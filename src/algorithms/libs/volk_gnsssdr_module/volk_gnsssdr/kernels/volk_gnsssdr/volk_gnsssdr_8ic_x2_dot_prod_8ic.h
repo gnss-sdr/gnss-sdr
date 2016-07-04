@@ -116,13 +116,14 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
 {
     lv_8sc_t dotProduct;
     memset(&dotProduct, 0x0, 2*sizeof(char));
-
+    unsigned int number;
+    unsigned int i;
     const lv_8sc_t* a = in_a;
     const lv_8sc_t* b = in_b;
 
     const unsigned int sse_iters = num_points/8;
 
-    if (sse_iters>0)
+    if (sse_iters > 0)
         {
             __m128i x, y, mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc, realcacc, imagcacc;
 
@@ -130,7 +131,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     x = _mm_loadu_si128((__m128i*)a);
                     y = _mm_loadu_si128((__m128i*)b);
@@ -168,13 +169,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
 
             _mm_storeu_si128((__m128i*)dotProductVector, totalc); // Store the results back into the dot product vector
 
-            for (int i = 0; i < 8; ++i)
+            for (i = 0; i < 8; ++i)
                 {
                     dotProduct += dotProductVector[i];
                 }
         }
 
-    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
+    for (i = sse_iters * 8; i < num_points; ++i)
         {
             dotProduct += (*a++) * (*b++);
         }
@@ -192,13 +193,14 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
 {
     lv_8sc_t dotProduct;
     memset(&dotProduct, 0x0, 2*sizeof(char));
-
+    unsigned int number;
+    unsigned int i;
     const lv_8sc_t* a = in_a;
     const lv_8sc_t* b = in_b;
 
     const unsigned int sse_iters = num_points/8;
 
-    if (sse_iters>0)
+    if (sse_iters > 0)
         {
             __m128i x, y, mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc, realcacc, imagcacc;
 
@@ -206,7 +208,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     x = _mm_lddqu_si128((__m128i*)a);
                     y = _mm_lddqu_si128((__m128i*)b);
@@ -242,13 +244,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
 
             _mm_storeu_si128((__m128i*)dotProductVector, totalc); // Store the results back into the dot product vector
 
-            for (unsigned int i = 0; i < 8; ++i)
+            for (i = 0; i < 8; ++i)
                 {
                     dotProduct += dotProductVector[i];
                 }
         }
 
-    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
+    for (i = sse_iters * 8; i < num_points; ++i)
         {
             dotProduct += (*a++) * (*b++);
         }
@@ -266,13 +268,14 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
 {
     lv_8sc_t dotProduct;
     memset(&dotProduct, 0x0, 2*sizeof(char));
-
+    unsigned int number;
+    unsigned int i;
     const lv_8sc_t* a = in_a;
     const lv_8sc_t* b = in_b;
 
     const unsigned int sse_iters = num_points/8;
 
-    if (sse_iters>0)
+    if (sse_iters > 0)
         {
             __m128i x, y, mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc, realcacc, imagcacc;
 
@@ -280,7 +283,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     x = _mm_load_si128((__m128i*)a);
                     y = _mm_load_si128((__m128i*)b);
@@ -318,13 +321,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
 
             _mm_store_si128((__m128i*)dotProductVector, totalc); // Store the results back into the dot product vector
 
-            for (unsigned int i = 0; i < 8; ++i)
+            for (i = 0; i < 8; ++i)
                 {
                     dotProduct += dotProductVector[i];
                 }
         }
 
-    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
+    for (i = sse_iters * 8; i < num_points; ++i)
         {
             dotProduct += (*a++) * (*b++);
         }
@@ -341,7 +344,8 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, c
 {
     lv_8sc_t dotProduct;
     memset(&dotProduct, 0x0, 2*sizeof(char));
-
+    unsigned int number;
+    unsigned int i;
     const lv_8sc_t* a = in_a;
     const lv_8sc_t* b = in_b;
 
@@ -355,7 +359,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, c
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     x = _mm_load_si128((__m128i*)a);
                     y = _mm_load_si128((__m128i*)b);
@@ -391,13 +395,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, c
 
             _mm_store_si128((__m128i*)dotProductVector, totalc); // Store the results back into the dot product vector
 
-            for (unsigned int i = 0; i < 8; ++i)
+            for (i = 0; i < 8; ++i)
                 {
                     dotProduct += dotProductVector[i];
                 }
         }
 
-    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
+    for (i = sse_iters * 8; i < num_points; ++i)
         {
             dotProduct += (*a++) * (*b++);
         }

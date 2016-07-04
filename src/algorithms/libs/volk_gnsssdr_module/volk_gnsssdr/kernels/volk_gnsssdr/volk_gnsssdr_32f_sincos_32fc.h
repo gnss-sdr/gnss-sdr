@@ -560,7 +560,8 @@ static inline void volk_gnsssdr_32f_sincos_32fc_u_sse2(lv_32fc_t* out, const flo
 static inline void volk_gnsssdr_32f_sincos_32fc_generic(lv_32fc_t* out, const float* in, unsigned int num_points)
 {
     float _in;
-    for(unsigned int i = 0; i < num_points; i++)
+    unsigned int i;
+    for(i = 0; i < num_points; i++)
         {
             _in = *in++;
             *out++ = lv_cmake((float)cos(_in), (float)sin(_in) );
@@ -584,8 +585,8 @@ static inline void volk_gnsssdr_32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, con
     const int32_t Nbits = 10;
     const int32_t diffbits = bitlength - Nbits;
     uint32_t ux;
-
-    for(unsigned int i = 0; i < num_points; i++)
+    unsigned int i;
+    for(i = 0; i < num_points; i++)
         {
             _in = *in++;
             d = (int32_t)floor(_in / TWO_PI + 0.5);

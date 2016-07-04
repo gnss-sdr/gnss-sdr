@@ -385,7 +385,8 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t* out, const fl
 static inline void volk_gnsssdr_s32f_sincos_32fc_generic(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
 {
     float _phase = (*phase);
-    for(unsigned int i = 0; i < num_points; i++)
+    unsigned int i;
+    for(i = 0; i < num_points; i++)
         {
             *out++ = lv_cmake((float)cos(_phase), (float)sin(_phase) );
             _phase += phase_inc;
@@ -402,6 +403,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic(lv_32fc_t* out, const f
 static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
 {
     float _in, s, c;
+    unsigned int i;
     int32_t x, sin_index, cos_index, d;
     const float PI = 3.14159265358979323846;
     const float TWO_TO_THE_31_DIV_PI = 2147483648.0 / PI;
@@ -411,7 +413,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, co
     const int32_t diffbits = bitlength - Nbits;
     uint32_t ux;
     float _phase = (*phase);
-    for(unsigned int i = 0; i < num_points; i++)
+    for(i = 0; i < num_points; i++)
         {
             _in = _phase;
             d = (int32_t)floor(_in / TWO_PI + 0.5);

@@ -81,11 +81,13 @@
 static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_generic(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_32fc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
     lv_32fc_t tmp32_1, tmp32_2;
-    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+    int n_vec;
+    unsigned int n;
+    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             result[n_vec] = lv_cmake(0,0);
         }
-    for (unsigned int n = 0; n < num_points; n++)
+    for (n = 0; n < num_points; n++)
         {
             tmp32_1 = *in_common++ * (*phase);//if(n<10 || n >= 8108) printf("generic phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
 
@@ -102,7 +104,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_generic(lv_32fc
                 }
 
             (*phase) *= phase_inc;
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     tmp32_2 = tmp32_1 * in_a[n_vec][n];
                     result[n_vec] += tmp32_2;
@@ -119,18 +121,21 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_generic_reload(
 {
     lv_32fc_t tmp32_1, tmp32_2;
     const unsigned int ROTATOR_RELOAD = 256;
-    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+    int n_vec;
+    unsigned int n;
+    unsigned int j;
+    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             result[n_vec] = lv_cmake(0,0);
         }
 
-    for (unsigned int n = 0; n < num_points / ROTATOR_RELOAD; n++)
+    for (n = 0; n < num_points / ROTATOR_RELOAD; n++)
         {
-            for (unsigned int j = 0; j < ROTATOR_RELOAD; j++)
+            for (j = 0; j < ROTATOR_RELOAD; j++)
                 {
                     tmp32_1 = *in_common++ * (*phase);
                     (*phase) *= phase_inc;
-                    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             tmp32_2 = tmp32_1 * in_a[n_vec][n * ROTATOR_RELOAD + j];
                             result[n_vec] += tmp32_2;
@@ -145,11 +150,11 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_generic_reload(
 #endif
         }
 
-    for (unsigned int j = 0; j < num_points % ROTATOR_RELOAD; j++)
+    for (j = 0; j < num_points % ROTATOR_RELOAD; j++)
         {
             tmp32_1 = *in_common++ * (*phase);
             (*phase) *= phase_inc;
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     tmp32_2 = tmp32_1 * in_a[n_vec][(num_points / ROTATOR_RELOAD) * ROTATOR_RELOAD + j];
                     result[n_vec] += tmp32_2;
@@ -167,7 +172,10 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_sse3(lv_32fc_
     lv_32fc_t dotProduct = lv_cmake(0,0);
     lv_32fc_t tmp32_1, tmp32_2;
     const unsigned int sse_iters = num_points / 2;
-
+    int n_vec;
+    int i;
+    unsigned int number;
+    unsigned int n;
     const lv_32fc_t** _in_a = in_a;
     const lv_32fc_t* _in_common = in_common;
 
@@ -175,7 +183,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_sse3(lv_32fc_
 
     __m128* acc = (__m128*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m128), volk_gnsssdr_get_alignment());
 
-    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             acc[n_vec] = _mm_setzero_ps();
         }
@@ -195,7 +203,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_sse3(lv_32fc_
     const __m128 ylp = _mm_moveldup_ps(two_phase_inc_reg);
     const __m128 yhp = _mm_movehdup_ps(two_phase_inc_reg);
 
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             // Phase rotation on operand in_common starts here:
             a = _mm_loadu_ps((float*)_in_common);
@@ -217,7 +225,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_sse3(lv_32fc_
             //next two samples
             _in_common += 2;
 
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     a = _mm_loadu_ps((float*)&(_in_a[n_vec][number*2]));
                     tmp1 = _mm_mul_ps(a, yl);
@@ -237,11 +245,11 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_sse3(lv_32fc_
                 }
         }
 
-    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             _mm_store_ps((float*)dotProductVector, acc[n_vec]); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
-            for (int i = 0; i < 2; ++i)
+            for (i = 0; i < 2; ++i)
                 {
                     dotProduct = dotProduct + dotProductVector[i];
                 }
@@ -252,11 +260,11 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_sse3(lv_32fc_
     _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
     (*phase) = two_phase_acc[0];
 
-    for(unsigned int n  = sse_iters * 2; n < num_points; n++)
+    for(n = sse_iters * 2; n < num_points; n++)
         {
             tmp32_1 = in_common[n] * (*phase);
             (*phase) *= phase_inc;
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     tmp32_2 = tmp32_1 * in_a[n_vec][n];
                     result[n_vec] += tmp32_2;
@@ -273,7 +281,10 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_sse3(lv_32fc_
     lv_32fc_t dotProduct = lv_cmake(0,0);
     lv_32fc_t tmp32_1, tmp32_2;
     const unsigned int sse_iters = num_points / 2;
-
+    int n_vec;
+    int i;
+    unsigned int n;
+    unsigned int number;
     const lv_32fc_t** _in_a = in_a;
     const lv_32fc_t* _in_common = in_common;
 
@@ -281,7 +292,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_sse3(lv_32fc_
 
     __m128* acc = (__m128*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m128), volk_gnsssdr_get_alignment());
 
-    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             acc[n_vec] = _mm_setzero_ps();
         }
@@ -301,7 +312,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_sse3(lv_32fc_
     const __m128 ylp = _mm_moveldup_ps(two_phase_inc_reg);
     const __m128 yhp = _mm_movehdup_ps(two_phase_inc_reg);
 
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             // Phase rotation on operand in_common starts here:
             a = _mm_load_ps((float*)_in_common);
@@ -323,7 +334,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_sse3(lv_32fc_
             //next two samples
             _in_common += 2;
 
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     a = _mm_load_ps((float*)&(_in_a[n_vec][number*2]));
                     tmp1 = _mm_mul_ps(a, yl);
@@ -343,11 +354,11 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_sse3(lv_32fc_
                 }
         }
 
-    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             _mm_store_ps((float*)dotProductVector, acc[n_vec]); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
-            for (int i = 0; i < 2; ++i)
+            for (i = 0; i < 2; ++i)
                 {
                     dotProduct = dotProduct + dotProductVector[i];
                 }
@@ -358,11 +369,11 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_sse3(lv_32fc_
     _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
     (*phase) = two_phase_acc[0];
 
-    for(unsigned int n  = sse_iters * 2; n < num_points; n++)
+    for(n = sse_iters * 2; n < num_points; n++)
         {
             tmp32_1 = in_common[n] * (*phase);
             (*phase) *= phase_inc;
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     tmp32_2 = tmp32_1 * in_a[n_vec][n];
                     result[n_vec] += tmp32_2;
@@ -379,7 +390,10 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t
     lv_32fc_t dotProduct = lv_cmake(0,0);
     lv_32fc_t tmp32_1, tmp32_2;
     const unsigned int avx_iters = num_points / 4;
-
+    int n_vec;
+    int i;
+    unsigned int number;
+    unsigned int n;
     const lv_32fc_t** _in_a = in_a;
     const lv_32fc_t* _in_common = in_common;
     lv_32fc_t _phase = (*phase);
@@ -388,7 +402,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t
 
     __m256* acc = (__m256*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m256), volk_gnsssdr_get_alignment());
 
-    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             acc[n_vec] = _mm256_setzero_ps();
             result[n_vec] = lv_cmake(0, 0);
@@ -417,7 +431,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t
     const __m256 ylp = _mm256_moveldup_ps(four_phase_inc_reg);
     const __m256 yhp = _mm256_movehdup_ps(four_phase_inc_reg);
 
-    for(unsigned int number = 0; number < avx_iters; number++)
+    for(number = 0; number < avx_iters; number++)
         {
             // Phase rotation on operand in_common starts here:
             a = _mm256_loadu_ps((float*)_in_common);
@@ -439,7 +453,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t
             //next two samples
             _in_common += 4;
 
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     a = _mm256_loadu_ps((float*)&(_in_a[n_vec][number * 4]));
                     tmp1 = _mm256_mul_ps(a, yl);
@@ -459,11 +473,11 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t
                 }
         }
 
-    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             _mm256_store_ps((float*)dotProductVector, acc[n_vec]); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
-            for (int i = 0; i < 4; ++i)
+            for (i = 0; i < 4; ++i)
                 {
                     dotProduct = dotProduct + dotProductVector[i];
                 }
@@ -481,11 +495,11 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t
     _phase  = four_phase_acc[0];
     _mm256_zeroupper();
 
-    for(unsigned int n  = avx_iters * 4; n < num_points; n++)
+    for(n = avx_iters * 4; n < num_points; n++)
         {
             tmp32_1 = *_in_common++ * _phase;
             _phase *= phase_inc;
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     tmp32_2 = tmp32_1 * _in_a[n_vec][n];
                     result[n_vec] += tmp32_2;
@@ -503,7 +517,10 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
     lv_32fc_t dotProduct = lv_cmake(0,0);
     lv_32fc_t tmp32_1, tmp32_2;
     const unsigned int avx_iters = num_points / 4;
-
+    int n_vec;
+    int i;
+    unsigned int number;
+    unsigned int n;
     const lv_32fc_t** _in_a = in_a;
     const lv_32fc_t* _in_common = in_common;
     lv_32fc_t _phase = (*phase);
@@ -512,7 +529,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
 
     __m256* acc = (__m256*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m256), volk_gnsssdr_get_alignment());
 
-    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             acc[n_vec] = _mm256_setzero_ps();
             result[n_vec] = lv_cmake(0, 0);
@@ -521,7 +538,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
     // phase rotation registers
     __m256 a, four_phase_acc_reg, yl, yh, tmp1, tmp1p, tmp2, tmp2p, z;
 
-    __attribute__((aligned(32))) lv_32fc_t four_phase_inc[4];
+    __VOLK_ATTR_ALIGNED(32) lv_32fc_t four_phase_inc[4];
     const lv_32fc_t phase_inc2 = phase_inc * phase_inc;
     const lv_32fc_t phase_inc3 = phase_inc2 * phase_inc;
     const lv_32fc_t phase_inc4 = phase_inc3 * phase_inc;
@@ -531,7 +548,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
     four_phase_inc[3] = phase_inc4;
     const __m256 four_phase_inc_reg = _mm256_load_ps((float*)four_phase_inc);
 
-    __attribute__((aligned(32))) lv_32fc_t four_phase_acc[4];
+    __VOLK_ATTR_ALIGNED(32) lv_32fc_t four_phase_acc[4];
     four_phase_acc[0] = _phase;
     four_phase_acc[1] = _phase * phase_inc;
     four_phase_acc[2] = _phase * phase_inc2;
@@ -541,7 +558,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
     const __m256 ylp = _mm256_moveldup_ps(four_phase_inc_reg);
     const __m256 yhp = _mm256_movehdup_ps(four_phase_inc_reg);
 
-    for(unsigned int number = 0; number < avx_iters; number++)
+    for(number = 0; number < avx_iters; number++)
         {
             // Phase rotation on operand in_common starts here:
             a = _mm256_load_ps((float*)_in_common);
@@ -563,7 +580,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
             //next two samples
             _in_common += 4;
 
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     a = _mm256_load_ps((float*)&(_in_a[n_vec][number * 4]));
                     tmp1 = _mm256_mul_ps(a, yl);
@@ -583,11 +600,11 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
                 }
         }
 
-    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             _mm256_store_ps((float*)dotProductVector, acc[n_vec]); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
-            for (int i = 0; i < 4; ++i)
+            for (i = 0; i < 4; ++i)
                 {
                     dotProduct = dotProduct + dotProductVector[i];
                 }
@@ -605,11 +622,11 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
     _phase  = four_phase_acc[0];
     _mm256_zeroupper();
 
-    for(unsigned int n  = avx_iters * 4; n < num_points; n++)
+    for(n = avx_iters * 4; n < num_points; n++)
         {
             tmp32_1 = *_in_common++ * _phase;
             _phase *= phase_inc;
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     tmp32_2 = tmp32_1 * _in_a[n_vec][n];
                     result[n_vec] += tmp32_2;
@@ -626,7 +643,10 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
 static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_neon(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_32fc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
     const unsigned int neon_iters = num_points / 4;
-
+    int n_vec;
+    int i;
+    unsigned int number;
+    unsigned int n ;
     const lv_32fc_t** _in_a = in_a;
     const lv_32fc_t* _in_common = in_common;
     lv_32fc_t* _out = result;
@@ -665,7 +685,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_neon(lv_32fc_t*
             float32x4x2_t* accumulator1 = (float32x4x2_t*)volk_gnsssdr_malloc(num_a_vectors * sizeof(float32x4x2_t), volk_gnsssdr_get_alignment());
             float32x4x2_t* accumulator2 = (float32x4x2_t*)volk_gnsssdr_malloc(num_a_vectors * sizeof(float32x4x2_t), volk_gnsssdr_get_alignment());
 
-            for(int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for(n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     accumulator1[n_vec].val[0] = vdupq_n_f32(0.0f);
                     accumulator1[n_vec].val[1] = vdupq_n_f32(0.0f);
@@ -673,7 +693,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_neon(lv_32fc_t*
                     accumulator2[n_vec].val[1] = vdupq_n_f32(0.0f);
                 }
 
-            for(unsigned int number = 0; number < neon_iters; number++)
+            for(number = 0; number < neon_iters; number++)
                 {
                     /* load 4 complex numbers (float 32 bits each component) */
                     b_val = vld2q_f32((float32_t*)_in_common);
@@ -715,7 +735,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_neon(lv_32fc_t*
                             _phase_imag = vld1q_f32(____phase_imag);
                         }
 
-                    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                    for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2q_f32((float32_t*)&(_in_a[n_vec][number * 4]));
 
@@ -726,16 +746,16 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_neon(lv_32fc_t*
                             accumulator2[n_vec].val[1] = vmlaq_f32(accumulator2[n_vec].val[1], a_val.val[1], b_val.val[0]);
                         }
                 }
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     accumulator1[n_vec].val[0] = vaddq_f32(accumulator1[n_vec].val[0], accumulator2[n_vec].val[0]);
                     accumulator1[n_vec].val[1] = vaddq_f32(accumulator1[n_vec].val[1], accumulator2[n_vec].val[1]);
                 }
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     vst2q_f32((float32_t*)dotProductVector, accumulator1[n_vec]); // Store the results back into the dot product vector
                     dotProduct = lv_cmake(0,0);
-                    for (int i = 0; i < 4; ++i)
+                    for (i = 0; i < 4; ++i)
                         {
                             dotProduct = dotProduct + dotProductVector[i];
                         }
@@ -750,11 +770,11 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_neon(lv_32fc_t*
             _phase = lv_cmake((float32_t)__phase_real[0], (float32_t)__phase_imag[0]);
         }
 
-    for(unsigned int n  = neon_iters * 4; n < num_points; n++)
+    for(n = neon_iters * 4; n < num_points; n++)
         {
             tmp32_1 = in_common[n] * _phase;
             _phase *= phase_inc;
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     tmp32_2 = tmp32_1 * in_a[n_vec][n];
                     _out[n_vec] += tmp32_2;

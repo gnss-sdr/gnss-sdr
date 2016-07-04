@@ -121,9 +121,9 @@ or manually as explained below, and then please follow instructions on how to [d
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-6.600.5.tar.gz
-$ tar xvfz armadillo-6.600.5.tar.gz
-$ cd armadillo-6.600.5
+$ wget http://sourceforge.net/projects/arma/files/armadillo-7.200.2.tar.xz
+$ tar xvfz armadillo-7.200.2.tar.xz
+$ cd armadillo-7.200.2
 $ cmake .
 $ make
 $ sudo make install
@@ -207,8 +207,6 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
  |---conf       <- Configuration files. Each file defines one particular receiver.
  |---data       <- Populate this folder with your captured data.
  |---docs       <- Contains documentation-related files.
- |---drivers    <- Drivers for some RF front-ends.
- |---firmware   <- Firmware for some front-ends.
  |---install    <- Executables will be placed here. 
  |---src        <- Source code folder.
  |-----algorithms  <- Signal processing blocks.
@@ -298,11 +296,11 @@ and then import the created project file into Eclipse:
 
 ###### Build GN3S V2 Custom firmware and driver (OPTIONAL):
 
-Go to GR-GN3S root directory, compile and install the driver (read the drivers/gr-gn3s/README for more information):
+Install the GNU Radio module:
 
 ~~~~~~   
-$ cd gnss-sdr/drivers/gr-gn3s
-$ cd build
+$ git clone https://github.com/gnss-sdr/gr-gn3s
+$ cd gr-gn3s/build
 $ cmake ../
 $ make
 $ sudo make install
@@ -312,17 +310,18 @@ $ sudo ldconfig
 Then configure GNSS-SDR to build the GN3S_Signal_Source by:
 
 ~~~~~~ 
+$ cd gnss-sdr/build
 $ cmake -DENABLE_GN3S=ON ../
 $ make
 $ sudo make install
 ~~~~~~ 
 
 In order to gain access to USB ports, gnss-sdr should be used as root. In addition, the driver requires access to the GN3S firmware binary file. It should be available in the same path where the application is called.
-GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/firmware/GN3S_v2/bin/gn3s_firmware.ihx. Please copy this file to the application path. The GNSS-SDR default path is gnss-sdr/install
+GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gr-gn3s/firmware/GN3S_v2/bin/gn3s_firmware.ihx. Please copy this file to the application path. 
 
 (in order to disable the GN3S_Signal_Source compilation, you can pass -DENABLE_GN3S=OFF to cmake and build GNSS-SDR again).
 
-More info at [drivers/gr-gn3s/README.md](./drivers/gr-gn3s/README.md)
+More info at https://github.com/gnss-sdr/gr-gn3s
    
 
 ###### Build OSMOSDR support (OPTIONAL):

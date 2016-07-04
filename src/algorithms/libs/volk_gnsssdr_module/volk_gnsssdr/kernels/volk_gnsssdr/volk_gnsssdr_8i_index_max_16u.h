@@ -66,7 +66,8 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
     if(num_points > 0)
         {
             const unsigned int sse_iters = num_points / 32;
-
+            unsigned int number;
+            unsigned int i;
             char* basePtr = (char*)src0;
             char* inputPtr = (char*)src0;
             char max = src0[0];
@@ -78,7 +79,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
             ones = _mm256_set1_epi8(0xFF);
             maxValues = _mm_set1_epi8(max);
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     currentValues  = _mm256_lddqu_si256((__m256i*)inputPtr);
 
@@ -95,7 +96,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
                         {
                             _mm256_storeu_si256((__m256i*)&currentValuesBuffer, currentValues);
 
-                            for(unsigned int i = 0; i < 32; i++)
+                            for(i = 0; i < 32; i++)
                                 {
                                     if(currentValuesBuffer[i] > max)
                                         {
@@ -109,7 +110,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
                     inputPtr += 32;
                 }
 
-            for(unsigned int i = 0; i<(num_points % 32); ++i)
+            for(i = 0; i<(num_points % 32); ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -132,7 +133,8 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
     if(num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
-
+            unsigned int number;
+            unsigned int i = 0;
             char* basePtr = (char*)src0;
             char* inputPtr = (char*)src0;
             char max = src0[0];
@@ -142,7 +144,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
 
             maxValues = _mm_set1_epi8(max);
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     currentValues  = _mm_lddqu_si128((__m128i*)inputPtr);
 
@@ -152,7 +154,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
                         {
                             _mm_storeu_si128((__m128i*)&currentValuesBuffer, currentValues);
 
-                            for(unsigned int i = 0; i < 16; i++)
+                            for(i = 0; i < 16; i++)
                                 {
                                     if(currentValuesBuffer[i] > max)
                                         {
@@ -166,7 +168,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
                     inputPtr += 16;
                 }
 
-            for(unsigned int i = 0; i<(num_points % 16); ++i)
+            for(i = 0; i<(num_points % 16); ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -189,7 +191,8 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
     if(num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
-
+            unsigned int number;
+            unsigned int i;
             char* basePtr = (char*)src0;
             char* inputPtr = (char*)src0;
             char max = src0[0];
@@ -200,7 +203,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
 
             maxValues = _mm_set1_epi8(max);
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     currentValues  = _mm_loadu_si128((__m128i*)inputPtr);
                     compareResults = _mm_cmpgt_epi8(maxValues, currentValues);
@@ -210,7 +213,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
                         {
                             _mm_storeu_si128((__m128i*)&currentValuesBuffer, currentValues);
                             mask = ~mask;
-                            unsigned int i = 0;
+                            i = 0;
                             while (mask > 0)
                                 {
                                     if ((mask & 1) == 1)
@@ -229,7 +232,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
                     inputPtr += 16;
                 }
 
-            for(unsigned int i = 0; i<(num_points % 16); ++i)
+            for(i = 0; i<(num_points % 16); ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -252,8 +255,8 @@ static inline void volk_gnsssdr_8i_index_max_16u_generic(unsigned int* target, c
         {
             char max = src0[0];
             unsigned int index = 0;
-
-            for(unsigned int i = 1; i < num_points; ++i)
+            unsigned int i;
+            for(i = 1; i < num_points; ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -276,7 +279,8 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
     if(num_points > 0)
         {
             const unsigned int sse_iters = num_points / 32;
-
+            unsigned int number;
+            unsigned int i;
             char* basePtr = (char*)src0;
             char* inputPtr = (char*)src0;
             char max = src0[0];
@@ -288,7 +292,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
             ones = _mm256_set1_epi8(0xFF);
             maxValues = _mm_set1_epi8(max);
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     currentValues  = _mm256_load_si256((__m256i*)inputPtr);
 
@@ -305,7 +309,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
                         {
                             _mm256_store_si256((__m256i*)&currentValuesBuffer, currentValues);
 
-                            for(unsigned int i = 0; i < 32; i++)
+                            for(i = 0; i < 32; i++)
                                 {
                                     if(currentValuesBuffer[i] > max)
                                         {
@@ -319,7 +323,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
                     inputPtr += 32;
                 }
 
-            for(unsigned int i = 0; i<(num_points % 32); ++i)
+            for(i = 0; i<(num_points % 32); ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -342,7 +346,8 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
     if(num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
-
+            unsigned int number;
+            unsigned int i;
             char* basePtr = (char*)src0;
             char* inputPtr = (char*)src0;
             char max = src0[0];
@@ -352,7 +357,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
 
             maxValues = _mm_set1_epi8(max);
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     currentValues  = _mm_load_si128((__m128i*)inputPtr);
 
@@ -362,7 +367,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
                         {
                             _mm_store_si128((__m128i*)&currentValuesBuffer, currentValues);
 
-                            for(unsigned int i = 0; i < 16; i++)
+                            for(i = 0; i < 16; i++)
                                 {
                                     if(currentValuesBuffer[i] > max)
                                         {
@@ -376,7 +381,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
                     inputPtr += 16;
                 }
 
-            for(unsigned int i = 0; i<(num_points % 16); ++i)
+            for(i = 0; i<(num_points % 16); ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -399,7 +404,8 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, co
     if(num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
-
+            unsigned int number;
+            unsigned int i;
             char* basePtr = (char*)src0;
             char* inputPtr = (char*)src0;
             char max = src0[0];
@@ -410,7 +416,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, co
 
             maxValues = _mm_set1_epi8(max);
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     currentValues  = _mm_load_si128((__m128i*)inputPtr);
                     compareResults = _mm_cmpgt_epi8(maxValues, currentValues);
@@ -420,7 +426,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, co
                         {
                             _mm_store_si128((__m128i*)&currentValuesBuffer, currentValues);
                             mask = ~mask;
-                            unsigned int i = 0;
+                            i = 0;
                             while (mask > 0)
                                 {
                                     if ((mask & 1) == 1)
@@ -439,7 +445,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, co
                     inputPtr += 16;
                 }
 
-            for(unsigned int i = 0; i<(num_points % 16); ++i)
+            for(i = 0; i<(num_points % 16); ++i)
                 {
                     if(src0[i] > max)
                         {

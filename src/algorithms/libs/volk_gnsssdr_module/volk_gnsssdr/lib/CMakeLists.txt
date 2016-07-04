@@ -73,9 +73,9 @@ endif()
 # _XOPEN_SOURCE or _POSIX_C_SOURCE; they leave this to the user.
 ########################################################################
 
-include(CheckFunctionExists)
-CHECK_FUNCTION_EXISTS(posix_memalign HAVE_POSIX_MEMALIGN)
-
+include(CheckSymbolExists)
+CHECK_SYMBOL_EXISTS(posix_memalign stdlib.h HAVE_POSIX_MEMALIGN)
+ 
 if(HAVE_POSIX_MEMALIGN)
       add_definitions(-DHAVE_POSIX_MEMALIGN)
 endif(HAVE_POSIX_MEMALIGN)

@@ -64,14 +64,15 @@
 static inline void volk_gnsssdr_8i_x2_add_8i_u_sse2(char* cVector, const char* aVector, const char* bVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 16;
-
+    unsigned int number;
+    unsigned int i;
     char* cPtr = cVector;
     const char* aPtr = aVector;
     const char* bPtr = bVector;
 
     __m128i aVal, bVal, cVal;
 
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             aVal = _mm_loadu_si128((__m128i*)aPtr);
             bVal = _mm_loadu_si128((__m128i*)bPtr);
@@ -85,7 +86,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_u_sse2(char* cVector, const char* a
             cPtr += 16;
         }
 
-    for(unsigned int i = sse_iters * 16; i < num_points; ++i)
+    for(i = sse_iters * 16; i < num_points; ++i)
         {
             *cPtr++ = (*aPtr++) + (*bPtr++);
         }
@@ -100,7 +101,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_generic(char* cVector, const char* 
     char* cPtr = cVector;
     const char* aPtr = aVector;
     const char* bPtr = bVector;
-    unsigned int number = 0;
+    unsigned int number;
 
     for(number = 0; number < num_points; number++)
         {
@@ -116,14 +117,15 @@ static inline void volk_gnsssdr_8i_x2_add_8i_generic(char* cVector, const char* 
 static inline void volk_gnsssdr_8i_x2_add_8i_a_sse2(char* cVector, const char* aVector, const char* bVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 16;
-
+    unsigned int number;
+    unsigned int i;
     char* cPtr = cVector;
     const char* aPtr = aVector;
     const char* bPtr = bVector;
 
     __m128i aVal, bVal, cVal;
 
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             aVal = _mm_load_si128((__m128i*)aPtr);
             bVal = _mm_load_si128((__m128i*)bPtr);
@@ -137,7 +139,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_a_sse2(char* cVector, const char* a
             cPtr += 16;
         }
 
-    for(unsigned int i = sse_iters * 16; i < num_points; ++i)
+    for(i = sse_iters * 16; i < num_points; ++i)
         {
             *cPtr++ = (*aPtr++) + (*bPtr++);
         }

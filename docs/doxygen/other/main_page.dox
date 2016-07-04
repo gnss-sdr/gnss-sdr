@@ -111,8 +111,6 @@ This will create a folder named gnss-sdr with the following structure:
  |---conf        <- Configuration files. Each file represents one receiver.
  |---data        <- Populate this folder with your captured data.
  |---docs        <- Contains documentation-related files
- |---drivers     <- Drivers for some RF front-ends
- |---firmware    <- Firmware for some front-ends
  |---install     <- Executables 
  |---src         <- Source code folder
  |-----algorithms

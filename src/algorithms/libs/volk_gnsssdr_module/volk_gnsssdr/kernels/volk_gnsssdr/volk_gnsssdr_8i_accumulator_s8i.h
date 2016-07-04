@@ -66,14 +66,15 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_u_sse3(char* result, const ch
 {
     char returnValue = 0;
     const unsigned int sse_iters = num_points / 16;
-
+    unsigned int number;
+    unsigned int i;
     const char* aPtr = inputBuffer;
 
     __VOLK_ATTR_ALIGNED(16) char tempBuffer[16];
     __m128i accumulator = _mm_setzero_si128();
     __m128i aVal = _mm_setzero_si128();
 
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             aVal = _mm_lddqu_si128((__m128i*)aPtr);
             accumulator = _mm_add_epi8(accumulator, aVal);
@@ -81,12 +82,12 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_u_sse3(char* result, const ch
         }
     _mm_storeu_si128((__m128i*)tempBuffer, accumulator);
 
-    for(unsigned int i = 0; i < 16; ++i)
+    for(i = 0; i < 16; ++i)
         {
             returnValue += tempBuffer[i];
         }
 
-    for(unsigned int i = 0; i < (num_points % 16); ++i)
+    for(i = 0; i < (num_points % 16); ++i)
         {
             returnValue += (*aPtr++);
         }
@@ -102,8 +103,8 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_generic(char* result, const c
 {
     const char* aPtr = inputBuffer;
     char returnValue = 0;
-
-    for(unsigned int number = 0;number < num_points; number++)
+    unsigned int number;
+    for(number = 0;number < num_points; number++)
         {
             returnValue += (*aPtr++);
         }
@@ -119,6 +120,8 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_a_sse3(char* result, const ch
 {
     char returnValue = 0;
     const unsigned int sse_iters = num_points / 16;
+    unsigned int number;
+    unsigned int i;
 
     const char* aPtr = inputBuffer;
 
@@ -126,7 +129,7 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_a_sse3(char* result, const ch
     __m128i accumulator = _mm_setzero_si128();
     __m128i aVal = _mm_setzero_si128();
 
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             aVal = _mm_load_si128((__m128i*)aPtr);
             accumulator = _mm_add_epi8(accumulator, aVal);
@@ -134,12 +137,12 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_a_sse3(char* result, const ch
         }
     _mm_store_si128((__m128i*)tempBuffer,accumulator);
 
-    for(unsigned int i = 0; i < 16; ++i)
+    for(i = 0; i < 16; ++i)
         {
             returnValue += tempBuffer[i];
         }
 
-    for(unsigned int i = 0; i < (num_points % 16); ++i)
+    for(i = 0; i < (num_points % 16); ++i)
         {
             returnValue += (*aPtr++);
         }

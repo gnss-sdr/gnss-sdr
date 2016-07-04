@@ -67,6 +67,9 @@ int main(int argc, char *argv[]) {
       ("json,j",
             boost::program_options::value<std::string>(),
             "JSON output file")
+      ("path,p",
+            boost::program_options::value<std::string>(),
+            "Specify volk_config path.")
       ;
 
     // Handle the options that were given
@@ -82,6 +85,7 @@ int main(int argc, char *argv[]) {
     std::string def_kernel_regex;
     bool update_mode = false;
     bool dry_run = false;
+    std::string config_file;
 
     // Handle the provided options
     try {
@@ -129,6 +133,16 @@ int main(int argc, char *argv[]) {
         json_file.open( filename.c_str() );
     }
 
+    if ( vm.count("path") ) {
+            try {
+                    config_file = vm["path"].as<std::string>() + "/volk_config";
+                }
+            catch (boost::bad_any_cast& error) {
+                std::cerr << error.what() << std::endl;
+                return 1;
+          }
+     }
+
     volk_gnsssdr_test_params_t test_params(def_tol, def_scalar, def_vlen, def_iter,
         def_benchmark_mode, def_kernel_regex);
 
@@ -136,6 +150,8 @@ int main(int argc, char *argv[]) {
     std::vector<volk_gnsssdr_test_results_t> results;
     if(update_mode) {
         read_results(&results);
+        if( vm.count("path") ) read_results(&results, config_file);
+        else read_results(&results);
     }
 
 
@@ -198,6 +214,8 @@ int main(int argc, char *argv[]) {
 
     if(!dry_run) {
         write_results(&results, false);
+        if(vm.count("path")) write_results(&results, false, config_file);
+        else write_results(&results, false);
     }
     else {
         std::cout << "Warning: this was a dry-run. Config not generated" << std::endl;
@@ -208,6 +226,12 @@ void read_results(std::vector<volk_gnsssdr_test_results_t> *results)
 {
     char path[1024];
     volk_gnsssdr_get_config_path(path);
+
+    read_results(results, std::string(path));
+}
+
+void read_results(std::vector<volk_gnsssdr_test_results_t> *results, std::string path)
+{
     const fs::path config_path(path);
 
     if(fs::exists(config_path)) {
@@ -260,8 +284,12 @@ void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool
     char path[1024];
     volk_gnsssdr_get_config_path(path);
 
-    const fs::path config_path(path);
+    write_results( results, update_result, std::string(path));
+}
 
+void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool update_result, const std::string path)
+{
+    const fs::path config_path(path);
     // Until we can update the config on a kernel by kernel basis
     // do not overwrite volk_gnsssdr_config when using a regex.
     if (not fs::exists(config_path.branch_path()))

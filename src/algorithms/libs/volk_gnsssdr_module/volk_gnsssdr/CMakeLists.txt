@@ -27,8 +27,9 @@ enable_language(CXX)
 enable_language(C)
 enable_testing()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
 option(ENABLE_STRIP "Create a stripped volk_gnsssdr_profile binary (without shared libraries)" OFF)
 
@@ -57,7 +58,7 @@ include(VolkVersion) #setup version info
 ########################################################################
 # Environment setup
 ########################################################################
-IF(NOT DEFINED BOOST_ROOT)
+IF(NOT DEFINED BOOST_ROOT AND NOT DEFINED ENV{BOOST_ROOT})
     SET(BOOST_ROOT ${CMAKE_INSTALL_PREFIX})
 ENDIF()
 
@@ -228,8 +229,13 @@ endif()
 ########################################################################
 
 configure_file(
-  ${PROJECT_SOURCE_DIR}/cmake/Modules/VolkConfigVersion.cmake.in
-  ${PROJECT_BINARY_DIR}/cmake/Modules/VolkConfigVersion.cmake
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake.in
+  ${CMAKE_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake
+@ONLY)
+
+configure_file(
+  ${PROJECT_SOURCE_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake.in
+  ${PROJECT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake
 @ONLY)
 
 
@@ -243,8 +249,8 @@ endif(NOT CMAKE_MODULES_DIR)
 
 install(
     FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/VolkConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake/Modules/VolkConfigVersion.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake
     DESTINATION ${CMAKE_MODULES_DIR}/volk_gnsssdr
     COMPONENT "volk_gnsssdr_devel"
 )
@@ -260,6 +266,34 @@ else()
 endif()
 message(STATUS "  Modify using: -DENABLE_TESTING=ON/OFF")
 
+
+########################################################################
+# Option to enable post-build profiling using volk_profile, off by default
+########################################################################
+OPTION(ENABLE_PROFILING "Launch system profiler after build" OFF)
+if(ENABLE_PROFILING)
+  set(ENABLE_STATIC_LIBS ON)
+  if(DEFINED VOLK_CONFIGPATH)  
+    get_filename_component(VOLK_CONFIGPATH ${VOLK_CONFIGPATH} ABSOLUTE)
+    set(VOLK_CONFIGPATH "${VOLK_CONFIGPATH}/volk_gnsssdr")
+    message(STATUS "System profiling is enabled, using path: ${VOLK_CONFIGPATH}")
+  elseif(DEFINED ENV{VOLK_CONFIGPATH})
+    set(VOLK_CONFIGPATH "$ENV{VOLK_CONFIGPATH}/volk_gnsssdr")
+    message(STATUS "System profiling is enabled, using env path: $ENV{VOLK_CONFIGPATH}")
+  else()
+    message(STATUS "System profiling is enabled with default paths.")
+    if(DEFINED ENV{HOME})
+        set(VOLK_CONFIGPATH "$ENV{HOME}/.volk_gnsssdr")
+    elseif(DEFINED ENV{APPDATA})
+        set(VOLK_CONFIGPATH "$ENV{APPDATA}/.volk_gnsssdr")
+    endif()
+  endif()
+else()
+  message(STATUS "System profiling is disabled.")
+endif()
+message(STATUS "  Modify using: -DENABLE_PROFILING=ON/OFF")
+########################################################################
+ 
 ########################################################################
 # Setup the library
 ########################################################################

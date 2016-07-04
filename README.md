@@ -121,9 +121,9 @@ or manually as explained below, and then please follow instructions on how to [d
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-6.600.5.tar.gz
-$ tar xvfz armadillo-6.600.5.tar.gz
-$ cd armadillo-6.600.5
+$ wget http://sourceforge.net/projects/arma/files/armadillo-7.200.2.tar.xz
+$ tar xvfz armadillo-7.200.2.tar.xz
+$ cd armadillo-7.200.2
 $ cmake .
 $ make
 $ sudo make install

@@ -1,5 +1,5 @@
  /*!
- * \file beidou_sdr_signal_processing.cc
+ * \file beidou_b1i_signal_processing.cc
  * \brief This class implements various functions for BeiDou B1I signals
  * \author Giorgio Savastano, 2015. giorgio.savastano(at)uniroma1.it
  *
@@ -30,7 +30,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "beidou_sdr_signal_processing.h"
+#include "beidou_b1i_signal_processing.h"
 #include <stdlib.h>
 #include <cmath>
 

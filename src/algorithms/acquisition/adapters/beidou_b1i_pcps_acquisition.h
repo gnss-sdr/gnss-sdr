@@ -33,14 +33,14 @@
 #define GNSS_SDR_BEIDOU_B1I_PCPS_ACQUISITION_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "pcps_acquisition_cc.h"
-#include "cshort_to_float_x2.h"
+#include "pcps_acquisition_sc.h"
 #include "complex_byte_to_float_x2.h"
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 
 
@@ -55,7 +55,7 @@ class BeidouB1iPcpsAcquisition: public AcquisitionInterface
 public:
 	BeidouB1iPcpsAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~BeidouB1iPcpsAcquisition();
 
@@ -109,11 +109,6 @@ public:
     void set_doppler_step(unsigned int doppler_step);
 
     /*!
-     * \brief Set tracking channel internal queue
-     */
-    void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
-
-    /*!
      * \brief Initializes acquisition algorithm.
      */
     void init();
@@ -141,20 +136,20 @@ public:
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_cc_sptr acquisition_cc_;
+    pcps_acquisition_sc_sptr acquisition_sc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
-    cshort_to_float_x2_sptr cshort_to_float_x2_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
     unsigned int code_length_;
     bool bit_transition_flag_;
+    bool use_CFAR_algorithm_flag_;
     unsigned int channel_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
-    unsigned int shift_resolution_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
     long fs_in_;
@@ -166,8 +161,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
-    concurrent_queue<int> *channel_internal_queue_;
 
     float calculate_threshold(float pfa);
 };

@@ -123,16 +123,15 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         }
     else if (std::find(system.begin(), system.end(), "B") != system.end())
         {
-        vector_length = round((float)fs_in
-                              / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
+            vector_length = round((float)fs_in
+                    / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
         }
 
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
             DLOG(INFO) << "Item size " << item_size_;
-            gen_source_ = signal_make_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips, delay_sec,
-                    data_flag, noise_flag, fs_in, vector_length, BW_BB);
+            gen_source_ = signal_make_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips,delay_sec, data_flag, noise_flag, fs_in, vector_length, BW_BB);
 
             vector_to_stream_ = gr::blocks::vector_to_stream::make(item_size_, vector_length);
 

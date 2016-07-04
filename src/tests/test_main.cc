@@ -116,7 +116,7 @@ DECLARE_string(log_dir);
 #include "gnss_block/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
 #include "gnss_block/galileo_e5a_tracking_test.cc"
 #include "gnss_block/gps_l2_m_dll_pll_tracking_test.cc"
-#include "gnss_block/beidou_b1i__dll_pll_tracking_test.cc"
+#include "gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc"
 
 //#include of the beidou acquisition test by Giorgio Savastano
 #include "gnss_block/beidou_B1I_pcps_acquisition_test.cc"

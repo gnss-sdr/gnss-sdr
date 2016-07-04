@@ -45,7 +45,7 @@
 #include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
-//#include "galileo_e1_dll_pll_veml_tracking.h"
+#include "beidou_b1i_dll_pll_tracking.h"
 
 //TODO: Test of BeiDou signal Tracking Block TBD
 //!!!! All parameters has to be re-defined (at least revised)
@@ -81,8 +81,8 @@ protected:
 void BeiDouB1iDllPllTrackingTest::init()
 {
     gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System = 'E';
-    std::string signal = "5Q";
+    gnss_synchro.System = 'B';
+    std::string signal = "1I";
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 11;
 
@@ -91,6 +91,7 @@ void BeiDouB1iDllPllTrackingTest::init()
     config->set_property("Tracking_BeiDou.dump", "false");
     config->set_property("Tracking_BeiDou.dump_filename", "../data/b1i_tracking_ch_");
     config->set_property("Tracking_BeiDou.implementation", "BeiDou_B1i_DLL_PLL_Tracking");
+    //TODO: Discriminators TBD
     config->set_property("Tracking_BeiDou.early_late_space_chips", "0.5");
     config->set_property("Tracking_BeiDou.order", "2");
     config->set_property("Tracking_BeiDou.pll_bw_hz_init","20.0");
@@ -112,10 +113,13 @@ TEST_F(BeiDouB1iDllPllTrackingTest, ValidationOfResults)
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
-    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", "BeiDou_B1i_DLL_PLL_Tracking", 1, 1);
-    std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
+    std::shared_ptr<GNSSBlockInterface> trk_ =
+        factory->GetBlock(config, "Tracking", "BeiDou_B1i_DLL_PLL_Tracking", 1, 1);
+    
+    std::shared_ptr<TrackingInterface> tracking =
+        std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
-    //REAL
+    // REAL
     gnss_synchro.Acq_delay_samples = 10; // 32 Msps
     //    gnss_synchro.Acq_doppler_hz = 3500; // 32 Msps
     gnss_synchro.Acq_doppler_hz = 2000; // 500 Hz resolution
@@ -135,9 +139,21 @@ TEST_F(BeiDouB1iDllPllTrackingTest, ValidationOfResults)
     }) << "Failure connecting tracking to the top_block." << std::endl;
 
     ASSERT_NO_THROW( {
-        gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-        gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+        gr::analog::sig_source_c::sptr source =
+            gr::analog::sig_source_c::make(fs_in,
+                                           gr::analog::GR_SIN_WAVE,
+                                           1000,
+                                           1,
+                                           gr_complex(0));
+        
+        boost::shared_ptr<gr::block> valve =
+            gnss_sdr_make_valve(sizeof(gr_complex),
+                                nsamples,
+                                queue);
+        
+        gr::blocks::null_sink::sptr sink =
+            gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+        
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, tracking->get_left_block(), 0);
         top_block->connect(tracking->get_right_block(), 0, sink, 0);

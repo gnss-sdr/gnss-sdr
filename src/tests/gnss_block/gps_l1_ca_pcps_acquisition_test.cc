@@ -52,7 +52,7 @@
 #include "gps_l1_ca_pcps_acquisition.h"
 
 
-// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
 class GpsL1CaPcpsAcquisitionTest_msg_rx;
 
 typedef boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> GpsL1CaPcpsAcquisitionTest_msg_rx_sptr;
@@ -234,7 +234,6 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        //std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         std::string file = path + "signal_samples/GPS_L1_CA_4000000_sps_CN0_48.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
@@ -253,7 +252,6 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
         gettimeofday(&tv, NULL);
         end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
-
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;

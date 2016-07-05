@@ -119,7 +119,7 @@ DECLARE_string(log_dir);
 
 //#include of the beidou acquisition test by Giorgio Savastano
 #include "gnss_block/beidou_B1I_pcps_acquisition_test.cc"
-#include "gnss_block/beidou_B1I_pcps_2ms_acquisition_test.cc"
+//#include "gnss_block/beidou_B1I_pcps_2ms_acquisition_test.cc"
 
 
 // For GPS NAVIGATION (L1)

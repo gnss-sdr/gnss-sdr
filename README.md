@@ -25,6 +25,12 @@ GNU/Linux
    * armel: ARM embedded ABI, supported on ARM v4t and higher.
    * armhf: ARM hard float, ARMv7 + VFP3-D16 floating-point hardware extension + Thumb-2 instruction set and above. 
    * arm64: ARM 64 bits or ARMv8.
+   * mips: MIPS architecture (big-endian, such as those manufactured by SGI).
+   * mipsel: MIPS architecture (little-endian, such as Loongson 3).
+   * mips64el: 64-bit version of MIPS architecture.
+   * powerpc: the RISC microprocessor architecture developed by IBM, Motorola (now Freescale) and Apple.
+   * ppc64el: 64-bit little-endian PowerPC architecture.
+   * s390x: IBM's S/390 architecture for mainframes.
 
 Older distribution releases might work as well, but you will need GCC 4.7 or newer.
 

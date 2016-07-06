@@ -94,9 +94,9 @@ add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc)
 target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
 add_dependencies(volk_gnsssdr-config-info volk_gnsssdr)
 
-# install(
-#    TARGETS volk_gnsssdr-config-info
-#    DESTINATION bin
-#    COMPONENT "volk_gnsssdr"
-# )
+install(
+    TARGETS volk_gnsssdr-config-info
+    DESTINATION bin
+    COMPONENT "volk_gnsssdr"
+)
 

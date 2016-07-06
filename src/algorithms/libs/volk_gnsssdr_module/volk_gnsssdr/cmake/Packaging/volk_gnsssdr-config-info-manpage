@@ -1,0 +1,42 @@
+.\" Manpage for volk_gnsssdr-config-info
+.\" Contact carles.fernandez@cttc.es to correct errors or typos.
+.TH volk_gnsssdr_profile 1 "06 Jun 2016" "0.0.8" "volk_gnsssdr-config-info man page"
+.SH NAME
+\fBvolk_gnsssdr-config-info\fR \- Prints configuration information of libvolk_gnsssdr functions.
+.SH SYNOPSIS
+\fBvolk_gnsssdr-config-info\fR [OPTION]
+.SH DESCRIPTION
+This program prints configuration information for the Vector-Optimized Library of Kernels of GNSS-SDR (VOLK_GNSSSDR)
+.TP
+\fBvolk_gnsssdr-config-info\fR is a program that prints configuration information for the Vector-Optimized Library of Kernels of GNSS-SDR (VOLK_GNSSSDR)
+.SH OPTIONS
+\fBvolk_gnsssdr-config-info\fR takes the following options:
+.TP
+\fB-h\fR [ \fB--help\fR ] Print help message.
+.TP
+\fB--prefix\fR Print VOLK_GNSSSDR installation prefix.
+.TP
+\fB--cc\fR Print VOLK_GNSSSDR C compiler version.
+.TP
+\fB--cflags\fR Print VOLK_GNSSSDR CFLAGS.
+.TP
+\fB--all-machines\fR Print VOLK_GNSSSDR machines built into library.
+.TP
+\fB--avail-amchines\fR Print VOLK_GNSSSDR machines the current platform can use.
+.TP
+\fB--machine\fR Print the VOLK_GNSSSDR machine that will be used.
+.TP
+\fB--alignment\fR Print the memory alignment that will be used.
+.TP
+\fB--malloc\fR Print malloc implementation that will be used.
+.TP
+\fB-v\fR [ \fB--version\fR ] Print VOLK_GNSSSDR version.
+.SH SEE ALSO
+.BR volk_gnsssdr_profile (1)
+.BR gnss-sdr (1)
+\.TP
+Check http://gnss-sdr.org for more information.
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Carles Fernandez-Prades (carles.fernandez@cttc.es)

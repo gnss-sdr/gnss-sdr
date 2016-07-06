@@ -6,9 +6,7 @@
 .SH SYNOPSIS
 \fBvolk_gnsssdr-config-info\fR [OPTION]
 .SH DESCRIPTION
-This program prints configuration information for the Vector-Optimized Library of Kernels of GNSS-SDR (VOLK_GNSSSDR)
-.TP
-\fBvolk_gnsssdr-config-info\fR is a program that prints configuration information for the Vector-Optimized Library of Kernels of GNSS-SDR (VOLK_GNSSSDR)
+This program prints configuration information for the Vector-Optimized Library of Kernels of GNSS-SDR (VOLK_GNSSSDR).
 .SH OPTIONS
 \fBvolk_gnsssdr-config-info\fR takes the following options:
 .TP

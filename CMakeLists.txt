@@ -459,8 +459,12 @@ if(NOT VOLK_GNSSSDR_FOUND)
     set(VOLK_GNSSSDR_LIBRARIES volk_gnsssdr)
 
     add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
-                                   ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile)
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+        ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile)
+        
+    add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr-config-info
+        ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr-config-info)    
 endif(NOT VOLK_GNSSSDR_FOUND)
 
 

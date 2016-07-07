@@ -137,7 +137,7 @@ void signal_generator_c::init()
                                                       / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
                     
                     //TODO: Definition of number of codes per vector (TBC)
-                    num_of_codes_per_vector_.push_back(galileo_signal ? 4 * static_cast<int>(ñ) : 1);
+                    num_of_codes_per_vector_.push_back(galileo_signal ? 4 * static_cast<int>(Galileo_E1_C_SECONDARY_CODE_LENGTH) : 1);
                     
                     // NAV Data period bit: 20 ms
                     data_bit_duration_ms_.push_back(1e3 / BEIDOU_D1_NAV_BITS_RATE);

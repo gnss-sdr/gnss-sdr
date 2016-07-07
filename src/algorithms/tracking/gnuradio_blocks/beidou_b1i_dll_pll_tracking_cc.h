@@ -82,15 +82,15 @@ public:
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
-    friend BeiDou_B1i_Dll_Pll_Tracking_cc_sptr
-    gps_l1_ca_dll_pll_make_tracking_cc(long if_freq,
-                                       long fs_in, unsigned
-                                       int vector_length,
-                                       bool dump,
-                                       std::string dump_filename,
-                                       float pll_bw_hz,
-                                       float dll_bw_hz,
-                                       float early_late_space_chips);
+    friend beidou_b1i_dll_pll_tracking_cc_sptr
+    beidou_b1i_dll_pll_make_tracking_cc(long if_freq,
+                                        long fs_in, unsigned
+                                        int vector_length,
+                                        bool dump,
+                                        std::string dump_filename,
+                                        float pll_bw_hz,
+                                        float dll_bw_hz,
+                                        float early_late_space_chips);
 
     BeiDou_B1i_Dll_Pll_Tracking_cc(long if_freq,
                                    long fs_in, unsigned

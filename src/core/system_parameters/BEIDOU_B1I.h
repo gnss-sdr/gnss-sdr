@@ -53,6 +53,7 @@ const double BEIDOU_B1I_FREQ_HZ              = 1.561098e9;  //!< B1I [Hz]
 const double BEIDOU_B1I_CODE_RATE_HZ         = 2.046e6;     //!< BeiDou B1 C/A code rate [chips/s]
 const double BEIDOU_B1I_CODE_LENGTH_CHIPS    = 2046.0;      //!< BeiDou B1 C/A code length [chips]
 const double BEIDOU_B1I_CODE_PERIOD          = 0.001;       //!< BeiDou B1 C/A code period [seconds]
+//const double BEIDOU_B1I_SECONDARY_CODE_LENGTH =;
 
 
 // NH code

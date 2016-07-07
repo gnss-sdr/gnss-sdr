@@ -259,12 +259,6 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
             uint16_t indext_plus = 0;
             uint16_t indext_minus = 0;
 #else
-
-            unsigned int indext = 0;
-#if VOLK_GT_122
-            uint16_t indext_plus = 0;
-            uint16_t indext_minus = 0;
-#else
             unsigned int indext_plus = 0;
             unsigned int indext_minus = 0;
 #endif

@@ -231,7 +231,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/FFF020_test_1.dat";                           //  set the name of the file
+        std::string file = path + "signal_samples/FFF020_beidou_test.dat";   //  set the name of the file
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);

@@ -28,7 +28,8 @@ GNU/Linux
    * mips: MIPS architecture (big-endian, such as those manufactured by SGI).
    * mipsel: MIPS architecture (little-endian, such as Loongson 3).
    * mips64el: 64-bit version of MIPS architecture.
-   * powerpc: the RISC microprocessor architecture developed by IBM, Motorola (now Freescale) and Apple.
+   * powerpc: the RISC 32-bit microprocessor architecture developed by IBM, Motorola (now Freescale) and Apple.
+   * ppc64: 64-bit big-endian PowerPC architecture.
    * ppc64el: 64-bit little-endian PowerPC architecture.
    * s390x: IBM's S/390 architecture for mainframes.
 

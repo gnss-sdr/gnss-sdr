@@ -75,7 +75,7 @@ SET(CROSSCOMPILE_MULTILIB ${CROSSCOMPILE_MULTILIB} CACHE STRING "Define \"true\"
 # Python
 include(VolkPython) #sets PYTHON_EXECUTABLE and PYTHON_DASH_B
 VOLK_PYTHON_CHECK_MODULE("python >= 2.5" sys "sys.version.split()[0] >= '2.5'" PYTHON_MIN_VER_FOUND)
-VOLK_PYTHON_CHECK_MODULE("mako >= 1.0.0" mako "mako.__version__ >= '1.0.0'" MAKO_FOUND)
+VOLK_PYTHON_CHECK_MODULE("mako >= 0.9.1" mako "mako.__version__ >= '0.9.1'" MAKO_FOUND)
 
 if(NOT PYTHON_MIN_VER_FOUND)
     message(FATAL_ERROR "Python 2.5 or greater required to build VOLK_GNSSSDR")

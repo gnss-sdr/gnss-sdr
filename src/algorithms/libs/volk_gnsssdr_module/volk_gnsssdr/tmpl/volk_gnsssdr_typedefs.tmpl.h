@@ -22,8 +22,8 @@
 #include <inttypes.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
-#for $kern in $kernels
-typedef void (*$(kern.pname))($kern.arglist_types);
-#end for
+%for kern in kernels:
+typedef void (*${kern.pname})(${kern.arglist_types});
+%endfor
 
 #endif /*INCLUDED_VOLK_GNSSSDR_TYPEDEFS*/

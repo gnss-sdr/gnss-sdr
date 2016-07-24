@@ -60,7 +60,7 @@ const double BEIDOU_B1I_CODE_PERIOD          = 0.001;       //!< BeiDou B1 C/A c
 #define NH_CODE {0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,1,1,1,0}
 const std::string BEIDOU_B1I_NH_CODE = "00000100110101001110";     // similar to Galileo_E1_C_SECONDARY_CODE
 const int NH_BITS_RATE    = 1000;                                     // NH code bit rate [bits/s]
-const int NH_BIT_DURATION = 0.001;                                    // NH code bit duration [s] --> 1 ms
+const double NH_BIT_DURATION = 0.001;                                    // NH code bit duration [s] --> 1 ms
 const int NH_length       = 20;
 
 
@@ -73,7 +73,7 @@ const int  BEIDOU_FRAME_SECONDS     = 30;               // FRAME duration       
 const int  BEIDOU_SUBFRAME_BITS     = 300;              // SUBFRAME    (10 words)         [bits]
 const int  BEIDOU_SUBFRAME_SECONDS  = 6;                // SUBFRAME duration              [seconds]
 const int  BEIDOU_WORD_BITS         = 30;               // WORD                           [bits]
-const int  BEIDOU_WORD_SECONDS      = 0.6;              // WORD duration                  [seconds]
+const double  BEIDOU_WORD_SECONDS      = 0.6;              // WORD duration                  [seconds]
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////

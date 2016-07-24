@@ -140,7 +140,7 @@ void BeidouB1iPcpsAcquisitionTest::init()
 
     config->set_property("GNSS-SDR.internal_fs_hz", "16000000");                       // set 16.000 MHz
     config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "98000");                                   // see "Development of a PC-Based Software Receiver for the Reception of Beidou Navigation Satellite Signals"
+    config->set_property("Acquisition.if", "0");                                   // see "Development of a PC-Based Software Receiver for the Reception of Beidou Navigation Satellite Signals"
     config->set_property("Acquisition.coherent_integration_time_ms", "1");             // Tested with a period of integration > 1 ms
     config->set_property("Acquisition.dump", "true");                                  // set "true"
     config->set_property("Acquisition.implementation", "BeiDou_B1I_PCPS_Acquisition");
@@ -199,7 +199,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
 
     double expected_delay_samples = 3767;          // [samples]
-    double expected_doppler_hz    = 1650;          // [Hz]
+    double expected_doppler_hz    = -1650;          // [Hz]
     init();
     std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 
@@ -231,7 +231,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/FFF020_beidou_test.dat";   //  set the name of the file
+        std::string file = path + "signal_samples/FFF020_test_beidou.dat";   //  set the name of the file
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);

@@ -121,7 +121,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
             vector_length = round((float)fs_in
                     / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
         }
-    else if (std::find(system.begin(), system.end(), "B") != system.end())
+    else if (std::find(system.begin(), system.end(), "C") != system.end())
         {
             vector_length = round((float)fs_in
                     / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));

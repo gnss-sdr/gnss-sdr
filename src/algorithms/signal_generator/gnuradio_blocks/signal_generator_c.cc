@@ -130,14 +130,14 @@ void signal_generator_c::init()
                     num_of_codes_per_vector_.push_back(galileo_signal ? 4 * static_cast<int>(Galileo_E1_C_SECONDARY_CODE_LENGTH) : 1);
                     data_bit_duration_ms_.push_back(1e3 / GPS_CA_TELEMETRY_RATE_BITS_SECOND);
                 }
-            else if (system_[sat] == "B")
+            else if (system_[sat] == "C")
                 {
                     // samples/code = Fs/1000;
                     samples_per_code_.push_back(round(static_cast<float>(fs_in_)
                                                       / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
                     
                     //TODO: Definition of number of codes per vector (TBC)
-                    num_of_codes_per_vector_.push_back(galileo_signal ? 4 * static_cast<int>(Galileo_E1_C_SECONDARY_CODE_LENGTH) : 1);
+                    num_of_codes_per_vector_.push_back(1);
                     
                     // NAV Data period bit: 20 ms
                     data_bit_duration_ms_.push_back(1e3 / BEIDOU_D1_NAV_BITS_RATE);
@@ -200,7 +200,7 @@ void signal_generator_c::generate_codes()
                                      code, sizeof(gr_complex) * samples_per_code_[sat]);
                         }
                 }
-            else if (system_[sat] == "B")
+            else if (system_[sat] == "C")
                 {
                     //TODO: TBC
                     // Generate one code-period of B1I signal
@@ -364,11 +364,11 @@ int signal_generator_c::general_work (int noutput_items __attribute__((unused)),
 								(round(1e3*GPS_L1_CA_CODE_PERIOD))) % data_bit_duration_ms_[sat];
                         }
                 }
-            else if (system_[sat] == "B")
+            else if (system_[sat] == "C")
                 {
                     unsigned int delay_samples = (delay_chips_[sat] %
                         (static_cast<int>(BEIDOU_B1I_CODE_LENGTH_CHIPS))) *
-                        samples_per_code_[sat] / BEIDOU_B1I_CODE_LENGTH_CHIPS;
+                            samples_per_code_[sat] / BEIDOU_B1I_CODE_LENGTH_CHIPS;
                     
                     for (i = 0; i < num_of_codes_per_vector_[sat]; i++)
                         {

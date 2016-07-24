@@ -1,0 +1,1519 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="CPP_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/rtcm_printer.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/nmea_printer.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/hybrid_ls_pvt.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/pvt_solution.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/rtcm_printer.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/rinex_printer.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/rinex_printer.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/gps_l1_ca_ls_pvt.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/kml_printer.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/geojson_printer.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/geojson_printer.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/galileo_e1_ls_pvt.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/ls_pvt.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/hybrid_ls_pvt.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/nmea_printer.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/kml_printer.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/gps_l1_ca_ls_pvt.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/galileo_e1_ls_pvt.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/ls_pvt.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/libs/pvt_solution.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/adapters/gps_l1_ca_pvt.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/adapters/hybrid_pvt.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/adapters/gps_l1_ca_pvt.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/adapters/galileo_e1_pvt.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/adapters/galileo_e1_pvt.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/adapters/hybrid_pvt.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/gnuradio_blocks/gps_l1_ca_pvt_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/gnuradio_blocks/hybrid_pvt_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/gnuradio_blocks/galileo_e1_pvt_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/gnuradio_blocks/gps_l1_ca_pvt_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/gnuradio_blocks/galileo_e1_pvt_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/gnuradio_blocks/hybrid_pvt_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/PVT/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/short_x2_to_cshort.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/complex_float_to_complex_byte.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gps_l2c_signal.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/galileo_e5_signal_processing.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/byte_x2_to_complex_byte.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/pass_through.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gnss_signal_processing.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/complex_float_to_complex_byte.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gps_sdr_signal_processing.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/fft_internal.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_test_2ms.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/byte_x2_to_complex_byte.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/galileo_e5_signal_processing.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gnss_signal_processing.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/pass_through.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/complex_byte_to_float_x2.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/short_x2_to_cshort.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/beidou_sdr_signal_processing.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gnss_sdr_valve.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/galileo_e1_signal_processing.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gps_l2c_signal.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/cshort_to_float_x2.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gnss_sdr_valve.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/cshort_to_float_x2.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gps_sdr_signal_processing.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/galileo_e1_signal_processing.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/fft_base_kernels.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/clFFT.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/beidou_sdr_signal_processing.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/complex_byte_to_float_x2.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/adapters/signal_generator.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/adapters/signal_generator.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/adapters/signal_generator_test_beidou.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_c.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_c.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_test_beidou_c.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/libs/gps_l1_ca_subframe_fsm.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/libs/gps_l1_ca_subframe_fsm.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/libs/convolutional.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/libs/viterbi_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/libs/viterbi_decoder.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/libs/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/galileo_e5a_telemetry_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/galileo_e1b_telemetry_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/sbas_l1_telemetry_decoder.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/gps_l1_ca_telemetry_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/gps_l2_m_telemetry_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/galileo_e5a_telemetry_decoder.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/galileo_e1b_telemetry_decoder.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/gps_l1_ca_telemetry_decoder.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/sbas_l1_telemetry_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/adapters/gps_l2_m_telemetry_decoder.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/galileo_e1b_telemetry_decoder_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/sbas_l1_telemetry_decoder_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l2_m_telemetry_decoder_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/sbas_l1_telemetry_decoder_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l2_m_telemetry_decoder_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/galileo_e5a_telemetry_decoder_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/galileo_e5a_telemetry_decoder_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/galileo_e1b_telemetry_decoder_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/adapters/direct_resampler_conditioner.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/adapters/direct_resampler_conditioner.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cb.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cs.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cb.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cs.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/unpack_byte_2bit_samples.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/unpack_2bit_samples.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/unpack_2bit_samples.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/unpack_intspir_1bit_samples.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/unpack_byte_2bit_samples.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/unpack_intspir_1bit_samples.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/rtl_tcp_signal_source_c.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/rtl_tcp_signal_source_c.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/unpack_byte_2bit_cpx_samples.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/gnuradio_blocks/unpack_byte_2bit_cpx_samples.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/gen_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/rtl_tcp_signal_source.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/flexiband_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/file_signal_source.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/nsr_file_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/two_bit_packed_file_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/gn3s_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/file_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/rtl_tcp_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/nsr_file_signal_source.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/uhd_signal_source.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/osmosdr_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/uhd_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/two_bit_packed_file_signal_source.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/two_bit_cpx_file_signal_source.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/gen_signal_source.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/two_bit_cpx_file_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/spir_file_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/raw_array_signal_source.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/adapters/spir_file_signal_source.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/libs/rtl_tcp_dongle_info.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/libs/rtl_tcp_commands.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/libs/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/libs/rtl_tcp_dongle_info.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_source/libs/rtl_tcp_commands.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_assisted_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l2_m_pcps_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_tong_ambiguous_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e5a_noncoherent_iq_acquisition_caf.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_8ms_ambiguous_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition_fine_doppler.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_8ms_ambiguous_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_quicksync_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_cccwsr_ambiguous_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_multithread_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_quicksync_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e5a_noncoherent_iq_acquisition_caf.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_tong_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_tong_ambiguous_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_quicksync_ambiguous_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l2_m_pcps_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition_fine_doppler.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_quicksync_ambiguous_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_tong_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_multithread_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_assisted_acquisition.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_opencl_acquisition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/galileo_pcps_8ms_acquisition_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/galileo_e5a_noncoherent_iq_acquisition_caf_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_cccwsr_acquisition_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_fine_doppler_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_quicksync_acquisition_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_tong_acquisition_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_opencl_acquisition_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_multithread_acquisition_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_cccwsr_acquisition_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/galileo_pcps_8ms_acquisition_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_quicksync_acquisition_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_multithread_acquisition_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_fine_doppler_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_assisted_acquisition_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_assisted_acquisition_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_sc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/galileo_e5a_noncoherent_iq_acquisition_caf_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_sc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_tong_acquisition_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/channel/adapters/channel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/channel/adapters/channel.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/channel/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/channel/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/channel/libs/channel_fsm.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/channel/libs/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/channel/libs/channel_msg_receiver_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/channel/libs/channel_msg_receiver_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/channel/libs/channel_fsm.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/adapters/galileo_e1_observables.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/adapters/gps_l1_ca_observables.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/adapters/hybrid_observables.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/adapters/galileo_e1_observables.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/adapters/hybrid_observables.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/adapters/gps_l1_ca_observables.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/gnuradio_blocks/galileo_e1_observables_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/gnuradio_blocks/hybrid_observables_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/gnuradio_blocks/gps_l1_ca_observables_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/gnuradio_blocks/hybrid_observables_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/gnuradio_blocks/galileo_e1_observables_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/gnuradio_blocks/gps_l1_ca_observables_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/observables/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/conditioner/adapters/array_signal_conditioner.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/conditioner/adapters/signal_conditioner.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/conditioner/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/conditioner/adapters/array_signal_conditioner.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/conditioner/adapters/signal_conditioner.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/conditioner/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/adapters/freq_xlating_fir_filter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/adapters/fir_filter.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/adapters/freq_xlating_fir_filter.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/adapters/beamformer_filter.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/adapters/beamformer_filter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/adapters/fir_filter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/gnuradio_blocks/beamformer.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/gnuradio_blocks/beamformer.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/input_filter/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/ibyte_to_cbyte.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/ishort_to_complex.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/ibyte_to_cbyte.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/ibyte_to_cshort.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/ishort_to_cshort.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/ibyte_to_complex.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/byte_to_short.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/byte_to_short.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/ishort_to_complex.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/ibyte_to_complex.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/ishort_to_cshort.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/adapters/ibyte_to_cshort.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/gnuradio_blocks/interleaved_short_to_complex_short.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/gnuradio_blocks/interleaved_byte_to_complex_byte.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/gnuradio_blocks/interleaved_byte_to_complex_short.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/gnuradio_blocks/interleaved_short_to_complex_short.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/gnuradio_blocks/interleaved_byte_to_complex_short.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/gnuradio_blocks/interleaved_byte_to_complex_byte.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/data_type_adapter/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tracking_2nd_DLL_filter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tracking_FLL_PLL_filter.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tracking_2nd_PLL_filter.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tcp_packet_data.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/cuda_multicorrelator.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tracking_2nd_DLL_filter.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/lock_detectors.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tracking_discriminators.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tracking_loop_filter.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator_16sc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tracking_loop_filter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tcp_packet_data.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator_16sc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tracking_discriminators.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/lock_detectors.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tcp_communication.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tcp_communication.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tracking_FLL_PLL_filter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/libs/tracking_2nd_PLL_filter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_c_aid_tracking.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_c_aid_tracking.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/galileo_e5a_dll_pll_tracking.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/galileo_e5a_dll_pll_tracking.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_tcp_connector_tracking.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking_gpu.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/galileo_e1_tcp_connector_tracking.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l2_m_dll_pll_tracking.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_tcp_connector_tracking.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l2_m_dll_pll_tracking.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/galileo_e1_tcp_connector_tracking.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_dll_pll_veml_tracking_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_dll_pll_veml_tracking_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_sc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_tcp_connector_tracking_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l2_m_dll_pll_tracking_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e5a_dll_pll_tracking_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e5a_dll_pll_tracking_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l2_m_dll_pll_tracking_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_gpu_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_tcp_connector_tracking_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_tcp_connector_tracking_cc.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_sc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_tcp_connector_tracking_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/utils/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/utils/front-end-cal/main.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/utils/front-end-cal/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/utils/front-end-cal/front_end_cal.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/utils/front-end-cal/front_end_cal.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/gnuradio_block/unpack_2bit_samples_test.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/arithmetic/tracking_loop_filter_test.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/flowgraph/pass_through_test.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/flowgraph/gnss_flowgraph_test.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/control_thread/control_thread_test.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/control_thread/control_message_factory_test.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/gnss_block/file_signal_source_test.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/gnss_block/fir_filter_test.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/gnss_block/gnss_block_factory_test.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/test_main.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/single_test_main.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/tests/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/concurrent_queue.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/control_message_factory.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/control_thread.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/gnss_flowgraph.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/in_memory_configuration.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/gnss_flowgraph.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/file_configuration.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/file_configuration.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/gnss_block_factory.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/gnss_block_factory.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/concurrent_map.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/control_thread.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/control_message.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/in_memory_configuration.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/receiver/control_message_factory.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_ref_time.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_navigation_message.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_ref_time.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_ephemeris.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_almanac.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/BEIDOU_B1I.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_navigation_message.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_cnav_utc_model.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/sbas_time.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gnss_synchro.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_iono.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_ephemeris.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/sbas_ephemeris.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gnss_signal.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_cnav_iono.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/sbas_satellite_correction.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_cnav_ephemeris.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_almanac.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/sbas_telemetry_data.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_fnav_message.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_cnav_utc_model.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/GPS_L2C.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_ephemeris.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/sbas_ephemeris.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/Galileo_E1.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/sbas_telemetry_data.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_fnav_message.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_iono.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_ephemeris.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_utc_model.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/sbas_ionospheric_correction.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_utc_model.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_ref_location.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/Galileo_E5a.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/sbas_ionospheric_correction.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/rtcm.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/MATH_CONSTANTS.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_almanac.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_navigation_message.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_cnav_navigation_message.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_cnav_ephemeris.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_cnav_navigation_message.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_navigation_message.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/rtcm.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_ref_location.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_cnav_iono.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/GPS_L1_CA.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_almanac.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/sbas_satellite_correction.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gnss_satellite.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_utc_model.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_acq_assist.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/galileo_iono.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_acq_assist.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gnss_signal.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_iono.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gps_utc_model.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/system_parameters/gnss_satellite.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/interfaces/gnss_block_interface.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/interfaces/configuration_interface.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/interfaces/telemetry_decoder_interface.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/interfaces/channel_interface.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/interfaces/pvt_interface.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/interfaces/tracking_interface.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/interfaces/acquisition_interface.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/interfaces/observables_interface.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLINIT.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/AltitudeInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Pathloss.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ber_tlv_tag.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ENUMERATED.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Ver.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Notification.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ENUMERATED.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SessionID.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SessionID.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constr_CHOICE.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/TimeslotISCP.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constraints.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/MeasuredResultsList.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constr_CHOICE.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/TimeslotISCP.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constraints.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/MeasuredResultsList.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CPICH-RSCP.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/BIT_STRING.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Horvel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLINIT.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/OCTET_STRING.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellMeasuredResultsList.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/GeneralizedTime.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLPOSINIT.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SlpSessionID.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/IA5String.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ber_tlv_tag.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLSTART.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Horandvervel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PrimaryCCPCH-RSCP.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PosTechnology.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PosProtocol.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PrimaryCCPCH-RSCP.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/AltitudeInfo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PosProtocol.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/XNavigationModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellMeasuredResults.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/RequestedAssistData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/GeneralizedTime.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SatelliteInfo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellMeasuredResults.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SetSessionID.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/OCTET_STRING.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SatelliteInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/per_opentype.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/VisibleString.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/NativeEnumerated.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/per_opentype.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/FQDN.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/per_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UARFCN.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/TGSN.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLPOS.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/per_decoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UARFCN.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/FrequencyInfoTDD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLPOS.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SLPMode.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/TimeslotISCP-List.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SlpSessionID.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SLPMode.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SatelliteInfoElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constr_SET_OF.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SatelliteInfoElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constr_SET_OF.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/per_encoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Horandveruncert.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/GsmCellInformation.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/XNavigationModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Horandveruncert.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ber_tlv_length.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/GsmCellInformation.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLRESPONSE.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLPOSINIT.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ber_tlv_length.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CdmaCellInformation.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/KeyIdentity4.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/StatusCode.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/MeasuredResults.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PrefMethod.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UTCTime.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/KeyIdentity4.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constr_TYPE.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PosPayLoad.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UTRA-CarrierRSSI.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ber_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PosPayLoad.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/NMR.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Horveluncert.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellParametersID.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ber_decoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLSTART.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/QoP.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CPICH-RSCP.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/asn_SET_OF.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SLPAddress.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/QoP.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/asn_SET_OF.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SLPAddress.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Position.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/MAC.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PositionEstimate.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Status.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PositionEstimate.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/BOOLEAN.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/INTEGER.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/BOOLEAN.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/INTEGER.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UlpMessage.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UTRA-CarrierRSSI.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/LocationId.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/asn_SEQUENCE_OF.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UlpMessage.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ULP-PDU.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/asn_SEQUENCE_OF.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/WcdmaCellInformation.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/IPAddress.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/FrequencyInfoFDD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/WcdmaCellInformation.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/IPAddress.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/FrequencyInfoFDD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SETId.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/xer_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/der_encoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/StatusCode.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SETId.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/xer_decoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/der_encoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CdmaCellInformation.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ULP-PDU.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/per_encoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/IA5String.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Status.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellInfo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/KeyIdentity.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/per_support.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/KeyIdentity.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/per_support.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SETAuthKey.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/asn_codecs_prim.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/NativeInteger.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SETAuthKey.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/asn_codecs_prim.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/NativeInteger.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/LocationId.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SetSessionID.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/TimeslotISCP-List.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/FormatIndicator.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constr_SEQUENCE.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Ver.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/MeasuredResults.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PrefMethod.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constr_SEQUENCE.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Velocity.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CPICH-Ec-N0.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Velocity.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/EncodingType.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/NativeEnumerated.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PrimaryCPICH-Info.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CPICH-Ec-N0.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/EncodingType.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Horvel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PrimaryCPICH-Info.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/MAC.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/VisibleString.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/NMR.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/NMRelement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SETCapabilities.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constr_TYPE.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/NMRelement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SETCapabilities.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellMeasuredResultsList.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/DUMMY.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Horandvervel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UTCTime.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/DUMMY.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/NotificationType.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLEND.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Position.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PosTechnology.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLRESPONSE.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLEND.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Version.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Horveluncert.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/NotificationType.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Version.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PosMethod.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/FrequencyInfoTDD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/PosMethod.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/BIT_STRING.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/FormatIndicator.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/TGSN.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/xer_encoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/RequestedAssistData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constr_SEQUENCE_OF.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/xer_encoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/FrequencyInfo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/constr_SEQUENCE_OF.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Notification.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/FrequencyInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/xer_support.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellParametersID.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/xer_support.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/FQDN.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Pathloss.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/supl.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/supl.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTime.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MoreAssDataToBeSent.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NavigationModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/CellIDAndLAC.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TLMWord.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceIdentityType.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/CellIDAndLAC.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/LocationInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSS-MsrSetElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MethodType.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRefMeasurementElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSAssistanceData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BOOLEAN.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/LocErrorReason.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/asn_SET_OF.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRefMeasurementElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoAssistData-R98-ExpOTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ExpectedOTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGPS-MsrSetElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SatelliteID.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGPS-MsrSetElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/FrameDrift.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SatelliteID.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MeasureInfo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSLocationInfo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTOD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTDValue.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ExtensionContainer.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-MeasureInfo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTOD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSIonosphericModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ExtensionContainer.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-MeasureInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MeasureInfo-R98-Ext.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSIonosphericModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSDataBit.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/LAC.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSSatelliteElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSAlmanacElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NativeEnumerated.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfMsrAssistBTS.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel98-Ext-ExpOTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSAlmanacElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel5-MsrPosition-Req-Extension.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrAssistBTS-R98-ExpOTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MpathIndic.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfSystemInfoAssistBTS-R98-ExpOTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel5-MsrPosition-Req-Extension.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTimeModelElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/per_encoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MpathIndic.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/per_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTOWAssistElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/per_decoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfStandardClockModelElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/PositionInstruct.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfAlmanacElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfOTD-MsrsOfOtherSets.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SVIDMASK.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoAssistBTS-R98-ExpOTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel7-AssistanceData-Extension.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfAlmanacElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AdditionalDopplerFields.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTimeModelElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel7-AssistanceData-Extension.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrAssistData-R98-ExpOTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_SET_OF.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TLMReservedBits.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AcquisAssist.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_SET_OF.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ExpOTDUncertainty.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/CellID.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrAssistBTS-R98-ExpOTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceFrame.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/StandardClockModelElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/CellID.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Ext-GeographicalInformation.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSMeasureInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel5-AssistanceData-Extension.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/VelocityEstimate.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AddionalDopplerFields.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_SEQUENCE.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AccuracyOpt.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfSatElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_SEQUENCE.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceAssistData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/EOTDQuality.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-5-ProtocolError-Extension.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfOTD-MsrsOfOtherSets.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfDGANSSSgnElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/UncompressedEphemeris.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-5-ProtocolError-Extension.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/asn_SEQUENCE_OF.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfDGANSSSgnElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-MsrElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RequestIndex.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/xer_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-MsrElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RequestIndex.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AddionalDopplerFields.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GSMTime.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRealTimeIntegrity.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MethodType.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRealTimeIntegrity.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NativeEnumerated.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSRefMeasurementElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BSIC.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSNavModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/EOTDQuality.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSRefMeasurementElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfOTD-MsrElementRest.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSNavModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MsrElementRest.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfOTD-MsrElementRest.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Ext-GeographicalInformation.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TA2.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/EnvironmentCharacter.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSS-SgnTypeElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AssistBTSData-R98-ExpOTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfOTD-FirstSetMsrs.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrPosition-Req.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-7-MsrPosition-Rsp-Extension.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AssistBTSData-R98-ExpOTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfOTD-FirstSetMsrs.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGPS-MsrElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfReferenceIdentityType.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/PositionData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/DGANSSSgnElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BTSPosition.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSIonosphereModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BTSPosition.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSPositioningMethod.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RoughRTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-5-MsrPosition-Rsp-Extension.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_SEQUENCE_OF.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/asn_SET_OF.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TOA-MeasurementsOfRef.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSReferenceTimeUncertainty.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ber_decoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/DGPSCorrections.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRefMeasurementAssist.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSReferenceTimeUncertainty.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSAlmanacElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AssistanceData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRefMeasurementAssist.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MsrElementRest.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTOWAssist.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/PositionMethod.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BIT_STRING.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/UncompressedEphemeris.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSGenericAssistDataElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTOW23b.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/PositionMethod.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BIT_STRING.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSS-MsrSetElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSS-SgnTypeElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel7-MsrPosition-Req-Extension.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RequiredResponseTime.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSS-MsrSetElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NavModelElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTimeAssistanceMeasurements.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TimeSlot.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/CalcAssistanceBTS.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceWGS84.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel98-Ext-ExpOTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfSystemInfoAssistBTS-R98-ExpOTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceWGS84.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel98-AssistanceData-Extension.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NavModel-KeplerianSet.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel98-AssistanceData-Extension.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfBadSignalElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoAssistBTS-R98-ExpOTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NavModel-KeplerianSet.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSDataBitAssist.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RoughRTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NavModelElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSIonoStormFlags.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MsrElementFirst-R98-Ext.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSAlmanacModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/der_encoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/StdResolution.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MsrElementFirst-R98-Ext.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ENUMERATED.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSIonosphereModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSS-SgnTypeElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Almanac.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MultipleSets.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSUTCModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AssistBTSData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SVID.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSTimeModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AssistBTSData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfSatElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoAssistData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MsrElementFirst.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OCTET_STRING.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/LocErrorReason.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfAcquisElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-MsrSetElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MsrElementFirst.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ControlHeader.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTOD-GSMTimeAssociation.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSS-AssistData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ControlHeader.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/FrameDrift.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Accuracy.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfBadSignalElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTOWAssist.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NativeInteger.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/xer_decoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MeasureResponseTime.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOf-BadSatelliteSet.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MeasureResponseTime.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AlmanacElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SgnTypeElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TimeSlot.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfSgnTypeElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTimeAssistanceMeasurements.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SgnTypeElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSPositioningMethod.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTOW24b.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_CHOICE.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRefTimeInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BitNumber.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MultiFrameOffset.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/CalcAssistanceBTS.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BitNumber.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MultiFrameOffset.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RRLP-Component.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTODUncertainty.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSWeek.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TA2.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-Measurement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-MsrSetElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSWeek.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RefLocation.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSSatelliteElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AntiSpoofFlag.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRefLocation.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceIdentity.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RefLocation.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfMsrAssistBTS-R98-ExpOTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-AssistData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BSICAndCarrier.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/der_encoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRefTimeInfo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/per_support.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-AssistData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MeasurementWithID.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/PositionData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/per_support.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/asn_SEQUENCE_OF.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel5-AssistanceData-Extension.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TA1.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/IonosphericModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/IonosphericModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TA1.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/converter-sample.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTOW24b.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/xer_encoder.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfNavModelElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GSMTime.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfNavModelElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RelDistance.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AlertFlag.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSDataBitAssist.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RelDistance.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AlertFlag.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel98-MsrPosition-Req-Extension.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-98-MsrPosition-Rsp-Extension.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGPS-MsrElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Almanac.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-98-MsrPosition-Rsp-Extension.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTODm.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SatElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSCommonAssistData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-Measurement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TOA-MeasurementsOfRef.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOf-GANSSDataBits.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSCommonAssistData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel7-MsrPosition-Req-Extension.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOf-GANSSDataBits.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NumOfMeasurements.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-FirstSetMsrs.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfAcquisElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfMsrAssistBTS-R98-ExpOTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/EphemerisSubframe1Reserved.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NumOfMeasurements.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BadSignalElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/PDU.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/per_opentype.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/VelocityEstimate.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/PDU.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/per_encoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoAssistBTS.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MultiFrameCarrier.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSS-MsrSetElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrAssistBTS.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoAssistBTS.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SVIDMASK.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MeasureInfo-R98-Ext.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/DGANSSSgnElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSReferenceTime.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSIonoStormFlags.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SatStatus.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MeasureInfo-5-Ext.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTODUncertainty.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ModuloTimeSlot.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSAlmanacModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSGenericAssistDataElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AccuracyOpt.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ProtocolError.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ber_decoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/LocationError.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSAssistanceData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/LocationError.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTOD-GSMTimeAssociation.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_TYPE.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ber_tlv_length.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfSystemInfoAssistBTS.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_TYPE.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AntiSpoofFlag.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ber_tlv_length.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSAssistanceData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-7-MsrPosition-Rsp-Extension.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTOW23b.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSS-SgnTypeElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSSatelliteElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RelativeAlt.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSAssistanceData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSS-SgnElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constraints.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceTime.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RelativeAlt.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AdditionalAssistanceData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/UlPseudoSegInd.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constraints.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-5-MsrPosition-Rsp-Extension.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AdditionalAssistanceData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/UlPseudoSegInd.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TimeRelation.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSUTCModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TimeRelation.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTDValue.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/UseMultipleSets.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceRelation.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoAssistData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/UseMultipleSets.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AssistanceData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfOTD-FirstSetMsrs-R98-Ext.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/EnvironmentCharacter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoAssistData-R98-ExpOTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSS-SgnElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTime.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSOrbitModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MeasurementWithID.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSS-SgnElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSClockModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceIdentity.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/xer_support.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSClockModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NativeInteger.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NULL.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSDiffCorrections.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSS-AssistData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrAssistData-R98-ExpOTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceFrame.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRefLocation.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MultiFrameCarrier.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BSIC.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Extended-reference.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrAssistData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TimeSlotScheme.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfMsrAssistBTS.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BadSignalElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TimeSlotScheme.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AddionalAngleFields.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSDataBit.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/INTEGER.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/StdResolution.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSAlmanacElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/asn_codecs_prim.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/FineRTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/EphemerisSubframe1Reserved.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSReferenceTime.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/asn_codecs_prim.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Accuracy.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSSignalID.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AcquisElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MsrsOfOtherSets.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSSignalID.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSS-SgnElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AcquisElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MsrsOfOtherSets.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BSICAndCarrier.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceRelation.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/FineRTD.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSOrbitModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OCTET_STRING.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSTimeModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel98-MsrPosition-Req-Extension.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceAssistData.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ExpectedOTD.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfReferenceIdentityType.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SVID.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSGenericAssistDataElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TLMWord.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/PositionInstruct.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSGenericAssistDataElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/FixType.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ErrorCodes.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/LocationInfo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceTime.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/FixType.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MoreAssDataToBeSent.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ErrorCodes.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrAssistData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOf-BadSatelliteSet.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AlmanacElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MultipleSets.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NULL.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/UTCModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MeasureInfo-5-Ext.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSDiffCorrections.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/UTCModel.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrAssistBTS.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NavigationModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSMeasureInfo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RequiredResponseTime.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/DGPSCorrections.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ModuloTimeSlot.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/xer_support.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SatElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfSystemInfoAssistBTS.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/FrameNumber.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AcquisAssist.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ExpOTDUncertainty.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/FrameNumber.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RefQuality.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BOOLEAN.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfOTD-FirstSetMsrs-R98-Ext.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Almanac-KeplerianSet.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RefQuality.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoIndex.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_CHOICE.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Almanac-KeplerianSet.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MeasureInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoIndex.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AddionalAngleFields.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ber_tlv_tag.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSLocationInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TA0.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Extended-reference.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ber_tlv_tag.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrPosition-Rsp.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TA0.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-FirstSetMsrs.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/per_opentype.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrPosition-Rsp.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/LAC.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfSgnTypeElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfStandardClockModelElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSSatelliteElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AdditionalDopplerFields.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SatStatus.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrPosition-Req.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RRLP-Component.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ProtocolError.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/StandardClockModelElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceIdentityType.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_SEQUENCE_OF.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TLMReservedBits.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSS-ControlHeader.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/xer_encoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ENUMERATED.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BCCHCarrier.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NeighborIdentity.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSS-ControlHeader.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/INTEGER.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTOWAssistElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BCCHCarrier.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NeighborIdentity.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTODm.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/ini.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/gnss_sdr_supl_client.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/ini.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/INIReader.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/INIReader.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/string_converter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/gnss_sdr_supl_client.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/string_converter.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/main.cc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/docs/doxygen/Doxyfile.in" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cmake/Modules/FindGnuradio.cmake" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cmake/Modules/FindORC.cmake" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cmake/Modules/FindGLOG.cmake" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cmake/Modules/FindVolkGnssSdr.cmake" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cmake/Modules/FindVolk.cmake" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cmake/Modules/FindUHD.cmake" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cmake/Modules/FindGFlags.cmake" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cmake/Modules/TestForSSE.cmake" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cmake/cmake_uninstall.cmake.in" isTestSource="false" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="Header Search Paths">
+        <CLASSES>
+          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include" />
+          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.3.0/include" />
+          <root url="file:///opt/local/include" />
+          <root url="file:///System/Library/Frameworks/AudioToolbox.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/HIToolbox.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/Help.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/SpeechRecognition.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/NavigationServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/CommonPanels.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/SecurityHI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/ImageCapture.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/OpenScripting.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/CarbonSound.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/Ink.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/Print.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreImage.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/InstantMessage.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MapKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DirectoryService.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ScriptingBridge.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/InstallerPlugins.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ForceFeedback.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreWLAN.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/JavaVM.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/JavaVM.framework/Frameworks/JavaNativeFoundation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MetalKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Metal.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Security.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Kerberos.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/QuartzCore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MediaAccessibility.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AddressBook.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/FWAUserLib.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreFoundation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/EventKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/vecLib.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/PrintCore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/LangAnalysis.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/HIServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/QD.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreText.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreGraphics.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/ImageIO.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/ColorSync.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/SpeechSynthesis.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/ATS.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/vmnet.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreMedia.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GSS.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SystemConfiguration.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Tcl.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Tcl.framework/PrivateHeaders" />
+          <root url="file:///System/Library/Frameworks/CoreAudioKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Cocoa.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OpenCL.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Python.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/PubSub.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GLUT.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreVideo.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GameKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OpenGL.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/StoreKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OpenAL.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CalendarStore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AVKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/FinderSync.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Contacts.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/WebKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreData.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/QuickTime.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/VideoToolbox.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Accounts.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SyncServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AVFoundation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Kernel.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AppKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/InputMethodKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreMediaIO.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/LatentSemanticMapping.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DVComponentGlue.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OpenDirectory.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OpenDirectory.framework/Frameworks/CFOpenDirectory.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IOBluetooth.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IOBluetooth.framework/Frameworks/CoreBluetooth.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreAudio.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DiskArbitration.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreBluetooth.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Photos.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DVDPlayback.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AudioVideoBridging.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AppKitScripting.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/QTKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GameController.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ModelIO.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MediaLibrary.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OSAKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ExceptionHandling.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IOBluetoothUI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Ruby.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreMIDI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/LocalAuthentication.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Foundation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/NetFS.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/PreferencePanes.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ScreenSaver.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ImageCaptureCore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SpriteKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Automator.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SecurityInterface.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Social.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreText.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/NetworkExtension.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SceneKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/PhotosUI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/QuickLook.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Tk.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Tk.framework/PrivateHeaders" />
+          <root url="file:///System/Library/Frameworks/JavaScriptCore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IMServicePlugIn.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AudioUnit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/TWAIN.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IOKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IOSurface.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Hypervisor.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GLKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Frameworks/QuickLookUI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Frameworks/QuartzComposer.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Frameworks/QuartzFilters.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Frameworks/ImageKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Frameworks/PDFKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GameplayKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ImageIO.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AppleScriptObjC.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CFNetwork.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CryptoTokenKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SecurityFoundation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DiscRecordingUI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Collaboration.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MediaToolbox.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreGraphics.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreTelephony.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AGL.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/VideoDecodeAcceleration.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ContactsUI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/NotificationCenter.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreLocation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DiscRecording.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/PCSC.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CloudKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AppleScriptKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MultipeerConnectivity.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/LDAP.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/JavaFrameEmbedding.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/DictionaryServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/SearchKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/SharedFileList.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/AE.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/FSEvents.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/OSServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ServiceManagement.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ICADevices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Scripting.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Accelerate.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers" />
+          <root url="file:///usr/include" />
+          <root url="file:///Library/Frameworks/Python.framework/Headers" />
+          <root url="file:///Library/Frameworks/iTunesLibrary.framework/Headers" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include" />
+          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.3.0/include" />
+          <root url="file:///opt/local/include" />
+          <root url="file:///System/Library/Frameworks/AudioToolbox.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/HIToolbox.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/Help.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/SpeechRecognition.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/NavigationServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/CommonPanels.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/SecurityHI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/ImageCapture.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/OpenScripting.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/CarbonSound.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/Ink.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Carbon.framework/Frameworks/Print.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreImage.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/InstantMessage.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MapKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DirectoryService.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ScriptingBridge.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/InstallerPlugins.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ForceFeedback.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreWLAN.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/JavaVM.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/JavaVM.framework/Frameworks/JavaNativeFoundation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MetalKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Metal.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Security.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Kerberos.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/QuartzCore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MediaAccessibility.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AddressBook.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/FWAUserLib.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreFoundation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/EventKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/vecLib.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/PrintCore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/LangAnalysis.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/HIServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/QD.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreText.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreGraphics.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/ImageIO.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/ColorSync.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/SpeechSynthesis.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ApplicationServices.framework/Frameworks/ATS.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/vmnet.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreMedia.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GSS.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SystemConfiguration.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Tcl.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Tcl.framework/PrivateHeaders" />
+          <root url="file:///System/Library/Frameworks/CoreAudioKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Cocoa.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OpenCL.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Python.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/PubSub.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GLUT.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreVideo.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GameKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OpenGL.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/StoreKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OpenAL.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CalendarStore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AVKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/FinderSync.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Contacts.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/WebKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreData.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/QuickTime.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/VideoToolbox.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Accounts.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SyncServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AVFoundation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Kernel.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AppKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/InputMethodKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreMediaIO.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/LatentSemanticMapping.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DVComponentGlue.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OpenDirectory.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OpenDirectory.framework/Frameworks/CFOpenDirectory.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IOBluetooth.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IOBluetooth.framework/Frameworks/CoreBluetooth.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreAudio.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DiskArbitration.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreBluetooth.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Photos.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DVDPlayback.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AudioVideoBridging.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AppKitScripting.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/QTKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GameController.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ModelIO.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MediaLibrary.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/OSAKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ExceptionHandling.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IOBluetoothUI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Ruby.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreMIDI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/LocalAuthentication.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Foundation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/NetFS.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/PreferencePanes.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ScreenSaver.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ImageCaptureCore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SpriteKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Automator.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SecurityInterface.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Social.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreText.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/NetworkExtension.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SceneKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/PhotosUI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/QuickLook.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Tk.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Tk.framework/PrivateHeaders" />
+          <root url="file:///System/Library/Frameworks/JavaScriptCore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IMServicePlugIn.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AudioUnit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/TWAIN.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IOKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/IOSurface.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Hypervisor.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GLKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Frameworks/QuickLookUI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Frameworks/QuartzComposer.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Frameworks/QuartzFilters.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Frameworks/ImageKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Quartz.framework/Frameworks/PDFKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/GameplayKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ImageIO.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AppleScriptObjC.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CFNetwork.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CryptoTokenKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/SecurityFoundation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DiscRecordingUI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Collaboration.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MediaToolbox.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreGraphics.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreTelephony.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AGL.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/VideoDecodeAcceleration.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ContactsUI.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/NotificationCenter.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreLocation.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/DiscRecording.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/PCSC.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CloudKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/AppleScriptKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/MultipeerConnectivity.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/LDAP.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/JavaFrameEmbedding.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/DictionaryServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/SearchKit.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/SharedFileList.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/AE.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/FSEvents.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/OSServices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ServiceManagement.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/ICADevices.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Scripting.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Accelerate.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Accelerate.framework/Frameworks/vImage.framework/Headers" />
+          <root url="file:///System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers" />
+          <root url="file:///usr/include" />
+          <root url="file:///Library/Frameworks/Python.framework/Headers" />
+          <root url="file:///Library/Frameworks/iTunesLibrary.framework/Headers" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+  </component>
+</module>

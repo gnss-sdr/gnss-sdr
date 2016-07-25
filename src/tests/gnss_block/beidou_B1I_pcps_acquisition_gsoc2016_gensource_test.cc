@@ -208,25 +208,14 @@ void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::config_gensource()
     ts_in = (1/static_cast<double>(fs_in));
 
     expected_delay_samples = 3767.0;                           // [samples]
-    // expected_delay_sec     = ts_in * expected_delay_samples * 1e3;   // [sec]
+    expected_delay_sec     = ts_in * expected_delay_samples * 1e3;   // [sec]
     expected_doppler_hz    = 1650.0;                             // [Hz]
     expected_delay_chips   = static_cast<float>(expected_delay_samples * BEIDOU_B1I_CODE_RATE_HZ / static_cast<float>(fs_in)); 
-
-
-    std::cout <<  "\nConfiguration parameters:" << std::endl;
-    std::cout << "\nExpected delay chips (Init test) = " << expected_delay_chips << std::endl;
 
     // max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     // max_delay_error_chips = 0.50;
 
     num_of_realizations = 1;
-
-// fs = 16.000e6;      %[Hz] Sampling frequency;                % think about fs = 16.368e6 [Hz]
-// ts = 1/fs;          %[sec] 
-
-// f_d                = 1650.0;                %[Hz] Initial Doppler frequeny for RF-signal;
-// code_delay         = ts * 3767.0;            %[sec] the delay in seconds rounded to a multiple of ts
-// code_delay_samples = code_delay * fs;         %[samples] the delay in samples
 
     config = std::make_shared<InMemoryConfiguration>();
 
@@ -435,9 +424,6 @@ TEST_F(BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest, ValidationOfResults)
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block." << std::endl;
 
-    // acquisition->init();
-    // acquisition->reset();
-
     // USING SIGNAL GENERATOR
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
@@ -454,7 +440,6 @@ TEST_F(BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     init();
-    
     acquisition->set_state(1);
     acquisition->init();
     

@@ -38,15 +38,13 @@
 #include <gnss_satellite.h>
 #include "MATH_CONSTANTS.h"
 
+#define BEIDOU_DEBUG 1
+
 // Physical constants
 const double BEIDOU_C_m_s       = 299792458.0;      //!< The speed of light, [m/s]
 const double BEIDOU_C_m_ms      = 299792.4580;      //!< The speed of light, [m/ms]
 const double BEIDOU_PI          = 3.1415926535898;  //!< Pi as defined in ICD-BEIDOU
 const double BEIDOU_TWO_PI      = 6.283185307179586;//!< 2Pi
-//const double OMEGA_EARTH_DOT    = 7.2921150e-5;     //!< Earth rotation rate, [rad/s]
-//const double GM                 = 3.986004418e14;   //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-//const double F                  = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
-
 
 // carrier and code frequencies
 const double BEIDOU_B1I_FREQ_HZ              = 1.561098e9;  //!< B1I [Hz]
@@ -59,9 +57,9 @@ const double BEIDOU_B1I_CODE_PERIOD          = 0.001;       //!< BeiDou B1 C/A c
 // NH code
 #define NH_CODE {0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,1,1,1,0}
 const std::string BEIDOU_B1I_NH_CODE = "00000100110101001110";     // similar to Galileo_E1_C_SECONDARY_CODE
-const int NH_BITS_RATE    = 1000;                                     // NH code bit rate [bits/s]
-const double NH_BIT_DURATION = 0.001;                                    // NH code bit duration [s] --> 1 ms
-const int NH_length       = 20;
+const int NH_BITS_RATE    			 = 1000;                                     // NH code bit rate [bits/s]
+const double NH_BIT_DURATION 		 = 0.001;                                    // NH code bit duration [s] --> 1 ms
+const int NH_length       			 = 20;
 
 
 // D1 NAV Message
@@ -73,7 +71,7 @@ const int  BEIDOU_FRAME_SECONDS     = 30;               // FRAME duration       
 const int  BEIDOU_SUBFRAME_BITS     = 300;              // SUBFRAME    (10 words)         [bits]
 const int  BEIDOU_SUBFRAME_SECONDS  = 6;                // SUBFRAME duration              [seconds]
 const int  BEIDOU_WORD_BITS         = 30;               // WORD                           [bits]
-const double  BEIDOU_WORD_SECONDS      = 0.6;              // WORD duration                  [seconds]
+const double  BEIDOU_WORD_SECONDS   = 0.6;              // WORD duration                  [seconds]
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////

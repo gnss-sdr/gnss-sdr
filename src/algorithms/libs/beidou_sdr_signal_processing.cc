@@ -39,22 +39,15 @@ auto auxCeil = [](float x){ return static_cast<int>(static_cast<long>((x)+1)); }
 
 void beidou_b1i_code_gen_complex(std::complex<float>* _dest, 
                                  signed int _prn, 
-                                 signed int _samplesPerCode, 
                                  unsigned int _chip_shift)
 {
-    const unsigned int _code_length = 2046;
+    const unsigned int _code_length = BEIDOU_B1I_CODE_LENGTH_CHIPS;
     signed int G1[_code_length];
     signed int G2[_code_length];
     signed int G1_register[11] = { 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1};       /* 1=>-1, 0=>1 */
     signed int G2_register[11] = { 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1};       /* 1=>-1, 0=>1 */
     signed int feedback1, feedback2;
-    bool aux;
     unsigned int lcv, lcv2;
-    signed int prn_idx;
-
-    const unsigned int delay = ((static_cast<int>(BEIDOU_B1I_CODE_LENGTH_CHIPS) - _chip_shift)
-                                % static_cast<int>(BEIDOU_B1I_CODE_LENGTH_CHIPS))
-                                * _samplesPerCode / BEIDOU_B1I_CODE_LENGTH_CHIPS;
 
     /* Generate G1 */
     for(lcv = 0; lcv < _code_length; lcv++)
@@ -204,12 +197,14 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest,
     /* Generate PRN from G1 and G2 Registers */
     for(lcv = 0; lcv < _code_length; lcv++)
         {
-            // _dest[(lcv + delay) % _code_length] = -G1[lcv]*G2[lcv];
             _dest[lcv] = -G1[lcv]*G2[lcv];
         }
 }
 
-static float mod(float a, float N) {return a - N*floor(a/N);} //return in range [0, N)
+static int mod(float a, float N) 
+{
+    return static_cast<int>(a - N*floor(a/N)); //return in range [0, N)
+} 
 
 /*
  *  Generates complex BeiDou B1I code for the desired SV ID and sampled to specific sampling frequency
@@ -218,75 +213,34 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::complex<float> _code[2046];
-    signed int _samplesPerCode, _codeValueIndex, _offset;
-    float _ts;
-    float _tc;
-    float aux;
-    const signed int _codeFreqBasis = static_cast<int>(BEIDOU_B1I_CODE_RATE_HZ);    // [Hz]
-    const signed int _codeLength    = static_cast<int>(BEIDOU_B1I_CODE_LENGTH_CHIPS);
+    signed int _offset;
+    double _phi_prn;
 
-    const signed int _codeDelayChips   = (_codeLength - _chip_shift) % _codeLength;
-    const signed int _codeDelaySamples = _codeDelayChips * (_fs / _codeFreqBasis);
+    const double _fs_in                 = static_cast<double>(_fs);
+    const signed int _codeFreqBasis     = static_cast<int>(BEIDOU_B1I_CODE_RATE_HZ);
+    const signed int _codeLength        = static_cast<int>(BEIDOU_B1I_CODE_LENGTH_CHIPS);
+    const signed int _codeDelayChips    = (_codeLength - _chip_shift) % _codeLength;
+    const signed int _codeDelaySamples  = _codeDelayChips * (_fs_in / BEIDOU_B1I_CODE_RATE_HZ);
 
     //--- Find number of samples per spreading code ----------------------------
-    _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
+    const signed int _samplesPerCode = static_cast<signed int>(_fs_in / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
 
-        //--- Find time constants --------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // B1I chip period in sec
+    beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate B1I code 1 sample per chip
 
-    beidou_b1i_code_gen_complex(_code, _prn, _samplesPerCode, _chip_shift);  //generate B1I code 1 sample per chip
-
-    std::cout << "\nChips Shift (beidou_sdr_signal_processing.cc) = " << _chip_shift << std::endl;
-    std::cout << "Delay chips (beidou_sdr_signal_processing.cc) = " << _codeDelayChips << std::endl;
-    std::cout << "Delay Samples (beidou_sdr_signal_processing.cc) = " << _codeDelaySamples << std::endl;
-    std::cout << "Samples per code (beidou_sdr_signal_processing.cc) = " << _samplesPerCode << std::endl;
-
-    for (signed int i = 0; i < _samplesPerCode; i++)
-        {
-
-            // Offset for the PRN codes in order to add the proper phase 
-            double _phi_prn = static_cast<double>(i - _codeDelaySamples) * (static_cast<double>(_codeFreqBasis) / static_cast<double>(_fs));
-            _offset = static_cast<signed int>(mod((_phi_prn), _codeLength));
-            // std::cout << "_offset = " << _offset << std::endl;
-
-
-            //=== Digitizing =======================================================
-
-            //--- Make index array to read B1I code values -------------------------
-            // The length of the index array depends on the sampling frequency -
-            // number of samples per millisecond (because one B1I code period is one
-            // millisecond).
-
-            // _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
-            aux = (_ts * (i + 1)) / _tc;
-            _codeValueIndex = auxCeil( aux ) - 1;
-
-            //--- Make the digitized version of the B1I code -----------------------
-            // The "upsampled" code is made by selecting values form the B1I code
-            // chip array (B1I) for the time instances of each sample.
-            if (i == _samplesPerCode - 1)
-                {
-                    //--- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = _code[_codeLength - 1];
-
-                }
-            else
-                {
-                    _dest[i] = _code[_codeValueIndex]; //repeat the chip -> upsample
-                }
-                // std::cout << "_dest[" << i << "] = " << _dest[i] << std::endl;
-                // std::cout << "_codeValueIndex = " << _codeValueIndex << std::endl;
-                // std::cout << "Offset = " << _offset << std::endl;
-        }
-
+#if BEIDOU_DEBUG
+    std::cout << "\nChips Shift     (beidou_sdr_signal_processing.cc) = " << _chip_shift << std::endl;
+    std::cout << "Delay chips       (beidou_sdr_signal_processing.cc) = " << _codeDelayChips << std::endl;
+    std::cout << "Delay Samples     (beidou_sdr_signal_processing.cc) = " << _codeDelaySamples << std::endl;
+    std::cout << "Samples per code  (beidou_sdr_signal_processing.cc) = " << _samplesPerCode << std::endl;
+#endif
 
     for (signed int i = 0; i < _samplesPerCode; i++)
         {
             // Offset for the PRN codes in order to add the proper phase 
-            double _phi_prn = static_cast<double>(i - _codeDelaySamples) * (static_cast<double>(_codeFreqBasis) / static_cast<double>(_fs));
-            _offset = static_cast<signed int>(mod((_phi_prn), _codeLength));
-            _dest[i] = _dest[i + _offset];
+            _phi_prn = static_cast<double>(i - _codeDelaySamples) * (BEIDOU_B1I_CODE_RATE_HZ / _fs_in);
+            _offset = mod(_phi_prn, _codeLength);
+
+            _dest[i] = _code[_offset];
         }
 }
 

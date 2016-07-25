@@ -35,11 +35,12 @@
 
 function plot_acq_grid_gsoc(sat)
 
-file=['/home/giorgio/Develop/gnss-sdr/data/test_statistics_C_1C_sat_' num2str(sat) '_doppler_0.dat'];
+path='/Users/enricjuan/code_repos/gnss-sdr/src/tests/data/acquisition_beidou/';
+file=[path 'acquisition_beidou_C_1C_sat_' num2str(sat) '_doppler_0.dat'];
 
 sampling_freq_Hz=16.000E6
-Doppler_max_Hz = 1000
-Doppler_min_Hz = -1000
+Doppler_max_Hz = 4750
+Doppler_min_Hz = -250
 Doppler_step_Hz = 250
 
 
@@ -59,7 +60,7 @@ index=0;
 
 for k=Doppler_min_Hz:Doppler_step_Hz:Doppler_max_Hz
     index=index+1;
-    filename=['/home/giorgio/Develop/gnss-sdr/data/test_statistics_C_1C_sat_' num2str(sat) '_doppler_' num2str(k) '.dat'];
+    filename=[path 'acquisition_beidou_C_1C_sat_' num2str(sat) '_doppler_' num2str(k) '.dat'];
     acq_grid(index,:)=abs(read_complex_binary (filename));
  end
 

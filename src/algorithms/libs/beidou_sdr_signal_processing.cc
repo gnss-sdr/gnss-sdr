@@ -201,10 +201,10 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest,
         }
 }
 
-static int mod(float a, float N) 
+static int mod(double a, double N)
 {
     return static_cast<int>(a - N*floor(a/N)); //return in range [0, N)
-} 
+}
 
 /*
  *  Generates complex BeiDou B1I code for the desired SV ID and sampled to specific sampling frequency
@@ -213,19 +213,19 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::complex<float> _code[2046];
-    signed int _offset;
-    double _phi_prn;
+    signed int _offset_prn, _offset_nh;
+    double _phi_prn, _phi_nh;
 
     const double _fs_in                 = static_cast<double>(_fs);
-    const signed int _codeFreqBasis     = static_cast<int>(BEIDOU_B1I_CODE_RATE_HZ);
     const signed int _codeLength        = static_cast<int>(BEIDOU_B1I_CODE_LENGTH_CHIPS);
     const signed int _codeDelayChips    = (_codeLength - _chip_shift) % _codeLength;
-    const signed int _codeDelaySamples  = _codeDelayChips * (_fs_in / BEIDOU_B1I_CODE_RATE_HZ);
+    const signed int _codeDelaySamples  = static_cast<int>(_codeDelayChips * (_fs_in / BEIDOU_B1I_CODE_RATE_HZ));
 
     //--- Find number of samples per spreading code ----------------------------
     const signed int _samplesPerCode = static_cast<signed int>(_fs_in / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
 
-    beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate B1I code 1 sample per chip
+    //generate B1I code 1 sample per chip
+    beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);
 
 #if BEIDOU_DEBUG
     std::cout << "\nChips Shift     (beidou_sdr_signal_processing.cc) = " << _chip_shift << std::endl;
@@ -238,9 +238,13 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
         {
             // Offset for the PRN codes in order to add the proper phase 
             _phi_prn = static_cast<double>(i - _codeDelaySamples) * (BEIDOU_B1I_CODE_RATE_HZ / _fs_in);
-            _offset = mod(_phi_prn, _codeLength);
+            _offset_prn = mod(_phi_prn, BEIDOU_B1I_CODE_LENGTH_CHIPS);
 
-            _dest[i] = _code[_offset];
+            // Offset for the NH code in order to add the proper phase
+            _phi_nh = static_cast<double>(i - _codeDelaySamples) * (NH_BITS_RATE / _fs_in);
+            _offset_nh = mod(_phi_nh, NH_BIT_DURATION);
+
+            _dest[i] = _code[_offset_prn] * static_cast<float>(NH_CODE[_offset_nh]);
         }
 }
 

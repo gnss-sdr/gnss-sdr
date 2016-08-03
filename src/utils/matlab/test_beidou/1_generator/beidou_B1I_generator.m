@@ -10,7 +10,7 @@ clc;
 clear all;
 close all;
 %% ------------Settings---------------------------------------------------------
-fileName = '/home/giorgio/Desktop/back_up_gnss_sdr/test/data/FFF020_test_1.dat';
+fileName ='/Users/enricjuan/code_repos/gnss-sdr/src/tests/signal_samples/test_beidou_100ms.dat';
 
 f_rf   = 1561.098e6;    %[Hz] BeiDou B1 nominal frequency;
 f_if   = 0.098e6;       %[Hz] IF nominal frequency;      
@@ -88,7 +88,8 @@ nh = NH(nh_indx+1);          	% generate NH-code;
 %Generate DATA;
 data = DATA(data_indx+1);  		% generate DATA;
 
-s_I         = ((prn1 .* nh).* data); 
+s_I         = ((prn1 .* nh).* data);
+% s_I         = ((prn1).* data);
 signal_test = ((s_I ).*carr_cos);
   
 %Let's add some noise:

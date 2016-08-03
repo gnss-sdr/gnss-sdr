@@ -139,8 +139,8 @@ void GpsL2MDllPllTrackingTest::init()
 
     config->set_property("GNSS-SDR.internal_fs_hz", "5000000");
     config->set_property("Tracking_2S.item_type", "gr_complex");
-    config->set_property("Tracking_2S.dump", "false");
-    config->set_property("Tracking_2S.dump_filename", "../data/L2m_tracking_ch_");
+    config->set_property("Tracking_2S.dump", "true");
+//    config->set_property("Tracking_2S.dump_filename", "../data/L2m_tracking_ch_");
     config->set_property("Tracking_2S.implementation", "GPS_L2_M_DLL_PLL_Tracking");
     config->set_property("Tracking_2S.early_late_space_chips", "0.5");
     config->set_property("Tracking_2S.order", "2");

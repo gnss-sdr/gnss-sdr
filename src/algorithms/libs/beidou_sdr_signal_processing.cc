@@ -244,7 +244,7 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
             _phi_nh = static_cast<double>(i - _codeDelaySamples) * (NH_BITS_RATE / _fs_in);
             _offset_nh = mod(_phi_nh, NH_BIT_DURATION);
 
-            _dest[i] = _code[_offset_prn] * static_cast<float>(NH_CODE[_offset_nh]);
+            _dest[i] = _code[_offset_prn];// * static_cast<float>(NH_CODE[_offset_nh]);
         }
 }
 

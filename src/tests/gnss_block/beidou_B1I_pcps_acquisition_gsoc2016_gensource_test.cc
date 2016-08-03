@@ -203,7 +203,7 @@ void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::config_gensource()
     signal.copy(gnss_synchro.Signal, 2, 0);
 
     gnss_synchro.PRN = 20;      // [1:37]
-    intg_time_ms = 1;           // Tested with a period of integration > 1 ms
+    intg_time_ms = 10;           // Tested with a period of integration > 1 ms
     fs_in = 16.000e6;           // set 16.000 MHz
     ts_in = (1/static_cast<double>(fs_in));
 
@@ -234,7 +234,7 @@ void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::config_gensource()
     config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
     config->set_property("SignalSource.dump", "true");
-    config->set_property("SignalSource.dump_filename", "../src/tests/data/signal_source_beidou_.dat");
+    config->set_property("SignalSource.dump_filename", "../src/tests/signal_samples/signal_source_beidou_100ms.dat");
 
     config->set_property("InputFilter.implementation", "Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
@@ -408,7 +408,7 @@ TEST_F(BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest, ValidationOfResults)
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro." << std::endl;
 
-        ASSERT_NO_THROW( {
+    ASSERT_NO_THROW( {
         acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
     }) << "Failure setting doppler_max." << std::endl;
 

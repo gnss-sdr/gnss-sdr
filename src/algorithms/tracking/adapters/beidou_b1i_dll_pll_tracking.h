@@ -65,7 +65,7 @@ public:
     //! Returns "BEIDOU_B1I_DLL_PLL_Tracking"
     std::string implementation()
     {
-        return "BEIDOU_B1I_DLL_PLL_Tracking";
+        return "BeiDou_B1i_DLL_PLL_Tracking";
     }
 
     size_t item_size()

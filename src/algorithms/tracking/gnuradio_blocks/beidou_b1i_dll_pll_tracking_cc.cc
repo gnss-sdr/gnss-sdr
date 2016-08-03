@@ -34,12 +34,7 @@
  */
 
 #include "beidou_b1i_dll_pll_tracking_cc.h"
-#include <cmath>
-#include <iostream>
-#include <memory>
-#include <sstream>
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
 #include "beidou_sdr_signal_processing.h"
@@ -118,6 +113,8 @@ BeiDou_B1i_Dll_Pll_Tracking_cc::BeiDou_B1i_Dll_Pll_Tracking_cc(
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
 
+    std::cout << "dump_filename: " << d_dump_filename << std::endl;
+
     d_current_prn_length_samples = static_cast<int>(d_vector_length);
 
     // Initialize tracking  ==========================================
@@ -154,7 +151,7 @@ BeiDou_B1i_Dll_Pll_Tracking_cc::BeiDou_B1i_Dll_Pll_Tracking_cc(
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
-    d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_chips = BEIDOU_B1I_CODE_RATE_HZ;
     
     // define residual code phase (in chips)
     d_rem_code_phase_samples = 0.0;
@@ -179,7 +176,7 @@ BeiDou_B1i_Dll_Pll_Tracking_cc::BeiDou_B1i_Dll_Pll_Tracking_cc(
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
-    systemName["G"] = std::string("GPS");
+    systemName["C"] = std::string("Beidou");
     systemName["S"] = std::string("SBAS");
 
     d_acquisition_gnss_synchro = 0;
@@ -252,7 +249,7 @@ void BeiDou_B1i_Dll_Pll_Tracking_cc::start_tracking()
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
-    d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+    d_carrier_phase_step_rad = BEIDOU_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(); // initialize the carrier filter
@@ -368,7 +365,7 @@ int BeiDou_B1i_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute_
             // ################## PLL ##########################################################
             // PLL discriminator
             // Update PLL discriminator [rads/Ti -> Secs/Ti]
-            carr_error_hz = pll_cloop_two_quadrant_atan(d_correlator_outs[1]) / GPS_TWO_PI; //prompt output
+            carr_error_hz = pll_cloop_two_quadrant_atan(d_correlator_outs[1]) / BEIDOU_TWO_PI; //prompt output
             // Carrier discriminator filter
         
             carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
@@ -380,13 +377,13 @@ int BeiDou_B1i_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute_
                 ((d_carrier_doppler_hz * BEIDOU_B1I_CODE_RATE_HZ) / BEIDOU_B1I_FREQ_HZ);
         
             //carrier phase accumulator for (K) doppler estimation
-            d_acc_carrier_phase_rad -= GPS_TWO_PI * d_carrier_doppler_hz * BEIDOU_B1I_CODE_PERIOD;
+            d_acc_carrier_phase_rad -= BEIDOU_TWO_PI * d_carrier_doppler_hz * BEIDOU_B1I_CODE_PERIOD;
         
             //remanent carrier phase to prevent overflow in the code NCO
             d_rem_carr_phase_rad = d_rem_carr_phase_rad +
-                GPS_TWO_PI * ( d_if_freq + d_carrier_doppler_hz ) *
+                    BEIDOU_TWO_PI * ( d_if_freq + d_carrier_doppler_hz ) *
                 BEIDOU_B1I_CODE_PERIOD;
-            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
+            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, BEIDOU_TWO_PI);
 
             // ################## DLL ##########################################################
             // DLL discriminator
@@ -419,7 +416,7 @@ int BeiDou_B1i_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute_
 
             //################### PLL COMMANDS #################################################
             //carrier phase step (NCO phase increment per sample) [rads/sample]
-            d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+            d_carrier_phase_step_rad = BEIDOU_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
             //################### DLL COMMANDS #################################################
             //code phase step (Code resampler phase increment per sample) [chips/sample]
@@ -499,7 +496,7 @@ int BeiDou_B1i_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute_
                  static_cast<double>(d_rem_code_phase_samples)) /
                 static_cast<double>(d_fs_in);
         
-            current_synchro_data.System = {'B'};
+            current_synchro_data.System = {'C'};
         }
 
     //assign the GNURadio block output data

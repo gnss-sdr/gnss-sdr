@@ -76,6 +76,7 @@
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
+#include "beidou_b1i_pcps_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
@@ -83,6 +84,7 @@
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "galileo_e5a_dll_pll_tracking.h"
 #include "gps_l2_m_dll_pll_tracking.h"
+#include "beidou_b1i_dll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l2_m_telemetry_decoder.h"
 #include "galileo_e1b_telemetry_decoder.h"
@@ -94,6 +96,7 @@
 #include "gps_l1_ca_pvt.h"
 #include "galileo_e1_pvt.h"
 #include "hybrid_pvt.h"
+
 
 #if OPENCL_BLOCKS
 #include "gps_l1_ca_pcps_opencl_acquisition.h"
@@ -921,8 +924,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
-
-
+    else if (implementation.compare("BeiDou_B1I_PCPS_Acquisition") == 0)
+    {
+        std::unique_ptr<AcquisitionInterface> block_(new BeidouB1iPcpsAcquisition(configuration.get(), role, in_streams,
+                                                                                  out_streams));
+        block = std::move(block_);
+    }
 
 
     // TRACKING BLOCKS -------------------------------------------------------------
@@ -974,6 +981,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aDllPllTracking(configuration.get(), role, in_streams,
                     out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("BeiDou_B1i_DLL_PLL_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new BeiDouB1iDllPllTracking(configuration.get(), role, in_streams,
+                                                                                  out_streams));
             block = std::move(block_);
         }
 
@@ -1156,6 +1169,12 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("BeiDou_B1I_PCPS_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new BeidouB1iPcpsAcquisition(configuration.get(), role, in_streams,
+                                                                                                   out_streams));
+            block = std::move(block_);
+        }
     else
         {
             // Log fatal. This causes execution to stop.
@@ -1216,6 +1235,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("BeiDou_B1i_DLL_PLL_Tracking") == 0)
+    {
+        std::unique_ptr<TrackingInterface> block_(new BeiDouB1iDllPllTracking(configuration.get(), role, in_streams,
+                                                                           out_streams));
+        block = std::move(block_);
+    }
 #if CUDA_GPU_ACCEL
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_GPU") == 0)
         {

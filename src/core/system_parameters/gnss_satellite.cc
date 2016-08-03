@@ -120,7 +120,7 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite &rhs) {
 
 void Gnss_Satellite::set_system(const std::string& system_)
 {
-    // Set the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
+    // Set the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}
     std::set<std::string>::iterator it = system_set.find(system_);
 
     if(it != system_set.end())
@@ -157,6 +157,18 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
                     PRN = PRN_;
                 }
         }
+    if (system.compare("Beidou") == 0)
+    {
+        if (PRN_ < 1 or PRN_ > 37)
+        {
+            DLOG(INFO) << "This PRN is not defined";
+            PRN = 0;
+        }
+        else
+        {
+            PRN = PRN_;
+        }
+    }
     else if (system.compare("Glonass") == 0)
            {
                if (PRN_ < 1 or PRN_ > 24)

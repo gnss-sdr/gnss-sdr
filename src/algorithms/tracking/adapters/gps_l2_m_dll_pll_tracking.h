@@ -63,10 +63,10 @@ public:
         return role_;
     }
 
-    //! Returns "gps_l2_m_dll_pll_tracking"
+    //! Returns "GPS_L2_M_DLL_PLL_Tracking"
     std::string implementation()
     {
-        return "gps_l2_m_dll_pll_tracking";
+        return "GPS_L2_M_DLL_PLL_Tracking";
     }
 
     size_t item_size()

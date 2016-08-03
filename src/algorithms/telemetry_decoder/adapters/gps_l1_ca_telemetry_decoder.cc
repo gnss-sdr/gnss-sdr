@@ -50,7 +50,6 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
         in_streams_(in_streams),
         out_streams_(out_streams)
 {
-    std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./navigation.dat";
     DLOG(INFO) << "role " << role;
     dump_ = configuration->property(role + ".dump", false);

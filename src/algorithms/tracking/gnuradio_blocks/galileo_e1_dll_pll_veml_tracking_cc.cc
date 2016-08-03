@@ -147,11 +147,11 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
 
     d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps * sizeof(float), volk_get_alignment()));
     // Set TAPs delay values [chips]
-    d_local_code_shift_chips[0] = - d_very_early_late_spc_chips * 2.0;
-    d_local_code_shift_chips[1] = - d_very_early_late_spc_chips;
+    d_local_code_shift_chips[0] = - d_very_early_late_spc_chips;
+    d_local_code_shift_chips[1] = - d_early_late_spc_chips;
     d_local_code_shift_chips[2] = 0.0;
-    d_local_code_shift_chips[3] = d_very_early_late_spc_chips;
-    d_local_code_shift_chips[4] = d_very_early_late_spc_chips * 2.0;
+    d_local_code_shift_chips[3] = d_early_late_spc_chips;
+    d_local_code_shift_chips[4] = d_very_early_late_spc_chips;
 
     d_correlation_length_samples = d_vector_length;
 

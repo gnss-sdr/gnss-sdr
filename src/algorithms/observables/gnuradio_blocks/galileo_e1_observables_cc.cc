@@ -50,22 +50,20 @@ using google::LogMessage;
 
 
 galileo_e1_observables_cc_sptr
-galileo_e1_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging)
+galileo_e1_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename)
 {
-    return galileo_e1_observables_cc_sptr(new galileo_e1_observables_cc(nchannels, dump, dump_filename, output_rate_ms, flag_averaging));
+    return galileo_e1_observables_cc_sptr(new galileo_e1_observables_cc(nchannels, dump, dump_filename));
 }
 
 
-galileo_e1_observables_cc::galileo_e1_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging) :
+galileo_e1_observables_cc::galileo_e1_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename) :
      gr::block("galileo_e1_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
      gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_dump = dump;
     d_nchannels = nchannels;
-    d_output_rate_ms = output_rate_ms;
     d_dump_filename = dump_filename;
-    d_flag_averaging = flag_averaging;
 
     for (unsigned int i = 0; i < d_nchannels; i++)
         {

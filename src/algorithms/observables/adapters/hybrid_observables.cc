@@ -44,15 +44,11 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
                     in_streams_(in_streams),
                     out_streams_(out_streams)
 {
-    int output_rate_ms;
-    output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
     std::string default_dump_filename = "./observables.dat";
     DLOG(INFO) << "role " << role;
-    bool flag_averaging;
-    flag_averaging = configuration->property(role + ".flag_averaging", false);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-    observables_ = hybrid_make_observables_cc(in_streams_, dump_, dump_filename_, output_rate_ms, flag_averaging);
+    observables_ = hybrid_make_observables_cc(in_streams_, dump_, dump_filename_);
     DLOG(INFO) << "pseudorange(" << observables_->unique_id() << ")";
 }
 

@@ -43,7 +43,7 @@ class hybrid_observables_cc;
 typedef boost::shared_ptr<hybrid_observables_cc> hybrid_observables_cc_sptr;
 
 hybrid_observables_cc_sptr
-hybrid_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+hybrid_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename);
 
 /*!
  * \brief This class implements a block that computes Galileo observables
@@ -57,14 +57,12 @@ public:
 
 private:
     friend hybrid_observables_cc_sptr
-    hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
-    hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+    hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename);
+    hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename);
 
     // class private vars
     bool d_dump;
-    bool d_flag_averaging;
     unsigned int d_nchannels;
-    int d_output_rate_ms;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 };

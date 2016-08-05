@@ -48,22 +48,20 @@ using google::LogMessage;
 
 
 hybrid_observables_cc_sptr
-hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging)
+hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename)
 {
-    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels, dump, dump_filename, output_rate_ms, flag_averaging));
+    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels, dump, dump_filename));
 }
 
 
-hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging) :
+hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename) :
                                 gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
                                 gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_dump = dump;
     d_nchannels = nchannels;
-    d_output_rate_ms = output_rate_ms;
     d_dump_filename = dump_filename;
-    d_flag_averaging = flag_averaging;
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)

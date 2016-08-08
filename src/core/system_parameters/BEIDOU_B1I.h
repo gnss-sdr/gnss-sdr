@@ -87,9 +87,9 @@ const double  BEIDOU_WORD_SECONDS   = 0.6;              // WORD duration        
 /***************** BEIDOU NAVIGATION MESSAGE STRUCTURE D1 *****************/
 // NAVIGATION MESSAGE FIELDS POSITIONS (from ICD VERSION 2.0)
 
-/** SUBFRAME 1-5 **/
-
-// Parity bits for SUBFRAME N
+// Fields for SUBFRAME N (Common for all of them)
+// WORD 1    ( 1 - 30 bits) [26 info + 4 parity]
+// WORD 2-10 (31 - 60 bits) [22 info + 8 parity]
 const std::vector<std::pair<int,int>> P             ({{27 ,4},
                                                       {53 ,8},
                                                       {83 ,8},
@@ -99,37 +99,105 @@ const std::vector<std::pair<int,int>> P             ({{27 ,4},
                                                       {203,8},
                                                       {233,8},
                                                       {263,8},
-                                                      {293,8}
-                                                     });
+                                                      {293,8}});
+const std::vector<std::pair<int,int>> PRE           ({{1,11 }});     // PREAMBLE from modified Barker code of 11 bits
+const std::vector<std::pair<int,int>> REV           ({{12,4 },
+                                                      {292,1}});     // This pair is only for SUBFRAME 3
+const std::vector<std::pair<int,int>> SUBFRAMEID    ({{16,3 }});     // 3 bits for subframe identification
+const std::vector<std::pair<int,int>> SOW           ({{19,8 },       // first 8 bits for seconds of week (the number of seconds occurred since the last Sunday, 00:00:00 of BDT)
+                                                      {31,12}});     // last 12 bits for seconds of week
 
-///** SUBFRAME 1 **/
-//// WORD 1 (1 - 30 bits)
-//const std::vector<std::pair<int,int>> PRE           ({{1,11}});     // PREAMBLE from modified Barker code of 11 bits
-//const std::vector<std::pair<int,int>> REV           ({{12,4}});
-//const std::vector<std::pair<int,int>> SUBFRAME_ID   ({{16,3}});     // 3 bits for subframe identification
-//const std::vector<std::pair<int,int>> SOW           ({{19,8}});     // first 8 bits for seconds of week (the number of seconds occurred since the last Sunday, 00:00:00 of BDT)
-//
-//
-//// WORD 2 (31 - 60)
-//const std::vector<std::pair<int,int>> SOW_W2        ({{31,12}});     // last 12 bits for seconds of week
-//const std::vector<std::pair<int,int>> SATH1         ({{43,1}});     // satellite health flag ("0" means sat is good, "1" means not)
-//const std::vector<std::pair<int,int>> AODC          ({{44,5}});     // Age of Data, Clock
-//const std::vector<std::pair<int,int>> URAI          ({{49,4}});     // User Range Accuracy Index
-//
-//
-//// WORD 3 (61 - 90)
-//const std::vector<std::pair<int,int>> WN            ({{61,13}});     // Week Number (the integral week count of BDT with the range of 0 through 8191)
-//const std::vector<std::pair<int,int>> T_OC_W3       ({{74,9}});     // Reference time of clock parameters (in seconds with the effective range of 0-604792)
-//const std::vector<std::pair<int,int>> URAI_W3       ({{83,8}});     // User Range Accuracy Index
-//
-//// WORD 4
-//const std::vector<std::pair<int,int>> T_OC_W4       ({{91,8 }});     // Reference time of clock parameters (in seconds with the effective range of 0-604792)
-//
-//
-//const std::vector<std::pair<int,int>> SV_HEALTH         ({{77 ,6 }});
+/** SUBFRAME 1-5 **/
+/** SUBFRAME 1 (In format D1) **/
+
+// WORD 2 (31 - 60)
+const std::vector<std::pair<int,int>> SATH1         ({{43,1}});     // satellite health flag ("0" means sat is good, "1" means not)
+const std::vector<std::pair<int,int>> AODC          ({{44,5}});     // Age of Data, Clock
+const std::vector<std::pair<int,int>> URAI          ({{49,4}});     // User Range Accuracy Index
+
+// WORD 3 (61  - 90)
+// WORD 4 (91  - 120)
+// WORD 5 (121 - 130)
+const std::vector<std::pair<int,int>> WN            ({{61,13}});     // Week Number (the integral week count of BDT with the range of 0 through 8191)
+const std::vector<std::pair<int,int>> TOC           ({{74,9 },       // Reference time of clock parameters (in seconds with the effective range of 0-604792)
+                                                      {91,8 }});
+const std::vector<std::pair<int,int>> T_GD1         ({{99 ,10}});
+const std::vector<std::pair<int,int>> T_GD2         ({{109,4 },
+                                                      {121,6 }});
+const std::vector<std::pair<int,int>> AL0           ({{127,8}});
+const std::vector<std::pair<int,int>> AL1           ({{135,8}});
+
+
+// WORD 6  (151 - 180)
+// WORD 7  (181 - 210)
+// WORD 8  (211 - 240)
+// WORD 9  (241 - 270)
+// WORD 10 (271 - 300)
+const std::vector<std::pair<int,int>> AL2           ({{151,8}});
+const std::vector<std::pair<int,int>> AL3           ({{159,8}});
+
+const std::vector<std::pair<int,int>> BT0            ({{167,6},
+                                                       {181,2}
+                                                      });
+const std::vector<std::pair<int,int>> BT1            ({{183,8}});
+const std::vector<std::pair<int,int>> BT2            ({{191,8}});
+const std::vector<std::pair<int,int>> BT3            ({{199,4},
+                                                       {211,4}});
+
+const std::vector<std::pair<int,int>> A2             ({{215,11}});
+const std::vector<std::pair<int,int>> A0             ({{226,7 },
+                                                       {241,17}});
+const std::vector<std::pair<int,int>> A1             ({{258,5 },
+                                                       {271,17}});
+const std::vector<std::pair<int,int>> AODE           ({{288,5 }});
+
+
+
+/** SUBFRAME 2 (In format D1) **/
+const std::vector<std::pair<int,int>> A_N            ({{43,10},
+                                                       {61, 6}});
+const std::vector<std::pair<int,int>> CUC            ({{67,16},
+                                                       {91, 2}});
+const std::vector<std::pair<int,int>> M0             ({{93,20},
+                                                       {121,12}});
+const std::vector<std::pair<int,int>> ECC            ({{133,10},
+                                                       {151,22}});
+const std::vector<std::pair<int,int>> CUS            ({{181,18}});
+const std::vector<std::pair<int,int>> CRC            ({{199,4 },
+                                                       {211,14}});
+const std::vector<std::pair<int,int>> CRS            ({{225,8 },
+                                                       {241,10}});
+const std::vector<std::pair<int,int>> SQRTA          ({{251,12},
+                                                       {271,20}});
+const std::vector<std::pair<int,int>> TOE            ({{291,2},
+                                                       {43,10},     // These two last pairs are related with the SUBFRAME 3
+                                                       {61, 5}});   //
+
+/** SUBFRAME 3 (In format D1) **/
+const std::vector<std::pair<int,int>> I_O            ({{66,17},
+                                                       {91,15}});
+const std::vector<std::pair<int,int>> C_INC           ({{106,7},
+                                                       {121,11}});
+const std::vector<std::pair<int,int>> OMG            ({{132,11},
+                                                       {151,13}});
+const std::vector<std::pair<int,int>> C_INS           ({{164,9},
+                                                       {181,9}});
+const std::vector<std::pair<int,int>> IDOT           ({{190,13},
+                                                       {211,1}});
+const std::vector<std::pair<int,int>> OMG_0          ({{212,21},
+                                                       {241,11}});
+const std::vector<std::pair<int,int>> PRGREE         ({{252,11},
+                                                       {271,21}});
+
+
+
+
+
+
+
 //const std::vector<std::pair<int,int>> L2_P_DATA_FLAG    ({{91 ,1 }});
-//const std::vector<std::pair<int,int>> T_GD              ({{197,8 }});
-//const double T_GD_LSB = TWO_N31;
+//const std::vector<std::pair<int,int>> T_GD1             ({{197,8 }});
+//
 //const std::vector<std::pair<int,int>> IODC({{83,2},{211,8}});
 //const std::vector<std::pair<int,int>> T_OC({{219,16}});
 //const double T_OC_LSB = TWO_P4;

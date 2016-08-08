@@ -57,10 +57,10 @@ public:
         return role_;
     }
 
-    //! Returns "gps_l2_m_telemetry_decoder"
+    //! Returns "GPS_L2_M_Telemetry_Decoder"
     std::string implementation()
     {
-        return "gps_l2_m_telemetry_decoder";
+        return "GPS_L2_M_Telemetry_Decoder";
     }
     void connect(gr::top_block_sptr top_block);
     void disconnect(gr::top_block_sptr top_block);
@@ -81,7 +81,6 @@ private:
     gps_l2_m_telemetry_decoder_cc_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
-    std::string item_type_;
     bool dump_;
     std::string dump_filename_;
     std::string role_;

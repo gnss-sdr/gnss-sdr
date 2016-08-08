@@ -87,7 +87,6 @@ private:
     galileo_e5a_telemetry_decoder_cc_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
-    std::string item_type_;
     bool dump_;
     std::string dump_filename_;
     std::string role_;

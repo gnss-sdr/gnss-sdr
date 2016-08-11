@@ -70,6 +70,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
 
     tong_init_val_ = configuration->property(role + ".tong_init_val", 1);
     tong_max_val_ = configuration->property(role + ".tong_max_val", 2);
+    tong_max_dwells_ = configuration->property(role + ".tong_max_dwells", tong_max_val_ + 1);
 
     dump_filename_ = configuration_->property(role + ".dump_filename",
             default_dump_filename);
@@ -92,7 +93,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_,
                     if_, fs_in_, samples_per_ms, code_length_, tong_init_val_,
-                    tong_max_val_, dump_, dump_filename_);
+                    tong_max_val_, tong_max_dwells_, dump_, dump_filename_);
 
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
             DLOG(INFO) << "stream_to_vector("

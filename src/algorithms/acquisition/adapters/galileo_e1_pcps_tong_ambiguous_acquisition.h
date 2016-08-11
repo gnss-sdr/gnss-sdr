@@ -143,6 +143,7 @@ private:
     unsigned int sampled_ms_;
     unsigned int tong_init_val_;
     unsigned int tong_max_val_;
+    unsigned int tong_max_dwells_;
     long fs_in_;
     long if_;
     bool dump_;

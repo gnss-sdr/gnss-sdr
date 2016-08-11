@@ -63,19 +63,19 @@ pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
                               unsigned int sampled_ms, unsigned int doppler_max,
                               long freq, long fs_in, int samples_per_ms,
                               int samples_per_code, unsigned int tong_init_val,
-                              unsigned int tong_max_val,
+                              unsigned int tong_max_val,  unsigned int tong_max_dwells,
                               bool dump, std::string dump_filename)
 {
     return pcps_tong_acquisition_cc_sptr(
             new pcps_tong_acquisition_cc(sampled_ms, doppler_max, freq, fs_in, samples_per_ms, samples_per_code,
-                                    tong_init_val, tong_max_val, dump, dump_filename));
+                                    tong_init_val, tong_max_val, tong_max_dwells, dump, dump_filename));
 }
 
 pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
                          unsigned int sampled_ms, unsigned int doppler_max,
                          long freq, long fs_in, int samples_per_ms,
                          int samples_per_code, unsigned int tong_init_val,
-                         unsigned int tong_max_val,
+                         unsigned int tong_max_val, unsigned int tong_max_dwells,
                          bool dump, std::string dump_filename) :
     gr::block("pcps_tong_acquisition_cc",
     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
@@ -90,8 +90,9 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
     d_sampled_ms = sampled_ms;
-    d_well_count = 0;
+    d_dwell_count = 0;
     d_tong_max_val = tong_max_val;
+    d_tong_max_dwells = tong_max_dwells;
     d_tong_init_val = tong_init_val;
     d_tong_count = d_tong_init_val;
     d_doppler_max = doppler_max;
@@ -213,8 +214,7 @@ void pcps_tong_acquisition_cc::set_state(int state)
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
             d_gnss_synchro->Acq_samplestamp_samples = 0;
-            d_well_count = 0;
-            d_well_count = 0;
+            d_dwell_count = 0;
             d_tong_count = d_tong_init_val;
             d_mag = 0.0;
             d_input_power = 0.0;
@@ -252,7 +252,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                     d_gnss_synchro->Acq_delay_samples = 0.0;
                     d_gnss_synchro->Acq_doppler_hz = 0.0;
                     d_gnss_synchro->Acq_samplestamp_samples = 0;
-                    d_well_count = 0;
+                    d_dwell_count = 0;
                     d_tong_count = d_tong_init_val;
                     d_mag = 0.0;
                     d_input_power = 0.0;
@@ -292,7 +292,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
 
             d_sample_counter += d_fft_size; // sample counter
 
-            d_well_count++;
+            d_dwell_count++;
 
             DLOG(INFO) << "Channel: " << d_channel
                     << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
@@ -370,7 +370,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
             // 5- Compute the test statistics and compare to the threshold
             d_test_statistics = d_mag;
 
-            if (d_test_statistics > d_threshold*d_well_count)
+            if (d_test_statistics > d_threshold * d_dwell_count)
                 {
                     d_tong_count++;
                     if (d_tong_count == d_tong_max_val)
@@ -387,6 +387,10 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                         }
                 }
 
+            if(d_dwell_count >= d_tong_max_dwells)
+                {
+                    d_state = 3; // Negative acquisition
+                }
             consume_each(1);
 
             break;

@@ -105,10 +105,10 @@ BeidouB1iPcpsAcquisitionTest_msg_rx::~BeidouB1iPcpsAcquisitionTest_msg_rx()
 
 // ###########################################################
 
-class BeidouB1iPcpsAcquisitionTest: public ::testing::Test
+class BeiDouB1iPcpsAcquisitionTest: public ::testing::Test
 {
 protected:
-    BeidouB1iPcpsAcquisitionTest()
+    BeiDouB1iPcpsAcquisitionTest()
     {
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
@@ -116,7 +116,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~BeidouB1iPcpsAcquisitionTest()
+    ~BeiDouB1iPcpsAcquisitionTest()
     {}
 
     void init();
@@ -129,7 +129,7 @@ protected:
 };
 
 
-void BeidouB1iPcpsAcquisitionTest::init()
+void BeiDouB1iPcpsAcquisitionTest::init()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'C';                                                         // "BeiDou" = "C"                               see gnss_satellite.h
@@ -151,13 +151,13 @@ void BeidouB1iPcpsAcquisitionTest::init()
     config->set_property("Acquisition.pfa", "0.0");
 }
 
-TEST_F(BeidouB1iPcpsAcquisitionTest, Instantiate)
+TEST_F(BeiDouB1iPcpsAcquisitionTest, Instantiate)
 {
     init();
     std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
-TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
+TEST_F(BeiDouB1iPcpsAcquisitionTest, ConnectAndRun)
 {
     int fs_in    =   16000000;                           
     int nsamples =      16000;                           
@@ -191,7 +191,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 }
 
-TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
+TEST_F(BeiDouB1iPcpsAcquisitionTest, ValidationOfResults)
 {
     struct timeval tv;
     long long int begin = 0;

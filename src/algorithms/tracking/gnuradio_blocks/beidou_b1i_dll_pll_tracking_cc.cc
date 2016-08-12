@@ -37,7 +37,7 @@
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <volk/volk.h>
-#include "beidou_sdr_signal_processing.h"
+#include "beidou_b1i_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
 #include "BEIDOU_B1I.h"
@@ -113,7 +113,7 @@ BeiDou_B1i_Dll_Pll_Tracking_cc::BeiDou_B1i_Dll_Pll_Tracking_cc(
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
 
-    std::cout << "dump_filename: " << d_dump_filename << std::endl;
+//    std::cout << "dump_filename: " << d_dump_filename << std::endl;
 
     d_current_prn_length_samples = static_cast<int>(d_vector_length);
 
@@ -123,6 +123,10 @@ BeiDou_B1i_Dll_Pll_Tracking_cc::BeiDou_B1i_Dll_Pll_Tracking_cc(
 
     //--- DLL variables --------------------------------------------------------
     d_early_late_spc_chips = early_late_space_chips; // Define early-late offset (in chips)
+
+//    std::cout << "d_early_late_spc_chips: " << d_early_late_spc_chips << std::endl;
+//    std::cout << "early_late_space_chips: " << early_late_space_chips << std::endl;
+
 
     // Initialization of local code replica
     // Get space for a vector with the Ranging code replica sampled 1x/chip
@@ -203,6 +207,10 @@ void BeiDou_B1i_Dll_Pll_Tracking_cc::start_tracking()
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp       = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+
+//    std::cout << "d_acq_code_phase_samples: " << d_acq_code_phase_samples << std::endl;
+//    std::cout << "d_acq_carrier_doppler_hz: " << d_acq_carrier_doppler_hz << std::endl;
+//    std::cout << "d_acq_sample_stamp: " << d_acq_sample_stamp << std::endl;
 
     long int acq_trk_diff_samples;
     double acq_trk_diff_seconds;

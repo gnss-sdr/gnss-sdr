@@ -10,10 +10,10 @@ clc;
 clear all;
 close all;
 %% ------------Settings---------------------------------------------------------
-fileName ='/Users/enricjuan/code_repos/gnss-sdr/src/tests/signal_samples/test_beidou_100ms.dat';
+fileName ='/Users/enricjuan/code_repos/gnss-sdr/src/tests/signal_samples/test_beidou_60s.dat';
 
 f_rf   = 1561.098e6;    %[Hz] BeiDou B1 nominal frequency;
-f_if   = 0.098e6;       %[Hz] IF nominal frequency;      
+f_if   = 0;%0.098e6;       %[Hz] IF nominal frequency;      
 f_prn  = 2.046e6;       %[Hz] Nominal PRN-generator clock frequency;
 f_nh   = 1e3;           %[Hz] Nominal Neiman-Huffman-generator clock frequency;
 f_data = 50;            %[Hz] Nominal data rate of BeiDou D1 signal
@@ -89,7 +89,7 @@ nh = NH(nh_indx+1);          	% generate NH-code;
 data = DATA(data_indx+1);  		% generate DATA;
 
 s_I         = ((prn1 .* nh).* data);
-% s_I         = ((prn1).* data);
+%s_I         = ((prn1).* data);
 signal_test = ((s_I ).*carr_cos);
   
 %Let's add some noise:

@@ -99,9 +99,9 @@ void BeidouB1iPcpsAcquisitionGenSourceTest_msg_rx::msg_handler_events(pmt::pmt_t
 
 
 BeidouB1iPcpsAcquisitionGenSourceTest_msg_rx::BeidouB1iPcpsAcquisitionGenSourceTest_msg_rx(concurrent_queue<int>& queue) :
-    gr::block("BeidouB1iPcpsAcquisitionGenSourceTest_msg_rx", 
-              gr::io_signature::make(0, 0, 0), 
-              gr::io_signature::make(0, 0, 0)), 
+    gr::block("BeidouB1iPcpsAcquisitionGenSourceTest_msg_rx",
+              gr::io_signature::make(0, 0, 0),
+              gr::io_signature::make(0, 0, 0)),
     channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
@@ -116,10 +116,10 @@ BeidouB1iPcpsAcquisitionGenSourceTest_msg_rx::~BeidouB1iPcpsAcquisitionGenSource
 
 // ###########################################################
 
-class BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest: public ::testing::Test
+class BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest: public ::testing::Test
 {
 protected:
-    BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest()
+    BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest()
     {
         item_size = sizeof(gr_complex);
         stop = false;
@@ -127,7 +127,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest()
+    ~BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest()
     {}
 
     void init();
@@ -138,15 +138,15 @@ protected:
     void stop_queue();
 
     concurrent_queue<int> channel_internal_queue;
-    
+
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
 
     std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
-    
+
     Gnss_Synchro gnss_synchro;
-    
+
     size_t item_size;
     bool stop;
     int message;
@@ -180,7 +180,7 @@ protected:
 };
 
 
-void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::init()
+void BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest::init()
 {
     message = 0;
     realization_counter = 0;
@@ -195,22 +195,22 @@ void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::init()
     Pfa_a = 0;
 }
 
-void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::config_gensource()
+void BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest::config_gensource()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'C';                                                         // "BeiDou" = "C"                               see gnss_satellite.h
-    std::string signal = "1C";                                                         // "1C" is for GPS L1 C/A (have to be changed)  see gnss_signal.h 
+    std::string signal = "1C";                                                         // "1C" is for GPS L1 C/A (have to be changed)  see gnss_signal.h
     signal.copy(gnss_synchro.Signal, 2, 0);
 
     gnss_synchro.PRN = 20;      // [1:37]
-    intg_time_ms = 10;           // Tested with a period of integration > 1 ms
+    intg_time_ms = 100;           // Tested with a period of integration > 1 ms
     fs_in = 16.000e6;           // set 16.000 MHz
     ts_in = (1/static_cast<double>(fs_in));
 
     expected_delay_samples = 3767.0;                           // [samples]
     expected_delay_sec     = ts_in * expected_delay_samples * 1e3;   // [sec]
     expected_doppler_hz    = 1650.0;                             // [Hz]
-    expected_delay_chips   = static_cast<float>(expected_delay_samples * BEIDOU_B1I_CODE_RATE_HZ / static_cast<float>(fs_in)); 
+    expected_delay_chips   = static_cast<float>(expected_delay_samples * BEIDOU_B1I_CODE_RATE_HZ / static_cast<float>(fs_in));
 
     // max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     // max_delay_error_chips = 0.50;
@@ -269,13 +269,13 @@ void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::config_gensource()
     config->set_property("Acquisition.pfa", "0.0");
 }
 
-void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::start_queue()
+void BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::wait_message, this);
+    ch_thread = boost::thread(&BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest::wait_message, this);
 }
 
-void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::wait_message()
+void BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest::wait_message()
 {
     struct timeval tv;
     long long int begin = 0;
@@ -299,7 +299,7 @@ void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::wait_message()
         }
 }
 
-void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::process_message()
+void BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest::process_message()
 {
     if (message == 1)
         {
@@ -340,22 +340,22 @@ void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::process_message()
         }
 }
 
-void BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest::stop_queue()
+void BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest::stop_queue()
 {
     stop = true;
 }
 
 
-TEST_F(BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest, Instantiate)
+TEST_F(BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest, Instantiate)
 {
     config_gensource();
     acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
-TEST_F(BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest, ConnectAndRun)
+TEST_F(BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest, ConnectAndRun)
 {
     int nsamples = floor(fs_in * intg_time_ms*1e-3);
-    // int nsamples =      16000; 
+    // int nsamples =      16000;
 
     struct timeval tv;
     long long int begin = 0;
@@ -387,12 +387,12 @@ TEST_F(BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest, ConnectAndRun)
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 }
 
-TEST_F(BeidouB1iPcpsAcquisitionGSoC2016GenSourceTest, ValidationOfResults)
+TEST_F(BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest, ValidationOfResults)
 {
     struct timeval tv;
     long long int begin = 0;
     long long int end   = 0;
-    
+
     config_gensource();
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);

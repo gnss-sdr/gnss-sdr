@@ -29,8 +29,10 @@
 %  */ 
 close all;
 clear all;
-samplingFreq       =  64e6/32;     %[Hz]
+% samplingFreq       =  64e6/32;     %[Hz]
 channels=1;
+
+addpath('/Users/enricjuan/code_repos/gnss-sdr/src/utils/matlab/libs/');
 
 path='/Users/enricjuan/code_repos/gnss-sdr/src/tests/data/tracking_beidou/';
 
@@ -38,7 +40,8 @@ clear PRN_absolute_sample_start;
 for N=1:1:channels
     tracking_log_path=[path 'tracking_ch_' num2str(N-1) '.dat'];
 
-    GNSS_tracking(N)= gps_l1_ca_dll_pll_read_tracking_dump_64bits(tracking_log_path);   
+    GNSS_tracking(N)= gps_l1_ca_dll_pll_read_tracking_dump(tracking_log_path); 
+%     GNSS_tracking(N)= gps_l1_ca_dll_pll_read_tracking_dump_64bits(tracking_log_path);   
 end
 
 % GNSS-SDR format conversion to MATLAB GPS receiver

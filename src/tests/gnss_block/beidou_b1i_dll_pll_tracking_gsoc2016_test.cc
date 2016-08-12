@@ -116,7 +116,7 @@ protected:
     ~BeiDouB1iDllPllTrackingTest()
     {}
 
-    void init();
+    void config_test();
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
@@ -124,44 +124,71 @@ protected:
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
+
+    double f_if             = 0;
+    double space_chips      = 0;
+    double pll_bw_hz        = 0;
+    double dll_bw_hz        = 0;
+    double delay_samples    = 0;
+    double doppler_hz       = 0;
+
+    int fs_in               = 0;
+    int nsamples            = 0;
+
+    long long int begin     = 0;
+    long long int end       = 0;
+
+    std::string signal_path = "";
 };
 
 
-void BeiDouB1iDllPllTrackingTest::init()
+void BeiDouB1iDllPllTrackingTest::config_test()
 {
     gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System = 'C';
-    std::string signal = "1C";
+    gnss_synchro.System     = 'C';
+    std::string signal      = "1C";
     signal.copy(gnss_synchro.Signal, 2, 0);
+
     gnss_synchro.PRN = 20;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "16000000");
+    fs_in            = 16000000;
+    nsamples         = fs_in * 9;
+
+    f_if             = 0.0;
+    space_chips      = 0.5;
+    pll_bw_hz        = 50;
+    dll_bw_hz        = 2;
+    delay_samples    = 3767.0;
+    doppler_hz       = 1650;
+
+    signal_path      = "signal_samples/test_beidou_60s.dat";
+
+    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
     config->set_property("Tracking.item_type", "gr_complex");
+    config->set_property("Tracking.if", std::to_string(f_if));
     config->set_property("Tracking.dump", "true");
     config->set_property("Tracking.dump_filename", "../src/tests/data/tracking_beidou/tracking_ch_");
     config->set_property("Tracking.implementation", "BeiDou_B1i_DLL_PLL_Tracking");
-    config->set_property("Tracking.early_late_space_chips", "0.1");
+    config->set_property("Tracking.early_late_space_chips", std::to_string(space_chips));
     config->set_property("Tracking.order", "2");
-    config->set_property("Tracking.pll_bw_hz", "2");
-    config->set_property("Tracking.dll_bw_hz", "0.5");
+    config->set_property("Tracking.pll_bw_hz", std::to_string(pll_bw_hz));
+    config->set_property("Tracking.dll_bw_hz", std::to_string(dll_bw_hz));
 }
 
 TEST_F(BeiDouB1iDllPllTrackingTest, ValidationOfResults)
 {
     struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
-    int fs_in = 16000000;
-    int nsamples = fs_in*9;
 
-    init();
+    config_test();
+
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Tracking test");
+
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<BeiDouB1iDllPllTracking>(config.get(), "Tracking", 1, 1);
     boost::shared_ptr<BeiDouB1iDllPllTrackingTest_msg_rx> msg_rx = BeiDouB1iDllPllTrackingTest_msg_rx_make();
 
-    gnss_synchro.Acq_delay_samples = 3767;
-    gnss_synchro.Acq_doppler_hz = 1650;
+    gnss_synchro.Acq_delay_samples  = delay_samples;
+    gnss_synchro.Acq_doppler_hz     = doppler_hz;
     gnss_synchro.Acq_samplestamp_samples = 0;
 
     ASSERT_NO_THROW( {
@@ -177,14 +204,14 @@ TEST_F(BeiDouB1iDllPllTrackingTest, ValidationOfResults)
     }) << "Failure connecting tracking to the top_block." << std::endl;
 
     ASSERT_NO_THROW( {
-    //gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
     std::string path = std::string(TEST_PATH);
-    std::string file = path + "signal_samples/signal_source_beidou_100msmás .dat";
-//    std::string file = path + "signal_samples/signal_source_beidou_data_10ms.dat";
+    std::string file = path + signal_path;
     const char * file_name = file.c_str();
+
     gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
     boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
     gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+
     top_block->connect(file_source, 0, valve, 0);
     top_block->connect(valve, 0, tracking->get_left_block(), 0);
     top_block->connect(tracking->get_right_block(), 0, sink, 0);

@@ -36,7 +36,7 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gps_sdr_signal_processing.h"
-#include "beidou_sdr_signal_processing.h"
+#include "beidou_b1i_signal_processing.h"
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
 #include "Galileo_E1.h"

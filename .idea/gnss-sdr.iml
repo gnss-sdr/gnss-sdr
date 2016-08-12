@@ -46,7 +46,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/pass_through.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gnss_signal_processing.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/complex_float_to_complex_byte.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gps_sdr_signal_processing.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/fft_internal.h" isTestSource="false" />
@@ -57,7 +56,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/pass_through.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/complex_byte_to_float_x2.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/short_x2_to_cshort.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/beidou_sdr_signal_processing.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gnss_sdr_valve.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/galileo_e1_signal_processing.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/gps_l2c_signal.h" isTestSource="false" />
@@ -69,7 +67,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/galileo_e1_signal_processing.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/fft_base_kernels.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/clFFT.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/beidou_sdr_signal_processing.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/complex_float_to_complex_byte.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/libs/complex_byte_to_float_x2.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/adapters/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/signal_generator/adapters/signal_generator.cc" isTestSource="false" />
@@ -304,10 +302,11 @@
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/galileo_e5a_dll_pll_tracking.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_tcp_connector_tracking.cc" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking_gpu.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/galileo_e1_tcp_connector_tracking.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l2_m_dll_pll_tracking.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking_gpu.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_tcp_connector_tracking.h" isTestSource="false" />
@@ -324,12 +323,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e5a_dll_pll_tracking_cc.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e5a_dll_pll_tracking_cc.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l2_m_dll_pll_tracking_cc.cc" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_gpu_cc.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_cc.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_tcp_connector_tracking_cc.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_gpu_cc.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_tcp_connector_tracking_cc.cc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_cc.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_sc.h" isTestSource="false" />
@@ -443,7 +443,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ENUMERATED.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Ver.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Notification.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellInfo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellInfo.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ENUMERATED.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SessionID.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SessionID.c" isTestSource="false" />
@@ -511,6 +511,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Horandveruncert.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ber_tlv_length.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/GsmCellInformation.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/asn_SEQUENCE_OF.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLRESPONSE.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/SUPLPOSINIT.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ber_tlv_length.c" isTestSource="false" />
@@ -550,7 +551,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UlpMessage.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UTRA-CarrierRSSI.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/LocationId.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/asn_SEQUENCE_OF.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellInfo.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/UlpMessage.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/ULP-PDU.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/asn_SEQUENCE_OF.c" isTestSource="false" />
@@ -572,7 +573,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/per_encoder.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/IA5String.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/Status.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/CellInfo.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/KeyIdentity.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/per_support.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-supl/KeyIdentity.c" isTestSource="false" />
@@ -647,7 +647,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/supl.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/supl.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTime.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTime.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MoreAssDataToBeSent.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NavigationModel.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/CellIDAndLAC.h" isTestSource="false" />
@@ -684,7 +684,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSIonosphericModel.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSDataBit.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/LAC.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSSatelliteElement.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSSAlmanacElement.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/NativeEnumerated.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfMsrAssistBTS.c" isTestSource="false" />
@@ -709,7 +708,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoAssistBTS-R98-ExpOTD.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel7-AssistanceData-Extension.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfAlmanacElement.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AdditionalDopplerFields.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTimeModelElement.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel7-AssistanceData-Extension.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrAssistData-R98-ExpOTD.h" isTestSource="false" />
@@ -720,7 +718,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ExpOTDUncertainty.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/CellID.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/MsrAssistBTS-R98-ExpOTD.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceFrame.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AdditionalDopplerFields.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/StandardClockModelElement.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/CellID.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Ext-GeographicalInformation.h" isTestSource="false" />
@@ -742,6 +740,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/asn_SEQUENCE_OF.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfDGANSSSgnElement.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-MsrElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/der_encoder.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RequestIndex.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/xer_decoder.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-MsrElement.c" isTestSource="false" />
@@ -774,6 +773,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGPS-MsrElement.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfReferenceIdentityType.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/PositionData.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTime.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/DGANSSSgnElement.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BTSPosition.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSIonosphereModel.h" isTestSource="false" />
@@ -879,8 +879,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTODUncertainty.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSWeek.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TA2.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-Measurement.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-MsrSetElement.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSSatelliteElement.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AntiSpoofFlag.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSWeek.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RefLocation.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSSatelliteElement.c" isTestSource="false" />
@@ -891,7 +891,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfMsrAssistBTS-R98-ExpOTD.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-AssistData.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/BSICAndCarrier.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/der_encoder.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-Measurement.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSRefTimeInfo.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/per_support.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-AssistData.c" isTestSource="false" />
@@ -901,6 +901,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/asn_SEQUENCE_OF.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel5-AssistanceData-Extension.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TA1.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RelDistance.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/IonosphericModel.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/IonosphericModel.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/TA1.c" isTestSource="false" />
@@ -913,14 +914,14 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RelDistance.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AlertFlag.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSDataBitAssist.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/RelDistance.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPS-MsrSetElement.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AlertFlag.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel98-MsrPosition-Req-Extension.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-98-MsrPosition-Rsp-Extension.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGPS-MsrElement.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Almanac.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-98-MsrPosition-Rsp-Extension.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTODm.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ReferenceFrame.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SatElement.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSCommonAssistData.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-Measurement.h" isTestSource="false" />
@@ -968,7 +969,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ber_tlv_length.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfSystemInfoAssistBTS.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/constr_TYPE.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/AntiSpoofFlag.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/ber_tlv_length.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSAssistanceData.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/Rel-7-MsrPosition-Rsp-Extension.c" isTestSource="false" />
@@ -1000,7 +1000,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/EnvironmentCharacter.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SystemInfoAssistData-R98-ExpOTD.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSS-SgnElement.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GPSTime.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSTODm.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/GANSSOrbitModel.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/OTD-MeasurementWithID.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/core/libs/supl/asn-rrlp/SeqOfGANSS-SgnElement.c" isTestSource="false" />

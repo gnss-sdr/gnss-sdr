@@ -47,7 +47,7 @@
  * \endcode
  *
  * \b Inputs
- * \li local_code:            One of the vectors to be multiplied.
+ * \li local_code:            Vector to be resampled.
  * \li rem_code_phase_chips:  Remnant code phase [chips]
  * \li code_phase_step_chips: Phase increment per sample [chips/sample]
  * \li code_length_chips:     Code length in chips.

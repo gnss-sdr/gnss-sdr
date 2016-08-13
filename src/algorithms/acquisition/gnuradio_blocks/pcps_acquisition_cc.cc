@@ -431,9 +431,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                         }
                 }
 
-            consume_each(1);
-
-            DLOG(INFO) << "Done. Consumed 1 item.";
+            consume_each(ninput_items[0]);
 
             break;
         }

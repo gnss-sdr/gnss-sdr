@@ -216,7 +216,7 @@ void BeiDouB1iDllPllTrackingGenSourceTest::init()
     config->set_property("Tracking.implementation", "BeiDou_B1i_DLL_PLL_Tracking");
     config->set_property("Tracking.early_late_space_chips", "0.5");
     config->set_property("Tracking.order", "2");
-    config->set_property("Tracking.pll_bw_hz", "50");
+    config->set_property("Tracking.pll_bw_hz", "100");
     config->set_property("Tracking.dll_bw_hz", "2");
 }
 

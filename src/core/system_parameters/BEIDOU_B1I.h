@@ -67,7 +67,9 @@ const signed int NH_CODE[NH_length]  = {1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, -1, 
 const int  BEIDOU_D1_NAV_BITS_RATE  = 50;               // D1 NAV message bit rate        [bits/s]
 const int  BEIDOU_B1I_PREAMBLE_LENGTH_BITS           = 11;                                           //!< [bits]
 const int  BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND     = 50;                                           //!< NAV message bit rate [bits/s]
-const int  BEIDOU_B1I_TELEMETRY_RATE_SYMBOLS_SECOND  = BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND*20;     //!< NAV message bit rate [symbols/s]
+const int  BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT      = 20;
+const int  BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS        = BEIDOU_B1I_PREAMBLE_LENGTH_BITS * BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;
+const int  BEIDOU_B1I_TELEMETRY_RATE_SYMBOLS_SECOND  = BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND * BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;     //!< NAV message bit rate [symbols/s]
 
 const int  BEIDOU_SUPERFRAME_BITS   = 36000;            // SUPERFRAME  (24 frames)        [bits]
 const int  BEIDOU_SUPERFRAME_SECS   = 720;              // SUPERFRAME duration            [seconds]
@@ -77,6 +79,7 @@ const int  BEIDOU_FRAME_SECONDS     = 30;               // FRAME duration       
 
 const int  BEIDOU_SUBFRAME_BITS     = 300;              // SUBFRAME    (10 words)         [bits]
 const int  BEIDOU_SUBFRAME_SECONDS  = 6;                // SUBFRAME duration              [seconds]
+const int  BEIDOU_SUBFRAME_MS       = BEIDOU_SUBFRAME_SECONDS * 1000;                // SUBFRAME duration [ms]
 
 const int     BEIDOU_WORD_BITS      = 30;               // WORD                           [bits]
 const double  BEIDOU_WORD_SECONDS   = 0.6;              // WORD duration                  [seconds]

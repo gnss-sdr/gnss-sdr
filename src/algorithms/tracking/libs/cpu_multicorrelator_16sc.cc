@@ -45,7 +45,6 @@ bool cpu_multicorrelator_16sc::init(
     size_t size = max_signal_length_samples * sizeof(lv_16sc_t);
 
     d_n_correlators = n_correlators;
-    d_tmp_code_phases_chips = static_cast<float*>(volk_gnsssdr_malloc(n_correlators * sizeof(float), volk_gnsssdr_get_alignment()));
 
     d_local_codes_resampled = static_cast<lv_16sc_t**>(volk_gnsssdr_malloc(n_correlators * sizeof(lv_16sc_t*), volk_gnsssdr_get_alignment()));
     for (int n = 0; n < n_correlators; n++)
@@ -80,18 +79,14 @@ bool cpu_multicorrelator_16sc::set_input_output_vectors(lv_16sc_t* corr_out, con
 
 void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
 {
-    for (int n = 0; n < d_n_correlators; n++)
-        {
-            d_tmp_code_phases_chips[n] = d_shifts_chips[n] - rem_code_phase_chips;
-        }
-
-    volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn(d_local_codes_resampled,
+    volk_gnsssdr_16ic_xn_resampler_16ic_xn(d_local_codes_resampled,
             d_local_code_in,
-            d_tmp_code_phases_chips,
+            rem_code_phase_chips,
             code_phase_step_chips,
-            correlator_length_samples,
+            d_shifts_chips,
+            d_code_length_chips,
             d_n_correlators,
-            d_code_length_chips);
+            correlator_length_samples);
 }
 
 
@@ -119,7 +114,6 @@ cpu_multicorrelator_16sc::cpu_multicorrelator_16sc()
     d_shifts_chips = nullptr;
     d_corr_out = nullptr;
     d_local_codes_resampled = nullptr;
-    d_tmp_code_phases_chips = nullptr;
     d_code_length_chips = 0;
     d_n_correlators = 0;
 }
@@ -137,11 +131,6 @@ cpu_multicorrelator_16sc::~cpu_multicorrelator_16sc()
 bool cpu_multicorrelator_16sc::free()
 {
     // Free memory
-    if (d_tmp_code_phases_chips != nullptr)
-        {
-            volk_gnsssdr_free(d_tmp_code_phases_chips);
-            d_tmp_code_phases_chips = nullptr;
-        }
     if (d_local_codes_resampled != nullptr)
         {
             for (int n = 0; n < d_n_correlators; n++)

@@ -369,7 +369,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                     d_state = 3; // Negative acquisition
                 }
 
-            consume_each(ninput_items[0]);
+            consume_each(1);
 
             break;
         }

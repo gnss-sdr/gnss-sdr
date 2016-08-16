@@ -521,7 +521,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             volk_free(in_temp_folded);
             volk_free(in_1code);
             volk_free(corr_output);
-            consume_each(ninput_items[0]);
+            consume_each(1);
 
             break;
         }

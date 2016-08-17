@@ -1893,7 +1893,7 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking_prs()
     double last_tow_round = std::ceil( last_tow/Galileo_E1_CODE_PERIOD ) * Galileo_E1_CODE_PERIOD;
 
     double curr_tow = std::floor( 
-            (last_tow + time_since_tow)/Galileo_E1_CODE_PERIOD 
+            (last_tow + time_since_tow)/Galileo_E1_CODE_PERIOD
             + 0.5 ) * Galileo_E1_CODE_PERIOD
         + d_rem_code_phase_samples/static_cast<double>(d_fs_in);
 

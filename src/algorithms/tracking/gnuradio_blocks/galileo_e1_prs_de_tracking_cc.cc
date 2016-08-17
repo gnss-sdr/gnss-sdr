@@ -1565,7 +1565,7 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
     double last_tow_round = std::ceil( last_tow/Galileo_E1_CODE_PERIOD ) * Galileo_E1_CODE_PERIOD;
 
     double curr_tow = std::floor( 
-            (d_last_tow + time_since_tow)/Galileo_E1_CODE_PERIOD 
+            (last_tow + time_since_tow)/Galileo_E1_CODE_PERIOD 
             + 0.5 ) * Galileo_E1_CODE_PERIOD
         + d_rem_code_phase_samples/static_cast<double>(d_fs_in);
 
@@ -1625,9 +1625,9 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
                << " Code phase " << d_integer_code_phase_chips_prs
                << std::setw(6) << std::fixed << d_fractional_code_phase_chips_prs << " chips."
                << " Subcarrier Phase " << ( d_subcarrier_phase_halfcycles_prs*2.0 ) << " cycles"
-               << " Last TOW: " << std::fixed << std::setprecision(12) << d_last_tow 
-               << " @ " << d_timestamp_last_tow
-               << " Correction: " << (curr_tow - d_last_tow)
+               << " Last TOW: " << std::fixed << std::setprecision(12) << last_tow 
+               << " @ " << timestamp_last_tow
+               << " Correction: " << (curr_tow - last_tow)
                << " Current Time: " << d_sample_counter/static_cast<double>(d_fs_in);
     // enable tracking
     d_prs_tracking_enabled = true;

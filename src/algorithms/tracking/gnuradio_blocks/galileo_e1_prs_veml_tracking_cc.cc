@@ -1893,7 +1893,7 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking_prs()
     double last_tow_round = std::ceil( last_tow/Galileo_E1_CODE_PERIOD ) * Galileo_E1_CODE_PERIOD;
 
     double curr_tow = std::floor( 
-            (d_last_tow + time_since_tow)/Galileo_E1_CODE_PERIOD 
+            (last_tow + time_since_tow)/Galileo_E1_CODE_PERIOD 
             + 0.5 ) * Galileo_E1_CODE_PERIOD
         + d_rem_code_phase_samples/static_cast<double>(d_fs_in);
 
@@ -1947,8 +1947,8 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking_prs()
 
     DLOG(INFO) << "Starting params: current TOW estimate: " << curr_tow
                << " Code phase " << code_phase_chips_prs << " chips."
-               << " Last TOW: " << d_last_tow << " @ " << d_timestamp_last_tow
-               << " Correction: " << (curr_tow - d_last_tow);
+               << " Last TOW: " << last_tow << " @ " << timestamp_last_tow
+               << " Correction: " << (curr_tow - last_tow);
     // enable tracking
     d_prs_tracking_enabled = true;
     d_prs_code_gen->set_prn( d_acquisition_gnss_synchro->PRN );

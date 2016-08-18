@@ -37,7 +37,7 @@ source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
 target_link_libraries(signal_generator_blocks gnss_system_parameters gnss_sp_libs
                                               ${GNURADIO_RUNTIME_LIBRARIES}
                                               ${GNURADIO_FFT_LIBRARIES}
-                                              ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                                              ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
 )
 
 if(VOLK_GNSSSDR_FOUND)

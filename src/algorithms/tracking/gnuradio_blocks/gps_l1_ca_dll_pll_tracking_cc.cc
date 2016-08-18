@@ -42,7 +42,7 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gps_sdr_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
@@ -123,16 +123,16 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
+    d_ca_code = static_cast<gr_complex*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3; // Early, Prompt, and Late
-    d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_get_alignment()));
+    d_correlator_outs = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0,0);
         }
-    d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps*sizeof(float), volk_get_alignment()));
+    d_local_code_shift_chips = static_cast<float*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(float), volk_gnsssdr_get_alignment()));
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = - d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -271,9 +271,9 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::~Gps_L1_Ca_Dll_Pll_Tracking_cc()
 {
     d_dump_file.close();
 
-    volk_free(d_local_code_shift_chips);
-    volk_free(d_correlator_outs);
-    volk_free(d_ca_code);
+    volk_gnsssdr_free(d_local_code_shift_chips);
+    volk_gnsssdr_free(d_correlator_outs);
+    volk_gnsssdr_free(d_ca_code);
 
     delete[] d_Prompt_buffer;
     multicorrelator_cpu.free();

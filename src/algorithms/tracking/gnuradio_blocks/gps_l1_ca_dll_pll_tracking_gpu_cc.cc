@@ -35,7 +35,6 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
-#include <volk/volk.h>
 #include <glog/logging.h>
 #include "gps_sdr_signal_processing.h"
 #include "tracking_discriminators.h"

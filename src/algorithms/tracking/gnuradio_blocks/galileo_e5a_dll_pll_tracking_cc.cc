@@ -41,7 +41,7 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "galileo_e5_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
@@ -133,12 +133,12 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the E5a primary code replicas sampled 1x/chip
-    d_codeQ = static_cast<gr_complex*>(volk_malloc(Galileo_E5a_CODE_LENGTH_CHIPS * sizeof(gr_complex), volk_get_alignment()));
-    d_codeI = static_cast<gr_complex*>(volk_malloc(Galileo_E5a_CODE_LENGTH_CHIPS * sizeof(gr_complex), volk_get_alignment()));
+    d_codeQ = static_cast<gr_complex*>(volk_gnsssdr_malloc(Galileo_E5a_CODE_LENGTH_CHIPS * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_codeI = static_cast<gr_complex*>(volk_gnsssdr_malloc(Galileo_E5a_CODE_LENGTH_CHIPS * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // correlator Q outputs (scalar)
     d_n_correlator_taps = 3; //  Early, Prompt, Late
-    d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_get_alignment()));
+    d_correlator_outs = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0,0);
@@ -149,7 +149,7 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     d_Single_Prompt = &d_correlator_outs[1];
     d_Single_Late = &d_correlator_outs[2];
 
-    d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps * sizeof(float), volk_get_alignment()));
+    d_local_code_shift_chips = static_cast<float*>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(float), volk_gnsssdr_get_alignment()));
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = - d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -158,7 +158,7 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     multicorrelator_cpu_Q.init(2 * d_vector_length, d_n_correlator_taps);
 
     // correlator I single output for data (scalar)
-    d_Single_Prompt_data=static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
+    d_Single_Prompt_data=static_cast<gr_complex*>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     *d_Single_Prompt_data = gr_complex(0,0);
     multicorrelator_cpu_I.init(2 * d_vector_length, 1); // single correlator for data channel
 
@@ -221,9 +221,9 @@ Galileo_E5a_Dll_Pll_Tracking_cc::~Galileo_E5a_Dll_Pll_Tracking_cc ()
 
     d_dump_file.close();
 
-    volk_free(d_local_code_shift_chips);
-    volk_free(d_correlator_outs);
-    volk_free(d_Single_Prompt_data);
+    volk_gnsssdr_free(d_local_code_shift_chips);
+    volk_gnsssdr_free(d_correlator_outs);
+    volk_gnsssdr_free(d_Single_Prompt_data);
 
     multicorrelator_cpu_Q.free();
     multicorrelator_cpu_I.free();

@@ -35,7 +35,7 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
-#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <glog/logging.h>
 #include "gnss_synchro.h"
 #include "gps_sdr_signal_processing.h"
@@ -124,19 +124,19 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
-    d_ca_code_16sc = static_cast<lv_16sc_t*>(volk_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(lv_16sc_t), volk_get_alignment()));
+    d_ca_code = static_cast<gr_complex*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_ca_code_16sc = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3; // Early, Prompt, and Late
 
-    d_correlator_outs_16sc = static_cast<lv_16sc_t*>(volk_malloc(d_n_correlator_taps*sizeof(lv_16sc_t), volk_get_alignment()));
+    d_correlator_outs_16sc = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs_16sc[n] = lv_16sc_t(0,0);
         }
 
-    d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps*sizeof(float), volk_get_alignment()));
+    d_local_code_shift_chips = static_cast<float*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(float), volk_gnsssdr_get_alignment()));
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = - d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -279,10 +279,10 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::~gps_l1_ca_dll_pll_c_aid_tracking_sc()
 {
     d_dump_file.close();
 
-    volk_free(d_local_code_shift_chips);
-    volk_free(d_ca_code);
-    volk_free(d_ca_code_16sc);
-    volk_free(d_correlator_outs_16sc);
+    volk_gnsssdr_free(d_local_code_shift_chips);
+    volk_gnsssdr_free(d_ca_code);
+    volk_gnsssdr_free(d_ca_code_16sc);
+    volk_gnsssdr_free(d_correlator_outs_16sc);
 
     delete[] d_Prompt_buffer;
     multicorrelator_cpu_16sc.free();

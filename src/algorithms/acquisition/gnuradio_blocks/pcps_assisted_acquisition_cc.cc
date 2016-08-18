@@ -81,8 +81,8 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     d_input_power = 0.0;
     d_state = 0;
     d_disable_assist = false;
-    d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-    d_carrier = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_fft_codes = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_carrier = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -133,8 +133,8 @@ void pcps_assisted_acquisition_cc::free_grid_memory()
 
 pcps_assisted_acquisition_cc::~pcps_assisted_acquisition_cc()
 {
-    volk_free(d_carrier);
-    volk_free(d_fft_codes);
+    volk_gnsssdr_free(d_carrier);
+    volk_gnsssdr_free(d_fft_codes);
     delete d_ifft;
     delete d_fft_if;
     if (d_dump)
@@ -322,14 +322,14 @@ float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_st
 {
     const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
     // 1- Compute the input signal power estimation
-    float* p_tmp_vector = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+    float* p_tmp_vector = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     volk_32fc_magnitude_squared_32f(p_tmp_vector, in, d_fft_size);
 
     const float* p_const_tmp_vector = p_tmp_vector;
     float power;
     volk_32f_accumulator_s32f(&power, p_const_tmp_vector, d_fft_size);
-    volk_free(p_tmp_vector);
+    volk_gnsssdr_free(p_tmp_vector);
     return ( power / static_cast<float>(d_fft_size));
 }
 
@@ -348,7 +348,7 @@ int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_vo
                << ", doppler_step: " << d_doppler_step;
 
     // 2- Doppler frequency search loop
-    float* p_tmp_vector = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+    float* p_tmp_vector = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
@@ -371,7 +371,7 @@ int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_vo
             const float* old_vector = d_grid_data[doppler_index];
             volk_32f_x2_add_32f(d_grid_data[doppler_index], old_vector, p_tmp_vector, d_fft_size);
         }
-    volk_free(p_tmp_vector);
+    volk_gnsssdr_free(p_tmp_vector);
     return d_fft_size;
 }
 

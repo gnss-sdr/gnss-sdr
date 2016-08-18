@@ -80,9 +80,9 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
     d_gnuradio_forecast_samples = d_fft_size;
     d_input_power = 0.0;
     d_state = 0;
-    d_carrier = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-    d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-    d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+    d_carrier = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_fft_codes = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_magnitude = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -118,7 +118,7 @@ void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_ste
     d_grid_data = new float*[d_num_doppler_points];
     for (int i = 0; i < d_num_doppler_points; i++)
         {
-            d_grid_data[i] = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+            d_grid_data[i] = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
         }
     update_carrier_wipeoff();
 }
@@ -127,7 +127,7 @@ void pcps_acquisition_fine_doppler_cc::free_grid_memory()
 {
     for (int i = 0; i < d_num_doppler_points; i++)
         {
-            volk_free(d_grid_data[i]);
+            volk_gnsssdr_free(d_grid_data[i]);
             delete[] d_grid_doppler_wipeoffs[i];
         }
     delete d_grid_data;
@@ -136,9 +136,9 @@ void pcps_acquisition_fine_doppler_cc::free_grid_memory()
 
 pcps_acquisition_fine_doppler_cc::~pcps_acquisition_fine_doppler_cc()
 {
-    volk_free(d_carrier);
-    volk_free(d_fft_codes);
-    volk_free(d_magnitude);
+    volk_gnsssdr_free(d_carrier);
+    volk_gnsssdr_free(d_fft_codes);
+    volk_gnsssdr_free(d_magnitude);
     delete d_ifft;
     delete d_fft_if;
     if (d_dump)
@@ -297,7 +297,7 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
 
 
     // 2- Doppler frequency search loop
-    float* p_tmp_vector = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+    float* p_tmp_vector = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
@@ -323,7 +323,7 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
 
         }
 
-    volk_free(p_tmp_vector);
+    volk_gnsssdr_free(p_tmp_vector);
     return d_fft_size;
 }
 
@@ -339,7 +339,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
     memset(fft_operator->get_inbuf(), 0, fft_size_extended * sizeof(gr_complex));
 
     //1. generate local code aligned with the acquisition code phase estimation
-    gr_complex *code_replica = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    gr_complex *code_replica = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     gps_l1_ca_code_gen_complex_sampled(code_replica, d_gnss_synchro->PRN, d_fs_in, 0);
 
@@ -360,7 +360,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
     fft_operator->execute();
 
     // 4. Compute the magnitude and find the maximum
-    float* p_tmp_vector = static_cast<float*>(volk_malloc(fft_size_extended * sizeof(float), volk_get_alignment()));
+    float* p_tmp_vector = static_cast<float*>(volk_gnsssdr_malloc(fft_size_extended * sizeof(float), volk_gnsssdr_get_alignment()));
 
     volk_32fc_magnitude_squared_32f(p_tmp_vector, fft_operator->get_outbuf(), fft_size_extended);
 
@@ -432,8 +432,8 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 
     // free memory!!
     delete fft_operator;
-    volk_free(code_replica);
-    volk_free(p_tmp_vector);
+    volk_gnsssdr_free(code_replica);
+    volk_gnsssdr_free(p_tmp_vector);
     return d_fft_size;
 }
 

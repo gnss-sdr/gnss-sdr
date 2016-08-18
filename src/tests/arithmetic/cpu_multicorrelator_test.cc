@@ -32,7 +32,7 @@
 #include <ctime>
 #include <complex>
 #include <thread>
-#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "cpu_multicorrelator.h"
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
@@ -77,17 +77,17 @@ TEST(CPU_multicorrelator_test, MeasureExecutionTime)
 
     //allocate host memory
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
-    in_cpu = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
+    d_ca_code = static_cast<gr_complex*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    in_cpu = static_cast<gr_complex*>(volk_gnsssdr_malloc(2 * d_vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3; // Early, Prompt, and Late
-    d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_get_alignment()));
+    d_correlator_outs = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     for (int n = 0; n < d_n_correlator_taps; n++)
     {
         d_correlator_outs[n] = gr_complex(0,0);
     }
-    d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps*sizeof(float), volk_get_alignment()));
+    d_local_code_shift_chips = static_cast<float*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(float), volk_gnsssdr_get_alignment()));
     // Set TAPs delay values [chips]
     float d_early_late_spc_chips=0.5;
     d_local_code_shift_chips[0] = - d_early_late_spc_chips;
@@ -152,10 +152,10 @@ TEST(CPU_multicorrelator_test, MeasureExecutionTime)
     );
 
 
-    volk_free(d_local_code_shift_chips);
-    volk_free(d_correlator_outs);
-    volk_free(d_ca_code);
-    volk_free(in_cpu);
+    volk_gnsssdr_free(d_local_code_shift_chips);
+    volk_gnsssdr_free(d_correlator_outs);
+    volk_gnsssdr_free(d_ca_code);
+    volk_gnsssdr_free(in_cpu);
 
     for (int n=0;n<max_threads;n++)
     {

@@ -36,6 +36,7 @@
 #include <numeric>
 #include <armadillo>
 #include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 DEFINE_int32(size_multiply_test, 100000, "Size of the arrays used for multiply testing");
 
@@ -182,8 +183,8 @@ TEST(Multiply_Test, ArmadilloComplexImplementation)
 
 TEST(Multiply_Test, VolkComplexImplementation)
 {
-    std::complex<float>* input = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_get_alignment()));
-    std::complex<float>* output = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_get_alignment()));
+    std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
+    std::complex<float>* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_multiply_test);
 
     struct timeval tv;
@@ -199,7 +200,7 @@ TEST(Multiply_Test, VolkComplexImplementation)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
 
-    float* mag = static_cast<float*>(volk_malloc(FLAGS_size_multiply_test * sizeof(float), volk_get_alignment()));
+    float* mag = static_cast<float*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(float), volk_gnsssdr_get_alignment()));
     volk_32fc_magnitude_32f(mag, output, FLAGS_size_multiply_test);
 
     float* result = new float(0);
@@ -209,8 +210,8 @@ TEST(Multiply_Test, VolkComplexImplementation)
     // See http://code.google.com/p/googletest/wiki/AdvancedGuide#Floating-Point_Comparison
     float expected = 0;
     ASSERT_FLOAT_EQ(expected, result[0]);
-    volk_free(input);
-    volk_free(output);
-    volk_free(mag);
+    volk_gnsssdr_free(input);
+    volk_gnsssdr_free(output);
+    volk_gnsssdr_free(mag);
 }
 

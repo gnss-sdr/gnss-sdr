@@ -106,14 +106,14 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_both_signal_components = both_signal_components_;
     d_CAF_window_hz = CAF_window_hz_;
 
-    d_inbuffer = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-    d_fft_code_I_A = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-    d_magnitudeIA = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+    d_inbuffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_fft_code_I_A = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_magnitudeIA = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     if (d_both_signal_components == true)
         {
-            d_fft_code_Q_A = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-            d_magnitudeQA = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+            d_fft_code_Q_A = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+            d_magnitudeQA = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
         }
     else
         {
@@ -123,12 +123,12 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     // IF COHERENT INTEGRATION TIME > 1
     if (d_sampled_ms > 1)
         {
-            d_fft_code_I_B = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-            d_magnitudeIB = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+            d_fft_code_I_B = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+            d_magnitudeIB = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
             if (d_both_signal_components == true)
                 {
-                    d_fft_code_Q_B = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-                    d_magnitudeQB = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+                    d_fft_code_Q_B = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+                    d_magnitudeQB = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
                 }
             else
                 {
@@ -175,37 +175,37 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::~galileo_e5a_noncoherentIQ_acquisi
         {
             for (unsigned int i = 0; i < d_num_doppler_bins; i++)
                 {
-                    volk_free(d_grid_doppler_wipeoffs[i]);
+                    volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
 
-    volk_free(d_inbuffer);
-    volk_free(d_fft_code_I_A);
-    volk_free(d_magnitudeIA);
+    volk_gnsssdr_free(d_inbuffer);
+    volk_gnsssdr_free(d_fft_code_I_A);
+    volk_gnsssdr_free(d_magnitudeIA);
     if (d_both_signal_components == true)
         {
-            volk_free(d_fft_code_Q_A);
-            volk_free(d_magnitudeQA);
+            volk_gnsssdr_free(d_fft_code_Q_A);
+            volk_gnsssdr_free(d_magnitudeQA);
         }
     // IF INTEGRATION TIME > 1
     if (d_sampled_ms > 1)
         {
-            volk_free(d_fft_code_I_B);
-            volk_free(d_magnitudeIB);
+            volk_gnsssdr_free(d_fft_code_I_B);
+            volk_gnsssdr_free(d_magnitudeIB);
             if (d_both_signal_components == true)
                 {
-                    volk_free(d_fft_code_Q_B);
-                    volk_free(d_magnitudeQB);
+                    volk_gnsssdr_free(d_fft_code_Q_B);
+                    volk_gnsssdr_free(d_magnitudeQB);
                 }
         }
     if (d_CAF_window_hz > 0)
         {
-            volk_free(d_CAF_vector);
-            volk_free(d_CAF_vector_I);
+            volk_gnsssdr_free(d_CAF_vector);
+            volk_gnsssdr_free(d_CAF_vector_I);
             if (d_both_signal_components == true)
                 {
-                    volk_free(d_CAF_vector_Q);
+                    volk_gnsssdr_free(d_CAF_vector_Q);
                 }
         }
 
@@ -297,7 +297,7 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = GALILEO_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
             float _phase[1];
@@ -310,11 +310,11 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
     //    if (d_CAF_filter)
     if (d_CAF_window_hz > 0)
         {
-            d_CAF_vector = static_cast<float*>(volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment()));
-            d_CAF_vector_I = static_cast<float*>(volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment()));
+            d_CAF_vector = static_cast<float*>(volk_gnsssdr_malloc(d_num_doppler_bins * sizeof(float), volk_gnsssdr_get_alignment()));
+            d_CAF_vector_I = static_cast<float*>(volk_gnsssdr_malloc(d_num_doppler_bins * sizeof(float), volk_gnsssdr_get_alignment()));
             if (d_both_signal_components == true)
                 {
-                    d_CAF_vector_Q = static_cast<float*>(volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment()));
+                    d_CAF_vector_Q = static_cast<float*>(volk_gnsssdr_malloc(d_num_doppler_bins * sizeof(float), volk_gnsssdr_get_alignment()));
                 }
         }
 }
@@ -656,7 +656,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
             if (d_CAF_window_hz > 0)
                 {
                     int CAF_bins_half;
-                    float* accum = static_cast<float*>(volk_malloc(sizeof(float), volk_get_alignment()));
+                    float* accum = static_cast<float*>(volk_gnsssdr_malloc(sizeof(float), volk_gnsssdr_get_alignment()));
                     CAF_bins_half = d_CAF_window_hz / (2 * d_doppler_step);
                     float weighting_factor;
                     weighting_factor = 0.5 / static_cast<float>(CAF_bins_half);
@@ -750,7 +750,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                             d_dump_file.write((char*)d_CAF_vector, n);
                             d_dump_file.close();
                         }
-                    volk_free(accum);
+                    volk_gnsssdr_free(accum);
                 }
 
             if (d_well_count == d_max_dwells)

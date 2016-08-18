@@ -34,6 +34,7 @@
 #include <ctime>
 #include <armadillo>
 #include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 DEFINE_int32(size_conjugate_test, 100000, "Size of the arrays used for conjugate testing");
 
@@ -118,8 +119,8 @@ TEST(Conjugate_Test, ArmadilloComplexImplementation)
 
 TEST(Conjugate_Test, VolkComplexImplementation)
 {
-    std::complex<float>* input = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_get_alignment()));
-    std::complex<float>* output = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_get_alignment()));
+    std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
+    std::complex<float>* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_conjugate_test);
 
     struct timeval tv;
@@ -134,6 +135,6 @@ TEST(Conjugate_Test, VolkComplexImplementation)
               << "-length complex float vector using VOLK finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
-    volk_free(input);
-    volk_free(output);
+    volk_gnsssdr_free(input);
+    volk_gnsssdr_free(output);
 }

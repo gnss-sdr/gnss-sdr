@@ -93,9 +93,9 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     //fft size is reduced.
     d_fft_size = (d_samples_per_code) / d_folding_factor;
 
-    d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-    d_magnitude = static_cast<float*>(volk_malloc(d_samples_per_code * d_folding_factor * sizeof(float), volk_get_alignment()));
-    d_magnitude_folded = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+    d_fft_codes = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_magnitude = static_cast<float*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(float), volk_gnsssdr_get_alignment()));
+    d_magnitude_folded = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     d_possible_delay = new unsigned int[d_folding_factor];
     d_corr_output_f = new float[d_folding_factor];
@@ -140,14 +140,14 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
         {
             for (unsigned int i = 0; i < d_num_doppler_bins; i++)
                 {
-                    volk_free(d_grid_doppler_wipeoffs[i]);
+                    volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
 
-    volk_free(d_fft_codes);
-    volk_free(d_magnitude);
-    volk_free(d_magnitude_folded);
+    volk_gnsssdr_free(d_fft_codes);
+    volk_gnsssdr_free(d_magnitude);
+    volk_gnsssdr_free(d_magnitude_folded);
 
     delete d_ifft;
     delete d_fft_if;
@@ -221,7 +221,7 @@ void pcps_quicksync_acquisition_cc::init()
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_get_alignment()));
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
             float _phase[1];
@@ -309,16 +309,16 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             float magt = 0.0;
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
 
-            gr_complex* in_temp = static_cast<gr_complex*>(volk_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_get_alignment()));
-            gr_complex* in_temp_folded = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+            gr_complex* in_temp = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+            gr_complex* in_temp_folded = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
             /*Create a signal to store a signal of size 1ms, to perform correlation
             in time. No folding on this data is required*/
-            gr_complex* in_1code = static_cast<gr_complex*>(volk_malloc(d_samples_per_code * sizeof(gr_complex), volk_get_alignment()));
+            gr_complex* in_1code = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
             /*Stores the values of the correlation output between the local code
             and the signal with doppler shift corrected */
-            gr_complex* corr_output = static_cast<gr_complex*>(volk_malloc(d_samples_per_code * sizeof(gr_complex), volk_get_alignment()));
+            gr_complex* corr_output = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
             /*Stores a copy of the folded version of the signal.This is used for
             the FFT operations in future steps of excecution*/
@@ -517,10 +517,10 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         }
                 }
 
-            volk_free(in_temp);
-            volk_free(in_temp_folded);
-            volk_free(in_1code);
-            volk_free(corr_output);
+            volk_gnsssdr_free(in_temp);
+            volk_gnsssdr_free(in_temp_folded);
+            volk_gnsssdr_free(in_1code);
+            volk_gnsssdr_free(corr_output);
             consume_each(1);
 
             break;

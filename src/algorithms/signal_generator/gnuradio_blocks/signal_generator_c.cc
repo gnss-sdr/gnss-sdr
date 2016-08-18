@@ -33,7 +33,7 @@
 #include <iostream>
 #include <fstream>
 #include <gnuradio/io_signature.h>
-#include <volk/volk.h>
+//#include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gps_sdr_signal_processing.h"
 #include "galileo_e1_signal_processing.h"
@@ -87,7 +87,7 @@ void signal_generator_c::init()
 {
     work_counter_ = 0;
 
-    complex_phase_ = static_cast<gr_complex*>(volk_malloc(vector_length_ * sizeof(gr_complex), volk_get_alignment()));
+    complex_phase_ = static_cast<gr_complex*>(volk_gnsssdr_malloc(vector_length_ * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // True if Galileo satellites are present
     bool galileo_signal = std::find(system_.begin(), system_.end(), "E") != system_.end();
@@ -244,7 +244,7 @@ signal_generator_c::~signal_generator_c()
                     std::free(sampled_code_pilot_[sat]);
                 }
         } */
-    volk_free(complex_phase_);
+    volk_gnsssdr_free(complex_phase_);
     delete random_;
 }
 

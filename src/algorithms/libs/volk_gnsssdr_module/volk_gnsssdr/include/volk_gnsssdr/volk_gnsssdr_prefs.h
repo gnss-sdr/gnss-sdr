@@ -22,8 +22,8 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_VOLK_PREFS_H
-#define INCLUDED_VOLK_PREFS_H
+#ifndef INCLUDED_VOLK_GNSSSDR_PREFS_H
+#define INCLUDED_VOLK_GNSSSDR_PREFS_H
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <stdlib.h>
@@ -50,4 +50,4 @@ VOLK_API size_t volk_gnsssdr_load_preferences(volk_gnsssdr_arch_pref_t **);
 
 __VOLK_DECL_END
 
-#endif /* INCLUDED_VOLK_PREFS_H */
+#endif /* INCLUDED_VOLK_GNSSSDR_PREFS_H */

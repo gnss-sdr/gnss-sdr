@@ -31,7 +31,7 @@ GNU/Linux
    * powerpc: the RISC 32-bit microprocessor architecture developed by IBM, Motorola (now Freescale) and Apple.
    * ppc64: 64-bit big-endian PowerPC architecture.
    * ppc64el: 64-bit little-endian PowerPC architecture.
-   * s390x: IBM's S/390 architecture for mainframes.
+   * s390x: IBM System z architecture for mainframe computers.
 
 Older distribution releases might work as well, but you will need GCC 4.7 or newer.
 
@@ -128,9 +128,9 @@ or manually as explained below, and then please follow instructions on how to [d
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-7.200.2.tar.xz
-$ tar xvfz armadillo-7.200.2.tar.xz
-$ cd armadillo-7.200.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-7.400.1.tar.xz
+$ tar xvfz armadillo-7.400.1.tar.xz
+$ cd armadillo-7.400.1
 $ cmake .
 $ make
 $ sudo make install

@@ -149,19 +149,19 @@ void BeiDouB1iDllPllTrackingTest::config_test()
     std::string signal      = "1C";
     signal.copy(gnss_synchro.Signal, 2, 0);
 
-    gnss_synchro.PRN = 20;
+/******** CONFIGURATION PARAMETERS ********/
+    gnss_synchro.PRN = 20;                  // PRN satellite number
+    fs_in            = 16000000;            // Sampling Frequency 
+    nsamples         = fs_in * 10;
+    f_if             = 0.0;                 // Intermediate Frequency 
+    space_chips      = 0.5;                 // Space b/w chips
+    pll_bw_hz        = 20;                  // PLL Bandwidth
+    dll_bw_hz        = 4;                   // DLL Bandwidth
+    delay_samples    = 3767.0;              // Code delay in samples 
+    doppler_hz       = 1650;                
+    signal_path      = "signal_samples/test_beidou_15s.dat";
 
-    fs_in            = 16000000;
-    nsamples         = fs_in * 9;
-
-    f_if             = 0.0;
-    space_chips      = 0.5;
-    pll_bw_hz        = 50;
-    dll_bw_hz        = 2;
-    delay_samples    = 3767.0;
-    doppler_hz       = 1650;
-
-    signal_path      = "signal_samples/test_beidou_60s.dat";
+/******************************************/
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
     config->set_property("Tracking.item_type", "gr_complex");

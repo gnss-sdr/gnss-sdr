@@ -37,6 +37,11 @@
 
 auto auxCeil = [](float x){ return static_cast<int>(static_cast<long>((x)+1)); };
 
+static int mod(double a, double N)
+{
+    return static_cast<int>(a - N*floor(a/N)); //return in range [0, N)
+}
+
 void beidou_b1i_code_gen_complex(std::complex<float>* _dest, 
                                  signed int _prn, 
                                  unsigned int _chip_shift)
@@ -201,11 +206,6 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest,
         }
 }
 
-static int mod(double a, double N)
-{
-    return static_cast<int>(a - N*floor(a/N)); //return in range [0, N)
-}
-
 /*
  *  Generates complex BeiDou B1I code for the desired SV ID and sampled to specific sampling frequency
  */
@@ -227,13 +227,6 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     //generate B1I code 1 sample per chip
     beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);
 
-#if BEIDOU_DEBUG
-    std::cout << "\nChips Shift     (beidou_sdr_signal_processing.cc) = " << _chip_shift << std::endl;
-    std::cout << "Delay chips       (beidou_sdr_signal_processing.cc) = " << _codeDelayChips << std::endl;
-    std::cout << "Delay Samples     (beidou_sdr_signal_processing.cc) = " << _codeDelaySamples << std::endl;
-    std::cout << "Samples per code  (beidou_sdr_signal_processing.cc) = " << _samplesPerCode << std::endl;
-#endif
-
     for (signed int i = 0; i < _samplesPerCode; i++)
         {
             // Offset for the PRN codes in order to add the proper phase 
@@ -244,7 +237,7 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
             _phi_nh = static_cast<double>(i - _codeDelaySamples) * (NH_BITS_RATE / _fs_in);
             _offset_nh = mod(_phi_nh, NH_BIT_DURATION);
 
-            _dest[i] = _code[_offset_prn];// * static_cast<float>(NH_CODE[_offset_nh]);
+            _dest[i] = _code[_offset_prn] * static_cast<float>(NH_CODE[_offset_nh]);
         }
 }
 

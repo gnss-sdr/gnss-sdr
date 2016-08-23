@@ -208,10 +208,6 @@ void BeiDou_B1i_Dll_Pll_Tracking_cc::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp       = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
-//    std::cout << "d_acq_code_phase_samples: " << d_acq_code_phase_samples << std::endl;
-//    std::cout << "d_acq_carrier_doppler_hz: " << d_acq_carrier_doppler_hz << std::endl;
-//    std::cout << "d_acq_sample_stamp: " << d_acq_sample_stamp << std::endl;
-
     long int acq_trk_diff_samples;
     double acq_trk_diff_seconds;
     

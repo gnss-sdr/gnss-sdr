@@ -202,34 +202,32 @@ void BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest::config_gensource()
     std::string signal = "1C";                                                         // "1C" is for GPS L1 C/A (have to be changed)  see gnss_signal.h
     signal.copy(gnss_synchro.Signal, 2, 0);
 
-    gnss_synchro.PRN = 20;      // [1:37]
-    intg_time_ms = 100;           // Tested with a period of integration > 1 ms
-    fs_in = 16.000e6;           // set 16.000 MHz
+/******** CONFIGURATION PARAMETERS ********/
+
+    gnss_synchro.PRN = 20;          // [1:37]
+    intg_time_ms = 100;             // Tested with a period of integration > 1 ms
+    fs_in = 16.000e6;               // set 16.000 MHz
     ts_in = (1/static_cast<double>(fs_in));
 
-    expected_delay_samples = 3767.0;                           // [samples]
-    expected_delay_sec     = ts_in * expected_delay_samples * 1e3;   // [sec]
-    expected_doppler_hz    = 1650.0;                             // [Hz]
+    expected_delay_samples = 3767.0;                                    // [samples]
+    expected_delay_sec     = ts_in * expected_delay_samples * 1e3;      // [sec]
+    expected_doppler_hz    = 1650.0;                                    // [Hz]
     expected_delay_chips   = static_cast<float>(expected_delay_samples * BEIDOU_B1I_CODE_RATE_HZ / static_cast<float>(fs_in));
-
-    // max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
-    // max_delay_error_chips = 0.50;
-
     num_of_realizations = 1;
+
+/******************************************/
 
     config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.num_satellites", "1");
     config->set_property("SignalSource.system_0", "C");
     config->set_property("SignalSource.PRN_0", std::to_string(gnss_synchro.PRN));
-    // config->set_property("SignalSource.CN0_dB_0", "44");
     config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
     config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
-    // config->set_property("SignalSource.delay_sec_0", std::to_string(expected_delay_sec));
-
     config->set_property("SignalSource.noise_flag", "false");
     config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
@@ -257,7 +255,6 @@ void BeiDouB1iPcpsAcquisitionGSoC2016GenSourceTest::config_gensource()
 
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0.0");
-    // config->set_property("Acquisition.if", "0.98e6");                                   // see "Development of a PC-Based Software Receiver for the Reception of Beidou Navigation Satellite Signals"
     config->set_property("Acquisition.coherent_integration_time_ms", std::to_string(intg_time_ms));
     config->set_property("Acquisition.implementation", "BeiDou_B1I_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.001");

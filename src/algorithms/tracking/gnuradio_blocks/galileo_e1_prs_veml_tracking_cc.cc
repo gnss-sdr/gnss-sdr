@@ -1348,10 +1348,6 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                             d_carrier_lock_fail_counter = 0;
 
-                            if( !d_use_bj )
-                            {
-                                d_very_early_late_code_spc_chips = d_final_very_early_late_code_space_chips;
-                            }
 
                         }
 
@@ -1372,7 +1368,6 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                                 d_code_loop_filter.initialize( subcarrier_error_filt_cycles );
                                 d_carrier_loop_filter.initialize( carr_error_filt_hz );
                                 d_early_late_code_spc_cycles = d_initial_early_late_code_space_cycles;
-                                d_very_early_late_code_spc_chips = d_initial_very_early_late_code_space_chips;
                             }
                         else
                         {

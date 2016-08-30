@@ -200,11 +200,7 @@ void pcps_multithread_acquisition_cc::acquisition_core()
 {
     // initialize acquisition algorithm
     int doppler;
-#if VOLK_GT_122
-    uint16_t indext = 0;
-#else
-    unsigned int indext = 0;
-#endif
+    uint32_t indext = 0;
     float magt = 0.0;
     float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
     gr_complex* in = d_in_buffer[d_well_count];
@@ -250,7 +246,7 @@ void pcps_multithread_acquisition_cc::acquisition_core()
 
             // Search maximum
             volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
-            volk_32f_index_max_16u(&indext, d_magnitude, d_fft_size);
+            volk_32f_index_max_32u(&indext, d_magnitude, d_fft_size);
 
             // Normalize the maximum value to correct the scale factor introduced by FFTW
             magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);

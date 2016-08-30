@@ -281,11 +281,7 @@ int pcps_acquisition_sc::general_work(int noutput_items,
         {
             // initialize acquisition algorithm
             int doppler;
-#if VOLK_GT_122
-            uint16_t indext = 0;
-#else
-            unsigned int indext = 0;
-#endif
+            uint32_t indext = 0;
             float magt = 0.0;
             const lv_16sc_t *in = (const lv_16sc_t *)input_items[0]; //Get the input samples pointer
             int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
@@ -338,7 +334,7 @@ int pcps_acquisition_sc::general_work(int noutput_items,
                     // Search maximum
                     size_t offset = ( d_bit_transition_flag ? effective_fft_size : 0 );
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
-                    volk_32f_index_max_16u(&indext, d_magnitude, effective_fft_size);
+                    volk_32f_index_max_32u(&indext, d_magnitude, effective_fft_size);
                     magt = d_magnitude[indext];
 
                     if (d_use_CFAR_algorithm_flag == true)

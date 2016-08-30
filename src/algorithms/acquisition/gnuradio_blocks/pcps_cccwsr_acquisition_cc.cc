@@ -254,16 +254,10 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
         {
             // initialize acquisition algorithm
             int doppler;
-#if VOLK_GT_122
-            uint16_t indext = 0;
-            uint16_t indext_plus = 0;
-            uint16_t indext_minus = 0;
-#else
 
-            unsigned int indext = 0;
-            unsigned int indext_plus = 0;
-            unsigned int indext_minus = 0;
-#endif
+            uint32_t indext = 0;
+            uint32_t indext_plus = 0;
+            uint32_t indext_minus = 0;
             float magt = 0.0;
             float magt_plus = 0.0;
             float magt_minus = 0.0;
@@ -337,11 +331,11 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                         }
 
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_correlation_plus, d_fft_size);
-                    volk_32f_index_max_16u(&indext_plus, d_magnitude, d_fft_size);
+                    volk_32f_index_max_32u(&indext_plus, d_magnitude, d_fft_size);
                     magt_plus = d_magnitude[indext_plus] / (fft_normalization_factor * fft_normalization_factor);
 
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_correlation_minus, d_fft_size);
-                    volk_32f_index_max_16u(&indext_minus, d_magnitude, d_fft_size);
+                    volk_32f_index_max_32u(&indext_minus, d_magnitude, d_fft_size);
                     magt_minus = d_magnitude[indext_minus] / (fft_normalization_factor * fft_normalization_factor);
 
                     if (magt_plus >= magt_minus)

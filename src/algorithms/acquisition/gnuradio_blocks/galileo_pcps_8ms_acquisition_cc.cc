@@ -242,15 +242,9 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
         {
             // initialize acquisition algorithm
             int doppler;
-#if VOLK_GT_122
-            uint16_t indext = 0;
-            uint16_t indext_A = 0;
-            uint16_t indext_B = 0;
-#else
-            unsigned int indext = 0;
-            unsigned int indext_A = 0;
-            unsigned int indext_B = 0;
-#endif
+            uint32_t indext = 0;
+            uint32_t indext_A = 0;
+            uint32_t indext_B = 0;
             float magt = 0.0;
             float magt_A = 0.0;
             float magt_B = 0.0;
@@ -299,7 +293,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
 
                     // Search maximum
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
-                    volk_32f_index_max_16u(&indext_A, d_magnitude, d_fft_size);
+                    volk_32f_index_max_32u(&indext_A, d_magnitude, d_fft_size);
 
                     // Normalize the maximum value to correct the scale factor introduced by FFTW
                     magt_A = d_magnitude[indext_A] / (fft_normalization_factor * fft_normalization_factor);
@@ -315,7 +309,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
 
                     // Search maximum
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
-                    volk_32f_index_max_16u(&indext_B, d_magnitude, d_fft_size);
+                    volk_32f_index_max_32u(&indext_B, d_magnitude, d_fft_size);
 
                     // Normalize the maximum value to correct the scale factor introduced by FFTW
                     magt_B = d_magnitude[indext_B] / (fft_normalization_factor * fft_normalization_factor);

@@ -326,11 +326,11 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                         }
 
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_correlation_plus, d_fft_size);
-                    volk_32f_index_max_16u(&indext_plus, d_magnitude, d_fft_size);
+                    volk_32f_index_max_32u(&indext_plus, d_magnitude, d_fft_size);
                     magt_plus = d_magnitude[indext_plus] / (fft_normalization_factor * fft_normalization_factor);
 
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_correlation_minus, d_fft_size);
-                    volk_32f_index_max_16u(&indext_minus, d_magnitude, d_fft_size);
+                    volk_32f_index_max_32u(&indext_minus, d_magnitude, d_fft_size);
                     magt_minus = d_magnitude[indext_minus] / (fft_normalization_factor * fft_normalization_factor);
 
                     if (magt_plus >= magt_minus)

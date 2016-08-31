@@ -328,7 +328,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                     volk_32f_x2_add_32f(d_grid_data[doppler_index], d_magnitude, d_grid_data[doppler_index], d_fft_size);
 
                     // Search maximum
-                    volk_32f_index_max_16u(&indext, d_grid_data[doppler_index], d_fft_size);
+                    volk_32f_index_max_32u(&indext, d_grid_data[doppler_index], d_fft_size);
 
                     magt = d_grid_data[doppler_index][indext];
 

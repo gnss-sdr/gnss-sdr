@@ -416,11 +416,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 
             // initialize acquisition algorithm
             int doppler;
-            unsigned int indext = 0;
-            unsigned int indext_IA = 0;
-            unsigned int indext_IB = 0;
-            unsigned int indext_QA = 0;
-            unsigned int indext_QB = 0;
+            uint32_t indext = 0;
+            uint32_t indext_IA = 0;
+            uint32_t indext_IB = 0;
+            uint32_t indext_QA = 0;
+            uint32_t indext_QB = 0;
             float magt = 0.0;
             float magt_IA = 0.0;
             float magt_IB = 0.0;
@@ -467,7 +467,12 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 
                     // Search maximum
                     volk_32fc_magnitude_squared_32f(d_magnitudeIA, d_ifft->get_outbuf(), d_fft_size);
+#if VOLK_GT_122
                     volk_32f_index_max_32u(&indext_IA, d_magnitudeIA, d_fft_size);
+#else
+                    volk_32f_index_max_16u(&indext_IA, d_magnitudeIA, d_fft_size);
+#endif
+
                     // Normalize the maximum value to correct the scale factor introduced by FFTW
                     magt_IA = d_magnitudeIA[indext_IA] / (fft_normalization_factor * fft_normalization_factor);
 
@@ -478,7 +483,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                     d_fft_if->get_outbuf(), d_fft_code_Q_A, d_fft_size);
                             d_ifft->execute();
                             volk_32fc_magnitude_squared_32f(d_magnitudeQA, d_ifft->get_outbuf(), d_fft_size);
+#if VOLK_GT_122
                             volk_32f_index_max_32u(&indext_QA, d_magnitudeQA, d_fft_size);
+#else
+                            volk_32f_index_max_16u(&indext_QA, d_magnitudeQA, d_fft_size);
+#endif
                             magt_QA = d_magnitudeQA[indext_QA] / (fft_normalization_factor * fft_normalization_factor);
                         }
                     if (d_sampled_ms > 1) // If Integration time > 1 code
@@ -488,7 +497,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                     d_fft_if->get_outbuf(), d_fft_code_I_B, d_fft_size);
                             d_ifft->execute();
                             volk_32fc_magnitude_squared_32f(d_magnitudeIB, d_ifft->get_outbuf(), d_fft_size);
+#if VOLK_GT_122
                             volk_32f_index_max_32u(&indext_IB, d_magnitudeIB, d_fft_size);
+#else
+                            volk_32f_index_max_16u(&indext_IB, d_magnitudeIB, d_fft_size);
+#endif
                             magt_IB = d_magnitudeIB[indext_IB] / (fft_normalization_factor * fft_normalization_factor);
 
                             if (d_both_signal_components == true)
@@ -498,7 +511,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                             d_fft_if->get_outbuf(), d_fft_code_Q_B, d_fft_size);
                                     d_ifft->execute();
                                     volk_32fc_magnitude_squared_32f(d_magnitudeQB, d_ifft->get_outbuf(), d_fft_size);
+#if VOLK_GT_122
                                     volk_32f_index_max_32u(&indext_QB, d_magnitudeQB, d_fft_size);
+#else
+                                    volk_32f_index_max_16u(&indext_QB, d_magnitudeQB, d_fft_size);
+#endif
                                     magt_QB = d_magnitudeIB[indext_QB] / (fft_normalization_factor * fft_normalization_factor);
                                 }
                         }
@@ -535,7 +552,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                                         }
                                                 }
                                         }
+#if VOLK_GT_122
                                     volk_32f_index_max_32u(&indext, d_magnitudeIA, d_fft_size);
+#else
+                                    volk_32f_index_max_16u(&indext, d_magnitudeIA, d_fft_size);
+#endif
                                     magt = d_magnitudeIA[indext] / (fft_normalization_factor * fft_normalization_factor);
                                 }
                             else
@@ -564,7 +585,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                                         }
                                                 }
                                         }
+#if VOLK_GT_122
                                     volk_32f_index_max_32u(&indext, d_magnitudeIB, d_fft_size);
+#else
+                                    volk_32f_index_max_16u(&indext, d_magnitudeIB, d_fft_size);
+#endif
                                     magt = d_magnitudeIB[indext] / (fft_normalization_factor * fft_normalization_factor);
                                 }
                         }
@@ -582,7 +607,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                             d_magnitudeIA[i] += d_magnitudeQA[i];
                                         }
                                 }
+#if VOLK_GT_122
                             volk_32f_index_max_32u(&indext, d_magnitudeIA, d_fft_size);
+#else
+                            volk_32f_index_max_16u(&indext, d_magnitudeIA, d_fft_size);
+#endif
                             magt = d_magnitudeIA[indext] / (fft_normalization_factor * fft_normalization_factor);
                         }
 
@@ -720,7 +749,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         }
 
                     // Recompute the maximum doppler peak
+#if VOLK_GT_122
                     volk_32f_index_max_32u(&indext, d_CAF_vector, d_num_doppler_bins);
+#else
+                    volk_32f_index_max_16u(&indext, d_CAF_vector, d_num_doppler_bins);
+#endif
                     doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * indext;
                     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                     // Dump if required, appended at the end of the file

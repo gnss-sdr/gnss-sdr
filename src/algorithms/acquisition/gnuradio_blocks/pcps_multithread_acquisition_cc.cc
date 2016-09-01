@@ -237,7 +237,11 @@ void pcps_multithread_acquisition_cc::acquisition_core()
 
             // Search maximum
             volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
+#if VOLK_GT_122
             volk_32f_index_max_32u(&indext, d_magnitude, d_fft_size);
+#else
+            volk_32f_index_max_16u(&indext, d_magnitude, d_fft_size);
+#endif
 
             // Normalize the maximum value to correct the scale factor introduced by FFTW
             magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);

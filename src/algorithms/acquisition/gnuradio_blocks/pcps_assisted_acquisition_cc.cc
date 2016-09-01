@@ -267,7 +267,11 @@ double pcps_assisted_acquisition_cc::search_maximum()
 
     for (int i=0;i<d_num_doppler_points;i++)
         {
+#if VOLK_GT_122
             volk_32f_index_max_32u_a(&tmp_intex_t,d_grid_data[i],d_fft_size);
+#else
+            volk_32f_index_max_16u_a(&tmp_intex_t,d_grid_data[i],d_fft_size);
+#endif
             if (d_grid_data[i][tmp_intex_t] > magt)
                 {
                     magt = d_grid_data[i][index_time];

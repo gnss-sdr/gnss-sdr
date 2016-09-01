@@ -398,7 +398,11 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                    introduced by FFTW*/
                     //volk_32f_s32f_multiply_32f_a(d_magnitude_folded,d_magnitude_folded,
                     // (1 / (fft_normalization_factor * fft_normalization_factor)), d_fft_size);
+#if VOLK_GT_122
                     volk_32f_index_max_32u(&indext, d_magnitude_folded, d_fft_size);
+#else
+                    volk_32f_index_max_16u(&indext, d_magnitude_folded, d_fft_size);
+#endif
 
                     magt = d_magnitude_folded[indext] / (fft_normalization_factor * fft_normalization_factor);
 
@@ -451,7 +455,11 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                         }
                                     /*Obtain maximun value of correlation given the possible delay selected */
                                     volk_32fc_magnitude_squared_32f(d_corr_output_f, complex_acumulator, d_folding_factor);
+#if VOLK_GT_122
                                     volk_32f_index_max_32u(&indext, d_corr_output_f, d_folding_factor);
+#else
+                                    volk_32f_index_max_16u(&indext, d_corr_output_f, d_folding_factor);
+#endif
 
                                     /*Now save the real code phase in the gnss_syncro block for use in other stages*/
                                     d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_possible_delay[indext]);

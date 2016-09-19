@@ -431,7 +431,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
 
             // Search maximum
             volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
-            volk_32f_index_max_32u(&indext, d_magnitude, d_fft_size);
+            volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude, d_fft_size);
 
             // Normalize the maximum value to correct the scale factor introduced by FFTW
             magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
@@ -593,7 +593,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 
             // Search maximum
             // @TODO: find an efficient way to search the maximum with OpenCL in the GPU.
-            volk_32f_index_max_32u(&indext, d_magnitude, d_fft_size);
+            volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude, d_fft_size);
 
             // Normalize the maximum value to correct the scale factor introduced by FFTW
             magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);

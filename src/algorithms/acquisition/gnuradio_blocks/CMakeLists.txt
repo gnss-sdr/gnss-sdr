@@ -47,32 +47,6 @@ include_directories(
 )
 
 
-## Workaround for issues with the change of VOLK API
-## See https://github.com/gnuradio/volk/issues/84
-## and https://github.com/gnss-sdr/gnss-sdr/issues/31
-
-if(NOT VOLK_VERSION)
-    set(VOLK_VERSION "1.2.2")
-endif(NOT VOLK_VERSION)
-
-if(VOLK_VERSION VERSION_EQUAL 1.2.2)
-    find_file(VOLK_GREATER_THAN_122
-              NAMES volk/volk_32f_index_max_32u.h
-              HINTS ${CMAKE_INSTALL_PREFIX}/include
-              PATHS /usr/local/include
-                    /usr/include
-                    ${CMAKE_INSTALL_PREFIX}/include
-              )
-     if(VOLK_GREATER_THAN_122)
-         set(VOLK_VERSION "1.2.3+")
-     endif(VOLK_GREATER_THAN_122)
-endif(VOLK_VERSION VERSION_EQUAL 1.2.2)
-
-if(VOLK_VERSION VERSION_GREATER 1.2.2)
-   add_definitions(-DVOLK_GT_122=1)
-endif(VOLK_VERSION VERSION_GREATER 1.2.2)
-
-
 if(OPENCL_FOUND)
     include_directories( ${OPENCL_INCLUDE_DIRS} )
     if(OS_IS_MACOSX)

@@ -293,7 +293,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
 
                     // Search maximum
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
-                    volk_32f_index_max_32u(&indext_A, d_magnitude, d_fft_size);
+                    volk_gnsssdr_32f_index_max_32u(&indext_A, d_magnitude, d_fft_size);
 
                     // Normalize the maximum value to correct the scale factor introduced by FFTW
                     magt_A = d_magnitude[indext_A] / (fft_normalization_factor * fft_normalization_factor);
@@ -309,7 +309,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
 
                     // Search maximum
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
-                    volk_32f_index_max_32u(&indext_B, d_magnitude, d_fft_size);
+                    volk_gnsssdr_32f_index_max_32u(&indext_B, d_magnitude, d_fft_size);
 
                     // Normalize the maximum value to correct the scale factor introduced by FFTW
                     magt_B = d_magnitude[indext_B] / (fft_normalization_factor * fft_normalization_factor);

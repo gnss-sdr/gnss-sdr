@@ -11,7 +11,7 @@ If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-develope
 # How to build GNSS-SDR
 
 
-This section describes how to set up the compilation environment in GNU/Linux or [macOS / Mac OS X](#macosx), and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
+This section describes how to set up the compilation environment in GNU/Linux or [macOS / Mac OS X](#macosx), and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/build-and-install/ "GNSS-SDR's Build and Install").
 
 
 GNU/Linux 
@@ -229,7 +229,7 @@ By default, you will be in the 'master' branch of the Git repository, which corr
 $ git checkout next
 ~~~~~~ 
 
-More information about GNSS-SDR-specific Git usage and pointers to further readings can be found at out guide about [how to contribute to the source code](http://gnss-sdr.org/documentation/how-contribute-source-code "How to contribute to the source code").
+More information about GNSS-SDR-specific Git usage and pointers to further readings can be found at our [Git tutorial](http://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
 
 
 ### Build and install GNSS-SDR
@@ -551,9 +551,9 @@ Before rebuilding the source code, it is safe (and recommended) to remove the re
 $ rm -rf gnss-sdr/build/*
 ~~~~~~ 
 
-If you are interested in contributing to the development of GNSS-SDR, please check out [how to do it](http://gnss-sdr.org/documentation/how-contribute-source-code "How to contribute to GNSS-SDR source code").
+If you are interested in contributing to the development of GNSS-SDR, please check out [how to do it](http://gnss-sdr.org/contribute/ "How to contribute to GNSS-SDR source code").
 
-There is a more controlled way to upgrade your repository, which is to use the Git commands ```fetch``` and ```merge```, as described [here](http://gnss-sdr.org/source-code). 
+There is a more controlled way to upgrade your repository, which is to use the Git commands ```fetch``` and ```merge```, as described [here](http://gnss-sdr.org/docs/tutorials/using-git/). 
 
    
 
@@ -1360,9 +1360,9 @@ In order to start using GNSS-SDR, you may want to populate ```gnss-sdr/data``` f
 
 Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware such as the [USRP family](http://www.ettus.com/product), for OsmoSDR and other front-ends (HackRF, bladeRF), for the GN3S v2 USB dongle and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
 
-You can find more information at the [GNSS-SDR Documentation page](http://gnss-sdr.org/documents) or directly asking to the [GNSS-SDR Developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers). 
+You can find more information at the [GNSS-SDR Documentation page](http://gnss-sdr.org/docs/) or directly asking to the [GNSS-SDR Developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers). 
  
-You are also very welcome to contribute to the project, there are many ways to [participate in GNSS-SDR](http://gnss-sdr.org/participate). If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. Please do not hesitate to [contact them](http://gnss-sdr.org/contact-us).
+You are also very welcome to contribute to the project, there are many ways to [participate in GNSS-SDR](http://gnss-sdr.org/contribute/). If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. Please do not hesitate to [contact them](http://gnss-sdr.org/team/).
 
 **Enjoy GNSS-SDR!**
 

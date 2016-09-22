@@ -195,6 +195,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      set(OS_IS_MACOSX TRUE)
      exec_program(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
      string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
+     if(${DARWIN_VERSION} MATCHES "16")
+         set(MACOS_SIERRA TRUE)
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on macOS Sierra 10.12")
+     endif(${DARWIN_VERSION} MATCHES "16")
      if(${DARWIN_VERSION} MATCHES "15")
          set(MACOSX_EL_CAPITAN TRUE)
          set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
@@ -431,7 +437,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 -DENABLE_PROFILING=${ENABLE_PROFILING}
                                 -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
                                 -DCMAKE_C_FLAGS=${C_FLAGS}
-                                ${STRIP_VOLK_GNSSSDR_PROFILE} 
+                                ${STRIP_VOLK_GNSSSDR_PROFILE}
                                 ${USE_THIS_PYTHON} )
     if(CMAKE_TOOLCHAIN_FILE)
         set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
@@ -461,10 +467,10 @@ if(NOT VOLK_GNSSSDR_FOUND)
     add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
         ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile)
-        
+
     add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr-config-info
-        ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr-config-info)    
+        ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr-config-info)
 endif(NOT VOLK_GNSSSDR_FOUND)
 
 
@@ -721,7 +727,7 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/x86_64-linux-gnu/5
                        /usr/lib/gcc/i686-linux-gnu/5
                        /usr/lib/gcc/arm-linux-gnueabi/5
-                       /usr/lib/gcc/arm-linux-gnueabihf/5                       
+                       /usr/lib/gcc/arm-linux-gnueabihf/5
                        /usr/lib/gcc/aarch64-linux-gnu/5
                 )
     if(NOT GFORTRAN)
@@ -800,10 +806,10 @@ endif(NOT ARMADILLO_FOUND)
 ################################################################################
 find_package(GnuTLS)
 find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
-                                    HINTS /usr/lib 
-                                          /usr/lib64 
-                                          /usr/local/lib 
-                                          /usr/local/lib64 
+                                    HINTS /usr/lib
+                                          /usr/lib64
+                                          /usr/local/lib
+                                          /usr/local/lib64
                                           /opt/local/lib
                                           /usr/lib/x86_64-linux-gnu
                                           /usr/lib/aarch64-linux-gnu
@@ -811,7 +817,7 @@ find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
                                           /usr/lib/arm-linux-gnueabi
                                           /usr/lib/i386-linux-gnu
              )
- 
+
 if(NOT GNUTLS_OPENSSL_LIBRARY)
      message(STATUS "Looking for OpenSSL instead...")
      find_package(OpenSSL)

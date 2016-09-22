@@ -11,7 +11,7 @@ If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-develope
 # How to build GNSS-SDR
 
 
-This section describes how to set up the compilation environment in GNU/Linux or [Mac OS X](#macosx), and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
+This section describes how to set up the compilation environment in GNU/Linux or [macOS / Mac OS X](#macosx), and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
 
 
 GNU/Linux 
@@ -407,11 +407,11 @@ Using this option, all SIMD instructions are exclusively accessed via VOLK, whic
 
 
 
-<a name="macosx">Mac OS X</a> 
+<a name="macosx">macOS and Mac OS X</a> 
 ---------
 
 
-### Mac OS X 10.9 (Mavericks), 10.10 (Yosemite) and 10.11 (El Capitan)
+### macOS Sierra, Mac OS X 10.11 (El Capitan), 10.10 (Yosemite) and 10.9 (Mavericks).
 
 If you still have not installed [Xcode](http://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 

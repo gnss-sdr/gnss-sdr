@@ -874,7 +874,7 @@ If you need to adapt some aspect of you signal, you can enable the Signal Condit
 SignalConditioner.implementation=Signal_Conditioner
 ~~~~~~
 
-More documentation at the [Signal Conditioner Blokcs page](http://gnss-sdr.org/docs/sp-blocks/signal-conditioner/).
+More documentation at the [Signal Conditioner Blocks page](http://gnss-sdr.org/docs/sp-blocks/signal-conditioner/).
 
 #### Data type adapter
 

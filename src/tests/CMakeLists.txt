@@ -372,3 +372,24 @@ endif(NOT ${GTEST_DIR_LOCAL})
 
 add_dependencies(check control_thread_test flowgraph_test gnss_block_test
     gnuradio_block_test trk_test)
+
+
+# Addition of System Tests
+add_executable(ttff
+    ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/ttff_gps_l1.cc )
+if(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(ttff gtest-${gtest_RELEASE})
+else(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(ttff gtest)
+endif(NOT ${GTEST_DIR_LOCAL})
+target_link_libraries(ttff
+    ${Boost_LIBRARIES}
+    ${GFLAGS_LIBS}
+    ${GLOG_LIBRARIES}
+    ${GTEST_LIBRARIES}
+    gnss_rx
+)
+add_custom_command(TARGET ttff POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:ttff>
+    ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:ttff>
+)

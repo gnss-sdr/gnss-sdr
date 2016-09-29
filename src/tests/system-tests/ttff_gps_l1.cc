@@ -74,6 +74,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("SignalSource.item_type", "cshort");
     config->set_property("SignalSource.implementation", "UHD_Signal_Source");
     config->set_property("SignalSource.freq", std::to_string(1575420000));
+    config->set_property("SignalSource.sampling_frequency", std::to_string(FLAGS_fs_in));
     config->set_property("SignalSource.gain", std::to_string(40));
     config->set_property("SignalSource.subdevice", FLAGS_subdevice);
     config->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
@@ -123,6 +124,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("Acquisition_1C.threshold", std::to_string(0.01));
     config->set_property("Acquisition_1C.doppler_max", std::to_string(8000));
     config->set_property("Acquisition_1C.doppler_step", std::to_string(500));
+    config->set_property("Acquisition_1C.bit_transition_flag", "false");
     config->set_property("Acquisition_1C.max_dwells", std::to_string(1));
     config->set_property("Acquisition_1C.tong_init_val", std::to_string(2));
     config->set_property("Acquisition_1C.tong_max_val", std::to_string(10));

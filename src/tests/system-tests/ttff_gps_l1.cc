@@ -55,18 +55,19 @@ DEFINE_string(subdevice, "B:0", "USRP subdevice");
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-class TTFF_GPS_L1_CA_Test: public ::testing::Test
-{
-public:
-    std::shared_ptr<InMemoryConfiguration> config;
-};
+//class TTFF_GPS_L1_CA_Test: public ::testing::Test
+//{
+//public:
+//    std::shared_ptr<InMemoryConfiguration> config;
+//};
 
-TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
+TEST(TTFF_GPS_L1_CA_Test, ColdStart)
 {
+    std::shared_ptr<InMemoryConfiguration> config;
     unsigned int num_measurements = 0;
     unsigned int num_valid_measurements = 0;
     config = std::make_shared<InMemoryConfiguration>();
-    google::InitGoogleLogging("ttff");
+    //google::InitGoogleLogging("ttff");
 
     // Set the Signal Source
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
@@ -212,4 +213,24 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
 
     // Print TTFF report
 
+}
+
+
+int main(int argc, char **argv)
+{
+    std::cout << "Running Time-To-First-Fix test..." << std::endl;
+    int res = 0;
+    testing::InitGoogleTest(&argc, argv);
+    google::ParseCommandLineFlags(&argc, &argv, true);
+    google::InitGoogleLogging(argv[0]);
+    try
+    {
+            res = RUN_ALL_TESTS();
+    }
+    catch(...)
+    {
+            LOG(WARNING) << "Unexpected catch";
+    }
+    google::ShutDownCommandLineFlags();
+    return res;
 }

@@ -38,15 +38,18 @@
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "control_thread.h"
+#include "gnss_flowgraph.h"
 #include "gps_acq_assist.h"
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
 
-DEFINE_double(fs_in, 4000000.0, "Sampling rate");
-DEFINE_string(subdevice, "B:0", "USRP subdevice");
+DEFINE_int32(fs_in, 4000000, "Sampling rate, in Ms/s");
+DEFINE_int32(max_measurement_duration, 90, "Maximum time waiting for a position fix, in seconds");
+DEFINE_int32(num_measurements, 2, "Number of measurements");
 DEFINE_string(device_address, "192.168.40.2", "USRP device IP address");
+DEFINE_string(subdevice, "B:0", "USRP subdevice");
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -72,7 +75,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("SignalSource.freq", std::to_string(1575420000));
     config->set_property("SignalSource.gain", std::to_string(40));
     config->set_property("SignalSource.subdevice", FLAGS_subdevice);
-    config->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * 90));
+    config->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
     config->set_property("SignalSource.device_address", FLAGS_device_address);
 
     // Set the Signal Conditioner
@@ -161,8 +164,8 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
 
     bool valid_pvt_received = false;
 
-    int n = 0;
-    for(n=0; n<4; n++) //    - for t > time_ obs || stop
+    int n;
+    for(n = 0; n < FLAGS_num_measurements; n++) //
         {
             // reset start( hot /warm / cold )
             // COLD START
@@ -172,6 +175,11 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
             std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
 
             //  - start clock
+            // record startup time
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+
             //      - start receiver
             try
             {
@@ -188,9 +196,14 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
 
             //    - if (pvt_fix | max_waiting_time)
             //        - stop_clock
-            ;
+            gettimeofday(&tv, NULL);
+            long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+            double ttff = static_cast<double>(end - begin) / 1000000.0;
+
+            std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
+            EXPECT_FALSE(flowgraph->running());
             num_measurements = num_measurements + 1;
-            std::cout << "Measurement " << num_measurements << std::endl;
+            std::cout << "Measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
             std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5));
             // if (pvt_fix) num_valid_measurements = num_valid_measurements + 1;
         }

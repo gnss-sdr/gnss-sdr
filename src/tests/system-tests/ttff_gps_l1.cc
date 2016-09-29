@@ -116,15 +116,17 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("Channel.signal", "1C");
 
     // Set Acquisition
-    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
     config->set_property("Acquisition_1C.item_type", "gr_complex");
     config->set_property("Acquisition_1C.if", std::to_string(0));
     config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(1));
     config->set_property("Acquisition_1C.threshold", std::to_string(0.01));
     config->set_property("Acquisition_1C.doppler_max", std::to_string(8000));
     config->set_property("Acquisition_1C.doppler_step", std::to_string(500));
-    config->set_property("Acquisition_1C.bit_transition_flag", "false");
     config->set_property("Acquisition_1C.max_dwells", std::to_string(1));
+    config->set_property("Acquisition_1C.tong_init_val", std::to_string(2));
+    config->set_property("Acquisition_1C.tong_max_val", std::to_string(10));
+    config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(30));
 
     // Set Tracking
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");

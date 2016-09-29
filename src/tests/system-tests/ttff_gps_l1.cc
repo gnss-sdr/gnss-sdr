@@ -30,7 +30,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include <gtest/gtest.h>
 #include <ctime>
 #include <chrono>
 #include <string>
@@ -38,12 +37,16 @@
 #include "in_memory_configuration.h"
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
-#include "concurrent_map.h"
 #include "control_thread.h"
-#include "control_message_factory.h"
 #include "gps_acq_assist.h"
-#include "gnss_flowgraph.h"
+#include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <gtest/gtest.h>
+
+
+DEFINE_double(fs_in, 4000000.0, "Sampling rate");
+DEFINE_string(subdevice, "B:0", "USRP subdevice");
+DEFINE_string(device_address, "192.168.40.2", "USRP device IP address");
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -63,15 +66,14 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
     google::InitGoogleLogging("ttff");
 
     // Set the Signal Source
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(4000000.0));
+    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
     config->set_property("SignalSource.item_type", "cshort");
     config->set_property("SignalSource.implementation", "UHD_Signal_Source");
     config->set_property("SignalSource.freq", std::to_string(1575420000));
     config->set_property("SignalSource.gain", std::to_string(40));
-    config->set_property("SignalSource.subdevice", "B:0");
-    config->set_property("SignalSource.samples", std::to_string(0));
-    config->set_property("SignalSource.device_address", "192.168.40.2");
-    //config->set_property("SignalSource.item_type", "cshort");
+    config->set_property("SignalSource.subdevice", FLAGS_subdevice);
+    config->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * 90));
+    config->set_property("SignalSource.device_address", FLAGS_device_address);
 
     // Set the Signal Conditioner
     config->set_property("SignalConditioner.implementation", "Signal_Conditioner");
@@ -169,12 +171,8 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
 
             std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
 
-            gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
-
-            std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
-
-
-            control_thread->set_control_queue(control_queue);
+            //  - start clock
+            //      - start receiver
             try
             {
                     control_thread->run();
@@ -188,23 +186,12 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
                     std::cout  << "STD exception: " << ex.what();
             }
 
-            std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, control_queue);
-            EXPECT_NO_THROW(flowgraph->connect());
-            EXPECT_TRUE(flowgraph->connected());
-            EXPECT_FALSE(flowgraph->running());
-
-            //  - start clock
-            //      - start receiver
-            EXPECT_NO_THROW(flowgraph->start());
-            EXPECT_TRUE(flowgraph->running());
             //    - if (pvt_fix | max_waiting_time)
             //        - stop_clock
-            std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(90));
-            //flowgraph->stop();
-            control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
-            EXPECT_FALSE(flowgraph->running());
+            ;
             num_measurements = num_measurements + 1;
             std::cout << "Measurement " << num_measurements << std::endl;
+            std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5));
             // if (pvt_fix) num_valid_measurements = num_valid_measurements + 1;
         }
     std::cout << "BYE " << num_measurements << std::endl;

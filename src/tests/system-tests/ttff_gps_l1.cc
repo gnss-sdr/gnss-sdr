@@ -30,11 +30,16 @@
  * -------------------------------------------------------------------------
  */
 
+ #include <errno.h>
+ #include <sys/types.h>
+ #include <sys/ipc.h>
+ #include <sys/msg.h>
 #include <ctime>
 #include <chrono>
 #include <string>
 #include <thread>
 #include "in_memory_configuration.h"
+#include "file_configuration.h"
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "control_thread.h"
@@ -55,18 +60,71 @@ DEFINE_string(subdevice, "B:0", "USRP subdevice");
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-//class TTFF_GPS_L1_CA_Test: public ::testing::Test
-//{
-//public:
-//    std::shared_ptr<InMemoryConfiguration> config;
-//};
+double TTFF;
+
+typedef struct  {
+        long mtype;//required by sys v message
+        double ttff;
+    } ttff_msgbuf;
+
+
+
+class TTFF_GPS_L1_CA_Test: public ::testing::Test
+{
+public:
+    std::shared_ptr<InMemoryConfiguration> config;
+    //std::thread receive_msg_thread(receive_msg);
+    //void receive_msg();
+};
+
+void receive_msg()
+{
+    ttff_msgbuf msg;
+  double ttff_msg=0.0;
+    int msgrcv_size=sizeof(msg.ttff);
+    int msqid;
+    key_t key=1101;
+    while((msqid = msgget(key, 0644)) == -1){}
+//    if ((msqid = msgget(key, 0644)) == -1) { /* connect to the queue */
+//        perror("TTFF MSG QUEUE NOT AVAILABLE");
+//        exit(1);
+//    }
+
+  //  msqid = msgget(key, 0644);
+    //while (keep_capturing==1) {
+
+        if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
+        {
+            //jammer=msg.jammer_msg;
+            ttff_msg = msg.ttff;
+            std::cout << "-----RECEIVED! " << ttff_msg << std::endl;
+            //struct tm  tstruct;
+            //char       buf[80];
+            //tstruct = *localtime(&jammer.timestamp);
+            //strftime(buf, sizeof(buf), "%d-%m-%Y-%H-%M-%S", &tstruct);
+            TTFF = ttff_msg;
+            //if(TTFF==0) receive_msg();
+        }
+
+    //}
+std::cout << "--------RECEIVEr msg thread stops " << std::endl;
+    //std::cout<<"RECEIVER MSG THREAD STOP.\n";
+    return;
+}
+
 
 TEST(TTFF_GPS_L1_CA_Test, ColdStart)
 {
     std::shared_ptr<InMemoryConfiguration> config;
+    std::shared_ptr<FileConfiguration> config2;
     unsigned int num_measurements = 0;
     unsigned int num_valid_measurements = 0;
     config = std::make_shared<InMemoryConfiguration>();
+    std::string path = std::string(TEST_PATH);
+    std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
+    config2 = std::make_shared<FileConfiguration>(filename);
+    config2->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
+
     //google::InitGoogleLogging("ttff");
 
     // Set the Signal Source
@@ -168,16 +226,21 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
 
 
     bool valid_pvt_received = false;
+    //std::thread receive_msg_thread(receive_msg);
+
 
     int n;
     for(n = 0; n < FLAGS_num_measurements; n++) //
         {
+
             // reset start( hot /warm / cold )
             // COLD START
             config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
             config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+            config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
 
-            std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
+
+            std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config2);
 
             //  - start clock
             // record startup time
@@ -207,6 +270,8 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
 
             std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
             EXPECT_FALSE(flowgraph->running());
+
+
             num_measurements = num_measurements + 1;
             std::cout << "Measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
             std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5));
@@ -214,7 +279,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
         }
     std::cout << "BYE " << num_measurements << std::endl;
     // Compute min, max, mean, stdev,
-
+//receive_msg_thread.join();
     // Print TTFF report
 
 }
@@ -227,6 +292,20 @@ int main(int argc, char **argv)
     testing::InitGoogleTest(&argc, argv);
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
+    //Create Sys V message queue
+    key_t sysv_msg_key;
+        int sysv_msqid;
+  //
+
+   sysv_msg_key=1101;
+int msgflg = IPC_CREAT | 0666;
+if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1){}
+//{
+//    std::cout<<"SDRJD can not create message queues!\n";
+//    perror("msgget");
+//    throw new std::exception();
+//}
+    std::thread receive_msg_thread(receive_msg);
     try
     {
             res = RUN_ALL_TESTS();
@@ -235,6 +314,14 @@ int main(int argc, char **argv)
     {
             LOG(WARNING) << "Unexpected catch";
     }
+    ttff_msgbuf msg;
+    msg.mtype = 1;
+    msg.ttff = 1;
+    int msgsend_size;
+    msgsend_size=sizeof(msg.ttff);
+    msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
+    receive_msg_thread.join();
+    std::cout << "-------------------TTFF:" << TTFF << std::endl;
     google::ShutDownCommandLineFlags();
     return res;
 }

@@ -30,15 +30,17 @@
  * -------------------------------------------------------------------------
  */
 
- #include <errno.h>
- #include <sys/types.h>
- #include <sys/ipc.h>
- #include <sys/msg.h>
 #include <ctime>
 #include <chrono>
 #include <numeric>
 #include <string>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <thread>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gtest/gtest.h>
 #include "in_memory_configuration.h"
 #include "file_configuration.h"
 #include "concurrent_queue.h"
@@ -46,9 +48,6 @@
 #include "control_thread.h"
 #include "gnss_flowgraph.h"
 #include "gps_acq_assist.h"
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gtest/gtest.h>
 
 
 DEFINE_int32(fs_in, 4000000, "Sampling rate, in Ms/s");
@@ -64,19 +63,10 @@ concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 std::vector<double> TTFF_v;
 
 typedef struct  {
-    long mtype;//required by sys v message
+    long mtype; //required by sys v message
     double ttff;
 } ttff_msgbuf;
 
-
-
-class TTFF_GPS_L1_CA_Test: public ::testing::Test
-{
-public:
-    std::shared_ptr<InMemoryConfiguration> config;
-    //std::thread receive_msg_thread(receive_msg);
-    //void receive_msg();
-};
 
 void receive_msg()
 {
@@ -85,25 +75,16 @@ void receive_msg()
     int msgrcv_size = sizeof(msg.ttff);
     int msqid;
     key_t key = 1101;
+    // wait for the queue to be created
     while((msqid = msgget(key, 0644)) == -1){}
-    //    if ((msqid = msgget(key, 0644)) == -1) { /* connect to the queue */
-    //        perror("TTFF MSG QUEUE NOT AVAILABLE");
-    //        exit(1);
-    //    }
-
 
     if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
         {
             ttff_msg = msg.ttff;
-            std::cout << "-----RECEIVED! " << ttff_msg << std::endl;
-            //struct tm  tstruct;
-            //char       buf[80];
-            //tstruct = *localtime(&jammer.timestamp);
-            //strftime(buf, sizeof(buf), "%d-%m-%Y-%H-%M-%S", &tstruct);
             if( (ttff_msg != 0) && (ttff_msg != -1))
                 {
                     TTFF_v.push_back(ttff_msg / (100 * 10)); // Fix this !  averaging_depth * output_rate_ms
-                    std::cout << "Annotate: TTFF = " << ttff_msg / (100 * 10) << std::endl;
+                    LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (100 * 10) << "[s]";
                 }
 
             if(ttff_msg != -1)
@@ -111,11 +92,6 @@ void receive_msg()
                     receive_msg();
                 }
         }
-
-    //}
-
-    std::cout << "--------RECEIVEr msg thread stops " << std::endl;
-    //std::cout<<"RECEIVER MSG THREAD STOP.\n";
     return;
 }
 
@@ -129,7 +105,7 @@ void print_TTFF_report(const std::vector<double> & ttff_v)
     std::cout << "---------------------------" << std::endl;
     std::cout << " Time-To-First FIX Report" << std::endl;
     std::cout << "---------------------------" << std::endl;
-    std::cout << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): " << std::endl;
+    std::cout << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
     for(double ttff_ : ttff) std::cout << ttff_ << " ";
     std::cout << std::endl;
     std::cout << "TTFF mean: " << mean << " [s]" << std::endl;
@@ -150,15 +126,16 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config2 = std::make_shared<FileConfiguration>(filename);
     config2->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
 
-    //google::InitGoogleLogging("ttff");
+    double central_freq = 1575420000.0;
+    double gain_dB = 40.0;
 
     // Set the Signal Source
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
     config->set_property("SignalSource.item_type", "cshort");
     config->set_property("SignalSource.implementation", "UHD_Signal_Source");
-    config->set_property("SignalSource.freq", std::to_string(1575420000));
+    config->set_property("SignalSource.freq", std::to_string(central_freq));
     config->set_property("SignalSource.sampling_frequency", std::to_string(FLAGS_fs_in));
-    config->set_property("SignalSource.gain", std::to_string(40));
+    config->set_property("SignalSource.gain", std::to_string(gain_dB));
     config->set_property("SignalSource.subdevice", FLAGS_subdevice);
     config->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
     config->set_property("SignalSource.device_address", FLAGS_device_address);
@@ -250,14 +227,9 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("PVT.dump", "false");
 
 
-    bool valid_pvt_received = false;
-    //std::thread receive_msg_thread(receive_msg);
-
-
     int n;
-    for(n = 0; n < FLAGS_num_measurements; n++) //
+    for(n = 0; n < FLAGS_num_measurements; n++)
         {
-
             // reset start( hot /warm / cold )
             // COLD START
             config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
@@ -265,16 +237,14 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
             config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
             config2->set_property("PVT.flag_rtcm_server", "false");
 
-
             std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config2);
 
-            //  - start clock
             // record startup time
             struct timeval tv;
             gettimeofday(&tv, NULL);
             long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-            //      - start receiver
+            // start receiver
             try
             {
                     control_thread->run();
@@ -288,8 +258,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
                     std::cout  << "STD exception: " << ex.what();
             }
 
-            //    - if (pvt_fix | max_waiting_time)
-            //        - stop_clock
+            // stop clock
             gettimeofday(&tv, NULL);
             long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
             double ttff = static_cast<double>(end - begin) / 1000000.0;
@@ -297,16 +266,11 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
             std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
             EXPECT_FALSE(flowgraph->running());
 
-
             num_measurements = num_measurements + 1;
             std::cout << "Measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
             std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5));
-            // if (pvt_fix) num_valid_measurements = num_valid_measurements + 1;
         }
-    std::cout << "BYE " << num_measurements << std::endl;
 
-    // Compute min, max, mean, stdev,
-    //receive_msg_thread.join();
     // Print TTFF report
     print_TTFF_report(TTFF_v);
 
@@ -322,19 +286,22 @@ int main(int argc, char **argv)
     testing::InitGoogleTest(&argc, argv);
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
-    //Create Sys V message queue
+
+    // Create Sys V message queue to read TFFF measurements
     key_t sysv_msg_key;
     int sysv_msqid;
     sysv_msg_key = 1101;
     int msgflg = IPC_CREAT | 0666;
-    if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1){}
-    //{
-    //    std::cout<<"GNSS-SDR can not create message queues!\n";
-    //    perror("msgget");
-    //    throw new std::exception();
-    //}
+    if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
+    {
+        std::cout<<"GNSS-SDR can not create message queues!" << std::endl;
+        throw new std::exception();
+    }
 
+    // Start queue thread
     std::thread receive_msg_thread(receive_msg);
+
+    // Run the Tests
     try
     {
             res = RUN_ALL_TESTS();
@@ -343,6 +310,8 @@ int main(int argc, char **argv)
     {
             LOG(WARNING) << "Unexpected catch";
     }
+
+    // Terminate the queue thread
     ttff_msgbuf msg;
     msg.mtype = 1;
     msg.ttff = -1;
@@ -350,7 +319,7 @@ int main(int argc, char **argv)
     msgsend_size = sizeof(msg.ttff);
     msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
     receive_msg_thread.join();
-    std::cout << "-------------------TTFF:" << std::accumulate(TTFF_v.begin(), TTFF_v.end(), 0.0) / TTFF_v.size() << std::endl;
+
     google::ShutDownCommandLineFlags();
     return res;
 }

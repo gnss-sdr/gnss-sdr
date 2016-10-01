@@ -71,10 +71,15 @@ typedef struct  {
 void receive_msg()
 {
     ttff_msgbuf msg;
+    ttff_msgbuf msg_stop;
+    msg_stop.mtype = 2;
+    msg_stop.ttff = 200;
     double ttff_msg = 0.0;
     int msgrcv_size = sizeof(msg.ttff);
     int msqid;
+    int msqid_stop;
     key_t key = 1101;
+    key_t key_stop = 1102;
     // wait for the queue to be created
     while((msqid = msgget(key, 0644)) == -1){}
 
@@ -85,6 +90,10 @@ void receive_msg()
                 {
                     TTFF_v.push_back(ttff_msg / (100 * 10)); // Fix this !  averaging_depth * output_rate_ms
                     LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (100 * 10) << "[s]";
+                    // Stop the receiver
+                    while((msqid_stop = msgget(key_stop, 0644)) == -1){}
+                    double msgsend_size = sizeof(msg_stop.ttff);
+                    msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
                 }
 
             if(ttff_msg != -1)
@@ -128,6 +137,8 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
 
     double central_freq = 1575420000.0;
     double gain_dB = 40.0;
+    int number_of_taps = 11;
+    int number_of_bands = 2;
 
     // Set the Signal Source
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
@@ -149,8 +160,8 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("InputFilter.input_item_type", "cshort");
     config->set_property("InputFilter.output_item_type", "gr_complex");
     config->set_property("InputFilter.taps_item_type", "float");
-    config->set_property("InputFilter.number_of_taps", std::to_string(11));
-    config->set_property("InputFilter.number_of_bands", std::to_string(2));
+    config->set_property("InputFilter.number_of_taps", std::to_string(number_of_taps));
+    config->set_property("InputFilter.number_of_bands", std::to_string(number_of_bands));
     config->set_property("InputFilter.band1_begin", std::to_string(0.0));
     config->set_property("InputFilter.band1_end", std::to_string(0.48));
     config->set_property("InputFilter.band2_begin", std::to_string(0.52));

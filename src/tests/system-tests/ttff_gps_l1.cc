@@ -105,12 +105,14 @@ void receive_msg()
             //strftime(buf, sizeof(buf), "%d-%m-%Y-%H-%M-%S", &tstruct);
             if( ttff_msg != 0)
                 {
-                    TTFF_v.push_back(ttff_msg * FLAGS_fs_in); // Fix this !
+                    TTFF_v.push_back(ttff_msg / (100 * 10)); // Fix this !  averaging_depth * output_rate_ms
+                    receive_msg();
                 }
             //if(TTFF==0) receive_msg();
         }
 
     //}
+
     std::cout << "--------RECEIVEr msg thread stops " << std::endl;
     //std::cout<<"RECEIVER MSG THREAD STOP.\n";
     return;

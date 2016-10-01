@@ -36,6 +36,7 @@
  #include <sys/msg.h>
 #include <ctime>
 #include <chrono>
+#include <numeric>
 #include <string>
 #include <thread>
 #include "in_memory_configuration.h"
@@ -60,7 +61,7 @@ DEFINE_string(subdevice, "B:0", "USRP subdevice");
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-double TTFF;
+std::vector<double> TTFF_v;
 
 typedef struct  {
     long mtype;//required by sys v message
@@ -80,10 +81,10 @@ public:
 void receive_msg()
 {
     ttff_msgbuf msg;
-    double ttff_msg=0.0;
-    int msgrcv_size=sizeof(msg.ttff);
+    double ttff_msg = 0.0;
+    int msgrcv_size = sizeof(msg.ttff);
     int msqid;
-    key_t key=1101;
+    key_t key = 1101;
     while((msqid = msgget(key, 0644)) == -1){}
     //    if ((msqid = msgget(key, 0644)) == -1) { /* connect to the queue */
     //        perror("TTFF MSG QUEUE NOT AVAILABLE");
@@ -102,7 +103,10 @@ void receive_msg()
             //char       buf[80];
             //tstruct = *localtime(&jammer.timestamp);
             //strftime(buf, sizeof(buf), "%d-%m-%Y-%H-%M-%S", &tstruct);
-            TTFF = ttff_msg;
+            if( ttff_msg != 0)
+                {
+                    TTFF_v.push_back(ttff_msg * FLAGS_fs_in); // Fix this !
+                }
             //if(TTFF==0) receive_msg();
         }
 
@@ -289,22 +293,22 @@ int main(int argc, char **argv)
 {
     std::cout << "Running Time-To-First-Fix test..." << std::endl;
     int res = 0;
+    TTFF_v.clear();
     testing::InitGoogleTest(&argc, argv);
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
     //Create Sys V message queue
     key_t sysv_msg_key;
     int sysv_msqid;
-    //
-
-    sysv_msg_key=1101;
+    sysv_msg_key = 1101;
     int msgflg = IPC_CREAT | 0666;
     if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1){}
     //{
-    //    std::cout<<"SDRJD can not create message queues!\n";
+    //    std::cout<<"GNSS-SDR can not create message queues!\n";
     //    perror("msgget");
     //    throw new std::exception();
     //}
+
     std::thread receive_msg_thread(receive_msg);
     try
     {
@@ -316,12 +320,12 @@ int main(int argc, char **argv)
     }
     ttff_msgbuf msg;
     msg.mtype = 1;
-    msg.ttff = 1;
+    msg.ttff = 0;
     int msgsend_size;
-    msgsend_size=sizeof(msg.ttff);
+    msgsend_size = sizeof(msg.ttff);
     msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
     receive_msg_thread.join();
-    std::cout << "-------------------TTFF:" << TTFF << std::endl;
+    std::cout << "-------------------TTFF:" << std::accumulate(TTFF_v.begin(), TTFF_v.end(), 0.0) / TTFF_v.size() << std::endl;
     google::ShutDownCommandLineFlags();
     return res;
 }

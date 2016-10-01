@@ -91,12 +91,9 @@ void receive_msg()
     //        exit(1);
     //    }
 
-    //  msqid = msgget(key, 0644);
-    //while (keep_capturing==1) {
 
     if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
         {
-            //jammer=msg.jammer_msg;
             ttff_msg = msg.ttff;
             std::cout << "-----RECEIVED! " << ttff_msg << std::endl;
             //struct tm  tstruct;
@@ -106,6 +103,7 @@ void receive_msg()
             if( (ttff_msg != 0) && (ttff_msg != -1))
                 {
                     TTFF_v.push_back(ttff_msg / (100 * 10)); // Fix this !  averaging_depth * output_rate_ms
+                    std::cout << "Annotate: TTFF = " << ttff_msg / (100 * 10) << std::endl;
                 }
 
             if(ttff_msg != -1)
@@ -119,6 +117,17 @@ void receive_msg()
     std::cout << "--------RECEIVEr msg thread stops " << std::endl;
     //std::cout<<"RECEIVER MSG THREAD STOP.\n";
     return;
+}
+
+void print_TTFF_report(const std::vector<double> & ttff_v)
+{
+    std::vector<double> ttff = ttff_v;
+    double sum = std::accumulate(ttff.begin(), ttff.end(), 0.0);
+    double mean = sum / ttff.size();
+    double sq_sum = std::inner_product(ttff.begin(), ttff.end(), ttff.begin(), 0.0);
+    double stdev = std::sqrt(sq_sum / ttff.size() - mean * mean);
+    std::cout << "TTFF mean: " << mean << " [s]" << std::endl;
+    std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
 }
 
 
@@ -287,11 +296,14 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
             // if (pvt_fix) num_valid_measurements = num_valid_measurements + 1;
         }
     std::cout << "BYE " << num_measurements << std::endl;
+
     // Compute min, max, mean, stdev,
     //receive_msg_thread.join();
     // Print TTFF report
+    print_TTFF_report(TTFF_v);
 
 }
+
 
 
 int main(int argc, char **argv)

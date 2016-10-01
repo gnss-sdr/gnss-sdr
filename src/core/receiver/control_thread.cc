@@ -529,9 +529,10 @@ void ControlThread::sysv_queue_listener()
     int msqid;
     key_t key = 1102;
     // wait for the queue to be created
-    while((msqid = msgget(key, 0644)) == -1){}
+
     while(read_queue)
         {
+            while((msqid = msgget(key, 0644)) == -1){}
             if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
                 {
 

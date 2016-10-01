@@ -63,9 +63,9 @@ concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 double TTFF;
 
 typedef struct  {
-        long mtype;//required by sys v message
-        double ttff;
-    } ttff_msgbuf;
+    long mtype;//required by sys v message
+    double ttff;
+} ttff_msgbuf;
 
 
 
@@ -80,20 +80,20 @@ public:
 void receive_msg()
 {
     ttff_msgbuf msg;
-  double ttff_msg=0.0;
+    double ttff_msg=0.0;
     int msgrcv_size=sizeof(msg.ttff);
     int msqid;
     key_t key=1101;
     while((msqid = msgget(key, 0644)) == -1){}
-//    if ((msqid = msgget(key, 0644)) == -1) { /* connect to the queue */
-//        perror("TTFF MSG QUEUE NOT AVAILABLE");
-//        exit(1);
-//    }
+    //    if ((msqid = msgget(key, 0644)) == -1) { /* connect to the queue */
+    //        perror("TTFF MSG QUEUE NOT AVAILABLE");
+    //        exit(1);
+    //    }
 
-  //  msqid = msgget(key, 0644);
+    //  msqid = msgget(key, 0644);
     //while (keep_capturing==1) {
 
-        if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
+    if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
         {
             //jammer=msg.jammer_msg;
             ttff_msg = msg.ttff;
@@ -107,7 +107,7 @@ void receive_msg()
         }
 
     //}
-std::cout << "--------RECEIVEr msg thread stops " << std::endl;
+    std::cout << "--------RECEIVEr msg thread stops " << std::endl;
     //std::cout<<"RECEIVER MSG THREAD STOP.\n";
     return;
 }
@@ -161,13 +161,13 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("InputFilter.band2_error", std::to_string(1.0));
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", std::to_string(16));
-    config->set_property("InputFilter.sampling_frequency", std::to_string(4000000));
+    config->set_property("InputFilter.sampling_frequency", std::to_string(FLAGS_fs_in));
     config->set_property("InputFilter.IF", std::to_string(0));
     config->set_property("Resampler.implementation", "Pass_Through");
     config->set_property("Resampler.dump", "false");
     config->set_property("Resampler.item_type", "gr_complex");
-    config->set_property("Resampler.sample_freq_in", std::to_string(4000000));
-    config->set_property("Resampler.sample_freq_out", std::to_string(4000000));
+    config->set_property("Resampler.sample_freq_in", std::to_string(FLAGS_fs_in));
+    config->set_property("Resampler.sample_freq_out", std::to_string(FLAGS_fs_in));
 
     // Set the number of Channels
     config->set_property("Channels_1C.count", std::to_string(8));
@@ -279,7 +279,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
         }
     std::cout << "BYE " << num_measurements << std::endl;
     // Compute min, max, mean, stdev,
-//receive_msg_thread.join();
+    //receive_msg_thread.join();
     // Print TTFF report
 
 }
@@ -294,17 +294,17 @@ int main(int argc, char **argv)
     google::InitGoogleLogging(argv[0]);
     //Create Sys V message queue
     key_t sysv_msg_key;
-        int sysv_msqid;
-  //
+    int sysv_msqid;
+    //
 
-   sysv_msg_key=1101;
-int msgflg = IPC_CREAT | 0666;
-if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1){}
-//{
-//    std::cout<<"SDRJD can not create message queues!\n";
-//    perror("msgget");
-//    throw new std::exception();
-//}
+    sysv_msg_key=1101;
+    int msgflg = IPC_CREAT | 0666;
+    if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1){}
+    //{
+    //    std::cout<<"SDRJD can not create message queues!\n";
+    //    perror("msgget");
+    //    throw new std::exception();
+    //}
     std::thread receive_msg_thread(receive_msg);
     try
     {

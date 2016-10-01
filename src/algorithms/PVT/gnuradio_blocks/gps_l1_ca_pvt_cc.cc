@@ -179,6 +179,21 @@ std::map<int,Gps_Ephemeris> gps_l1_ca_pvt_cc::get_GPS_L1_ephemeris_map()
     return d_ls_pvt->gps_ephemeris_map;
 }
 
+bool gps_l1_ca_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
+{
+    /* Fill Sys V message structures */
+    int msgsend_size;
+    ttff_msgbuf msg;
+    msg.ttff = ttff.ttff;
+    msgsend_size = sizeof(msg.ttff);
+    msg.mtype = 1; /* default message ID */
+
+    /* SEND SOLUTION OVER A MESSAGE QUEUE */
+    /* non-blocking Sys V message send */
+    msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
+    return true;
+}
+
 gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         bool dump, std::string dump_filename,
         int averaging_depth,
@@ -284,6 +299,16 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
                     }
                 }
         }
+
+    // Create Sys V message queue
+    first_fix = true;
+    sysv_msg_key = 1101;
+    int msgflg = IPC_CREAT | 0666;
+    if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
+        {
+            std::cout << "GNSS-SDR can not create message queues!" << std::endl;
+            throw new std::exception();
+        }
 }
 
 
@@ -349,6 +374,14 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                     pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
                     if (pvt_result == true)
                         {
+                            if( first_fix == true)
+                                {
+                                    ttff_msgbuf ttff;
+                                    ttff.mtype = 1;
+                                    ttff.ttff = d_sample_counter;
+                                    send_sys_v_ttff_msg(ttff);
+                                    first_fix = false;
+                                }
                             d_kml_printer->print_position(d_ls_pvt, d_flag_averaging);
                             d_geojson_printer->print_position(d_ls_pvt, d_flag_averaging);
                             d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);

@@ -32,6 +32,9 @@
 
 #include <fstream>
 #include <string>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <gnuradio/block.h>
 #include "nmea_printer.h"
 #include "kml_printer.h"
@@ -136,6 +139,15 @@ private:
     std::shared_ptr<gps_l1_ca_ls_pvt> d_ls_pvt;
 
     std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+
+    bool first_fix;
+    key_t sysv_msg_key;
+    int sysv_msqid;
+    typedef struct  {
+        long mtype;//required by sys v message
+        double ttff;
+    } ttff_msgbuf;
+    bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
 
 public:
 

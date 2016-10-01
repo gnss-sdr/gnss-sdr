@@ -126,8 +126,15 @@ void print_TTFF_report(const std::vector<double> & ttff_v)
     double mean = sum / ttff.size();
     double sq_sum = std::inner_product(ttff.begin(), ttff.end(), ttff.begin(), 0.0);
     double stdev = std::sqrt(sq_sum / ttff.size() - mean * mean);
+    std::cout << "---------------------------" << std::endl;
+    std::cout << " Time-To-First FIX Report" << std::endl;
+    std::cout << "---------------------------" << std::endl;
+    std::cout << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): " << std::endl;
+    for(double ttff_ : ttff) std::cout << ttff_ << " ";
+    std::cout << std::endl;
     std::cout << "TTFF mean: " << mean << " [s]" << std::endl;
     std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
+    std::cout << "---------------------------" << std::endl;
 }
 
 
@@ -256,6 +263,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
             config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
             config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
             config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+            config2->set_property("PVT.flag_rtcm_server", "false");
 
 
             std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config2);

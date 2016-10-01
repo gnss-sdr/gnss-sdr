@@ -155,9 +155,11 @@ private:
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
     boost::thread keyboard_thread_;
+    boost::thread sysv_queue_thread_;
     boost::thread gps_acq_assist_data_collector_thread_;
     
     void keyboard_listener();
+    void sysv_queue_listener();
 
     // default filename for assistance data
     const std::string eph_default_xml_filename = "./gps_ephemeris.xml";

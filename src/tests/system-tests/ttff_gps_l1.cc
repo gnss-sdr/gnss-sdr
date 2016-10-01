@@ -111,6 +111,8 @@ void print_TTFF_report(const std::vector<double> & ttff_v)
     double mean = sum / ttff.size();
     double sq_sum = std::inner_product(ttff.begin(), ttff.end(), ttff.begin(), 0.0);
     double stdev = std::sqrt(sq_sum / ttff.size() - mean * mean);
+    auto max_ttff = std::max_element(std::begin(ttff), std::end(ttff));
+    auto min_ttff = std::min_element(std::begin(ttff), std::end(ttff));
     std::cout << "---------------------------" << std::endl;
     std::cout << " Time-To-First FIX Report" << std::endl;
     std::cout << "---------------------------" << std::endl;
@@ -118,6 +120,8 @@ void print_TTFF_report(const std::vector<double> & ttff_v)
     for(double ttff_ : ttff) std::cout << ttff_ << " ";
     std::cout << std::endl;
     std::cout << "TTFF mean: " << mean << " [s]" << std::endl;
+    std::cout << "TTFF max: " << *max_ttff << " [s]" << std::endl;
+    std::cout << "TTFF min: " << *min_ttff << " [s]" << std::endl;
     std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
     std::cout << "---------------------------" << std::endl;
 }
@@ -331,16 +335,16 @@ int main(int argc, char **argv)
 
     // Terminate the queue thread
     ttff_msgbuf msg;
-    ttff_msgbuf msg_stop;
+    //ttff_msgbuf msg_stop;
     msg.mtype = 1;
     msg.ttff = -1;
-    msg_stop.mtype = 1;
-    msg_stop.ttff = 200;
+    //msg_stop.mtype = 1;
+    //msg_stop.ttff = 200;
     int msgsend_size;
     msgsend_size = sizeof(msg.ttff);
     msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
     receive_msg_thread.join();
-    msgsnd(sysv_msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
+    //msgsnd(sysv_msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
     google::ShutDownCommandLineFlags();
     return res;
 }

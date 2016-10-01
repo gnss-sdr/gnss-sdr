@@ -376,6 +376,9 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                         {
                             if( first_fix == true)
                                 {
+                                    std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+                                              << " UTC is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                                              << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
                                     ttff_msgbuf ttff;
                                     ttff.mtype = 1;
                                     ttff.ttff = d_sample_counter;

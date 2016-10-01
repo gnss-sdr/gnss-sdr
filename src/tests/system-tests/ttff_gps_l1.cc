@@ -142,6 +142,24 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     double gain_dB = 40.0;
     int number_of_taps = 11;
     int number_of_bands = 2;
+    float band1_begin = 0.0;
+    float band1_end = 0.48;
+    float band2_begin = 0.52;
+    float band2_end = 1.0;
+    float ampl1_begin = 1.0;
+    float ampl1_end = 1.0;
+    float ampl2_begin = 0.0;
+    float ampl2_end = 0.0;
+    float band1_error = 1.0;
+    float band2_error = 1.0;
+    int grid_density = 16;
+    float zero = 0.0;
+    int number_of_channels = 8;
+    int in_acquisition = 1;
+
+    float threshold = 0.01;
+    float doppler_max = 8000.0;
+    float doppler_step = 500.0;
 
     // Set the Signal Source
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
@@ -165,20 +183,20 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("InputFilter.taps_item_type", "float");
     config->set_property("InputFilter.number_of_taps", std::to_string(number_of_taps));
     config->set_property("InputFilter.number_of_bands", std::to_string(number_of_bands));
-    config->set_property("InputFilter.band1_begin", std::to_string(0.0));
-    config->set_property("InputFilter.band1_end", std::to_string(0.48));
-    config->set_property("InputFilter.band2_begin", std::to_string(0.52));
-    config->set_property("InputFilter.band2_end", std::to_string(1.0));
-    config->set_property("InputFilter.ampl1_begin", std::to_string(1.0));
-    config->set_property("InputFilter.ampl1_end", std::to_string(1.0));
-    config->set_property("InputFilter.ampl2_begin", std::to_string(0.0));
-    config->set_property("InputFilter.ampl2_end", std::to_string(0.0));
-    config->set_property("InputFilter.band1_error", std::to_string(1.0));
-    config->set_property("InputFilter.band2_error", std::to_string(1.0));
+    config->set_property("InputFilter.band1_begin", std::to_string(band1_begin));
+    config->set_property("InputFilter.band1_end", std::to_string(band1_end));
+    config->set_property("InputFilter.band2_begin", std::to_string(band2_begin));
+    config->set_property("InputFilter.band2_end", std::to_string(band2_end));
+    config->set_property("InputFilter.ampl1_begin", std::to_string(ampl1_begin));
+    config->set_property("InputFilter.ampl1_end", std::to_string(ampl1_end));
+    config->set_property("InputFilter.ampl2_begin", std::to_string(ampl2_begin));
+    config->set_property("InputFilter.ampl2_end", std::to_string(ampl2_end));
+    config->set_property("InputFilter.band1_error", std::to_string(band1_error));
+    config->set_property("InputFilter.band2_error", std::to_string(band2_error));
     config->set_property("InputFilter.filter_type", "bandpass");
-    config->set_property("InputFilter.grid_density", std::to_string(16));
+    config->set_property("InputFilter.grid_density", std::to_string(grid_density));
     config->set_property("InputFilter.sampling_frequency", std::to_string(FLAGS_fs_in));
-    config->set_property("InputFilter.IF", std::to_string(0));
+    config->set_property("InputFilter.IF", std::to_string(zero));
     config->set_property("Resampler.implementation", "Pass_Through");
     config->set_property("Resampler.dump", "false");
     config->set_property("Resampler.item_type", "gr_complex");
@@ -186,18 +204,18 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("Resampler.sample_freq_out", std::to_string(FLAGS_fs_in));
 
     // Set the number of Channels
-    config->set_property("Channels_1C.count", std::to_string(8));
-    config->set_property("Channels.in_acquisition", std::to_string(1));
+    config->set_property("Channels_1C.count", std::to_string(number_of_channels));
+    config->set_property("Channels.in_acquisition", std::to_string(in_acquisition));
     config->set_property("Channel.signal", "1C");
 
     // Set Acquisition
     config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
     config->set_property("Acquisition_1C.item_type", "gr_complex");
-    config->set_property("Acquisition_1C.if", std::to_string(0));
+    config->set_property("Acquisition_1C.if", std::to_string(zero));
     config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(1));
-    config->set_property("Acquisition_1C.threshold", std::to_string(0.01));
-    config->set_property("Acquisition_1C.doppler_max", std::to_string(8000));
-    config->set_property("Acquisition_1C.doppler_step", std::to_string(500));
+    config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
+    config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
+    config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
     config->set_property("Acquisition_1C.bit_transition_flag", "false");
     config->set_property("Acquisition_1C.max_dwells", std::to_string(1));
     config->set_property("Acquisition_1C.tong_init_val", std::to_string(2));

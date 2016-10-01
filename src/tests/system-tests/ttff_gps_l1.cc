@@ -103,12 +103,15 @@ void receive_msg()
             //char       buf[80];
             //tstruct = *localtime(&jammer.timestamp);
             //strftime(buf, sizeof(buf), "%d-%m-%Y-%H-%M-%S", &tstruct);
-            if( ttff_msg != 0)
+            if( (ttff_msg != 0) && (ttff_msg != -1))
                 {
                     TTFF_v.push_back(ttff_msg / (100 * 10)); // Fix this !  averaging_depth * output_rate_ms
+                }
+
+            if(ttff_msg != -1)
+                {
                     receive_msg();
                 }
-            //if(TTFF==0) receive_msg();
         }
 
     //}
@@ -322,7 +325,7 @@ int main(int argc, char **argv)
     }
     ttff_msgbuf msg;
     msg.mtype = 1;
-    msg.ttff = 0;
+    msg.ttff = -1;
     int msgsend_size;
     msgsend_size = sizeof(msg.ttff);
     msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);

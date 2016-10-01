@@ -128,7 +128,6 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config2;
     unsigned int num_measurements = 0;
-    unsigned int num_valid_measurements = 0;
     config = std::make_shared<InMemoryConfiguration>();
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
@@ -300,10 +299,18 @@ int main(int argc, char **argv)
 
     // Create Sys V message queue to read TFFF measurements
     key_t sysv_msg_key;
+    key_t sysv_stop_key;
     int sysv_msqid;
+    int sysv_msqid_stop;
     sysv_msg_key = 1101;
+    sysv_stop_key = 1102;
     int msgflg = IPC_CREAT | 0666;
     if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
+    {
+        std::cout<<"GNSS-SDR can not create message queues!" << std::endl;
+        throw new std::exception();
+    }
+    if ((sysv_msqid_stop = msgget(sysv_stop_key, msgflg )) == -1)
     {
         std::cout<<"GNSS-SDR can not create message queues!" << std::endl;
         throw new std::exception();
@@ -324,13 +331,16 @@ int main(int argc, char **argv)
 
     // Terminate the queue thread
     ttff_msgbuf msg;
+    ttff_msgbuf msg_stop;
     msg.mtype = 1;
     msg.ttff = -1;
+    msg_stop.mtype = 1;
+    msg_stop.ttff = 200;
     int msgsend_size;
     msgsend_size = sizeof(msg.ttff);
     msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
     receive_msg_thread.join();
-
+    msgsnd(sysv_msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
     google::ShutDownCommandLineFlags();
     return res;
 }

@@ -30,9 +30,9 @@
  * -------------------------------------------------------------------------
  */
 
-#include <ctime>
 #include <chrono>
 #include <cstdlib>
+#include <ctime>
 #include <numeric>
 #include <string>
 #include <sys/types.h>
@@ -42,11 +42,11 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
-#include "in_memory_configuration.h"
-#include "file_configuration.h"
-#include "concurrent_queue.h"
 #include "concurrent_map.h"
+#include "concurrent_queue.h"
 #include "control_thread.h"
+#include "file_configuration.h"
+#include "in_memory_configuration.h"
 #include "gnss_flowgraph.h"
 #include "gps_acq_assist.h"
 
@@ -343,6 +343,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
             std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
             if(n < FLAGS_num_measurements - 1)
                 {
+                    std::srand(std::time(0)); // use current time as seed for random generator
                     int random_variable = std::rand();
                     float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
                     int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);

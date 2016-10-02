@@ -306,7 +306,7 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
         {
             std::cout << "Cold start." << std::endl;
         }
-    std::cout << "AGNSS: ";
+    std::cout << "A-GNSS: ";
     if (agnss && read_ephemeris)
         {
             std::cout << "Enabled." << std::endl;

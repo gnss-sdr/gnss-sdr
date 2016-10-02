@@ -275,6 +275,16 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
                     }
                 }
         }
+
+    // Create Sys V message queue
+    first_fix = true;
+    sysv_msg_key = 1101;
+    int msgflg = IPC_CREAT | 0666;
+    if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
+        {
+            std::cout << "GNSS-SDR can not create message queues!" << std::endl;
+            throw new std::exception();
+        }
 }
 
 
@@ -301,6 +311,22 @@ void hybrid_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronizatio
             //DLOG(INFO) << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
             //          << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
         }
+}
+
+
+bool hybrid_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
+{
+    /* Fill Sys V message structures */
+    int msgsend_size;
+    ttff_msgbuf msg;
+    msg.ttff = ttff.ttff;
+    msgsend_size = sizeof(msg.ttff);
+    msg.mtype = 1; /* default message ID */
+
+    /* SEND SOLUTION OVER A MESSAGE QUEUE */
+    /* non-blocking Sys V message send */
+    msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
+    return true;
 }
 
 

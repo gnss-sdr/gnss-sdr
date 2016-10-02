@@ -37,6 +37,9 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/chrono.hpp>
 #include <gnuradio/message.h>
@@ -126,6 +129,7 @@ void ControlThread::run()
     assist_GNSS();
     // start the keyboard_listener thread
     keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
+    sysv_queue_thread_ = boost::thread(&ControlThread::sysv_queue_listener, this);
 
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
@@ -141,9 +145,11 @@ void ControlThread::run()
     //Join keyboard thread
 #ifdef OLD_BOOST
     keyboard_thread_.timed_join(boost::posix_time::seconds(1));
+    sysv_queue_thread_.timed_join(boost::posix_time::seconds(1));
 #endif
 #ifndef OLD_BOOST
     keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
+    sysv_queue_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
 #endif
 
     LOG(INFO) << "Flowgraph stopped";
@@ -506,6 +512,41 @@ void ControlThread::gps_acq_assist_data_collector()
                     // insert new acq record
                     LOG(INFO) << "New acq assist record inserted";
                     global_gps_acq_assist_map.write(gps_acq.i_satellite_PRN, gps_acq);
+                }
+        }
+}
+
+void ControlThread::sysv_queue_listener()
+{
+    typedef struct  {
+        long mtype; //required by sys v message
+        double ttff;
+    } ttff_msgbuf;
+    bool read_queue = true;
+    ttff_msgbuf msg;
+    double ttff_msg = 0.0;
+    int msgrcv_size = sizeof(msg.ttff);
+    int msqid;
+    key_t key = 1102;
+    // wait for the queue to be created
+
+    while(read_queue)
+        {
+            while((msqid = msgget(key, 0644)) == -1){}
+            if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
+                {
+
+                    ttff_msg = msg.ttff;
+                    if(ttff_msg == 200)
+                        {
+                            std::cout << "Quit order received, stopping GNSS-SDR !!" << std::endl;
+                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+                            if (control_queue_ != gr::msg_queue::sptr())
+                                {
+                                    control_queue_->handle(cmf->GetQueueMessage(200, 0));
+                                }
+                            read_queue = false;
+                        }
                 }
         }
 }

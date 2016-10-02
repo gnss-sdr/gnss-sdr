@@ -164,14 +164,14 @@ endif(ENABLE_CUDA)
 
 add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
 
+if(ENABLE_UNIT_TESTING)
+    add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 
-add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
-
-add_custom_command(TARGET run_tests POST_BUILD
+    add_custom_command(TARGET run_tests POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:run_tests>
                        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:run_tests>)
 
-target_link_libraries(run_tests ${CLANG_FLAGS}
+    target_link_libraries(run_tests ${CLANG_FLAGS}
                                 ${Boost_LIBRARIES}
                                 ${GFLAGS_LIBS}
                                 ${GLOG_LIBRARIES}
@@ -191,8 +191,8 @@ target_link_libraries(run_tests ${CLANG_FLAGS}
                                 pvt_gr_blocks
                                 ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
-)
-
+    )
+endif(ENABLE_UNIT_TESTING)
 
 #########################################################
 #  Adding Tests to Ctest
@@ -372,3 +372,33 @@ endif(NOT ${GTEST_DIR_LOCAL})
 
 add_dependencies(check control_thread_test flowgraph_test gnss_block_test
     gnuradio_block_test trk_test)
+
+
+# Addition of System Tests
+if(ENABLE_SYSTEM_TESTING)
+    add_executable(ttff
+        ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/ttff_gps_l1.cc )
+    if(NOT ${GTEST_DIR_LOCAL})
+        add_dependencies(ttff gtest-${gtest_RELEASE})
+    else(NOT ${GTEST_DIR_LOCAL})
+        add_dependencies(ttff gtest)
+    endif(NOT ${GTEST_DIR_LOCAL})
+    target_link_libraries(ttff
+        ${Boost_LIBRARIES}
+        ${GFLAGS_LIBS}
+        ${GLOG_LIBRARIES}
+        ${GTEST_LIBRARIES}
+        ${GNURADIO_RUNTIME_LIBRARIES}
+        ${GNURADIO_BLOCKS_LIBRARIES}
+        ${GNURADIO_FILTER_LIBRARIES}
+        ${GNURADIO_ANALOG_LIBRARIES}
+        ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+        gnss_sp_libs
+        gnss_rx
+        gnss_system_parameters
+    )
+    add_custom_command(TARGET ttff POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:ttff>
+        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:ttff>
+    )
+endif(ENABLE_SYSTEM_TESTING)

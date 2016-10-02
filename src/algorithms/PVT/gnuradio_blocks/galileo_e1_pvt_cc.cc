@@ -198,6 +198,16 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, bool dump, std::str
                     }
                 }
         }
+
+    // Create Sys V message queue
+    first_fix = true;
+    sysv_msg_key = 1101;
+    int msgflg = IPC_CREAT | 0666;
+    if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
+        {
+            std::cout << "GNSS-SDR can not create message queues!" << std::endl;
+            throw new std::exception();
+        }
 }
 
 
@@ -226,6 +236,21 @@ void galileo_e1_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchroniz
         }
 }
 
+
+bool galileo_e1_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
+{
+    /* Fill Sys V message structures */
+    int msgsend_size;
+    ttff_msgbuf msg;
+    msg.ttff = ttff.ttff;
+    msgsend_size = sizeof(msg.ttff);
+    msg.mtype = 1; /* default message ID */
+
+    /* SEND SOLUTION OVER A MESSAGE QUEUE */
+    /* non-blocking Sys V message send */
+    msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
+    return true;
+}
 
 int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items  __attribute__((unused)))
@@ -267,6 +292,17 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
 
                     if (pvt_result == true)
                         {
+                            if( first_fix == true)
+                                {
+                                    std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+                                              << " UTC is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                                              << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
+                                    ttff_msgbuf ttff;
+                                    ttff.mtype = 1;
+                                    ttff.ttff = d_sample_counter;
+                                    send_sys_v_ttff_msg(ttff);
+                                    first_fix = false;
+                                }
                             d_kml_dump->print_position(d_ls_pvt, d_flag_averaging);
                             d_geojson_printer->print_position(d_ls_pvt, d_flag_averaging);
                             d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);

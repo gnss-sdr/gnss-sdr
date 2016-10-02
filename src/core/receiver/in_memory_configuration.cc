@@ -36,7 +36,9 @@
 #include "string_converter.h"
 
 InMemoryConfiguration::InMemoryConfiguration()
-{}
+{
+    std::unique_ptr<StringConverter> converter_(new StringConverter);
+}
 
 
 InMemoryConfiguration::~InMemoryConfiguration()

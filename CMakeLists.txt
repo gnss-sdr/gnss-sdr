@@ -60,7 +60,7 @@ if(ENABLE_PACKAGING)
 endif(ENABLE_PACKAGING)
 
 # Testing
-option(ENABLE_SYSTEM_TESTING "Builds system tests" ON)
+option(ENABLE_SYSTEM_TESTING "Builds system tests" OFF)
 option(ENABLE_UNIT_TESTING "Builds unit tests" ON)
 
 ###############################

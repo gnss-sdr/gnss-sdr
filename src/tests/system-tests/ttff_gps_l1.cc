@@ -54,7 +54,9 @@ DEFINE_int32(fs_in, 4000000, "Sampling rate, in Ms/s");
 DEFINE_int32(max_measurement_duration, 90, "Maximum time waiting for a position fix, in seconds");
 DEFINE_int32(num_measurements, 2, "Number of measurements");
 DEFINE_string(device_address, "192.168.40.2", "USRP device IP address");
-DEFINE_string(subdevice, "B:0", "USRP subdevice");
+DEFINE_string(subdevice, "A:0", "USRP subdevice");
+DEFINE_int32(output_rate_ms, 100, "Rate at which PVT solutions will be computed, in ms.");
+DEFINE_int32(averaging_depth, 10, "size of the buffer performing a moving average");
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -63,7 +65,7 @@ concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 std::vector<double> TTFF_v;
 
 typedef struct  {
-    long mtype; //required by sys v message
+    long mtype; // required by SysV message
     double ttff;
 } ttff_msgbuf;
 
@@ -88,8 +90,8 @@ void receive_msg()
             ttff_msg = msg.ttff;
             if( (ttff_msg != 0) && (ttff_msg != -1))
                 {
-                    TTFF_v.push_back(ttff_msg / (100 * 10)); // Fix this !  averaging_depth * output_rate_ms
-                    LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (100 * 10) << "[s]";
+                    TTFF_v.push_back(ttff_msg / static_cast<double>(FLAGS_output_rate_ms * FLAGS_averaging_depth));
+                    LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / static_cast<double>(FLAGS_output_rate_ms * FLAGS_averaging_depth) << "[s]";
                     // Stop the receiver
                     while((msqid_stop = msgget(key_stop, 0644)) == -1){}
                     double msgsend_size = sizeof(msg_stop.ttff);
@@ -133,10 +135,12 @@ void print_TTFF_report(const std::vector<double> & ttff_v)
 
 TEST(TTFF_GPS_L1_CA_Test, ColdStart)
 {
-    std::shared_ptr<InMemoryConfiguration> config;
-    std::shared_ptr<FileConfiguration> config2;
     unsigned int num_measurements = 0;
+
+    std::shared_ptr<InMemoryConfiguration> config;
     config = std::make_shared<InMemoryConfiguration>();
+
+    std::shared_ptr<FileConfiguration> config2;
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
     config2 = std::make_shared<FileConfiguration>(filename);
@@ -168,6 +172,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     int tong_init_val = 2;
     int tong_max_val = 10;
     int tong_max_dwells = 30;
+    int coherent_integration_time_ms = 1;
 
 
     // Set the Signal Source
@@ -221,7 +226,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
     config->set_property("Acquisition_1C.item_type", "gr_complex");
     config->set_property("Acquisition_1C.if", std::to_string(zero));
-    config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(1));
+    config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
     config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
@@ -234,7 +239,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     // Set Tracking
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
-    config->set_property("Tracking_1C.if", std::to_string(0));
+    config->set_property("Tracking_1C.if", std::to_string(zero));
     config->set_property("Tracking_1C.dump", "false");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
     config->set_property("Tracking_1C.pll_bw_hz", std::to_string(30.0));
@@ -254,9 +259,9 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
 
     // Set PVT
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-    config->set_property("PVT.averaging_depth", std::to_string(10));
+    config->set_property("PVT.averaging_depth", std::to_string(FLAGS_averaging_depth));
     config->set_property("PVT.flag_averaging", "true");
-    config->set_property("PVT.output_rate_ms", std::to_string(100));
+    config->set_property("PVT.output_rate_ms", std::to_string(FLAGS_output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(500));
     config->set_property("PVT.dump_filename", "./PVT");
     config->set_property("PVT.nmea_dump_filename", "./gnss_sdr_pvt.nmea");
@@ -278,7 +283,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
             config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
             config2->set_property("PVT.flag_rtcm_server", "false");
 
-            std::unique_ptr<ControlThread> control_thread(new ControlThread(config2));
+            std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
 
             // record startup time
             struct timeval tv;
@@ -314,7 +319,6 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
 
     // Print TTFF report
     print_TTFF_report(TTFF_v);
-
 }
 
 
@@ -328,7 +332,7 @@ int main(int argc, char **argv)
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
 
-    // Create Sys V message queue to read TFFF measurements
+    // Create SysV message queue to read TFFF measurements
     key_t sysv_msg_key;
     int sysv_msqid;
     sysv_msg_key = 1101;

@@ -376,6 +376,14 @@ add_dependencies(check control_thread_test flowgraph_test gnss_block_test
 
 # Addition of System Tests
 if(ENABLE_SYSTEM_TESTING)
+    set(HOST_SYSTEM "Unknown")
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        set(HOST_SYSTEM "GNU/LINUX ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCH_}")
+    endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set(HOST_SYSTEM "MacOS")
+    endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    add_definitions(-DHOST_SYSTEM="${HOST_SYSTEM}")
     add_executable(ttff
         ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/ttff_gps_l1.cc )
     if(NOT ${GTEST_DIR_LOCAL})

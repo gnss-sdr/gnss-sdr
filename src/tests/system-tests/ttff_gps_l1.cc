@@ -76,7 +76,7 @@ class TTFF_GPS_L1_CA_Test: public ::testing::Test
 public:
     void config_1();
     void config_2();
-    void print_TTFF_report(const std::vector<double> & ttff_v);
+    void print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_);
 
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config2;
@@ -267,9 +267,13 @@ void receive_msg()
 }
 
 
-void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v)
+void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_)
 {
     std::vector<double> ttff = ttff_v;
+    bool read_ephemeris;
+    read_ephemeris = config->property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+    bool agnss;
+    agnss = config->property("GNSS-SDR.SUPL_gps_enabled", "false");
     double sum = std::accumulate(ttff.begin(), ttff.end(), 0.0);
     double mean = sum / ttff.size();
     double sq_sum = std::inner_product(ttff.begin(), ttff.end(), ttff.begin(), 0.0);
@@ -279,6 +283,24 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v)
     std::cout << "---------------------------" << std::endl;
     std::cout << " Time-To-First-Fix Report" << std::endl;
     std::cout << "---------------------------" << std::endl;
+    std::cout << "Initial receiver status: ";
+    if (read_ephemeris)
+        {
+            std::cout << "Hot start." << std::endl;
+        }
+    else
+        {
+            std::cout << "Cold start." << std::endl;
+        }
+    std::cout << "AGNSS: ";
+    if (agnss && read_ephemeris)
+        {
+            std::cout << "Enabled." << std::endl;
+        }
+    else
+        {
+            std::cout << "Disabled." << std::endl;
+        }
     std::cout << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
     for(double ttff_ : ttff) std::cout << ttff_ << " ";
     std::cout << std::endl;
@@ -289,6 +311,7 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v)
             std::cout << "TTFF min: " << *min_ttff << " [s]" << std::endl;
         }
     std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
+    std::cout << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
     std::cout << "---------------------------" << std::endl;
 }
 
@@ -304,7 +327,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
 
     config_2();
     // Ensure Cold Start
-    config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+    config2->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
     config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
     config2->set_property("PVT.flag_rtcm_server", "false");
 
@@ -357,7 +380,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
         }
 
     // Print TTFF report
-    print_TTFF_report(TTFF_v);
+    print_TTFF_report(TTFF_v, config);
 }
 
 

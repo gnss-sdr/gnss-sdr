@@ -378,7 +378,7 @@ add_dependencies(check control_thread_test flowgraph_test gnss_block_test
 if(ENABLE_SYSTEM_TESTING)
     set(HOST_SYSTEM "Unknown")
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        set(HOST_SYSTEM "GNU/LINUX ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCH_}")
+        set(HOST_SYSTEM "GNU/Linux ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCH_}")
     endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         set(HOST_SYSTEM "MacOS")

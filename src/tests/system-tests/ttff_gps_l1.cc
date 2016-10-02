@@ -32,6 +32,7 @@
 
 #include <ctime>
 #include <chrono>
+#include <cstdlib>
 #include <numeric>
 #include <string>
 #include <sys/types.h>
@@ -70,111 +71,55 @@ typedef struct  {
 } ttff_msgbuf;
 
 
-void receive_msg()
+
+class TTFF_GPS_L1_CA_Test: public ::testing::Test
 {
-    ttff_msgbuf msg;
-    ttff_msgbuf msg_stop;
-    msg_stop.mtype = 1;
-    msg_stop.ttff = 200;
-    double ttff_msg = 0.0;
-    int msgrcv_size = sizeof(msg.ttff);
-    int msqid;
-    int msqid_stop;
-    key_t key = 1101;
-    key_t key_stop = 1102;
-    // wait for the queue to be created
-    while((msqid = msgget(key, 0644)) == -1){}
-
-    if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
-        {
-            ttff_msg = msg.ttff;
-            if( (ttff_msg != 0) && (ttff_msg != -1))
-                {
-                    TTFF_v.push_back(ttff_msg / static_cast<double>(FLAGS_output_rate_ms * FLAGS_averaging_depth));
-                    LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / static_cast<double>(FLAGS_output_rate_ms * FLAGS_averaging_depth) << "[s]";
-                    // Stop the receiver
-                    while((msqid_stop = msgget(key_stop, 0644)) == -1){}
-                    double msgsend_size = sizeof(msg_stop.ttff);
-                    msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
-                }
-
-            if(ttff_msg != -1)
-                {
-                    receive_msg();
-                }
-        }
-    return;
-}
-
-
-void print_TTFF_report(const std::vector<double> & ttff_v)
-{
-    std::vector<double> ttff = ttff_v;
-    double sum = std::accumulate(ttff.begin(), ttff.end(), 0.0);
-    double mean = sum / ttff.size();
-    double sq_sum = std::inner_product(ttff.begin(), ttff.end(), ttff.begin(), 0.0);
-    double stdev = std::sqrt(sq_sum / ttff.size() - mean * mean);
-    auto max_ttff = std::max_element(std::begin(ttff), std::end(ttff));
-    auto min_ttff = std::min_element(std::begin(ttff), std::end(ttff));
-    std::cout << "---------------------------" << std::endl;
-    std::cout << " Time-To-First-Fix Report" << std::endl;
-    std::cout << "---------------------------" << std::endl;
-    std::cout << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
-    for(double ttff_ : ttff) std::cout << ttff_ << " ";
-    std::cout << std::endl;
-    std::cout << "TTFF mean: " << mean << " [s]" << std::endl;
-    if (ttff.size() > 0)
-        {
-            std::cout << "TTFF max: " << *max_ttff << " [s]" << std::endl;
-            std::cout << "TTFF min: " << *min_ttff << " [s]" << std::endl;
-        }
-    std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
-    std::cout << "---------------------------" << std::endl;
-}
-
-
-TEST(TTFF_GPS_L1_CA_Test, ColdStart)
-{
-    unsigned int num_measurements = 0;
-
+public:
+    void config_1();
+    void config_2();
     std::shared_ptr<InMemoryConfiguration> config;
-    config = std::make_shared<InMemoryConfiguration>();
-
     std::shared_ptr<FileConfiguration> config2;
-    std::string path = std::string(TEST_PATH);
-    std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
-    config2 = std::make_shared<FileConfiguration>(filename);
-    config2->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
 
-    double central_freq = 1575420000.0;
-    double gain_dB = 40.0;
-    int number_of_taps = 11;
-    int number_of_bands = 2;
-    float band1_begin = 0.0;
-    float band1_end = 0.48;
-    float band2_begin = 0.52;
-    float band2_end = 1.0;
-    float ampl1_begin = 1.0;
-    float ampl1_end = 1.0;
-    float ampl2_begin = 0.0;
-    float ampl2_end = 0.0;
-    float band1_error = 1.0;
-    float band2_error = 1.0;
-    int grid_density = 16;
-    float zero = 0.0;
-    int number_of_channels = 8;
-    int in_acquisition = 1;
+    const double central_freq = 1575420000.0;
+    const double gain_dB = 40.0;
 
-    float threshold = 0.01;
-    float doppler_max = 8000.0;
-    float doppler_step = 500.0;
-    int max_dwells = 1;
-    int tong_init_val = 2;
-    int tong_max_val = 10;
-    int tong_max_dwells = 30;
-    int coherent_integration_time_ms = 1;
+    const int number_of_taps = 11;
+    const int number_of_bands = 2;
+    const float band1_begin = 0.0;
+    const float band1_end = 0.48;
+    const float band2_begin = 0.52;
+    const float band2_end = 1.0;
+    const float ampl1_begin = 1.0;
+    const float ampl1_end = 1.0;
+    const float ampl2_begin = 0.0;
+    const float ampl2_end = 0.0;
+    const float band1_error = 1.0;
+    const float band2_error = 1.0;
+    const int grid_density = 16;
+    const float zero = 0.0;
+    const int number_of_channels = 8;
+    const int in_acquisition = 1;
+
+    const float threshold = 0.01;
+    const float doppler_max = 8000.0;
+    const float doppler_step = 500.0;
+    const int max_dwells = 1;
+    const int tong_init_val = 2;
+    const int tong_max_val = 10;
+    const int tong_max_dwells = 30;
+    const int coherent_integration_time_ms = 1;
+
+    const float pll_bw_hz = 30.0;
+    const float dll_bw_hz = 4.0;
+    const float early_late_space_chips = 0.5;
+
+    const int display_rate_ms = 500;
+};
 
 
+void TTFF_GPS_L1_CA_Test::config_1()
+{
+    config = std::make_shared<InMemoryConfiguration>();
     // Set the Signal Source
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
     config->set_property("SignalSource.item_type", "cshort");
@@ -242,10 +187,9 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("Tracking_1C.if", std::to_string(zero));
     config->set_property("Tracking_1C.dump", "false");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
-    config->set_property("Tracking_1C.pll_bw_hz", std::to_string(30.0));
-    config->set_property("Tracking_1C.dll_bw_hz", std::to_string(4.0));
-    config->set_property("Tracking_1C.order", std::to_string(3));
-    config->set_property("Tracking_1C.early_late_space_chips", std::to_string(0.5));
+    config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));
+    config->set_property("Tracking_1C.dll_bw_hz", std::to_string(dll_bw_hz));
+    config->set_property("Tracking_1C.early_late_space_chips", std::to_string(early_late_space_chips));
 
     // Set Telemetry
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
@@ -262,7 +206,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("PVT.averaging_depth", std::to_string(FLAGS_averaging_depth));
     config->set_property("PVT.flag_averaging", "true");
     config->set_property("PVT.output_rate_ms", std::to_string(FLAGS_output_rate_ms));
-    config->set_property("PVT.display_rate_ms", std::to_string(500));
+    config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");
     config->set_property("PVT.nmea_dump_filename", "./gnss_sdr_pvt.nmea");
     config->set_property("PVT.flag_nmea_tty_port", "false");
@@ -271,24 +215,107 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("PVT.flag_rtcm_tty_port", "false");
     config->set_property("PVT.rtcm_dump_devname", "/dev/pts/1");
     config->set_property("PVT.dump", "false");
+}
 
 
-    int n;
-    for(n = 0; n < FLAGS_num_measurements; n++)
+void TTFF_GPS_L1_CA_Test::config_2()
+{
+    std::string path = std::string(TEST_PATH);
+    std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
+    config2 = std::make_shared<FileConfiguration>(filename);
+    config2->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
+}
+
+
+void receive_msg()
+{
+    ttff_msgbuf msg;
+    ttff_msgbuf msg_stop;
+    msg_stop.mtype = 1;
+    msg_stop.ttff = 200;
+    double ttff_msg = 0.0;
+    int msgrcv_size = sizeof(msg.ttff);
+    int msqid;
+    int msqid_stop;
+    key_t key = 1101;
+    key_t key_stop = 1102;
+    // wait for the queue to be created
+    while((msqid = msgget(key, 0644)) == -1){}
+
+    if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
         {
-            // reset start( hot /warm / cold )
-            // COLD START
-            config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
-            config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
-            config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
-            config2->set_property("PVT.flag_rtcm_server", "false");
+            ttff_msg = msg.ttff;
+            if( (ttff_msg != 0) && (ttff_msg != -1))
+                {
+                    TTFF_v.push_back(ttff_msg / static_cast<double>(FLAGS_output_rate_ms * FLAGS_averaging_depth));
+                    LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / static_cast<double>(FLAGS_output_rate_ms * FLAGS_averaging_depth) << "[s]";
+                    // Stop the receiver
+                    while((msqid_stop = msgget(key_stop, 0644)) == -1){}
+                    double msgsend_size = sizeof(msg_stop.ttff);
+                    msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
+                }
 
+            if(ttff_msg != -1)
+                {
+                    receive_msg();
+                }
+        }
+    return;
+}
+
+
+void print_TTFF_report(const std::vector<double> & ttff_v)
+{
+    std::vector<double> ttff = ttff_v;
+    double sum = std::accumulate(ttff.begin(), ttff.end(), 0.0);
+    double mean = sum / ttff.size();
+    double sq_sum = std::inner_product(ttff.begin(), ttff.end(), ttff.begin(), 0.0);
+    double stdev = std::sqrt(sq_sum / ttff.size() - mean * mean);
+    auto max_ttff = std::max_element(std::begin(ttff), std::end(ttff));
+    auto min_ttff = std::min_element(std::begin(ttff), std::end(ttff));
+    std::cout << "---------------------------" << std::endl;
+    std::cout << " Time-To-First-Fix Report" << std::endl;
+    std::cout << "---------------------------" << std::endl;
+    std::cout << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
+    for(double ttff_ : ttff) std::cout << ttff_ << " ";
+    std::cout << std::endl;
+    std::cout << "TTFF mean: " << mean << " [s]" << std::endl;
+    if (ttff.size() > 0)
+        {
+            std::cout << "TTFF max: " << *max_ttff << " [s]" << std::endl;
+            std::cout << "TTFF min: " << *min_ttff << " [s]" << std::endl;
+        }
+    std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
+    std::cout << "---------------------------" << std::endl;
+}
+
+
+TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
+{
+    unsigned int num_measurements = 0;
+
+    config_1();
+    // Ensure Cold Start
+    config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
+    config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+
+    config_2();
+    // Ensure Cold Start
+    config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+    config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+    config2->set_property("PVT.flag_rtcm_server", "false");
+
+    for(int n = 0; n < FLAGS_num_measurements; n++)
+        {
+            // Create a new ControlThread object with a smart pointer
             std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
 
             // record startup time
             struct timeval tv;
             gettimeofday(&tv, NULL);
             long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+
+            std::cout << "Starting measurement " << num_measurements << std::endl;
 
             // start receiver
             try
@@ -313,8 +340,16 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
             EXPECT_FALSE(flowgraph->running());
 
             num_measurements = num_measurements + 1;
-            std::cout << "Measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
-            std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5)); // add random waiting!
+            std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
+            if(n < FLAGS_num_measurements - 1)
+                {
+                    int random_variable = std::rand();
+                    float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
+                    int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
+                    std::cout << "Waiting a random amount of time (from 5 to 30 s) to start new measurement... " << std::endl;
+                    std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
+                    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5) + std::chrono::seconds(random_delay_s)); // add random waiting!
+                }
         }
 
     // Print TTFF report

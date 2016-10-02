@@ -271,9 +271,9 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
 {
     std::vector<double> ttff = ttff_v;
     bool read_ephemeris;
-    read_ephemeris = config->property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+    read_ephemeris = config_->property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
     bool agnss;
-    agnss = config->property("GNSS-SDR.SUPL_gps_enabled", "false");
+    agnss = config_->property("GNSS-SDR.SUPL_gps_enabled", "false");
     double sum = std::accumulate(ttff.begin(), ttff.end(), 0.0);
     double mean = sum / ttff.size();
     double sq_sum = std::inner_product(ttff.begin(), ttff.end(), ttff.begin(), 0.0);
@@ -312,6 +312,7 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
         }
     std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
     std::cout << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
+    std::cout << "Navigation mode: " << "3D" << std::endl;
     std::cout << "---------------------------" << std::endl;
 }
 

@@ -126,9 +126,7 @@ void TTFF_GPS_L1_CA_Test::config_1()
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
 
-    // Set the assistance system
-    config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
-    config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+    // Set the assistance system parameters
     config->set_property("GNSS-SDR.SUPL_gps_ephemeris_server", "supl.google.com");
     config->set_property("GNSS-SDR.SUPL_gps_ephemeris_port", std::to_string(7275));
     config->set_property("GNSS-SDR.SUPL_gps_acquisition_server", "supl.google.com");

@@ -56,8 +56,7 @@ DEFINE_int32(max_measurement_duration, 90, "Maximum time waiting for a position 
 DEFINE_int32(num_measurements, 2, "Number of measurements");
 DEFINE_string(device_address, "192.168.40.2", "USRP device IP address");
 DEFINE_string(subdevice, "A:0", "USRP subdevice");
-DEFINE_int32(output_rate_ms, 100, "Rate at which PVT solutions will be computed, in ms.");
-DEFINE_int32(averaging_depth, 10, "size of the buffer performing a moving average");
+
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -70,13 +69,15 @@ typedef struct  {
     double ttff;
 } ttff_msgbuf;
 
-
+const int decimation_factor = 1;
 
 class TTFF_GPS_L1_CA_Test: public ::testing::Test
 {
 public:
     void config_1();
     void config_2();
+    void print_TTFF_report(const std::vector<double> & ttff_v);
+
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config2;
 
@@ -114,6 +115,8 @@ public:
     const float early_late_space_chips = 0.5;
 
     const int display_rate_ms = 500;
+    const int output_rate_ms = 100;
+    const int averaging_depth = 10;
 };
 
 
@@ -194,7 +197,7 @@ void TTFF_GPS_L1_CA_Test::config_1()
     // Set Telemetry
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.dump", "false");
-    config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(1));
+    config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
     // Set Observables
     config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
@@ -203,9 +206,9 @@ void TTFF_GPS_L1_CA_Test::config_1()
 
     // Set PVT
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-    config->set_property("PVT.averaging_depth", std::to_string(FLAGS_averaging_depth));
+    config->set_property("PVT.averaging_depth", std::to_string(averaging_depth));
     config->set_property("PVT.flag_averaging", "true");
-    config->set_property("PVT.output_rate_ms", std::to_string(FLAGS_output_rate_ms));
+    config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");
     config->set_property("PVT.nmea_dump_filename", "./gnss_sdr_pvt.nmea");
@@ -247,8 +250,8 @@ void receive_msg()
             ttff_msg = msg.ttff;
             if( (ttff_msg != 0) && (ttff_msg != -1))
                 {
-                    TTFF_v.push_back(ttff_msg / static_cast<double>(FLAGS_output_rate_ms * FLAGS_averaging_depth));
-                    LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / static_cast<double>(FLAGS_output_rate_ms * FLAGS_averaging_depth) << "[s]";
+                    TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor) );
+                    LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor ) << "[s]";
                     // Stop the receiver
                     while((msqid_stop = msgget(key_stop, 0644)) == -1){}
                     double msgsend_size = sizeof(msg_stop.ttff);
@@ -264,7 +267,7 @@ void receive_msg()
 }
 
 
-void print_TTFF_report(const std::vector<double> & ttff_v)
+void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v)
 {
     std::vector<double> ttff = ttff_v;
     double sum = std::accumulate(ttff.begin(), ttff.end(), 0.0);
@@ -315,7 +318,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
             gettimeofday(&tv, NULL);
             long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-            std::cout << "Starting measurement " << num_measurements << std::endl;
+            std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << std::endl;
 
             // start receiver
             try
@@ -349,7 +352,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
                     int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
                     std::cout << "Waiting a random amount of time (from 5 to 30 s) to start new measurement... " << std::endl;
                     std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
-                    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5) + std::chrono::seconds(random_delay_s)); // add random waiting!
+                    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5) + std::chrono::seconds(random_delay_s));
                 }
         }
 

@@ -104,6 +104,7 @@ void receive_msg()
     return;
 }
 
+
 void print_TTFF_report(const std::vector<double> & ttff_v)
 {
     std::vector<double> ttff = ttff_v;
@@ -114,14 +115,17 @@ void print_TTFF_report(const std::vector<double> & ttff_v)
     auto max_ttff = std::max_element(std::begin(ttff), std::end(ttff));
     auto min_ttff = std::min_element(std::begin(ttff), std::end(ttff));
     std::cout << "---------------------------" << std::endl;
-    std::cout << " Time-To-First FIX Report" << std::endl;
+    std::cout << " Time-To-First-Fix Report" << std::endl;
     std::cout << "---------------------------" << std::endl;
     std::cout << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
     for(double ttff_ : ttff) std::cout << ttff_ << " ";
     std::cout << std::endl;
     std::cout << "TTFF mean: " << mean << " [s]" << std::endl;
-    std::cout << "TTFF max: " << *max_ttff << " [s]" << std::endl;
-    std::cout << "TTFF min: " << *min_ttff << " [s]" << std::endl;
+    if (ttff.size() > 0)
+        {
+            std::cout << "TTFF max: " << *max_ttff << " [s]" << std::endl;
+            std::cout << "TTFF min: " << *min_ttff << " [s]" << std::endl;
+        }
     std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
     std::cout << "---------------------------" << std::endl;
 }
@@ -160,6 +164,11 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     float threshold = 0.01;
     float doppler_max = 8000.0;
     float doppler_step = 500.0;
+    int max_dwells = 1;
+    int tong_init_val = 2;
+    int tong_max_val = 10;
+    int tong_max_dwells = 30;
+
 
     // Set the Signal Source
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
@@ -217,10 +226,10 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
     config->set_property("Acquisition_1C.bit_transition_flag", "false");
-    config->set_property("Acquisition_1C.max_dwells", std::to_string(1));
-    config->set_property("Acquisition_1C.tong_init_val", std::to_string(2));
-    config->set_property("Acquisition_1C.tong_max_val", std::to_string(10));
-    config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(30));
+    config->set_property("Acquisition_1C.max_dwells", std::to_string(max_dwells));
+    config->set_property("Acquisition_1C.tong_init_val", std::to_string(tong_init_val));
+    config->set_property("Acquisition_1C.tong_max_val", std::to_string(tong_max_val));
+    config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(tong_max_dwells));
 
     // Set Tracking
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
@@ -269,7 +278,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
             config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
             config2->set_property("PVT.flag_rtcm_server", "false");
 
-            std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config2);
+            std::unique_ptr<ControlThread> control_thread(new ControlThread(config2));
 
             // record startup time
             struct timeval tv;
@@ -300,7 +309,7 @@ TEST(TTFF_GPS_L1_CA_Test, ColdStart)
 
             num_measurements = num_measurements + 1;
             std::cout << "Measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
-            std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5));
+            std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5)); // add random waiting!
         }
 
     // Print TTFF report

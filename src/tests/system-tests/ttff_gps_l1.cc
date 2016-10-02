@@ -412,7 +412,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
     for(int n = 0; n < FLAGS_num_measurements; n++)
         {
             // Create a new ControlThread object with a smart pointer
-            std::unique_ptr<ControlThread> control_thread(new ControlThread(config2));
+            std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
 
             // record startup time
             struct timeval tv;

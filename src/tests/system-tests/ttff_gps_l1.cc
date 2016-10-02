@@ -63,13 +63,13 @@ concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 std::vector<double> TTFF_v;
+const int decimation_factor = 1;
 
 typedef struct  {
     long mtype; // required by SysV message
     double ttff;
 } ttff_msgbuf;
 
-const int decimation_factor = 1;
 
 class TTFF_GPS_L1_CA_Test: public ::testing::Test
 {
@@ -385,6 +385,69 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
 }
 
 
+TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
+{
+    unsigned int num_measurements = 0;
+    TTFF_v.clear();
+
+    config_2();
+    // Ensure Hot Start
+    config2->set_property("GNSS-SDR.SUPL_gps_enabled", "true");
+    config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
+    config2->set_property("PVT.flag_rtcm_server", "false");
+
+    for(int n = 0; n < FLAGS_num_measurements; n++)
+        {
+            // Create a new ControlThread object with a smart pointer
+            std::unique_ptr<ControlThread> control_thread(new ControlThread(config2));
+
+            // record startup time
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+
+            std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << std::endl;
+
+            // start receiver
+            try
+            {
+                    control_thread->run();
+            }
+            catch( boost::exception & e )
+            {
+                    std::cout << "Boost exception: " << boost::diagnostic_information(e);
+            }
+            catch(std::exception const&  ex)
+            {
+                    std::cout  << "STD exception: " << ex.what();
+            }
+
+            // stop clock
+            gettimeofday(&tv, NULL);
+            long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+            double ttff = static_cast<double>(end - begin) / 1000000.0;
+
+            std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
+            EXPECT_FALSE(flowgraph->running());
+
+            num_measurements = num_measurements + 1;
+            std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
+            if(n < FLAGS_num_measurements - 1)
+                {
+                    std::srand(std::time(0)); // use current time as seed for random generator
+                    int random_variable = std::rand();
+                    float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
+                    int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
+                    std::cout << "Waiting a random amount of time (from 5 to 30 s) to start new measurement... " << std::endl;
+                    std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
+                    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5) + std::chrono::seconds(random_delay_s));
+                }
+        }
+
+    // Print TTFF report
+    print_TTFF_report(TTFF_v, config);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -405,7 +468,6 @@ int main(int argc, char **argv)
         std::cout<<"GNSS-SDR can not create message queues!" << std::endl;
         throw new std::exception();
     }
-
 
     // Start queue thread
     std::thread receive_msg_thread(receive_msg);

@@ -123,8 +123,22 @@ public:
 void TTFF_GPS_L1_CA_Test::config_1()
 {
     config = std::make_shared<InMemoryConfiguration>();
-    // Set the Signal Source
+
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
+
+    // Set the assistance system
+    config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
+    config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+    config->set_property("GNSS-SDR.SUPL_gps_ephemeris_server", "supl.google.com");
+    config->set_property("GNSS-SDR.SUPL_gps_ephemeris_port", std::to_string(7275));
+    config->set_property("GNSS-SDR.SUPL_gps_acquisition_server", "supl.google.com");
+    config->set_property("GNSS-SDR.SUPL_gps_acquisition_port", std::to_string(7275));
+    config->set_property("GNSS-SDR.SUPL_MCC", std::to_string(244));
+    config->set_property("GNSS-SDR.SUPL_MNS", std::to_string(5));
+    config->set_property("GNSS-SDR.SUPL_LAC", "0x59e2");
+    config->set_property("GNSS-SDR.SUPL_CI", "0x31b0");
+
+    // Set the Signal Source
     config->set_property("SignalSource.item_type", "cshort");
     config->set_property("SignalSource.implementation", "UHD_Signal_Source");
     config->set_property("SignalSource.freq", std::to_string(central_freq));
@@ -390,11 +404,10 @@ TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
     unsigned int num_measurements = 0;
     TTFF_v.clear();
 
-    config_2();
+    config_1();
     // Ensure Hot Start
-    config2->set_property("GNSS-SDR.SUPL_gps_enabled", "true");
-    config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
-    config2->set_property("PVT.flag_rtcm_server", "false");
+    config->set_property("GNSS-SDR.SUPL_gps_enabled", "true");
+    config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
 
     for(int n = 0; n < FLAGS_num_measurements; n++)
         {

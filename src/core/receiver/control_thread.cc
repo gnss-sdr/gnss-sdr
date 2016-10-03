@@ -34,7 +34,9 @@
 
 #include "control_thread.h"
 #include <unistd.h>
+#include <cmath>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <string>
 #include <sys/types.h>
@@ -528,16 +530,18 @@ void ControlThread::sysv_queue_listener()
     int msgrcv_size = sizeof(msg.ttff);
     int msqid;
     key_t key = 1102;
-    // wait for the queue to be created
+
+    if((msqid = msgget(key, 0644 | IPC_CREAT )) == -1)
+        {
+            perror("msgget");
+        }
 
     while(read_queue)
         {
-            while((msqid = msgget(key, 0644)) == -1){}
             if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
                 {
-
                     ttff_msg = msg.ttff;
-                    if(ttff_msg == 200)
+                    if( (std::abs(ttff_msg - (-200.0)) < 10 * std::numeric_limits<double>::epsilon()) )
                         {
                             std::cout << "Quit order received, stopping GNSS-SDR !!" << std::endl;
                             std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
@@ -548,7 +552,9 @@ void ControlThread::sysv_queue_listener()
                             read_queue = false;
                         }
                 }
+            usleep(1000000);
         }
+    msgctl(msqid, IPC_RMID, NULL);
 }
 
 

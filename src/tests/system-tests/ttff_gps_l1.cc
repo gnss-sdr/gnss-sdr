@@ -248,7 +248,7 @@ void receive_msg()
     ttff_msgbuf msg;
     ttff_msgbuf msg_stop;
     msg_stop.mtype = 1;
-    msg_stop.ttff = 200;
+    msg_stop.ttff = -200.0;
     double ttff_msg = 0.0;
     int msgrcv_size = sizeof(msg.ttff);
     int msqid;
@@ -266,7 +266,8 @@ void receive_msg()
                     TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor) );
                     LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor ) << "[s]";
                     // Stop the receiver
-                    while(((msqid_stop = msgget(key_stop, 0644 | IPC_CREAT))) == -1){}
+                    //while(((msqid_stop = msgget(key_stop, 0644 | IPC_CREAT))) == -1){}
+                    while(((msqid_stop = msgget(key_stop, 0644))) == -1){}
                     double msgsend_size = sizeof(msg_stop.ttff);
                     msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
                 }
@@ -274,10 +275,6 @@ void receive_msg()
             if(ttff_msg != -1)
                 {
                     receive_msg();
-                }
-            else
-                {
-                    if(msqid_stop != -1) msgctl(msqid_stop, IPC_RMID, NULL);
                 }
         }
     return;

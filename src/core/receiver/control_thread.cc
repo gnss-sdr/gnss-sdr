@@ -90,7 +90,7 @@ ControlThread::~ControlThread()
 {
     // save navigation data to files
    // if (save_assistance_to_XML() == true) {}
-   if(msgiq != -1) msgctl(msqid, IPC_RMID, NULL);;
+   if(msqid != -1) msgctl(msqid, IPC_RMID, NULL);
 }
 
 

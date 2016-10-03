@@ -30,10 +30,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include <error.h>
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
+#include <cerrno>
 #include <numeric>
 #include <string>
 #include <sys/types.h>
@@ -286,6 +286,61 @@ void receive_msg()
 
 void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_)
 {
+    std::ofstream ttff_report_file;
+    std::string filename = "ttff_report";
+    std::string filename_;
+    bool time_tag_name = true;
+
+    time_t rawtime;
+    struct tm * timeinfo;
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+
+    if (time_tag_name)
+        {
+            std::stringstream strm0;
+            const int year = timeinfo->tm_year - 100;
+            strm0 << year;
+            const int month = timeinfo->tm_mon + 1;
+            if(month < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << month;
+            const int day = timeinfo->tm_mday;
+            if(day < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << day << "_";
+            const int hour = timeinfo->tm_hour;
+            if(hour < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << hour;
+            const int min = timeinfo->tm_min;
+            if(min < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << min;
+            const int sec = timeinfo->tm_sec;
+            if(sec < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << sec;
+
+            filename_ = filename + "_" +  strm0.str() + ".txt";
+        }
+    else
+        {
+            filename_ = filename + ".txt";
+        }
+
+    ttff_report_file.open(filename_.c_str());
+
     std::vector<double> ttff = ttff_v;
     bool read_ephemeris;
     read_ephemeris = config_->property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
@@ -297,6 +352,57 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
     double stdev = std::sqrt(sq_sum / ttff.size() - mean * mean);
     auto max_ttff = std::max_element(std::begin(ttff), std::end(ttff));
     auto min_ttff = std::min_element(std::begin(ttff), std::end(ttff));
+    std::string source;
+    std::string default_str = "default";
+    source = config_->property("SignalSource.implementation", default_str);
+
+    if (ttff_report_file.is_open())
+        {
+            ttff_report_file << "---------------------------" << std::endl;
+            ttff_report_file << " Time-To-First-Fix Report" << std::endl;
+            ttff_report_file <<  "---------------------------" << std::endl;
+            ttff_report_file << "Initial receiver status: ";
+            if (read_ephemeris)
+                {
+                    ttff_report_file << "Hot start." << std::endl;
+                }
+            else
+                {
+                    ttff_report_file << "Cold start." << std::endl;
+                }
+            ttff_report_file << "A-GNSS: ";
+            if (agnss && read_ephemeris)
+                {
+                    ttff_report_file << "Enabled." << std::endl;
+                }
+            else
+                {
+                    ttff_report_file << "Disabled." << std::endl;
+                }
+            ttff_report_file << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
+            for(double ttff_ : ttff) ttff_report_file << ttff_ << " ";
+            ttff_report_file << std::endl;
+            ttff_report_file << "TTFF mean: " << mean << " [s]" << std::endl;
+            if (ttff.size() > 0)
+                {
+                    ttff_report_file << "TTFF max: " << *max_ttff << " [s]" << std::endl;
+                    ttff_report_file << "TTFF min: " << *min_ttff << " [s]" << std::endl;
+                }
+            ttff_report_file << "TTFF stdev: " << stdev << " [s]" << std::endl;
+            ttff_report_file << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
+            ttff_report_file << "Navigation mode: " << "3D" << std::endl;
+
+            if(source.compare("UHD_Signal_Source"))
+                {
+                    ttff_report_file << "Source: File" << std::endl;
+                }
+            else
+                {
+                    ttff_report_file << "Source: Live" << std::endl;
+                }
+            ttff_report_file << "---------------------------" << std::endl;
+        }
+    ttff_report_file.close();
     std::cout << "---------------------------" << std::endl;
     std::cout << " Time-To-First-Fix Report" << std::endl;
     std::cout << "---------------------------" << std::endl;
@@ -330,9 +436,7 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
     std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
     std::cout << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
     std::cout << "Navigation mode: " << "3D" << std::endl;
-    std::string source;
-    std::string default_str = "default";
-    source = config_->property("SignalSource.implementation", default_str);
+
     if(source.compare("UHD_Signal_Source"))
         {
             std::cout << "Source: File" << std::endl;

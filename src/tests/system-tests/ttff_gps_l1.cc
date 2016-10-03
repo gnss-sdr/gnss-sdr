@@ -266,7 +266,7 @@ void receive_msg()
                     TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor) );
                     LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor ) << "[s]";
                     // Stop the receiver
-                    while((msqid_stop = msgget(key_stop, 0644 | IPC_CREAT))) == -1){}
+                    while(((msqid_stop = msgget(key_stop, 0644 | IPC_CREAT))) == -1){}
                     double msgsend_size = sizeof(msg_stop.ttff);
                     msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
                 }
@@ -330,7 +330,9 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
     std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
     std::cout << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
     std::cout << "Navigation mode: " << "3D" << std::endl;
-    std::string source = config_->property("SignalSource.implementation", "");
+    std::string source;
+    std::string default_str = "default";
+    source = config_->property("SignalSource.implementation", default_str);
     if(source.compare("UHD_Signal_Source"))
         {
             std::cout << "Source: File" << std::endl;
@@ -400,7 +402,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
                     int random_variable = std::rand();
                     float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
                     int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
-                    std::cout << "Waiting a random amount of time (from 5 to 30 s) to start new measurement... " << std::endl;
+                    std::cout << "Waiting a random amount of time (from 5 to 30 s) to start a new measurement... " << std::endl;
                     std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
                     std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5) + std::chrono::seconds(random_delay_s));
                 }

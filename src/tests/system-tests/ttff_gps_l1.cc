@@ -30,6 +30,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include <error.h>
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
@@ -251,11 +252,11 @@ void receive_msg()
     double ttff_msg = 0.0;
     int msgrcv_size = sizeof(msg.ttff);
     int msqid;
-    int msqid_stop;
+    int msqid_stop = -1;
     key_t key = 1101;
     key_t key_stop = 1102;
     // wait for the queue to be created
-    while((msqid = msgget(key, 0644)) == -1){}
+    if((msqid = msgget(key, 0644)) == -1){}
 
     if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
         {
@@ -265,7 +266,7 @@ void receive_msg()
                     TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor) );
                     LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor ) << "[s]";
                     // Stop the receiver
-                    while((msqid_stop = msgget(key_stop, 0644)) == -1){}
+                    while((msqid_stop = msgget(key_stop, 0644 | IPC_CREAT))) == -1){}
                     double msgsend_size = sizeof(msg_stop.ttff);
                     msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
                 }
@@ -273,6 +274,10 @@ void receive_msg()
             if(ttff_msg != -1)
                 {
                     receive_msg();
+                }
+            else
+                {
+                    if(msqid_stop != -1) msgctl(msqid_stop, IPC_RMID, NULL);
                 }
         }
     return;
@@ -325,6 +330,15 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
     std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
     std::cout << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
     std::cout << "Navigation mode: " << "3D" << std::endl;
+    std::string source = config_->property("SignalSource.implementation", "");
+    if(source.compare("UHD_Signal_Source"))
+        {
+            std::cout << "Source: File" << std::endl;
+        }
+    else
+        {
+            std::cout << "Source: Live" << std::endl;
+        }
     std::cout << "---------------------------" << std::endl;
 }
 
@@ -501,6 +515,7 @@ int main(int argc, char **argv)
     msgsend_size = sizeof(msg.ttff);
     msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
     receive_msg_thread.join();
+    msgctl(sysv_msqid, IPC_RMID, NULL);
     google::ShutDownCommandLineFlags();
     return res;
 }

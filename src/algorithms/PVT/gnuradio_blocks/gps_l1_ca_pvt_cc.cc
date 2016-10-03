@@ -313,7 +313,9 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
 
 
 gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc()
-{}
+{
+    msgctl(sysv_msqid, IPC_RMID, NULL);
+}
 
 
 bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)

@@ -143,7 +143,6 @@ private:
      */
     void assist_GNSS();
     
-    
     void apply_action(unsigned int what);
     std::shared_ptr<GNSSFlowgraph> flowgraph_;
     std::shared_ptr<ConfigurationInterface> configuration_;
@@ -160,6 +159,7 @@ private:
     
     void keyboard_listener();
     void sysv_queue_listener();
+    int msqid;
 
     // default filename for assistance data
     const std::string eph_default_xml_filename = "./gps_ephemeris.xml";

@@ -213,7 +213,9 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, bool dump, std::str
 
 
 galileo_e1_pvt_cc::~galileo_e1_pvt_cc()
-{}
+{
+    msgctl(sysv_msqid, IPC_RMID, NULL);
+}
 
 
 

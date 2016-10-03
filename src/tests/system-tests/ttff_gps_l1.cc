@@ -255,26 +255,30 @@ void receive_msg()
     int msqid_stop = -1;
     key_t key = 1101;
     key_t key_stop = 1102;
-    // wait for the queue to be created
-    if((msqid = msgget(key, 0644)) == -1){}
+    bool leave = false;
 
-    if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
+    while(!leave)
         {
-            ttff_msg = msg.ttff;
-            if( (ttff_msg != 0) && (ttff_msg != -1))
-                {
-                    TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor) );
-                    LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor ) << "[s]";
-                    // Stop the receiver
-                    //while(((msqid_stop = msgget(key_stop, 0644 | IPC_CREAT))) == -1){}
-                    while(((msqid_stop = msgget(key_stop, 0644))) == -1){}
-                    double msgsend_size = sizeof(msg_stop.ttff);
-                    msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
-                }
+            // wait for the queue to be created
+            while((msqid = msgget(key, 0644)) == -1){}
 
-            if(ttff_msg != -1)
+            if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
                 {
-                    receive_msg();
+                    ttff_msg = msg.ttff;
+                    if( (ttff_msg != 0) && (ttff_msg != -1))
+                        {
+                            TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor) );
+                            LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor ) << "[s]";
+                            // Stop the receiver
+                            while(((msqid_stop = msgget(key_stop, 0644))) == -1){}
+                            double msgsend_size = sizeof(msg_stop.ttff);
+                            msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
+                        }
+
+                    if(ttff_msg == -1)
+                        {
+                            leave = true;
+                        }
                 }
         }
     return;
@@ -586,17 +590,6 @@ int main(int argc, char **argv)
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
 
-    // Create SysV message queue to read TFFF measurements
-    key_t sysv_msg_key;
-    int sysv_msqid;
-    sysv_msg_key = 1101;
-    int msgflg = IPC_CREAT | 0666;
-    if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
-    {
-        std::cout<<"GNSS-SDR can not create message queues!" << std::endl;
-        throw new std::exception();
-    }
-
     // Start queue thread
     std::thread receive_msg_thread(receive_msg);
 
@@ -611,6 +604,15 @@ int main(int argc, char **argv)
     }
 
     // Terminate the queue thread
+    key_t sysv_msg_key;
+    int sysv_msqid;
+    sysv_msg_key = 1101;
+    int msgflg = IPC_CREAT | 0666;
+    if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
+    {
+        std::cout<<"GNSS-SDR can not create message queues!" << std::endl;
+        throw new std::exception();
+    }
     ttff_msgbuf msg;
     msg.mtype = 1;
     msg.ttff = -1;
@@ -619,6 +621,7 @@ int main(int argc, char **argv)
     msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
     receive_msg_thread.join();
     msgctl(sysv_msqid, IPC_RMID, NULL);
+
     google::ShutDownCommandLineFlags();
     return res;
 }

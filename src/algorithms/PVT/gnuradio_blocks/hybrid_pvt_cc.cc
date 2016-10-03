@@ -290,7 +290,9 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
 
 
 hybrid_pvt_cc::~hybrid_pvt_cc()
-{}
+{
+    msgctl(sysv_msqid, IPC_RMID, NULL);
+}
 
 
 

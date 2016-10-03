@@ -90,6 +90,7 @@ ControlThread::~ControlThread()
 {
     // save navigation data to files
    // if (save_assistance_to_XML() == true) {}
+   if(msgiq != -1) msgctl(msqid, IPC_RMID, NULL);;
 }
 
 
@@ -431,6 +432,7 @@ void ControlThread::init()
     supl_mns = 0;
     supl_lac = 0;
     supl_ci = 0;
+    msqid = -1;
 }
 
 
@@ -528,7 +530,7 @@ void ControlThread::sysv_queue_listener()
     ttff_msgbuf msg;
     double ttff_msg = 0.0;
     int msgrcv_size = sizeof(msg.ttff);
-    int msqid;
+
     key_t key = 1102;
 
     if((msqid = msgget(key, 0644 | IPC_CREAT )) == -1)
@@ -552,9 +554,7 @@ void ControlThread::sysv_queue_listener()
                             read_queue = false;
                         }
                 }
-            usleep(1000000);
         }
-    msgctl(msqid, IPC_RMID, NULL);
 }
 
 

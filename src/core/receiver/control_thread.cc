@@ -538,7 +538,7 @@ void ControlThread::sysv_queue_listener()
             perror("msgget");
         }
 
-    while(read_queue)
+    while(read_queue && !stop_)
         {
             if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
                 {

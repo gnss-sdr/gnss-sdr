@@ -30,10 +30,12 @@
  * -------------------------------------------------------------------------
  */
 
+#include <cerrno>
 #include <chrono>
 #include <cstdlib>
+#include <cmath>
 #include <ctime>
-#include <cerrno>
+#include <limits>
 #include <numeric>
 #include <string>
 #include <sys/types.h>
@@ -275,7 +277,7 @@ void receive_msg()
                             msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
                         }
 
-                    if(ttff_msg == -1)
+                    if( std::abs(ttff_msg - (-1.0) ) < 10 * std::numeric_limits<double>::epsilon() )
                         {
                             leave = true;
                         }
@@ -515,6 +517,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
 
     // Print TTFF report
     print_TTFF_report(TTFF_v, config);
+    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5)); //let the USRP some time to rest before the next test
 }
 
 

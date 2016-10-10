@@ -238,10 +238,17 @@ void TTFF_GPS_L1_CA_Test::config_1()
 
 void TTFF_GPS_L1_CA_Test::config_2()
 {
-    //std::string path = std::string(TEST_PATH);
-    //std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
-    config2 = std::make_shared<FileConfiguration>(FLAGS_config_file_ttff);
-    config2->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
+   if(FLAGS_config_file_ttff.empty())
+     {
+        std::string path = std::string(TEST_PATH);
+        std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
+        config2 = std::make_shared<FileConfiguration>(filename);
+     }
+   else
+     {
+        config2 = std::make_shared<FileConfiguration>(FLAGS_config_file_ttff);
+     }
+   config2->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
 }
 
 

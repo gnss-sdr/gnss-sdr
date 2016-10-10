@@ -256,9 +256,9 @@ set_property(TEST flowgraph_test PROPERTY TIMEOUT 30)
 
 add_executable(gnss_block_test
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing/sources/file_signal_source_test.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing/filter/fir_filter_test.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing/adapter/pass_through_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/file_signal_source_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/filter/fir_filter_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/adapter/pass_through_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_block_factory_test.cc
 )
 if(NOT ${ENABLE_PACKAGING})
@@ -289,7 +289,7 @@ endif(NOT ${GTEST_DIR_LOCAL})
 
 add_executable(gnuradio_block_test
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing/sources/unpack_2bit_samples_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc
 )
 if(NOT ${ENABLE_PACKAGING})
      set_property(TARGET gnuradio_block_test PROPERTY EXCLUDE_FROM_ALL TRUE)
@@ -341,8 +341,8 @@ endif(NOT ${GTEST_DIR_LOCAL})
 
 add_executable(trk_test
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing/tracking/tracking_loop_filter_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc
 )
 if(NOT ${ENABLE_PACKAGING})
      set_property(TARGET trk_test PROPERTY EXCLUDE_FROM_ALL TRUE)

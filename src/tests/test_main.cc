@@ -84,44 +84,44 @@ DECLARE_string(log_dir);
 #include "unit-tests/control-plane/string_converter_test.cc"
 #include "unit-tests/control-plane/gnss_block_factory_test.cc"
 
-#include "unit-tests/signal-processing/sources/file_signal_source_test.cc"
-#include "unit-tests/signal-processing/sources/gnss_sdr_valve_test.cc"
+#include "unit-tests/signal-processing-blocks/sources/file_signal_source_test.cc"
+#include "unit-tests/signal-processing-blocks/sources/gnss_sdr_valve_test.cc"
 
-#include "unit-tests/signal-processing/adapter/pass_through_test.cc"
+#include "unit-tests/signal-processing-blocks/adapter/pass_through_test.cc"
 
-#include "unit-tests/signal-processing/filter/fir_filter_test.cc"
+#include "unit-tests/signal-processing-blocks/filter/fir_filter_test.cc"
 
-#include "unit-tests/signal-processing/resampler/direct_resampler_conditioner_cc_test.cc"
+#include "unit-tests/signal-processing-blocks/resampler/direct_resampler_conditioner_cc_test.cc"
 
-#include "unit-tests/signal-processing/acquisition/gps_l1_ca_pcps_acquisition_test.cc"
-#include "unit-tests/signal-processing/acquisition/gps_l2_m_pcps_acquisition_test.cc"
-#include "unit-tests/signal-processing/acquisition/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
-#include "unit-tests/signal-processing/acquisition/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc"
-#include "unit-tests/signal-processing/acquisition/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"
-#include "unit-tests/signal-processing/acquisition/galileo_e1_pcps_ambiguous_acquisition_test.cc"
-#include "unit-tests/signal-processing/acquisition/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"
-#include "unit-tests/signal-processing/acquisition/galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc"
-#include "unit-tests/signal-processing/acquisition/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc"
-#include "unit-tests/signal-processing/acquisition/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc"
-#include "unit-tests/signal-processing/acquisition/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
-#include "unit-tests/signal-processing/acquisition/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc"
-#include "unit-tests/signal-processing/acquisition/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
-//#include "unit-tests/signal-processing/acquisition/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l2_m_pcps_acquisition_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_ambiguous_acquisition_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
+//#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
 #if OPENCL_BLOCKS_TEST
-#include "unit-tests/signal-processing/acquisition/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
 #endif
 
-#include "unit-tests/signal-processing/tracking/galileo_e1_dll_pll_veml_tracking_test.cc"
-#include "unit-tests/signal-processing/tracking/galileo_e5a_tracking_test.cc"
-#include "unit-tests/signal-processing/tracking/gps_l2_m_dll_pll_tracking_test.cc"
-#include "unit-tests/signal-processing/tracking/tracking_loop_filter_test.cc"
-#include "unit-tests/signal-processing/tracking/cpu_multicorrelator_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/galileo_e5a_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"
 #if CUDA_BLOCKS_TEST
-	#include "unit-tests/signal-processing/tracking/gpu_multicorrelator_test.cc"
+	#include "unit-tests/signal-processing-blocks/tracking/gpu_multicorrelator_test.cc"
 #endif
 
-#include "unit-tests/signal-processing/pvt/rtcm_test.cc"
-#include "unit-tests/signal-processing/pvt/rtcm_printer_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/rtcm_printer_test.cc"
 
 
 // For GPS NAVIGATION (L1)

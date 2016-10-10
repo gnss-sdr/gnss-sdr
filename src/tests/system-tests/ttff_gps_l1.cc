@@ -54,7 +54,7 @@
 #include "gps_acq_assist.h"
 
 
-DEFINE_int32(fs_in, 4000000, "Sampling rate, in Ms/s");
+DEFINE_int32(fs_in, 4000000, "Sampling rate, in Samples/s");
 DEFINE_int32(max_measurement_duration, 90, "Maximum time waiting for a position fix, in seconds");
 DEFINE_int32(num_measurements, 2, "Number of measurements");
 DEFINE_string(device_address, "192.168.40.2", "USRP device IP address");
@@ -238,17 +238,20 @@ void TTFF_GPS_L1_CA_Test::config_1()
 
 void TTFF_GPS_L1_CA_Test::config_2()
 {
-   if(FLAGS_config_file_ttff.empty())
-     {
-        std::string path = std::string(TEST_PATH);
-        std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
-        config2 = std::make_shared<FileConfiguration>(filename);
-     }
-   else
-     {
-        config2 = std::make_shared<FileConfiguration>(FLAGS_config_file_ttff);
-     }
-   config2->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
+    if(FLAGS_config_file_ttff.empty())
+        {
+            std::string path = std::string(TEST_PATH);
+            std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
+            config2 = std::make_shared<FileConfiguration>(filename);
+        }
+    else
+        {
+            config2 = std::make_shared<FileConfiguration>(FLAGS_config_file_ttff);
+        }
+
+    int d_sampling_rate;
+    d_sampling_rate = config2->property("GNSS-SDR.internal_fs_hz", FLAGS_fs_in);
+    config2->set_property("SignalSource.samples", std::to_string(d_sampling_rate * FLAGS_max_measurement_duration));
 }
 
 
@@ -479,13 +482,13 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
             // Create a new ControlThread object with a smart pointer
             std::shared_ptr<ControlThread> control_thread;
             if(FLAGS_config_file_ttff.empty())
-            {
-                control_thread = std::make_shared<ControlThread>(config);
-            }
+                {
+                    control_thread = std::make_shared<ControlThread>(config);
+                }
             else
-            {
-                control_thread = std::make_shared<ControlThread>(config2);
-            }
+                {
+                    control_thread = std::make_shared<ControlThread>(config2);
+                }
 
             // record startup time
             struct timeval tv;
@@ -532,13 +535,13 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
 
     // Print TTFF report
     if(FLAGS_config_file_ttff.empty())
-    {
-        print_TTFF_report(TTFF_v, config);
-    }
+        {
+            print_TTFF_report(TTFF_v, config);
+        }
     else
-    {
-        print_TTFF_report(TTFF_v, config2);
-    }
+        {
+            print_TTFF_report(TTFF_v, config2);
+        }
     std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5)); //let the USRP some time to rest before the next test
 }
 
@@ -564,13 +567,13 @@ TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
             // Create a new ControlThread object with a smart pointer
             std::shared_ptr<ControlThread> control_thread;
             if(FLAGS_config_file_ttff.empty())
-            {
-                control_thread = std::make_shared<ControlThread>(config);
-            }
+                {
+                    control_thread = std::make_shared<ControlThread>(config);
+                }
             else
-            {
-                control_thread = std::make_shared<ControlThread>(config2);
-            }
+                {
+                    control_thread = std::make_shared<ControlThread>(config2);
+                }
             // record startup time
             struct timeval tv;
             gettimeofday(&tv, NULL);
@@ -616,13 +619,13 @@ TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
 
     // Print TTFF report
     if(FLAGS_config_file_ttff.empty())
-    {
-        print_TTFF_report(TTFF_v, config);
-    }
+        {
+            print_TTFF_report(TTFF_v, config);
+        }
     else
-    {
-        print_TTFF_report(TTFF_v, config2);
-    }
+        {
+            print_TTFF_report(TTFF_v, config2);
+        }
 }
 
 

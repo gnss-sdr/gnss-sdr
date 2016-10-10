@@ -474,11 +474,11 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
     config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
     config2->set_property("PVT.flag_rtcm_server", "false");
 
-    std::unique_ptr<ControlThread> control_thread;
-
     for(int n = 0; n < FLAGS_num_measurements; n++)
         {
             // Create a new ControlThread object with a smart pointer
+            std::unique_ptr<ControlThread> control_thread;
+
             if(FLAGS_config_file_ttff.empty())
             {
                 std::unique_ptr<ControlThread> control_thread(new ControlThread(config));

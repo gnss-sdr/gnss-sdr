@@ -477,16 +477,16 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
     for(int n = 0; n < FLAGS_num_measurements; n++)
         {
             // Create a new ControlThread object with a smart pointer
-            std::unique_ptr<ControlThread> control_thread;
-
+            std::shared_ptr<ControlThread> control_thread;
             if(FLAGS_config_file_ttff.empty())
             {
-                std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
+                control_thread = std::make_shared<ControlThread>(config);
             }
             else
             {
-                std::unique_ptr<ControlThread> control_thread(new ControlThread(config2));
+                control_thread = std::make_shared<ControlThread>(config2);
             }
+
             // record startup time
             struct timeval tv;
             gettimeofday(&tv, NULL);
@@ -559,18 +559,17 @@ TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
     config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
     config2->set_property("PVT.flag_rtcm_server", "false");
 
-    std::unique_ptr<ControlThread> control_thread;
-
     for(int n = 0; n < FLAGS_num_measurements; n++)
         {
             // Create a new ControlThread object with a smart pointer
+            std::shared_ptr<ControlThread> control_thread;
             if(FLAGS_config_file_ttff.empty())
             {
-                std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
+                control_thread = std::make_shared<ControlThread>(config);
             }
             else
             {
-               std::unique_ptr<ControlThread> control_thread(new ControlThread(config2));
+                control_thread = std::make_shared<ControlThread>(config2);
             }
             // record startup time
             struct timeval tv;

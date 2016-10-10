@@ -59,7 +59,7 @@ DEFINE_int32(max_measurement_duration, 90, "Maximum time waiting for a position 
 DEFINE_int32(num_measurements, 2, "Number of measurements");
 DEFINE_string(device_address, "192.168.40.2", "USRP device IP address");
 DEFINE_string(subdevice, "A:0", "USRP subdevice");
-
+DEFINE_string(config_file_ttff, std::string(""), "File containing the configuration parameters for the TTFF test.");
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -238,9 +238,9 @@ void TTFF_GPS_L1_CA_Test::config_1()
 
 void TTFF_GPS_L1_CA_Test::config_2()
 {
-    std::string path = std::string(TEST_PATH);
-    std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
-    config2 = std::make_shared<FileConfiguration>(filename);
+    //std::string path = std::string(TEST_PATH);
+    //std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
+    config2 = std::make_shared<FileConfiguration>(FLAGS_config_file_ttff);
     config2->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
 }
 
@@ -467,11 +467,19 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
     config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
     config2->set_property("PVT.flag_rtcm_server", "false");
 
+    std::unique_ptr<ControlThread> control_thread;
+
     for(int n = 0; n < FLAGS_num_measurements; n++)
         {
             // Create a new ControlThread object with a smart pointer
-            std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
-
+            if(FLAGS_config_file_ttff.empty())
+            {
+                std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
+            }
+            else
+            {
+                std::unique_ptr<ControlThread> control_thread(new ControlThread(config2));
+            }
             // record startup time
             struct timeval tv;
             gettimeofday(&tv, NULL);
@@ -516,7 +524,14 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
         }
 
     // Print TTFF report
-    print_TTFF_report(TTFF_v, config);
+    if(FLAGS_config_file_ttff.empty())
+    {
+        print_TTFF_report(TTFF_v, config);
+    }
+    else
+    {
+        print_TTFF_report(TTFF_v, config2);
+    }
     std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5)); //let the USRP some time to rest before the next test
 }
 
@@ -531,11 +546,25 @@ TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
     config->set_property("GNSS-SDR.SUPL_gps_enabled", "true");
     config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
 
+    config_2();
+    // Ensure Hot Start
+    config2->set_property("GNSS-SDR.SUPL_gps_enabled", "true");
+    config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
+    config2->set_property("PVT.flag_rtcm_server", "false");
+
+    std::unique_ptr<ControlThread> control_thread;
+
     for(int n = 0; n < FLAGS_num_measurements; n++)
         {
             // Create a new ControlThread object with a smart pointer
-            std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
-
+            if(FLAGS_config_file_ttff.empty())
+            {
+                std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
+            }
+            else
+            {
+               std::unique_ptr<ControlThread> control_thread(new ControlThread(config2));
+            }
             // record startup time
             struct timeval tv;
             gettimeofday(&tv, NULL);
@@ -580,7 +609,14 @@ TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
         }
 
     // Print TTFF report
-    print_TTFF_report(TTFF_v, config);
+    if(FLAGS_config_file_ttff.empty())
+    {
+        print_TTFF_report(TTFF_v, config);
+    }
+    else
+    {
+        print_TTFF_report(TTFF_v, config2);
+    }
 }
 
 

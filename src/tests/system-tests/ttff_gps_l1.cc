@@ -655,7 +655,7 @@ int main(int argc, char **argv)
     int msgflg = IPC_CREAT | 0666;
     if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
     {
-        std::cout<<"GNSS-SDR can not create message queues!" << std::endl;
+        std::cout << "GNSS-SDR can not create message queues!" << std::endl;
         throw new std::exception();
     }
     ttff_msgbuf msg;

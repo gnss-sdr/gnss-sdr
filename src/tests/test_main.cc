@@ -132,7 +132,11 @@ int main(int argc, char **argv)
 {
     std::cout << "Running GNSS-SDR Tests..." << std::endl;
     int res = 0;
-    testing::InitGoogleTest(&argc, argv);
+    try
+    {
+            testing::InitGoogleTest(&argc, argv);
+    }
+    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
     try

@@ -628,7 +628,12 @@ int main(int argc, char **argv)
     std::cout << "Running Time-To-First-Fix test..." << std::endl;
     int res = 0;
     TTFF_v.clear();
-    testing::InitGoogleTest(&argc, argv);
+    try
+    {
+            testing::InitGoogleTest(&argc, argv);
+    }
+    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
 

@@ -302,55 +302,48 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
     std::ofstream ttff_report_file;
     std::string filename = "ttff_report";
     std::string filename_;
-    bool time_tag_name = true;
 
     time_t rawtime;
     struct tm * timeinfo;
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
 
-    if (time_tag_name)
+    std::stringstream strm0;
+    const int year = timeinfo->tm_year - 100;
+    strm0 << year;
+    const int month = timeinfo->tm_mon + 1;
+    if(month < 10)
         {
-            std::stringstream strm0;
-            const int year = timeinfo->tm_year - 100;
-            strm0 << year;
-            const int month = timeinfo->tm_mon + 1;
-            if(month < 10)
+            strm0 << "0";
+        }
+    strm0 << month;
+    const int day = timeinfo->tm_mday;
+    if(day < 10)
+        {
+            strm0 << "0";
+        }
+    strm0 << day << "_";
+    const int hour = timeinfo->tm_hour;
+    if(hour < 10)
                 {
-                    strm0 << "0";
-                }
-            strm0 << month;
-            const int day = timeinfo->tm_mday;
-            if(day < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << day << "_";
-            const int hour = timeinfo->tm_hour;
-            if(hour < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << hour;
-            const int min = timeinfo->tm_min;
-            if(min < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << min;
-            const int sec = timeinfo->tm_sec;
-            if(sec < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << sec;
+            strm0 << "0";
+        }
+    strm0 << hour;
+    const int min = timeinfo->tm_min;
 
-            filename_ = filename + "_" +  strm0.str() + ".txt";
-        }
-    else
+    if(min < 10)
         {
-            filename_ = filename + ".txt";
+            strm0 << "0";
         }
+    strm0 << min;
+    const int sec = timeinfo->tm_sec;
+    if(sec < 10)
+        {
+            strm0 << "0";
+        }
+    strm0 << sec;
+
+    filename_ = filename + "_" +  strm0.str() + ".txt";
 
     ttff_report_file.open(filename_.c_str());
 

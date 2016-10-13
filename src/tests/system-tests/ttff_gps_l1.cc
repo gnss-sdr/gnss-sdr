@@ -349,9 +349,10 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
 
     std::vector<double> ttff = ttff_v;
     bool read_ephemeris;
-    read_ephemeris = config_->property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+    bool false_bool = false;
+    read_ephemeris = config_->property("GNSS-SDR.SUPL_read_gps_assistance_xml", false_bool);
     bool agnss;
-    agnss = config_->property("GNSS-SDR.SUPL_gps_enabled", "false");
+    agnss = config_->property("GNSS-SDR.SUPL_gps_enabled", false_bool);
     double sum = std::accumulate(ttff.begin(), ttff.end(), 0.0);
     double mean = sum / ttff.size();
     double sq_sum = std::inner_product(ttff.begin(), ttff.end(), ttff.begin(), 0.0);
@@ -652,7 +653,7 @@ int main(int argc, char **argv)
     if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
     {
         std::cout << "GNSS-SDR can not create message queues!" << std::endl;
-        throw new std::exception();
+        exit(1);
     }
     ttff_msgbuf msg;
     msg.mtype = 1;

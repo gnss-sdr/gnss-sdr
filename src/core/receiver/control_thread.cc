@@ -536,6 +536,7 @@ void ControlThread::sysv_queue_listener()
     if((msqid = msgget(key, 0644 | IPC_CREAT )) == -1)
         {
             perror("msgget");
+            exit(1);
         }
 
     while(read_queue && !stop_)

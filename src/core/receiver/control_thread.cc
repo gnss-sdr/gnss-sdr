@@ -520,22 +520,24 @@ void ControlThread::gps_acq_assist_data_collector()
         }
 }
 
+
 void ControlThread::sysv_queue_listener()
 {
     typedef struct  {
-        long mtype; //required by sys v message
-        double ttff;
-    } ttff_msgbuf;
+        long mtype; // required by SysV queue messaging
+        double stop_message;
+    } stop_msgbuf;
+
     bool read_queue = true;
-    ttff_msgbuf msg;
-    double ttff_msg = 0.0;
-    int msgrcv_size = sizeof(msg.ttff);
+    stop_msgbuf msg;
+    double received_message = 0.0;
+    int msgrcv_size = sizeof(msg.stop_message);
 
     key_t key = 1102;
 
     if((msqid = msgget(key, 0644 | IPC_CREAT )) == -1)
         {
-            perror("msgget");
+            perror("GNSS-SDR cannot create SysV message queues");
             exit(1);
         }
 
@@ -543,8 +545,8 @@ void ControlThread::sysv_queue_listener()
         {
             if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
                 {
-                    ttff_msg = msg.ttff;
-                    if( (std::abs(ttff_msg - (-200.0)) < 10 * std::numeric_limits<double>::epsilon()) )
+                    received_message = msg.stop_message;
+                    if( (std::abs(received_message - (-200.0)) < 10 * std::numeric_limits<double>::epsilon()) )
                         {
                             std::cout << "Quit order received, stopping GNSS-SDR !!" << std::endl;
                             std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());

@@ -207,7 +207,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_sse3(lv_32fc_
         {
             // Phase rotation on operand in_common starts here:
             a = _mm_loadu_ps((float*)_in_common);
-           // __VOLK_PREFETCH(_in_common + 4);
+           // __VOLK_GNSSSDR_PREFETCH(_in_common + 4);
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg);
             tmp1 = _mm_mul_ps(a, yl);
@@ -316,7 +316,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_sse3(lv_32fc_
         {
             // Phase rotation on operand in_common starts here:
             a = _mm_load_ps((float*)_in_common);
-           // __VOLK_PREFETCH(_in_common + 4);
+           // __VOLK_GNSSSDR_PREFETCH(_in_common + 4);
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg);
             tmp1 = _mm_mul_ps(a, yl);
@@ -435,7 +435,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t
         {
             // Phase rotation on operand in_common starts here:
             a = _mm256_loadu_ps((float*)_in_common);
-            __VOLK_PREFETCH(_in_common + 16);
+            __VOLK_GNSSSDR_PREFETCH(_in_common + 16);
             yl = _mm256_moveldup_ps(four_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm256_movehdup_ps(four_phase_acc_reg);
             tmp1 = _mm256_mul_ps(a, yl);
@@ -562,7 +562,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t
         {
             // Phase rotation on operand in_common starts here:
             a = _mm256_load_ps((float*)_in_common);
-            __VOLK_PREFETCH(_in_common + 16);
+            __VOLK_GNSSSDR_PREFETCH(_in_common + 16);
             yl = _mm256_moveldup_ps(four_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm256_movehdup_ps(four_phase_acc_reg);
             tmp1 = _mm256_mul_ps(a, yl);
@@ -697,7 +697,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn_neon(lv_32fc_t*
                 {
                     /* load 4 complex numbers (float 32 bits each component) */
                     b_val = vld2q_f32((float32_t*)_in_common);
-                    __VOLK_PREFETCH(_in_common + 8);
+                    __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     _in_common += 4;
 
                     /* complex multiplication of four complex samples (float 32 bits each component) */

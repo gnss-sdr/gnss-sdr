@@ -28,14 +28,14 @@
 // Cross-platform attribute macros not included in VOLK
 ////////////////////////////////////////////////////////////////////////
 #if defined __GNUC__
-#  define __VOLK_PREFETCH(addr) __builtin_prefetch(addr)
-#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality) __builtin_prefetch(addr, rw, locality)
+#  define __VOLK_GNSSSDR_PREFETCH(addr) __builtin_prefetch(addr)
+#  define __VOLK_GNSSSDR_PREFETCH_LOCALITY(addr, rw, locality) __builtin_prefetch(addr, rw, locality)
 #elif _MSC_VER
-#  define __VOLK_PREFETCH(addr)
-#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality)
+#  define __VOLK_GNSSSDR_PREFETCH(addr)
+#  define __VOLK_GNSSSDR_PREFETCH_LOCALITY(addr, rw, locality)
 #else
-#  define __VOLK_PREFETCH(addr)
-#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality)
+#  define __VOLK_GNSSSDR_PREFETCH(addr)
+#  define __VOLK_GNSSSDR_PREFETCH_LOCALITY(addr, rw, locality)
 #endif
 
 #ifndef INCLUDED_LIBVOLK_COMMON_H

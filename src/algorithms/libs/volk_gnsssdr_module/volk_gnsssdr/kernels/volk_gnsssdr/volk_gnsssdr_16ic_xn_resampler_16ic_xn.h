@@ -395,8 +395,8 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_avx(lv_16sc_t** resu
             indexn = n0;
             for(n = 0; n < avx_iters; n++)
                 {
-                    __VOLK_PREFETCH_LOCALITY(&_result[current_correlator_tap][8 * n + 7], 1, 0);
-                    __VOLK_PREFETCH_LOCALITY(&local_code_chip_index[8], 1, 3);
+                    __VOLK_GNSSSDR_PREFETCH_LOCALITY(&_result[current_correlator_tap][8 * n + 7], 1, 0);
+                    __VOLK_GNSSSDR_PREFETCH_LOCALITY(&local_code_chip_index[8], 1, 3);
                     aux = _mm256_mul_ps(code_phase_step_chips_reg, indexn);
                     aux = _mm256_add_ps(aux, aux2);
                     // floor
@@ -472,8 +472,8 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_u_avx(lv_16sc_t** resu
             indexn = n0;
             for(n = 0; n < avx_iters; n++)
                 {
-                    __VOLK_PREFETCH_LOCALITY(&_result[current_correlator_tap][8 * n + 7], 1, 0);
-                    __VOLK_PREFETCH_LOCALITY(&local_code_chip_index[8], 1, 3);
+                    __VOLK_GNSSSDR_PREFETCH_LOCALITY(&_result[current_correlator_tap][8 * n + 7], 1, 0);
+                    __VOLK_GNSSSDR_PREFETCH_LOCALITY(&local_code_chip_index[8], 1, 3);
                     aux = _mm256_mul_ps(code_phase_step_chips_reg, indexn);
                     aux = _mm256_add_ps(aux, aux2);
                     // floor
@@ -554,8 +554,8 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_neon(lv_16sc_t** resul
             indexn = n0;
             for(n = 0; n < neon_iters; n++)
                 {
-                    __VOLK_PREFETCH_LOCALITY(&_result[current_correlator_tap][4 * n + 3], 1, 0);
-                    __VOLK_PREFETCH(&local_code_chip_index[4]);
+                    __VOLK_GNSSSDR_PREFETCH_LOCALITY(&_result[current_correlator_tap][4 * n + 3], 1, 0);
+                    __VOLK_GNSSSDR_PREFETCH(&local_code_chip_index[4]);
                     aux = vmulq_f32(code_phase_step_chips_reg, indexn);
                     aux = vaddq_f32(aux, aux2);
 
@@ -588,7 +588,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_neon(lv_16sc_t** resul
                 }
             for(n = neon_iters * 4; n < num_points; n++)
                 {
-                    __VOLK_PREFETCH_LOCALITY(&_result[current_correlator_tap][n], 1, 0);
+                    __VOLK_GNSSSDR_PREFETCH_LOCALITY(&_result[current_correlator_tap][n], 1, 0);
                     // resample code for current tap
                     local_code_chip_index_ = (int)floor(code_phase_step_chips * (float)n + shifts_chips[current_correlator_tap] - rem_code_phase_chips);
                     //Take into account that in multitap correlators, the shifts can be negative!

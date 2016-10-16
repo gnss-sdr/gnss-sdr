@@ -100,7 +100,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_u_sse4_1(lv_32fc_t* out, const f
     for(;number < quarterPoints; number++)
         {
             aVal = _mm_loadu_ps(aPtr);
-            __VOLK_PREFETCH(aPtr + 8);
+            __VOLK_GNSSSDR_PREFETCH(aPtr + 8);
             s = _mm_sub_ps(aVal, _mm_and_ps(_mm_mul_ps(aVal, ftwos), _mm_cmplt_ps(aVal, fzeroes)));
             q = _mm_cvtps_epi32(_mm_floor_ps(_mm_mul_ps(s, m4pi)));
             r = _mm_add_epi32(q, _mm_and_si128(q, ones));
@@ -194,7 +194,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_a_sse4_1(lv_32fc_t* out, const f
     for(;number < quarterPoints; number++)
         {
             aVal = _mm_load_ps(aPtr);
-            __VOLK_PREFETCH(aPtr + 8);
+            __VOLK_GNSSSDR_PREFETCH(aPtr + 8);
             s = _mm_sub_ps(aVal, _mm_and_ps(_mm_mul_ps(aVal, ftwos), _mm_cmplt_ps(aVal, fzeroes)));
             q = _mm_cvtps_epi32(_mm_floor_ps(_mm_mul_ps(s, m4pi)));
             r = _mm_add_epi32(q, _mm_and_si128(q, ones));
@@ -292,7 +292,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_a_sse2(lv_32fc_t* out, const flo
     for(;number < sse_iters; number++)
         {
             x = _mm_load_ps(aPtr);
-            __VOLK_PREFETCH(aPtr + 8);
+            __VOLK_GNSSSDR_PREFETCH(aPtr + 8);
 
             sign_bit_sin = x;
             /* take the absolute value */
@@ -445,7 +445,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_u_sse2(lv_32fc_t* out, const flo
     for(;number < sse_iters; number++)
         {
             x = _mm_loadu_ps(aPtr);
-            __VOLK_PREFETCH(aPtr + 8);
+            __VOLK_GNSSSDR_PREFETCH(aPtr + 8);
 
             sign_bit_sin = x;
             /* take the absolute value */
@@ -640,7 +640,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_neon(lv_32fc_t* out, const float
     for(;number < neon_iters; number++)
         {
             x = vld1q_f32(aPtr);
-            __VOLK_PREFETCH(aPtr + 8);
+            __VOLK_GNSSSDR_PREFETCH(aPtr + 8);
 
             sign_mask_sin = vcltq_f32(x, vdupq_n_f32(0));
             x = vabsq_f32(x);

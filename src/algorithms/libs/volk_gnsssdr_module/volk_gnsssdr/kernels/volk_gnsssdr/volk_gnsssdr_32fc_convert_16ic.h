@@ -84,7 +84,7 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse2(lv_16sc_t* outputVector
         {
             inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-            __VOLK_PREFETCH(inputVectorPtr + 8);
+            __VOLK_GNSSSDR_PREFETCH(inputVectorPtr + 8);
 
             // Clip
             ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
@@ -137,7 +137,7 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector,
         {
             inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-            __VOLK_PREFETCH(inputVectorPtr + 8);
+            __VOLK_GNSSSDR_PREFETCH(inputVectorPtr + 8);
 
             // Clip
             ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
@@ -190,7 +190,7 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector
         {
             inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-            __VOLK_PREFETCH(inputVectorPtr + 8);
+            __VOLK_GNSSSDR_PREFETCH(inputVectorPtr + 8);
 
             // Clip
             ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
@@ -241,7 +241,7 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse(lv_16sc_t* outputVector,
         {
             inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-            __VOLK_PREFETCH(inputVectorPtr + 8);
+            __VOLK_GNSSSDR_PREFETCH(inputVectorPtr + 8);
 
             // Clip
             ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
@@ -296,7 +296,7 @@ static inline void volk_gnsssdr_32fc_convert_16ic_neon(lv_16sc_t* outputVector, 
         {
             a = vld1q_f32((const float32_t*)(inputVectorPtr)); inputVectorPtr += 4;
             b = vld1q_f32((const float32_t*)(inputVectorPtr)); inputVectorPtr += 4;
-            __VOLK_PREFETCH(inputVectorPtr + 8);
+            __VOLK_GNSSSDR_PREFETCH(inputVectorPtr + 8);
 
             ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
             ret2 = vmaxq_f32(vminq_f32(b, max_val), min_val);

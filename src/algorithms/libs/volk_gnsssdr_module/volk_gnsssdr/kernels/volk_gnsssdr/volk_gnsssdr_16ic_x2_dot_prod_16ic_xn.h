@@ -145,7 +145,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
                 {
                     // b[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     b = _mm_load_si128((__m128i*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-                    __builtin_prefetch(_in_common + 8);
+                    __VOLK_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a = _mm_load_si128((__m128i*)&(_in_a[n_vec][index*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
@@ -239,7 +239,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
                 {
                     // b[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     b = _mm_loadu_si128((__m128i*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-                    __builtin_prefetch(_in_common + 8);
+                    __VOLK_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a = _mm_loadu_si128((__m128i*)&(_in_a[n_vec][index*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
@@ -332,7 +332,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_avx2(lv_16sc_t* resul
             for(index = 0; index < sse_iters; index++)
                 {
                     b = _mm256_load_si256((__m256i*)_in_common);
-                    __builtin_prefetch(_in_common + 16);
+                    __VOLK_PREFETCH(_in_common + 16);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a = _mm256_load_si256((__m256i*)&(_in_a[n_vec][index*8]));
@@ -426,7 +426,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_avx2(lv_16sc_t* resul
             for(index = 0; index < sse_iters; index++)
                 {
                     b = _mm256_loadu_si256((__m256i*)_in_common);
-                    __builtin_prefetch(_in_common + 16);
+                    __VOLK_PREFETCH(_in_common + 16);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a = _mm256_loadu_si256((__m256i*)&(_in_a[n_vec][index*8]));
@@ -518,11 +518,11 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
             for(index = 0; index < neon_iters; index++)
                 {
                     b_val = vld2_s16((int16_t*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-                    __builtin_prefetch(_in_common + 8);
+                    __VOLK_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-                            //__builtin_prefetch(&_in_a[n_vec][index*4] + 8);
+                            //__VOLK_PREFETCH(&_in_a[n_vec][index*4] + 8);
 
                             // multiply the real*real and imag*imag to get real result
                             // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r
@@ -604,7 +604,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_vma(lv_16sc_t* res
             for(index = 0; index < neon_iters; index++)
                 {
                     b_val = vld2_s16((int16_t*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-                    __builtin_prefetch(_in_common + 8);
+                    __VOLK_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index*4]));
@@ -684,7 +684,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* 
             for(index = 0; index < neon_iters; index++)
                 {
                     b_val = vld2_s16((int16_t*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-                    __builtin_prefetch(_in_common + 8);
+                    __VOLK_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index*4]));

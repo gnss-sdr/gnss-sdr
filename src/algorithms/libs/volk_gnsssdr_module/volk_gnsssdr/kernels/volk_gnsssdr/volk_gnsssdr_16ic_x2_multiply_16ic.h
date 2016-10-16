@@ -309,8 +309,8 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_neon(lv_16sc_t* out, const
         {
             a_val = vld2_s16((int16_t*)a_ptr); // a0r|a1r|a2r|a3r || a0i|a1i|a2i|a3i
             b_val = vld2_s16((int16_t*)b_ptr); // b0r|b1r|b2r|b3r || b0i|b1i|b2i|b3i
-            __builtin_prefetch(a_ptr + 4);
-            __builtin_prefetch(b_ptr + 4);
+            __VOLK_PREFETCH(a_ptr + 4);
+            __VOLK_PREFETCH(b_ptr + 4);
 
             // multiply the real*real and imag*imag to get real result
             // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r

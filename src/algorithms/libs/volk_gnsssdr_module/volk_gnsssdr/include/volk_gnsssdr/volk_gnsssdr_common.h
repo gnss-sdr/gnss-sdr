@@ -39,6 +39,8 @@
 #    define __VOLK_ATTR_EXPORT
 #    define __VOLK_ATTR_IMPORT
 #  endif
+#  define __VOLK_PREFETCH(addr) __builtin_prefetch(addr)
+#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality) __builtin_prefetch(addr, rw, locality)
 #elif _MSC_VER
 #  define __VOLK_ATTR_ALIGNED(x) __declspec(align(x))
 #  define __VOLK_ATTR_UNUSED
@@ -46,6 +48,8 @@
 #  define __VOLK_ATTR_DEPRECATED __declspec(deprecated)
 #  define __VOLK_ATTR_EXPORT     __declspec(dllexport)
 #  define __VOLK_ATTR_IMPORT     __declspec(dllimport)
+#  define __VOLK_PREFETCH(addr)
+#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality)
 #else
 #  define __VOLK_ATTR_ALIGNED(x)
 #  define __VOLK_ATTR_UNUSED
@@ -53,6 +57,8 @@
 #  define __VOLK_ATTR_DEPRECATED
 #  define __VOLK_ATTR_EXPORT
 #  define __VOLK_ATTR_IMPORT
+#  define __VOLK_PREFETCH(addr)
+#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality)
 #endif
 
 ////////////////////////////////////////////////////////////////////////

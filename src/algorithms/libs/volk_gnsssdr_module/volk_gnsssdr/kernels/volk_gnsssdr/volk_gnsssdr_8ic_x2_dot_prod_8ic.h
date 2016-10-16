@@ -457,8 +457,8 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_neon(lv_8sc_t* result, const
         {
             a_val = vld2_s8((const int8_t*)a);
             b_val = vld2_s8((const int8_t*)b);
-            __builtin_prefetch(a + 16);
-            __builtin_prefetch(b + 16);
+            __VOLK_PREFETCH(a + 16);
+            __VOLK_PREFETCH(b + 16);
 
             // multiply the real*real and imag*imag to get real result
             tmp_real.val[0] = vmul_s8(a_val.val[0], b_val.val[0]);

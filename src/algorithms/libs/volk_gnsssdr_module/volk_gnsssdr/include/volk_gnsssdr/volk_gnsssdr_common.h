@@ -21,6 +21,23 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef INCLUDED_LIBVOLK_GNSSSDR_COMMON_H
+#define INCLUDED_LIBVOLK_GNSSSDR_COMMON_H
+
+////////////////////////////////////////////////////////////////////////
+// Cross-platform attribute macros not included in VOLK
+////////////////////////////////////////////////////////////////////////
+#if defined __GNUC__
+#  define __VOLK_PREFETCH(addr) __builtin_prefetch(addr)
+#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality) __builtin_prefetch(addr, rw, locality)
+#elif _MSC_VER
+#  define __VOLK_PREFETCH(addr)
+#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality)
+#else
+#  define __VOLK_PREFETCH(addr)
+#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality)
+#endif
+
 #ifndef INCLUDED_LIBVOLK_COMMON_H
 #define INCLUDED_LIBVOLK_COMMON_H
 
@@ -39,8 +56,6 @@
 #    define __VOLK_ATTR_EXPORT
 #    define __VOLK_ATTR_IMPORT
 #  endif
-#  define __VOLK_PREFETCH(addr) __builtin_prefetch(addr)
-#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality) __builtin_prefetch(addr, rw, locality)
 #elif _MSC_VER
 #  define __VOLK_ATTR_ALIGNED(x) __declspec(align(x))
 #  define __VOLK_ATTR_UNUSED
@@ -48,8 +63,6 @@
 #  define __VOLK_ATTR_DEPRECATED __declspec(deprecated)
 #  define __VOLK_ATTR_EXPORT     __declspec(dllexport)
 #  define __VOLK_ATTR_IMPORT     __declspec(dllimport)
-#  define __VOLK_PREFETCH(addr)
-#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality)
 #else
 #  define __VOLK_ATTR_ALIGNED(x)
 #  define __VOLK_ATTR_UNUSED
@@ -57,8 +70,6 @@
 #  define __VOLK_ATTR_DEPRECATED
 #  define __VOLK_ATTR_EXPORT
 #  define __VOLK_ATTR_IMPORT
-#  define __VOLK_PREFETCH(addr)
-#  define __VOLK_PREFETCH_LOCALITY(addr, rw, locality)
 #endif
 
 ////////////////////////////////////////////////////////////////////////
@@ -139,3 +150,4 @@ union bit256{
 #define bit256_p(x) ((union bit256 *)(x))
 
 #endif /* INCLUDED_LIBVOLK_COMMON_H */
+#endif /* INCLUDED_LIBVOLK_GNSSSDR_COMMON_H */

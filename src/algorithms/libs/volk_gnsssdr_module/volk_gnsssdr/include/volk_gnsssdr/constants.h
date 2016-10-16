@@ -28,11 +28,11 @@
 
 __VOLK_DECL_BEGIN
 
-VOLK_API char* volk_gnsssdr_prefix();
-VOLK_API char* volk_gnsssdr_version();
-VOLK_API char* volk_gnsssdr_c_compiler();
-VOLK_API char* volk_gnsssdr_compiler_flags();
-VOLK_API char* volk_gnsssdr_available_machines();
+VOLK_API const char* volk_gnsssdr_prefix();
+VOLK_API const char* volk_gnsssdr_version();
+VOLK_API const char* volk_gnsssdr_c_compiler();
+VOLK_API const char* volk_gnsssdr_compiler_flags();
+VOLK_API const char* volk_gnsssdr_available_machines();
 
 __VOLK_DECL_END
 

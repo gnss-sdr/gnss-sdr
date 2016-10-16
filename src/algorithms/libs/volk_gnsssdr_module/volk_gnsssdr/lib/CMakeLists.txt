@@ -499,7 +499,7 @@ endif()
 message(STATUS "Loading version ${VERSION} into constants...")
 
 #double escape for windows backslash path separators
-string(REPLACE "\\" "\\\\" prefix ${prefix})
+string(REPLACE "\\" "\\\\" prefix "${prefix}")
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/constants.c.in

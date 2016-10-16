@@ -32,8 +32,13 @@
 
 
 #include <unistd.h>
+#include <chrono>
 #include <exception>
 #include <memory>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <thread>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -48,7 +53,40 @@
 #include "control_message_factory.h"
 
 
-TEST(Control_Thread_Test, InstantiateRunControlMessages)
+class Control_Thread_Test: public ::testing::Test
+{
+public:
+    static int stop_receiver();
+    typedef struct  {
+        long mtype; // required by SysV message
+        double message;
+    } message_buffer;
+};
+
+
+int Control_Thread_Test::stop_receiver()
+{
+    message_buffer msg_stop;
+    msg_stop.mtype = 1;
+    msg_stop.message = -200.0;
+    int msqid_stop = -1;
+    int msgsend_size = sizeof(msg_stop.message);
+    key_t key_stop = 1102;
+
+    // wait for the receiver control queue to be created
+    while(((msqid_stop = msgget(key_stop, 0644))) == -1){ }
+
+    // wait for a couple of seconds
+    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(2));
+
+    // Stop the receiver
+    msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
+
+    return 0;
+}
+
+
+TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
@@ -109,10 +147,7 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
 }
 
 
-
-
-
-TEST(Control_Thread_Test, InstantiateRunControlMessages2)
+TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
@@ -172,4 +207,57 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     unsigned int expected1 = 1;
     EXPECT_EQ(expected5, control_thread2->processed_control_messages());
     EXPECT_EQ(expected1, control_thread2->applied_actions());
+}
+
+
+
+TEST_F(Control_Thread_Test, StopReceiverProgrammatically)
+{
+    std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
+    config->set_property("SignalSource.implementation", "File_Signal_Source");
+    std::string path = std::string(TEST_PATH);
+    std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+    const char * file_name = file.c_str();
+    config->set_property("SignalSource.filename", file_name);
+    config->set_property("SignalSource.item_type", "gr_complex");
+    config->set_property("SignalSource.sampling_frequency", "4000000");
+    config->set_property("SignalSource.repeat", "true");
+    config->set_property("SignalConditioner.implementation", "Pass_Through");
+    config->set_property("SignalConditioner.item_type", "gr_complex");
+    config->set_property("Channels_1C.count", "4");
+    config->set_property("Channels_1E.count", "0");
+    config->set_property("Channels.in_acquisition", "1");
+    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition_1C.threshold", "1");
+    config->set_property("Acquisition_1C.doppler_max", "5000");
+    config->set_property("Acquisition_1C.doppler_min", "-5000");
+    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+    config->set_property("Tracking_1C.item_type", "gr_complex");
+    config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
+    config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
+    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.item_type", "gr_complex");
+    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("PVT.item_type", "gr_complex");
+
+    std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
+    gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
+    control_thread->set_control_queue(control_queue);
+
+    std::thread stop_receiver_thread(stop_receiver);
+
+    try
+    {
+            control_thread->run();
+    }
+    catch( boost::exception & e )
+    {
+            std::cout << "Boost exception: " << boost::diagnostic_information(e);
+    }
+    catch(std::exception const&  ex)
+    {
+            std::cout  << "STD exception: " << ex.what();
+    }
+
+    stop_receiver_thread.join();
 }

@@ -906,7 +906,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         break;
 
     case 8: /*Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)*/
-        IOD_a_8 = static_cast<double>(read_navigation_signed(data_jk_bits, IOD_a_8_bit));
+        IOD_a_8 = static_cast<double>(read_navigation_unsigned(data_jk_bits, IOD_a_8_bit));
         DLOG(INFO) << "IOD_a_8= " << IOD_a_8;
         af0_8 = static_cast<double>(read_navigation_signed(data_jk_bits, af0_8_bit));
         af0_8 = af0_8 * af0_8_LSB;
@@ -959,11 +959,11 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         af1_9 = static_cast<double>(read_navigation_signed(data_jk_bits, af1_9_bit));
         af1_9 = af1_9 * af1_9_LSB;
         DLOG(INFO) << "af1_9= " << af1_9;
+        E5b_HS_9 = static_cast<double>(read_navigation_unsigned(data_jk_bits, E5b_HS_9_bit));
+        DLOG(INFO) << "E5b_HS_9= " << E5b_HS_9;
         E1B_HS_9 = static_cast<double>(read_navigation_unsigned(data_jk_bits, E1B_HS_9_bit));
         DLOG(INFO) << "E1B_HS_9= " << E1B_HS_9;
-        E1B_HS_9 = static_cast<double>(read_navigation_unsigned(data_jk_bits, E1B_HS_9_bit));
-        DLOG(INFO) << "E1B_HS_9= " << E1B_HS_9;
-        SVID3_9 = static_cast<double>(read_navigation_unsigned(data_jk_bits,SVID3_9_bit));
+        SVID3_9 = static_cast<double>(read_navigation_unsigned(data_jk_bits, SVID3_9_bit));
         DLOG(INFO) << "SVID3_9= " << SVID3_9;
         DELTA_A_9 = static_cast<double>(read_navigation_signed(data_jk_bits, DELTA_A_9_bit));
         DELTA_A_9 = DELTA_A_9 * DELTA_A_9_LSB;

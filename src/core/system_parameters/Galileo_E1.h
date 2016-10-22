@@ -145,7 +145,7 @@ const std::vector<std::pair<int,int>> af1_4_bit({{100,21}});            //
 const double af1_4_LSB = TWO_N46;
 const std::vector<std::pair<int,int>> af2_4_bit({{121,6}});
 const double af2_4_LSB = TWO_N59;
-const std::vector<std::pair<int,int>> spare_4_bit({{121,6}});
+const std::vector<std::pair<int,int>> spare_4_bit({{127,2}});
 //last two bits are reserved
 
 
@@ -187,9 +187,9 @@ const std::vector<std::pair<int,int>> Delta_tLS_6_bit({{63,8}});
 const std::vector<std::pair<int,int>> t0t_6_bit({{71,8}});
 const double t0t_6_LSB = 3600;
 const std::vector<std::pair<int,int>> WNot_6_bit({{79,8}});
-const std::vector<std::pair<int,int>> WN_LSF_6_bit({{86,8}});
+const std::vector<std::pair<int,int>> WN_LSF_6_bit({{87,8}});
 const std::vector<std::pair<int,int>> DN_6_bit({{95,3}});
-const std::vector<std::pair<int,int>> Delta_tLSF_6_bit({{97,8}});
+const std::vector<std::pair<int,int>> Delta_tLSF_6_bit({{98,8}});
 const std::vector<std::pair<int,int>> TOW_6_bit({{106,20}});
 
 

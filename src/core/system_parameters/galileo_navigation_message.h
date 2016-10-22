@@ -1,7 +1,7 @@
 /*!
  * \file galileo_navigation_message.h
  * \brief  Implementation of a Galileo I/NAV Data message
- *         as described in Galileo OS SIS ICD Issue 1.1 (Sept. 2010)
+ *         as described in Galileo OS SIS ICD Issue 1.2 (Nov. 2015)
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
@@ -47,8 +47,8 @@
 
 /*!
  * \brief This class handles the Galileo I/NAV Data message, as described in the
- * Galileo Open Service Signal in Space Interface Control Document (OS SIS ICD), Issue 1.1 (Sept 2010).
- * See http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf
+ * Galileo Open Service Signal in Space Interface Control Document (OS SIS ICD), Issue 1.2 (Nov 2015).
+ * See https://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf
  */
 class Galileo_Navigation_Message
 {

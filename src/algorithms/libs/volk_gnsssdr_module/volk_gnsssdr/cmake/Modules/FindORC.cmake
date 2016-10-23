@@ -15,6 +15,22 @@ FIND_PATH(ORC_INCLUDE_DIR NAMES orc/orc.h
 
 FIND_PATH(ORC_LIBRARY_DIR NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}orc-0.4${CMAKE_SHARED_LIBRARY_SUFFIX}
           HINTS ${PC_ORC_LIBDIR}
+                /usr/local/lib
+                /usr/lib/x86_64-linux-gnu
+                /usr/lib/i386-linux-gnu
+                /usr/lib/arm-linux-gnueabihf
+                /usr/lib/arm-linux-gnueabi
+                /usr/lib/aarch64-linux-gnu
+                /usr/lib/mipsel-linux-gnu
+                /usr/lib/mips-linux-gnu
+                /usr/lib/mips64el-linux-gnuabi64
+                /usr/lib/powerpc-linux-gnu
+                /usr/lib/powerpc64-linux-gnu
+                /usr/lib/powerpc64le-linux-gnu
+                /usr/lib/hppa-linux-gnu
+                /usr/lib/s390x-linux-gnu
+                /usr/lib64
+                /usr/lib
 	  PATHS ${ORC_ROOT}/lib${LIB_SUFFIX} ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
 
 FIND_LIBRARY(ORC_LIB orc-0.4

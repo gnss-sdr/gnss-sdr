@@ -541,15 +541,11 @@ endif()
 if(CMAKE_VERSION VERSION_GREATER "2.8.7")
     #Create a volk_gnsssdr object library (requires cmake >= 2.8.8)
     add_library(volk_gnsssdr_obj OBJECT ${volk_gnsssdr_sources})
-
-    #Add dynamic library
-    file(GLOB orc ${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/orc/*.orc)
-    list(SORT orc)
     
     if(ENABLE_STATIC_LIBS)
-        add_library(volk_gnsssdr STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj> ${orc})
+        add_library(volk_gnsssdr STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj> ${volk_gnsssdr_sources})
     else(ENABLE_STATIC_LIBS)
-        add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj> ${orc})
+        add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj> ${volk_gnsssdr_sources})
     endif(ENABLE_STATIC_LIBS)
     target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries} ${Boost_LIBRARIES})
 

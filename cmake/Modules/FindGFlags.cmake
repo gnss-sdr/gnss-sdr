@@ -42,6 +42,7 @@ else(APPLE)
      /usr/lib/powerpc-linux-gnu
      /usr/lib/powerpc64-linux-gnu
      /usr/lib/powerpc64le-linux-gnu
+     /usr/lib/hppa-linux-gnu
      /usr/lib/s390x-linux-gnu
      /usr/lib64
      /usr/lib

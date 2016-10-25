@@ -28,7 +28,14 @@ project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
-
+if(NOT CMAKE_PREFIX_PATH)
+    if(DEFINED ENV{PYBOMBS_PREFIX})
+        set(CMAKE_PREFIX_PATH $ENV{PYBOMBS_PREFIX})
+    endif(DEFINED ENV{PYBOMBS_PREFIX})
+    if(DEFINED ENV{SNAP})
+        set(CMAKE_PREFIX_PATH $ENV{SNAP})
+    endif(DEFINED ENV{SNAP})
+endif(NOT CMAKE_PREFIX_PATH)
 
 ########################################################################
 # Determine optional blocks/libraries to be built (default: not built)

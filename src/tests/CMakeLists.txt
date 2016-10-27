@@ -173,7 +173,7 @@ if(ENABLE_UNIT_TESTING)
 
     target_link_libraries(run_tests ${CLANG_FLAGS}
                                 ${Boost_LIBRARIES}
-                                ${GFLAGS_LIBS}
+                                ${GFlags_LIBS}
                                 ${GLOG_LIBRARIES}
                                 ${GTEST_LIBRARIES}
                                 ${GNURADIO_RUNTIME_LIBRARIES}
@@ -189,7 +189,7 @@ if(ENABLE_UNIT_TESTING)
                                 signal_generator_blocks
                                 signal_generator_adapters
                                 pvt_gr_blocks
-                                ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                                ${VOLK_GNSSSDR_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
     )
 endif(ENABLE_UNIT_TESTING)
@@ -211,13 +211,13 @@ if(NOT ${ENABLE_PACKAGING})
 endif(NOT ${ENABLE_PACKAGING})
 
 target_link_libraries(control_thread_test ${Boost_LIBRARIES}
-                                          ${GFLAGS_LIBS}
+                                          ${GFlags_LIBS}
                                           ${GLOG_LIBRARIES}
                                           ${GTEST_LIBRARIES}
                                           gnss_sp_libs
                                           gnss_system_parameters
                                           gnss_rx
-                                          ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                                          ${VOLK_GNSSSDR_LIBRARIES}
                                           )
 
 add_test(control_thread_test control_thread_test)
@@ -237,13 +237,13 @@ if(NOT ${ENABLE_PACKAGING})
 endif(NOT ${ENABLE_PACKAGING})
 
 target_link_libraries(flowgraph_test ${Boost_LIBRARIES}
-                                     ${GFLAGS_LIBS}
+                                     ${GFlags_LIBS}
                                      ${GLOG_LIBRARIES}
                                      ${GTEST_LIBRARIES}
                                      gnss_sp_libs
                                      gnss_rx
                                      gnss_system_parameters
-                                     ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                                     ${VOLK_GNSSSDR_LIBRARIES}
                                      )
 
 add_test(flowgraph_test flowgraph_test)
@@ -266,7 +266,7 @@ if(NOT ${ENABLE_PACKAGING})
 endif(NOT ${ENABLE_PACKAGING})
 
 target_link_libraries(gnss_block_test ${Boost_LIBRARIES}
-                                      ${GFLAGS_LIBS}
+                                      ${GFlags_LIBS}
                                       ${GLOG_LIBRARIES}
                                       ${GTEST_LIBRARIES}
                                       ${GNURADIO_RUNTIME_LIBRARIES}
@@ -277,7 +277,7 @@ target_link_libraries(gnss_block_test ${Boost_LIBRARIES}
                                       gnss_rx
                                       gnss_system_parameters
                                       # signal_generator_blocks
-                                      ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                                      ${VOLK_GNSSSDR_LIBRARIES}
                                       )
 
 add_test(gnss_block_test gnss_block_test)
@@ -296,7 +296,7 @@ if(NOT ${ENABLE_PACKAGING})
 endif(NOT ${ENABLE_PACKAGING})
 
 target_link_libraries(gnuradio_block_test ${Boost_LIBRARIES}
-                                      ${GFLAGS_LIBS}
+                                      ${GFlags_LIBS}
                                       ${GLOG_LIBRARIES}
                                       ${GTEST_LIBRARIES}
                                       ${GNURADIO_RUNTIME_LIBRARIES}
@@ -307,7 +307,7 @@ target_link_libraries(gnuradio_block_test ${Boost_LIBRARIES}
                                       gnss_rx
                                       gnss_system_parameters
                                       # signal_generator_blocks
-                                      ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                                      ${VOLK_GNSSSDR_LIBRARIES}
                                       )
 
 add_test(gnuradio_block_test gnuradio_block_test)
@@ -324,7 +324,7 @@ endif(NOT ${GTEST_DIR_LOCAL})
 #      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc
 # )
 # target_link_libraries(acq_test ${Boost_LIBRARIES}
-#                                ${GFLAGS_LIBS}
+#                                ${GFlags_LIBS}
 #                                ${GLOG_LIBRARIES}
 #                                ${GTEST_LIBRARIES}
 #                                ${GNURADIO_RUNTIME_LIBRARIES}
@@ -335,7 +335,7 @@ endif(NOT ${GTEST_DIR_LOCAL})
 #                                gnss_rx
 #                                gnss_system_parameters
 #                                signal_generator_blocks
-#                                ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+#                                ${VOLK_GNSSSDR_LIBRARIES}
 #                                )
 # add_test(acq_test acq_test)
 
@@ -349,7 +349,7 @@ if(NOT ${ENABLE_PACKAGING})
 endif(NOT ${ENABLE_PACKAGING})
 
 target_link_libraries(trk_test ${Boost_LIBRARIES}
-                               ${GFLAGS_LIBS}
+                               ${GFlags_LIBS}
                                ${GLOG_LIBRARIES}
                                ${GTEST_LIBRARIES}
                                ${GNURADIO_RUNTIME_LIBRARIES}
@@ -360,7 +360,7 @@ target_link_libraries(trk_test ${Boost_LIBRARIES}
                                gnss_rx
                                gnss_system_parameters
                                signal_generator_blocks
-                               ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                               ${VOLK_GNSSSDR_LIBRARIES}
                                )
 
 add_test(trk_test trk_test)
@@ -393,14 +393,14 @@ if(ENABLE_SYSTEM_TESTING)
     endif(NOT ${GTEST_DIR_LOCAL})
     target_link_libraries(ttff
         ${Boost_LIBRARIES}
-        ${GFLAGS_LIBS}
+        ${GFlags_LIBS}
         ${GLOG_LIBRARIES}
         ${GTEST_LIBRARIES}
         ${GNURADIO_RUNTIME_LIBRARIES}
         ${GNURADIO_BLOCKS_LIBRARIES}
         ${GNURADIO_FILTER_LIBRARIES}
         ${GNURADIO_ANALOG_LIBRARIES}
-        ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+        ${VOLK_GNSSSDR_LIBRARIES}
         gnss_sp_libs
         gnss_rx
         gnss_system_parameters

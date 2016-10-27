@@ -92,7 +92,7 @@ target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
                                ${GFlags_LIBS}
                                ${GLOG_LIBRARIES}
                                ${ARMADILLO_LIBRARIES}
-                               ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                               ${VOLK_GNSSSDR_LIBRARIES}
                                ${GNSS_SDR_OPTIONAL_LIBS}
                                gnss_sp_libs
                                gnss_rx

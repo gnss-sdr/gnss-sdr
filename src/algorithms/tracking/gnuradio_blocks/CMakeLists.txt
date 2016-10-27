@@ -58,7 +58,7 @@ list(SORT TRACKING_GR_BLOCKS_HEADERS)
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
 
-target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES} ${OPT_TRACKING_LIBRARIES})
+target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_TRACKING_LIBRARIES})
 
 if(NOT VOLK_GNSSSDR_FOUND)
     add_dependencies(tracking_gr_blocks volk_gnsssdr_module)

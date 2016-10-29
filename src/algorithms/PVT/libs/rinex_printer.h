@@ -182,9 +182,14 @@ public:
     void log_rinex_nav(std::fstream & out, const std::map<int, Gps_Ephemeris> & gps_eph_map, const std::map<int, Galileo_Ephemeris> & galileo_eph_map);
 
     /*!
-     *  \brief Writes GPS observables into the RINEX file
+     *  \brief Writes GPS L1 observables into the RINEX file
      */
     void log_rinex_obs(std::fstream & out, const Gps_Ephemeris & eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+
+    /*!
+     *  \brief Writes GPS L2 observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream & out, const Gps_CNAV_Ephemeris & eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
     /*!
      *  \brief Writes dual frequency GPS L1 and L2 observables into the RINEX file

@@ -59,8 +59,7 @@
 #include <map>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "gps_navigation_message.h"
-#include "gps_utc_model.h"
-#include "gps_iono.h"
+#include "gps_cnav_navigation_message.h"
 #include "galileo_navigation_message.h"
 #include "sbas_telemetry_data.h"
 #include "GPS_L1_CA.h"
@@ -93,9 +92,14 @@ public:
     std::fstream navMixFile ; //<! Output file stream for RINEX Mixed navigation data file
 
     /*!
-     *  \brief Generates the GPS Navigation Data header
+     *  \brief Generates the GPS L1 C/A Navigation Data header
      */
     void rinex_nav_header(std::fstream & out, const Gps_Iono & iono, const Gps_Utc_Model & utc_model);
+
+    /*!
+     *  \brief Generates the GPS L2C(M) Navigation Data header
+     */
+    void rinex_nav_header(std::fstream & out, const Gps_CNAV_Iono & iono, const Gps_CNAV_Utc_Model & utc_model);
 
     /*!
      *  \brief Generates the Galileo Navigation Data header
@@ -111,6 +115,12 @@ public:
      *  \brief Generates the GPS Observation data header
      */
     void rinex_obs_header(std::fstream & out, const Gps_Ephemeris & eph, const double d_TOW_first_observation);
+
+    /*!
+     *  \brief Generates the GPS L2 Observation data header
+     */
+    void rinex_obs_header(std::fstream & out, const Gps_CNAV_Ephemeris & eph, const double d_TOW_first_observation);
+
 
     /*!
      *  \brief Generates the Galileo Observation data header
@@ -138,14 +148,25 @@ public:
     boost::posix_time::ptime compute_GPS_time(const Gps_Ephemeris & eph, const double obs_time);
 
     /*!
+     *  \brief Computes the GPS time and returns a boost::posix_time::ptime object
+     */
+    boost::posix_time::ptime compute_GPS_time(const Gps_CNAV_Ephemeris & eph, const double obs_time);
+
+    /*!
      *  \brief Computes the Galileo time and returns a boost::posix_time::ptime object
      */
     boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris & eph, const double obs_time);
 
     /*!
-     *  \brief Writes data from the GPS navigation message into the RINEX file
+     *  \brief Writes data from the GPS L1 C/A navigation message into the RINEX file
      */
     void log_rinex_nav(std::fstream & out, const std::map<int, Gps_Ephemeris> & eph_map);
+
+    /*!
+     *  \brief Writes data from the GPS L2 navigation message into the RINEX file
+     */
+    // void log_rinex_nav(std::fstream & out, const std::map<int, Gps_CNAV_Ephemeris> & eph_map);
+
 
     /*!
      *  \brief Writes data from the Galileo navigation message into the RINEX file
@@ -183,6 +204,8 @@ public:
     void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
 
     void update_nav_header(std::fstream & out, const Gps_Utc_Model & gps_utc, const Gps_Iono & gps_iono);
+
+    void update_nav_header(std::fstream & out, const Gps_CNAV_Utc_Model & utc_model, const Gps_CNAV_Iono & iono);
 
     void update_nav_header(std::fstream & out, const Gps_Iono & gps_iono, const Gps_Utc_Model & gps_utc_model, const Galileo_Iono & galileo_iono, const Galileo_Utc_Model & galileo_utc_model, const Galileo_Almanac& galileo_almanac);
 

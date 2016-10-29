@@ -165,7 +165,7 @@ public:
     /*!
      *  \brief Writes data from the GPS L2 navigation message into the RINEX file
      */
-    // void log_rinex_nav(std::fstream & out, const std::map<int, Gps_CNAV_Ephemeris> & eph_map);
+    void log_rinex_nav(std::fstream & out, const std::map<int, Gps_CNAV_Ephemeris> & eph_map);
 
 
     /*!

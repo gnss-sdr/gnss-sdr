@@ -121,6 +121,10 @@ public:
      */
     void rinex_obs_header(std::fstream & out, const Gps_CNAV_Ephemeris & eph, const double d_TOW_first_observation);
 
+    /*!
+     *  \brief Generates the dual frequency GPS L1 & L2 Observation data header
+     */
+    void rinex_obs_header(std::fstream & out, const Gps_Ephemeris & eph, const Gps_CNAV_Ephemeris & eph_cnav, const double d_TOW_first_observation);
 
     /*!
      *  \brief Generates the Galileo Observation data header
@@ -167,7 +171,6 @@ public:
      */
     void log_rinex_nav(std::fstream & out, const std::map<int, Gps_CNAV_Ephemeris> & eph_map);
 
-
     /*!
      *  \brief Writes data from the Galileo navigation message into the RINEX file
      */
@@ -184,12 +187,17 @@ public:
     void log_rinex_obs(std::fstream & out, const Gps_Ephemeris & eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
     /*!
+     *  \brief Writes dual frequency GPS L1 and L2 observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream & out, const Gps_Ephemeris & eph, const Gps_CNAV_Ephemeris & eph_cnav, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+
+    /*!
      *  \brief Writes Galileo observables into the RINEX file
      */
     void log_rinex_obs(std::fstream & out, const Galileo_Ephemeris & eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
     /*!
-     *  \brief Writes Galileo observables into the RINEX file
+     *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
      */
     void log_rinex_obs(std::fstream & out, const Gps_Ephemeris & gps_eph, const Galileo_Ephemeris & galileo_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
@@ -212,6 +220,8 @@ public:
     void update_nav_header(std::fstream & out, const Galileo_Iono & galileo_iono, const Galileo_Utc_Model & utc_model, const Galileo_Almanac & galileo_almanac);
 
     void update_obs_header(std::fstream & out, const Gps_Utc_Model & utc_model);
+
+    void update_obs_header(std::fstream & out, const Gps_CNAV_Utc_Model & utc_model);
 
     void update_obs_header(std::fstream & out, const Galileo_Utc_Model & galileo_utc_model);
 

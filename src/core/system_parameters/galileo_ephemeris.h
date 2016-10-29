@@ -122,8 +122,12 @@ public:
     {
         using boost::serialization::make_nvp;
 
+        archive & make_nvp("IOD_ephemeris", IOD_ephemeris );
+        archive & make_nvp("IOD_nav_1", IOD_nav_1 );
+        archive & make_nvp("SV_ID_PRN_4", SV_ID_PRN_4);
         archive & make_nvp("i_satellite_PRN",i_satellite_PRN);
         archive & make_nvp("M0_1", M0_1);
+        archive & make_nvp("delta_n_3", delta_n_3);
         archive & make_nvp("e_1", e_1);
         archive & make_nvp("A_1", A_1);
         archive & make_nvp("OMEGA_0_2", OMEGA_0_2);
@@ -142,6 +146,15 @@ public:
         archive & make_nvp("af0_4", af0_4);
         archive & make_nvp("af1_4", af1_4);
         archive & make_nvp("af2_4", af2_4);
+        archive & make_nvp("WN_5", WN_5);
+        archive & make_nvp("TOW_5", TOW_5);
+        archive & make_nvp("SISA_3", SISA_3);
+        archive & make_nvp("E5a_HS", E5a_HS);
+        archive & make_nvp("E1B_HS_5", E1B_HS_5);
+        archive & make_nvp("E5a_DVS", E5a_DVS);
+        archive & make_nvp("E5b_DVS_5", E5b_DVS_5);
+        archive & make_nvp("E1B_DVS_5", E1B_DVS_5);
+        archive & make_nvp("BGD_E1E5a_5", BGD_E1E5a_5);
     }
 };
 

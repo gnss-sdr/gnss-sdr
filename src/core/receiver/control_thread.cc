@@ -113,6 +113,35 @@ ControlThread::~ControlThread()
 {
     // save navigation data to files
     if (save_assistance_to_XML() == true) {}
+    bool do_write = configuration_->property("GNSS-SDR.dump_ephemeris", false);
+    if( do_write )
+    {
+        if( global_galileo_ephemeris_map.size() != 0 )
+        {
+            std::string galileo_eph_filename( "galileo_eph.xml" );
+            galileo_eph_filename = configuration_->property("GNSS-SDR.galileo_ephemeris_filename", galileo_eph_filename);
+
+            std::ofstream ofs(galileo_eph_filename.c_str(), std::ofstream::out);
+            boost::archive::xml_oarchive xml(ofs);
+            std::map< int, Galileo_Ephemeris > galileo_eph_map = global_galileo_ephemeris_map.get_map_copy();
+            xml << BOOST_SERIALIZATION_NVP( galileo_eph_map );
+            ofs.close();
+            LOG(INFO) << "Saved Galileo Ephemeris data";
+        }
+
+        if( global_gps_ephemeris_map.size() != 0 )
+        {
+            std::string gps_eph_filename( "gps_eph.xml" );
+            gps_eph_filename = configuration_->property("GNSS-SDR.gps_ephemeris_filename", gps_eph_filename);
+
+            std::ofstream ofs(gps_eph_filename.c_str(), std::ofstream::out);
+            boost::archive::xml_oarchive xml(ofs);
+            std::map< int, Gps_Ephemeris > gps_eph_map = global_gps_ephemeris_map.get_map_copy();
+            xml << BOOST_SERIALIZATION_NVP( gps_eph_map );
+            ofs.close();
+            LOG(INFO) << "Saved Gps Ephemeris data";
+        }
+    }
 }
 
 
@@ -549,6 +578,51 @@ void ControlThread::init()
                         }
                 }
         }
+
+    bool do_read_eph = configuration_->property("GNSS-SDR.load_ephemeris", false);
+    if( do_read_eph )
+    {
+        std::string gps_eph_filename( "gps_eph.xml" );
+        gps_eph_filename = configuration_->property("GNSS-SDR.gps_ephemeris_filename", gps_eph_filename);
+
+        std::ifstream ifs(gps_eph_filename.c_str(), std::ofstream::in);
+        if( ifs.is_open() && not ifs.eof() )
+        {
+            boost::archive::xml_iarchive xml(ifs);
+            std::map< int, Gps_Ephemeris > gps_eph_map;
+            xml >> BOOST_SERIALIZATION_NVP( gps_eph_map );
+
+            ifs.close();
+            LOG(INFO) << "Loaded Gps Ephemeris data";
+
+            for( auto const &mapIter : gps_eph_map )
+            {
+                global_gps_ephemeris_map.write( mapIter.first, mapIter.second );
+            }
+        }
+
+        std::string galileo_eph_filename( "galileo_eph.xml" );
+        galileo_eph_filename = configuration_->property("GNSS-SDR.galileo_ephemeris_filename", galileo_eph_filename);
+
+        ifs.open(galileo_eph_filename.c_str(), std::ofstream::in);
+        if( ifs.is_open() && not ifs.eof() )
+        {
+            boost::archive::xml_iarchive xml(ifs);
+            std::map< int, Galileo_Ephemeris > galileo_eph_map;
+            xml >> BOOST_SERIALIZATION_NVP( galileo_eph_map );
+
+            ifs.close();
+            LOG(INFO) << "Loaded Galileo Ephemeris data";
+
+            for( auto const &mapIter : galileo_eph_map )
+            {
+                global_galileo_ephemeris_map.write( mapIter.first, mapIter.second );
+            }
+        }
+
+
+    }
+
 }
 
 

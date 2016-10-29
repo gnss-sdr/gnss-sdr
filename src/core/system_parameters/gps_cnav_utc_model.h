@@ -37,18 +37,18 @@
 
 
 /*!
- * \brief This class is a storage for the GPS UTC MODEL data as described in IS-GPS-200E
+ * \brief This class is a storage for the GPS UTC MODEL data as described in in IS-GPS-200H
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * See http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Appendix III
  */
 class Gps_CNAV_Utc_Model
 {
 public:
     bool valid;
     // UTC parameters
-    double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
-    double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
-    double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
+    double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s/s]
+    double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s]
+    double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200H) [s]
     int i_WN_T;           //!< UTC reference week number [weeks]
     double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
     int i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]

@@ -37,9 +37,9 @@
 
 
 /*!
- * \brief This class is a storage and orbital model functions for the GPS SV ephemeris data as described in IS-GPS-200E
+ * \brief This class is a storage and orbital model functions for the GPS SV ephemeris data as described in IS-GPS-200H
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * See http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Appendix III
  */
 class Gps_CNAV_Ephemeris
 {

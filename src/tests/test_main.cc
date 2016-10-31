@@ -122,7 +122,7 @@ DECLARE_string(log_dir);
 
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_printer_test.cc"
-
+#include "unit-tests/signal-processing-blocks/pvt/rinex_printer_test.cc"
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

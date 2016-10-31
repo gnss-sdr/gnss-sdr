@@ -127,9 +127,9 @@ public:
     void rinex_obs_header(std::fstream & out, const Gps_Ephemeris & eph, const Gps_CNAV_Ephemeris & eph_cnav, const double d_TOW_first_observation);
 
     /*!
-     *  \brief Generates the Galileo Observation data header
+     *  \brief Generates the Galileo Observation data header. Example: bands("1B"), bands("1B 5X"), bands("5X"), ... Default: "1B".
      */
-    void rinex_obs_header(std::fstream & out, const Galileo_Ephemeris & eph, const double d_TOW_first_observation);
+    void rinex_obs_header(std::fstream & out, const Galileo_Ephemeris & eph, const double d_TOW_first_observation, const std::string bands = "1B");
 
     /*!
      *  \brief Generates the Mixed (GPS/Galileo) Observation data header
@@ -235,6 +235,12 @@ public:
     std::map<std::string,std::string> observationCode; //<! GNSS observation descriptors
     std::string stringVersion; //<! RINEX version (2.10/2.11 or 3.01/3.02)
 
+    std::string navfilename;
+    std::string obsfilename;
+    std::string sbsfilename;
+    std::string navGalfilename;
+    std::string navMixfilename;
+
 private:
     int version ;  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
     int numberTypesObservations; // Number of available types of observable in the system. Should be public?
@@ -260,12 +266,6 @@ private:
      * "RINEX_FILE_TYPE_CLK" - Clock file.
      */
     std::string createFilename(std::string type);
-
-    std::string navfilename;
-    std::string obsfilename;
-    std::string sbsfilename;
-    std::string navGalfilename;
-    std::string navMixfilename;
 
     /*
      * Generates the data for the PGM / RUN BY / DATE line

@@ -249,6 +249,11 @@ TEST(Rinex_Printer_Test, GpsObsLogDualBand)
     gs4.Carrier_Doppler_hz = 1534;
     gs4.CN0_dB_hz = 42;
 
+    gs3.Pseudorange_m = 22000007;
+    gs3.Carrier_phase_rads = -23.4;
+    gs3.Carrier_Doppler_hz = -1534;
+    gs3.CN0_dB_hz = 47;
+
     gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(1,gs1) );
     gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(2,gs2) );
     gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(3,gs3) );

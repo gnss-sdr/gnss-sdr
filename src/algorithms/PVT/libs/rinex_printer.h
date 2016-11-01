@@ -132,9 +132,9 @@ public:
     void rinex_obs_header(std::fstream & out, const Galileo_Ephemeris & eph, const double d_TOW_first_observation, const std::string bands = "1B");
 
     /*!
-     *  \brief Generates the Mixed (GPS/Galileo) Observation data header
+     *  \brief Generates the Mixed (GPS/Galileo) Observation data header. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void rinex_obs_header(std::fstream & out, const Gps_Ephemeris & gps_eph, const Galileo_Ephemeris & galileo_eph, const double d_TOW_first_observation);
+    void rinex_obs_header(std::fstream & out, const Gps_Ephemeris & gps_eph, const Galileo_Ephemeris & galileo_eph, const double d_TOW_first_observation, const std::string galileo_bands = "1B");
 
     /*!
      *  \brief Generates the SBAS raw data header

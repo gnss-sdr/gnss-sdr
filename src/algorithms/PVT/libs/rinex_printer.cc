@@ -3143,7 +3143,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string galileo_bands)
 {
     if(galileo_eph.e_1){} // avoid warning, not needed
     std::string line;
@@ -3312,26 +3312,85 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     out << line << std::endl;
 
     line.clear();
+    unsigned int number_of_observations_gal = 0;
+    std::string signal_("1B");
+    std::size_t found_1B = galileo_bands.find(signal_);
+    if(found_1B != std::string::npos)
+        {
+            number_of_observations_gal = number_of_observations_gal + 4;
+        }
+    signal_ = "5X";
+    std::size_t found_5X = galileo_bands.find(signal_);
+    if(found_5X != std::string::npos)
+        {
+            number_of_observations_gal = number_of_observations_gal + 4;
+        }
+
+    line.clear();
+    signal_ = "7X";
+    std::size_t found_7X = galileo_bands.find(signal_);
+    if(found_7X != std::string::npos)
+        {
+            number_of_observations_gal = number_of_observations_gal + 4;
+        }
+
+
     line += satelliteSystem["Galileo"];
     line += std::string(2, ' ');
-    line += Rinex_Printer::rightJustify("4", 3);
-    line += std::string(1, ' ');
-    line += observationType["PSEUDORANGE"];
-    line += observationCode["GALILEO_E1_B"];
-    line += std::string(1, ' ');
-    line += observationType["CARRIER_PHASE"];
-    line += observationCode["GALILEO_E1_B"];
-    line += std::string(1, ' ');
-    line += observationType["DOPPLER"];
-    line += observationCode["GALILEO_E1_B"];
-    line += std::string(1, ' ');
-    line += observationType["SIGNAL_STRENGTH"];
-    line += observationCode["GALILEO_E1_B"];
+    line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_gal), 3);
+
+    if(found_1B != std::string::npos)
+        {
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GALILEO_E1_B"];
+            line += std::string(1, ' ');
+            line += observationType["CARRIER_PHASE"];
+            line += observationCode["GALILEO_E1_B"];
+            line += std::string(1, ' ');
+            line += observationType["DOPPLER"];
+            line += observationCode["GALILEO_E1_B"];
+            line += std::string(1, ' ');
+            line += observationType["SIGNAL_STRENGTH"];
+            line += observationCode["GALILEO_E1_B"];
+        }
+
+    if(found_5X != std::string::npos)
+        {
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GALILEO_E5a_IQ"];
+            line += std::string(1, ' ');
+            line += observationType["CARRIER_PHASE"];
+            line += observationCode["GALILEO_E5a_IQ"];
+            line += std::string(1, ' ');
+            line += observationType["DOPPLER"];
+            line += observationCode["GALILEO_E5a_IQ"];
+            line += std::string(1, ' ');
+            line += observationType["SIGNAL_STRENGTH"];
+            line += observationCode["GALILEO_E5a_IQ"];
+        }
+
+    if(found_7X != std::string::npos)
+        {
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GALILEO_E5b_IQ"];
+            line += std::string(1, ' ');
+            line += observationType["CARRIER_PHASE"];
+            line += observationCode["GALILEO_E5b_IQ"];
+            line += std::string(1, ' ');
+            line += observationType["DOPPLER"];
+            line += observationCode["GALILEO_E5b_IQ"];
+            line += std::string(1, ' ');
+            line += observationType["SIGNAL_STRENGTH"];
+            line += observationCode["GALILEO_E5b_IQ"];
+        }
+
     line += std::string(60-line.size(), ' ');
     line += Rinex_Printer::leftJustify("SYS / # / OBS TYPES", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
-
 
     // -------- Signal Strength units
     line.clear();
@@ -4218,7 +4277,6 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
         }
 
     std::multimap<unsigned int, Gnss_Synchro> total_map;
-    std::multimap<unsigned int, Gnss_Synchro>::iterator total_iter;
     std::set<unsigned int> available_prns;
     std::set<unsigned int>::iterator it;
     for(pseudoranges_iter = pseudorangesE1B.begin();
@@ -4228,7 +4286,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
             unsigned int prn_ = pseudoranges_iter->second.PRN;
             total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
             it = available_prns.find(prn_);
-            if(it != available_prns.end())
+            if(it == available_prns.end())
                 {
                     available_prns.insert(prn_);
                 }
@@ -4241,7 +4299,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
             unsigned int prn_ = pseudoranges_iter->second.PRN;
             total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
             it = available_prns.find(prn_);
-            if(it != available_prns.end())
+            if(it == available_prns.end())
                 {
                     available_prns.insert(prn_);
                 }
@@ -4254,7 +4312,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
             unsigned int prn_ = pseudoranges_iter->second.PRN;
             total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
             it = available_prns.find(prn_);
-            if(it != available_prns.end())
+            if(it == available_prns.end())
                 {
                     available_prns.insert(prn_);
                 }
@@ -4268,18 +4326,17 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
+    std::string lineObs;
     std::pair <std::multimap<unsigned int, Gnss_Synchro>::iterator, std::multimap<unsigned int, Gnss_Synchro>::iterator> ret;
-    for(total_iter = total_map.begin();
-            total_iter != total_map.end();
-            total_iter++)
+    for(it = available_prns.begin();
+            it != available_prns.end();
+            it++)
         {
-            std::string lineObs;
             lineObs.clear();
             lineObs += satelliteSystem["Galileo"];
-            if (static_cast<int>(total_iter->first) < 10) lineObs += std::string(1, '0');
-            lineObs += boost::lexical_cast<std::string>(static_cast<int>(total_iter->first));
-            //lineObs += std::string(2, ' ');
-            ret = total_map.equal_range(total_iter->first);
+            if (static_cast<int>(*it) < 10) lineObs += std::string(1, '0');
+            lineObs += boost::lexical_cast<std::string>(static_cast<int>(*it));
+            ret = total_map.equal_range(*it);
             for (std::multimap<unsigned int, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
                 {
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
@@ -4375,14 +4432,83 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     line += std::string(1, '0');
 
     //Number of satellites observed in current epoch
-    int numSatellitesObserved = 0;
-    std::map<int,Gnss_Synchro>::const_iterator pseudoranges_iter;
+
+    //Get maps with observations
+    std::map<int, Gnss_Synchro> pseudorangesG1C;
+    std::map<int, Gnss_Synchro> pseudorangesE1B;
+    std::map<int, Gnss_Synchro> pseudorangesE5A;
+    std::map<int, Gnss_Synchro> pseudorangesE5B;
+    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
+
     for(pseudoranges_iter = pseudoranges.begin();
             pseudoranges_iter != pseudoranges.end();
             pseudoranges_iter++)
         {
-            numSatellitesObserved++;
+            std::string system_(&pseudoranges_iter->second.System, 1);
+            std::string sig_(pseudoranges_iter->second.Signal);
+            if((system_.compare("E") == 0) && (sig_.compare("1B") == 0))
+                {
+                    pseudorangesE1B.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                }
+            if((system_.compare("E") == 0) && (sig_.compare("5X") == 0))
+                {
+                    pseudorangesE5A.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                }
+            if((system_.compare("E") == 0) && (sig_.compare("7X") == 0))
+                {
+                    pseudorangesE5B.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                }
+            if((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
+                {
+                    pseudorangesG1C.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                }
         }
+
+    std::multimap<unsigned int, Gnss_Synchro> total_gal_map;
+    std::set<unsigned int> available_gal_prns;
+    std::set<unsigned int>::iterator it;
+    for(pseudoranges_iter = pseudorangesE1B.begin();
+            pseudoranges_iter != pseudorangesE1B.end();
+            pseudoranges_iter++)
+        {
+            unsigned int prn_ = pseudoranges_iter->second.PRN;
+            total_gal_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
+            it = available_gal_prns.find(prn_);
+            if(it == available_gal_prns.end())
+                {
+                    available_gal_prns.insert(prn_);
+                }
+        }
+
+    for(pseudoranges_iter = pseudorangesE5A.begin();
+            pseudoranges_iter != pseudorangesE5A.end();
+            pseudoranges_iter++)
+        {
+            unsigned int prn_ = pseudoranges_iter->second.PRN;
+            total_gal_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
+            it = available_gal_prns.find(prn_);
+            if(it == available_gal_prns.end())
+                {
+                    available_gal_prns.insert(prn_);
+                }
+        }
+
+    for(pseudoranges_iter = pseudorangesE5B.begin();
+            pseudoranges_iter != pseudorangesE5B.end();
+            pseudoranges_iter++)
+        {
+            unsigned int prn_ = pseudoranges_iter->second.PRN;
+            total_gal_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
+            it = available_gal_prns.find(prn_);
+            if(it == available_gal_prns.end())
+                {
+                    available_gal_prns.insert(prn_);
+                }
+        }
+
+    int numGalSatellitesObserved = available_gal_prns.size();
+    int numGpsSatellitesObserved = pseudorangesG1C.size();
+    int numSatellitesObserved = numGalSatellitesObserved + numGpsSatellitesObserved;
     line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
 
     // Receiver clock offset (optional)
@@ -4393,18 +4519,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     out << line << std::endl;
 
     std::string s;
-    for(pseudoranges_iter = pseudoranges.begin();
-            pseudoranges_iter != pseudoranges.end();
+    std::string lineObs;
+    for(pseudoranges_iter = pseudorangesG1C.begin();
+            pseudoranges_iter != pseudorangesG1C.end();
             pseudoranges_iter++)
         {
-            std::string lineObs;
             lineObs.clear();
 
             s.assign(1, pseudoranges_iter->second.System);
             if(s.compare("G") == 0) lineObs += satelliteSystem["GPS"];
-            if(s.compare("E") == 0) lineObs += satelliteSystem["Galileo"];
-            if (static_cast<int>(pseudoranges_iter->first) < 10) lineObs += std::string(1, '0');
-            lineObs += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->first));
+            if(s.compare("E") == 0) lineObs += satelliteSystem["Galileo"]; // should not happen
+            if (static_cast<int>(pseudoranges_iter->second.PRN) < 10) lineObs += std::string(1, '0');
+            lineObs += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->second.PRN));
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Pseudorange_m, 3), 14);
 
             //Loss of lock indicator (LLI)
@@ -4448,6 +4574,67 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
 
             // SIGNAL STRENGTH
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.CN0_dB_hz, 3), 14);
+
+            if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
+            out << lineObs << std::endl;
+        }
+
+    std::pair <std::multimap<unsigned int, Gnss_Synchro>::iterator, std::multimap<unsigned int, Gnss_Synchro>::iterator> ret;
+    for(it = available_gal_prns.begin();
+            it != available_gal_prns.end();
+            it++)
+        {
+            lineObs.clear();
+            lineObs += satelliteSystem["Galileo"];
+            if (static_cast<int>(*it) < 10) lineObs += std::string(1, '0');
+            lineObs += boost::lexical_cast<std::string>(static_cast<int>(*it));
+            ret = total_gal_map.equal_range(*it);
+            for (std::multimap<unsigned int, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+                {
+                    lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
+
+                    //Loss of lock indicator (LLI)
+                    int lli = 0; // Include in the observation!!
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
+
+                    // Signal Strength Indicator (SSI)
+                    int ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
+                    // Galileo CARRIER PHASE
+                    lineObs += Rinex_Printer::rightJustify(asString(iter->second.Carrier_phase_rads / (GALILEO_TWO_PI), 3), 14);
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
+                    // Galileo  DOPPLER
+                    lineObs += Rinex_Printer::rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
+                    // Galileo SIGNAL STRENGTH
+                    lineObs += Rinex_Printer::rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
+                }
 
             if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
             out << lineObs << std::endl;

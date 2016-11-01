@@ -4064,141 +4064,100 @@ void  Rinex_Printer::log_rinex_obs(std::fstream & out, const Gps_Ephemeris & eph
                 }
         }
 
-    // Get common observables
-    std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >  common_pseudoranges;
-    std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >::const_iterator common_pseudoranges_iter;
-
+    std::multimap<unsigned int, Gnss_Synchro> total_map;
+    std::set<unsigned int> available_prns;
+    std::set<unsigned int>::iterator it;
     for(pseudoranges_iter = pseudorangesL1.begin();
             pseudoranges_iter != pseudorangesL1.end();
             pseudoranges_iter++)
         {
             unsigned int prn_ = pseudoranges_iter->second.PRN;
-            for(pseudoranges_iter2 = pseudorangesL2.begin();
-                    pseudoranges_iter2 != pseudorangesL2.end();
-                    pseudoranges_iter2++)
+            total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
+            it = available_prns.find(prn_);
+            if(it == available_prns.end())
                 {
-                    if(pseudoranges_iter2->second.PRN == prn_)
-                        {
-                            std::pair<Gnss_Synchro, Gnss_Synchro> p;
-                            Gnss_Synchro pr1 = pseudoranges_iter->second;
-                            Gnss_Synchro pr2 = pseudoranges_iter2->second;
-                            p = std::make_pair(pr1, pr2);
-                            common_pseudoranges.push_back(p);
-                        }
+                    available_prns.insert(prn_);
                 }
         }
 
-    int numSatellitesObserved = common_pseudoranges.size();
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
+    for(pseudoranges_iter = pseudorangesL2.begin();
+            pseudoranges_iter != pseudorangesL2.end();
+            pseudoranges_iter++)
+        {
+            unsigned int prn_ = pseudoranges_iter->second.PRN;
+            total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
+            it = available_prns.find(prn_);
+            if(it == available_prns.end())
+                {
+                    available_prns.insert(prn_);
+                }
+        }
 
+    int numSatellitesObserved = available_prns.size();
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
     // Receiver clock offset (optional)
     //line += rightJustify(asString(clockOffset, 12), 15);
-
     line += std::string(80 - line.size(), ' ');
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
-    for(common_pseudoranges_iter = common_pseudoranges.begin();
-            common_pseudoranges_iter != common_pseudoranges.end();
-            common_pseudoranges_iter++)
+    std::string lineObs;
+    std::pair <std::multimap<unsigned int, Gnss_Synchro>::iterator, std::multimap<unsigned int, Gnss_Synchro>::iterator> ret;
+    for(it = available_prns.begin();
+            it != available_prns.end();
+            it++)
         {
-            std::string lineObs;
             lineObs.clear();
             lineObs += satelliteSystem["GPS"];
-            if (static_cast<int>(std::get<0>(*common_pseudoranges_iter).PRN) < 10) lineObs += std::string(1, '0');
-            lineObs += boost::lexical_cast<std::string>(static_cast<int>(std::get<0>(*common_pseudoranges_iter).PRN));
-            //lineObs += std::string(2, ' ');
-            // GPS L1 CA PSEUDORANGE
-            lineObs += Rinex_Printer::rightJustify(asString(std::get<0>(*common_pseudoranges_iter).Pseudorange_m, 3), 14);
-
-            //Loss of lock indicator (LLI)
-            int lli = 0; // Include in the observation!!
-            if (lli == 0)
+            if (static_cast<int>(*it) < 10) lineObs += std::string(1, '0');
+            lineObs += boost::lexical_cast<std::string>(static_cast<int>(*it));
+            ret = total_map.equal_range(*it);
+            for (std::multimap<unsigned int, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
                 {
-                    lineObs += std::string(1, ' ');
-                }
-            else
-                {
-                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
-                }
+                    lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
-            // Signal Strength Indicator (SSI)
-            int ssi = Rinex_Printer::signalStrength(std::get<0>(*common_pseudoranges_iter).CN0_dB_hz);
-            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+                    //Loss of lock indicator (LLI)
+                    int lli = 0; // Include in the observation!!
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
 
-            // GPS L1 CA PHASE
-            lineObs += Rinex_Printer::rightJustify(asString(std::get<0>(*common_pseudoranges_iter).Carrier_phase_rads / GPS_TWO_PI, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
+                    // Signal Strength Indicator (SSI)
+                    int ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
+                    // GPS CARRIER PHASE
+                    lineObs += Rinex_Printer::rightJustify(asString(iter->second.Carrier_phase_rads / (GALILEO_TWO_PI), 3), 14);
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
+                    // GPS  DOPPLER
+                    lineObs += Rinex_Printer::rightJustify(asString(iter->second.Carrier_Doppler_hz, 3), 14);
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
+                    // GPS SIGNAL STRENGTH
+                    lineObs += Rinex_Printer::rightJustify(asString(iter->second.CN0_dB_hz, 3), 14);
                 }
-            else
-                {
-                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
-                }
-            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
-
-            // GPS L1 CA DOPPLER
-            lineObs += Rinex_Printer::rightJustify(asString(std::get<0>(*common_pseudoranges_iter).Carrier_Doppler_hz, 3), 14);
-            if (lli == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            else
-                {
-                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
-                }
-
-            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
-
-            //GPS L1 SIGNAL STRENGTH
-            lineObs += Rinex_Printer::rightJustify(asString(std::get<0>(*common_pseudoranges_iter).CN0_dB_hz, 3), 14);
-
-            // GPS L2 PSEUDORANGE
-            lineObs += Rinex_Printer::rightJustify(asString(std::get<1>(*common_pseudoranges_iter).Pseudorange_m, 3), 14);
-
-            //Loss of lock indicator (LLI)
-            int lli_2 = 0; // Include in the observation!!
-            if (lli_2 == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            else
-                {
-                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli_2), 1);
-                }
-
-            // Signal Strength Indicator (SSI)
-            int ssi_2 = Rinex_Printer::signalStrength(std::get<1>(*common_pseudoranges_iter).CN0_dB_hz);
-            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi_2), 1);
-
-            // GPS L2 PHASE
-            lineObs += Rinex_Printer::rightJustify(asString(std::get<0>(*common_pseudoranges_iter).Carrier_phase_rads / GPS_TWO_PI, 3), 14);
-            if (lli_2 == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            else
-                {
-                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli_2), 1);
-                }
-            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi_2), 1);
-
-            // GPS L2 DOPPLER
-            lineObs += Rinex_Printer::rightJustify(asString(std::get<1>(*common_pseudoranges_iter).Carrier_Doppler_hz, 3), 14);
-            if (lli_2 == 0)
-                {
-                    lineObs += std::string(1, ' ');
-                }
-            else
-                {
-                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli_2), 1);
-                }
-
-            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi_2), 1);
-
-            //GPS L2 SIGNAL STRENGTH
-            lineObs += Rinex_Printer::rightJustify(asString(std::get<1>(*common_pseudoranges_iter).CN0_dB_hz, 3), 14);
 
             if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
             out << lineObs << std::endl;

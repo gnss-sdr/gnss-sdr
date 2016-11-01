@@ -200,6 +200,84 @@ TEST(Rinex_Printer_Test, GalileoObsLog)
     if(remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
 }
 
+
+TEST(Rinex_Printer_Test, GpsObsLogDualBand)
+{
+    std::string line_aux;
+    std::string line_str;
+    bool no_more_finds = false;
+    const Gps_Ephemeris eph_gps = Gps_Ephemeris();
+    const Gps_CNAV_Ephemeris eph_cnav = Gps_CNAV_Ephemeris();
+
+    std::shared_ptr<Rinex_Printer> rp;
+    rp = std::make_shared<Rinex_Printer>();
+    rp->rinex_obs_header(rp->obsFile, eph_gps, eph_cnav, 0.0);
+
+    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+
+    Gnss_Synchro gs1 = Gnss_Synchro();
+    Gnss_Synchro gs2 = Gnss_Synchro();
+    Gnss_Synchro gs3 = Gnss_Synchro();
+    Gnss_Synchro gs4 = Gnss_Synchro();
+
+    std::string sys = "G";
+    gs1.System = *sys.c_str();
+    gs2.System = *sys.c_str();
+    gs3.System = *sys.c_str();
+    gs4.System = *sys.c_str();
+
+    std::string sig = "1C";
+    std::memcpy((void*)gs1.Signal, sig.c_str(), 3);
+    std::memcpy((void*)gs2.Signal, sig.c_str(), 3);
+
+    sig = "2S";
+    std::memcpy((void*)gs3.Signal, sig.c_str(), 3);
+    std::memcpy((void*)gs4.Signal, sig.c_str(), 3);
+
+    gs1.PRN = 3;
+    gs2.PRN = 8;
+    gs3.PRN = 7;
+    gs4.PRN = 8;
+
+    gs2.Pseudorange_m = 22000002.1;
+    gs2.Carrier_phase_rads = 45.4;
+    gs2.Carrier_Doppler_hz = 321;
+    gs2.CN0_dB_hz = 39;
+
+    gs4.Pseudorange_m = 22000000;
+    gs4.Carrier_phase_rads = 23.4;
+    gs4.Carrier_Doppler_hz = 1534;
+    gs4.CN0_dB_hz = 42;
+
+    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(1,gs1) );
+    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(2,gs2) );
+    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(3,gs3) );
+    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(4,gs4) );
+
+    rp->log_rinex_obs(rp->obsFile, eph_gps, eph_cnav, 0.0, gnss_pseudoranges_map);
+    rp->obsFile.seekp(0);
+
+    while(!rp->obsFile.eof())
+        {
+            std::getline(rp->obsFile, line_str);
+            if(!no_more_finds)
+                {
+                    if (line_str.find("G08", 0) != std::string::npos)
+                        {
+                            no_more_finds = true;
+                            line_aux = std::string(line_str);
+                        }
+                }
+        }
+
+    std::string expected_str("G08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
+    EXPECT_EQ(0, expected_str.compare(line_aux));
+
+    if(remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+
+}
+
+
 TEST(Rinex_Printer_Test, GalileoObsLogDualBand)
 {
     std::string line_aux;

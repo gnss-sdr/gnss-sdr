@@ -47,13 +47,13 @@ using google::LogMessage;
 
 
 gps_l1_ca_observables_cc_sptr
-gps_l1_ca_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename)
+gps_l1_ca_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history)
 {
-    return gps_l1_ca_observables_cc_sptr(new gps_l1_ca_observables_cc(nchannels, dump, dump_filename));
+    return gps_l1_ca_observables_cc_sptr(new gps_l1_ca_observables_cc(nchannels, dump, dump_filename, deep_history));
 }
 
 
-gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename) :
+gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history) :
                                 gr::block("gps_l1_ca_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
                                 gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
@@ -61,6 +61,7 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, bool 
     d_dump = dump;
     d_nchannels = nchannels;
     d_dump_filename = dump_filename;
+    history_deep = deep_history;
 
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
@@ -117,7 +118,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
     Gnss_Synchro current_gnss_synchro[d_nchannels];
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
     std::map<int,Gnss_Synchro>::iterator gnss_synchro_iter;
-    
+
     if (d_nchannels != ninput_items.size())
         {
             LOG(WARNING) << "The Observables block is not well connected";
@@ -146,15 +147,15 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     // save TOW history
                     d_symbol_TOW_queue_s[i].push_back(current_gnss_synchro[i].d_TOW_at_current_symbol);
 
-                    if (d_carrier_doppler_queue_hz[i].size() > GPS_L1_CA_HISTORY_DEEP)
+                    if (d_carrier_doppler_queue_hz[i].size() > history_deep)
                         {
                             d_carrier_doppler_queue_hz[i].pop_front();
                         }
-                    if (d_acc_carrier_phase_queue_rads[i].size() > GPS_L1_CA_HISTORY_DEEP)
+                    if (d_acc_carrier_phase_queue_rads[i].size() > history_deep)
                         {
                             d_acc_carrier_phase_queue_rads[i].pop_front();
                         }
-                    if (d_symbol_TOW_queue_s[i].size() > GPS_L1_CA_HISTORY_DEEP)
+                    if (d_symbol_TOW_queue_s[i].size() > history_deep)
                         {
                             d_symbol_TOW_queue_s[i].pop_front();
                         }
@@ -209,19 +210,19 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000.0)/1000.0 + GPS_STARTOFFSET_ms/1000.0;
 
-                    if (d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].size()>=GPS_L1_CA_HISTORY_DEEP)
+                    if (d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].size() >= history_deep)
                         {
                             // compute interpolated observation values for Doppler and Accumulate carrier phase
                             symbol_TOW_vec_s = arma::vec(std::vector<double>(d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].begin(), d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].end()));
                             acc_phase_vec_rads = arma::vec(std::vector<double>(d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].begin(), d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].end()));
                             dopper_vec_hz = arma::vec(std::vector<double>(d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].begin(), d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].end()));
 
-                            desired_symbol_TOW[0] = symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP - 1] + delta_rx_time_ms / 1000.0;
+                            desired_symbol_TOW[0] = symbol_TOW_vec_s[history_deep - 1] + delta_rx_time_ms / 1000.0;
                             //    arma::interp1(symbol_TOW_vec_s,dopper_vec_hz,desired_symbol_TOW,dopper_vec_interp_hz);
                             //    arma::interp1(symbol_TOW_vec_s,acc_phase_vec_rads,desired_symbol_TOW,acc_phase_vec_interp_rads);
 
                             // Curve fitting to cuadratic function
-                            arma::mat A = arma::ones<arma::mat> (GPS_L1_CA_HISTORY_DEEP, 2);
+                            arma::mat A = arma::ones<arma::mat> (history_deep, 2);
                             A.col(1) = symbol_TOW_vec_s;
 
                             arma::mat coef_acc_phase(1,3);
@@ -284,4 +285,3 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
         }
     return 1;
 }
-

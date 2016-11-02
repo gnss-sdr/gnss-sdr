@@ -43,7 +43,7 @@ class hybrid_observables_cc;
 typedef boost::shared_ptr<hybrid_observables_cc> hybrid_observables_cc_sptr;
 
 hybrid_observables_cc_sptr
-hybrid_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename);
+hybrid_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename, unsigned int deep_history);
 
 /*!
  * \brief This class implements a block that computes Galileo observables
@@ -57,12 +57,18 @@ public:
 
 private:
     friend hybrid_observables_cc_sptr
-    hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename);
-    hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename);
+    hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
+    hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
+
+    //Tracking observable history
+    std::vector<std::deque<double>> d_acc_carrier_phase_queue_rads;
+    std::vector<std::deque<double>> d_carrier_doppler_queue_hz;
+    std::vector<std::deque<double>> d_symbol_TOW_queue_s;
 
     // class private vars
     bool d_dump;
     unsigned int d_nchannels;
+    unsigned int history_deep;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 };

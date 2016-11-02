@@ -108,8 +108,8 @@ HybridPvt::HybridPvt(ConfigurationInterface* configuration,
     //std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
     //std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
     //std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
-    //std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);    
-    
+    //std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
+
     // make PVT object
     pvt_ = hybrid_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
@@ -120,7 +120,7 @@ bool HybridPvt::save_assistance_to_XML()
 {
     LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename_;
     std::map<int,Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
-    
+
     if (eph_map.size() > 0)
         {
             try
@@ -177,4 +177,3 @@ gr::basic_block_sptr HybridPvt::get_right_block()
 {
     return pvt_; // this is a sink, nothing downstream
 }
-

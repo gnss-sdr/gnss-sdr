@@ -44,7 +44,7 @@ class galileo_e1_observables_cc;
 typedef boost::shared_ptr<galileo_e1_observables_cc> galileo_e1_observables_cc_sptr;
 
 galileo_e1_observables_cc_sptr
-galileo_e1_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename);
+galileo_e1_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename, unsigned int deep_history);
 
 /*!
  * \brief This class implements a block that computes Galileo observables
@@ -59,8 +59,8 @@ public:
 
 private:
     friend galileo_e1_observables_cc_sptr
-    galileo_e1_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename);
-    galileo_e1_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename);
+    galileo_e1_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
+    galileo_e1_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
 
     //Tracking observable history
     std::vector<std::deque<double>> d_acc_carrier_phase_queue_rads;
@@ -70,6 +70,7 @@ private:
     // class private vars
     bool d_dump;
     unsigned int d_nchannels;
+    unsigned int history_deep;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 };

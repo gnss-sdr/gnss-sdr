@@ -82,6 +82,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     std::map<int,Gnss_Synchro>::iterator gnss_pseudoranges_iter;
     std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
     std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+    std::map<int,Gps_CNAV_Ephemeris>::iterator gps_cnav_ephemeris_iter;
+
     int valid_pseudoranges = gnss_pseudoranges_map.size();
 
     arma::mat W = arma::eye(valid_pseudoranges, valid_pseudoranges); // channels weights matrix
@@ -317,4 +319,3 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
         }
     return b_valid_position;
 }
-

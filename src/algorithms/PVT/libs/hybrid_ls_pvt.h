@@ -39,11 +39,12 @@
 #include "ls_pvt.h"
 #include "galileo_navigation_message.h"
 #include "gps_navigation_message.h"
+#include "gps_cnav_navigation_message.h"
 #include "gnss_synchro.h"
-#include "galileo_ephemeris.h"
-#include "galileo_utc_model.h"
-#include "gps_ephemeris.h"
-#include "gps_utc_model.h"
+//#include "galileo_ephemeris.h"
+//#include "galileo_utc_model.h"
+//#include "gps_ephemeris.h"
+//#include "gps_utc_model.h"
 
 
 /*!
@@ -64,7 +65,8 @@ public:
     Gps_Navigation_Message* d_GPS_ephemeris;
 
     std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
-    std::map<int,Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new Galileo_Ephemeris
+    std::map<int,Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new GPS_Ephemeris
+    std::map<int,Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map; 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
     Galileo_Almanac galileo_almanac;

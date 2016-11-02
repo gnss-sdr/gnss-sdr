@@ -33,6 +33,7 @@
 #include "gps_l1_ca_observables.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
+#include "GPS_L1_CA.h"
 
 using google::LogMessage;
 
@@ -48,7 +49,8 @@ GpsL1CaObservables::GpsL1CaObservables(ConfigurationInterface* configuration,
     DLOG(INFO) << "role " << role;
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-    observables_ = gps_l1_ca_make_observables_cc(in_streams_, dump_, dump_filename_);
+    unsigned int history_deep = configuration->property(role + ".averaging_depth", GPS_L1_CA_HISTORY_DEEP);
+    observables_ = gps_l1_ca_make_observables_cc(in_streams_, dump_, dump_filename_, history_deep);
     DLOG(INFO) << "pseudorange(" << observables_->unique_id() << ")";
 }
 
@@ -91,4 +93,3 @@ gr::basic_block_sptr GpsL1CaObservables::get_right_block()
 {
     return observables_;
 }
-

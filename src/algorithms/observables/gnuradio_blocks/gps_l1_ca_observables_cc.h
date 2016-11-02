@@ -44,7 +44,7 @@ class gps_l1_ca_observables_cc;
 typedef boost::shared_ptr<gps_l1_ca_observables_cc> gps_l1_ca_observables_cc_sptr;
 
 gps_l1_ca_observables_cc_sptr
-gps_l1_ca_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename);
+gps_l1_ca_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename, unsigned int deep_history);
 
 /*!
  * \brief This class implements a block that computes GPS L1 C/A observables
@@ -59,8 +59,8 @@ public:
 
 private:
     friend gps_l1_ca_observables_cc_sptr
-    gps_l1_ca_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename);
-    gps_l1_ca_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename);
+    gps_l1_ca_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
+    gps_l1_ca_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
 
 
     //Tracking observable history
@@ -71,6 +71,7 @@ private:
     // class private vars
     bool d_dump;
     unsigned int d_nchannels;
+    unsigned int history_deep;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 };

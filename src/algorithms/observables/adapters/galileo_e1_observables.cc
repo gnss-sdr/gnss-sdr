@@ -31,8 +31,9 @@
 
 
 #include "galileo_e1_observables.h"
-#include "configuration_interface.h"
 #include <glog/logging.h>
+#include "configuration_interface.h"
+#include "Galileo_E1.h"
 
 using google::LogMessage;
 
@@ -48,7 +49,8 @@ GalileoE1Observables::GalileoE1Observables(ConfigurationInterface* configuration
     DLOG(INFO) << "role " << role;
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-    observables_ = galileo_e1_make_observables_cc(in_streams_, dump_, dump_filename_);
+    unsigned int history_deep = configuration->property(role + ".averaging_depth", GALILEO_E1_HISTORY_DEEP);
+    observables_ = galileo_e1_make_observables_cc(in_streams_, dump_, dump_filename_, history_deep);
     DLOG(INFO) << "pseudorange(" << observables_->unique_id() << ")";
 }
 
@@ -91,4 +93,3 @@ gr::basic_block_sptr GalileoE1Observables::get_right_block()
 {
     return observables_;
 }
-

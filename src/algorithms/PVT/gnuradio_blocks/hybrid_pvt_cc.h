@@ -65,7 +65,8 @@ hybrid_pvt_cc_sptr hybrid_make_pvt_cc(unsigned int n_channels,
                                               unsigned short rtcm_tcp_port,
                                               unsigned short rtcm_station_id,
                                               std::map<int,int> rtcm_msg_rate_ms,
-                                              std::string rtcm_dump_devname);
+                                              std::string rtcm_dump_devname,
+                                              const unsigned int type_of_receiver);
 
 /*!
  * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
@@ -88,7 +89,8 @@ private:
                                                          unsigned short rtcm_tcp_port,
                                                          unsigned short rtcm_station_id,
                                                          std::map<int,int> rtcm_msg_rate_ms,
-                                                         std::string rtcm_dump_devname);
+                                                         std::string rtcm_dump_devname,
+                                                         const unsigned int type_of_receiver);
     hybrid_pvt_cc(unsigned int nchannels,
                       bool dump, std::string dump_filename,
                       int averaging_depth,
@@ -103,7 +105,8 @@ private:
                       unsigned short rtcm_tcp_port,
                       unsigned short rtcm_station_id,
                       std::map<int,int> rtcm_msg_rate_ms,
-                      std::string rtcm_dump_devname);
+                      std::string rtcm_dump_devname,
+                      const unsigned int type_of_receiver);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 
@@ -137,8 +140,10 @@ private:
     double d_rx_time;
     double d_TOW_at_curr_symbol_constellation;
     std::shared_ptr<hybrid_ls_pvt> d_ls_pvt;
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
-    bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b);
+    std::map<int,Gnss_Synchro> gnss_observables_map;
+    bool observables_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b);
+
+    unsigned int type_of_rx;
 
     bool first_fix;
     key_t sysv_msg_key;

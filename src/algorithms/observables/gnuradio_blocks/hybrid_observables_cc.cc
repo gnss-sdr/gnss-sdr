@@ -92,28 +92,15 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, 
 }
 
 
-
 hybrid_observables_cc::~hybrid_observables_cc()
 {
     d_dump_file.close();
 }
 
 
-
-//bool Hybrid_pairCompare_gnss_synchro_Prn_delay_ms(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
-//{
-//    return (a.second.Prn_timestamp_ms) < (b.second.Prn_timestamp_ms);
-//}
-
-
 bool Hybrid_pairCompare_gnss_synchro_d_TOW_hybrid_at_current_symbol(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
     return (a.second.d_TOW_hybrid_at_current_symbol) < (b.second.d_TOW_hybrid_at_current_symbol);
-}
-
-bool Hybrid_pairCompare_gnss_synchro_d_TOW_at_current_symbol(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
-{
-    return (a.second.d_TOW_at_current_symbol) < (b.second.d_TOW_at_current_symbol);
 }
 
 
@@ -127,7 +114,6 @@ int hybrid_observables_cc::general_work (int noutput_items,
 
     Gnss_Synchro current_gnss_synchro[d_nchannels];
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
-    //std::map<int,Gnss_Synchro> current_gnss_synchro_map_gps_only;
     std::map<int,Gnss_Synchro>::iterator gnss_synchro_iter;
 
     if (d_nchannels != ninput_items.size())
@@ -151,37 +137,33 @@ int hybrid_observables_cc::general_work (int noutput_items,
                 {
                     //record the word structure in a map for pseudorange computation
                     current_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
-    //                if (current_gnss_synchro[i].System == 'G')
-    //                    {
-    //                        current_gnss_synchro_map_gps_only.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
-    //                    }
                     //################### SAVE DOPPLER AND ACC CARRIER PHASE HISTORIC DATA FOR INTERPOLATION IN OBSERVABLE MODULE #######
                     d_carrier_doppler_queue_hz[i].push_back(current_gnss_synchro[i].Carrier_Doppler_hz);
                     d_acc_carrier_phase_queue_rads[i].push_back(current_gnss_synchro[i].Carrier_phase_rads);
                     // save TOW history
                     d_symbol_TOW_queue_s[i].push_back(current_gnss_synchro[i].d_TOW_at_current_symbol);
                     if (d_carrier_doppler_queue_hz[i].size() > history_deep)
-                                  {
-                                      d_carrier_doppler_queue_hz[i].pop_front();
-                                  }
+                        {
+                            d_carrier_doppler_queue_hz[i].pop_front();
+                        }
                     if (d_acc_carrier_phase_queue_rads[i].size() > history_deep)
-                                  {
-                                      d_acc_carrier_phase_queue_rads[i].pop_front();
-                                  }
+                        {
+                            d_acc_carrier_phase_queue_rads[i].pop_front();
+                        }
                     if (d_symbol_TOW_queue_s[i].size() > history_deep)
-                                  {
-                                      d_symbol_TOW_queue_s[i].pop_front();
-                                  }
+                        {
+                            d_symbol_TOW_queue_s[i].pop_front();
+                        }
                 }
-                else
+            else
                 {
-                  // Clear the observables history for this channel
-                        if (d_symbol_TOW_queue_s[i].size() > 0)
-                            {
-                                d_symbol_TOW_queue_s[i].clear();
-                                d_carrier_doppler_queue_hz[i].clear();
-                                d_acc_carrier_phase_queue_rads[i].clear();
-                            }
+                    // Clear the observables history for this channel
+                    if (d_symbol_TOW_queue_s[i].size() > 0)
+                        {
+                            d_symbol_TOW_queue_s[i].clear();
+                            d_carrier_doppler_queue_hz[i].clear();
+                            d_acc_carrier_phase_queue_rads[i].clear();
+                        }
                 }
         }
 
@@ -189,8 +171,19 @@ int hybrid_observables_cc::general_work (int noutput_items,
      * 2. Compute RAW pseudoranges using COMMON RECEPTION TIME algorithm. Use only the valid channels (channels that are tracking a satellite)
      */
     DLOG(INFO) << "gnss_synchro set size=" << current_gnss_synchro_map.size();
+    double traveltime_ms;
+    double pseudorange_m;
+    double delta_rx_time_ms;
+    double delta_TOW_ms;
+    arma::vec symbol_TOW_vec_s;
+    arma::vec dopper_vec_hz;
+    arma::vec dopper_vec_interp_hz;
+    arma::vec acc_phase_vec_rads;
+    arma::vec acc_phase_vec_interp_rads;
+    arma::vec desired_symbol_TOW(1);
+    double start_offset_ms = 0.0;
 
-    if(current_gnss_synchro_map.size() > 0)// and current_gnss_synchro_map_gps_only.size()>0)
+    if(current_gnss_synchro_map.size() > 0)
         {
             /*
              *  2.1 Use CURRENT set of measurements and find the nearest satellite
@@ -206,30 +199,19 @@ int hybrid_observables_cc::general_work (int noutput_items,
             //int reference_channel= gnss_synchro_iter->second.Channel_ID;
 
             // Now compute RX time differences due to the PRN alignment in the correlators
-            double traveltime_ms;
-            double pseudorange_m;
-            double delta_rx_time_ms;
-            double delta_TOW_ms;
-            arma::vec symbol_TOW_vec_s;
-            arma::vec dopper_vec_hz;
-            arma::vec dopper_vec_interp_hz;
-            arma::vec acc_phase_vec_rads;
-            arma::vec acc_phase_vec_interp_rads;
-            arma::vec desired_symbol_TOW(1);
-            double start_offset_ms = 0.0;
             for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
                 {
                     // check and correct synchronization in cross-system pseudoranges!
                     delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms - d_ref_PRN_rx_time_ms;
                     delta_TOW_ms = (d_TOW_reference - gnss_synchro_iter->second.d_TOW_hybrid_at_current_symbol) * 1000.0;
                     if(gnss_synchro_iter->second.System == 'E')
-                    {
-                        start_offset_ms = GALILEO_STARTOFFSET_ms;
-                    }
+                        {
+                            start_offset_ms = GALILEO_STARTOFFSET_ms;
+                        }
                     if(gnss_synchro_iter->second.System == 'G')
-                    {
-                        start_offset_ms = GPS_STARTOFFSET_ms;
-                    }
+                        {
+                            start_offset_ms = GPS_STARTOFFSET_ms;
+                        }
                     //compute the pseudorange
                     traveltime_ms = delta_TOW_ms + delta_rx_time_ms + start_offset_ms;
                     pseudorange_m = traveltime_ms * GALILEO_C_m_ms; // [m]
@@ -244,7 +226,7 @@ int hybrid_observables_cc::general_work (int noutput_items,
                     //current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_hybrid_at_current_symbol = round(d_TOW_reference * 1000) / 1000 + GPS_STARTOFFSET_ms / 1000.0;
+                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_hybrid_at_current_symbol = round(d_TOW_reference * 1000) / 1000 + start_offset_ms / 1000.0;
                     if (d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].size() >= history_deep)
                         {
                             // compute interpolated observation values for Doppler and Accumulate carrier phase

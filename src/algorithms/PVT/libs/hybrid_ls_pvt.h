@@ -74,6 +74,9 @@ public:
     Gps_Utc_Model gps_utc_model;
     Gps_Iono gps_iono;
 
+    Gps_CNAV_Iono gps_cnav_iono;
+    Gps_CNAV_Utc_Model gps_cnav_utc_model;
+
     double d_galileo_current_time;
 
     int count_valid_position;

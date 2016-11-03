@@ -162,101 +162,101 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                     // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
                     std::string sig_(gnss_observables_iter->second.Signal);
                     if(sig_.compare("1C") == 0)
-                    {
-                        gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                        if (gps_ephemeris_iter != gps_ephemeris_map.end())
-                            {
-                                /*!
-                                 * \todo Place here the satellite CN0 (power level, or weight factor)
-                                 */
-                                W(obs_counter, obs_counter) = 1;
+                        {
+                            gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                            if (gps_ephemeris_iter != gps_ephemeris_map.end())
+                                {
+                                    /*!
+                                     * \todo Place here the satellite CN0 (power level, or weight factor)
+                                     */
+                                    W(obs_counter, obs_counter) = 1;
 
-                                // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
-                                // first estimate of transmit time
-                                double Rx_time = hybrid_current_time;
-                                double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_m_s;
+                                    // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
+                                    // first estimate of transmit time
+                                    double Rx_time = hybrid_current_time;
+                                    double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_m_s;
 
-                                // 2- compute the clock drift using the clock model (broadcast) for this SV
-                                SV_clock_bias_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);
+                                    // 2- compute the clock drift using the clock model (broadcast) for this SV
+                                    SV_clock_bias_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);
 
-                                // 3- compute the current ECEF position for this SV using corrected TX time
-                                TX_time_corrected_s = Tx_time - SV_clock_bias_s;
-                                gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
+                                    // 3- compute the current ECEF position for this SV using corrected TX time
+                                    TX_time_corrected_s = Tx_time - SV_clock_bias_s;
+                                    gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
 
-                                satpos(0, obs_counter) = gps_ephemeris_iter->second.d_satpos_X;
-                                satpos(1, obs_counter) = gps_ephemeris_iter->second.d_satpos_Y;
-                                satpos(2, obs_counter) = gps_ephemeris_iter->second.d_satpos_Z;
+                                    satpos(0, obs_counter) = gps_ephemeris_iter->second.d_satpos_X;
+                                    satpos(1, obs_counter) = gps_ephemeris_iter->second.d_satpos_Y;
+                                    satpos(2, obs_counter) = gps_ephemeris_iter->second.d_satpos_Z;
 
-                                // 5- fill the observations vector with the corrected observables
-                                obs(obs_counter) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
-                                d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
-                                d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
-                                valid_obs++;
-                                GPS_week = gps_ephemeris_iter->second.i_GPS_week;
+                                    // 5- fill the observations vector with the corrected observables
+                                    obs(obs_counter) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
+                                    d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
+                                    d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
+                                    valid_obs++;
+                                    GPS_week = gps_ephemeris_iter->second.i_GPS_week;
 
-                                // SV ECEF DEBUG OUTPUT
-                                DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
-                                        << " X=" << gps_ephemeris_iter->second.d_satpos_X
-                                        << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
-                                        << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
-                                        << " [m] PR_obs=" << obs(obs_counter) << " [m]";
-                            }
-                        else // the ephemeris are not available for this SV
-                            {
-                                // no valid pseudorange for the current SV
-                                W(obs_counter, obs_counter) = 0; // SV de-activated
-                                obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
-                                DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
-                            }
-                    }
+                                    // SV ECEF DEBUG OUTPUT
+                                    DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
+                                            << " X=" << gps_ephemeris_iter->second.d_satpos_X
+                                            << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
+                                            << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
+                                            << " [m] PR_obs=" << obs(obs_counter) << " [m]";
+                                }
+                            else // the ephemeris are not available for this SV
+                                {
+                                    // no valid pseudorange for the current SV
+                                    W(obs_counter, obs_counter) = 0; // SV de-activated
+                                    obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
+                                    DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                }
+                        }
                     if(sig_.compare("2S") == 0)
-                    {
-                        gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                        if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.end())
-                            {
-                                /*!
-                                 * \todo Place here the satellite CN0 (power level, or weight factor)
-                                 */
-                                W(obs_counter, obs_counter) = 1;
+                        {
+                            gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                            if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.end())
+                                {
+                                    /*!
+                                     * \todo Place here the satellite CN0 (power level, or weight factor)
+                                     */
+                                    W(obs_counter, obs_counter) = 1;
 
-                                // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
-                                // first estimate of transmit time
-                                double Rx_time = hybrid_current_time;
-                                double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_m_s;
+                                    // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
+                                    // first estimate of transmit time
+                                    double Rx_time = hybrid_current_time;
+                                    double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_m_s;
 
-                                // 2- compute the clock drift using the clock model (broadcast) for this SV
-                                SV_clock_bias_s = gps_cnav_ephemeris_iter->second.sv_clock_drift(Tx_time);
+                                    // 2- compute the clock drift using the clock model (broadcast) for this SV
+                                    SV_clock_bias_s = gps_cnav_ephemeris_iter->second.sv_clock_drift(Tx_time);
 
-                                // 3- compute the current ECEF position for this SV using corrected TX time
-                                TX_time_corrected_s = Tx_time - SV_clock_bias_s;
-                                gps_cnav_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
+                                    // 3- compute the current ECEF position for this SV using corrected TX time
+                                    TX_time_corrected_s = Tx_time - SV_clock_bias_s;
+                                    gps_cnav_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
 
-                                satpos(0, obs_counter) = gps_cnav_ephemeris_iter->second.d_satpos_X;
-                                satpos(1, obs_counter) = gps_cnav_ephemeris_iter->second.d_satpos_Y;
-                                satpos(2, obs_counter) = gps_cnav_ephemeris_iter->second.d_satpos_Z;
+                                    satpos(0, obs_counter) = gps_cnav_ephemeris_iter->second.d_satpos_X;
+                                    satpos(1, obs_counter) = gps_cnav_ephemeris_iter->second.d_satpos_Y;
+                                    satpos(2, obs_counter) = gps_cnav_ephemeris_iter->second.d_satpos_Z;
 
-                                // 5- fill the observations vector with the corrected observables
-                                obs(obs_counter) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
-                                d_visible_satellites_IDs[valid_obs] = gps_cnav_ephemeris_iter->second.i_satellite_PRN;
-                                d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
-                                valid_obs++;
-                                GPS_week = gps_cnav_ephemeris_iter->second.i_GPS_week;
+                                    // 5- fill the observations vector with the corrected observables
+                                    obs(obs_counter) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
+                                    d_visible_satellites_IDs[valid_obs] = gps_cnav_ephemeris_iter->second.i_satellite_PRN;
+                                    d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
+                                    valid_obs++;
+                                    GPS_week = gps_cnav_ephemeris_iter->second.i_GPS_week;
 
-                                // SV ECEF DEBUG OUTPUT
-                                DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_cnav_ephemeris_iter->second.i_satellite_PRN
-                                        << " X=" << gps_cnav_ephemeris_iter->second.d_satpos_X
-                                        << " [m] Y=" << gps_cnav_ephemeris_iter->second.d_satpos_Y
-                                        << " [m] Z=" << gps_cnav_ephemeris_iter->second.d_satpos_Z
-                                        << " [m] PR_obs=" << obs(obs_counter) << " [m]";
-                            }
-                        else // the ephemeris are not available for this SV
-                            {
-                                // no valid pseudorange for the current SV
-                                W(obs_counter, obs_counter) = 0; // SV de-activated
-                                obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
-                                DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
-                            }
-                    }
+                                    // SV ECEF DEBUG OUTPUT
+                                    DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_cnav_ephemeris_iter->second.i_satellite_PRN
+                                            << " X=" << gps_cnav_ephemeris_iter->second.d_satpos_X
+                                            << " [m] Y=" << gps_cnav_ephemeris_iter->second.d_satpos_Y
+                                            << " [m] Z=" << gps_cnav_ephemeris_iter->second.d_satpos_Z
+                                            << " [m] PR_obs=" << obs(obs_counter) << " [m]";
+                                }
+                            else // the ephemeris are not available for this SV
+                                {
+                                    // no valid pseudorange for the current SV
+                                    W(obs_counter, obs_counter) = 0; // SV de-activated
+                                    obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
+                                    DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                }
+                        }
                 }
             obs_counter++;
         }

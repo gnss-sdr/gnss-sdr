@@ -602,7 +602,7 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                                 }
                                             if((type_of_rx == 14) || (type_of_rx == 15)) //  Galileo E1B + Galileo E5a
                                                 {
-                                                  rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
+                                                    rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
                                                 }
 
                                             d_last_sample_nav_output = d_sample_counter;

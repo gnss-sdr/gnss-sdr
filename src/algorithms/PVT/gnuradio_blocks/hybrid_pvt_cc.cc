@@ -877,10 +877,10 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                     << " UTC using "<< d_ls_pvt->d_valid_observations<<" observations is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
                     << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]";
 
-                    std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+                    /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
                     << " UTC using "<< d_ls_pvt->d_valid_observations<<" observations is HDOP = " << d_ls_pvt->d_HDOP << " VDOP = "
                     << d_ls_pvt->d_VDOP <<" TDOP = " << d_ls_pvt->d_TDOP
-                    << " GDOP = " << d_ls_pvt->d_GDOP << std::endl;
+                    << " GDOP = " << d_ls_pvt->d_GDOP << std::endl; */
                 }
 
             // MULTIPLEXED FILE RECORDING - Record results to file

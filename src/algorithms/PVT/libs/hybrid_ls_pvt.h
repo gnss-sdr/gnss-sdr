@@ -58,15 +58,15 @@ public:
 
     bool get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double hybrid_current_time, bool flag_averaging);
     int d_nchannels;                                        //!< Number of available channels for positioning
-    int d_valid_GPS_obs;                                    //!< Number of valid GPS pseudorange observations (valid GPS satellites) -- used for hybrid configuration
-    int d_valid_GAL_obs;                                    //!< Number of valid GALILEO pseudorange observations (valid GALILEO satellites) -- used for hybrid configuration
+    //int d_valid_GPS_obs;                                    //!< Number of valid GPS pseudorange observations (valid GPS satellites) -- used for hybrid configuration
+    //int d_valid_GAL_obs;                                    //!< Number of valid GALILEO pseudorange observations (valid GALILEO satellites) -- used for hybrid configuration
 
     //Galileo_Navigation_Message* d_Gal_ephemeris;
     //Gps_Navigation_Message* d_GPS_ephemeris;
 
     std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
     std::map<int,Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new GPS_Ephemeris
-    std::map<int,Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map; 
+    std::map<int,Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
     Galileo_Almanac galileo_almanac;

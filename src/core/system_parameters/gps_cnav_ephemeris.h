@@ -44,7 +44,7 @@
 class Gps_CNAV_Ephemeris
 {
 private:
-
+    double check_t(double time);
 public:
     unsigned int i_satellite_PRN; // SV PRN NUMBER
 
@@ -164,6 +164,23 @@ public:
         archive & make_nvp("b_antispoofing_flag", b_antispoofing_flag); //!<  If true, the AntiSpoofing mode is ON in that SV
     }
 
+    /*!
+     * \brief Compute the ECEF SV coordinates and ECEF velocity
+     * Implementation of Table 20-IV (IS-GPS-200E)
+     */
+    void satellitePosition(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
+     *  (IS-GPS-200E,  20.3.3.3.3.1)
+     */
+    double sv_clock_drift(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
+     *  (IS-GPS-200E,  20.3.3.3.3.1)
+     */
+    double sv_clock_relativistic_term(double transmitTime);
     /*!
      * Default constructor
      */

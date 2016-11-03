@@ -18,6 +18,7 @@
 
 set(OBS_ADAPTER_SOURCES 
 	gps_l1_ca_observables.cc
+	gps_l2_m_observables.cc
 	galileo_e1_observables.cc
 	hybrid_observables.cc
 )

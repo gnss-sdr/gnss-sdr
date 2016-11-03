@@ -174,7 +174,7 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, bool dump, std::str
     d_last_sample_nav_output = 0;
     d_rx_time = 0.0;
 
-    b_rinex_header_writen = false;
+    b_rinex_header_written = false;
     b_rinex_header_updated = false;
 
     rp = std::make_shared<Rinex_Printer>();
@@ -218,13 +218,6 @@ galileo_e1_pvt_cc::~galileo_e1_pvt_cc()
 }
 
 
-
-bool galileo_e1_pvt_cc::pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
-{
-    return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
-}
-
-
 void galileo_e1_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronization_data)
 {
     // Print the current receiver status using std::cout every second
@@ -259,7 +252,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
 {
     d_sample_counter++;
 
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+    std::map<int,Gnss_Synchro> gnss_observables_map;
 
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
 
@@ -270,7 +263,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
         {
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
-                    gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map
+                    gnss_observables_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map
                     d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
                     if(d_ls_pvt->galileo_ephemeris_map.size() > 0)
                         {
@@ -284,13 +277,13 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
         }
 
     // ############ 2 COMPUTE THE PVT ################################
-    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0)
+    if (gnss_observables_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0)
         {
             // compute on the fly PVT solution
             if ((d_sample_counter % d_output_rate_ms) == 0)
                 {
                     bool pvt_result;
-                    pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
+                    pvt_result = d_ls_pvt->get_PVT(gnss_observables_map, d_rx_time, d_flag_averaging);
 
                     if (pvt_result == true)
                         {
@@ -309,7 +302,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
                             d_geojson_printer->print_position(d_ls_pvt, d_flag_averaging);
                             d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
 
-                            if (!b_rinex_header_writen)
+                            if (!b_rinex_header_written)
                                 {
                                     std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
                                     galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
@@ -317,10 +310,10 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
                                         {
                                             rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
                                             rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
-                                            b_rinex_header_writen = true; // do not write header anymore
+                                            b_rinex_header_written = true; // do not write header anymore
                                         }
                                 }
-                            if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
+                            if(b_rinex_header_written) // Put here another condition to separate annotations (e.g 30 s)
                                 {
                                     // Limit the RINEX navigation output rate to 1/6 seg
                                     // Notice that d_sample_counter period is 4ms (for Galileo correlators)
@@ -333,7 +326,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
                                     galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
                                     if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
                                         {
-                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map);
                                         }
                                     if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                         {
@@ -358,7 +351,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
                                             gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
                                             if (gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
                                                 {
-                                                    d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map, 0, 0, 0, 0, 0);
+                                                    d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
                                                 }
                                         }
                                 }
@@ -373,7 +366,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
 
                                     if (gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
                                         {
-                                            d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map, 0, 0, 0, 0, 0);
+                                            d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
                                         }
                                     b_rtcm_writing_started = true;
                                 }

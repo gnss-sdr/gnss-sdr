@@ -131,21 +131,21 @@ void gps_l1_ca_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     Sbas_Raw_Msg sbas_raw_msg = *sbas_raw_msg_ptr;
                     // read SBAS raw messages directly from queue and write them into rinex file
                     // create the header of not yet done
-                    if(!b_rinex_sbs_header_writen)
+                    if(!b_rinex_sbs_header_written)
                         {
                             rp->rinex_sbs_header(rp->sbsFile);
-                            b_rinex_sbs_header_writen = true;
+                            b_rinex_sbs_header_written = true;
                         }
 
                     // Define the RX time of the SBAS message by using the GPS time.
                     // It has only an effect if there has not been yet a SBAS MT12 available
                     // when the message was received.
                     if(sbas_raw_msg.get_rx_time_obj().is_related() == false
-                            && gnss_pseudoranges_map.size() > 0
+                            && gnss_observables_map.size() > 0
                             && d_ls_pvt->gps_ephemeris_map.size() > 0)
                         {
                             // doesn't matter which channel/satellite we choose
-                            Gnss_Synchro gs = gnss_pseudoranges_map.begin()->second;
+                            Gnss_Synchro gs = gnss_observables_map.begin()->second;
                             Gps_Ephemeris eph = d_ls_pvt->gps_ephemeris_map.begin()->second;
 
                             double relative_rx_time = gs.Tracking_timestamp_secs;
@@ -277,9 +277,9 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
 
     d_last_status_print_seg = 0;
 
-    b_rinex_header_writen = false;
+    b_rinex_header_written = false;
     b_rinex_header_updated = false;
-    b_rinex_sbs_header_writen = false;
+    b_rinex_sbs_header_written = false;
     rp = std::make_shared<Rinex_Printer>();
 
     // ############# ENABLE DATA FILE LOG #################
@@ -318,12 +318,6 @@ gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc()
 }
 
 
-bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
-{
-    return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
-}
-
-
 void gps_l1_ca_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronization_data)
 {
     // Print the current receiver status using std::cout every second
@@ -341,7 +335,7 @@ void gps_l1_ca_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchroniza
 int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items __attribute__((unused)))
 {
-    gnss_pseudoranges_map.clear();
+    gnss_observables_map.clear();
     d_sample_counter++;
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
 
@@ -352,7 +346,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
         {
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
-                    gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map
+                    gnss_observables_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map
                     d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
                     if(d_ls_pvt->gps_ephemeris_map.size() > 0)
                         {
@@ -366,14 +360,14 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
         }
 
     // ############ 2 COMPUTE THE PVT ################################
-    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() > 0)
+    if (gnss_observables_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() > 0)
         {
             // compute on the fly PVT solution
             //mod 8/4/2012 Set the PVT computation rate in this block
             if ((d_sample_counter % d_output_rate_ms) == 0)
                 {
                     bool pvt_result;
-                    pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
+                    pvt_result = d_ls_pvt->get_PVT(gnss_observables_map, d_rx_time, d_flag_averaging);
                     if (pvt_result == true)
                         {
                             if( first_fix == true)
@@ -391,7 +385,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                             d_geojson_printer->print_position(d_ls_pvt, d_flag_averaging);
                             d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
 
-                            if (!b_rinex_header_writen)
+                            if (!b_rinex_header_written)
                                 {
                                     std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
                                     gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
@@ -399,10 +393,10 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                                         {
                                             rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, d_rx_time);
                                             rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
-                                            b_rinex_header_writen = true; // do not write header anymore
+                                            b_rinex_header_written = true; // do not write header anymore
                                         }
                                 }
-                            if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
+                            if(b_rinex_header_written) // Put here another condition to separate annotations (e.g 30 s)
                                 {
                                     // Limit the RINEX navigation output rate to 1/6 seg
                                     // Notice that d_sample_counter period is 1ms (for GPS correlators)
@@ -415,7 +409,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                                     gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
                                     if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
                                         {
-                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_observables_map);
                                         }
                                     if (!b_rinex_header_updated && (d_ls_pvt->gps_utc_model.d_A0 != 0))
                                         {
@@ -439,7 +433,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                                             gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
                                             if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
                                                 {
-                                                    d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_pseudoranges_map, 0, 0, 0, 0, 0);
+                                                    d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
                                                 }
                                         }
                                 }
@@ -455,7 +449,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
 
                                     if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
                                         {
-                                            d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_pseudoranges_map, 0, 0, 0, 0, 0);
+                                            d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
                                         }
                                     b_rtcm_writing_started = true;
                                 }

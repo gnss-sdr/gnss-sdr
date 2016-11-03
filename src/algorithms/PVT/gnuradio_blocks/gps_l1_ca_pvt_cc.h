@@ -108,8 +108,8 @@ private:
     void msg_handler_telemetry(pmt::pmt_t msg);
 
     bool d_dump;
-    bool b_rinex_header_writen;
-    bool b_rinex_sbs_header_writen;
+    bool b_rinex_header_written;
+    bool b_rinex_sbs_header_written;
     bool b_rinex_header_updated;
     bool b_rtcm_writing_started;
     unsigned short d_rtcm_tcp_port;
@@ -138,7 +138,7 @@ private:
     double d_rx_time;
     std::shared_ptr<gps_l1_ca_ls_pvt> d_ls_pvt;
 
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+    std::map<int,Gnss_Synchro> gnss_observables_map;
 
     bool first_fix;
     key_t sysv_msg_key;

@@ -3705,8 +3705,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
                     pseudoranges_iter++)
                 {
                     line += satelliteSystem["GPS"];
-                    if (static_cast<int>(pseudoranges_iter->first) < 10) line += std::string(1, '0');
-                    line += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->first));
+                    if (static_cast<int>(pseudoranges_iter->second.PRN) < 10) line += std::string(1, '0');
+                    line += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->second.PRN));
                 }
             // Receiver clock offset (optional)
             //line += rightJustify(asString(clockOffset, 12), 15);
@@ -3822,8 +3822,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
                     std::string lineObs;
                     lineObs.clear();
                     lineObs += satelliteSystem["GPS"];
-                    if (static_cast<int>(pseudoranges_iter->first) < 10) lineObs += std::string(1, '0');
-                    lineObs += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->first));
+                    if (static_cast<int>(pseudoranges_iter->second.PRN) < 10) lineObs += std::string(1, '0');
+                    lineObs += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->second.PRN));
                     //lineObs += std::string(2, ' ');
                     lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Pseudorange_m, 3), 14);
 
@@ -3943,8 +3943,8 @@ void Rinex_Printer::log_rinex_obs(std::fstream & out, const Gps_CNAV_Ephemeris &
             std::string lineObs;
             lineObs.clear();
             lineObs += satelliteSystem["GPS"];
-            if (static_cast<int>(pseudoranges_iter->first) < 10) lineObs += std::string(1, '0');
-            lineObs += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->first));
+            if (static_cast<int>(pseudoranges_iter->second.PRN) < 10) lineObs += std::string(1, '0');
+            lineObs += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->second.PRN));
             //lineObs += std::string(2, ' ');
             //GPS L2 PSEUDORANGE
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Pseudorange_m, 3), 14);

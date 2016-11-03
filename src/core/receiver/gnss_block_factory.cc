@@ -90,7 +90,7 @@
 #include "galileo_e5a_telemetry_decoder.h"
 #include "sbas_l1_telemetry_decoder.h"
 #include "gps_l1_ca_observables.h"
-#include "gps_l2_m_observables.h"
+#include "gps_l2c_observables.h"
 #include "galileo_e1_observables.h"
 #include "galileo_e5a_observables.h"
 #include "hybrid_observables.h"
@@ -1057,9 +1057,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
-    else if (implementation.compare("GPS_L2_M_Observables") == 0)
+    else if (implementation.compare("GPS_L2C_Observables") == 0)
         {
-            std::unique_ptr<GNSSBlockInterface> block_(new GpsL2MObservables(configuration.get(), role, in_streams,
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL2CObservables(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
             }

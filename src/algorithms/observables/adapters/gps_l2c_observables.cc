@@ -1,5 +1,5 @@
 /*!
- * \file gps_l2_m_observables.cc
+ * \file gps_l2c_observables.cc
  * \brief Implementation of an adapter of a GPS L2 C(M) observables block
  * to a ObservablesInterface
  * \author Carles Fernandez 2016. carles.fernandez(at)cttc.es
@@ -30,14 +30,14 @@
  */
 
 
-#include "gps_l2_m_observables.h"
+#include "gps_l2c_observables.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
 #include "GPS_L2C.h"
 
 using google::LogMessage;
 
-GpsL2MObservables::GpsL2MObservables(ConfigurationInterface* configuration,
+GpsL2CObservables::GpsL2CObservables(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams) :
@@ -56,11 +56,11 @@ GpsL2MObservables::GpsL2MObservables(ConfigurationInterface* configuration,
 }
 
 
-GpsL2MObservables::~GpsL2MObservables()
+GpsL2CObservables::~GpsL2CObservables()
 {}
 
 
-void GpsL2MObservables::connect(gr::top_block_sptr top_block)
+void GpsL2CObservables::connect(gr::top_block_sptr top_block)
 {
     if(top_block) { /* top_block is not null */};
     // Nothing to connect internally
@@ -68,20 +68,20 @@ void GpsL2MObservables::connect(gr::top_block_sptr top_block)
 }
 
 
-void GpsL2MObservables::disconnect(gr::top_block_sptr top_block)
+void GpsL2CObservables::disconnect(gr::top_block_sptr top_block)
 {
     if(top_block) { /* top_block is not null */};
     // Nothing to disconnect
 }
 
 
-gr::basic_block_sptr GpsL2MObservables::get_left_block()
+gr::basic_block_sptr GpsL2CObservables::get_left_block()
 {
     return observables_;
 }
 
 
-gr::basic_block_sptr GpsL2MObservables::get_right_block()
+gr::basic_block_sptr GpsL2CObservables::get_right_block()
 {
     return observables_;
 }

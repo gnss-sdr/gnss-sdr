@@ -1,5 +1,5 @@
 /*!
- * \file gps_l2_m_observables.h
+ * \file gps_l2c_observables.h
  * \brief Implementation of an adapter of a GPS L2C(M) observables block
  * to a ObservablesInterface
  * \author Carles Fernandez 2016. carles.fernandez(at)cttc.es
@@ -30,8 +30,8 @@
  */
 
 
-#ifndef GNSS_SDR_GPS_L2_M_OBSERVABLES_H_
-#define GNSS_SDR_GPS_L2_M_OBSERVABLES_H_
+#ifndef GNSS_SDR_GPS_L2C_OBSERVABLES_H_
+#define GNSS_SDR_GPS_L2C_OBSERVABLES_H_
 
 #include <string>
 #include "observables_interface.h"
@@ -41,25 +41,25 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements an ObservablesInterface for Galileo E1B
+ * \brief This class implements an ObservablesInterface for GPS L2C
  */
-class GpsL2MObservables : public ObservablesInterface
+class GpsL2CObservables : public ObservablesInterface
 {
 public:
-    GpsL2MObservables(ConfigurationInterface* configuration,
+    GpsL2CObservables(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams);
-    virtual ~GpsL2MObservables();
+    virtual ~GpsL2CObservables();
     std::string role()
     {
         return role_;
     }
 
-    //!  Returns "GPS_L2_M_Observables"
+    //!  Returns "GPS_L2C_Observables"
     std::string implementation()
     {
-        return "GPS_L2_M_Observables";
+        return "GPS_L2C_Observables";
     }
     void connect(gr::top_block_sptr top_block);
     void disconnect(gr::top_block_sptr top_block);

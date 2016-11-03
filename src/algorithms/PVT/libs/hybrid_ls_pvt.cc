@@ -40,8 +40,8 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
-    d_Gal_ephemeris = new Galileo_Navigation_Message[nchannels];
-    d_GPS_ephemeris = new Gps_Navigation_Message[nchannels];
+    //d_Gal_ephemeris = new Galileo_Navigation_Message[nchannels];
+    //d_GPS_ephemeris = new Gps_Navigation_Message[nchannels];
     d_dump_filename = dump_filename;
     d_flag_dump_enabled = flag_dump_to_file;
     d_galileo_current_time = 0;
@@ -72,8 +72,9 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
 hybrid_ls_pvt::~hybrid_ls_pvt()
 {
     d_dump_file.close();
-    delete[] d_Gal_ephemeris;
-    delete[] d_GPS_ephemeris;
+    //delete[] d_Gal_ephemeris;
+    //delete[] d_GPS_ephemeris;
+    //delete[]
 }
 
 

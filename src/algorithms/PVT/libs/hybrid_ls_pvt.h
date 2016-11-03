@@ -61,8 +61,8 @@ public:
     int d_valid_GPS_obs;                                    //!< Number of valid GPS pseudorange observations (valid GPS satellites) -- used for hybrid configuration
     int d_valid_GAL_obs;                                    //!< Number of valid GALILEO pseudorange observations (valid GALILEO satellites) -- used for hybrid configuration
 
-    Galileo_Navigation_Message* d_Gal_ephemeris;
-    Gps_Navigation_Message* d_GPS_ephemeris;
+    //Galileo_Navigation_Message* d_Gal_ephemeris;
+    //Gps_Navigation_Message* d_GPS_ephemeris;
 
     std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
     std::map<int,Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new GPS_Ephemeris

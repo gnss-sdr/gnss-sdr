@@ -111,7 +111,7 @@ private:
     void msg_handler_telemetry(pmt::pmt_t msg);
 
     bool d_dump;
-    bool b_rinex_header_writen;
+    bool b_rinex_header_written;
     bool b_rinex_header_updated;
     bool b_rtcm_writing_started;
     int d_rtcm_MT1045_rate_ms;

@@ -50,6 +50,11 @@ const double GALILEO_E5a_CODE_PERIOD = 0.001;
 const int Galileo_E5a_SYMBOL_RATE_BPS = 50;       //!< Galileo E5a symbol rate [bits/second]
 const int Galileo_E5a_NUMBER_OF_CODES = 50;
 
+
+// OBSERVABLE HISTORY DEEP FOR INTERPOLATION
+const int GALILEO_E5A_HISTORY_DEEP = 20;
+
+
 // F/NAV message structure
 
 const int GALILEO_FNAV_PREAMBLE_LENGTH_BITS = 12;

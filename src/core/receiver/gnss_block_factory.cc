@@ -92,6 +92,7 @@
 #include "gps_l1_ca_observables.h"
 #include "gps_l2_m_observables.h"
 #include "galileo_e1_observables.h"
+#include "galileo_e5a_observables.h"
 #include "hybrid_observables.h"
 #include "gps_l1_ca_pvt.h"
 #include "galileo_e1_pvt.h"
@@ -1065,6 +1066,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Galileo_E1B_Observables") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1Observables(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Galileo_E5A_Observables") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aObservables(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

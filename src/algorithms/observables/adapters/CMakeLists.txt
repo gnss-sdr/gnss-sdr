@@ -16,10 +16,11 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(OBS_ADAPTER_SOURCES 
+set(OBS_ADAPTER_SOURCES
 	gps_l1_ca_observables.cc
 	gps_l2_m_observables.cc
 	galileo_e1_observables.cc
+     galileo_e5a_observables.cc
 	hybrid_observables.cc
 )
 

@@ -145,17 +145,17 @@ Rtcm_Printer::~Rtcm_Printer()
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+bool Rtcm_Printer::Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables)
 {
-    std::string m1001 = rtcm->print_MT1001(gps_eph, obs_time, pseudoranges, station_id);
+    std::string m1001 = rtcm->print_MT1001(gps_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1001);
     return true;
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+bool Rtcm_Printer::Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables)
 {
-    std::string m1002 = rtcm->print_MT1002(gps_eph, obs_time, pseudoranges, station_id);
+    std::string m1002 = rtcm->print_MT1002(gps_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1002);
     return true;
 }
@@ -181,7 +181,7 @@ bool Rtcm_Printer::Print_Rtcm_MSM(unsigned int msm_number, const Gps_Ephemeris &
         const Gps_CNAV_Ephemeris & gps_cnav_eph,
         const Galileo_Ephemeris & gal_eph,
         double obs_time,
-        const std::map<int, Gnss_Synchro> & pseudoranges,
+        const std::map<int, Gnss_Synchro> & observables,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
         int smooth_int,
@@ -191,31 +191,31 @@ bool Rtcm_Printer::Print_Rtcm_MSM(unsigned int msm_number, const Gps_Ephemeris &
     std::string msm;
     if(msm_number == 1)
         {
-            msm = rtcm->print_MSM_1(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+            msm = rtcm->print_MSM_1(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
         }
     else if(msm_number == 2)
         {
-            msm = rtcm->print_MSM_2(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+            msm = rtcm->print_MSM_2(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
         }
     else if(msm_number == 3)
         {
-            msm = rtcm->print_MSM_3(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+            msm = rtcm->print_MSM_3(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
         }
     else if(msm_number == 4)
         {
-            msm = rtcm->print_MSM_4(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+            msm = rtcm->print_MSM_4(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
         }
     else if(msm_number == 5)
         {
-            msm = rtcm->print_MSM_5(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+            msm = rtcm->print_MSM_5(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
         }
     else if(msm_number == 6)
         {
-            msm = rtcm->print_MSM_6(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+            msm = rtcm->print_MSM_6(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
         }
     else if(msm_number == 7)
         {
-            msm = rtcm->print_MSM_7(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+            msm = rtcm->print_MSM_7(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
         }
     else
         {

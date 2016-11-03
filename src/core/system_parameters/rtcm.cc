@@ -391,11 +391,11 @@ std::string Rtcm::build_message(const std::string & data) const
 //
 // ********************************************************
 
-std::bitset<64> Rtcm::get_MT1001_4_header(unsigned int msg_number, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges,
+std::bitset<64> Rtcm::get_MT1001_4_header(unsigned int msg_number, double obs_time, const std::map<int, Gnss_Synchro> & observables,
         unsigned int ref_id, unsigned int smooth_int, bool sync_flag, bool divergence_free)
 {
     unsigned int reference_station_id = ref_id; // Max: 4095
-    const std::map<int, Gnss_Synchro> pseudoranges_ = pseudoranges;
+    const std::map<int, Gnss_Synchro> observables_ = observables;
     bool synchronous_GNSS_flag = sync_flag;
     bool divergence_free_smoothing_indicator = divergence_free;
     unsigned int smoothing_interval = smooth_int;
@@ -403,7 +403,7 @@ std::bitset<64> Rtcm::get_MT1001_4_header(unsigned int msg_number, double obs_ti
     Rtcm::set_DF003(reference_station_id);
     Rtcm::set_DF004(obs_time);
     Rtcm::set_DF005(synchronous_GNSS_flag);
-    Rtcm::set_DF006(pseudoranges_);
+    Rtcm::set_DF006(observables_);
     Rtcm::set_DF007(divergence_free_smoothing_indicator);
     Rtcm::set_DF008(smoothing_interval);
 
@@ -440,7 +440,7 @@ std::bitset<58> Rtcm::get_MT1001_sat_content(const Gps_Ephemeris & eph, double o
 }
 
 
-std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id)
+std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id)
 {
     unsigned int ref_id = static_cast<unsigned int>(station_id);
     unsigned int smooth_int = 0;
@@ -448,29 +448,29 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, c
     bool divergence_free = false;
 
     //Get a map with GPS L1 only observations
-    std::map<int, Gnss_Synchro> pseudorangesL1;
-    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
+    std::map<int, Gnss_Synchro> observablesL1;
+    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
 
-    for(pseudoranges_iter = pseudoranges.begin();
-            pseudoranges_iter != pseudoranges.end();
-            pseudoranges_iter++)
+    for(observables_iter = observables.begin();
+            observables_iter != observables.end();
+            observables_iter++)
         {
-            std::string system_(&pseudoranges_iter->second.System, 1);
-            std::string sig_(pseudoranges_iter->second.Signal);
+            std::string system_(&observables_iter->second.System, 1);
+            std::string sig_(observables_iter->second.Signal);
             if((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
-                    pseudorangesL1.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
-    std::bitset<64> header = Rtcm::get_MT1001_4_header(1001, obs_time, pseudorangesL1, ref_id, smooth_int, sync_flag, divergence_free);
+    std::bitset<64> header = Rtcm::get_MT1001_4_header(1001, obs_time, observablesL1, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
-    for(pseudoranges_iter = pseudorangesL1.begin();
-            pseudoranges_iter != pseudorangesL1.end();
-            pseudoranges_iter++)
+    for(observables_iter = observablesL1.begin();
+            observables_iter != observablesL1.end();
+            observables_iter++)
         {
-            std::bitset<58> content = Rtcm::get_MT1001_sat_content(gps_eph, obs_time, pseudoranges_iter->second);
+            std::bitset<58> content = Rtcm::get_MT1001_sat_content(gps_eph, obs_time, observables_iter->second);
             data += content.to_string();
         }
 
@@ -490,7 +490,7 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, c
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id)
+std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id)
 {
     unsigned int ref_id = static_cast<unsigned int>(station_id);
     unsigned int smooth_int = 0;
@@ -498,29 +498,29 @@ std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, c
     bool divergence_free = false;
 
     //Get a map with GPS L1 only observations
-    std::map<int, Gnss_Synchro> pseudorangesL1;
-    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
+    std::map<int, Gnss_Synchro> observablesL1;
+    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
 
-    for(pseudoranges_iter = pseudoranges.begin();
-            pseudoranges_iter != pseudoranges.end();
-            pseudoranges_iter++)
+    for(observables_iter = observables.begin();
+            observables_iter != observables.end();
+            observables_iter++)
         {
-            std::string system_(&pseudoranges_iter->second.System, 1);
-            std::string sig_(pseudoranges_iter->second.Signal);
+            std::string system_(&observables_iter->second.System, 1);
+            std::string sig_(observables_iter->second.Signal);
             if((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
-                    pseudorangesL1.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
-    std::bitset<64> header = Rtcm::get_MT1001_4_header(1002, obs_time, pseudorangesL1, ref_id, smooth_int, sync_flag, divergence_free);
+    std::bitset<64> header = Rtcm::get_MT1001_4_header(1002, obs_time, observablesL1, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
-    for(pseudoranges_iter = pseudorangesL1.begin();
-            pseudoranges_iter != pseudorangesL1.end();
-            pseudoranges_iter++)
+    for(observables_iter = observablesL1.begin();
+            observables_iter != observablesL1.end();
+            observables_iter++)
         {
-            std::bitset<74> content = Rtcm::get_MT1002_sat_content(gps_eph, obs_time, pseudoranges_iter->second);
+            std::bitset<74> content = Rtcm::get_MT1002_sat_content(gps_eph, obs_time, observables_iter->second);
             data += content.to_string();
         }
 
@@ -562,7 +562,7 @@ std::bitset<74> Rtcm::get_MT1002_sat_content(const Gps_Ephemeris & eph, double o
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id)
+std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id)
 {
     unsigned int ref_id = static_cast<unsigned int>(station_id);
     unsigned int smooth_int = 0;
@@ -570,61 +570,61 @@ std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
     bool divergence_free = false;
 
     //Get maps with GPS L1 and L2 observations
-    std::map<int, Gnss_Synchro> pseudorangesL1;
-    std::map<int, Gnss_Synchro> pseudorangesL2;
-    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
-    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter2;
+    std::map<int, Gnss_Synchro> observablesL1;
+    std::map<int, Gnss_Synchro> observablesL2;
+    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int, Gnss_Synchro>::const_iterator observables_iter2;
 
-    for(pseudoranges_iter = pseudoranges.begin();
-            pseudoranges_iter != pseudoranges.end();
-            pseudoranges_iter++)
+    for(observables_iter = observables.begin();
+            observables_iter != observables.end();
+            observables_iter++)
         {
-            std::string system_(&pseudoranges_iter->second.System, 1);
-            std::string sig_(pseudoranges_iter->second.Signal);
+            std::string system_(&observables_iter->second.System, 1);
+            std::string sig_(observables_iter->second.Signal);
             if((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
-                    pseudorangesL1.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
             if((system_.compare("G") == 0) && (sig_.compare("2S") == 0))
                 {
-                    pseudorangesL2.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                    observablesL2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
     // Get common observables
-    std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >  common_pseudoranges;
-    std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >::const_iterator common_pseudoranges_iter;
-    std::map<int, Gnss_Synchro> pseudorangesL1_with_L2;
+    std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >  common_observables;
+    std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >::const_iterator common_observables_iter;
+    std::map<int, Gnss_Synchro> observablesL1_with_L2;
 
-    for(pseudoranges_iter = pseudorangesL1.begin();
-            pseudoranges_iter != pseudorangesL1.end();
-            pseudoranges_iter++)
+    for(observables_iter = observablesL1.begin();
+            observables_iter != observablesL1.end();
+            observables_iter++)
         {
-            unsigned int prn_ = pseudoranges_iter->second.PRN;
-            for(pseudoranges_iter2 = pseudorangesL2.begin();
-                    pseudoranges_iter2 != pseudorangesL2.end();
-                    pseudoranges_iter2++)
+            unsigned int prn_ = observables_iter->second.PRN;
+            for(observables_iter2 = observablesL2.begin();
+                    observables_iter2 != observablesL2.end();
+                    observables_iter2++)
                 {
-                    if(pseudoranges_iter2->second.PRN == prn_)
+                    if(observables_iter2->second.PRN == prn_)
                         {
                             std::pair<Gnss_Synchro, Gnss_Synchro> p;
-                            Gnss_Synchro pr1 = pseudoranges_iter->second;
-                            Gnss_Synchro pr2 = pseudoranges_iter2->second;
+                            Gnss_Synchro pr1 = observables_iter->second;
+                            Gnss_Synchro pr2 = observables_iter2->second;
                             p = std::make_pair(pr1, pr2);
-                            common_pseudoranges.push_back(p);
-                            pseudorangesL1_with_L2.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                            common_observables.push_back(p);
+                            observablesL1_with_L2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                         }
                 }
         }
 
-    std::bitset<64> header = Rtcm::get_MT1001_4_header(1003, obs_time, pseudorangesL1_with_L2, ref_id, smooth_int, sync_flag, divergence_free);
+    std::bitset<64> header = Rtcm::get_MT1001_4_header(1003, obs_time, observablesL1_with_L2, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
-    for(common_pseudoranges_iter = common_pseudoranges.begin();
-            common_pseudoranges_iter != common_pseudoranges.end();
-            common_pseudoranges_iter++)
+    for(common_observables_iter = common_observables.begin();
+            common_observables_iter != common_observables.end();
+            common_observables_iter++)
         {
-            std::bitset<101> content = Rtcm::get_MT1003_sat_content(ephL1, ephL2, obs_time, common_pseudoranges_iter->first, common_pseudoranges_iter->second);
+            std::bitset<101> content = Rtcm::get_MT1003_sat_content(ephL1, ephL2, obs_time, common_observables_iter->first, common_observables_iter->second);
             data += content.to_string();
         }
 
@@ -672,7 +672,7 @@ std::bitset<101> Rtcm::get_MT1003_sat_content(const Gps_Ephemeris & ephL1, const
 //
 // ******************************************************************
 
-std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id)
+std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id)
 {
     unsigned int ref_id = static_cast<unsigned int>(station_id);
     unsigned int smooth_int = 0;
@@ -680,61 +680,61 @@ std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
     bool divergence_free = false;
 
     //Get maps with GPS L1 and L2 observations
-    std::map<int, Gnss_Synchro> pseudorangesL1;
-    std::map<int, Gnss_Synchro> pseudorangesL2;
-    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
-    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter2;
+    std::map<int, Gnss_Synchro> observablesL1;
+    std::map<int, Gnss_Synchro> observablesL2;
+    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int, Gnss_Synchro>::const_iterator observables_iter2;
 
-    for(pseudoranges_iter = pseudoranges.begin();
-            pseudoranges_iter != pseudoranges.end();
-            pseudoranges_iter++)
+    for(observables_iter = observables.begin();
+            observables_iter != observables.end();
+            observables_iter++)
         {
-            std::string system_(&pseudoranges_iter->second.System, 1);
-            std::string sig_(pseudoranges_iter->second.Signal);
+            std::string system_(&observables_iter->second.System, 1);
+            std::string sig_(observables_iter->second.Signal);
             if((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
-                    pseudorangesL1.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
             if((system_.compare("G") == 0) && (sig_.compare("2S") == 0))
                 {
-                    pseudorangesL2.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                    observablesL2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
     // Get common observables
-    std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >  common_pseudoranges;
-    std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >::const_iterator common_pseudoranges_iter;
-    std::map<int, Gnss_Synchro> pseudorangesL1_with_L2;
+    std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >  common_observables;
+    std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >::const_iterator common_observables_iter;
+    std::map<int, Gnss_Synchro> observablesL1_with_L2;
 
-    for(pseudoranges_iter = pseudorangesL1.begin();
-            pseudoranges_iter != pseudorangesL1.end();
-            pseudoranges_iter++)
+    for(observables_iter = observablesL1.begin();
+            observables_iter != observablesL1.end();
+            observables_iter++)
         {
-            unsigned int prn_ = pseudoranges_iter->second.PRN;
-            for(pseudoranges_iter2 = pseudorangesL2.begin();
-                    pseudoranges_iter2 != pseudorangesL2.end();
-                    pseudoranges_iter2++)
+            unsigned int prn_ = observables_iter->second.PRN;
+            for(observables_iter2 = observablesL2.begin();
+                    observables_iter2 != observablesL2.end();
+                    observables_iter2++)
                 {
-                    if(pseudoranges_iter2->second.PRN == prn_)
+                    if(observables_iter2->second.PRN == prn_)
                         {
                             std::pair<Gnss_Synchro, Gnss_Synchro> p;
-                            Gnss_Synchro pr1 = pseudoranges_iter->second;
-                            Gnss_Synchro pr2 = pseudoranges_iter2->second;
+                            Gnss_Synchro pr1 = observables_iter->second;
+                            Gnss_Synchro pr2 = observables_iter2->second;
                             p = std::make_pair(pr1, pr2);
-                            common_pseudoranges.push_back(p);
-                            pseudorangesL1_with_L2.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
+                            common_observables.push_back(p);
+                            observablesL1_with_L2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                         }
                 }
         }
 
-    std::bitset<64> header = Rtcm::get_MT1001_4_header(1004, obs_time, pseudorangesL1_with_L2, ref_id, smooth_int, sync_flag, divergence_free);
+    std::bitset<64> header = Rtcm::get_MT1001_4_header(1004, obs_time, observablesL1_with_L2, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
-    for(common_pseudoranges_iter = common_pseudoranges.begin();
-            common_pseudoranges_iter != common_pseudoranges.end();
-            common_pseudoranges_iter++)
+    for(common_observables_iter = common_observables.begin();
+            common_observables_iter != common_observables.end();
+            common_observables_iter++)
         {
-            std::bitset<125> content = Rtcm::get_MT1004_sat_content(ephL1, ephL2, obs_time, common_pseudoranges_iter->first, common_pseudoranges_iter->second);
+            std::bitset<125> content = Rtcm::get_MT1004_sat_content(ephL1, ephL2, obs_time, common_observables_iter->first, common_observables_iter->second);
             data += content.to_string();
         }
 
@@ -1564,7 +1564,7 @@ int Rtcm::read_MT1045(const std::string & message, Galileo_Ephemeris & gal_eph)
 
 // **********************************************************************************************
 //
-//   MESSAGE TYPE MSM1 (COMPACT PSEUDORANGES)
+//   MESSAGE TYPE MSM1 (COMPACT observables)
 //
 // **********************************************************************************************
 
@@ -1572,7 +1572,7 @@ std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
         const Gps_CNAV_Ephemeris & gps_cnav_eph,
         const Galileo_Ephemeris & gal_eph,
         double obs_time,
-        const std::map<int, Gnss_Synchro> & pseudoranges,
+        const std::map<int, Gnss_Synchro> & observables,
         unsigned int ref_id,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
@@ -1596,7 +1596,7 @@ std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
 
     std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
-             pseudoranges,
+             observables,
              ref_id,
              clock_steering_indicator,
              external_clock_indicator,
@@ -1604,9 +1604,9 @@ std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
              divergence_free,
              more_messages);
 
-    std::string sat_data = Rtcm::get_MSM_1_content_sat_data(pseudoranges);
+    std::string sat_data = Rtcm::get_MSM_1_content_sat_data(observables);
 
-    std::string signal_data = Rtcm::get_MSM_1_content_signal_data(pseudoranges);
+    std::string signal_data = Rtcm::get_MSM_1_content_signal_data(observables);
 
     std::string message = build_message(header + sat_data + signal_data);
 
@@ -1621,7 +1621,7 @@ std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
 
 std::string Rtcm::get_MSM_header(unsigned int msg_number,
         double obs_time,
-        const std::map<int, Gnss_Synchro> & pseudoranges,
+        const std::map<int, Gnss_Synchro> & observables,
         unsigned int ref_id,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
@@ -1640,8 +1640,8 @@ std::string Rtcm::get_MSM_header(unsigned int msg_number,
     Rtcm::set_DF417(divergence_free);
     Rtcm::set_DF418(smooth_int);
 
-    Rtcm::set_DF394(pseudoranges);
-    Rtcm::set_DF395(pseudoranges);
+    Rtcm::set_DF394(observables);
+    Rtcm::set_DF395(observables);
 
     std::string header = DF002.to_string() + DF003.to_string();
     header += DF004.to_string();
@@ -1654,38 +1654,38 @@ std::string Rtcm::get_MSM_header(unsigned int msg_number,
             DF418.to_string() +
             DF394.to_string() +
             DF395.to_string() +
-            Rtcm::set_DF396(pseudoranges);
+            Rtcm::set_DF396(observables);
 
     return header;
 }
 
 
-std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro> & observables)
 {
     std::string sat_data;
     sat_data.clear();
 
-    Rtcm::set_DF394(pseudoranges);
+    Rtcm::set_DF394(observables);
     unsigned int num_satellites = DF394.count();
 
-    std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
+    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
     std::vector<unsigned int> pos;
     std::vector<unsigned int>::iterator it;
 
-    for(gnss_synchro_iter = pseudoranges.begin();
-            gnss_synchro_iter != pseudoranges.end();
+    for(gnss_synchro_iter = observables.begin();
+            gnss_synchro_iter != observables.end();
             gnss_synchro_iter++)
         {
             it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
             if(it == pos.end())
                 {
                     pos.push_back(65 - gnss_synchro_iter->second.PRN);
-                    pseudoranges_vector.push_back(*gnss_synchro_iter);
+                    observables_vector.push_back(*gnss_synchro_iter);
                 }
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(pseudoranges_vector);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
 
     for(unsigned int nsat = 0; nsat < num_satellites; nsat++)
         {
@@ -1697,23 +1697,23 @@ std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro> &
 }
 
 
-std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro> & observables)
 {
     std::string signal_data;
     signal_data.clear();
-    unsigned int Ncells = pseudoranges.size();
+    unsigned int Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
+    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = pseudoranges.begin();
-            map_iter != pseudoranges.end();
+    for(map_iter = observables.begin();
+            map_iter != observables.end();
             map_iter++)
         {
-            pseudoranges_vector.push_back(*map_iter);
+            observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(pseudoranges_vector);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
     std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
@@ -1737,7 +1737,7 @@ std::string Rtcm::print_MSM_2( const Gps_Ephemeris & gps_eph,
         const Gps_CNAV_Ephemeris & gps_cnav_eph,
         const Galileo_Ephemeris & gal_eph,
         double obs_time,
-        const std::map<int, Gnss_Synchro> & pseudoranges,
+        const std::map<int, Gnss_Synchro> & observables,
         unsigned int ref_id,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
@@ -1761,7 +1761,7 @@ std::string Rtcm::print_MSM_2( const Gps_Ephemeris & gps_eph,
 
     std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
-             pseudoranges,
+             observables,
              ref_id,
              clock_steering_indicator,
              external_clock_indicator,
@@ -1769,9 +1769,9 @@ std::string Rtcm::print_MSM_2( const Gps_Ephemeris & gps_eph,
              divergence_free,
              more_messages);
 
-    std::string sat_data = Rtcm::get_MSM_1_content_sat_data(pseudoranges);
+    std::string sat_data = Rtcm::get_MSM_1_content_sat_data(observables);
 
-    std::string signal_data = Rtcm::get_MSM_2_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
+    std::string signal_data = Rtcm::get_MSM_2_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables);
 
     std::string message = build_message(header + sat_data + signal_data);
     if(server_is_running)
@@ -1783,26 +1783,26 @@ std::string Rtcm::print_MSM_2( const Gps_Ephemeris & gps_eph,
 }
 
 
-std::string Rtcm::get_MSM_2_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::get_MSM_2_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & observables)
 {
     std::string signal_data;
     std::string first_data_type;
     std::string second_data_type;
     std::string third_data_type;
 
-    unsigned int Ncells = pseudoranges.size();
+    unsigned int Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
+    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = pseudoranges.begin();
-            map_iter != pseudoranges.end();
+    for(map_iter = observables.begin();
+            map_iter != observables.end();
             map_iter++)
         {
-            pseudoranges_vector.push_back(*map_iter);
+            observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(pseudoranges_vector);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
     std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
@@ -1832,7 +1832,7 @@ std::string Rtcm::print_MSM_3( const Gps_Ephemeris & gps_eph,
         const Gps_CNAV_Ephemeris & gps_cnav_eph,
         const Galileo_Ephemeris & gal_eph,
         double obs_time,
-        const std::map<int, Gnss_Synchro> & pseudoranges,
+        const std::map<int, Gnss_Synchro> & observables,
         unsigned int ref_id,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
@@ -1856,7 +1856,7 @@ std::string Rtcm::print_MSM_3( const Gps_Ephemeris & gps_eph,
 
     std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
-             pseudoranges,
+             observables,
              ref_id,
              clock_steering_indicator,
              external_clock_indicator,
@@ -1864,9 +1864,9 @@ std::string Rtcm::print_MSM_3( const Gps_Ephemeris & gps_eph,
              divergence_free,
              more_messages);
 
-    std::string sat_data = Rtcm::get_MSM_1_content_sat_data(pseudoranges);
+    std::string sat_data = Rtcm::get_MSM_1_content_sat_data(observables);
 
-    std::string signal_data = Rtcm::get_MSM_3_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
+    std::string signal_data = Rtcm::get_MSM_3_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables);
 
     std::string message = build_message(header + sat_data + signal_data);
     if(server_is_running)
@@ -1878,7 +1878,7 @@ std::string Rtcm::print_MSM_3( const Gps_Ephemeris & gps_eph,
 }
 
 
-std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & observables)
 {
     std::string signal_data;
     std::string first_data_type;
@@ -1886,19 +1886,19 @@ std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::string third_data_type;
     std::string fourth_data_type;
 
-    unsigned int Ncells = pseudoranges.size();
+    unsigned int Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
+    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = pseudoranges.begin();
-            map_iter != pseudoranges.end();
+    for(map_iter = observables.begin();
+            map_iter != observables.end();
             map_iter++)
         {
-            pseudoranges_vector.push_back(*map_iter);
+            observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(pseudoranges_vector);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
     std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
@@ -1929,7 +1929,7 @@ std::string Rtcm::print_MSM_4( const Gps_Ephemeris & gps_eph,
         const Gps_CNAV_Ephemeris & gps_cnav_eph,
         const Galileo_Ephemeris & gal_eph,
         double obs_time,
-        const std::map<int, Gnss_Synchro> & pseudoranges,
+        const std::map<int, Gnss_Synchro> & observables,
         unsigned int ref_id,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
@@ -1953,7 +1953,7 @@ std::string Rtcm::print_MSM_4( const Gps_Ephemeris & gps_eph,
 
     std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
-             pseudoranges,
+             observables,
              ref_id,
              clock_steering_indicator,
              external_clock_indicator,
@@ -1961,9 +1961,9 @@ std::string Rtcm::print_MSM_4( const Gps_Ephemeris & gps_eph,
              divergence_free,
              more_messages);
 
-    std::string sat_data = Rtcm::get_MSM_4_content_sat_data(pseudoranges);
+    std::string sat_data = Rtcm::get_MSM_4_content_sat_data(observables);
 
-    std::string signal_data = Rtcm::get_MSM_4_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
+    std::string signal_data = Rtcm::get_MSM_4_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables);
 
     std::string message = build_message(header + sat_data + signal_data);
     if(server_is_running)
@@ -1975,33 +1975,33 @@ std::string Rtcm::print_MSM_4( const Gps_Ephemeris & gps_eph,
 }
 
 
-std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro> & observables)
 {
     std::string sat_data;
     std::string first_data_type;
     std::string second_data_type;
 
-    Rtcm::set_DF394(pseudoranges);
+    Rtcm::set_DF394(observables);
     unsigned int num_satellites = DF394.count();
 
-    std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
+    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
     std::vector<unsigned int> pos;
     std::vector<unsigned int>::iterator it;
 
-    for(gnss_synchro_iter = pseudoranges.begin();
-            gnss_synchro_iter != pseudoranges.end();
+    for(gnss_synchro_iter = observables.begin();
+            gnss_synchro_iter != observables.end();
             gnss_synchro_iter++)
         {
             it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
             if(it == pos.end())
                 {
                     pos.push_back(65 - gnss_synchro_iter->second.PRN);
-                    pseudoranges_vector.push_back(*gnss_synchro_iter);
+                    observables_vector.push_back(*gnss_synchro_iter);
                 }
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(pseudoranges_vector);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
 
     for(unsigned int nsat = 0; nsat < num_satellites; nsat++)
         {
@@ -2015,7 +2015,7 @@ std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro> &
 }
 
 
-std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & observables)
 {
     std::string signal_data;
     std::string first_data_type;
@@ -2024,19 +2024,19 @@ std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::string fourth_data_type;
     std::string fifth_data_type;
 
-    unsigned int Ncells = pseudoranges.size();
+    unsigned int Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
+    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = pseudoranges.begin();
-            map_iter != pseudoranges.end();
+    for(map_iter = observables.begin();
+            map_iter != observables.end();
             map_iter++)
         {
-            pseudoranges_vector.push_back(*map_iter);
+            observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(pseudoranges_vector);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
     std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
@@ -2069,7 +2069,7 @@ std::string Rtcm::print_MSM_5( const Gps_Ephemeris & gps_eph,
         const Gps_CNAV_Ephemeris & gps_cnav_eph,
         const Galileo_Ephemeris & gal_eph,
         double obs_time,
-        const std::map<int, Gnss_Synchro> & pseudoranges,
+        const std::map<int, Gnss_Synchro> & observables,
         unsigned int ref_id,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
@@ -2093,7 +2093,7 @@ std::string Rtcm::print_MSM_5( const Gps_Ephemeris & gps_eph,
 
     std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
-             pseudoranges,
+             observables,
              ref_id,
              clock_steering_indicator,
              external_clock_indicator,
@@ -2101,9 +2101,9 @@ std::string Rtcm::print_MSM_5( const Gps_Ephemeris & gps_eph,
              divergence_free,
              more_messages);
 
-    std::string sat_data = Rtcm::get_MSM_5_content_sat_data(pseudoranges);
+    std::string sat_data = Rtcm::get_MSM_5_content_sat_data(observables);
 
-    std::string signal_data = Rtcm::get_MSM_5_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
+    std::string signal_data = Rtcm::get_MSM_5_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables);
 
     std::string message = build_message(header + sat_data + signal_data);
     if(server_is_running)
@@ -2115,7 +2115,7 @@ std::string Rtcm::print_MSM_5( const Gps_Ephemeris & gps_eph,
 }
 
 
-std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int, Gnss_Synchro> & observables)
 {
     std::string sat_data;
     std::string first_data_type;
@@ -2123,27 +2123,27 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int, Gnss_Synchro> &
     std::string third_data_type;
     std::string fourth_data_type;
 
-    Rtcm::set_DF394(pseudoranges);
+    Rtcm::set_DF394(observables);
     unsigned int num_satellites = DF394.count();
 
-    std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
+    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
     std::vector<unsigned int> pos;
     std::vector<unsigned int>::iterator it;
 
-    for(gnss_synchro_iter = pseudoranges.begin();
-            gnss_synchro_iter != pseudoranges.end();
+    for(gnss_synchro_iter = observables.begin();
+            gnss_synchro_iter != observables.end();
             gnss_synchro_iter++)
         {
             it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
             if(it == pos.end())
                 {
                     pos.push_back(65 - gnss_synchro_iter->second.PRN);
-                    pseudoranges_vector.push_back(*gnss_synchro_iter);
+                    observables_vector.push_back(*gnss_synchro_iter);
                 }
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(pseudoranges_vector);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
 
     for(unsigned int nsat = 0; nsat < num_satellites; nsat++)
         {
@@ -2161,7 +2161,7 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int, Gnss_Synchro> &
 }
 
 
-std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & observables)
 {
     std::string signal_data;
     std::string first_data_type;
@@ -2171,19 +2171,19 @@ std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::string fifth_data_type;
     std::string sixth_data_type;
 
-    unsigned int Ncells = pseudoranges.size();
+    unsigned int Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
+    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = pseudoranges.begin();
-            map_iter != pseudoranges.end();
+    for(map_iter = observables.begin();
+            map_iter != observables.end();
             map_iter++)
         {
-            pseudoranges_vector.push_back(*map_iter);
+            observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(pseudoranges_vector);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
     std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
@@ -2219,7 +2219,7 @@ std::string Rtcm::print_MSM_6( const Gps_Ephemeris & gps_eph,
         const Gps_CNAV_Ephemeris & gps_cnav_eph,
         const Galileo_Ephemeris & gal_eph,
         double obs_time,
-        const std::map<int, Gnss_Synchro> & pseudoranges,
+        const std::map<int, Gnss_Synchro> & observables,
         unsigned int ref_id,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
@@ -2243,7 +2243,7 @@ std::string Rtcm::print_MSM_6( const Gps_Ephemeris & gps_eph,
 
     std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
-             pseudoranges,
+             observables,
              ref_id,
              clock_steering_indicator,
              external_clock_indicator,
@@ -2251,9 +2251,9 @@ std::string Rtcm::print_MSM_6( const Gps_Ephemeris & gps_eph,
              divergence_free,
              more_messages);
 
-    std::string sat_data = Rtcm::get_MSM_4_content_sat_data(pseudoranges);
+    std::string sat_data = Rtcm::get_MSM_4_content_sat_data(observables);
 
-    std::string signal_data = Rtcm::get_MSM_6_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
+    std::string signal_data = Rtcm::get_MSM_6_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables);
 
     std::string message = build_message(header + sat_data + signal_data);
     if(server_is_running)
@@ -2265,7 +2265,7 @@ std::string Rtcm::print_MSM_6( const Gps_Ephemeris & gps_eph,
 }
 
 
-std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & observables)
 {
     std::string signal_data;
     std::string first_data_type;
@@ -2274,19 +2274,19 @@ std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::string fourth_data_type;
     std::string fifth_data_type;
 
-    unsigned int Ncells = pseudoranges.size();
+    unsigned int Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
+    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = pseudoranges.begin();
-            map_iter != pseudoranges.end();
+    for(map_iter = observables.begin();
+            map_iter != observables.end();
             map_iter++)
         {
-            pseudoranges_vector.push_back(*map_iter);
+            observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(pseudoranges_vector);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
     std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
@@ -2320,7 +2320,7 @@ std::string Rtcm::print_MSM_7( const Gps_Ephemeris & gps_eph,
         const Gps_CNAV_Ephemeris & gps_cnav_eph,
         const Galileo_Ephemeris & gal_eph,
         double obs_time,
-        const std::map<int, Gnss_Synchro> & pseudoranges,
+        const std::map<int, Gnss_Synchro> & observables,
         unsigned int ref_id,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
@@ -2344,7 +2344,7 @@ std::string Rtcm::print_MSM_7( const Gps_Ephemeris & gps_eph,
 
     std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
-             pseudoranges,
+             observables,
              ref_id,
              clock_steering_indicator,
              external_clock_indicator,
@@ -2352,9 +2352,9 @@ std::string Rtcm::print_MSM_7( const Gps_Ephemeris & gps_eph,
              divergence_free,
              more_messages);
 
-    std::string sat_data = Rtcm::get_MSM_5_content_sat_data(pseudoranges);
+    std::string sat_data = Rtcm::get_MSM_5_content_sat_data(observables);
 
-    std::string signal_data = Rtcm::get_MSM_7_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
+    std::string signal_data = Rtcm::get_MSM_7_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables);
 
     std::string message = build_message(header + sat_data + signal_data);
     if(server_is_running)
@@ -2366,7 +2366,7 @@ std::string Rtcm::print_MSM_7( const Gps_Ephemeris & gps_eph,
 }
 
 
-std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & observables)
 {
     std::string signal_data;
     std::string first_data_type;
@@ -2376,19 +2376,19 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::string fifth_data_type;
     std::string sixth_data_type;
 
-    unsigned int Ncells = pseudoranges.size();
+    unsigned int Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
+    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = pseudoranges.begin();
-            map_iter != pseudoranges.end();
+    for(map_iter = observables.begin();
+            map_iter != observables.end();
             map_iter++)
         {
-            pseudoranges_vector.push_back(*map_iter);
+            observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(pseudoranges_vector);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
     std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
@@ -2769,14 +2769,14 @@ int Rtcm::set_DF005(bool sync_flag)
 }
 
 
-int Rtcm::set_DF006(const std::map<int, Gnss_Synchro> & pseudoranges)
+int Rtcm::set_DF006(const std::map<int, Gnss_Synchro> & observables)
 {
     //Number of satellites observed in current epoch
     unsigned short int nsats = 0;
-    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
-    for(pseudoranges_iter = pseudoranges.begin();
-            pseudoranges_iter != pseudoranges.end();
-            pseudoranges_iter++)
+    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    for(observables_iter = observables.begin();
+            observables_iter != observables.end();
+            observables_iter++)
         {
             nsats++;
         }
@@ -3623,12 +3623,12 @@ int Rtcm::set_DF395(const std::map<int, Gnss_Synchro> & gnss_synchro)
 }
 
 
-std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro> & observables)
 {
     std::string DF396;
-    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
-    Rtcm::set_DF394(pseudoranges);
-    Rtcm::set_DF395(pseudoranges);
+    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    Rtcm::set_DF394(observables);
+    Rtcm::set_DF395(observables);
     unsigned int num_signals = DF395.count();
     unsigned int num_satellites = DF394.count();
 
@@ -3643,16 +3643,16 @@ std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro> & pseudoranges)
     std::vector<unsigned int> list_of_sats;
     std::vector<int> list_of_signals;
 
-    for(pseudoranges_iter = pseudoranges.begin();
-            pseudoranges_iter != pseudoranges.end();
-            pseudoranges_iter++)
+    for(observables_iter = observables.begin();
+            observables_iter != observables.end();
+            observables_iter++)
         {
-            list_of_sats.push_back(pseudoranges_iter->second.PRN);
+            list_of_sats.push_back(observables_iter->second.PRN);
 
-            std::string sig_(pseudoranges_iter->second.Signal);
+            std::string sig_(observables_iter->second.Signal);
             sig = sig_.substr(0,2);
 
-            std::string sys(&pseudoranges_iter->second.System, 1);
+            std::string sys(&observables_iter->second.System, 1);
 
             if ((sig.compare("1C") == 0) && (sys.compare("G") == 0 ) )
                 {
@@ -3697,40 +3697,40 @@ std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro> & pseudoranges)
             for(unsigned int sat = 0; sat < num_satellites; sat++)
                 {
                     value = false;
-                    for(pseudoranges_iter = pseudoranges.begin();
-                            pseudoranges_iter != pseudoranges.end();
-                            pseudoranges_iter++)
+                    for(observables_iter = observables.begin();
+                            observables_iter != observables.end();
+                            observables_iter++)
                         {
-                            std::string sig_(pseudoranges_iter->second.Signal);
+                            std::string sig_(observables_iter->second.Signal);
                             sig = sig_.substr(0,2);
-                            std::string sys(&pseudoranges_iter->second.System, 1);
+                            std::string sys(&observables_iter->second.System, 1);
 
-                            if ((sig.compare("1C") == 0) && (sys.compare("G") == 0 ) && (list_of_signals.at(row) == 32 - 2) && (pseudoranges_iter->second.PRN == list_of_sats.at(sat) ) )
+                            if ((sig.compare("1C") == 0) && (sys.compare("G") == 0 ) && (list_of_signals.at(row) == 32 - 2) && (observables_iter->second.PRN == list_of_sats.at(sat) ) )
                                 {
                                     value = true;
                                 }
 
-                            if ((sig.compare("2S") == 0) && (sys.compare("G") == 0 ) && (list_of_signals.at(row) == 32 - 15) && (pseudoranges_iter->second.PRN == list_of_sats.at(sat) ) )
+                            if ((sig.compare("2S") == 0) && (sys.compare("G") == 0 ) && (list_of_signals.at(row) == 32 - 15) && (observables_iter->second.PRN == list_of_sats.at(sat) ) )
                                 {
                                     value = true;
                                 }
 
-                            if ((sig.compare("5X") == 0) && (sys.compare("G") == 0 ) && (list_of_signals.at(row) == 32 - 24) && (pseudoranges_iter->second.PRN == list_of_sats.at(sat) ) )
+                            if ((sig.compare("5X") == 0) && (sys.compare("G") == 0 ) && (list_of_signals.at(row) == 32 - 24) && (observables_iter->second.PRN == list_of_sats.at(sat) ) )
                                 {
                                     value = true;
                                 }
 
-                            if ((sig.compare("1B") == 0) && (sys.compare("E") == 0 ) && (list_of_signals.at(row) == 32 - 4) && (pseudoranges_iter->second.PRN == list_of_sats.at(sat) ) )
+                            if ((sig.compare("1B") == 0) && (sys.compare("E") == 0 ) && (list_of_signals.at(row) == 32 - 4) && (observables_iter->second.PRN == list_of_sats.at(sat) ) )
                                 {
                                     value = true;
                                 }
 
-                            if ((sig.compare("5X") == 0) && (sys.compare("E") == 0 ) && (list_of_signals.at(row) == 32 - 24) && (pseudoranges_iter->second.PRN == list_of_sats.at(sat) ) )
+                            if ((sig.compare("5X") == 0) && (sys.compare("E") == 0 ) && (list_of_signals.at(row) == 32 - 24) && (observables_iter->second.PRN == list_of_sats.at(sat) ) )
                                 {
                                     value = true;
                                 }
 
-                            if ((sig.compare("7X") == 0) && (sys.compare("E") == 0 ) && (list_of_signals.at(row) == 32 - 16) && (pseudoranges_iter->second.PRN == list_of_sats.at(sat) ) )
+                            if ((sig.compare("7X") == 0) && (sys.compare("E") == 0 ) && (list_of_signals.at(row) == 32 - 16) && (observables_iter->second.PRN == list_of_sats.at(sat) ) )
                                 {
                                     value = true;
                                 }
@@ -3855,7 +3855,7 @@ int Rtcm::set_DF400(const Gnss_Synchro & gnss_synchro)
         }
     else if(std::fabs(psrng_s) > 292.7)
         {
-            fine_pseudorange = -16384; // 4000h: invalid value 
+            fine_pseudorange = -16384; // 4000h: invalid value
         }
     else
         {
@@ -3905,7 +3905,7 @@ int Rtcm::set_DF401(const Gnss_Synchro & gnss_synchro)
     /* TODO: check LLI! */
     double cp = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI; // ?
     if(std::fabs(phrng_m - cp) > 1171.0)
-        { 
+        {
             cp = std::round(phrng_m / lambda) * lambda;
         }
     phrng_m -= cp;
@@ -4068,7 +4068,7 @@ int Rtcm::set_DF406(const Gnss_Synchro & gnss_synchro)
         }
 
     phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI ) * lambda - rough_range_m;
-    
+
     /* Substract phase - pseudorange integer cycle offset */
     /* TODO: check LLI! */
     double cp = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI; // ?

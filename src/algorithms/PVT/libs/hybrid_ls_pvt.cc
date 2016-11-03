@@ -71,18 +71,18 @@ hybrid_ls_pvt::~hybrid_ls_pvt()
 }
 
 
-bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double hybrid_current_time, bool flag_averaging)
+bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, double hybrid_current_time, bool flag_averaging)
 {
-    std::map<int,Gnss_Synchro>::iterator gnss_pseudoranges_iter;
+    std::map<int,Gnss_Synchro>::iterator gnss_observables_iter;
     std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
     std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
     std::map<int,Gps_CNAV_Ephemeris>::iterator gps_cnav_ephemeris_iter;
 
-    int valid_pseudoranges = gnss_pseudoranges_map.size();
+    int valid_observables = gnss_observables_map.size();
 
-    arma::mat W = arma::eye(valid_pseudoranges, valid_pseudoranges); // channels weights matrix
-    arma::vec obs = arma::zeros(valid_pseudoranges);                 // pseudoranges observation vector
-    arma::mat satpos = arma::zeros(3, valid_pseudoranges);           // satellite positions matrix
+    arma::mat W = arma::eye(valid_observables, valid_observables); // channels weights matrix
+    arma::vec obs = arma::zeros(valid_observables);                 // observables observation vector
+    arma::mat satpos = arma::zeros(3, valid_observables);           // satellite positions matrix
 
     int Galileo_week_number = 0;
     int GPS_week = 0;
@@ -100,14 +100,14 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     int valid_obs = 0; //valid observations counter
     int obs_counter = 0;
 
-    for(gnss_pseudoranges_iter = gnss_pseudoranges_map.begin();
-            gnss_pseudoranges_iter != gnss_pseudoranges_map.end();
-            gnss_pseudoranges_iter++)
+    for(gnss_observables_iter = gnss_observables_map.begin();
+            gnss_observables_iter != gnss_observables_map.end();
+            gnss_observables_iter++)
         {
-            if(gnss_pseudoranges_iter->second.System == 'E')
+            if(gnss_observables_iter->second.System == 'E')
                 {
                     // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
-                    galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_pseudoranges_iter->second.PRN);
+                    galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
                     if (galileo_ephemeris_iter != galileo_ephemeris_map.end())
                         {
                             /*!
@@ -117,7 +117,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 
                             // COMMON RX TIME PVT ALGORITHM
                             double Rx_time = hybrid_current_time;
-                            double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m / GALILEO_C_m_s;
+                            double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GALILEO_C_m_s;
 
                             // 2- compute the clock drift using the clock model (broadcast) for this SV
                             SV_clock_bias_s = galileo_ephemeris_iter->second.sv_clock_drift(Tx_time);
@@ -130,10 +130,10 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             satpos(1,obs_counter) = galileo_ephemeris_iter->second.d_satpos_Y;
                             satpos(2,obs_counter) = galileo_ephemeris_iter->second.d_satpos_Z;
 
-                            // 5- fill the observations vector with the corrected pseudoranges
-                            obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s * GALILEO_C_m_s;
+                            // 5- fill the observations vector with the corrected observables
+                            obs(obs_counter) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GALILEO_C_m_s;
                             d_visible_satellites_IDs[valid_obs] = galileo_ephemeris_iter->second.i_satellite_PRN;
-                            d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
+                            d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
                             valid_obs++;
 
                             Galileo_week_number = galileo_ephemeris_iter->second.WN_5; //for GST
@@ -152,18 +152,18 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             // no valid pseudorange for the current SV
                             W(obs_counter, obs_counter) = 0; // SV de-activated
                             obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
-                            DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->second.PRN;
+                            DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                         }
                 }
 
-            else if(gnss_pseudoranges_iter->second.System == 'G')
+            else if(gnss_observables_iter->second.System == 'G')
                 {
-                    //std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
+                    //std::cout << "Satellite System: " << gnss_observables_iter->second.System <<std::endl;
                     // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
-                    std::string sig_(gnss_pseudoranges_iter->second.Signal);
+                    std::string sig_(gnss_observables_iter->second.Signal);
                     if(sig_.compare("1C") == 0)
                     {
-                        gps_ephemeris_iter = gps_ephemeris_map.find(gnss_pseudoranges_iter->second.PRN);
+                        gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
                         if (gps_ephemeris_iter != gps_ephemeris_map.end())
                             {
                                 /*!
@@ -174,7 +174,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                                 // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
                                 // first estimate of transmit time
                                 double Rx_time = hybrid_current_time;
-                                double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m / GPS_C_m_s;
+                                double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_m_s;
 
                                 // 2- compute the clock drift using the clock model (broadcast) for this SV
                                 SV_clock_bias_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);
@@ -187,10 +187,10 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                                 satpos(1, obs_counter) = gps_ephemeris_iter->second.d_satpos_Y;
                                 satpos(2, obs_counter) = gps_ephemeris_iter->second.d_satpos_Z;
 
-                                // 5- fill the observations vector with the corrected pseudoranges
-                                obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
+                                // 5- fill the observations vector with the corrected observables
+                                obs(obs_counter) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
                                 d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
-                                d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
+                                d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
                                 valid_obs++;
                                 GPS_week = gps_ephemeris_iter->second.i_GPS_week;
 
@@ -206,12 +206,12 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                                 // no valid pseudorange for the current SV
                                 W(obs_counter, obs_counter) = 0; // SV de-activated
                                 obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
-                                DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->second.PRN;
+                                DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                             }
                     }
                     if(sig_.compare("2S") == 0)
                     {
-                        gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_pseudoranges_iter->second.PRN);
+                        gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                         if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.end())
                             {
                                 /*!
@@ -222,7 +222,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                                 // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
                                 // first estimate of transmit time
                                 double Rx_time = hybrid_current_time;
-                                double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m / GPS_C_m_s;
+                                double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_m_s;
 
                                 // 2- compute the clock drift using the clock model (broadcast) for this SV
                                 SV_clock_bias_s = gps_cnav_ephemeris_iter->second.sv_clock_drift(Tx_time);
@@ -235,10 +235,10 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                                 satpos(1, obs_counter) = gps_cnav_ephemeris_iter->second.d_satpos_Y;
                                 satpos(2, obs_counter) = gps_cnav_ephemeris_iter->second.d_satpos_Z;
 
-                                // 5- fill the observations vector with the corrected pseudoranges
-                                obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
+                                // 5- fill the observations vector with the corrected observables
+                                obs(obs_counter) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
                                 d_visible_satellites_IDs[valid_obs] = gps_cnav_ephemeris_iter->second.i_satellite_PRN;
-                                d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
+                                d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
                                 valid_obs++;
                                 GPS_week = gps_cnav_ephemeris_iter->second.i_GPS_week;
 
@@ -254,7 +254,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                                 // no valid pseudorange for the current SV
                                 W(obs_counter, obs_counter) = 0; // SV de-activated
                                 obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
-                                DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->second.PRN;
+                                DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                             }
                     }
                 }

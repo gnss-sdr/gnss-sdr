@@ -55,8 +55,8 @@ public:
      */
     ~Rtcm_Printer();
 
-    bool Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
-    bool Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    bool Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables);
+    bool Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables);
     bool Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph); //<! GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
     bool Print_Rtcm_MT1045(const Galileo_Ephemeris & gal_eph); //<! Galileo Ephemeris, should be broadcast every 2 minutes
 
@@ -64,7 +64,7 @@ public:
             const Gps_CNAV_Ephemeris & gps_cnav_eph,
             const Galileo_Ephemeris & gal_eph,
             double obs_time,
-            const std::map<int, Gnss_Synchro> & pseudoranges,
+            const std::map<int, Gnss_Synchro> & observables,
             unsigned int clock_steering_indicator,
             unsigned int external_clock_indicator,
             int smooth_int,

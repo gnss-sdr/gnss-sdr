@@ -1,5 +1,5 @@
 /*!
- * \file gps_l2_m_telemetry_decoder.cc
+ * \file gps_l2c_telemetry_decoder.cc
  * \brief Implementation of an adapter of a GPS L2C M NAV data decoder block
  * to a TelemetryDecoderInterface
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
@@ -30,7 +30,7 @@
  */
 
 
-#include "gps_l2_m_telemetry_decoder.h"
+#include "gps_l2c_telemetry_decoder.h"
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include "concurrent_queue.h"
@@ -43,7 +43,7 @@
 
 using google::LogMessage;
 
-GpsL2MTelemetryDecoder::GpsL2MTelemetryDecoder(ConfigurationInterface* configuration,
+GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams) :
@@ -56,7 +56,7 @@ GpsL2MTelemetryDecoder::GpsL2MTelemetryDecoder(ConfigurationInterface* configura
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = gps_l2_m_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
+    telemetry_decoder_ = gps_l2c_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
 
     //decimation factor
@@ -67,11 +67,11 @@ GpsL2MTelemetryDecoder::GpsL2MTelemetryDecoder(ConfigurationInterface* configura
 }
 
 
-GpsL2MTelemetryDecoder::~GpsL2MTelemetryDecoder()
+GpsL2CTelemetryDecoder::~GpsL2CTelemetryDecoder()
 {}
 
 
-void GpsL2MTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
+void GpsL2CTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     telemetry_decoder_->set_satellite(satellite_);
@@ -79,7 +79,7 @@ void GpsL2MTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
 }
 
 
-void GpsL2MTelemetryDecoder::connect(gr::top_block_sptr top_block)
+void GpsL2CTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
     if(top_block) { /* top_block is not null */};
     // Nothing to connect internally
@@ -87,20 +87,20 @@ void GpsL2MTelemetryDecoder::connect(gr::top_block_sptr top_block)
 }
 
 
-void GpsL2MTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
+void GpsL2CTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
     if(top_block) { /* top_block is not null */};
     // Nothing to disconnect
 }
 
 
-gr::basic_block_sptr GpsL2MTelemetryDecoder::get_left_block()
+gr::basic_block_sptr GpsL2CTelemetryDecoder::get_left_block()
 {
     return telemetry_decoder_;
 }
 
 
-gr::basic_block_sptr GpsL2MTelemetryDecoder::get_right_block()
+gr::basic_block_sptr GpsL2CTelemetryDecoder::get_right_block()
 {
     return telemetry_decoder_;
 }

@@ -1,6 +1,6 @@
 /*!
- * \file gps_l2_m_telemetry_decoder.h
- * \brief Interface of an adapter of a GPS L1 C/A NAV data decoder block
+ * \file gps_l2c_telemetry_decoder.h
+ * \brief Interface of an adapter of a GPS L2C (CNAV) data decoder block
  * to a TelemetryDecoderInterface
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
@@ -30,12 +30,12 @@
  */
 
 
-#ifndef GNSS_SDR_GPS_L2_M_TELEMETRY_DECODER_H_
-#define GNSS_SDR_GPS_L2_M_TELEMETRY_DECODER_H_
+#ifndef GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_H_
+#define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_H_
 
 #include <string>
 #include "telemetry_decoder_interface.h"
-#include "gps_l2_m_telemetry_decoder_cc.h"
+#include "gps_l2c_telemetry_decoder_cc.h"
 
 
 class ConfigurationInterface;
@@ -43,24 +43,24 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a NAV data decoder for GPS L2 M
  */
-class GpsL2MTelemetryDecoder : public TelemetryDecoderInterface
+class GpsL2CTelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
-    GpsL2MTelemetryDecoder(ConfigurationInterface* configuration,
+    GpsL2CTelemetryDecoder(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams);
 
-    virtual ~GpsL2MTelemetryDecoder();
+    virtual ~GpsL2CTelemetryDecoder();
     std::string role()
     {
         return role_;
     }
 
-    //! Returns "GPS_L2_M_Telemetry_Decoder"
+    //! Returns "GPS_L2C_Telemetry_Decoder"
     std::string implementation()
     {
-        return "GPS_L2_M_Telemetry_Decoder";
+        return "GPS_L2C_Telemetry_Decoder";
     }
     void connect(gr::top_block_sptr top_block);
     void disconnect(gr::top_block_sptr top_block);
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    gps_l2_m_telemetry_decoder_cc_sptr telemetry_decoder_;
+    gps_l2c_telemetry_decoder_cc_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

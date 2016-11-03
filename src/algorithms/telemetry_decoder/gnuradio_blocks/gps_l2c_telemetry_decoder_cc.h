@@ -1,6 +1,6 @@
 /*!
- * \file gps_l2_m_telemetry_decoder_cc.h
- * \brief Interface of a NAV message demodulator block based on
+ * \file gps_l2c_telemetry_decoder_cc.h
+ * \brief Interface of a CNAV message demodulator block based on
  * Kay Borre book MATLAB-based GPS receiver
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L2_M_TELEMETRY_DECODER_CC_H
-#define GNSS_SDR_GPS_L2_M_TELEMETRY_DECODER_CC_H
+#ifndef GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_CC_H
+#define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_CC_H
 
 #include <algorithm> // for copy
 #include <deque>
@@ -47,21 +47,21 @@
 #include "concurrent_queue.h"
 #include "GPS_L2C.h"
 
-class gps_l2_m_telemetry_decoder_cc;
+class gps_l2c_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<gps_l2_m_telemetry_decoder_cc> gps_l2_m_telemetry_decoder_cc_sptr;
+typedef boost::shared_ptr<gps_l2c_telemetry_decoder_cc> gps_l2c_telemetry_decoder_cc_sptr;
 
-gps_l2_m_telemetry_decoder_cc_sptr
-gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+gps_l2c_telemetry_decoder_cc_sptr
+gps_l2c_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
  *
  */
-class gps_l2_m_telemetry_decoder_cc : public gr::block
+class gps_l2c_telemetry_decoder_cc : public gr::block
 {
 public:
-    ~gps_l2_m_telemetry_decoder_cc();
+    ~gps_l2c_telemetry_decoder_cc();
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
     void set_decimation(int decimation);
@@ -79,9 +79,9 @@ public:
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
-    friend gps_l2_m_telemetry_decoder_cc_sptr
-    gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-    gps_l2_m_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    friend gps_l2c_telemetry_decoder_cc_sptr
+    gps_l2c_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    gps_l2c_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
     void align_samples();

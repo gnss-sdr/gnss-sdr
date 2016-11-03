@@ -1,5 +1,5 @@
 /*!
- * \file gps_l2_m_telemetry_decoder_cc.cc
+ * \file gps_l2c_telemetry_decoder_cc.cc
  * \brief Implementation of a NAV message demodulator block based on
  * Kay Borre book MATLAB-based GPS receiver
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
@@ -35,7 +35,7 @@
 #include <glog/logging.h>
 #include <boost/lexical_cast.hpp>
 #include "gnss_synchro.h"
-#include "gps_l2_m_telemetry_decoder_cc.h"
+#include "gps_l2c_telemetry_decoder_cc.h"
 
 using google::LogMessage;
 
@@ -47,18 +47,18 @@ using google::LogMessage;
 
 
 
-gps_l2_m_telemetry_decoder_cc_sptr
-gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
+gps_l2c_telemetry_decoder_cc_sptr
+gps_l2c_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
 {
-    return gps_l2_m_telemetry_decoder_cc_sptr(new gps_l2_m_telemetry_decoder_cc(satellite, dump));
+    return gps_l2c_telemetry_decoder_cc_sptr(new gps_l2c_telemetry_decoder_cc(satellite, dump));
 }
 
 
 
-gps_l2_m_telemetry_decoder_cc::gps_l2_m_telemetry_decoder_cc(
+gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
         Gnss_Satellite satellite,
         bool dump) :
-                gr::block("gps_l2_m_telemetry_decoder_cc",
+                gr::block("gps_l2c_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
@@ -85,13 +85,13 @@ gps_l2_m_telemetry_decoder_cc::gps_l2_m_telemetry_decoder_cc(
 
 
 
-gps_l2_m_telemetry_decoder_cc::~gps_l2_m_telemetry_decoder_cc()
+gps_l2c_telemetry_decoder_cc::~gps_l2c_telemetry_decoder_cc()
 {
     d_dump_file.close();
 }
 
 
-void gps_l2_m_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
+void gps_l2c_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
 {
     if (noutput_items != 0)
         {
@@ -103,13 +103,13 @@ void gps_l2_m_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &
 }
 
 
-void gps_l2_m_telemetry_decoder_cc::set_decimation(int decimation)
+void gps_l2c_telemetry_decoder_cc::set_decimation(int decimation)
 {
     d_decimation_output_factor = decimation;
 }
 
 
-int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // get pointers on in- and output gnss-synchro objects
@@ -276,7 +276,7 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__
 
 
 
-void gps_l2_m_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
+void gps_l2c_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "GPS L2C CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
@@ -284,7 +284,7 @@ void gps_l2_m_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 
 
 
-void gps_l2_m_telemetry_decoder_cc::set_channel(int channel)
+void gps_l2c_telemetry_decoder_cc::set_channel(int channel)
 {
     d_channel = channel;
     LOG(INFO) << "GPS L2C CNAV channel set to " << channel;
@@ -292,7 +292,7 @@ void gps_l2_m_telemetry_decoder_cc::set_channel(int channel)
 
 
 // ### helper class for symbol alignment and viterbi decoding ###
-gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::symbol_aligner_and_decoder()
+gps_l2c_telemetry_decoder_cc::symbol_aligner_and_decoder::symbol_aligner_and_decoder()
 {
     // convolutional code properties
     d_KK = 7;
@@ -307,14 +307,14 @@ gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::symbol_aligner_and_de
 }
 
 
-gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::~symbol_aligner_and_decoder()
+gps_l2c_telemetry_decoder_cc::symbol_aligner_and_decoder::~symbol_aligner_and_decoder()
 {
     delete d_vd1;
     delete d_vd2;
 }
 
 
-void gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::reset()
+void gps_l2c_telemetry_decoder_cc::symbol_aligner_and_decoder::reset()
 {
     d_past_symbol = 0;
     d_vd1->reset();
@@ -322,7 +322,7 @@ void gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::reset()
 }
 
 
-bool gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const std::vector<double> & symbols, std::vector<int> & bits)
+bool gps_l2c_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const std::vector<double> & symbols, std::vector<int> & bits)
 {
     const int traceback_depth = 5 * d_KK;
     int nbits_requested = symbols.size() / GPS_L2_SYMBOLS_PER_BIT;
@@ -362,13 +362,13 @@ bool gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const s
 
 
 // ### helper class for detecting the preamble and collect the corresponding message candidates ###
-void gps_l2_m_telemetry_decoder_cc::frame_detector::reset()
+void gps_l2c_telemetry_decoder_cc::frame_detector::reset()
 {
     d_buffer.clear();
 }
 
 
-void gps_l2_m_telemetry_decoder_cc::frame_detector::get_frame_candidates(const std::vector<int> & bits, std::vector<std::pair<int,std::vector<int>>> & msg_candidates)
+void gps_l2c_telemetry_decoder_cc::frame_detector::get_frame_candidates(const std::vector<int> & bits, std::vector<std::pair<int,std::vector<int>>> & msg_candidates)
 {
     //std::stringstream ss;
     unsigned int cnav_msg_length = 300;
@@ -426,12 +426,12 @@ void gps_l2_m_telemetry_decoder_cc::frame_detector::get_frame_candidates(const s
 
 // ### helper class for checking the CRC of the message candidates ###
 
-void gps_l2_m_telemetry_decoder_cc::crc_verifier::reset()
+void gps_l2c_telemetry_decoder_cc::crc_verifier::reset()
 {
 
 }
 
-void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vector<msg_candiate_int_t> & msg_candidates, std::vector<msg_candiate_int_t> & valid_msgs)
+void gps_l2c_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vector<msg_candiate_int_t> & msg_candidates, std::vector<msg_candiate_int_t> & valid_msgs)
 {
     std::vector <unsigned char> tmp_msg;
     LOG(INFO) << "get_valid_frames(): " << "msg_candidates.size()=" << msg_candidates.size();
@@ -457,7 +457,7 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::ve
 }
 
 
-void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_bytes(const std::vector<int> & msg_candidate, std::vector<unsigned char> & bytes)
+void gps_l2c_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_bytes(const std::vector<int> & msg_candidate, std::vector<unsigned char> & bytes)
 {
     //std::stringstream ss;
     const size_t bits_per_byte = 8;
@@ -482,7 +482,7 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_b
     //            << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }
 
-void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_bytes(const std::vector<int> & msg_candidate, std::vector<unsigned char> & bytes)
+void gps_l2c_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_bytes(const std::vector<int> & msg_candidate, std::vector<unsigned char> & bytes)
 {
     //std::stringstream ss;
     const size_t bits_per_byte = 8;

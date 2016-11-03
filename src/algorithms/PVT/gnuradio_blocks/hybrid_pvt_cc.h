@@ -118,6 +118,7 @@ private:
     int d_rtcm_MT1019_rate_ms;
     int d_rtcm_MT1077_rate_ms;
     int d_rtcm_MT1097_rate_ms;
+    int d_rtcm_MSM_rate_ms;
 
     void print_receiver_status(Gnss_Synchro** channels_synchronization_data);
     int d_last_status_print_seg; //for status printer
@@ -161,7 +162,7 @@ public:
      * It is used to save the assistance data at the receiver shutdown
      */
     std::map<int,Gps_Ephemeris> get_GPS_L1_ephemeris_map();
-    
+
     ~hybrid_pvt_cc (); //!< Default destructor
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,

@@ -197,9 +197,9 @@ public:
     void log_rinex_obs(std::fstream & out, const Gps_Ephemeris & eph, const Gps_CNAV_Ephemeris & eph_cnav, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
     /*!
-     *  \brief Writes Galileo observables into the RINEX file
+     *  \brief Writes Galileo observables into the RINEX file. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void log_rinex_obs(std::fstream & out, const Galileo_Ephemeris & eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    void log_rinex_obs(std::fstream & out, const Galileo_Ephemeris & eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, const std::string galileo_bands = "1B");
 
     /*!
      *  \brief Writes Mixed GPS / Galileo observables into the RINEX file

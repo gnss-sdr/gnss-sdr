@@ -4191,7 +4191,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream & out, const Gps_Ephemeris & eph,
 }
 
 
-void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int,Gnss_Synchro>& pseudoranges)
+void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int,Gnss_Synchro>& pseudoranges, const std::string galileo_bands)
 {
     // RINEX observations timestamps are Galileo timestamps.
     // See http://gage14.upc.es/gLAB/HTML/Observation_Rinex_v3.01.html
@@ -4260,49 +4260,105 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                     pseudorangesE5B.insert(std::pair<int, Gnss_Synchro>(pseudoranges_iter->first, pseudoranges_iter->second));
                 }
         }
+    std::size_t found_1B = galileo_bands.find("1B");
+    std::size_t found_E5a = galileo_bands.find("5X");
+    std::size_t found_E5b = galileo_bands.find("7X");
 
     std::multimap<unsigned int, Gnss_Synchro> total_map;
     std::set<unsigned int> available_prns;
     std::set<unsigned int>::iterator it;
-    for(pseudoranges_iter = pseudorangesE1B.begin();
-            pseudoranges_iter != pseudorangesE1B.end();
-            pseudoranges_iter++)
-        {
-            unsigned int prn_ = pseudoranges_iter->second.PRN;
-            total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
-            it = available_prns.find(prn_);
-            if(it == available_prns.end())
-                {
-                    available_prns.insert(prn_);
-                }
-        }
-
-    for(pseudoranges_iter = pseudorangesE5A.begin();
-            pseudoranges_iter != pseudorangesE5A.end();
-            pseudoranges_iter++)
-        {
-            unsigned int prn_ = pseudoranges_iter->second.PRN;
-            total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
-            it = available_prns.find(prn_);
-            if(it == available_prns.end())
-                {
-                    available_prns.insert(prn_);
-                }
-        }
-
-    for(pseudoranges_iter = pseudorangesE5B.begin();
-            pseudoranges_iter != pseudorangesE5B.end();
-            pseudoranges_iter++)
-        {
-            unsigned int prn_ = pseudoranges_iter->second.PRN;
-            total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
-            it = available_prns.find(prn_);
-            if(it == available_prns.end())
-                {
-                    available_prns.insert(prn_);
-                }
-        }
-
+    if(found_1B != std::string::npos)
+    {
+        for(pseudoranges_iter = pseudorangesE1B.begin();
+                pseudoranges_iter != pseudorangesE1B.end();
+                pseudoranges_iter++)
+            {
+                unsigned int prn_ = pseudoranges_iter->second.PRN;
+                total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
+                it = available_prns.find(prn_);
+                if(it == available_prns.end())
+                    {
+                        available_prns.insert(prn_);
+                    }
+            }
+    }
+    if(found_E5a != std::string::npos)
+    {
+        for(pseudoranges_iter = pseudorangesE5A.begin();
+                pseudoranges_iter != pseudorangesE5A.end();
+                pseudoranges_iter++)
+            {
+                unsigned int prn_ = pseudoranges_iter->second.PRN;
+                it = available_prns.find(prn_);
+                if(it == available_prns.end())
+                    {
+                        available_prns.insert(prn_);
+                        if(found_1B != std::string::npos)
+                        {
+                            Gnss_Synchro gs = Gnss_Synchro();
+                            std::string sys = "E";
+                            gs.System = *sys.c_str();
+                            std::string sig = "1B";
+                            std::memcpy((void*)gs.Signal, sig.c_str(), 3);
+                            gs.PRN = prn_;
+                            total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, gs));
+                        }
+                    }
+                total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
+            }
+    }
+    if(found_E5b != std::string::npos)
+    {
+        for(pseudoranges_iter = pseudorangesE5B.begin();
+                pseudoranges_iter != pseudorangesE5B.end();
+                pseudoranges_iter++)
+            {
+                unsigned int prn_ = pseudoranges_iter->second.PRN;
+                it = available_prns.find(prn_);
+                if(it == available_prns.end())
+                    {
+                        available_prns.insert(prn_);
+                        if(found_1B != std::string::npos)
+                        {
+                            Gnss_Synchro gs = Gnss_Synchro();
+                            std::string sys = "E";
+                            gs.System = *sys.c_str();
+                            std::string sig = "1B";
+                            std::memcpy((void*)gs.Signal, sig.c_str(), 3);
+                            gs.PRN = prn_;
+                            total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, gs));
+                        }
+                        if(found_E5a != std::string::npos)
+                        {
+                            Gnss_Synchro gs = Gnss_Synchro();
+                            std::string sys = "E";
+                            gs.System = *sys.c_str();
+                            std::string sig = "5X";
+                            std::memcpy((void*)gs.Signal, sig.c_str(), 3);
+                            gs.PRN = prn_;
+                            total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, gs));
+                        }
+                    }
+                else
+                    {
+                        // if 5X is listed but empty
+                        if(found_E5a != std::string::npos)
+                            {
+                                if( (total_map.count(prn_)) == 1)
+                                {
+                                    Gnss_Synchro gs = Gnss_Synchro();
+                                    std::string sys = "E";
+                                    gs.System = *sys.c_str();
+                                    std::string sig = "5X";
+                                    std::memcpy((void*)gs.Signal, sig.c_str(), 3);
+                                    gs.PRN = prn_;
+                                    total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, gs));
+                                }
+                            }
+                    }
+                total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, pseudoranges_iter->second));
+            }
+    }
     int numSatellitesObserved = available_prns.size();
     line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
     // Receiver clock offset (optional)

@@ -326,6 +326,11 @@ TEST(Rinex_Printer_Test, GalileoObsLogDualBand)
     gs2.Carrier_Doppler_hz = 321;
     gs2.CN0_dB_hz = 39;
 
+    gs3.Pseudorange_m = 22000003.3;
+    gs3.Carrier_phase_rads = 43.3;
+    gs3.Carrier_Doppler_hz = -321;
+    gs3.CN0_dB_hz = 40;
+
     gs4.Pseudorange_m = 22000000;
     gs4.Carrier_phase_rads = 23.4;
     gs4.Carrier_Doppler_hz = 1534;
@@ -336,7 +341,7 @@ TEST(Rinex_Printer_Test, GalileoObsLogDualBand)
     gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(3,gs3) );
     gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(4,gs4) );
 
-    rp->log_rinex_obs(rp->obsFile, eph, 0.0, gnss_pseudoranges_map);
+    rp->log_rinex_obs(rp->obsFile, eph, 0.0, gnss_pseudoranges_map, bands);
     rp->obsFile.seekp(0);
 
     while(!rp->obsFile.eof())

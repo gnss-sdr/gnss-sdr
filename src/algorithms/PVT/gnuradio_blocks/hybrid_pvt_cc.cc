@@ -587,7 +587,7 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                                 {
                                                     rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_cnav_ephemeris_map);
                                                 }
-                                            if( (type_of_rx == 4) || (type_of_rx == 5)  || (type_of_rx == 6) ) // Galileo
+                                            if( (type_of_rx == 4)  || (type_of_rx == 5)  || (type_of_rx == 6) ) // Galileo
                                                 {
                                                     rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
                                                 }
@@ -599,10 +599,10 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                                 {
                                                     rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_ephemeris_map, d_ls_pvt->galileo_ephemeris_map);
                                                 }
-
-
-
-
+                                            if((type_of_rx == 14) || (type_of_rx == 15)) //  Galileo E1B + Galileo E5a
+                                                {
+                                                  rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
+                                                }
 
                                             d_last_sample_nav_output = d_sample_counter;
                                         }
@@ -610,6 +610,7 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                     gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
                                     gps_cnav_ephemeris_iter = d_ls_pvt->gps_cnav_ephemeris_map.begin();
 
+                                    // Log observables into the RINEX file
                                     if(type_of_rx == 1) // GPS L1 C/A only
                                         {
                                             if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
@@ -636,11 +637,37 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                                     b_rinex_header_updated = true;
                                                 }
                                         }
-                                    if((type_of_rx == 4) || (type_of_rx == 5)  || (type_of_rx == 6)) // Galileo single freq
+                                    if(type_of_rx == 4) // Galileo E1B only
                                         {
                                             if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
                                                 {
-                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1B");
+                                                }
+                                            if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                {
+                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                    b_rinex_header_updated = true;
+                                                }
+                                        }
+                                    if(type_of_rx == 5) // Galileo E5a only
+                                        {
+                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                {
+                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "5X");
+                                                }
+                                            if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                {
+                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                    b_rinex_header_updated = true;
+                                                }
+                                        }
+                                    if(type_of_rx == 6) // Galileo E5b only
+                                        {
+                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                {
+                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "7X");
                                                 }
                                             if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                                 {
@@ -675,7 +702,32 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                                     b_rinex_header_updated = true;
                                                 }
                                         }
-
+                                    if(type_of_rx == 14) // Galileo E1B + Galileo E5a
+                                        {
+                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                {
+                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1B 5X");
+                                                }
+                                            if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                {
+                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                    b_rinex_header_updated = true;
+                                                }
+                                        }
+                                    if(type_of_rx == 15) // Galileo E1B + Galileo E5b
+                                        {
+                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                {
+                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1B 7X");
+                                                }
+                                            if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                {
+                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                    b_rinex_header_updated = true;
+                                                }
+                                        }
                                 }
 
                             // ####################### RTCM MESSAGES #################
@@ -856,5 +908,3 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
     consume_each(1); //one by one
     return 1;
 }
-
-

@@ -552,7 +552,7 @@ if (NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
      endif(NOT ${LOCAL_GFLAGS})
 
      if(${LOCAL_GFLAGS})
-         set(TARGET_GFLAGS ${gflags})
+         set(TARGET_GFLAGS gflags-${gflags_RELEASE})
          if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
              file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
@@ -573,6 +573,11 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
 export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib
 export LIBS=${GFlags_SHARED_LIBS}
+cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/
+aclocal
+automake --add-missing
+autoreconf -vfi
+cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
              file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
@@ -602,6 +607,11 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
 export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib
 export LIBS=${GFlags_SHARED_LIBS}
+cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/
+aclocal
+automake --add-missing
+autoreconf -vfi
+cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
               file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
                 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}

@@ -366,7 +366,6 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items __attribute__((unused)))
 {
     d_sample_counter++;
-    bool arrived_galileo_almanac = false;
     unsigned int gps_channel = 0;
     unsigned int gal_channel = 0;
 
@@ -743,8 +742,17 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                                             d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
                                                         }
                                                 }
+                                            if((d_sample_counter % d_rtcm_MSM_rate_ms) == 0)
+                                                {
+                                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+                                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                                        {
+                                                            d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
+                                                        }
+                                                }
                                         }
-                                    if(type_of_rx == 4) // Galileo E1B
+                                    if((type_of_rx == 4) || (type_of_rx == 5) || (type_of_rx == 6) || (type_of_rx == 14) || (type_of_rx == 15)) // Galileo
                                         {
                                             if((d_sample_counter % (d_rtcm_MT1045_rate_ms / 4) ) == 0)
                                                 {
@@ -762,6 +770,27 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                                             d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
                                                         }
                                                 }
+                                        }
+                                    if(type_of_rx == 7) // GPS L1 C/A + GPS L2C
+                                        {
+                                            if((d_sample_counter % d_rtcm_MT1019_rate_ms) == 0)
+                                                {
+                                                    for(std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin(); gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end(); gps_ephemeris_iter++ )
+                                                        {
+                                                            d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
+                                                        }
+                                                }
+                                            if((d_sample_counter % d_rtcm_MSM_rate_ms) == 0)
+                                                 {
+                                                     std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+                                                     gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                                                     std::map<int,Gps_CNAV_Ephemeris>::iterator gps_cnav_ephemeris_iter;
+                                                     gps_cnav_ephemeris_iter = d_ls_pvt->gps_cnav_ephemeris_map.begin();
+                                                     if ((gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()) && (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end()) )
+                                                         {
+                                                             d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
+                                                         }
+                                                 }
                                         }
                                     if(type_of_rx == 9) // GPS L1 C/A + Galileo E1B
                                         {
@@ -833,7 +862,23 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
 
                             if(!b_rtcm_writing_started) // the first time
                                 {
-                                    if(type_of_rx == 4) // Galileo E1B
+                                    if(type_of_rx == 1) // GPS L1 C/A
+                                        {
+                                            for(std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin(); gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end(); gps_ephemeris_iter++ )
+                                                {
+                                                    d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
+                                                }
+
+                                            std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+
+                                            if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                                {
+                                                    d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
+                                                }
+                                            b_rtcm_writing_started = true;
+                                        }
+
+                                    if((type_of_rx == 4) || (type_of_rx == 5) || (type_of_rx == 6) || (type_of_rx == 14) || (type_of_rx == 15)) // Galileo
                                         {
                                             for(std::map<int,Galileo_Ephemeris>::iterator gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin(); gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end(); gal_ephemeris_iter++ )
                                                 {
@@ -848,7 +893,7 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                                 }
                                             b_rtcm_writing_started = true;
                                         }
-                                    if(type_of_rx == 1) // GPS L1 C/A
+                                    if(type_of_rx == 7) // GPS L1 C/A + GPS L2C
                                         {
                                             for(std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin(); gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end(); gps_ephemeris_iter++ )
                                                 {
@@ -856,10 +901,11 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                                 }
 
                                             std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                                            std::map<int,Gps_CNAV_Ephemeris>::iterator gps_cnav_ephemeris_iter = d_ls_pvt->gps_cnav_ephemeris_map.begin();
 
-                                            if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                            if ((gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()) && (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end()))
                                                 {
-                                                    d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
+                                                    d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
                                                 }
                                             b_rtcm_writing_started = true;
                                         }
@@ -879,7 +925,6 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                                             d_rtcm_printer->Print_Rtcm_MT1045(galileo_ephemeris_iter->second);
                                                         }
                                                 }
-
 
                                             unsigned int i = 0;
                                             for (gnss_observables_iter = gnss_observables_map.begin(); gnss_observables_iter != gnss_observables_map.end(); gnss_observables_iter++)

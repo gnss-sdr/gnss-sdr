@@ -161,6 +161,22 @@ bool Rtcm_Printer::Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_ti
 }
 
 
+bool Rtcm_Printer::Print_Rtcm_MT1003(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables)
+{
+    std::string m1003 = rtcm->print_MT1003(gps_eph, cnav_eph, obs_time, observables, station_id);
+    Rtcm_Printer::Print_Message(m1003);
+    return true;
+}
+
+
+bool Rtcm_Printer::Print_Rtcm_MT1004(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables)
+{
+    std::string m1003 = rtcm->print_MT1004(gps_eph, cnav_eph, obs_time, observables, station_id);
+    Rtcm_Printer::Print_Message(m1003);
+    return true;
+}
+
+
 bool Rtcm_Printer::Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph)
 {
     std::string m1019 = rtcm->print_MT1019(gps_eph);

@@ -41,7 +41,7 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements an ObservablesInterface for Galileo E1B
+ * \brief This class implements an ObservablesInterface for Galileo E5A
  */
 class GalileoE5aObservables : public ObservablesInterface
 {

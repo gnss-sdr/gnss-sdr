@@ -1,7 +1,7 @@
 /*!
  * \file hybrid_observables.h
- * \brief Implementation of an adapter of a Galileo E1 observables block
- * to a ObservablesInterface
+ * \brief Implementation of an adapter of an observables block accepting all kind
+ * of signals to a ObservablesInterface
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * \author Javier Arribas 2013. jarribas(at)cttc.es
  *
@@ -42,7 +42,7 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements an ObservablesInterface for Galileo E1B
+ * \brief This class implements an ObservablesInterface for observables of all kind of GNSS signals
  */
 class HybridObservables : public ObservablesInterface
 {

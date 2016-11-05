@@ -553,16 +553,18 @@ if (NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
      set(TARGET_GFLAGS gflags-${gflags_RELEASE})
      if(${LOCAL_GFLAGS})
          set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_SHARED_LIBS})
+         set(GFLAGS_LIBRARY_DIR_TO_LINK ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib)
      else(${LOCAL_GFLAGS})  
          set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_LIBS})
+         set(GFLAGS_LIBRARY_DIR_TO_LINK ${GFlags_LIBRARY_DIRS})
      endif(${LOCAL_GFLAGS})
      
      if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
-export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib
-export LIBS=${GFLAGS_LIBRARIES_TO_LINK}
+export LDFLAGS=-L${GFLAGS_LIBRARY_DIR_TO_LINK}
+export LIBS=\"${GFLAGS_LIBRARIES_TO_LINK} -lc++\"
 export CXXFLAGS=\"-stdlib=libc++\"
 export CC=clang
 export CXX=clang++
@@ -577,7 +579,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
              file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
-export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib
+export LDFLAGS=-L${GFLAGS_LIBRARY_DIR_TO_LINK}
 export LIBS=${GFLAGS_LIBRARIES_TO_LINK}
 cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/
 aclocal

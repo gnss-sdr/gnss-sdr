@@ -63,6 +63,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     check_arm_version("__ARM_ARCH_7EM_" ${TEST_FOR_ARM_RESULTS} "armv7e-m" ARM_VERSION)
     check_arm_version("__ARM_ARCH_7VE__" ${TEST_FOR_ARM_RESULTS} "armv7ve" ARM_VERSION)
     check_arm_version("__ARM_ARCH_8A__" ${TEST_FOR_ARM_RESULTS} "armv8-a" ARM_VERSION)
+    check_arm_version("__ARM_ARCH_8A" ${TEST_FOR_ARM_RESULTS} "armv8-a" ARM_VERSION)
 
     # anything else just define as arm
     if (ARM_VERSION STREQUAL "")

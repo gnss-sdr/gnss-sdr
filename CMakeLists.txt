@@ -554,11 +554,11 @@ if (NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
      if(${LOCAL_GFLAGS})
          set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_SHARED_LIBS})
          set(GFLAGS_LIBRARY_DIR_TO_LINK ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib)
-     else(${LOCAL_GFLAGS})  
+     else(${LOCAL_GFLAGS})
          set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_LIBS})
          set(GFLAGS_LIBRARY_DIR_TO_LINK ${GFlags_LIBRARY_DIRS})
      endif(${LOCAL_GFLAGS})
-     
+
      if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
@@ -839,6 +839,10 @@ if(NOT GNUTLS_OPENSSL_LIBRARY)
      endif(OPENSSL_FOUND)
 endif(NOT GNUTLS_OPENSSL_LIBRARY)
 
+if(OS_IS_LINUX)
+    find_package(Threads REQUIRED)
+    link_libraries(${CMAKE_THREAD_LIBS_INIT})
+endif(OS_IS_LINUX)
 
 ################################################################################
 # USRP Hardware Driver (UHD) - OPTIONAL
@@ -1122,14 +1126,7 @@ if(ENABLE_GPROF)
     #endif(CMAKE_COMPILER_IS_GNUCXX)
 endif(ENABLE_GPROF)
 
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
-
-if(OS_IS_LINUX)
-    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "openSUSE" OR ${LINUX_DISTRIBUTION} MATCHES "ArchLinux")
-        link_libraries(pthread)
-    endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "openSUSE" OR ${LINUX_DISTRIBUTION} MATCHES "ArchLinux")
-endif(OS_IS_LINUX)
 
 
 ########################################################################

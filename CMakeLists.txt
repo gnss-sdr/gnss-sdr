@@ -490,7 +490,7 @@ endif(NOT VOLK_GNSSSDR_FOUND)
 # gflags - https://github.com/gflags/gflags
 ################################################################################
 set(LOCAL_GFLAGS false)
-set(gflags_RELEASE 2.1.2)
+set(gflags_RELEASE 2.2.0)
 find_package(GFlags)
 if (NOT GFlags_FOUND)
      message (STATUS " gflags library has not been found.")

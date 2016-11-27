@@ -192,6 +192,9 @@ if(ENABLE_UNIT_TESTING)
                                 ${VOLK_GNSSSDR_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
     )
+    if(NOT ${GTEST_DIR_LOCAL})
+        add_dependencies(run_tests gtest-${gtest_RELEASE})
+    endif(NOT ${GTEST_DIR_LOCAL})
 endif(ENABLE_UNIT_TESTING)
 
 #########################################################

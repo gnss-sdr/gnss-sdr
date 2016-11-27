@@ -596,6 +596,37 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
                            GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
      set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)
+     
+     # Ensure that aclocal and libtool are present
+     if(OS_IS_LINUX)
+         if(EXISTS "/usr/bin/libtoolize")
+             if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+                 # Everything ok, we can move on
+             else()
+                 message(" aclocal has not been found.")
+                 message(" You can try to install it by typing:")
+                 if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                      message(" sudo yum groupinstall 'Development Tools'")
+                 elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                      message(" sudo zypper install automake")
+                 else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                      message(" sudo apt-get install automake")
+                 endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                 message(FATAL_ERROR "aclocal is required to build glog from source")
+             endif()
+         else()
+             message(" libtool has not been found.")
+             message(" You can try to install it by typing:")
+             if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                 message(" sudo yum groupinstall 'Development Tools'")
+             elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                 message(" sudo zypper install libtoool")
+             else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                 message(" sudo apt-get install libtool")
+             endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+             message(FATAL_ERROR "libtool is required to build glog from source")
+         endif()
+     endif(OS_IS_LINUX)
 
      ExternalProject_Add(
          glog-${glog_RELEASE}
@@ -726,6 +757,28 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/arm-linux-gnueabi/5
                        /usr/lib/gcc/arm-linux-gnueabihf/5
                        /usr/lib/gcc/aarch64-linux-gnu/5
+                       /usr/lib/gcc/x86_64-linux-gnu/6      # Ubuntu 16.10
+                       /usr/lib/gcc/alpha-linux-gnu/6
+                       /usr/lib/gcc/aarch64-linux-gnu/6
+                       /usr/lib/gcc/arm-linux-gnueabi/6
+                       /usr/lib/gcc/arm-linux-gnueabihf/6
+                       /usr/lib/gcc/hppa-linux-gnu/6
+                       /usr/lib/gcc/i686-gnu/6
+                       /usr/lib/gcc/i686-linux-gnu/6
+                       /usr/lib/gcc/x86_64-kfreebsd-gnu/6
+                       /usr/lib/gcc/i686-kfreebsd-gnu/6
+                       /usr/lib/gcc/m68k-linux-gnu/6
+                       /usr/lib/gcc/mips-linux-gnu/6
+                       /usr/lib/gcc/mips64el-linux-gnuabi64/6
+                       /usr/lib/gcc/mipsel-linux-gnu/6
+                       /usr/lib/gcc/powerpc-linux-gnu/6
+                       /usr/lib/gcc/powerpc-linux-gnuspe/6
+                       /usr/lib/gcc/powerpc64-linux-gnu/6
+                       /usr/lib/gcc/powerpc64le-linux-gnu/6
+                       /usr/lib/gcc/s390x-linux-gnu/6
+                       /usr/lib/gcc/sparc64-linux-gnu/6
+                       /usr/lib/gcc/x86_64-linux-gnux32/6
+                       /usr/lib/gcc/sh4-linux-gnu/6
                 )
     if(NOT GFORTRAN)
         message(STATUS "The gfortran library has not been found.")

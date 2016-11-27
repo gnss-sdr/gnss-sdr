@@ -16,7 +16,6 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 ########################################################################
 # Project setup
 ########################################################################
@@ -37,11 +36,12 @@ if(NOT CMAKE_PREFIX_PATH)
     endif(DEFINED ENV{SNAP})
 endif(NOT CMAKE_PREFIX_PATH)
 
+
+
 ########################################################################
 # Determine optional blocks/libraries to be built (default: not built)
 # Enable them here or at the command line by doing 'cmake -DENABLE_XXX=ON ../'
 ########################################################################
-
 # Support of optional RF front-ends
 option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based dongles, HackRF, bladeRF, etc.) as signal source (experimental)" OFF)
 option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNURadio driver" OFF)
@@ -69,6 +69,8 @@ endif(ENABLE_PACKAGING)
 # Testing
 option(ENABLE_SYSTEM_TESTING "Builds system tests" OFF)
 option(ENABLE_UNIT_TESTING "Builds unit tests" ON)
+
+
 
 ###############################
 # GNSS-SDR version information
@@ -103,11 +105,11 @@ endif(${THIS_IS_A_RELEASE})
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
 
 
+
 ########################################################################
 # Environment setup
 ########################################################################
 include(ExternalProject)
-
 # Detect 64-bits machine
 if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
      set(ARCH_64BITS TRUE)
@@ -241,7 +243,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      endif(${DARWIN_VERSION} MATCHES "10")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-
 #select the release build type by default to get optimization flags
 if(NOT CMAKE_BUILD_TYPE)
      if(ENABLE_GPERFTOOLS OR ENABLE_GPROF)
@@ -260,6 +261,7 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 
 
+
 ################################################################################
 # Checkout cmake version
 ################################################################################
@@ -269,10 +271,10 @@ if(CMAKE_VERSION VERSION_LESS 2.8.8)
 endif(CMAKE_VERSION VERSION_LESS 2.8.8)
 
 
+
 ################################################################################
 # Checkout compiler version
 ################################################################################
-
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
       if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7)
           message(STATUS "Your GCC version is too old and does not support some C++11 features required by GNSS-SDR. GCC version must be at least 4.7")
@@ -286,6 +288,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
 
+
 ################################################################################
 # Check if the compiler defines the architecture as ARM
 ################################################################################
@@ -294,12 +297,24 @@ if(NOT OS_IS_MACOSX)
 endif(NOT OS_IS_MACOSX)
 
 
+
 ################################################################################
 # Check for availability of SSE
 ################################################################################
 if(NOT ENABLE_GENERIC_ARCH)
      include(TestForSSE)
 endif(NOT ENABLE_GENERIC_ARCH)
+
+
+
+###############################
+# Find a thread library
+###############################
+if(OS_IS_LINUX)
+    find_package(Threads REQUIRED)
+    link_libraries(${CMAKE_THREAD_LIBS_INIT})
+endif(OS_IS_LINUX)
+
 
 
 ################################################################################
@@ -354,6 +369,7 @@ find_package(Boost COMPONENTS date_time system filesystem thread serialization c
 if(NOT Boost_FOUND)
      message(FATAL_ERROR "Fatal error: Boost (version >=1.45.0) required.")
 endif(NOT Boost_FOUND)
+
 
 
 ################################################################################
@@ -486,6 +502,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
 endif(NOT VOLK_GNSSSDR_FOUND)
 
 
+
 ################################################################################
 # gflags - https://github.com/gflags/gflags
 ################################################################################
@@ -527,6 +544,7 @@ if (NOT GFlags_FOUND)
      set(GFlags_LIBRARY_PATH ${GFlags_LIBS})
      set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and built automatically" FORCE)
 endif(NOT GFlags_FOUND)
+
 
 
 ################################################################################
@@ -602,7 +620,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
          if(EXISTS "/usr/bin/libtoolize")
              if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                  # Everything ok, we can move on
-             else()
+             else(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                  message(" aclocal has not been found.")
                  message(" You can try to install it by typing:")
                  if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -613,8 +631,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
                       message(" sudo apt-get install automake")
                  endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                  message(FATAL_ERROR "aclocal is required to build glog from source")
-             endif()
-         else()
+             endif(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+         else(EXISTS "/usr/bin/libtoolize")
              message(" libtool has not been found.")
              message(" You can try to install it by typing:")
              if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -625,7 +643,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
                  message(" sudo apt-get install libtool")
              endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
              message(FATAL_ERROR "libtool is required to build glog from source")
-         endif()
+         endif(EXISTS "/usr/bin/libtoolize")
      endif(OS_IS_LINUX)
 
      ExternalProject_Add(
@@ -866,6 +884,27 @@ find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
                                           /usr/lib/arm-linux-gnueabihf
                                           /usr/lib/arm-linux-gnueabi
                                           /usr/lib/i386-linux-gnu
+                                          /usr/lib/gcc/alpha-linux-gnu
+                                          /usr/lib/gcc/aarch64-linux-gnu
+                                          /usr/lib/gcc/arm-linux-gnueabi
+                                          /usr/lib/gcc/arm-linux-gnueabihf
+                                          /usr/lib/gcc/hppa-linux-gnu
+                                          /usr/lib/gcc/i686-gnu
+                                          /usr/lib/gcc/i686-linux-gnu
+                                          /usr/lib/gcc/x86_64-kfreebsd-gnu
+                                          /usr/lib/gcc/i686-kfreebsd-gnu
+                                          /usr/lib/gcc/m68k-linux-gnu
+                                          /usr/lib/gcc/mips-linux-gnu
+                                          /usr/lib/gcc/mips64el-linux-gnuabi64
+                                          /usr/lib/gcc/mipsel-linux-gnu
+                                          /usr/lib/gcc/powerpc-linux-gnu
+                                          /usr/lib/gcc/powerpc-linux-gnuspe
+                                          /usr/lib/gcc/powerpc64-linux-gnu
+                                          /usr/lib/gcc/powerpc64le-linux-gnu
+                                          /usr/lib/gcc/s390x-linux-gnu
+                                          /usr/lib/gcc/sparc64-linux-gnu
+                                          /usr/lib/gcc/x86_64-linux-gnux32
+                                          /usr/lib/gcc/sh4-linux-gnu
              )
 
 if(NOT GNUTLS_OPENSSL_LIBRARY)
@@ -892,10 +931,7 @@ if(NOT GNUTLS_OPENSSL_LIBRARY)
      endif(OPENSSL_FOUND)
 endif(NOT GNUTLS_OPENSSL_LIBRARY)
 
-if(OS_IS_LINUX)
-    find_package(Threads REQUIRED)
-    link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif(OS_IS_LINUX)
+
 
 ################################################################################
 # USRP Hardware Driver (UHD) - OPTIONAL
@@ -911,6 +947,7 @@ else(NOT UHD_FOUND)
     find_package(Gnuradio)
     set(ENABLE_UHD ON)
 endif(NOT UHD_FOUND)
+
 
 
 ################################################################################
@@ -1005,6 +1042,7 @@ else(ENABLE_OPENCL)
 endif(ENABLE_OPENCL)
 
 
+
 ###############################################################################
 # CUDA (OPTIONAL)
 ###############################################################################
@@ -1024,29 +1062,9 @@ endif(ENABLE_CUDA)
 
 
 
-
-################################################################################
-# GPerftools - https://github.com/gperftools/gperftools (OPTIONAL)
-################################################################################
-
-if(ENABLE_GPERFTOOLS)
-    find_package(Gperftools)
-    if ( NOT GPERFTOOLS_FOUND )
-        message(STATUS "Although ENABLE_GPERFTOOLS has been set to ON, GPerftools has not been found.")
-        message(STATUS "Binaries will be compiled without 'tcmalloc' and 'profiler' libraries.")
-        message(STATUS "You can install GPerftools from https://github.com/gperftools/gperftools")
-    else( NOT GPERFTOOLS_FOUND )
-        message(STATUS "GPerftools libraries found." )
-        message(STATUS "Binaries will be compiled with 'tcmalloc' and 'profiler' libraries.")
-    endif( NOT GPERFTOOLS_FOUND )
-endif(ENABLE_GPERFTOOLS)
-
-
-
 ################################################################################
 # Setup of optional drivers
 ################################################################################
-
 if($ENV{GN3S_DRIVER})
     message(STATUS "GN3S_DRIVER environment variable found." )
     set(ENABLE_GN3S ON)
@@ -1061,7 +1079,6 @@ else(ENABLE_GN3S)
      message(STATUS "The (optional and experimental) GN3S driver is not enabled." )
      message(STATUS "Enable it with 'cmake -DENABLE_GN3S=ON ../' to add support for the GN3S dongle." )
 endif(ENABLE_GN3S)
-
 
 if($ENV{RAW_ARRAY_DRIVER})
     message(STATUS "RAW_ARRAY_DRIVER environment variable found." )
@@ -1095,7 +1112,6 @@ else(ENABLE_OSMOSDR)
     message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)" )
 endif(ENABLE_OSMOSDR)
 
-
 if($ENV{FLEXIBAND_DRIVER})
     message(STATUS "FLEXIBAND_DRIVER environment variable found." )
     set(ENABLE_FLEXIBAND ON)
@@ -1113,51 +1129,22 @@ else(ENABLE_FLEXIBAND)
     message(STATUS "Enable it with 'cmake -DENABLE_FLEXIBAND=ON ../' to add support for the Teleorbit Flexiband front-end." )
 endif(ENABLE_FLEXIBAND)
 
-########################################################################
-# Set compiler flags
-########################################################################
 
-# Enable C++11 support in GCC
-# For "-std=c++0x"  GCC's support for C++11 see http://gcc.gnu.org/projects/cxx0x.html
-if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
-        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wno-unused-private-field")
-    endif(CMAKE_BUILD_TYPE MATCHES "Release")
-endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
-# Processor-architecture related flags
-# See http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html#i386-and-x86_002d64-Options
-if (NOT ARCH_COMPILER_FLAGS)
-  if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-    if(OS_IS_MACOSX)
-      set(ARCH_COMPILER_FLAGS "-march=corei7 -mfpmath=sse")
-    else(OS_IS_MACOSX)
-      if(NOT ${ENABLE_GENERIC_ARCH})
-         if(IS_ARM) # ARM-specific options (https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html)
-            if(ARM_VERSION STREQUAL "arm")
-               # Unknown arm version - try our best to detect
-               set(ARCH_COMPILER_FLAGS "-mcpu=native")
-            else(ARM_VERSION STREQUAL "arm")
-               set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
-	        endif(ARM_VERSION STREQUAL "arm")
-         else(IS_ARM)
-            set(ARCH_COMPILER_FLAGS "-march=native -mfpmath=sse")
-	     endif(IS_ARM)
-      endif(NOT ${ENABLE_GENERIC_ARCH})
-    endif(OS_IS_MACOSX)
-  endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-endif (NOT ARCH_COMPILER_FLAGS)
-set(MY_CXX_FLAGS "${MY_CXX_FLAGS} ${ARCH_COMPILER_FLAGS}")
-
-if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-    #http://gcc.gnu.org/wiki/Visibility
-    add_definitions(-fvisibility=hidden)
-endif()
-
+################################################################################
+# GPerftools - https://github.com/gperftools/gperftools (OPTIONAL)
+################################################################################
+if(ENABLE_GPERFTOOLS)
+    find_package(Gperftools)
+    if ( NOT GPERFTOOLS_FOUND )
+        message(STATUS "Although ENABLE_GPERFTOOLS has been set to ON, GPerftools has not been found.")
+        message(STATUS "Binaries will be compiled without 'tcmalloc' and 'profiler' libraries.")
+        message(STATUS "You can install GPerftools from https://github.com/gperftools/gperftools")
+    else( NOT GPERFTOOLS_FOUND )
+        message(STATUS "GPerftools libraries found." )
+        message(STATUS "Binaries will be compiled with 'tcmalloc' and 'profiler' libraries.")
+    endif( NOT GPERFTOOLS_FOUND )
+endif(ENABLE_GPERFTOOLS)
 if(ENABLE_GPERFTOOLS)
     # Set GPerftools related flags if it is available
     # See http://gperftools.googlecode.com/svn/trunk/README
@@ -1171,6 +1158,11 @@ if(ENABLE_GPERFTOOLS)
     endif(GPERFTOOLS_FOUND)
 endif(ENABLE_GPERFTOOLS)
 
+
+
+########################################################################
+# GNU gprof (OPTIONAL) - https://sourceware.org/binutils/docs/gprof/
+########################################################################
 if(ENABLE_GPROF)
     #if(CMAKE_COMPILER_IS_GNUCXX)
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -pg")
@@ -1179,7 +1171,53 @@ if(ENABLE_GPROF)
     #endif(CMAKE_COMPILER_IS_GNUCXX)
 endif(ENABLE_GPROF)
 
+
+
+########################################################################
+# Set compiler flags
+########################################################################
+# Enable C++11 support in GCC
+if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    if(CMAKE_BUILD_TYPE MATCHES "Release")
+        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wno-unused-private-field")
+    endif(CMAKE_BUILD_TYPE MATCHES "Release")
+endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+# Processor-architecture related flags
+# See http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html#i386-and-x86_002d64-Options
+if (NOT ARCH_COMPILER_FLAGS)
+    if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        if(OS_IS_MACOSX)
+            set(ARCH_COMPILER_FLAGS "-march=corei7 -mfpmath=sse")
+        else(OS_IS_MACOSX)
+            if(NOT ${ENABLE_GENERIC_ARCH})
+                if(IS_ARM) # ARM-specific options (https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html)
+                    if(ARM_VERSION STREQUAL "arm")
+                        # Unknown arm version - try our best to detect
+                        set(ARCH_COMPILER_FLAGS "-mcpu=native")
+                    else(ARM_VERSION STREQUAL "arm")
+                        set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
+	                endif(ARM_VERSION STREQUAL "arm")
+                else(IS_ARM)
+                    set(ARCH_COMPILER_FLAGS "-march=native -mfpmath=sse")
+	            endif(IS_ARM)
+            endif(NOT ${ENABLE_GENERIC_ARCH})
+        endif(OS_IS_MACOSX)
+    endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+endif (NOT ARCH_COMPILER_FLAGS)
+set(MY_CXX_FLAGS "${MY_CXX_FLAGS} ${ARCH_COMPILER_FLAGS}")
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
+
+if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    #http://gcc.gnu.org/wiki/Visibility
+    add_definitions(-fvisibility=hidden)
+endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+
 
 
 ########################################################################
@@ -1192,6 +1230,8 @@ configure_file(
 
 add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+
 
 ########################################################################
 # Add subdirectories (in order of deps)

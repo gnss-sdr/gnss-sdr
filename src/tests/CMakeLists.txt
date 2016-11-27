@@ -16,7 +16,9 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+################################################################################
+# Google Test - https://github.com/google/googletest
+################################################################################
 if(EXISTS $ENV{GTEST_DIR})
    set(GTEST_DIR_LOCAL $ENV{GTEST_DIR})
 endif(EXISTS $ENV{GTEST_DIR})
@@ -32,7 +34,6 @@ endif(NOT GTEST_DIR_LOCAL)
 if(GTEST_INCLUDE_DIRS)
     set(GTEST_DIR_LOCAL true)
 endif(GTEST_INCLUDE_DIRS)
-
 
 if(NOT ${GTEST_DIR_LOCAL})
      # if GTEST_DIR is not defined, we download and build it
@@ -84,6 +85,10 @@ else(NOT ${GTEST_DIR_LOCAL})
 endif(NOT ${GTEST_DIR_LOCAL})
 
 
+
+################################################################################
+# Optional libraries
+################################################################################
 set(GNSS_SDR_TEST_OPTIONAL_LIBS "")
 set(GNSS_SDR_TEST_OPTIONAL_HEADERS "")
 
@@ -106,6 +111,20 @@ endif(Boost_VERSION LESS 105000)
 if(OPENSSL_FOUND)
     add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
 endif(OPENSSL_FOUND)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(CLANG_FLAGS "-stdlib=libc++ -std=c++11 -lc++")
+endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+if(OPENCL_FOUND)
+    add_definitions(-DOPENCL_BLOCKS_TEST=1)
+endif(OPENCL_FOUND)
+
+if (ENABLE_CUDA)
+	add_definitions(-DCUDA_BLOCKS_TEST=1)
+endif(ENABLE_CUDA)
+
+add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
 
 include_directories(
      ${GTEST_INCLUDE_DIRECTORIES}
@@ -149,26 +168,15 @@ include_directories(
 )
 
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(CLANG_FLAGS "-stdlib=libc++ -std=c++11 -lc++")
-endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
-
-if(OPENCL_FOUND)
-    add_definitions(-DOPENCL_BLOCKS_TEST=1)
-endif(OPENCL_FOUND)
-
-if (ENABLE_CUDA)
-	add_definitions(-DCUDA_BLOCKS_TEST=1)
-endif(ENABLE_CUDA)
-
-add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
-
+################################################################################
+# Unit testing
+################################################################################
 if(ENABLE_UNIT_TESTING)
     add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 
     add_custom_command(TARGET run_tests POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:run_tests>
+                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:run_tests>
                        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:run_tests>)
 
     target_link_libraries(run_tests ${CLANG_FLAGS}
@@ -197,10 +205,11 @@ if(ENABLE_UNIT_TESTING)
     endif(NOT ${GTEST_DIR_LOCAL})
 endif(ENABLE_UNIT_TESTING)
 
+
+
 #########################################################
 #  Adding Tests to Ctest
 #########################################################
-
 set(CMAKE_CTEST_COMMAND ctest -V)
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
@@ -320,7 +329,6 @@ else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(gnuradio_block_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL})
 
-
 # add_executable(acq_test ${EXCLUDE}
 #      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
 #      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_acquisition_test.cc
@@ -343,12 +351,13 @@ endif(NOT ${GTEST_DIR_LOCAL})
 # add_test(acq_test acq_test)
 
 add_executable(trk_test
-     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc
-)
+               ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+               ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
+               ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc
+               )
+
 if(NOT ${ENABLE_PACKAGING})
-     set_property(TARGET trk_test PROPERTY EXCLUDE_FROM_ALL TRUE)
+    set_property(TARGET trk_test PROPERTY EXCLUDE_FROM_ALL TRUE)
 endif(NOT ${ENABLE_PACKAGING})
 
 target_link_libraries(trk_test ${Boost_LIBRARIES}
@@ -365,7 +374,6 @@ target_link_libraries(trk_test ${Boost_LIBRARIES}
                                signal_generator_blocks
                                ${VOLK_GNSSSDR_LIBRARIES}
                                )
-
 add_test(trk_test trk_test)
 if(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(trk_test gtest-${gtest_RELEASE})
@@ -374,10 +382,13 @@ else(NOT ${GTEST_DIR_LOCAL})
 endif(NOT ${GTEST_DIR_LOCAL})
 
 add_dependencies(check control_thread_test flowgraph_test gnss_block_test
-    gnuradio_block_test trk_test)
+                 gnuradio_block_test trk_test)
 
 
-# Addition of System Tests
+
+################################################################################
+# System testing
+################################################################################
 if(ENABLE_SYSTEM_TESTING)
     set(HOST_SYSTEM "Unknown")
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

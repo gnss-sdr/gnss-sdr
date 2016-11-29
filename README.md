@@ -156,10 +156,21 @@ $ sudo ldconfig
 
 #### Install [Glog](https://github.com/google/glog "Glog's Homepage"), a library that implements application-level logging:
 
+Note: in order to regenerate the autotools files (the ones that come with glog are obsolete), you will need the packages `automake` and `libtool` installed:
+
+~~~~~~
+$ sudo apt-get install automake libtool
+~~~~~~
+
+Then:
+
 ~~~~~~
 $ wget https://github.com/google/glog/archive/v0.3.4.tar.gz
 $ tar xvfz v0.3.4.tar.gz
 $ cd glog-0.3.4
+$ aclocal
+$ automake --add-missing
+$ autoreconf -vfi
 $ ./configure
 $ make
 $ sudo make install

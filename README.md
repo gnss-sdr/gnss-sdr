@@ -17,7 +17,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux
 ----------
 
- * Tested distributions: Ubuntu from 14.04 LTS to 16.04 LTS, Debian 8.0 "jessie", Linaro 15.03
+ * Tested distributions: Ubuntu from 14.04 LTS to 16.10, Debian 8.0 "jessie", Linaro 15.03
  * Known to work but not continually tested: Arch Linux, Fedora, and openSUSE
  * Supported microprocessor architectures:
    * i386: Intel x86 instruction set (32-bit microprocessors).

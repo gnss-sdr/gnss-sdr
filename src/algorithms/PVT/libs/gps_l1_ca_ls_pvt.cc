@@ -177,6 +177,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)
                 {
+std::cout<<"LS: bad height\n";
                     b_valid_position = false;
                     return false;
                 }

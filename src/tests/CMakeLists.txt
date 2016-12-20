@@ -38,13 +38,19 @@ endif(GTEST_INCLUDE_DIRS)
 if(NOT ${GTEST_DIR_LOCAL})
      # if GTEST_DIR is not defined, we download and build it
      set(gtest_RELEASE 1.8.0)
+     set(TOOLCHAIN_ARG "")
+     set(GTEST_COMPILER -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}) 
+     if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+         set(GTEST_COMPILER "")
+         set(TOOLCHAIN_ARG -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/Toolchains/oe-sdk_cross.cmake)
+     endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
      ExternalProject_Add(
          gtest-${gtest_RELEASE}
          GIT_REPOSITORY https://github.com/google/googletest
          GIT_TAG release-${gtest_RELEASE}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
-         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF
+         CMAKE_ARGS ${GTEST_COMPILER} -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF ${TOOLCHAIN_ARG}
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
          INSTALL_COMMAND ""

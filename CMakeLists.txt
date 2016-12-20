@@ -293,7 +293,11 @@ endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 # Check if the compiler defines the architecture as ARM
 ################################################################################
 if(NOT OS_IS_MACOSX)
-     include(TestForARM)
+    if(CMAKE_CROSSCOMPILING)
+        set(IS_ARM TRUE)
+    else(CMAKE_CROSSCOMPILING)
+        include(TestForARM)
+    endif(CMAKE_CROSSCOMPILING)
 endif(NOT OS_IS_MACOSX)
 
 
@@ -365,7 +369,7 @@ set(Boost_ADDITIONAL_VERSIONS
 )
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
-find_package(Boost COMPONENTS date_time system filesystem thread serialization chrono REQUIRED)
+find_package(Boost COMPONENTS date_time system filesystem thread serialization chrono unit_test_framework program_options REQUIRED)
 if(NOT Boost_FOUND)
      message(FATAL_ERROR "Fatal error: Boost (version >=1.45.0) required.")
 endif(NOT Boost_FOUND)
@@ -458,8 +462,12 @@ if(NOT VOLK_GNSSSDR_FOUND)
     message(STATUS " volk_gnsssdr will be built along with gnss-sdr when doing 'make'")
     set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     set(C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-    set(VOLK_GNSSSDR_CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    if(CMAKE_CROSSCOMPILING)  
+        set(VOLK_GNSSSDR_COMPILER "") 
+    else(CMAKE_CROSSCOMPILING)   
+        set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
+    endif(CMAKE_CROSSCOMPILING)
+    set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
                                 -DENABLE_STATIC_LIBS=ON
                                 -DENABLE_PROFILING=${ENABLE_PROFILING}
@@ -467,9 +475,12 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 -DCMAKE_C_FLAGS=${C_FLAGS}
                                 ${STRIP_VOLK_GNSSSDR_PROFILE}
                                 ${USE_THIS_PYTHON} )
-    if(CMAKE_TOOLCHAIN_FILE)
-        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
-    endif(CMAKE_TOOLCHAIN_FILE)
+    if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} 
+                                    -DENABLE_ORC=OFF
+                                    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
+                                    -DCROSSCOMPILE_MULTILIB=TRUE )
+    endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
     ExternalProject_Add(volk_gnsssdr_module
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
@@ -701,7 +712,12 @@ if(OS_IS_LINUX)
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(" sudo apt-get install liblapack-dev")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
+        if(IS_ARM)
+            message(WARNING "LAPACK is recommended to build gnss-sdr")
+            set(LAPACK "")
+        else(IS_ARM)
+            message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
+        endif(IS_ARM)
     endif(NOT LAPACK)
     #############################################################################
     # Check that BLAS is found in the system
@@ -717,7 +733,12 @@ if(OS_IS_LINUX)
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(" sudo apt-get install libopenblas-dev")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        message(FATAL_ERROR "BLAS is required to build gnss-sdr")
+        if(IS_ARM)
+            message(WARNING "BLAS is recommended to build gnss-sdr")
+            set(BLAS "")
+        else(IS_ARM)
+            message(FATAL_ERROR "BLAS is required to build gnss-sdr")
+        endif(IS_ARM)
     endif(NOT BLAS)
     #############################################
     # Check if GFORTRAN is found in the system
@@ -823,8 +844,8 @@ if(NOT ARMADILLO_FOUND)
          set(armadillo_MD5 "8116185e1d7391eed3bf6c500f81b4d8")
          set(ARMA_FILE_EXTENSION "gz")
      else(CMAKE_VERSION VERSION_LESS 3.1)
-         set(armadillo_RELEASE 7.500.2)
-         set(armadillo_MD5 "c7dc07d6d2d9f92432cf06d44b6508b2")
+         set(armadillo_RELEASE 7.600.1)
+         set(armadillo_MD5 "7edc68972ad5f0121efcd1173551d9a1")
          set(ARMA_FILE_EXTENSION "xz")
      endif(CMAKE_VERSION VERSION_LESS 3.1)
 
@@ -1193,12 +1214,14 @@ if (NOT ARCH_COMPILER_FLAGS)
         else(OS_IS_MACOSX)
             if(NOT ${ENABLE_GENERIC_ARCH})
                 if(IS_ARM) # ARM-specific options (https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html)
-                    if(ARM_VERSION STREQUAL "arm")
-                        # Unknown arm version - try our best to detect
-                        set(ARCH_COMPILER_FLAGS "-mcpu=native")
-                    else(ARM_VERSION STREQUAL "arm")
-                        set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
-	                endif(ARM_VERSION STREQUAL "arm")
+                    if(NOT CMAKE_CROSSCOMPILING)
+                        if(ARM_VERSION STREQUAL "arm")
+                            # Unknown arm version - try our best to detect
+                            set(ARCH_COMPILER_FLAGS "-mcpu=native")
+                        else(ARM_VERSION STREQUAL "arm")
+                            set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
+	                    endif(ARM_VERSION STREQUAL "arm")
+	                endif(NOT CMAKE_CROSSCOMPILING)
                 else(IS_ARM)
                     set(ARCH_COMPILER_FLAGS "-march=native -mfpmath=sse")
 	            endif(IS_ARM)

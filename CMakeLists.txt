@@ -293,7 +293,11 @@ endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 # Check if the compiler defines the architecture as ARM
 ################################################################################
 if(NOT OS_IS_MACOSX)
-     include(TestForARM)
+    if(CMAKE_CROSSCOMPILING)
+        set(IS_ARM TRUE)
+    else(CMAKE_CROSSCOMPILING)
+        include(TestForARM)
+    endif(CMAKE_CROSSCOMPILING)
 endif(NOT OS_IS_MACOSX)
 
 
@@ -458,8 +462,12 @@ if(NOT VOLK_GNSSSDR_FOUND)
     message(STATUS " volk_gnsssdr will be built along with gnss-sdr when doing 'make'")
     set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     set(C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-    set(VOLK_GNSSSDR_CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    if(CMAKE_CROSSCOMPILING)  
+        set(VOLK_GNSSSDR_COMPILER "") 
+    else(CMAKE_CROSSCOMPILING)   
+        set(VOLK_GNSSSDR_COMPILER "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
+    endif(CMAKE_CROSSCOMPILING)
+    set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
                                 -DENABLE_STATIC_LIBS=ON
                                 -DENABLE_PROFILING=${ENABLE_PROFILING}
@@ -467,9 +475,12 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 -DCMAKE_C_FLAGS=${C_FLAGS}
                                 ${STRIP_VOLK_GNSSSDR_PROFILE}
                                 ${USE_THIS_PYTHON} )
-    if(CMAKE_TOOLCHAIN_FILE)
-        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
-    endif(CMAKE_TOOLCHAIN_FILE)
+    if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} 
+                                    -DENABLE_ORC=OFF
+                                    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
+                                    -DCROSSCOMPILE_MULTILIB=TRUE )
+    endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
     ExternalProject_Add(volk_gnsssdr_module
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
@@ -1203,12 +1214,14 @@ if (NOT ARCH_COMPILER_FLAGS)
         else(OS_IS_MACOSX)
             if(NOT ${ENABLE_GENERIC_ARCH})
                 if(IS_ARM) # ARM-specific options (https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html)
-                    if(ARM_VERSION STREQUAL "arm")
-                        # Unknown arm version - try our best to detect
-                        set(ARCH_COMPILER_FLAGS "-mcpu=native")
-                    else(ARM_VERSION STREQUAL "arm")
-                        set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
-	                endif(ARM_VERSION STREQUAL "arm")
+                    if(NOT CMAKE_CROSSCOMPILING)
+                        if(ARM_VERSION STREQUAL "arm")
+                            # Unknown arm version - try our best to detect
+                            set(ARCH_COMPILER_FLAGS "-mcpu=native")
+                        else(ARM_VERSION STREQUAL "arm")
+                            set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
+	                    endif(ARM_VERSION STREQUAL "arm")
+	                endif(NOT CMAKE_CROSSCOMPILING)
                 else(IS_ARM)
                     set(ARCH_COMPILER_FLAGS "-march=native -mfpmath=sse")
 	            endif(IS_ARM)

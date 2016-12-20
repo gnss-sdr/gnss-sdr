@@ -35,15 +35,18 @@ if(GTEST_INCLUDE_DIRS)
     set(GTEST_DIR_LOCAL true)
 endif(GTEST_INCLUDE_DIRS)
 
+set(GTEST_COMPILER -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
+set(TOOLCHAIN_ARG "")
+
 if(NOT ${GTEST_DIR_LOCAL})
      # if GTEST_DIR is not defined, we download and build it
      set(gtest_RELEASE 1.8.0)
-     set(TOOLCHAIN_ARG "")
-     set(GTEST_COMPILER -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}) 
+
      if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
          set(GTEST_COMPILER "")
          set(TOOLCHAIN_ARG -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/Toolchains/oe-sdk_cross.cmake)
      endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+
      ExternalProject_Add(
          gtest-${gtest_RELEASE}
          GIT_REPOSITORY https://github.com/google/googletest
@@ -129,6 +132,26 @@ endif(OPENCL_FOUND)
 if (ENABLE_CUDA)
 	add_definitions(-DCUDA_BLOCKS_TEST=1)
 endif(ENABLE_CUDA)
+
+################################################################################
+# Optional generator
+################################################################################
+if(ENABLE_SW_GENERATOR)
+   ExternalProject_Add(
+      gnss-sim
+      GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
+      GIT_TAG master
+      SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gnss-sim
+      BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim
+      CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG}
+      UPDATE_COMMAND ""
+      PATCH_COMMAND ""
+      INSTALL_COMMAND ""
+   )
+   set(SW_GENERATOR_BIN ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim)
+   add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
+   add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
+endif(ENABLE_SW_GENERATOR)
 
 add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
 
@@ -429,4 +452,17 @@ if(ENABLE_SYSTEM_TESTING)
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:ttff>
         ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:ttff>
     )
+
+    add_executable(trk_system_test
+    ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/trk_system_test.cc )
+    if(NOT ${GTEST_DIR_LOCAL})
+        add_dependencies(trk_system_test gtest-${gtest_RELEASE})
+    else(NOT ${GTEST_DIR_LOCAL})
+        add_dependencies(trk_system_test gtest)
+    endif(NOT ${GTEST_DIR_LOCAL})
+    add_custom_command(TARGET trk_system_test POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:trk_system_test>
+        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:trk_system_test>
+    )
+
 endif(ENABLE_SYSTEM_TESTING)

@@ -78,7 +78,7 @@ public:
     /*!
      * \brief Default constructor. Creates GPS Navigation and Observables RINEX files and their headers
      */
-    Rinex_Printer();
+    Rinex_Printer(int version = 0);
 
     /*!
      * \brief Default destructor. Closes GPS Navigation and Observables RINEX files

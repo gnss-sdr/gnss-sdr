@@ -116,7 +116,7 @@ int Trk_System_Test::configure_receiver()
     const float early_late_space_chips = 0.5;
 
     const int display_rate_ms = 500;
-    const int output_rate_ms = 100;
+    const int output_rate_ms = 1000;
     const int averaging_depth = 10;
 
     bool false_bool = false;
@@ -225,6 +225,7 @@ int Trk_System_Test::configure_receiver()
     config->set_property("PVT.flag_rtcm_tty_port", "false");
     config->set_property("PVT.rtcm_dump_devname", "/dev/pts/1");
     config->set_property("PVT.dump", "false");
+    config->set_property("PVT.rinex_version", std::to_string(2));
 
     return 0;
 }

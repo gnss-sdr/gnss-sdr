@@ -58,7 +58,8 @@ gps_l1_ca_make_pvt_cc(unsigned int nchannels,
         unsigned short rtcm_tcp_port,
         unsigned short rtcm_station_id,
         std::map<int,int> rtcm_msg_rate_ms,
-        std::string rtcm_dump_devname)
+        std::string rtcm_dump_devname,
+        int rinex_version)
 {
     return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels,
             dump,
@@ -75,7 +76,8 @@ gps_l1_ca_make_pvt_cc(unsigned int nchannels,
             rtcm_tcp_port,
             rtcm_station_id,
             rtcm_msg_rate_ms,
-            rtcm_dump_devname));
+            rtcm_dump_devname,
+            rinex_version));
 }
 
 
@@ -208,7 +210,8 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         unsigned short rtcm_tcp_port,
         unsigned short rtcm_station_id,
         std::map<int,int> rtcm_msg_rate_ms,
-        std::string rtcm_dump_devname) :
+        std::string rtcm_dump_devname,
+        int rinex_version) :
              gr::block("gps_l1_ca_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
              gr::io_signature::make(0, 0, sizeof(gr_complex)) )
 {
@@ -280,7 +283,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     b_rinex_header_written = false;
     b_rinex_header_updated = false;
     b_rinex_sbs_header_written = false;
-    rp = std::make_shared<Rinex_Printer>();
+    rp = std::make_shared<Rinex_Printer>(rinex_version);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -496,5 +499,3 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
     consume_each(1); //one by one
     return 1;
 }
-
-

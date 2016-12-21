@@ -63,7 +63,8 @@ gps_l1_ca_pvt_cc_sptr gps_l1_ca_make_pvt_cc(unsigned int n_channels,
                                             unsigned short rtcm_tcp_port,
                                             unsigned short rtcm_station_id,
                                             std::map<int,int> rtcm_msg_rate_ms,
-                                            std::string rtcm_dump_devname
+                                            std::string rtcm_dump_devname,
+                                            int rinex_version
 );
 
 /*!
@@ -87,7 +88,8 @@ private:
                                                        unsigned short rtcm_tcp_port,
                                                        unsigned short rtcm_station_id,
                                                        std::map<int,int> rtcm_msg_rate_ms,
-                                                       std::string rtcm_dump_devname);
+                                                       std::string rtcm_dump_devname,
+                                                       int rinex_version);
     gps_l1_ca_pvt_cc(unsigned int nchannels,
                      bool dump,
                      std::string dump_filename,
@@ -103,7 +105,8 @@ private:
                      unsigned short rtcm_tcp_port,
                      unsigned short rtcm_station_id,
                      std::map<int,int> rtcm_msg_rate_ms,
-                     std::string rtcm_dump_devname);
+                     std::string rtcm_dump_devname,
+                     int rinex_version);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 
@@ -157,7 +160,7 @@ public:
      * It is used to save the assistance data at the receiver shutdown
      */
     std::map<int,Gps_Ephemeris> get_GPS_L1_ephemeris_map();
-    
+
     ~gps_l1_ca_pvt_cc (); //!< Default destructor
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,

@@ -103,6 +103,10 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
     //std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
     //std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
 
+    // RINEX version
+    int conf_rinex_version;
+    conf_rinex_version = configuration->property(role + ".rinex_version", 0);
+
     // make PVT object
     pvt_ = gps_l1_ca_make_pvt_cc(in_streams_,
             dump_,
@@ -119,7 +123,8 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
             rtcm_tcp_port,
             rtcm_station_id,
             rtcm_msg_rate_ms,
-            rtcm_dump_devname );
+            rtcm_dump_devname,
+            conf_rinex_version );
 
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
@@ -129,7 +134,7 @@ bool GpsL1CaPvt::save_assistance_to_XML()
 {
     // return variable (true == succeeded)
     bool ret = false;
-    
+
     LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename_;
     std::map<int,Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
 
@@ -243,4 +248,3 @@ gr::basic_block_sptr GpsL1CaPvt::get_right_block()
 {
     return pvt_;
 }
-

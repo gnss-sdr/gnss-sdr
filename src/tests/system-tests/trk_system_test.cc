@@ -6,6 +6,7 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
+#include "RinexUtilities.hpp"
 #include "control_thread.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
@@ -256,6 +257,8 @@ int Trk_System_Test::check_results()
     // Open reference RINEX observables file
 
     // Open generated RINEX observables file
+
+    // Time alignment!
 
     // Read reference pseudoranges from a given satellite
 

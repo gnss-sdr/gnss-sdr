@@ -151,6 +151,8 @@ if(ENABLE_SW_GENERATOR)
    set(SW_GENERATOR_BIN ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim)
    add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
    add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
+   add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv")
+
 endif(ENABLE_SW_GENERATOR)
 
 add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
@@ -460,6 +462,11 @@ if(ENABLE_SYSTEM_TESTING)
     else(NOT ${GTEST_DIR_LOCAL})
         add_dependencies(trk_system_test gtest)
     endif(NOT ${GTEST_DIR_LOCAL})
+    target_link_libraries(trk_system_test ${GFlags_LIBS}
+                                          ${GLOG_LIBRARIES}
+                                          ${GTEST_LIBRARIES}
+                                          gnss_sp_libs
+                                          gnss_rx)
     add_custom_command(TARGET trk_system_test POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:trk_system_test>
         ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:trk_system_test>

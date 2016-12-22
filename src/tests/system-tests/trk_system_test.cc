@@ -12,6 +12,8 @@
 #include "concurrent_queue.h"
 #include "in_memory_configuration.h"
 
+
+
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
@@ -37,14 +39,36 @@ public:
     int configure_receiver();
     int run_receiver();
     int check_results();
+    bool check_valid_rinex_nav(std::string filename);  // return true if the file is a valid Rinex navigation file.
+    bool check_valid_rinex_obs(std::string filename);  // return true if the file is a valid Rinex observation file.
 
     std::shared_ptr<InMemoryConfiguration> config;
 };
+
+
+bool Trk_System_Test::check_valid_rinex_nav(std::string filename)
+{
+    bool res = false;
+    res = gpstk::isRinexNavFile(filename);
+    return res;
+}
+
+
+bool Trk_System_Test::check_valid_rinex_obs(std::string filename)
+{
+    bool res = false;
+    res = gpstk::isRinexObsFile(filename);
+    return res;
+}
+
 
 int Trk_System_Test::configure_generator()
 {
     // Configure signal
     generator_binary = std::string(SW_GENERATOR_BIN);
+
+    EXPECT_EQ(true, check_valid_rinex_nav(std::string(DEFAULT_RINEX_NAV)));
+
     p1 = std::string("-rinex_nav_file=") + std::string(DEFAULT_RINEX_NAV);
     p2_static = std::string("-static_position=30.286502,120.032669,100,1000");
     p2_dynamic = std::string("-obs_pos_file=") + std::string(DEFAULT_POSITION_FILE); // Observer positions file, in .csv or .nmea format"
@@ -53,6 +77,7 @@ int Trk_System_Test::configure_generator()
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq); //Baseband sampling frequency [MSps]
     return 0;
 }
+
 
 int Trk_System_Test::generate_signal()
 {
@@ -65,16 +90,19 @@ int Trk_System_Test::generate_signal()
     if ((pid = fork()) == -1)
         perror("fork error");
     else if (pid == 0)
-    {
-        execv(&generator_binary[0], parmList);
-        std::cout << "Return not expected. Must be an execv error." << std::endl;
-        std::terminate();
-    }
+        {
+            execv(&generator_binary[0], parmList);
+            std::cout << "Return not expected. Must be an execv error." << std::endl;
+            std::terminate();
+        }
 
     wait_result = waitpid(pid, &child_status, 0);
+
+    EXPECT_EQ(true, check_valid_rinex_obs(filename_rinex_obs));
     std::cout << "Signal and Observables RINEX files created."  << std::endl;
     return 0;
 }
+
 
 int Trk_System_Test::configure_receiver()
 {
@@ -231,6 +259,7 @@ int Trk_System_Test::configure_receiver()
     return 0;
 }
 
+
 int Trk_System_Test::run_receiver()
 {
     std::shared_ptr<ControlThread> control_thread;
@@ -238,15 +267,15 @@ int Trk_System_Test::run_receiver()
     // start receiver
     try
     {
-        control_thread->run();
+            control_thread->run();
     }
     catch( boost::exception & e )
     {
-        std::cout << "Boost exception: " << boost::diagnostic_information(e);
+            std::cout << "Boost exception: " << boost::diagnostic_information(e);
     }
     catch(std::exception const&  ex)
     {
-        std::cout  << "STD exception: " << ex.what();
+            std::cout  << "STD exception: " << ex.what();
     }
     return 0;
 }
@@ -300,7 +329,7 @@ int main(int argc, char **argv)
     int res = 0;
     try
     {
-        testing::InitGoogleTest(&argc, argv);
+            testing::InitGoogleTest(&argc, argv);
     }
     catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 

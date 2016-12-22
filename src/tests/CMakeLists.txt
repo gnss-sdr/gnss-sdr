@@ -152,6 +152,10 @@ if(ENABLE_SW_GENERATOR)
    add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
    add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
    add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv")
+   
+   ################################################################################
+   # Local installation of GPSTk http://www.gpstk.org/
+   ################################################################################
    set(gpstk_RELEASE "2.5")
    set(gpstk_md5 "9d79f6838d274f5edfd46c780a6b1b72")
    ExternalProject_Add(

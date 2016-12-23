@@ -345,89 +345,56 @@ int Trk_System_Test::run_receiver()
 
 void Trk_System_Test::check_results()
 {
-    // Open reference RINEX observables file
-    pid_t wait_result;
-    int child_status;
-    std::string RinDump = std::string("RinDump");
-    std::string path_RinDump = std::string(GPSTK_BINDIR) + RinDump;
-    std::string arg1 = std::string("--obs");
-    std::string arg2 = std::string("./") + FLAGS_filename_rinex_obs;
-    std::string arg3 = std::string("9");
-    std::string arg4 = std::string("C1C");
-    std::string arg5 = std::string("--headless");
+    std::vector<std::vector<std::map<double, double>> > pseudorange_ref(33);
+    std::vector<std::vector<std::map<double, double>> > carrierphase_ref(33);
 
+    std::vector<std::vector<std::map<double, double>> > pseudorange_meas(33);
+    std::vector<std::vector<std::map<double, double>> > carrierphase_meas(33);
+
+    // Open reference RINEX observables file
     try
     {
-            gpstk::Rinex3ObsStream r_ref(FLAGS_filename_rinex_obs);
-            r_ref.exceptions(std::ios::failbit);
-            gpstk::Rinex3ObsData r_ref_data;
-            gpstk::Rinex3ObsHeader r_ref_header;
+        gpstk::Rinex3ObsStream r_ref(FLAGS_filename_rinex_obs);
+        r_ref.exceptions(std::ios::failbit);
+        gpstk::Rinex3ObsData r_ref_data;
+        gpstk::Rinex3ObsHeader r_ref_header;
 
-            gpstk::RinexDatum dataobj;
+        gpstk::RinexDatum dataobj;
 
-            r_ref >> r_ref_header;
+        r_ref >> r_ref_header;
 
-            std::vector<gpstk::RinexObsID> typelist = r_ref_header.obsTypeList;
-
-            std::vector<gpstk::RinexObsID>::iterator it;
-            for(it = typelist.begin(); it != typelist.end(); it++)
-                {
-                    gpstk::RinexObsID id = *it;
-                    std::cout << "ID: " << id.asString() << std::endl;
-                }
-
-            //int indexC1_ref(  r_ref_header.getObsIndex( "C1" ) );
-            //int indexL1_ref(  r_ref_header.getObsIndex( "L1P" ) );
-            std::cout << r_ref_header.stringSystemNumObs << std::endl;
-
+        while (r_ref >> r_ref_data)
+        {
             for (int myprn = 1; myprn < 33; myprn++)
+            {
+                gpstk::SatID prn( myprn, gpstk::SatID::systemGPS );
+                //std::cout << " PRN " << myprn <<  std::endl;
+                gpstk::CommonTime time = r_ref_data.time;
+                //std::cout << time  << " " << std::endl;
+                double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
+                //std::cout << "Time: " << sow << std::endl;
+
+                gpstk::Rinex3ObsData::DataMap::iterator pointer = r_ref_data.obs.find(prn);
+                if( pointer ==  r_ref_data.obs.end() )
                 {
-                     gpstk::SatID prn( myprn, gpstk::SatID::systemGPS );
-                    while (r_ref >> r_ref_data)
-                        {
-                            std::cout << r_ref_data.time  << " " << std::endl;
-
-
-                            gpstk::Rinex3ObsData::DataMap::iterator pointer = r_ref_data.obs.find(prn);
-                            if( pointer ==  r_ref_data.obs.end() )
-                                {
-                                    std::cout << "PRN " << myprn << " not in view " << std::endl;
-                                }
-                            else
-                                {
-                                    // Get P1, P2 and L1 observations
-                                    // Here there are three equivalent ways to get the RinexDatum
-                                    // from the RinexObsData object
-
-                                    // The first one is a fast but DANGEROUS method, because there
-                                    // is a chance of unawarely change the contents of "roe.obs".
-                                    // -----------------------------------------------------------
-                                    //dataobj = r_ref_data.obs[prn][indexC1_ref];
-                                    //double C1 = dataobj.data;
-
-                                    // The second method is secure but a little slower.
-                                    // This should be your preferred method
-                                    // -----------------------------------------------------------
-                                    dataobj = r_ref_data.getObs(prn, "P1",  r_ref_header);
-                                    double P1 = dataobj.data;
-                                    std::cout << P1 << " " << std::endl;
-
-                                    //dataobj = r_ref_data.getObs(prn, "L1",  r_ref_header);
-                                    //double L1 = dataobj.data;
-
-                                    gpstk::CommonTime time = r_ref_data.time;
-                                    //std::cout << time.getSecondOfDay() << std::endl;
-
-
-
-
-
-                                    std::cout << " PRN " << myprn <<  std::endl;
-
-                                }  // End of 'if( pointer == roe.obs.end() )'
-
-                        }
+                    // PRN not present; do nothing
                 }
+                else
+                {
+                    dataobj = r_ref_data.getObs(prn, "P1",  r_ref_header);
+                    double P1 = dataobj.data;
+                    std::map<double, double> pseudo;
+                    pseudo[sow] =  P1;
+                    pseudorange_ref.at(myprn).push_back(pseudo);
+
+                    dataobj = r_ref_data.getObs(prn, "L1C",  r_ref_header);
+                    double L1 = dataobj.data;
+                    std::map<double, double> carrier;
+                    carrier[sow]= L1;
+                    carrierphase_ref.at(myprn).push_back(carrier);
+                }  // End of 'if( pointer == roe.obs.end() )'
+            } // end for
+        } // end while
     } // End of 'try' block
     catch(gpstk::FFStreamError& e)
     {
@@ -444,52 +411,77 @@ void Trk_System_Test::check_results()
             std::cout << "unknown error.  I don't feel so well..." << std::endl;
             exit(1);
     }
-//    FILE *fp;
-//    FILE *fp2;
-//    int status;
-//    char buffer[1035];
-//
-//    /* Open the command for reading. */
-//    std::string argum = path_RinDump + " " + arg1 + " " + arg2 + " " + arg3 + " " + arg4 + " " + arg5;
-//
-//    fp = popen(&argum[0], "r");
-//    if (fp == NULL)
-//        {
-//            std::cout << "Failed to run command: " << argum << std::endl;
-//        }
-//
-//    /* Read the output a line at a time - output it. */
-//    while (fgets(buffer, sizeof(buffer), fp) != NULL)
-//        {
-//            printf("Reading line: %s", buffer);
-//        }
-//    pclose(fp);
 
-    // Open generated RINEX observables file
-    std::string arg2_gen = std::string("./") + generated_rinex_obs;
-    gpstk::Rinex3ObsStream r_meas(arg2_gen);
-    gpstk::Rinex3ObsData r_meas_data;
-    gpstk::Rinex3ObsHeader r_meas_header;
+    // Example: count observations per sat:
+    std::vector<std::vector<std::map<double, double>> >::iterator iter;
+    int prn_id=0;
+    for(iter = pseudorange_ref.begin(); iter != pseudorange_ref.end(); iter++)
+    {
+        double size_v = iter->size();
+        std::cout << "Size for sat " << prn_id << ": " << size_v << std::endl;
+        prn_id++;
+    }
 
-    r_meas >> r_meas_header;
+    // Open GNSS-SDR-generated RINEX observables file
+    try
+    {
+        std::string arg2_gen = std::string("./") + generated_rinex_obs;
+        gpstk::Rinex3ObsStream r_meas(arg2_gen);
+        gpstk::Rinex3ObsData r_meas_data;
+        gpstk::Rinex3ObsHeader r_meas_header;
+        gpstk::RinexDatum dataobj;
 
-     //int indexC1_meas(  r_meas_header.getObsIndex( "C1" ) );
-     //int indexL1_meas(  r_meas_header.getObsIndex( "L1" ) );
-//    std::string argum2 = path_RinDump + " " + arg1 + " " + arg2_gen + " " + arg3 + " " + arg4 + " " + arg5;
-//
-//    fp2 = popen(&argum2[0], "r");
-//    if (fp2 == NULL)
-//        {
-//            printf("Failed to run command\n" );
-//        }
-//
-//    /* Read the output a line at a time - output it. */
-//    while (fgets(buffer, sizeof(buffer), fp2) != NULL)
-//        {
-//            printf("Reading generated line: %s", buffer);
-//        }
-//
-//    pclose(fp2);
+        r_meas >> r_meas_header;
+
+        while (r_meas >> r_meas_data)
+        {
+            for (int myprn = 1; myprn < 33; myprn++)
+            {
+                gpstk::SatID prn( myprn, gpstk::SatID::systemGPS );
+                //std::cout << " PRN " << myprn <<  std::endl;
+                gpstk::CommonTime time = r_meas_data.time;
+                //std::cout << time  << " " << std::endl;
+                double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
+                //std::cout << "Time: " << sow << std::endl;
+
+                gpstk::Rinex3ObsData::DataMap::iterator pointer = r_meas_data.obs.find(prn);
+                if( pointer ==  r_meas_data.obs.end() )
+                {
+                    // PRN not present; do nothing
+                }
+                else
+                {
+                    dataobj = r_meas_data.getObs(prn, "C1",  r_meas_header);
+                    double P1 = dataobj.data;
+                    std::map<double, double> pseudo;
+                    pseudo[sow] =  P1;
+                    pseudorange_meas.at(myprn).push_back(pseudo);
+
+                    dataobj = r_meas_data.getObs(prn, "L1C",  r_meas_header);
+                    double L1 = dataobj.data;
+                    std::map<double, double> carrier;
+                    carrier[sow]= L1;
+                    carrierphase_meas.at(myprn).push_back(carrier);
+                }  // End of 'if( pointer == roe.obs.end() )'
+            } // end for
+        } // end while
+    } // End of 'try' block
+    catch(gpstk::FFStreamError& e)
+    {
+            std::cout << e;
+            exit(1);
+    }
+    catch(gpstk::Exception& e)
+    {
+            std::cout << e;
+            exit(1);
+    }
+    catch (...)
+    {
+            std::cout << "unknown error.  I don't feel so well..." << std::endl;
+            exit(1);
+    }
+
     // Time alignment!
 
     // Read reference pseudoranges from a given satellite

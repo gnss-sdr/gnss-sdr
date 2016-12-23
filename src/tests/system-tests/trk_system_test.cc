@@ -1,3 +1,34 @@
+/*!
+ * \file trk_system_test.cc
+ * \brief  This class implements a test for the validation of generated observables.
+ * \author Carles Fernandez-Prades, 2016. cfernandez(at)cttc.es
+ *
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2016  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
+
 
 #include <exception>
 #include <iostream>
@@ -14,6 +45,12 @@
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "in_memory_configuration.h"
+
+#include "Rinex3ObsBase.hpp"
+#include "Rinex3ObsData.hpp"
+#include "Rinex3ObsHeader.hpp"
+#include "Rinex3ObsStream.hpp"
+
 
 DEFINE_string(generator_binary, std::string(SW_GENERATOR_BIN), "Path of Software Geenrator binary");
 DEFINE_string(rinex_nav_file, std::string(DEFAULT_RINEX_NAV), "Input RINEX navigation file");
@@ -292,7 +329,7 @@ int Trk_System_Test::run_receiver()
     fp = popen(&argum2[0], "r");
     if (fp == NULL)
         {
-          printf("Failed to run command\n" );
+            std::cout << "Failed to run command: " << argum2 << std::endl;
         }
     char * without_trailing;
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
@@ -319,44 +356,140 @@ void Trk_System_Test::check_results()
     std::string arg4 = std::string("C1C");
     std::string arg5 = std::string("--headless");
 
-    FILE *fp;
-    FILE *fp2;
-    int status;
-    char buffer[1035];
+    try
+    {
+            gpstk::Rinex3ObsStream r_ref(FLAGS_filename_rinex_obs);
+            r_ref.exceptions(std::ios::failbit);
+            gpstk::Rinex3ObsData r_ref_data;
+            gpstk::Rinex3ObsHeader r_ref_header;
 
-    /* Open the command for reading. */
-    std::string argum = path_RinDump + " " + arg1 + " " + arg2 + " " + arg3 + " " + arg4 + " " + arg5;
+            gpstk::RinexDatum dataobj;
 
-    fp = popen(&argum[0], "r");
-    if (fp == NULL)
-     {
-       printf("Failed to run command\n" );
-     }
+            r_ref >> r_ref_header;
 
-     /* Read the output a line at a time - output it. */
-     while (fgets(buffer, sizeof(buffer), fp) != NULL)
-     {
-       printf("Reading line: %s", buffer);
-     }
-     pclose(fp);
+            std::vector<gpstk::RinexObsID> typelist = r_ref_header.obsTypeList;
+
+            std::vector<gpstk::RinexObsID>::iterator it;
+            for(it = typelist.begin(); it != typelist.end(); it++)
+                {
+                    gpstk::RinexObsID id = *it;
+                    std::cout << "ID: " << id.asString() << std::endl;
+                }
+
+            //int indexC1_ref(  r_ref_header.getObsIndex( "C1" ) );
+            //int indexL1_ref(  r_ref_header.getObsIndex( "L1P" ) );
+            std::cout << r_ref_header.stringSystemNumObs << std::endl;
+
+            for (int myprn = 1; myprn < 33; myprn++)
+                {
+                     gpstk::SatID prn( myprn, gpstk::SatID::systemGPS );
+                    while (r_ref >> r_ref_data)
+                        {
+                            std::cout << r_ref_data.time  << " " << std::endl;
+
+
+                            gpstk::Rinex3ObsData::DataMap::iterator pointer = r_ref_data.obs.find(prn);
+                            if( pointer ==  r_ref_data.obs.end() )
+                                {
+                                    std::cout << "PRN " << myprn << " not in view " << std::endl;
+                                }
+                            else
+                                {
+                                    // Get P1, P2 and L1 observations
+                                    // Here there are three equivalent ways to get the RinexDatum
+                                    // from the RinexObsData object
+
+                                    // The first one is a fast but DANGEROUS method, because there
+                                    // is a chance of unawarely change the contents of "roe.obs".
+                                    // -----------------------------------------------------------
+                                    //dataobj = r_ref_data.obs[prn][indexC1_ref];
+                                    //double C1 = dataobj.data;
+
+                                    // The second method is secure but a little slower.
+                                    // This should be your preferred method
+                                    // -----------------------------------------------------------
+                                    dataobj = r_ref_data.getObs(prn, "P1",  r_ref_header);
+                                    double P1 = dataobj.data;
+                                    std::cout << P1 << " " << std::endl;
+
+                                    //dataobj = r_ref_data.getObs(prn, "L1",  r_ref_header);
+                                    //double L1 = dataobj.data;
+
+                                    gpstk::CommonTime time = r_ref_data.time;
+                                    //std::cout << time.getSecondOfDay() << std::endl;
+
+
+
+
+
+                                    std::cout << " PRN " << myprn <<  std::endl;
+
+                                }  // End of 'if( pointer == roe.obs.end() )'
+
+                        }
+                }
+    } // End of 'try' block
+    catch(gpstk::FFStreamError& e)
+    {
+            std::cout << e;
+            exit(1);
+    }
+    catch(gpstk::Exception& e)
+    {
+            std::cout << e;
+            exit(1);
+    }
+    catch (...)
+    {
+            std::cout << "unknown error.  I don't feel so well..." << std::endl;
+            exit(1);
+    }
+//    FILE *fp;
+//    FILE *fp2;
+//    int status;
+//    char buffer[1035];
+//
+//    /* Open the command for reading. */
+//    std::string argum = path_RinDump + " " + arg1 + " " + arg2 + " " + arg3 + " " + arg4 + " " + arg5;
+//
+//    fp = popen(&argum[0], "r");
+//    if (fp == NULL)
+//        {
+//            std::cout << "Failed to run command: " << argum << std::endl;
+//        }
+//
+//    /* Read the output a line at a time - output it. */
+//    while (fgets(buffer, sizeof(buffer), fp) != NULL)
+//        {
+//            printf("Reading line: %s", buffer);
+//        }
+//    pclose(fp);
 
     // Open generated RINEX observables file
-    std::string arg2_gen = "./" + generated_rinex_obs;
-    std::string argum2 = path_RinDump + " " + arg1 + " " + arg2_gen + " " + arg3 + " " + arg4 + " " + arg5;
+    std::string arg2_gen = std::string("./") + generated_rinex_obs;
+    gpstk::Rinex3ObsStream r_meas(arg2_gen);
+    gpstk::Rinex3ObsData r_meas_data;
+    gpstk::Rinex3ObsHeader r_meas_header;
 
-    fp2 = popen(&argum2[0], "r");
-    if (fp2 == NULL)
-    {
-      printf("Failed to run command\n" );
-    }
+    r_meas >> r_meas_header;
 
-    /* Read the output a line at a time - output it. */
-    while (fgets(buffer, sizeof(buffer), fp2) != NULL)
-    {
-      printf("Reading generated line: %s", buffer);
-    }
-
-    pclose(fp2);
+     //int indexC1_meas(  r_meas_header.getObsIndex( "C1" ) );
+     //int indexL1_meas(  r_meas_header.getObsIndex( "L1" ) );
+//    std::string argum2 = path_RinDump + " " + arg1 + " " + arg2_gen + " " + arg3 + " " + arg4 + " " + arg5;
+//
+//    fp2 = popen(&argum2[0], "r");
+//    if (fp2 == NULL)
+//        {
+//            printf("Failed to run command\n" );
+//        }
+//
+//    /* Read the output a line at a time - output it. */
+//    while (fgets(buffer, sizeof(buffer), fp2) != NULL)
+//        {
+//            printf("Reading generated line: %s", buffer);
+//        }
+//
+//    pclose(fp2);
     // Time alignment!
 
     // Read reference pseudoranges from a given satellite

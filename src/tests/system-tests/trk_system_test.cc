@@ -347,9 +347,11 @@ void Trk_System_Test::check_results()
 {
     std::vector<std::vector<std::pair<double, double>> > pseudorange_ref(33);
     std::vector<std::vector<std::pair<double, double>> > carrierphase_ref(33);
+    std::vector<std::vector<std::pair<double, double>> > doppler_ref(33);
 
     std::vector<std::vector<std::pair<double, double>> > pseudorange_meas(33);
     std::vector<std::vector<std::pair<double, double>> > carrierphase_meas(33);
+    std::vector<std::vector<std::pair<double, double>> > doppler_meas(33);
 
     // Open and read reference RINEX observables file
     try
@@ -387,6 +389,11 @@ void Trk_System_Test::check_results()
                                     double L1 = dataobj.data;
                                     std::pair<double, double> carrier(sow, L1);
                                     carrierphase_ref.at(myprn).push_back(carrier);
+
+                                    dataobj = r_ref_data.getObs(prn, "D1C",  r_ref_header);
+                                    double D1 = dataobj.data;
+                                    std::pair<double, double> doppler(sow, D1);
+                                    doppler_ref.at(myprn).push_back(doppler);
                                 }  // End of 'if( pointer == roe.obs.end() )'
                         } // end for
                 } // end while
@@ -453,6 +460,11 @@ void Trk_System_Test::check_results()
                                     double L1 = dataobj.data;
                                     std::pair<double, double> carrier(sow,L1);
                                     carrierphase_meas.at(myprn).push_back(carrier);
+
+                                    dataobj = r_meas_data.getObs(prn, "D1C",  r_meas_header);
+                                    double D1 = dataobj.data;
+                                    std::pair<double, double> doppler(sow, L1);
+                                    doppler_meas.at(myprn).push_back(doppler);
                                 }  // End of 'if( pointer == roe.obs.end() )'
                         } // end for
                 } // end while
@@ -476,6 +488,7 @@ void Trk_System_Test::check_results()
     // Time alignment
     std::vector<std::vector<std::pair<double, double>> > pseudorange_ref_aligned(33);
     std::vector<std::vector<std::pair<double, double>> > carrierphase_ref_aligned(33);
+    std::vector<std::vector<std::pair<double, double>> > doppler_ref_aligned(33);
 
     std::vector<std::vector<std::pair<double, double>> >::iterator iter;
     std::vector<std::pair<double, double>>::iterator it;
@@ -483,6 +496,7 @@ void Trk_System_Test::check_results()
 
     std::vector<std::vector<double>> pr_diff(33);
     std::vector<std::vector<double>> cp_diff(33);
+    std::vector<std::vector<double>> doppler_diff(33);
 
     std::vector<std::vector<double>>::iterator iter_diff;
     std::vector<double>::iterator iter_v;
@@ -517,6 +531,23 @@ void Trk_System_Test::check_results()
                                 {
                                     carrierphase_ref_aligned.at(prn_id).push_back(*it);
                                     cp_diff.at(prn_id).push_back(it->second - it2->second );
+                                }
+                        }
+                }
+            prn_id++;
+        }
+    prn_id = 0;
+    for(iter = doppler_ref.begin(); iter != doppler_ref.end(); iter++)
+        {
+            for(it = iter->begin(); it != iter->end(); it++)
+                {
+                    // If a measure exists for this sow, store it
+                    for(it2 = doppler_meas.at(prn_id).begin(); it2 != doppler_meas.at(prn_id).end(); it2++)
+                        {
+                            if(std::abs(it->first - it2->first) < 0.001) // store measures closer than 1 ms.
+                                {
+                                    doppler_ref_aligned.at(prn_id).push_back(*it);
+                                    doppler_diff.at(prn_id).push_back(it->second - it2->second );
                                 }
                         }
                 }
@@ -566,6 +597,32 @@ void Trk_System_Test::check_results()
                 {
                     mean_diff = mean_diff / number_obs;
                     std::cout << "-- Mean carrier phase difference for sat " << prn_id << ": " << mean_diff << std::endl;
+                }
+            else
+                {
+                    mean_diff = 0.0;
+                }
+
+            prn_id++;
+        }
+
+    // Compute doppler error
+    prn_id = 0;
+    for(iter_diff = doppler_diff.begin(); iter_diff != doppler_diff.end(); iter_diff++)
+        {
+            // For each satellite with reference and measurements aligned in time
+            int number_obs = 0;
+            double mean_diff = 0.0;
+            for(iter_v = iter_diff->begin(); iter_v != iter_diff->end(); iter_v++)
+                {
+                    //std::cout << *iter_v << std::endl;
+                    mean_diff = mean_diff + *iter_v;
+                    number_obs = number_obs + 1;
+                }
+            if(number_obs > 0)
+                {
+                    mean_diff = mean_diff / number_obs;
+                    std::cout << "-- Mean Doppler difference for sat " << prn_id << ": " << mean_diff << std::endl;
                 }
             else
                 {

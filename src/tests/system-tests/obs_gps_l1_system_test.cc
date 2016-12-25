@@ -555,7 +555,6 @@ void Obs_Gps_L1_System_Test::check_results()
             double mean_diff = 0.0;
             for(iter_v = iter_diff->begin(); iter_v != iter_diff->end(); iter_v++)
                 {
-                    //std::cout << *iter_v << std::endl;
                     mean_diff = mean_diff + *iter_v;
                     number_obs = number_obs + 1;
                 }
@@ -574,11 +573,11 @@ void Obs_Gps_L1_System_Test::check_results()
         }
     double sum_ = std::accumulate(mean_pr_diff_v.begin(), mean_pr_diff_v.end(), 0.0);
     double mean_ = sum_ / mean_pr_diff_v.size();
-    std::vector<double> diff_pr(mean_pr_diff_v.size());
-    std::transform(mean_pr_diff_v.begin(), mean_pr_diff_v.end(), diff_pr.begin(),
-                   std::bind2nd(std::minus<double>(), mean_));
-    double sq_sum_pr = std::inner_product(diff_pr.begin(), diff_pr.end(), diff_pr.begin(), 0.0);
-    double stdev_pr = std::sqrt(sq_sum_pr / mean_pr_diff_v.size());
+    double accum = 0.0;
+    std::for_each (std::begin(mean_pr_diff_v), std::end(mean_pr_diff_v), [&](const double d) {
+        accum += (d - mean_) * (d - mean_);
+    });
+    double stdev_pr = std::sqrt(accum / (mean_pr_diff_v.size() - 1));
     std::cout << "Pseudorange diff error stdev = " << stdev_pr << " [m]" << std::endl;
     ASSERT_LT(stdev_pr, 1.0);
 
@@ -591,7 +590,6 @@ void Obs_Gps_L1_System_Test::check_results()
             double mean_diff = 0.0;
             for(iter_v = iter_diff->begin(); iter_v != iter_diff->end(); iter_v++)
                 {
-                    //std::cout << *iter_v << std::endl;
                     mean_diff = mean_diff + *iter_v;
                     number_obs = number_obs + 1;
                 }
@@ -608,7 +606,7 @@ void Obs_Gps_L1_System_Test::check_results()
             prn_id++;
         }
 
-    // Compute doppler error
+    // Compute Doppler error
     prn_id = 0;
     std::vector<double> mean_doppler_v;
     for(iter_diff = doppler_diff.begin(); iter_diff != doppler_diff.end(); iter_diff++)
@@ -636,15 +634,14 @@ void Obs_Gps_L1_System_Test::check_results()
             prn_id++;
         }
     sum_ = std::accumulate(mean_doppler_v.begin(), mean_doppler_v.end(), 0.0);
-    mean_ = sum_ /mean_doppler_v.size();
-    std::vector<double> diff_dp(mean_doppler_v.size());
-    std::transform(mean_doppler_v.begin(), mean_doppler_v.end(), diff_dp.begin(),
-                   std::bind2nd(std::minus<double>(), mean_));
-    double sq_sum_dp = std::inner_product(diff_dp.begin(), diff_dp.end(), diff_dp.begin(), 0.0);
-    double stdev_dp = std::sqrt(sq_sum_dp / mean_doppler_v.size());
+    mean_ = sum_ / mean_doppler_v.size();
+    accum = 0.0;
+    std::for_each (std::begin(mean_doppler_v), std::end(mean_doppler_v), [&](const double d) {
+        accum += (d - mean_) * (d - mean_);
+    });
+    double stdev_dp = std::sqrt(accum / (mean_doppler_v.size() - 1));
     std::cout << "Doppler error stdev = " << stdev_dp << " [Hz]" << std::endl;
     ASSERT_LT(stdev_dp, 1.0);
-    //return 0;
 }
 
 

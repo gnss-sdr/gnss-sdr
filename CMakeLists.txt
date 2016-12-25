@@ -436,30 +436,46 @@ endif()
 # volk_gnsssdr module - GNSS-SDR's own VOLK library
 ################################################################################
 find_package(VolkGnssSdr)
-if(ENABLE_PACKAGING)
-    if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-        set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON")
-    endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-endif(ENABLE_PACKAGING)
-set(VOLK_GNSSSDR_BUILD_COMMAND "make")
-if(PYTHON_EXECUTABLE)
-     set(USE_THIS_PYTHON "-DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
-endif(PYTHON_EXECUTABLE)
-if(OS_IS_MACOSX)
-     if(NOT PYTHON_EXECUTABLE)
-         find_file(MAC_PYTHON python
-                   PATHS /opt/local/bin
-                         /usr/local/bin )
-         if(MAC_PYTHON)
-              set(USE_THIS_PYTHON "-DPYTHON_EXECUTABLE=${MAC_PYTHON}")
-         endif(MAC_PYTHON)
-     endif(NOT PYTHON_EXECUTABLE)
-    if(CMAKE_GENERATOR STREQUAL Xcode)
-        set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "Debug" "-target")
-    endif(CMAKE_GENERATOR STREQUAL Xcode)
-endif(OS_IS_MACOSX)
+
 if(NOT VOLK_GNSSSDR_FOUND)
     message(STATUS " volk_gnsssdr will be built along with gnss-sdr when doing 'make'")
+    ###############################
+    # Find Python required modules
+    ###############################
+    include(SetupPython) #sets PYTHON_EXECUTABLE and PYTHON_DASH_B
+    GNSSSDR_PYTHON_CHECK_MODULE("python >= 2.7" sys "sys.version.split()[0] >= '2.7'" PYTHON_MIN_VER_FOUND)
+    GNSSSDR_PYTHON_CHECK_MODULE("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
+    GNSSSDR_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+
+    if(NOT PYTHON_MIN_VER_FOUND)
+        message(FATAL_ERROR "Python 2.7 or greater required to build VOLK_GNSSSDR")
+    endif()
+
+    #  Mako
+    if(NOT MAKO_FOUND)
+        message(FATAL_ERROR "Mako templates required to build VOLK_GNSSSDR")
+    endif(NOT MAKO_FOUND)
+    # Six
+    if(NOT SIX_FOUND)
+        message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
+    endif(NOT SIX_FOUND)
+    
+    if(ENABLE_PACKAGING)
+        if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+            set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON")
+        endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    endif(ENABLE_PACKAGING)
+    
+    set(VOLK_GNSSSDR_BUILD_COMMAND "make")
+    if(PYTHON_EXECUTABLE)
+        set(USE_THIS_PYTHON "-DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
+    endif(PYTHON_EXECUTABLE)
+    if(OS_IS_MACOSX)
+        if(CMAKE_GENERATOR STREQUAL Xcode)
+            set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "Debug" "-target")
+        endif(CMAKE_GENERATOR STREQUAL Xcode)
+    endif(OS_IS_MACOSX)
+    
     set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     set(C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
     if(CMAKE_CROSSCOMPILING)  

@@ -442,6 +442,8 @@ $ sudo port install gnuradio
 $ sudo port install armadillo
 $ sudo port install gnutls
 $ sudo port install google-glog +gflags
+$ sudo port install py27-mako
+$ sudo port install py27-six
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:

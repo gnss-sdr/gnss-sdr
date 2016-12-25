@@ -17,7 +17,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux
 ----------
 
- * Tested distributions: Ubuntu from 14.04 LTS to 16.10, Debian 8.0 "jessie", Linaro 15.03
+ * Tested distributions: Ubuntu 14.04 LTS and above, Debian 8.0 "jessie" and above, Linaro 15.03
  * Known to work but not continually tested: Arch Linux, Fedora, and openSUSE
  * Supported microprocessor architectures:
    * i386: Intel x86 instruction set (32-bit microprocessors).
@@ -128,9 +128,9 @@ or manually as explained below, and then please follow instructions on how to [d
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-7.500.2.tar.xz
-$ tar xvfz armadillo-7.500.2.tar.xz
-$ cd armadillo-7.500.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-7.600.2.tar.xz
+$ tar xvfz armadillo-7.600.2.tar.xz
+$ cd armadillo-7.600.2
 $ cmake .
 $ make
 $ sudo make install
@@ -520,29 +520,28 @@ changing ```/opt/local``` by the base directory in which your software is instal
 The CMake script will create Makefiles that download, build and link Armadillo, Gflags, Glog and Google Test on the fly at compile time if they are not detected in your machine.
 
 
-Android
-----------
-
-In the framework of the [Google Summer of Code](https://summerofcode.withgoogle.com/) program [2016](https://summerofcode.withgoogle.com/organizations/4864875935301632/) there is a project working on a [GNSS-SDR Android port](https://summerofcode.withgoogle.com/projects/?sp-page=2#4871316700135424).
-
-See https://github.com/Hoernchen/grand-build for ongoing work on a script which will build GNSS-SDR for Android.
-
 
 Updating GNSS-SDR
 =================
 
-If you cloned GNSS-SDR some time ago, it is possible that some developer has updated files at the Git repository. You can update your working copy by doing:
+If you cloned or forked GNSS-SDR some time ago, it is possible that some developer has updated files at the Git repository. If you still have not done so, add the ```upstream``` repository to the list of remotes:
 
 ~~~~~~
-$ git checkout master      # Switch to branch you want to update
-$ git pull origin master   # Download the newest code from our repository
+$ git remote add upstream https://github.com/gnss-sdr/gnss-sdr.git
+~~~~~~
+
+and then you can update your working copy by doing:
+
+~~~~~~
+$ git checkout master        # Switch to branch you want to update
+$ git pull upstream master   # Download the newest code from our repository
 ~~~~~~
 
 or, if you want to test the latest developments:
 
 ~~~~~~
 $ git checkout next
-$ git pull origin next
+$ git pull upstream next
 ~~~~~~
 
 Before rebuilding the source code, it is safe (and recommended) to remove the remainders of old compilations:
@@ -553,7 +552,7 @@ $ rm -rf gnss-sdr/build/*
 
 If you are interested in contributing to the development of GNSS-SDR, please check out [how to do it](http://gnss-sdr.org/contribute/ "How to contribute to GNSS-SDR source code").
 
-There is a more controlled way to upgrade your repository, which is to use the Git commands ```fetch``` and ```merge```, as described [here](http://gnss-sdr.org/docs/tutorials/using-git/).
+There is a more controlled way to upgrade your repository, which is to use the Git commands ```fetch``` and ```merge```, as described in our [Git Tutorial](http://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
 
 
 
@@ -1277,69 +1276,11 @@ But what this also means is that non-GPL code cannot use GPL code. This means th
 Publications and Credits
 ========================
 
-If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate if you reference any of these articles to credit the GNSS-SDR project:
+If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate if you reference the following article to credit the GNSS-SDR project:
 
-  * J. Arribas, M. Branzanti, C. Fern&aacute;ndez-Prades, P. Closas, [Fastening GPS and Galileo Tight with a Software Receiver](http://www.cttc.es/publication/fastening-gps-and-galileo-tight-with-a-software-receiver/), in Proc. of the ION GNSS+ 2014 Conference, Tampa, Florida, Sept. 2014.
-  * J. Arribas, P. Closas, C. Fern&aacute;ndez-Prades, [Interference Mitigation in GNSS Receivers by Array Signal Processing: A Software Radio Approach](http://www.cttc.es/publication/interference-mitigation-in-gnss-receivers-by-array-signal-processing-a-software-radio-approach/), in Proc. of the 8th IEEE Sensor Array and Multichannel Signal Processing Workshop, A Coru&ntilde;a, Spain, June 2014.
-  * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, [Turning a Television into a GNSS Receiver](http://www.cttc.es/publication/turning-a-television-into-a-gnss-receiver/), in Proc. of the ION GNSS+ 2013 Conference, Nashville, Tennessee, Sept. 2013.
-  * C. Fern&aacute;ndez-Prades, J. Arribas, L. Esteve, D. Pubill, P. Closas, [An Open Source Galileo E1 Software Receiver](http://www.cttc.es/publication/an-open-source-galileo-e1-software-receiver/), in Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC 2012), ESTEC, Noordwijk, The Netherlands, Dec. 2012.
-  * J. Arribas, [GNSS Array-based Acquisition: Theory and Implementation](http://theses.eurasip.org/theses/449/gnss-array-based-acquisition-theory-and/), PhD Thesis, Universitat Polit&egrave;cnica de Catalunya, Barcelona, Spain, June 2012.
-  * C. Fern&aacute;ndez-Prades, J. Arribas,  P. Closas, C. Avil&eacute;s, and L. Esteve, [GNSS-SDR: an open source tool for researchers and developers](http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/), in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011.
-  * C. Fern&aacute;ndez-Prades, C. Avil&eacute;s, L. Esteve, J. Arribas, and P. Closas, [Design patterns for GNSS software receivers](http://www.cttc.es/publication/design-patterns-for-gnss-software-receivers/), in Proc. of the 5th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2010), ESTEC, Noordwijk, The Netherlands, Dec. 2010. DOI:10.1109/NAVITEC.2010.5707981
+ * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, C. Avil&eacute;s, and L. Esteve, [GNSS-SDR: an open source tool for researchers and developers](http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/), in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011.
 
-For LaTeX users, these are the BibTeX cites for your convenience:
-~~~~~~
-@INPROCEEDINGS{GNSS-SDR14b,
- AUTHOR = {J.~Arribas and M.~Branzanti and C.~{Fern\'{a}ndez--Prades} and P.~Closas},
- TITLE = {Fastening {GPS} and {G}alileo Tight with a Software Receiver},
- BOOKTITLE = {Proc. of the ION GNSS+ 2014 Conference},
- YEAR = {2014},
- address = {Tampa, Florida},
- month = {Sept.}
-}
-~~~~~~
-
-~~~~~~
-@INPROCEEDINGS{GNSS-SDR14a,
- AUTHOR = {J.~Arribas  and P.~Closas and C.~{Fern\'{a}ndez--Prades}},
- TITLE = {Interference Mitigation in {GNSS} Receivers by Array Signal Processing: {A} Software Radio Approach},
- BOOKTITLE = {Proc. of the 8th IEEE Sensor Array and Multichannel Signal Processing Workshop},
- YEAR = {2014},
- address = {A Coru\~{n}a, Spain},
- month = {June}
-}
-~~~~~~
-
-~~~~~~
-@INPROCEEDINGS{GNSS-SDR13,
- AUTHOR = {C.~{Fern\'{a}ndez--Prades} and J.~Arribas and P.~Closas},
- TITLE = {Turning a Television into a {GNSS} Receiver},
- BOOKTITLE = {Proc. of the ION GNSS+ 2013 Conference},
- YEAR = {2013},
- address = {Nashville, Tennessee},
- month = {Sept.}
-}
-~~~~~~
-
-~~~~~~
-@INPROCEEDINGS{GNSS-SDR12
-  author = {C.~{Fern\'{a}ndez--Prades} and J.~Arribas and L.~Esteve and D.~Pubill and P.~Closas},
-  title = {An Open Source {G}alileo {E1} Software Receiver},
-  booktitle = {Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2012)},
-  year = {2012},
-  address = {ESTEC, Noordwijk, The Netherlands},
-  month = {Dec.} }
-~~~~~~
-
-~~~~~~
-@PHDTHESIS{Arribas12,
-  author = {J.~Arribas},
-  title = {{GNSS} Array-based Acquisition: Theory and Implementation},
-  school = {Universitat Polit\`{e}cnica de Catalunya},
-  year = {2012},
-  address = {Barcelona, Spain},
-  month = {June} }
-~~~~~~
+For LaTeX users, this is the BibTeX entry for your convenience:
 
 ~~~~~~
 @INPROCEEDINGS{GNSS-SDR11,
@@ -1351,17 +1292,8 @@ For LaTeX users, these are the BibTeX cites for your convenience:
  month = {Sept.} }
 ~~~~~~
 
-~~~~~~
-@INPROCEEDINGS{GNSS-SDR10,
- AUTHOR = {C.~{Fern\'{a}ndez--Prades} and C.~Avil\'{e}s and L.~Esteve and J.~Arribas and P.~Closas},
- TITLE = {Design patterns for {GNSS} software receivers},
- BOOKTITLE = {Proc. of the 5th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2010)},
- YEAR = {2010},
- address = {ESTEC, Noordwijk, The Netherlands},
- month = {Dec.},
- note = {DOI:10.1109/NAVITEC.2010.5707981} }
-~~~~~~
 
+There is a list of papers related to GNSS-SDR in our [publications page](http://gnss-sdr.org/publications/ "Publications").
 
 
 

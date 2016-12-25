@@ -33,6 +33,7 @@
 #include <exception>
 #include <iostream>
 #include <cstring>
+#include <numeric>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>
@@ -458,12 +459,12 @@ void Trk_System_Test::check_results()
 
                                     dataobj = r_meas_data.getObs(prn, "L1C",  r_meas_header);
                                     double L1 = dataobj.data;
-                                    std::pair<double, double> carrier(sow,L1);
+                                    std::pair<double, double> carrier(sow, L1);
                                     carrierphase_meas.at(myprn).push_back(carrier);
 
                                     dataobj = r_meas_data.getObs(prn, "D1C",  r_meas_header);
                                     double D1 = dataobj.data;
-                                    std::pair<double, double> doppler(sow, L1);
+                                    std::pair<double, double> doppler(sow, D1);
                                     doppler_meas.at(myprn).push_back(doppler);
                                 }  // End of 'if( pointer == roe.obs.end() )'
                         } // end for
@@ -531,6 +532,7 @@ void Trk_System_Test::check_results()
                                 {
                                     carrierphase_ref_aligned.at(prn_id).push_back(*it);
                                     cp_diff.at(prn_id).push_back(it->second - it2->second );
+                                    // std::cout << "Sat " << prn_id << ": " << "Carrier_ref=" << it->second << "   Carrier_meas=" << it2->second << std::endl;
                                 }
                         }
                 }
@@ -556,6 +558,7 @@ void Trk_System_Test::check_results()
 
     // Compute pseudorange error
     prn_id = 0;
+    std::vector<double> mean_pr_diff_v;
     for(iter_diff = pr_diff.begin(); iter_diff != pr_diff.end(); iter_diff++)
         {
             // For each satellite with reference and measurements aligned in time
@@ -570,6 +573,7 @@ void Trk_System_Test::check_results()
             if(number_obs > 0)
                 {
                     mean_diff = mean_diff / number_obs;
+                    mean_pr_diff_v.push_back(mean_diff);
                     std::cout << "-- Mean pseudorange difference for sat " << prn_id << ": " << mean_diff << std::endl;
                 }
             else
@@ -579,6 +583,15 @@ void Trk_System_Test::check_results()
 
             prn_id++;
         }
+    double sum_ = std::accumulate(mean_pr_diff_v.begin(), mean_pr_diff_v.end(), 0.0);
+    double mean_ = sum_ / mean_pr_diff_v.size();
+    std::vector<double> diff_pr(mean_pr_diff_v.size());
+    std::transform(mean_pr_diff_v.begin(), mean_pr_diff_v.end(), diff_pr.begin(),
+                   std::bind2nd(std::minus<double>(), mean_));
+    double sq_sum_pr = std::inner_product(diff_pr.begin(), diff_pr.end(), diff_pr.begin(), 0.0);
+    double stdev_pr = std::sqrt(sq_sum_pr / mean_pr_diff_v.size());
+    std::cout << "Pseudorange diff error stdev = " << stdev_pr << " [m]" << std::endl;
+    ASSERT_LT(stdev_pr, 1.0);
 
     // Compute carrier phase error
     prn_id = 0;
@@ -608,6 +621,7 @@ void Trk_System_Test::check_results()
 
     // Compute doppler error
     prn_id = 0;
+    std::vector<double> mean_doppler_v;
     for(iter_diff = doppler_diff.begin(); iter_diff != doppler_diff.end(); iter_diff++)
         {
             // For each satellite with reference and measurements aligned in time
@@ -622,6 +636,7 @@ void Trk_System_Test::check_results()
             if(number_obs > 0)
                 {
                     mean_diff = mean_diff / number_obs;
+                    mean_doppler_v.push_back(mean_diff);
                     std::cout << "-- Mean Doppler difference for sat " << prn_id << ": " << mean_diff << std::endl;
                 }
             else
@@ -631,7 +646,15 @@ void Trk_System_Test::check_results()
 
             prn_id++;
         }
-
+    sum_ = std::accumulate(mean_doppler_v.begin(), mean_doppler_v.end(), 0.0);
+    mean_ = sum_ /mean_doppler_v.size();
+    std::vector<double> diff_dp(mean_doppler_v.size());
+    std::transform(mean_doppler_v.begin(), mean_doppler_v.end(), diff_dp.begin(),
+                   std::bind2nd(std::minus<double>(), mean_));
+    double sq_sum_dp = std::inner_product(diff_dp.begin(), diff_dp.end(), diff_dp.begin(), 0.0);
+    double stdev_dp = std::sqrt(sq_sum_dp / mean_doppler_v.size());
+    std::cout << "Doppler error stdev = " << stdev_dp << " [Hz]" << std::endl;
+    ASSERT_LT(stdev_dp, 1.0);
     //return 0;
 }
 

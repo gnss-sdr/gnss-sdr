@@ -1,5 +1,5 @@
 /*!
- * \file trk_system_test.cc
+ * \file obs_gps_l1_system_test.cc
  * \brief  This class implements a test for the validation of generated observables.
  * \author Carles Fernandez-Prades, 2016. cfernandez(at)cttc.es
  *
@@ -64,7 +64,7 @@ DEFINE_string(filename_raw_data, "signal_out.bin", "Filename of output raw data 
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-class Trk_System_Test: public ::testing::Test
+class Obs_Gps_L1_System_Test: public ::testing::Test
 {
 public:
     std::string generator_binary;
@@ -93,7 +93,7 @@ public:
 };
 
 
-bool Trk_System_Test::check_valid_rinex_nav(std::string filename)
+bool Obs_Gps_L1_System_Test::check_valid_rinex_nav(std::string filename)
 {
     bool res = false;
     res = gpstk::isRinexNavFile(filename);
@@ -101,7 +101,7 @@ bool Trk_System_Test::check_valid_rinex_nav(std::string filename)
 }
 
 
-bool Trk_System_Test::check_valid_rinex_obs(std::string filename)
+bool Obs_Gps_L1_System_Test::check_valid_rinex_obs(std::string filename)
 {
     bool res = false;
     res = gpstk::isRinexObsFile(filename);
@@ -109,7 +109,7 @@ bool Trk_System_Test::check_valid_rinex_obs(std::string filename)
 }
 
 
-int Trk_System_Test::configure_generator()
+int Obs_Gps_L1_System_Test::configure_generator()
 {
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
@@ -124,7 +124,7 @@ int Trk_System_Test::configure_generator()
 }
 
 
-int Trk_System_Test::generate_signal()
+int Obs_Gps_L1_System_Test::generate_signal()
 {
     pid_t wait_result;
     int child_status;
@@ -149,7 +149,7 @@ int Trk_System_Test::generate_signal()
 }
 
 
-int Trk_System_Test::configure_receiver()
+int Obs_Gps_L1_System_Test::configure_receiver()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
@@ -305,7 +305,7 @@ int Trk_System_Test::configure_receiver()
 }
 
 
-int Trk_System_Test::run_receiver()
+int Obs_Gps_L1_System_Test::run_receiver()
 {
     std::shared_ptr<ControlThread> control_thread;
     control_thread = std::make_shared<ControlThread>(config);
@@ -344,7 +344,7 @@ int Trk_System_Test::run_receiver()
 }
 
 
-void Trk_System_Test::check_results()
+void Obs_Gps_L1_System_Test::check_results()
 {
     std::vector<std::vector<std::pair<double, double>> > pseudorange_ref(33);
     std::vector<std::vector<std::pair<double, double>> > carrierphase_ref(33);
@@ -415,17 +415,6 @@ void Trk_System_Test::check_results()
             exit(1);
     }
 
-    // Example: count observations per sat:
-    /* std::vector<std::vector<std::pair<double, double>> >::iterator iter;
-    int prn_id=0;
-    for(iter = pseudorange_ref.begin(); iter != pseudorange_ref.end(); iter++)
-        {
-            double size_v = iter->size();
-            std::cout << "Size for sat " << prn_id << ": " << size_v << std::endl;
-            prn_id++;
-        }*/
-
-    // Open and read GNSS-SDR-generated RINEX observables file
     try
     {
             std::string arg2_gen = std::string("./") + generated_rinex_obs;
@@ -659,7 +648,7 @@ void Trk_System_Test::check_results()
 }
 
 
-TEST_F(Trk_System_Test, Tracking_system_test)
+TEST_F(Obs_Gps_L1_System_Test, Observables_system_test)
 {
     std::cout << "Validating input RINEX nav file: " << FLAGS_rinex_nav_file << " ..." << std::endl;
     bool is_rinex_nav_valid = check_valid_rinex_nav(FLAGS_rinex_nav_file);
@@ -695,7 +684,7 @@ TEST_F(Trk_System_Test, Tracking_system_test)
 
 int main(int argc, char **argv)
 {
-    std::cout << "Running Tracking validation test..." << std::endl;
+    std::cout << "Running Observables validation test..." << std::endl;
     int res = 0;
     try
     {

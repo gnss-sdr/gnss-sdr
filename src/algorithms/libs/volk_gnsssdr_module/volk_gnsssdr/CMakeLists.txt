@@ -74,17 +74,23 @@ SET(CROSSCOMPILE_MULTILIB ${CROSSCOMPILE_MULTILIB} CACHE STRING "Define \"true\"
 
 # Python
 include(VolkPython) #sets PYTHON_EXECUTABLE and PYTHON_DASH_B
-VOLK_PYTHON_CHECK_MODULE("python >= 2.5" sys "sys.version.split()[0] >= '2.5'" PYTHON_MIN_VER_FOUND)
+VOLK_PYTHON_CHECK_MODULE("python >= 2.7" sys "sys.version.split()[0] >= '2.7'" PYTHON_MIN_VER_FOUND)
 VOLK_PYTHON_CHECK_MODULE("Cheetah >= 2.0.0" Cheetah "Cheetah.Version >= '2.0.0'" CHEETAH_FOUND)
+VOLK_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
 
 if(NOT PYTHON_MIN_VER_FOUND)
-    message(FATAL_ERROR "Python 2.5 or greater required to build VOLK_GNSSSDR")
+    message(FATAL_ERROR "Python 2.7 or greater required to build VOLK_GNSSSDR")
 endif()
 
 # Cheetah
 if(NOT CHEETAH_FOUND)
     message(FATAL_ERROR "Cheetah templates required to build VOLK_GNSSSDR")
 endif()
+# Six
+if(NOT SIX_FOUND)
+    message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK")
+endif()
+
 
 # Boost
 if(MSVC)

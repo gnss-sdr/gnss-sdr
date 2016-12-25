@@ -18,6 +18,8 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -67,7 +69,7 @@ def main():
     
     output = __parse_tmpl(open(opts.input).read(), args=args)
     if opts.output: open(opts.output, 'w').write(output)
-    else: print output
+    else: print(output)
 
 if __name__ == '__main__': main()
 

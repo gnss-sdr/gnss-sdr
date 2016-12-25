@@ -18,6 +18,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+ 
+import six
+ 
 archs = list()
 arch_dict = dict()
 
@@ -81,8 +85,8 @@ for arch_xml in archs_xml:
         if not flags.has_key(name): flags[name] = list()
         flags[name].append(flag_xml.firstChild.data)
     #force kwargs keys to be of type str, not unicode for py25
-    kwargs = dict((str(k), v) for k, v in kwargs.iteritems())
+    kwargs = dict((str(k), v) for k, v in six.iteritems(kwargs))
     register_arch(flags=flags, checks=checks, **kwargs)
 
 if __name__ == '__main__':
-    print archs
+    print(archs)

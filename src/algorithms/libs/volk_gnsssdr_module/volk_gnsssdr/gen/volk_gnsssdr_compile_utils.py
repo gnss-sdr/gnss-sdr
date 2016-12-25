@@ -18,6 +18,8 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
+
 import optparse
 import volk_gnsssdr_arch_defs
 import volk_gnsssdr_machine_defs
@@ -28,7 +30,7 @@ def do_arch_flags_list(compiler):
         if not arch.is_supported(compiler): continue
         fields = [arch.name] + arch.get_flags(compiler)
         output.append(','.join(fields))
-    print ';'.join(output)
+    print(';'.join(output))
 
 def do_machines_list(arch_names):
     output = list()
@@ -36,14 +38,14 @@ def do_machines_list(arch_names):
         machine_arch_set = set(machine.arch_names)
         if set(arch_names).intersection(machine_arch_set) == machine_arch_set:
             output.append(machine.name)
-    print ';'.join(output)
+    print(';'.join(output))
 
 def do_machine_flags_list(compiler, machine_name):
     output = list()
     machine = volk_gnsssdr_machine_defs.machine_dict[machine_name]
     for arch in machine.archs:
         output.extend(arch.get_flags(compiler))
-    print ' '.join(output)
+    print(' '.join(output))
 
 def main():
     parser = optparse.OptionParser()

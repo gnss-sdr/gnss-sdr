@@ -18,6 +18,7 @@
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
 #
+from __future__ import print_function
 
 import os
 import glob
@@ -225,14 +226,14 @@ class volk_gnsssdr_modtool:
 
         for kernel in search_kernels:
             infile = os.path.join(inpath, 'kernels/' + top[:-1] + '/' + top + kernel.pattern + '.h');
-            print "Removing kernel %s"%(kernel.pattern)
+            print("Removing kernel %s" % kernel.pattern)
             if os.path.exists(infile):
                 os.remove(infile);
         # remove the orc proto-kernels if they exist. There are no puppets here
         # so just need to glob for files matching kernel name
-        print glob.glob(inpath + '/orc/' + top + name + '*.orc');
+        print(glob.glob(inpath + '/kernel/volk/asm/orc/' + top + name + '*.orc'))
         for orcfile in glob.glob(inpath + '/orc/' + top + name + '*.orc'):
-            print orcfile
+            print(orcfile)
             if(os.path.exists(orcfile)):
                 os.remove(orcfile);
 
@@ -294,7 +295,7 @@ class volk_gnsssdr_modtool:
                 open(dest, 'a').write(otherline);
 
         for kernel in search_kernels:
-            print "Adding kernel %s from module %s"%(kernel.pattern,base)
+            print("Adding kernel %s from module %s" % (kernel.pattern, base))
 
         infile = open(os.path.join(inpath, 'lib/testqa.cc'));
         otherinfile = open(os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], 'lib/testqa.cc'));

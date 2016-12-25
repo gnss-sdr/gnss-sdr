@@ -17,7 +17,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux
 ----------
 
- * Tested distributions: Ubuntu 14.04 LTS and above, Debian 8.0 "jessie" and above, Linaro 15.03
+ * Tested distributions: Ubuntu 14.04 LTS and [above](http://packages.ubuntu.com/search?keywords=gnss-sdr), Debian 8.0 "jessie" and [above](https://packages.debian.org/search?searchon=names&keywords=gnss-sdr), Linaro 15.03
  * Known to work but not continually tested: Arch Linux, Fedora, and openSUSE
  * Supported microprocessor architectures:
    * i386: Intel x86 instruction set (32-bit microprocessors).
@@ -46,7 +46,8 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
        liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
-       libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev
+       libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev \
+       python-mako python-six
 ~~~~~~
 
 Alternatively, and starting from Ubuntu 16.04 LTS, you can install all the required dependencies by adding the line

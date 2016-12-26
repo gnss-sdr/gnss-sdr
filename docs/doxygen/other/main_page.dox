@@ -73,8 +73,8 @@ As signal inputs, it accepts:
 \li Raw data file captured with a data grabber (digitized at some intermediate frequency or directly at baseband).
 \li Any suitable RF configuration that can be driven by the Universal Software Radio Peripheral Hardware Driver (<a href="http://files.ettus.com/uhd_docs/manual/html/" target="_blank">UHD</a>).
 This includes all current and future <a href="http://www.ettus.com/">Ettus Research</a> products. The USRP1 + DBSRX 2.2 daughterboard is an example of working configuration for GPS L1 C/A and Galileo E1B and E1C signals.
-\li The <a href="http://gnss-sdr.org/documentation/sige-gn3s-sampler-v2-usb-front-end" target="blank">GN3S v2 USB dongle</a> (GN3S v3 might work with small modifications).
-\li Experimentally, with some <a href="http://gnss-sdr.org/documentation/gnss-sdr-operation-realtek-rtl2832u-usb-dongle-dvb-t-receiver" target="_blank">USB DVB-T dongles based on the Realtek RTL2832U chipset</a>.
+\li The <a href="http://gnss-sdr.org/docs/tutorials/sige-gn3s-sampler-v2-usb-front-end/" target="blank">GN3S v2 USB dongle</a> (GN3S v3 might work with small modifications).
+\li Experimentally, with some <a href="http://gnss-sdr.org/docs/tutorials/gnss-sdr-operation-realtek-rtl2832u-usb-dongle-dvb-t-receiver/" target="_blank">USB DVB-T dongles based on the Realtek RTL2832U chipset</a>.
 \li For mathematical representations of the targeted signals, check out the \ref the_signal_model page.
 
 As outputs, it provides:
@@ -87,7 +87,7 @@ As outputs, it provides:
 
 \section build Building GNSS-SDR  
 
-In principle, GNSS-SDR can be built in any Unix-like system. In practice, it depends on being able to install all the required dependencies. See the <a href="http://gnss-sdr.org/documentation/building-guide" target="_blank">building guide</a> page for details about the project's
+In principle, GNSS-SDR can be built in any Unix-like system. In practice, it depends on being able to install all the required dependencies. See the <a href="http://gnss-sdr.org/build-and-install/" target="_blank">building guide</a> page for details about the project's
 dependencies and build process. Mainly, it consists on installing <a href="http://gnuradio.org/" target="_blank">GNU Radio</a> plus some few more libraries:
 
 \li <a href="http://code.google.com/p/gflags/" target="_blank">Gflags</a>, a library that implements commandline flags processing,
@@ -655,12 +655,12 @@ Please ask the Developer Team for a signal sample if you need one, and they will
 Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware (see \ref signal_source), for the GN3S v2 USB dongle
 and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
 
-You can find more information at the <a href="http://gnss-sdr.org/documents" target="_blank"><b>GNSS-SDR Documentation page</b></a> or directly asking to the 
+You can find more information at the <a href="http://gnss-sdr.org/docs/" target="_blank"><b>GNSS-SDR Documentation page</b></a> or directly asking to the 
 <a href="http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>GNSS-SDR Developers mailing list</b></a>. 
  
-You are also very welcome to contribute to the project, there are many ways to <a href="http://gnss-sdr.org/participate" target="_blank"><b>participate in GNSS-SDR</b></a>.
+You are also very welcome to contribute to the project, there are many ways to <a href="http://gnss-sdr.org/contribute/" target="_blank"><b>participate in GNSS-SDR</b></a>.
 If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. 
-Please do not hesitate to <a href="http://gnss-sdr.org/contact-us" target="_blank"><b>contact them</b></a>.
+Please do not hesitate to <a href="http://gnss-sdr.org/team/" target="_blank"><b>contact them</b></a>.
 
 Enjoy GNSS-SDR! 
 

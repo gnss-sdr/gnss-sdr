@@ -453,7 +453,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
 
     #  Mako
     if(NOT MAKO_FOUND)
-        message(STATUS "Mako templates not found.")
+        message(STATUS "Mako templates not found. See http://www.makotemplates.org/ ")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " sudo yum install python-mako")
@@ -467,7 +467,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
     
     # Six
     if(NOT SIX_FOUND)
-        message(STATUS "Six not found.")
+        message(STATUS "python-six not found. See https://pythonhosted.org/six/ ")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " sudo yum install python-six")

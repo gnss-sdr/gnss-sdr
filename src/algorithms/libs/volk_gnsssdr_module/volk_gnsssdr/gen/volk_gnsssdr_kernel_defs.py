@@ -19,6 +19,8 @@
 
 #
 
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -98,9 +100,9 @@ def split_into_nested_ifdef_sections(code):
 def print_sections(sections, indent = '  '):
     for header, body in sections:
         if header == 'text':
-            print indent, ('\n'+indent).join(body.splitlines())
+            print(indent, ('\n'+indent).join(body.splitlines()))
             continue
-        print indent.replace(' ', '-') + '>', header
+        print(indent.replace(' ', '-') + '>', header)
         print_sections(body, indent + '  ')
 
 ########################################################################
@@ -136,7 +138,7 @@ class impl_class:
                 arg_type, arg_name = m.groups()
                 self.args.append((arg_type, arg_name))
         except Exception as ex:
-            raise Exception, 'I cant parse the function prototype from: %s in %s\n%s'%(kern_name, body, ex)
+            raise Exception('I cant parse the function prototype from: %s in %s\n%s'%(kern_name, body, ex))
 
         assert self.name
         self.is_aligned = self.name.startswith('a_')
@@ -206,4 +208,4 @@ kernel_files = glob.glob(os.path.join(srcdir, "kernels", "volk_gnsssdr", "*.h"))
 kernels = map(kernel_class, kernel_files)
 
 if __name__ == '__main__':
-    print kernels
+    print(kernels)

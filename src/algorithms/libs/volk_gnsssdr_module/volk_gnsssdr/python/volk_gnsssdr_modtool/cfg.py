@@ -19,6 +19,8 @@
 #
 #
 
+from __future__ import print_function
+
 import ConfigParser
 import sys
 import os
@@ -70,7 +72,7 @@ class volk_gnsssdr_modtool_config:
         elif os.path.exists(default):
             icfg.read(default)
         else:
-            print "Initializing config file..."
+            print("Initializing config file...")
             icfg.add_section(self.config_name)
             for kn in self.config_defaults:
                 rv = raw_input("%s: "%(kn))
@@ -94,10 +96,4 @@ class volk_gnsssdr_modtool_config:
         for i in stuff:
             retval[i[0]] = i[1]
         return retval
-
-
-
-
-
-
 

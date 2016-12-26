@@ -377,11 +377,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             //remnant code phase [chips]
             d_rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / static_cast<double>(d_fs_in));
 
-            current_synchro_data.Flag_valid_symbol_output = true;
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-
-
-
             if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
                 {
                     // fill buffer with prompt correlator output values
@@ -399,10 +395,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
                         {
                             d_carrier_lock_fail_counter++;
-                            //current_synchro_data.Flag_valid_symbol_output = false;
-                            d_acc_carrier_phase_rad = 0.0;
-                            std::cout << "----------------------------Cycle slip! Threshold: " << d_carrier_lock_threshold << "  detector: " << d_carrier_lock_test << " CN0: " << d_CN0_SNV_dB_Hz <<  " Sat: " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-
                         }
                     else
                         {
@@ -432,7 +424,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
-            //current_synchro_data.Flag_valid_symbol_output = true;
+            current_synchro_data.Flag_valid_symbol_output = true;
             current_synchro_data.correlation_length_ms = 1;
         }
     else

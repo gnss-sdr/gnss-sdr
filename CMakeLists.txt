@@ -464,7 +464,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "Mako templates required to build VOLK_GNSSSDR")
     endif(NOT MAKO_FOUND)
-    
+
     # Six
     if(NOT SIX_FOUND)
         message(STATUS "python-six not found. See https://pythonhosted.org/six/ ")
@@ -478,13 +478,13 @@ if(NOT VOLK_GNSSSDR_FOUND)
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif(NOT SIX_FOUND)
-    
+
     if(ENABLE_PACKAGING)
         if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
             set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON")
         endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     endif(ENABLE_PACKAGING)
-    
+
     set(VOLK_GNSSSDR_BUILD_COMMAND "make")
     if(PYTHON_EXECUTABLE)
         set(USE_THIS_PYTHON "-DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
@@ -494,7 +494,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
             set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "Debug" "-target")
         endif(CMAKE_GENERATOR STREQUAL Xcode)
     endif(OS_IS_MACOSX)
-    
+
     set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     set(C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
     if(CMAKE_CROSSCOMPILING)  

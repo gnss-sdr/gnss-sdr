@@ -542,11 +542,8 @@ if(CMAKE_VERSION VERSION_GREATER "2.8.7")
     #Create a volk_gnsssdr object library (requires cmake >= 2.8.8)
     add_library(volk_gnsssdr_obj OBJECT ${volk_gnsssdr_sources})
     
-    if(ENABLE_STATIC_LIBS)
-        add_library(volk_gnsssdr STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj> ${volk_gnsssdr_sources})
-    else(ENABLE_STATIC_LIBS)
-        add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj> ${volk_gnsssdr_sources})
-    endif(ENABLE_STATIC_LIBS)
+    #Add dynamic library
+    add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
     target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries} ${Boost_LIBRARIES})
 
     #Configure target properties

@@ -21,11 +21,11 @@
 #include "volk_gnsssdr_machines.h"
 
 struct volk_gnsssdr_machine *volk_gnsssdr_machines[] = {
-#for $machine in $machines
-#ifdef LV_MACHINE_$(machine.name.upper())
-&volk_gnsssdr_machine_$(machine.name),
+%for machine in machines:
+#ifdef LV_MACHINE_${machine.name.upper()}
+&volk_gnsssdr_machine_${machine.name},
 #endif
-#end for
+%endfor
 };
 
 unsigned int n_volk_gnsssdr_machines = sizeof(volk_gnsssdr_machines)/sizeof(*volk_gnsssdr_machines);

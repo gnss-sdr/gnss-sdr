@@ -24,9 +24,9 @@
 __VOLK_DECL_BEGIN
 
 struct VOLK_CPU {
-    #for $arch in $archs
-    int (*has_$arch.name) ();
-    #end for
+    %for arch in archs:
+    int (*has_${arch.name}) ();
+    %endfor
 };
 
 extern struct VOLK_CPU volk_gnsssdr_cpu;

@@ -68,23 +68,23 @@ VOLK_API size_t volk_gnsssdr_get_alignment(void);
  */
 VOLK_API bool volk_gnsssdr_is_aligned(const void *ptr);
 
-#for $kern in $kernels
+%for kern in kernels:
 
 //! A function pointer to the dispatcher implementation
-extern VOLK_API $kern.pname $kern.name;
+extern VOLK_API ${kern.pname} ${kern.name};
 
 //! A function pointer to the fastest aligned implementation
-extern VOLK_API $kern.pname $(kern.name)_a;
+extern VOLK_API ${kern.pname} ${kern.name}_a;
 
 //! A function pointer to the fastest unaligned implementation
-extern VOLK_API $kern.pname $(kern.name)_u;
+extern VOLK_API ${kern.pname} ${kern.name}_u;
 
 //! Call into a specific implementation given by name
-extern VOLK_API void $(kern.name)_manual($kern.arglist_full, const char* impl_name);
+extern VOLK_API void ${kern.name}_manual(${kern.arglist_full}, const char* impl_name);
 
 //! Get description paramaters for this kernel
-extern VOLK_API volk_gnsssdr_func_desc_t $(kern.name)_get_func_desc(void);
-#end for
+extern VOLK_API volk_gnsssdr_func_desc_t ${kern.name}_get_func_desc(void);
+%endfor
 
 __VOLK_DECL_END
 

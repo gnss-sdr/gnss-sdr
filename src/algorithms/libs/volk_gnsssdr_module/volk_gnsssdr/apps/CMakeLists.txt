@@ -91,8 +91,19 @@ endif()
 
 # MAKE volk_gnsssdr-config-info
 add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc)
-target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
-add_dependencies(volk_gnsssdr-config-info volk_gnsssdr)
+if(ENABLE_STATIC_LIBS)
+   target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr_static ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+else(ENABLE_STATIC_LIBS)
+   target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+   add_dependencies(volk_gnsssdr-config-info volk_gnsssdr)
+endif(ENABLE_STATIC_LIBS)
+
+if(ENABLE_STRIP)
+    if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        set_target_properties(volk_gnsssdr-config-info
+                              PROPERTIES LINK_FLAGS "-s")
+    endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+endif(ENABLE_STRIP)
 
 install(
     TARGETS volk_gnsssdr-config-info

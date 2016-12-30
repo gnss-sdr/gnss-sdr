@@ -136,6 +136,7 @@ endif(ENABLE_CUDA)
 ################################################################################
 # Optional generator
 ################################################################################
+option(ENABLE_OWN_GPSTK "Download, build and link GPSTk for system tests" OFF)
 if(ENABLE_SW_GENERATOR)
    ExternalProject_Add(
       gnss-sim
@@ -156,30 +157,37 @@ if(ENABLE_SW_GENERATOR)
    ################################################################################
    # Local installation of GPSTk http://www.gpstk.org/
    ################################################################################
-   set(gpstk_RELEASE "2.5")
-   set(gpstk_md5 "9d79f6838d274f5edfd46c780a6b1b72")
-   ExternalProject_Add(
-      gpstk-${gpstk_RELEASE}
-      URL https://sourceforge.net/projects/gpstk/files/gpstk/${gpstk_RELEASE}/gpstk-${gpstk_RELEASE}.src.tar.gz
-      URL_MD5 ${gpstk_md5}
-      SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk
-      BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/script_gpstk.sh -c
-      UPDATE_COMMAND ""
-      PATCH_COMMAND ""
-      INSTALL_COMMAND ""
-   )
-   set(GPSTK_INCLUDE_DIRS
-       ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/include CACHE PATH "Local GPSTK headers"
-   )
-   add_library(gpstk UNKNOWN IMPORTED)
-   set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
-   add_dependencies(gpstk gpstk-${gpstk_RELEASE})
-   set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/bin/ )
-   add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
-   set(gpstk_libs gpstk)
+   find_package(GPSTK)
+   if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
+      set(gpstk_RELEASE "2.5")
+      set(gpstk_md5 "9d79f6838d274f5edfd46c780a6b1b72")
+      ExternalProject_Add(
+         gpstk-${gpstk_RELEASE}
+         URL https://sourceforge.net/projects/gpstk/files/gpstk/${gpstk_RELEASE}/gpstk-${gpstk_RELEASE}.src.tar.gz
+         URL_MD5 ${gpstk_md5}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk
+         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk
+         CONFIGURE_COMMAND ""
+         BUILD_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/script_gpstk.sh -c
+         UPDATE_COMMAND ""
+         PATCH_COMMAND ""
+         INSTALL_COMMAND ""
+      )
+      set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/include CACHE PATH "Local GPSTK headers")
+      add_library(gpstk UNKNOWN IMPORTED)
+      set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+      add_dependencies(gpstk gpstk-${gpstk_RELEASE})
+      set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/bin/ )
+      add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
+      set(gpstk_libs gpstk)
+   else(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
+       set(gpstk_libs ${GPSTK_LIBRARIES})
+       set(GPSTK_INCLUDE_DIRS ${GPSTK_INCLUDE_DIR})
+       set(GPSTK_BINDIR ${GPSTK_LIBRARY}/../bin/ )
+       add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
+   endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
 endif(ENABLE_SW_GENERATOR)
+
 
 add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
 
@@ -481,23 +489,23 @@ if(ENABLE_SYSTEM_TESTING)
         ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:ttff>
     )
 
-    add_executable(obs_gps_l1_system_test
-    ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc )
-    if(NOT ${GTEST_DIR_LOCAL})
-        add_dependencies(obs_gps_l1_system_test gtest-${gtest_RELEASE} )
-    else(NOT ${GTEST_DIR_LOCAL})
-        add_dependencies(obs_gps_l1_system_test gtest)
-    endif(NOT ${GTEST_DIR_LOCAL})
-    include_directories(${GPSTK_INCLUDE_DIRS})
-    target_link_libraries(obs_gps_l1_system_test ${GFlags_LIBS}
-                                                 ${GLOG_LIBRARIES}
-                                                 ${GTEST_LIBRARIES}
-                                                 gnss_sp_libs
-                                                 gnss_rx
-                                                 ${gpstk_libs})
-    add_custom_command(TARGET obs_gps_l1_system_test POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_gps_l1_system_test>
-        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_gps_l1_system_test>
-    )
-
+    if(ENABLE_SW_GENERATOR)
+        add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc )
+        if(NOT ${GTEST_DIR_LOCAL})
+            add_dependencies(obs_gps_l1_system_test gtest-${gtest_RELEASE} )
+        else(NOT ${GTEST_DIR_LOCAL})
+            add_dependencies(obs_gps_l1_system_test gtest)
+        endif(NOT ${GTEST_DIR_LOCAL})
+        include_directories(${GPSTK_INCLUDE_DIRS})
+        target_link_libraries(obs_gps_l1_system_test ${GFlags_LIBS}
+                                                     ${GLOG_LIBRARIES}
+                                                     ${GTEST_LIBRARIES}
+                                                     gnss_sp_libs
+                                                     gnss_rx
+                                                     ${gpstk_libs})
+        add_custom_command(TARGET obs_gps_l1_system_test POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_gps_l1_system_test>
+                               ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_gps_l1_system_test>
+        )
+    endif(ENABLE_SW_GENERATOR)
 endif(ENABLE_SYSTEM_TESTING)

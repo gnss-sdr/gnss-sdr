@@ -583,6 +583,7 @@ void Obs_Gps_L1_System_Test::check_results()
 
     // Compute carrier phase error
     prn_id = 0;
+    std::vector<double> mean_cp_diff_v;
     for(iter_diff = cp_diff.begin(); iter_diff != cp_diff.end(); iter_diff++)
         {
             // For each satellite with reference and measurements aligned in time
@@ -596,6 +597,7 @@ void Obs_Gps_L1_System_Test::check_results()
             if(number_obs > 0)
                 {
                     mean_diff = mean_diff / number_obs;
+                    mean_cp_diff_v.push_back(mean_diff);
                     std::cout << "-- Mean carrier phase difference for sat " << prn_id << ": " << mean_diff << std::endl;
                 }
             else
@@ -605,6 +607,14 @@ void Obs_Gps_L1_System_Test::check_results()
 
             prn_id++;
         }
+    sum_ = std::accumulate(mean_cp_diff_v.begin(), mean_cp_diff_v.end(), 0.0);
+    mean_ = sum_ / mean_cp_diff_v.size();
+    accum = 0.0;
+    std::for_each (std::begin(mean_cp_diff_v), std::end(mean_cp_diff_v), [&](const double d) {
+        accum += (d - mean_) * (d - mean_);
+    });
+    double stdev_cp = std::sqrt(accum / (mean_cp_diff_v.size() - 1));
+    std::cout << "Carrier phase diff error stdev = " << stdev_cp << " whole cycles (19 cm)" << std::endl;
 
     // Compute Doppler error
     prn_id = 0;
@@ -656,7 +666,7 @@ TEST_F(Obs_Gps_L1_System_Test, Observables_system_test)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    generate_signal();
+    //generate_signal();
 
     std::cout << "Validating generated reference RINEX obs file: " << FLAGS_filename_rinex_obs << " ..." << std::endl;
     bool is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + FLAGS_filename_rinex_obs);

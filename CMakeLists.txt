@@ -508,6 +508,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 -DENABLE_PROFILING=${ENABLE_PROFILING}
                                 -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
                                 -DCMAKE_C_FLAGS=${C_FLAGS}
+                                -DCMAKE_INCLUDE_PATH=${Boost_INCLUDE_DIR}
                                 ${STRIP_VOLK_GNSSSDR_PROFILE}
                                 ${USE_THIS_PYTHON} )
     if(EXISTS $ENV{OECORE_TARGET_SYSROOT})

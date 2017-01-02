@@ -66,7 +66,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     foreach(libname ${PC_GNURADIO_${EXTVAR}_LIBRARIES})
         FIND_LIBRARY(
             ${LIBVAR_NAME}_${libname}
-            NAMES ${libname}
+            NAMES ${libname} ${libname}-${PC_GNURADIO_RUNTIME_VERSION}
             HINTS $ENV{GNURADIO_RUNTIME_DIR}/lib
                 ${PC_LIBDIR}
                 ${CMAKE_INSTALL_PREFIX}/lib/

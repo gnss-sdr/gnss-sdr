@@ -523,7 +523,8 @@ changing ```/opt/local``` by the base directory in which your software is instal
 The CMake script will create Makefiles that download, build and link Armadillo, Gflags, Glog and Google Test on the fly at compile time if they are not detected in your machine.
 
 
-### Other builds
+Other builds
+---------
 
 * **Snap packages**: [Snaps](http://snapcraft.io) are universal Linux packages aimed to work on any distribution or device, from IoT devices to servers, desktops to mobile devices. Visit [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox) for instructions.
 

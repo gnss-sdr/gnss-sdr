@@ -51,7 +51,7 @@ using google::LogMessage;
 DEFINE_string(RINEX_version, "3.02", "Specifies the RINEX version (2.11 or 3.02)");
 
 
-Rinex_Printer::Rinex_Printer()
+Rinex_Printer::Rinex_Printer(int conf_version)
 {
     navfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_GPS_NAV");
     obsfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS");
@@ -178,6 +178,13 @@ Rinex_Printer::Rinex_Printer()
             version = 3;
             stringVersion = "3.02";
         }
+
+    if(conf_version != 0)
+    {
+        if(conf_version == 2)
+        version = 2;
+        stringVersion = "2.11";
+    }
 
     numberTypesObservations = 4; // Number of available types of observable in the system
 }

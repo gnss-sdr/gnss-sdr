@@ -42,21 +42,22 @@
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include "RinexUtilities.hpp"
+#include "Rinex3ObsBase.hpp"
+#include "Rinex3ObsData.hpp"
+#include "Rinex3ObsHeader.hpp"
+#include "Rinex3ObsStream.hpp"
 #include "control_thread.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "in_memory_configuration.h"
 
-#include "Rinex3ObsBase.hpp"
-#include "Rinex3ObsData.hpp"
-#include "Rinex3ObsHeader.hpp"
-#include "Rinex3ObsStream.hpp"
 
 
-DEFINE_string(generator_binary, std::string(SW_GENERATOR_BIN), "Path of Software Geenrator binary");
+DEFINE_string(generator_binary, std::string(SW_GENERATOR_BIN), "Path of software-defined signal generator binary");
 DEFINE_string(rinex_nav_file, std::string(DEFAULT_RINEX_NAV), "Input RINEX navigation file");
 DEFINE_int32(duration, 100, "Duration of the experiment [in seconds]");
 DEFINE_string(static_position, "30.286502,120.032669,100", "Static receiver position [log,lat,height]");
+DEFINE_string(dynamic_position, "", "Observer positions file, in .csv or .nmea format");
 DEFINE_string(filename_rinex_obs, "sim.16o", "Filename of output RINEX navigation file");
 DEFINE_string(filename_raw_data, "signal_out.bin", "Filename of output raw data file");
 
@@ -69,8 +70,7 @@ class Obs_Gps_L1_System_Test: public ::testing::Test
 public:
     std::string generator_binary;
     std::string p1;
-    std::string p2_static;
-    std::string p2_dynamic;
+    std::string p2;
     std::string p3;
     std::string p4;
     std::string p5;
@@ -115,8 +115,14 @@ int Obs_Gps_L1_System_Test::configure_generator()
     generator_binary = FLAGS_generator_binary;
 
     p1 = std::string("-rinex_nav_file=") + FLAGS_rinex_nav_file;
-    p2_static = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(FLAGS_duration * 10);
-    p2_dynamic = std::string("-obs_pos_file=") + std::string(DEFAULT_POSITION_FILE); // Observer positions file, in .csv or .nmea format"
+    if(FLAGS_dynamic_position.empty())
+        {
+            p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(FLAGS_duration * 10);
+        }
+    else
+        {
+            p2 = std::string("-obs_pos_file=") + std::string(FLAGS_dynamic_position);
+        }
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs; // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data; // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq); //Baseband sampling frequency [MSps]
@@ -129,7 +135,7 @@ int Obs_Gps_L1_System_Test::generate_signal()
     pid_t wait_result;
     int child_status;
 
-    char *const parmList[] = { &generator_binary[0], &generator_binary[0], &p1[0], &p2_static[0], &p3[0], &p4[0], &p5[0], NULL };
+    char *const parmList[] = { &generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL };
 
     int pid;
     if ((pid = fork()) == -1)
@@ -666,7 +672,7 @@ TEST_F(Obs_Gps_L1_System_Test, Observables_system_test)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    //generate_signal();
+    generate_signal();
 
     std::cout << "Validating generated reference RINEX obs file: " << FLAGS_filename_rinex_obs << " ..." << std::endl;
     bool is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + FLAGS_filename_rinex_obs);

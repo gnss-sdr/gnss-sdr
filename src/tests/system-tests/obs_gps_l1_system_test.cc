@@ -87,6 +87,7 @@ public:
     void check_results();
     bool check_valid_rinex_nav(std::string filename);  // return true if the file is a valid Rinex navigation file.
     bool check_valid_rinex_obs(std::string filename);  // return true if the file is a valid Rinex observation file.
+    double compute_stdev(const std::vector<double> & vec);
 
     std::shared_ptr<InMemoryConfiguration> config;
     std::string generated_rinex_obs;
@@ -98,6 +99,19 @@ bool Obs_Gps_L1_System_Test::check_valid_rinex_nav(std::string filename)
     bool res = false;
     res = gpstk::isRinexNavFile(filename);
     return res;
+}
+
+
+double Obs_Gps_L1_System_Test::compute_stdev(const std::vector<double> & vec)
+{
+    double sum__ = std::accumulate(vec.begin(), vec.end(), 0.0);
+    double mean__ = sum__ / vec.size();
+    double accum__ = 0.0;
+    std::for_each (std::begin(vec), std::end(vec), [&](const double d) {
+        accum__ += (d - mean__) * (d - mean__);
+    });
+    double stdev__ = std::sqrt(accum__ / (vec.size() - 1));
+    return stdev__;
 }
 
 
@@ -527,7 +541,7 @@ void Obs_Gps_L1_System_Test::check_results()
                                 {
                                     carrierphase_ref_aligned.at(prn_id).push_back(*it);
                                     cp_diff.at(prn_id).push_back(it->second - it2->second );
-                                    // std::cout << "Sat " << prn_id << ": " << "Carrier_ref=" << it->second << "   Carrier_meas=" << it2->second << std::endl;
+                                    // std::cout << "Sat " << prn_id << ": " << "Carrier_ref=" << it->second << "   Carrier_meas=" << it2->second << "    Diff:" << it->second - it2->second <<  std::endl;
                                 }
                         }
                 }
@@ -568,7 +582,7 @@ void Obs_Gps_L1_System_Test::check_results()
                 {
                     mean_diff = mean_diff / number_obs;
                     mean_pr_diff_v.push_back(mean_diff);
-                    std::cout << "-- Mean pseudorange difference for sat " << prn_id << ": " << mean_diff << std::endl;
+                    std::cout << "-- Mean pseudorange difference for sat " << prn_id << ": " << mean_diff << " [m]" << std::endl;
                 }
             else
                 {
@@ -577,13 +591,7 @@ void Obs_Gps_L1_System_Test::check_results()
 
             prn_id++;
         }
-    double sum_ = std::accumulate(mean_pr_diff_v.begin(), mean_pr_diff_v.end(), 0.0);
-    double mean_ = sum_ / mean_pr_diff_v.size();
-    double accum = 0.0;
-    std::for_each (std::begin(mean_pr_diff_v), std::end(mean_pr_diff_v), [&](const double d) {
-        accum += (d - mean_) * (d - mean_);
-    });
-    double stdev_pr = std::sqrt(accum / (mean_pr_diff_v.size() - 1));
+    double stdev_pr = compute_stdev(mean_pr_diff_v);
     std::cout << "Pseudorange diff error stdev = " << stdev_pr << " [m]" << std::endl;
     ASSERT_LT(stdev_pr, 1.0);
 
@@ -604,7 +612,9 @@ void Obs_Gps_L1_System_Test::check_results()
                 {
                     mean_diff = mean_diff / number_obs;
                     mean_cp_diff_v.push_back(mean_diff);
-                    std::cout << "-- Mean carrier phase difference for sat " << prn_id << ": " << mean_diff << std::endl;
+                    std::cout << "-- Mean carrier phase difference for sat " << prn_id << ": " << mean_diff;
+                    double stdev_pr_ = compute_stdev(*iter_diff);
+                    std::cout << " +/- " << stdev_pr_ << " whole cycles (19 cm)" << std::endl;
                 }
             else
                 {
@@ -613,14 +623,6 @@ void Obs_Gps_L1_System_Test::check_results()
 
             prn_id++;
         }
-    sum_ = std::accumulate(mean_cp_diff_v.begin(), mean_cp_diff_v.end(), 0.0);
-    mean_ = sum_ / mean_cp_diff_v.size();
-    accum = 0.0;
-    std::for_each (std::begin(mean_cp_diff_v), std::end(mean_cp_diff_v), [&](const double d) {
-        accum += (d - mean_) * (d - mean_);
-    });
-    double stdev_cp = std::sqrt(accum / (mean_cp_diff_v.size() - 1));
-    std::cout << "Carrier phase diff error stdev = " << stdev_cp << " whole cycles (19 cm)" << std::endl;
 
     // Compute Doppler error
     prn_id = 0;
@@ -640,7 +642,7 @@ void Obs_Gps_L1_System_Test::check_results()
                 {
                     mean_diff = mean_diff / number_obs;
                     mean_doppler_v.push_back(mean_diff);
-                    std::cout << "-- Mean Doppler difference for sat " << prn_id << ": " << mean_diff << std::endl;
+                    std::cout << "-- Mean Doppler difference for sat " << prn_id << ": " << mean_diff << " [Hz]" << std::endl;
                 }
             else
                 {
@@ -649,13 +651,8 @@ void Obs_Gps_L1_System_Test::check_results()
 
             prn_id++;
         }
-    sum_ = std::accumulate(mean_doppler_v.begin(), mean_doppler_v.end(), 0.0);
-    mean_ = sum_ / mean_doppler_v.size();
-    accum = 0.0;
-    std::for_each (std::begin(mean_doppler_v), std::end(mean_doppler_v), [&](const double d) {
-        accum += (d - mean_) * (d - mean_);
-    });
-    double stdev_dp = std::sqrt(accum / (mean_doppler_v.size() - 1));
+
+    double stdev_dp = compute_stdev(mean_doppler_v);
     std::cout << "Doppler error stdev = " << stdev_dp << " [Hz]" << std::endl;
     ASSERT_LT(stdev_dp, 1.0);
 }

@@ -136,8 +136,7 @@ endif(ENABLE_CUDA)
 ################################################################################
 # Optional generator
 ################################################################################
-option(ENABLE_OWN_GPSTK "Download, build and link GPSTk for system tests" OFF)
-if(ENABLE_SW_GENERATOR)
+if(ENABLE_SYSTEM_TESTING_EXTRA)
    ExternalProject_Add(
       gnss-sim
       GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
@@ -186,7 +185,7 @@ if(ENABLE_SW_GENERATOR)
        set(GPSTK_BINDIR ${GPSTK_LIBRARY}/../bin/ )
        add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
    endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-endif(ENABLE_SW_GENERATOR)
+endif(ENABLE_SYSTEM_TESTING_EXTRA)
 
 
 add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
@@ -489,7 +488,7 @@ if(ENABLE_SYSTEM_TESTING)
         ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:ttff>
     )
 
-    if(ENABLE_SW_GENERATOR)
+    if(ENABLE_SYSTEM_TESTING_EXTRA)
         add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc )
         if(NOT ${GTEST_DIR_LOCAL})
             add_dependencies(obs_gps_l1_system_test gtest-${gtest_RELEASE} )
@@ -507,5 +506,5 @@ if(ENABLE_SYSTEM_TESTING)
                            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_gps_l1_system_test>
                                ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_gps_l1_system_test>
         )
-    endif(ENABLE_SW_GENERATOR)
+    endif(ENABLE_SYSTEM_TESTING_EXTRA)
 endif(ENABLE_SYSTEM_TESTING)

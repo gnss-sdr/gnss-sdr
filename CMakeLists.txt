@@ -67,8 +67,13 @@ if(ENABLE_PACKAGING)
 endif(ENABLE_PACKAGING)
 
 # Testing
-option(ENABLE_SYSTEM_TESTING "Builds system tests" OFF)
-option(ENABLE_UNIT_TESTING "Builds unit tests" ON)
+option(ENABLE_UNIT_TESTING "Build unit tests" ON)
+option(ENABLE_SYSTEM_TESTING "Build system tests" OFF)
+option(ENABLE_SYSTEM_TESTING_EXTRA "Download external tools and build extra system tests" OFF)
+if(ENABLE_SYSTEM_TESTING_EXTRA)
+    set(ENABLE_SYSTEM_TESTING ON)
+endif(ENABLE_SYSTEM_TESTING_EXTRA)
+option(ENABLE_OWN_GPSTK "Force to download, build and link GPSTk for system tests, even if it is already installed" OFF)
 
 
 

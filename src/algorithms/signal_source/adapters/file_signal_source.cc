@@ -202,8 +202,10 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
                     std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << std::endl;
                     LOG(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
                 }
+            std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
             std::cout << "Processing file " << filename_ << ", which contains " << static_cast<double>(size) << " [bytes]" << std::endl;
+            std::cout.precision (ss);
 
             if (size > 0)
                 {
@@ -218,9 +220,9 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     signal_duration_s = static_cast<double>(samples_) * ( 1 / static_cast<double>(sampling_frequency_));
 
     if( is_complex )
-    {
-        signal_duration_s /= 2.0;
-    }
+        {
+            signal_duration_s /= 2.0;
+        }
 
     DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;

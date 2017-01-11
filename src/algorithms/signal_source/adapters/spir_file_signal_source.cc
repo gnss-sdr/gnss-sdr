@@ -129,8 +129,10 @@ SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration
                     std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << std::endl;
                     LOG(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
                 }
+            std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
             std::cout << "Processing file " << filename_ << ", which contains " << (double)size << " [bytes]" << std::endl;
+            std::cout.precision (ss);
 
             if (size > 0)
                 {

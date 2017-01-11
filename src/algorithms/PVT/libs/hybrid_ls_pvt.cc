@@ -297,17 +297,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
             DLOG(INFO) << "HYBRID Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
             cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
-            //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
-            if (d_height_m > 50000)
-                {
-                    b_valid_position = false;
-                    LOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
-                    << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                    << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << mypos(3) << " [s]";
-                    return false;
-                }
 
-            LOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
+            DLOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
             << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
             << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_m << " [s]";
 

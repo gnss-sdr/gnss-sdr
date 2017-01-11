@@ -174,13 +174,6 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
 
             d_rx_dt_m = mypos(3)/GPS_C_m_s; // Convert RX time offset from meters to seconds
 
-            //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
-            if (d_height_m > 50000)
-                {
-		    DLOG(INFO)<<"LS: bad height\n";
-                    b_valid_position = false;
-                    return false;
-                }
             // Compute UTC time and print PVT solution
             double secondsperweek = 604800.0; // number of seconds in one week (7*24*60*60)
             boost::posix_time::time_duration t = boost::posix_time::seconds(utc + secondsperweek * static_cast<double>(GPS_week));
@@ -188,7 +181,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             d_position_UTC_time = p_time;
 
-            LOG(INFO) << "(new)Position at " << boost::posix_time::to_simple_string(p_time)
+            DLOG(INFO) << "Position at " << boost::posix_time::to_simple_string(p_time)
             << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
             << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_m << " [s]";
 

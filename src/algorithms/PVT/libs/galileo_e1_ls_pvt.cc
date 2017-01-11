@@ -178,12 +178,6 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
 
             cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
             d_rx_dt_m = mypos(3)/GALILEO_C_m_s; // Convert RX time offset from meters to seconds
-            //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
-            if (d_height_m > 50000)
-                {
-                    b_valid_position = false;
-                    return false;
-                }
             DLOG(INFO) << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
                       << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
                       << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_m << " [s]";

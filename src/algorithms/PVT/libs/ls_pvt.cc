@@ -116,10 +116,17 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
                                 {
                                     //--- Find receiver's height
                                     Ls_Pvt::togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
+                                    // Add troposphere correction if the receiver is below the troposphere
+                                    if (h > 15000)
+                                        {
+                                            //receiver is above the troposphere
+                                            trop = 0.0;
+                                        }else{
+                                            //--- Find delay due to troposphere (in meters)
+                                            Ls_Pvt::tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                            if(trop > 5.0 ) trop = 0.0; //check for erratic values
+                                        }
 
-                                    //--- Find delay due to troposphere (in meters)
-                                    Ls_Pvt::tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
-                                    if(trop > 50.0 ) trop = 0.0;
                                 }
                         }
                     //--- Apply the corrections ----------------------------------------

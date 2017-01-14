@@ -61,7 +61,18 @@ Rtcm::~Rtcm()
 {
     if(server_is_running)
         {
-            stop_server();
+            try
+            {
+                    stop_server();
+            }
+            catch( boost::exception & e )
+            {
+                    LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+            }
+            catch(std::exception const&  ex)
+            {
+                    LOG(WARNING) << "STD exception: " << ex.what();
+            }
         }
 }
 

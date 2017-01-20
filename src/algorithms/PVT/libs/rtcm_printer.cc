@@ -129,7 +129,18 @@ Rtcm_Printer::~Rtcm_Printer()
 {
     if(rtcm->is_server_running())
         {
-            rtcm->stop_server();
+            try
+            {
+                    rtcm->stop_server();
+            }
+            catch( boost::exception & e )
+            {
+                    LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+            }
+            catch(std::exception const&  ex)
+            {
+                    LOG(WARNING) << "STD exception: " << ex.what();
+            }
         }
     if (rtcm_file_descriptor.is_open())
         {

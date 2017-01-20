@@ -1299,6 +1299,3 @@ add_custom_target(uninstall
 ########################################################################
 add_subdirectory(src)
 
-if(ENABLE_PACKAGING)
-    include(GnssSdrPackaging)
-endif(ENABLE_PACKAGING)

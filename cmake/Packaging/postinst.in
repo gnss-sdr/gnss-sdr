@@ -1,4 +1,0 @@
-#!/bin/sh
-set -e
-chmod +x @CMAKE_INSTALL_PREFIX@/bin/@PROJECT_NAME@
-chmod +x @CMAKE_INSTALL_PREFIX@/bin/volk_gnsssdr_profile

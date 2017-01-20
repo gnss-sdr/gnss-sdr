@@ -205,7 +205,7 @@ class kernel_class:
 __file__ = os.path.abspath(__file__)
 srcdir = os.path.dirname(os.path.dirname(__file__))
 kernel_files = glob.glob(os.path.join(srcdir, "kernels", "volk_gnsssdr", "*.h"))
-kernels = set(map(kernel_class, kernel_files))
+kernels = list(map(kernel_class, kernel_files))
 
 if __name__ == '__main__':
     print(kernels)

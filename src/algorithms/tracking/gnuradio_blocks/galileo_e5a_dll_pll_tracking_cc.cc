@@ -421,7 +421,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             current_synchro_data.Prompt_Q = 0.0;
             current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) / static_cast<double>(d_fs_in);
             current_synchro_data.Carrier_phase_rads = 0.0;
-            current_synchro_data.Code_phase_secs = 0.0;
             current_synchro_data.CN0_dB_hz = 0.0;
             *out[0] = current_synchro_data;
             consume_each(samples_offset); //shift input to perform alignment with local replica
@@ -629,7 +628,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     // Tracking_timestamp_secs is aligned with the PRN start sample
                     current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_current_prn_length_samples) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
                     // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
-                    current_synchro_data.Code_phase_secs = 0;
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
@@ -642,7 +640,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     current_synchro_data.Prompt_Q = 0.0;
                     current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) /  static_cast<double>(d_fs_in);
                     current_synchro_data.Carrier_phase_rads = 0.0;
-                    current_synchro_data.Code_phase_secs = 0.0;
                     current_synchro_data.CN0_dB_hz = 0.0;
 
                 }

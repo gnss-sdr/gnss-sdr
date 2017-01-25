@@ -227,6 +227,9 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     this->set_msg_handler(pmt::mp("telemetry"),
             boost::bind(&gps_l1_ca_pvt_cc::msg_handler_telemetry, this, _1));
 
+    // Receiver time feedback to observables block
+    this->message_port_register_out(pmt::mp("rx_dt_s"));
+
     //initialize kml_printer
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;
@@ -373,6 +376,12 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                     pvt_result = d_ls_pvt->get_PVT(gnss_observables_map, d_rx_time, d_flag_averaging);
                     if (pvt_result == true)
                         {
+                        //feedback the receiver time  offset estimation to observables block
+                        // send asynchronous message to observables block
+                        // time offset is expressed as the equivalent travel distance [m]
+                        pmt::pmt_t value = pmt::from_double(d_ls_pvt->d_rx_dt_s);
+                        this->message_port_pub(pmt::mp("rx_dt_s"), value);
+                        //std::cout<<"d_rx_dt_s*GPS_C_m_s="<<d_ls_pvt->d_rx_dt_s*GPS_C_m_s<<std::endl;
                             if( first_fix == true)
                                 {
                                     std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)

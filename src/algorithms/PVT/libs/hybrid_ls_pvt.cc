@@ -276,7 +276,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
             DLOG(INFO) << "W=" << W;
 
             mypos = leastSquarePos(satpos, obs, W);
-            d_rx_dt_m = mypos(3) / GPS_C_m_s; // Convert RX time offset from meters to seconds
+            d_rx_dt_s = mypos(3) / GPS_C_m_s; // Convert RX time offset from meters to seconds
             double secondsperweek = 604800.0;
             // Compute GST and Gregorian time
             if( GST != 0.0)
@@ -300,7 +300,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
 
             DLOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
             << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-            << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_m << " [s]";
+            << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_s << " [s]";
 
             // ###### Compute DOPs ########
             hybrid_ls_pvt::compute_DOP();

@@ -57,6 +57,14 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, bool 
                                 gr::block("gps_l1_ca_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
                                 gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
+
+    // Telemetry bit synchronization message port input
+    this->message_port_register_in(pmt::mp("rx_dt_s"));
+
+    this->set_msg_handler(pmt::mp("rx_dt_s"),
+            boost::bind(&gps_l1_ca_observables_cc::msg_handler_rx_dt_s, this, _1));
+
+    d_rx_dt_s=0;
     // initialize internal vars
     d_dump = dump;
     d_nchannels = nchannels;
@@ -94,6 +102,14 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, bool 
 gps_l1_ca_observables_cc::~gps_l1_ca_observables_cc()
 {
     d_dump_file.close();
+}
+
+
+void gps_l1_ca_observables_cc::msg_handler_rx_dt_s(pmt::pmt_t msg)
+{
+    //pmt::print(msg);
+    //accumulate the receiver time offset
+    d_rx_dt_s = d_rx_dt_s+pmt::to_double(msg);
 }
 
 
@@ -203,7 +219,8 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms - d_ref_PRN_rx_time_ms;
                     //compute the pseudorange
                     traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol) * 1000.0 + delta_rx_time_ms + GPS_STARTOFFSET_ms;
-                    pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
+                    //convert to meters and remove the receiver time offset in meters
+                    pseudorange_m = traveltime_ms * GPS_C_m_ms-d_rx_dt_s*GPS_C_m_s; // [m]
                     // update the pseudorange object
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;

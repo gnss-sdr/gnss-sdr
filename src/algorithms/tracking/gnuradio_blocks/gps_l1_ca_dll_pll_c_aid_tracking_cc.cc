@@ -555,8 +555,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                     current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs[1]).imag());
                     // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!)
                     current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + old_d_rem_code_phase_samples) / static_cast<double>(d_fs_in);
-                    // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
-                    current_synchro_data.Code_phase_secs = 0;
                     current_synchro_data.Carrier_phase_rads = GPS_TWO_PI * d_acc_carrier_phase_cycles;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
@@ -576,8 +574,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                     current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs[1]).imag());
                     // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!)
                     current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in);
-                    // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
-                    current_synchro_data.Code_phase_secs = 0;
                     current_synchro_data.Carrier_phase_rads = GPS_TWO_PI * d_acc_carrier_phase_cycles;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;// todo: project the carrier doppler
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;

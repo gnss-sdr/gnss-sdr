@@ -174,7 +174,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
     d_carrier_doppler_hz = 0.0;
     d_acc_carrier_phase_rad = 0.0;
     d_code_phase_samples = 0.0;
-    d_acc_code_phase_secs = 0.0;
     d_rem_code_phase_chips = 0.0;
     d_code_phase_step_chips = 0.0;
     d_carrier_phase_step_rad = 0.0;
@@ -247,7 +246,6 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_rem_carr_phase_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
     d_acc_carrier_phase_rad = 0.0;
-    d_acc_code_phase_secs = 0.0;
 
     d_code_phase_samples = d_acq_code_phase_samples;
 
@@ -313,6 +311,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
                     current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
+                    //take into account the carrier cycles accumulated in the pull in signal alignement
+                    d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * samples_offset;
+                    current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
+                    current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     *out[0] = current_synchro_data;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
                     return 1;
@@ -335,14 +337,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
             // New carrier Doppler frequency estimation
             d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
-
             // New code Doppler frequency estimation
             d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ);
-            //carrier phase accumulator for (K) doppler estimation
-            d_acc_carrier_phase_rad -= GPS_TWO_PI * d_carrier_doppler_hz * GPS_L1_CA_CODE_PERIOD;
-            //remanent carrier phase to prevent overflow in the code NCO
-            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * ( d_if_freq + d_carrier_doppler_hz ) * GPS_L1_CA_CODE_PERIOD;
-            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
 
             // ################## DLL ##########################################################
             // DLL discriminator
@@ -352,7 +348,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             //Code phase accumulator
             double code_error_filt_secs;
             code_error_filt_secs = (GPS_L1_CA_CODE_PERIOD * code_error_filt_chips) / GPS_L1_CA_CODE_RATE_HZ; //[seconds]
-            d_acc_code_phase_secs = d_acc_code_phase_secs + code_error_filt_secs;
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
             // keep alignment parameters for the next input buffer
@@ -370,12 +365,18 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             //################### PLL COMMANDS #################################################
             //carrier phase step (NCO phase increment per sample) [rads/sample]
             d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+            //remanent carrier phase to prevent overflow in the code NCO
+            d_rem_carr_phase_rad = d_rem_carr_phase_rad + d_carrier_phase_step_rad * d_current_prn_length_samples;
+            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
+            //carrier phase accumulator for (K) doppler estimation
+            d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * d_current_prn_length_samples;
 
             //################### DLL COMMANDS #################################################
             //code phase step (Code resampler phase increment per sample) [chips/sample]
             d_code_phase_step_chips = d_code_freq_chips / static_cast<double>(d_fs_in);
             //remnant code phase [chips]
-            d_rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / static_cast<double>(d_fs_in));
+            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
+            d_rem_code_phase_chips = d_code_freq_chips * (d_rem_code_phase_samples / static_cast<double>(d_fs_in));
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
             if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
@@ -413,14 +414,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs[1]).real());
             current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs[1]).imag());
 
-            // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!, but some glitches??)
-            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
-            //compute remnant code phase samples AFTER the Tracking timestamp
-            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
-
-            //current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter)/static_cast<double>(d_fs_in);
-            // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
-            current_synchro_data.Code_phase_secs = 0;
+            // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample
+            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter+d_current_prn_length_samples) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
@@ -434,7 +429,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
                     d_correlator_outs[n] = gr_complex(0,0);
                 }
 
-            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter+d_current_prn_length_samples) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
             current_synchro_data.System = {'G'};
         }
 
@@ -447,6 +442,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             float prompt_Q;
             float tmp_E, tmp_P, tmp_L;
             double tmp_double;
+            unsigned long int tmp_long;
             prompt_I = d_correlator_outs[1].real();
             prompt_Q = d_correlator_outs[1].imag();
             tmp_E = std::abs<float>(d_correlator_outs[0]);
@@ -462,8 +458,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
                 d_dump_file.write(reinterpret_cast<char*>(&prompt_I), sizeof(float));
                 d_dump_file.write(reinterpret_cast<char*>(&prompt_Q), sizeof(float));
                 // PRN start sample stamp
-                //tmp_float=(float)d_sample_counter;
-                d_dump_file.write(reinterpret_cast<char*>(&d_sample_counter), sizeof(unsigned long int));
+                tmp_long = d_sample_counter+d_current_prn_length_samples;
+                d_dump_file.write(reinterpret_cast<char*>(&tmp_long), sizeof(unsigned long int));
                 // accumulated carrier phase
                 d_dump_file.write(reinterpret_cast<char*>(&d_acc_carrier_phase_rad), sizeof(double));
 
@@ -486,7 +482,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
                 // AUX vars (for debug purposes)
                 tmp_double = d_rem_code_phase_samples;
                 d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
+                tmp_double = static_cast<double>(d_sample_counter);
                 d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }
             catch (const std::ifstream::failure &e)

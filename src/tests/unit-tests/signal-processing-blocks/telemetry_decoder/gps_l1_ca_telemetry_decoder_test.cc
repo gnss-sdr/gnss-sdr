@@ -226,6 +226,8 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     gnss_synchro.Acq_samplestamp_samples = 0;
 
     std::shared_ptr<TelemetryDecoderInterface> tlm(new GpsL1CaTelemetryDecoder(config.get(), "TelemetryDecoder_1C",1, 1));
+    tlm->set_channel(0);
+
     boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx> tlm_msg_rx = GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();
 
     ASSERT_NO_THROW( {
@@ -251,7 +253,8 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
         top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
         //top_block->connect(gr_interleaved_char_to_complex, 0, valve, 0);
         top_block->connect(gr_interleaved_char_to_complex, 0, tracking->get_left_block(), 0);
-        top_block->connect(tracking->get_right_block(), 0, sink, 0);
+        top_block->connect(tracking->get_right_block(), 0, tlm->get_left_block(), 0);
+        top_block->connect(tlm->get_right_block(), 0, sink, 0);
         top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of tracking test." << std::endl;
 

@@ -61,7 +61,6 @@ private:
     friend galileo_e1_observables_cc_sptr
     galileo_e1_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
     galileo_e1_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
-    void msg_handler_rx_dt_s(pmt::pmt_t msg);
 
     //Tracking observable history
     std::vector<std::deque<double>> d_acc_carrier_phase_queue_rads;
@@ -69,7 +68,6 @@ private:
     std::vector<std::deque<double>> d_symbol_TOW_queue_s;
 
     // class private vars
-    double d_rx_dt_s;
     bool d_dump;
     unsigned int d_nchannels;
     unsigned int history_deep;

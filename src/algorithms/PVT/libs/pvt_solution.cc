@@ -57,6 +57,7 @@ Pvt_Solution::Pvt_Solution()
     b_valid_position = false;
     d_averaging_depth = 0;
     d_valid_observations = 0;
+    d_rx_pos=arma::zeros(3,1);
     d_rx_dt_s = 0.0;
 }
 

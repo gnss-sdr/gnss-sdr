@@ -58,13 +58,6 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, bool 
                                 gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
 
-    // Telemetry bit synchronization message port input
-    this->message_port_register_in(pmt::mp("rx_dt_s"));
-
-    this->set_msg_handler(pmt::mp("rx_dt_s"),
-            boost::bind(&gps_l1_ca_observables_cc::msg_handler_rx_dt_s, this, _1));
-
-    d_rx_dt_s=0;
     // initialize internal vars
     d_dump = dump;
     d_nchannels = nchannels;
@@ -103,15 +96,6 @@ gps_l1_ca_observables_cc::~gps_l1_ca_observables_cc()
 {
     d_dump_file.close();
 }
-
-
-void gps_l1_ca_observables_cc::msg_handler_rx_dt_s(pmt::pmt_t msg)
-{
-    //pmt::print(msg);
-    //accumulate the receiver time offset
-    d_rx_dt_s = d_rx_dt_s+pmt::to_double(msg);
-}
-
 
 bool pairCompare_gnss_synchro_Prn_delay_ms(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
@@ -220,7 +204,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     //compute the pseudorange
                     traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol) * 1000.0 + delta_rx_time_ms + GPS_STARTOFFSET_ms;
                     //convert to meters and remove the receiver time offset in meters
-                    pseudorange_m = traveltime_ms * GPS_C_m_ms-d_rx_dt_s*GPS_C_m_s; // [m]
+                    pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
                     // update the pseudorange object
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
@@ -237,7 +221,6 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             desired_symbol_TOW[0] = symbol_TOW_vec_s[history_deep - 1] + delta_rx_time_ms / 1000.0;
                             //    arma::interp1(symbol_TOW_vec_s,dopper_vec_hz,desired_symbol_TOW,dopper_vec_interp_hz);
                             //    arma::interp1(symbol_TOW_vec_s,acc_phase_vec_rads,desired_symbol_TOW,acc_phase_vec_interp_rads);
-
                             // Curve fitting to cuadratic function
                             arma::mat A = arma::ones<arma::mat> (history_deep, 2);
                             A.col(1) = symbol_TOW_vec_s;
@@ -249,10 +232,8 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             coef_doppler = pinv_A * dopper_vec_hz;
                             arma::vec acc_phase_lin;
                             arma::vec carrier_doppler_lin;
-                            acc_phase_lin = coef_acc_phase[0] + coef_acc_phase[1] * desired_symbol_TOW[0];   // +coef_acc_phase[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
-                            carrier_doppler_lin = coef_doppler[0] + coef_doppler[1] * desired_symbol_TOW[0]; // +coef_doppler[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
-                            //std::cout<<"acc_phase_vec_interp_rads="<<acc_phase_vec_interp_rads[0]<<std::endl;
-                            //std::cout<<"dopper_vec_interp_hz="<<dopper_vec_interp_hz[0]<<std::endl;
+                            acc_phase_lin = coef_acc_phase[0] + coef_acc_phase[1] * desired_symbol_TOW[0];
+                            carrier_doppler_lin = coef_doppler[0] + coef_doppler[1] * desired_symbol_TOW[0];
                             current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads = acc_phase_lin[0];
                             current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz = carrier_doppler_lin[0];
                         }
@@ -277,10 +258,6 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].Pseudorange_m;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            //tmp_double = (double)(current_gnss_synchro[i].Flag_valid_pseudorange==true);
-                            //tmp_double = current_gnss_synchro[i].debug_var1;
-                            //tmp_double = current_gnss_synchro[i].debug_var2;
-                            //d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].PRN;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                         }

@@ -55,24 +55,10 @@ hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_f
 }
 
 
-void hybrid_observables_cc::msg_handler_rx_dt_s(pmt::pmt_t msg)
-{
-    //pmt::print(msg);
-
-    d_rx_dt_s = pmt::to_double(msg);
-}
-
 hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history) :
                                 gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
                                 gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
-
-    // Telemetry bit synchronization message port input
-    this->message_port_register_in(pmt::mp("rx_dt_s"));
-
-    this->set_msg_handler(pmt::mp("rx_dt_s"),
-            boost::bind(&hybrid_observables_cc::msg_handler_rx_dt_s, this, _1));
-
     // initialize internal vars
     d_dump = dump;
     d_nchannels = nchannels;

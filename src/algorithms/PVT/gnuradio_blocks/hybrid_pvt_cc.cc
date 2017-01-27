@@ -216,9 +216,6 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     this->message_port_register_in(pmt::mp("telemetry"));
     this->set_msg_handler(pmt::mp("telemetry"), boost::bind(&hybrid_pvt_cc::msg_handler_telemetry, this, _1));
 
-    // Receiver time feedback to observables block
-    this->message_port_register_out(pmt::mp("rx_dt_s"));
-
     //initialize kml_printer
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;

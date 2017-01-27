@@ -324,8 +324,6 @@ void GNSSFlowgraph::connect()
                     top_block_->connect(observables_->get_right_block(), i, pvt_->get_left_block(), i);
                     top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
                 }
-            //asynchronous feedback of receiver time estimation from PVT to observables
-            top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("rx_dt_s"), observables_->get_right_block(), pmt::mp("rx_dt_s"));
     }
     catch (std::exception& e)
     {

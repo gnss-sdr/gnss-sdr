@@ -68,6 +68,7 @@ endif(ENABLE_PACKAGING)
 
 # Testing
 option(ENABLE_UNIT_TESTING "Build unit tests" ON)
+option(ENABLE_UNIT_TESTING_EXTRA "Download external files and build extra unit tests" OFF)
 option(ENABLE_SYSTEM_TESTING "Build system tests" OFF)
 option(ENABLE_SYSTEM_TESTING_EXTRA "Download external tools and build extra system tests" OFF)
 if(ENABLE_SYSTEM_TESTING_EXTRA)

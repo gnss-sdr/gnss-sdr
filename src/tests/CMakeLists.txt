@@ -188,7 +188,20 @@ if(ENABLE_SYSTEM_TESTING_EXTRA)
 endif(ENABLE_SYSTEM_TESTING_EXTRA)
 
 
-add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
+if(ENABLE_UNIT_TESTING_EXTRA)
+   add_definitions(-DEXTRA_TESTS)
+   if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
+      message(STATUS "Downloading some data files for testing...")
+      file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/gps_l2c_m_prn7_5msps.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat
+           SHOW_PROGRESS
+           EXPECTED_HASH MD5=a6fcbefe155137945d3c33c5ef7bd0f9 )
+   endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
+endif(ENABLE_UNIT_TESTING_EXTRA)
+file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
+file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
+file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
+
+add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/thirdparty/")
 
 include_directories(
      ${GTEST_INCLUDE_DIRECTORIES}

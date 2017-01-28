@@ -50,6 +50,7 @@
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "gps_l1_ca_telemetry_decoder.h"
+#include "gps_l1_ca_dll_pll_tracking.h"
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_msg_rx;
@@ -244,7 +245,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file =  path + "data/gps_l1ca_prn1_2.6msps.dat";
+        std::string file =  path + "signal_samples/gps_l1ca_prn1_2.6msps.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
         //boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);

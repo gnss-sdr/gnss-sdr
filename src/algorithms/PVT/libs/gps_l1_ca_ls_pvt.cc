@@ -81,14 +81,14 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
     std::map<int,Gnss_Synchro>::iterator gnss_pseudoranges_iter;
     std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
 
-    arma::vec W;//= arma::eye(valid_pseudoranges, valid_pseudoranges); //channels weights matrix
-    arma::vec obs;// = arma::zeros(valid_pseudoranges);                 // pseudoranges observation vector
-    arma::mat satpos;// = arma::zeros(3, valid_pseudoranges);           //satellite positions matrix
+    arma::vec W;      // channels weight vector
+    arma::vec obs;    // pseudoranges observation vector
+    arma::mat satpos; // satellite positions matrix
 
     int GPS_week = 0;
-    double utc = 0;
+    double utc = 0.0;
     double TX_time_corrected_s;
-    double SV_clock_bias_s = 0;
+    double SV_clock_bias_s = 0.0;
 
     d_flag_averaging = flag_averaging;
 
@@ -107,8 +107,8 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     /*!
                      * \todo Place here the satellite CN0 (power level, or weight factor)
                      */
-                    W.resize(valid_obs+1,1);
-                    W(valid_obs)=1;
+                    W.resize(valid_obs + 1, 1);
+                    W(valid_obs) = 1;
 
                     // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
                     // first estimate of transmit time
@@ -121,23 +121,24 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     // 3- compute the current ECEF position for this SV using corrected TX time
                     TX_time_corrected_s = Tx_time - SV_clock_bias_s;
                     gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
-                    satpos.resize(3,valid_obs+1);
+                    satpos.resize(3, valid_obs + 1);
                     satpos(0, valid_obs) = gps_ephemeris_iter->second.d_satpos_X;
                     satpos(1, valid_obs) = gps_ephemeris_iter->second.d_satpos_Y;
                     satpos(2, valid_obs) = gps_ephemeris_iter->second.d_satpos_Z;
+
                     // 4- fill the observations vector with the corrected pseudoranges
-                    obs.resize(valid_obs+1,1);
-                    obs(valid_obs) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s-d_rx_dt_s*GPS_C_m_s;
+                    obs.resize(valid_obs + 1, 1);
+                    obs(valid_obs) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s - d_rx_dt_s * GPS_C_m_s;
                     d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
                     d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
                     valid_obs++;
 
                     // SV ECEF DEBUG OUTPUT
                     DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
-                            << " X=" << gps_ephemeris_iter->second.d_satpos_X
-                            << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
-                            << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
-                            << " [m] PR_obs=" << obs(valid_obs) << " [m]";
+                               << " X=" << gps_ephemeris_iter->second.d_satpos_X
+                               << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
+                               << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
+                               << " [m] PR_obs=" << obs(valid_obs) << " [m]";
 
                     // compute the UTC time for this SV (just to print the associated UTC timestamp)
                     GPS_week = gps_ephemeris_iter->second.i_GPS_week;
@@ -162,25 +163,27 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             DLOG(INFO) << "obs=" << obs;
             DLOG(INFO) << "W=" << W;
 
-            //check if this is the initial position computation
-            if (d_rx_dt_s==0)
-            {
-                //execute Bancroft's algorithm to estimate initial receiver position and time
-                std::cout<<"Executing Bancroft algorithm...\n";
-                rx_position_and_time =bancroftPos(satpos.t(), obs);
-                d_rx_pos=rx_position_and_time.rows(0,2); //save ECEF position for the next iteration
-                d_rx_dt_s=rx_position_and_time(3)/GPS_C_m_s; //save time for the next iteration [meters]->[seconds]
-            }
+            // check if this is the initial position computation
+            if (d_rx_dt_s == 0)
+                {
+                    // execute Bancroft's algorithm to estimate initial receiver position and time
+                    DLOG(INFO) << " Executing Bancroft algorithm...";
+                    rx_position_and_time = bancroftPos(satpos.t(), obs);
+                    d_rx_pos = rx_position_and_time.rows(0, 2); // save ECEF position for the next iteration
+                    d_rx_dt_s = rx_position_and_time(3) / GPS_C_m_s; // save time for the next iteration [meters]->[seconds]
+                }
 
-            //Execute WLS using previos position as the initialization point
+            // Execute WLS using previous position as the initialization point
             rx_position_and_time = leastSquarePos(satpos, obs, W);
-            d_rx_pos=rx_position_and_time.rows(0,2); //save ECEF position for the next iteration
-            d_rx_dt_s+=rx_position_and_time(3)/GPS_C_m_s; //accumulate the rx time error for the next iteration [meters]->[seconds]
+
+            d_rx_pos = rx_position_and_time.rows(0, 2); // save ECEF position for the next iteration
+            d_rx_dt_s += rx_position_and_time(3) / GPS_C_m_s; // accumulate the rx time error for the next iteration [meters]->[seconds]
 
             DLOG(INFO) << "(new)Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
-            DLOG(INFO) <<"Accumulated rx clock error="<<d_rx_dt_s<<" clock error for this iteration="<<rx_position_and_time(3)/GPS_C_m_s<<" [s]"<<std::endl;
+            DLOG(INFO) << "Accumulated rx clock error=" << d_rx_dt_s << " clock error for this iteration=" << rx_position_and_time(3) / GPS_C_m_s << " [s]";
 
             cart2geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
+
             // Compute UTC time and print PVT solution
             double secondsperweek = 604800.0; // number of seconds in one week (7*24*60*60)
             boost::posix_time::time_duration t = boost::posix_time::seconds(utc + secondsperweek * static_cast<double>(GPS_week));
@@ -188,13 +191,12 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             d_position_UTC_time = p_time;
             DLOG(INFO) << "Position at " << boost::posix_time::to_simple_string(p_time)
-            << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-            << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_s << " [s]";
+                       << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+                       << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_s << " [s]";
 
             // ###### Compute DOPs ########
-            std::cout<<"c\r";
             compute_DOP();
-            std::cout<<"d\r";
+
             // ######## LOG FILE #########
             if(d_flag_dump_enabled == true)
                 {

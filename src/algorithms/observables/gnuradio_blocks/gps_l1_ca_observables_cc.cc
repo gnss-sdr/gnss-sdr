@@ -80,11 +80,11 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, bool 
                     {
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str();
                     }
                     catch (const std::ifstream::failure & e)
                     {
-                            LOG(WARNING) << "Exception opening observables dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "Exception opening observables dump file " << e.what();
                     }
                 }
         }
@@ -185,7 +185,6 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
             gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_d_TOW_at_current_symbol);
             double d_TOW_reference = gnss_synchro_iter->second.d_TOW_at_current_symbol;
             double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
-            //int reference_channel= gnss_synchro_iter->second.Channel_ID;
 
             // Now compute RX time differences due to the PRN alignment in the correlators
             double traveltime_ms;
@@ -202,14 +201,14 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     // compute the required symbol history shift in order to match the reference symbol
                     delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms - d_ref_PRN_rx_time_ms;
                     //compute the pseudorange
-                    traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol) * 1000.0 + delta_rx_time_ms + GPS_STARTOFFSET_ms;
+                    traveltime_ms = (d_TOW_reference - gnss_synchro_iter->second.d_TOW_at_current_symbol) * 1000.0 + delta_rx_time_ms + GPS_STARTOFFSET_ms;
                     //convert to meters and remove the receiver time offset in meters
                     pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
                     // update the pseudorange object
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000.0)/1000.0 + GPS_STARTOFFSET_ms/1000.0;
+                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference * 1000.0) / 1000.0 + GPS_STARTOFFSET_ms / 1000.0;
 
                     if (d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].size() >= history_deep)
                         {
@@ -221,7 +220,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             desired_symbol_TOW[0] = symbol_TOW_vec_s[history_deep - 1] + delta_rx_time_ms / 1000.0;
                             //    arma::interp1(symbol_TOW_vec_s,dopper_vec_hz,desired_symbol_TOW,dopper_vec_interp_hz);
                             //    arma::interp1(symbol_TOW_vec_s,acc_phase_vec_rads,desired_symbol_TOW,acc_phase_vec_interp_rads);
-                            // Curve fitting to cuadratic function
+                            // Curve fitting to quadratic function
                             arma::mat A = arma::ones<arma::mat> (history_deep, 2);
                             A.col(1) = symbol_TOW_vec_s;
 
@@ -237,7 +236,6 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads = acc_phase_lin[0];
                             current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz = carrier_doppler_lin[0];
                         }
-
                 }
         }
 

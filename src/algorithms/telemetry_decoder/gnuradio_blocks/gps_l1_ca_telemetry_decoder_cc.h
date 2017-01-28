@@ -98,9 +98,6 @@ private:
     double d_symbol_accumulator;
     short int d_symbol_accumulator_counter;
 
-    //debug
-    int tmp_counter;
-
     //bits and frame
     unsigned short int d_frame_bit_index;
     unsigned int d_GPS_frame_4bytes;

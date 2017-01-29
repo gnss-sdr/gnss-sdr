@@ -136,12 +136,11 @@ private:
     double d_carrier_phase_step_rad;
     double d_acc_carrier_phase_rad;
     double d_code_phase_samples;
-    double d_acc_code_phase_secs;
 
-    //PRN period in samples
+    // PRN period in samples
     int d_current_prn_length_samples;
 
-    //processing samples counters
+    // processing samples counters
     unsigned long int d_sample_counter;
     unsigned long int d_acq_sample_stamp;
 

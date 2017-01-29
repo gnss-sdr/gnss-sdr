@@ -162,7 +162,7 @@ int Obs_Gps_L1_System_Test::generate_signal()
         }
 
     wait_result = waitpid(pid, &child_status, 0);
-
+    if (wait_result == -1) perror("waitpid error");
     EXPECT_EQ(true, check_valid_rinex_obs(filename_rinex_obs));
     std::cout << "Signal and Observables RINEX files created."  << std::endl;
     return 0;
@@ -173,9 +173,7 @@ int Obs_Gps_L1_System_Test::configure_receiver()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
-    const double central_freq = 1575420000.0;
     const int sampling_rate_internal = baseband_sampling_freq;
-    const double gain_dB = 40.0;
 
     const int number_of_taps = 11;
     const int number_of_bands = 2;
@@ -210,13 +208,11 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     const float early_late_space_chips = 0.5;
     const float pll_bw_narrow_hz = 20.0;
     const float dll_bw_narrow_hz = 2.0;
-    const int extend_correlation_ms = 1;
+    const int extend_correlation_ms = 10;
 
     const int display_rate_ms = 500;
     const int output_rate_ms = 1000;
     const int averaging_depth = 10;
-
-    bool false_bool = false;
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
 
@@ -361,7 +357,7 @@ int Obs_Gps_L1_System_Test::run_receiver()
             std::cout << "Failed to run command: " << argum2 << std::endl;
             return -1;
         }
-    char * without_trailing;
+    char * without_trailing = (char*)"0";
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
         {
             std::string aux = std::string(buffer);

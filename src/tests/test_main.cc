@@ -113,7 +113,6 @@ DECLARE_string(log_dir);
 
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e5a_tracking_test.cc"
-#include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"
 
@@ -128,6 +127,7 @@ DECLARE_string(log_dir);
 #if EXTRA_TESTS
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_l1_ca_telemetry_decoder_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
 #endif
 
 // For GPS NAVIGATION (L1)

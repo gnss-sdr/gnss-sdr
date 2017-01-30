@@ -197,7 +197,7 @@ void Gps_Ephemeris::satellitePosition(double transmitTime)
     a = d_sqrt_A*d_sqrt_A;
 
     // Time from ephemeris reference epoch
-    tk = check_t(transmitTime - d_Toe);
+    tk = check_t(transmitTime - d_Toc);
 
     // Computed mean motion
     n0 = sqrt(GM / (a*a*a));

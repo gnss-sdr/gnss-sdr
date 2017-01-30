@@ -379,10 +379,6 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                         {
                           it->second.Pseudorange_m=it->second.Pseudorange_m-d_ls_pvt->d_rx_dt_s*GPS_C_m_s;
                         }
-                        // send asynchronous message to observables block
-                        // time offset is expressed as the equivalent travel distance [m]
-                        //pmt::pmt_t value = pmt::from_double(d_ls_pvt->d_rx_dt_s);
-                        //this->message_port_pub(pmt::mp("rx_dt_s"), value);
                         //std::cout<<"d_rx_dt_s*GPS_C_m_s="<<d_ls_pvt->d_rx_dt_s*GPS_C_m_s<<std::endl;
                             if( first_fix == true)
                                 {

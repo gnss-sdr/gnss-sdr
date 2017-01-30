@@ -119,7 +119,12 @@ double Gps_Ephemeris::sv_clock_drift(double transmitTime)
 {
     double dt;
     dt = check_t(transmitTime - d_Toc);
-    d_satClkDrift = d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt) + sv_clock_relativistic_term(transmitTime);
+
+    for (int i=0;i<2;i++) {
+        dt-=d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt);
+    }
+    d_satClkDrift = d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt);
+
     return d_satClkDrift;
 }
 
@@ -174,7 +179,7 @@ double Gps_Ephemeris::sv_clock_relativistic_term(double transmitTime)
 }
 
 
-void Gps_Ephemeris::satellitePosition(double transmitTime)
+double Gps_Ephemeris::satellitePosition(double transmitTime)
 {
     double tk;
     double a;
@@ -197,7 +202,7 @@ void Gps_Ephemeris::satellitePosition(double transmitTime)
     a = d_sqrt_A*d_sqrt_A;
 
     // Time from ephemeris reference epoch
-    tk = check_t(transmitTime - d_Toc);
+    tk = check_t(transmitTime - d_Toe);
 
     // Computed mean motion
     n0 = sqrt(GM / (a*a*a));
@@ -263,4 +268,14 @@ void Gps_Ephemeris::satellitePosition(double transmitTime)
     d_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
     d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
+
+    // Time from ephemeris reference clock
+    tk = check_t(transmitTime - d_Toc);
+
+    double dtr_s=d_A_f0+d_A_f1*tk+d_A_f2*tk*tk;
+
+    /* relativity correction */
+    dtr_s-=2.0*sqrt(GM*a)*d_e_eccentricity*sin(E)/(GPS_C_m_s*GPS_C_m_s);
+
+    return dtr_s;
 }

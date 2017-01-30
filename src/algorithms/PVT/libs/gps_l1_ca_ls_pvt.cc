@@ -115,19 +115,22 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     double Rx_time = GPS_current_time;
                     double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m / GPS_C_m_s;
 
-                    // 2- compute the clock drift using the clock model (broadcast) for this SV, including relativistic effect
+                    // 2- compute the clock drift using the clock model (broadcast) for this SV, not including relativistic effect
                     SV_clock_bias_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time); //- gps_ephemeris_iter->second.d_TGD;
 
-                    // 3- compute the current ECEF position for this SV using corrected TX time
+                    // 3- compute the current ECEF position for this SV using corrected TX time and obtain clock bias including relativistic effect
                     TX_time_corrected_s = Tx_time - SV_clock_bias_s;
-                    gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
+                    double dtr=gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
+
+                    //store satellite positions in a matrix
                     satpos.resize(3,valid_obs+1);
                     satpos(0, valid_obs) = gps_ephemeris_iter->second.d_satpos_X;
                     satpos(1, valid_obs) = gps_ephemeris_iter->second.d_satpos_Y;
                     satpos(2, valid_obs) = gps_ephemeris_iter->second.d_satpos_Z;
+
                     // 4- fill the observations vector with the corrected pseudoranges
                     obs.resize(valid_obs+1,1);
-                    obs(valid_obs) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s-d_rx_dt_s*GPS_C_m_s;
+                    obs(valid_obs) = gnss_pseudoranges_iter->second.Pseudorange_m + dtr * GPS_C_m_s-d_rx_dt_s*GPS_C_m_s;
                     d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
                     d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
                     valid_obs++;

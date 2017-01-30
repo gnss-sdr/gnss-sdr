@@ -183,8 +183,9 @@ public:
     /*!
      * \brief Compute the ECEF SV coordinates and ECEF velocity
      * Implementation of Table 20-IV (IS-GPS-200E)
+     * and compute the clock bias term including relativistic effect (return value)
      */
-    void satellitePosition(double transmitTime);
+    double satellitePosition(double transmitTime);
 
     /*!
      * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction

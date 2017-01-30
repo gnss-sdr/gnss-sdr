@@ -212,7 +212,7 @@ int Obs_Gps_L1_System_Test::configure_receiver()
 
     const int display_rate_ms = 500;
     const int output_rate_ms = 1000;
-    const int averaging_depth = 10;
+    const int averaging_depth = 1;
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
 
@@ -285,8 +285,8 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(tong_max_dwells));
 
     // Set Tracking
-    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-    //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+    //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
+    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("Tracking_1C.if", std::to_string(zero));
     config->set_property("Tracking_1C.dump", "false");

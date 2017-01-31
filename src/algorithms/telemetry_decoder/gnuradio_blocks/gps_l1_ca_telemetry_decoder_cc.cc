@@ -339,7 +339,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
     if (this->d_flag_preamble == true and d_GPS_FSM.d_nav.d_TOW > 0)
         {
             // update TOW at the preamble instant
-            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW;
+            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_L1_CA_CODE_PERIOD;
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
             d_TOW_at_current_symbol = d_TOW_at_Preamble;
             if (flag_TOW_set == false)

@@ -285,8 +285,8 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(tong_max_dwells));
 
     // Set Tracking
-    //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
+    //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("Tracking_1C.if", std::to_string(zero));
     config->set_property("Tracking_1C.dump", "false");
@@ -407,7 +407,7 @@ void Obs_Gps_L1_System_Test::check_results()
                                 }
                             else
                                 {
-                                    dataobj = r_ref_data.getObs(prn, "P1",  r_ref_header);
+                                    dataobj = r_ref_data.getObs(prn, "C1C",  r_ref_header);
                                     double P1 = dataobj.data;
                                     std::pair<double, double> pseudo(sow,P1);
                                     pseudorange_ref.at(myprn).push_back(pseudo);
@@ -467,7 +467,7 @@ void Obs_Gps_L1_System_Test::check_results()
                                 }
                             else
                                 {
-                                    dataobj = r_meas_data.getObs(prn, "C1",  r_meas_header);
+                                    dataobj = r_meas_data.getObs(prn, "C1C",  r_meas_header);
                                     double P1 = dataobj.data;
                                     std::pair<double, double> pseudo(sow, P1);
                                     pseudorange_meas.at(myprn).push_back(pseudo);
@@ -679,7 +679,7 @@ TEST_F(Obs_Gps_L1_System_Test, Observables_system_test)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    generate_signal();
+    //generate_signal();
 
     std::cout << "Validating generated reference RINEX obs file: " << FLAGS_filename_rinex_obs << " ..." << std::endl;
     bool is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + FLAGS_filename_rinex_obs);

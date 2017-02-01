@@ -51,6 +51,8 @@
 #include "gnss_synchro.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
+#include "gps_l1_ca_dll_pll_c_aid_tracking.h"
+#include "tracking_obs_reader.h"
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_msg_rx;
@@ -200,8 +202,8 @@ void GpsL1CATelemetryDecoderTest::init()
     config->set_property("Tracking_1C.if", "0");
     config->set_property("Tracking_1C.dump", "true");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
-    config->set_property("Tracking_1C.pll_bw_hz", "30.0");
-    config->set_property("Tracking_1C.dll_bw_hz", "4.0");
+    config->set_property("Tracking_1C.pll_bw_hz", "20.0");
+    config->set_property("Tracking_1C.dll_bw_hz", "1.5");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
 
     config->set_property("TelemetryDecoder_1C.dump","true");
@@ -217,9 +219,24 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     int fs_in = 2600000;
 
     init();
+
+    //todo: call here the gnss simulator
+
+    //open true observables log file written by the simulator
+    tracking_obs_reader true_obs_data;
+    ASSERT_NO_THROW({
+        if (true_obs_data.open_obs_file("signal_samples/gps_l1_ca_obs_prn1.dat")==false)
+            {
+                throw std::exception();
+            };
+    })<< "Failure opening true observables file" << std::endl;
+
+
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Telemetry_Decoder test");
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
+    //std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
+
     boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx> msg_rx = GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
 
     gnss_synchro.Acq_delay_samples = (1023-994.622/1023)*fs_in*1e-3;
@@ -245,7 +262,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file =  path + "signal_samples/gps_l1ca_prn1_2.6msps.dat";
+        std::string file =  path + "signal_samples/signal_out.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
         //boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);

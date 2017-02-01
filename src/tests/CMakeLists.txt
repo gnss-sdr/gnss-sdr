@@ -164,7 +164,7 @@ if(ENABLE_SYSTEM_TESTING_EXTRA)
          GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
          GIT_TAG v${gpstk_RELEASE}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}
-         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../gpstk-${gpstk_RELEASE}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${gpstk_RELEASE}
          CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
          UPDATE_COMMAND ""
          PATCH_COMMAND ""

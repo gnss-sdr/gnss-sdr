@@ -152,31 +152,28 @@ if(ENABLE_SYSTEM_TESTING_EXTRA)
    add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
    add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
    add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv")
-   
+
    ################################################################################
    # Local installation of GPSTk http://www.gpstk.org/
    ################################################################################
    find_package(GPSTK)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-      set(gpstk_RELEASE "2.5")
-      set(gpstk_md5 "9d79f6838d274f5edfd46c780a6b1b72")
+      set(gpstk_RELEASE "2.9")
       ExternalProject_Add(
          gpstk-${gpstk_RELEASE}
-         URL https://sourceforge.net/projects/gpstk/files/gpstk/${gpstk_RELEASE}/gpstk-${gpstk_RELEASE}.src.tar.gz
-         URL_MD5 ${gpstk_md5}
-         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk
-         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk
-         CONFIGURE_COMMAND ""
-         BUILD_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/script_gpstk.sh -c
+         GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
+         GIT_TAG v${gpstk_RELEASE}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../gpstk-${gpstk_RELEASE}
+         CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
-         INSTALL_COMMAND ""
       )
-      set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/include CACHE PATH "Local GPSTK headers")
+      set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/include CACHE PATH "Local GPSTK headers")
       add_library(gpstk UNKNOWN IMPORTED)
-      set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+      set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
       add_dependencies(gpstk gpstk-${gpstk_RELEASE})
-      set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/bin/ )
+      set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/bin/ )
       add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
       set(gpstk_libs gpstk)
    else(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)

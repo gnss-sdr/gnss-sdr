@@ -136,7 +136,7 @@ endif(ENABLE_CUDA)
 ################################################################################
 # Optional generator
 ################################################################################
-if(ENABLE_SYSTEM_TESTING_EXTRA)
+if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA)
    ExternalProject_Add(
       gnss-sim
       GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
@@ -182,7 +182,7 @@ if(ENABLE_SYSTEM_TESTING_EXTRA)
        set(GPSTK_BINDIR ${GPSTK_LIBRARY}/../bin/ )
        add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
    endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-endif(ENABLE_SYSTEM_TESTING_EXTRA)
+endif(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA)
 
 
 if(ENABLE_UNIT_TESTING_EXTRA)

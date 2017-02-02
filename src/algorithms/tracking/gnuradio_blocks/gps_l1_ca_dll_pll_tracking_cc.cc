@@ -465,7 +465,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
 
                 // PLL commands
                 d_dump_file.write(reinterpret_cast<char*>(&carr_error_hz), sizeof(double));
-                d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(double));
+                d_dump_file.write(reinterpret_cast<char*>(&carr_error_filt_hz), sizeof(double));
 
                 // DLL commands
                 d_dump_file.write(reinterpret_cast<char*>(&code_error_chips), sizeof(double));

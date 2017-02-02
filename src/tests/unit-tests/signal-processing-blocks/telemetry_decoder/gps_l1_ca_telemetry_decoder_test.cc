@@ -49,7 +49,6 @@
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
 #include <gtest/gtest.h>
-
 #include "GPS_L1_CA.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
@@ -58,24 +57,22 @@
 #include "in_memory_configuration.h"
 #include "gnss_synchro.h"
 #include "gps_l1_ca_telemetry_decoder.h"
-
-#include "../libs/tracking_true_obs_reader.h"
-#include "../libs/tracking_dump_reader.h"
-#include "../libs/tlm_dump_reader.h"
-
+#include "tracking_true_obs_reader.h"
+#include "tracking_dump_reader.h"
+#include "tlm_dump_reader.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking.h"
+#include "signal_generator_flags.h"
 
-DEFINE_string(generator_binary, std::string(SW_GENERATOR_BIN), "Path of software-defined signal generator binary");
-DEFINE_string(rinex_nav_file, std::string(DEFAULT_RINEX_NAV), "Input RINEX navigation file");
-DEFINE_int32(duration, 20, "Duration of the experiment [in seconds]");
-DEFINE_int32(fs_gen_hz, 2600000, "Samppling frequency [Hz]");
-DEFINE_string(static_position, "30.286502,120.032669,100", "Static receiver position [log,lat,height]");
-DEFINE_string(dynamic_position, "", "Observer positions file, in .csv or .nmea format");
-DEFINE_string(filename_rinex_obs, "sim.16o", "Filename of output RINEX navigation file");
-DEFINE_string(filename_raw_data, "signal_out.bin", "Filename of output raw data file");
-DEFINE_int32(test_satellite_PRN,1, "PRN of the satellite under test (must be visible during the observation time)");
-
+DECLARE_string(generator_binary);
+DECLARE_string(rinex_nav_file);
+DECLARE_int32(duration); // 20
+DECLARE_int32(fs_gen_hz);
+DECLARE_string(static_position);
+DECLARE_string(dynamic_position);
+DECLARE_string(filename_rinex_obs);
+DECLARE_string(filename_raw_data);
+DECLARE_int32(test_satellite_PRN);
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_msg_rx;

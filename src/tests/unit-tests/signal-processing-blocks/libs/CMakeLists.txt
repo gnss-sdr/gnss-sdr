@@ -17,8 +17,10 @@
 #
 
 
-set(SIGNAL_PROCESSING_TESTING_LIB_SOURCES   
-     tracking_obs_reader.cc
+set(SIGNAL_PROCESSING_TESTING_LIB_SOURCES
+    tracking_dump_reader.cc
+    tlm_dump_reader.cc   
+    tracking_true_obs_reader.cc
 )
 
 include_directories(

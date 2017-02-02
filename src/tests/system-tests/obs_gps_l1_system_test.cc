@@ -50,16 +50,15 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "in_memory_configuration.h"
-#include "signal_generator_flags.h"
 
 
-DECLARE_string(generator_binary);
-DECLARE_string(rinex_nav_file);
-DECLARE_int32(duration);
-DECLARE_string(static_position);
-DECLARE_string(dynamic_position);
-DECLARE_string(filename_rinex_obs);
-DECLARE_string(filename_raw_data);
+DEFINE_string(generator_binary, std::string(SW_GENERATOR_BIN), "Path of software-defined signal generator binary");
+DEFINE_string(rinex_nav_file, std::string(DEFAULT_RINEX_NAV), "Input RINEX navigation file");
+DEFINE_int32(duration, 100, "Duration of the experiment [in seconds, max = 300]");
+DEFINE_string(static_position, "30.286502,120.032669,100", "Static receiver position [log,lat,height]");
+DEFINE_string(dynamic_position, "", "Observer positions file, in .csv or .nmea format");
+DEFINE_string(filename_rinex_obs, "sim.16o", "Filename of output RINEX navigation file");
+DEFINE_string(filename_raw_data, "signal_out.bin", "Filename of output raw data file");
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -238,14 +237,11 @@ int Obs_Gps_L1_System_Test::configure_receiver()
 
     // Set the Signal Conditioner
     config->set_property("SignalConditioner.implementation", "Signal_Conditioner");
-    //config->set_property("DataTypeAdapter.implementation", "Ibyte_To_Complex");
-    config->set_property("DataTypeAdapter.implementation", "Ibyte_To_Cshort");
+    config->set_property("DataTypeAdapter.implementation", "Ibyte_To_Complex");
     config->set_property("InputFilter.implementation", "Fir_Filter");
     config->set_property("InputFilter.dump", "false");
-    //config->set_property("InputFilter.input_item_type", "gr_complex");
-    //config->set_property("InputFilter.output_item_type", "gr_complex");
-    config->set_property("InputFilter.input_item_type", "cshort");
-    config->set_property("InputFilter.output_item_type", "cshort");
+    config->set_property("InputFilter.input_item_type", "gr_complex");
+    config->set_property("InputFilter.output_item_type", "gr_complex");
     config->set_property("InputFilter.taps_item_type", "float");
     config->set_property("InputFilter.number_of_taps", std::to_string(number_of_taps));
     config->set_property("InputFilter.number_of_bands", std::to_string(number_of_bands));
@@ -265,8 +261,7 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     config->set_property("InputFilter.IF", std::to_string(zero));
     config->set_property("Resampler.implementation", "Pass_Through");
     config->set_property("Resampler.dump", "false");
-    //config->set_property("Resampler.item_type", "gr_complex");
-    config->set_property("Resampler.item_type", "cshort");
+    config->set_property("Resampler.item_type", "gr_complex");
     config->set_property("Resampler.sample_freq_in", std::to_string(sampling_rate_internal));
     config->set_property("Resampler.sample_freq_out", std::to_string(sampling_rate_internal));
 
@@ -276,10 +271,8 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     config->set_property("Channel.signal", "1C");
 
     // Set Acquisition
-    //config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
-    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    //config->set_property("Acquisition_1C.item_type", "gr_complex");
-    config->set_property("Acquisition_1C.item_type", "cshort");
+    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
+    config->set_property("Acquisition_1C.item_type", "gr_complex");
     config->set_property("Acquisition_1C.if", std::to_string(zero));
     config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
     config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
@@ -292,10 +285,9 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(tong_max_dwells));
 
     // Set Tracking
-    //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
-    //config->set_property("Tracking_1C.item_type", "gr_complex");
-    config->set_property("Tracking_1C.item_type", "cshort");
+    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
+    //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+    config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("Tracking_1C.if", std::to_string(zero));
     config->set_property("Tracking_1C.dump", "false");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");

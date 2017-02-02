@@ -169,7 +169,6 @@ private:
     int d_extend_correlation_ms;
     bool d_enable_extended_integration;
     bool d_preamble_synchronized;
-    int d_correlation_symbol_counter;
     void msg_handler_preamble_index(pmt::pmt_t msg);
 
     //Integration period in samples

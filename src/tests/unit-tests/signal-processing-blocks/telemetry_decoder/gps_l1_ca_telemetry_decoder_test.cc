@@ -39,7 +39,6 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <numeric>
 #include <armadillo>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -57,7 +56,6 @@
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
 #include "in_memory_configuration.h"
-#include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 
@@ -202,7 +200,6 @@ public:
 
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
-    std::string generated_rinex_obs;
 
     int configure_generator();
     int generate_signal();
@@ -321,9 +318,15 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec true_time_s,
     double error_mean=arma::mean(err);
     double error_var=arma::var(err);
 
-    //4. report
+    // 4. Peaks
+    double max_error=arma::max(err);
+    double min_error=arma::min(err);
 
-    std::cout<< std::setprecision(10)<<"Telemetry reported TOW RMSE="<<rmse<<" [s], mean="<<error_mean<<" [s], stdev="<<sqrt(error_var)<<" [s]."<<std::endl;
+    //5. report
+
+    std::cout<< std::setprecision(10)<<"TLM TOW RMSE="
+            <<rmse<<", mean="<<error_mean
+            <<", stdev="<<sqrt(error_var)<<" (max,min)="<<max_error<<","<<min_error<<" [Chips]"<<std::endl;
 
 }
 

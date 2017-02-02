@@ -181,7 +181,7 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     ASSERT_NO_THROW( {
         //gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
         std::string path = std::string(TEST_PATH);
-        std::string file =  path + "/data/gps_l2c_m_prn7_5msps.dat";
+        std::string file =  path + "signal_samples/gps_l2c_m_prn7_5msps.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);

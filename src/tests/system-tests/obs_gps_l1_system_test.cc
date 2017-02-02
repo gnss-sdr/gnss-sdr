@@ -50,15 +50,16 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "in_memory_configuration.h"
+#include "signal_generator_flags.h"
 
 
-DEFINE_string(generator_binary, std::string(SW_GENERATOR_BIN), "Path of software-defined signal generator binary");
-DEFINE_string(rinex_nav_file, std::string(DEFAULT_RINEX_NAV), "Input RINEX navigation file");
-DEFINE_int32(duration, 100, "Duration of the experiment [in seconds, max = 300]");
-DEFINE_string(static_position, "30.286502,120.032669,100", "Static receiver position [log,lat,height]");
-DEFINE_string(dynamic_position, "", "Observer positions file, in .csv or .nmea format");
-DEFINE_string(filename_rinex_obs, "sim.16o", "Filename of output RINEX navigation file");
-DEFINE_string(filename_raw_data, "signal_out.bin", "Filename of output raw data file");
+ DECLARE_string(generator_binary);
+ DECLARE_string(rinex_nav_file);
+ DECLARE_int32(duration);
+ DECLARE_string(static_position);
+ DECLARE_string(dynamic_position);
+ DECLARE_string(filename_rinex_obs);
+ DECLARE_string(filename_raw_data);
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

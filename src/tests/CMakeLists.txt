@@ -234,6 +234,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${CMAKE_SOURCE_DIR}/src/tests/unit-tests/signal-processing-blocks/libs
+     ${CMAKE_SOURCE_DIR}/src/tests/common-files
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -504,7 +505,7 @@ if(ENABLE_SYSTEM_TESTING)
     )
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
-        add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc )
+        add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc)
         if(NOT ${GTEST_DIR_LOCAL})
             add_dependencies(obs_gps_l1_system_test gtest-${gtest_RELEASE} )
         else(NOT ${GTEST_DIR_LOCAL})

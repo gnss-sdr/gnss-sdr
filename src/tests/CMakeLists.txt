@@ -16,6 +16,9 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+
+add_subdirectory(unit-tests/signal-processing-blocks/libs)
+
 ################################################################################
 # Google Test - https://github.com/google/googletest
 ################################################################################
@@ -230,6 +233,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+     ${CMAKE_SOURCE_DIR}/src/tests/unit-tests/signal-processing-blocks/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -271,6 +275,7 @@ if(ENABLE_UNIT_TESTING)
                                 signal_generator_blocks
                                 signal_generator_adapters
                                 pvt_gr_blocks
+                                signak_processing_testing_lib
                                 ${VOLK_GNSSSDR_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
     )

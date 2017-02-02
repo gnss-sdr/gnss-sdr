@@ -111,6 +111,7 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
                     dll_bw_hz,
                     pll_bw_narrow_hz,
                     dll_bw_narrow_hz,
+                    extend_correlation_ms,
                     early_late_space_chips);
             DLOG(INFO) << "tracking(" << tracking_sc->unique_id() << ")";
         }
@@ -226,4 +227,3 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTracking::get_right_block()
             return nullptr;
         }
 }
-

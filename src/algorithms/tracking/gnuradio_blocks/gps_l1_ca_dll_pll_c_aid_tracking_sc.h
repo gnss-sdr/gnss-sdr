@@ -65,6 +65,7 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
                                    float dll_bw_hz,
                                    float pll_bw_narrow_hz,
                                    float dll_bw_narrow_hz,
+                                   int extend_correlation_ms,
                                    float early_late_space_chips);
 
 
@@ -97,6 +98,7 @@ private:
             float dll_bw_hz,
             float pll_bw_narrow_hz,
             float dll_bw_narrow_hz,
+            int extend_correlation_ms,
             float early_late_space_chips);
 
     gps_l1_ca_dll_pll_c_aid_tracking_sc(long if_freq,
@@ -108,6 +110,7 @@ private:
             float dll_bw_hz,
             float pll_bw_narrow_hz,
             float dll_bw_narrow_hz,
+            int extend_correlation_ms,
             float early_late_space_chips);
 
     // tracking configuration vars
@@ -157,6 +160,8 @@ private:
     double d_acc_carrier_phase_cycles;
     double d_code_phase_samples;
     double d_pll_to_dll_assist_secs_Ti;
+    double d_carr_phase_error_secs_Ti;
+    double d_code_error_chips_Ti;
     double d_preamble_timestamp_s;
     int d_extend_correlation_ms;
     bool d_enable_extended_integration;

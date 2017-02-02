@@ -33,8 +33,10 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
+#include <pmt/pmt.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <glog/logging.h>
 #include "gnss_synchro.h"
@@ -67,10 +69,11 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_sc(
         float dll_bw_hz,
         float pll_bw_narrow_hz,
         float dll_bw_narrow_hz,
+        int extend_correlation_ms,
         float early_late_space_chips)
 {
     return gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr(new gps_l1_ca_dll_pll_c_aid_tracking_sc(if_freq,
-            fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz, early_late_space_chips));
+            fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz, extend_correlation_ms, early_late_space_chips));
 }
 
 
@@ -85,6 +88,17 @@ void gps_l1_ca_dll_pll_c_aid_tracking_sc::forecast (int noutput_items,
 }
 
 
+void gps_l1_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index(pmt::pmt_t msg)
+{
+    //pmt::print(msg);
+    DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN);
+    if (d_enable_extended_integration == false) //avoid re-setting preamble indicator
+        {
+            d_preamble_timestamp_s = pmt::to_double(msg);
+            d_enable_extended_integration = true;
+            d_preamble_synchronized = false;
+        }
+}
 
 gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
         long if_freq,
@@ -96,6 +110,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
         float dll_bw_hz,
         float pll_bw_narrow_hz,
         float dll_bw_narrow_hz,
+        int extend_correlation_ms,
         float early_late_space_chips) :
         gr::block("gps_l1_ca_dll_pll_c_aid_tracking_sc", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -118,11 +133,11 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
     d_dll_bw_hz = dll_bw_hz;
     d_pll_bw_narrow_hz = pll_bw_narrow_hz;
     d_dll_bw_narrow_hz = dll_bw_narrow_hz;
-    d_code_loop_filter.set_DLL_BW(dll_bw_hz);
-    d_carrier_loop_filter.set_params(10.0, pll_bw_hz,2);
-    d_extend_correlation_ms = 1; // TODO!
+    d_code_loop_filter.set_DLL_BW(d_dll_bw_hz);
+    d_carrier_loop_filter.set_params(10.0, d_pll_bw_hz, 2);
+    d_extend_correlation_ms = extend_correlation_ms;
 
-    //--- DLL variables --------------------------------------------------------
+    // --- DLL variables --------------------------------------------------------
     d_early_late_spc_chips = early_late_space_chips; // Define early-late offset (in chips)
 
     // Initialization of local code replica
@@ -136,7 +151,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
     d_correlator_outs_16sc = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
-            d_correlator_outs_16sc[n] = lv_16sc_t(0,0);
+            d_correlator_outs_16sc[n] = lv_cmake(0,0);
         }
 
     d_local_code_shift_chips = static_cast<float*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(float), volk_gnsssdr_get_alignment()));
@@ -157,10 +172,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
 
     // sample synchronization
     d_sample_counter = 0; //(from trk to tlm)
-
-    //d_sample_counter_seconds = 0;
     d_acq_sample_stamp = 0;
-
     d_enable_tracking = false;
     d_pull_in = false;
 
@@ -175,7 +187,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
 
-    set_relative_rate(1.0 / (static_cast<double>(d_vector_length) * 2.0));
+    set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 
     d_acquisition_gnss_synchro = 0;
     d_channel = 0;
@@ -184,8 +196,10 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
     d_carrier_doppler_hz = 0.0;
     d_acc_carrier_phase_cycles = 0.0;
     d_code_phase_samples = 0.0;
+    d_enable_extended_integration = false;
+    d_preamble_synchronized = false;
     d_rem_code_phase_integer_samples = 0;
-
+    d_code_error_chips_Ti = 0.0;
     d_pll_to_dll_assist_secs_Ti = 0.0;
     d_rem_code_phase_chips = 0.0;
     d_code_phase_step_chips = 0.0;
@@ -193,6 +207,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
     d_code_error_filt_chips_s = 0.0;
     d_code_error_filt_chips_Ti = 0.0;
     d_preamble_timestamp_s = 0.0;
+    d_carr_phase_error_secs_Ti = 0.0;
     //set_min_output_buffer((long int)300);
 }
 
@@ -211,7 +226,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     acq_trk_diff_samples = static_cast<long int>(d_sample_counter) - static_cast<long int>(d_acq_sample_stamp);//-d_vector_length;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
     acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / static_cast<double>(d_fs_in);
-    //doppler effect
+    // Doppler effect
     // Fd=(C/(C+Vr))*F
     double radial_velocity = (GPS_L1_FREQ_HZ + d_acq_carrier_doppler_hz) / GPS_L1_FREQ_HZ;
     // new chip and prn sequence periods based on acq Doppler
@@ -220,7 +235,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     double T_prn_mod_samples;
     d_code_freq_chips = radial_velocity * GPS_L1_CA_CODE_RATE_HZ;
     d_code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
-    T_chip_mod_seconds = 1/d_code_freq_chips;
+    T_chip_mod_seconds = 1.0 / d_code_freq_chips;
     T_prn_mod_seconds = T_chip_mod_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
     T_prn_mod_samples = T_prn_mod_seconds * static_cast<double>(d_fs_in);
 
@@ -245,7 +260,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); //The carrier loop filter implements the Doppler accumulator
+    d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); // The carrier loop filter implements the Doppler accumulator
     d_code_loop_filter.initialize();    // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
@@ -284,17 +299,6 @@ void gps_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
 
-void gps_l1_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index(pmt::pmt_t msg)
-{
-    //pmt::print(msg);
-    DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN);
-    if (d_enable_extended_integration == false) //avoid re-setting preamble indicator
-        {
-            d_preamble_timestamp_s = pmt::to_double(msg);
-            d_enable_extended_integration = true;
-            d_preamble_synchronized = false;
-        }
-}
 
 gps_l1_ca_dll_pll_c_aid_tracking_sc::~gps_l1_ca_dll_pll_c_aid_tracking_sc()
 {
@@ -322,14 +326,10 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items __attri
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     // process vars
-    double d_code_error_chips_Ti = 0.0;
-    double code_error_filt_chips = 0.0;
     double code_error_filt_secs_Ti = 0.0;
-    double CURRENT_INTEGRATION_TIME_S;
-    double CORRECTED_INTEGRATION_TIME_S;
-    double dll_code_error_secs_Ti = 0.0;
-    double d_carr_phase_error_secs_Ti = 0.0;
-    double old_d_rem_code_phase_samples;
+    double CURRENT_INTEGRATION_TIME_S = 0.0;
+    double CORRECTED_INTEGRATION_TIME_S = 0.0;
+
     if (d_enable_tracking == true)
         {
             // Fill the acquisition data
@@ -516,7 +516,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items __attri
                         {
                             d_cn0_estimation_counter = 0;
                             // Code lock indicator
-                            d_CN0_SNV_dB_Hz = cn0_svn_estimator( d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
+                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
                             // Carrier lock indicator
                             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
                             // Loss of lock detection
@@ -617,14 +617,14 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items __attri
 
                     //DLL commands
                     d_dump_file.write(reinterpret_cast<char*>(&d_code_error_chips_Ti), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char*>(&code_error_filt_chips), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_code_error_filt_chips_Ti), sizeof(double));
 
                     // CN0 and carrier lock test
                     d_dump_file.write(reinterpret_cast<char*>(&d_CN0_SNV_dB_Hz), sizeof(double));
                     d_dump_file.write(reinterpret_cast<char*>(&d_carrier_lock_test), sizeof(double));
 
                     // AUX vars (for debug purposes)
-                    tmp_double = d_rem_code_phase_samples;
+                    tmp_double = d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                     tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));

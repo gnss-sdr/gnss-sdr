@@ -51,10 +51,9 @@
 #include "in_memory_configuration.h"
 #include "gnss_synchro.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
-
-
-#include "../libs/tracking_true_obs_reader.h"
-#include "../libs/tracking_dump_reader.h"
+#include "tracking_true_obs_reader.h"
+#include "tracking_dump_reader.h"
+#include "signal_generator_flags"
 
 DECLARE_string(generator_binary);
 DECLARE_string(rinex_nav_file);

@@ -196,7 +196,6 @@ int hybrid_observables_cc::general_work (int noutput_items,
             DLOG(INFO) << "d_TOW_hybrid_reference [ms] = " << d_TOW_reference * 1000;
             double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
             DLOG(INFO) << "ref_PRN_rx_time_ms [ms] = " << d_ref_PRN_rx_time_ms;
-            //int reference_channel= gnss_synchro_iter->second.Channel_ID;
 
             // Now compute RX time differences due to the PRN alignment in the correlators
             for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
@@ -235,8 +234,6 @@ int hybrid_observables_cc::general_work (int noutput_items,
                             dopper_vec_hz = arma::vec(std::vector<double>(d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].begin(), d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].end()));
 
                             desired_symbol_TOW[0] = symbol_TOW_vec_s[history_deep - 1] + delta_rx_time_ms / 1000.0;
-                            //    arma::interp1(symbol_TOW_vec_s,dopper_vec_hz,desired_symbol_TOW,dopper_vec_interp_hz);
-                            //    arma::interp1(symbol_TOW_vec_s,acc_phase_vec_rads,desired_symbol_TOW,acc_phase_vec_interp_rads);
 
                             // Curve fitting to cuadratic function
                             arma::mat A = arma::ones<arma::mat> (history_deep, 2);
@@ -249,10 +246,8 @@ int hybrid_observables_cc::general_work (int noutput_items,
                             coef_doppler = pinv_A * dopper_vec_hz;
                             arma::vec acc_phase_lin;
                             arma::vec carrier_doppler_lin;
-                            acc_phase_lin = coef_acc_phase[0] + coef_acc_phase[1] * desired_symbol_TOW[0];   // +coef_acc_phase[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
-                            carrier_doppler_lin = coef_doppler[0] + coef_doppler[1] * desired_symbol_TOW[0]; // +coef_doppler[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
-                            //std::cout<<"acc_phase_vec_interp_rads="<<acc_phase_vec_interp_rads[0]<<std::endl;
-                            //std::cout<<"dopper_vec_interp_hz="<<dopper_vec_interp_hz[0]<<std::endl;
+                            acc_phase_lin = coef_acc_phase[0] + coef_acc_phase[1] * desired_symbol_TOW[0];
+                            carrier_doppler_lin = coef_doppler[0] + coef_doppler[1] * desired_symbol_TOW[0];
                             current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads = acc_phase_lin[0];
                             current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz = carrier_doppler_lin[0];
                         }

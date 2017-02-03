@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-
+#include <algorithm>
 #include <exception>
 #include <iostream>
 #include <cstring>
@@ -46,20 +46,20 @@
 #include "Rinex3ObsData.hpp"
 #include "Rinex3ObsHeader.hpp"
 #include "Rinex3ObsStream.hpp"
-#include "control_thread.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
+#include "control_thread.h"
 #include "in_memory_configuration.h"
+#include "signal_generator_flags.h"
 
 
-
-DEFINE_string(generator_binary, std::string(SW_GENERATOR_BIN), "Path of software-defined signal generator binary");
-DEFINE_string(rinex_nav_file, std::string(DEFAULT_RINEX_NAV), "Input RINEX navigation file");
-DEFINE_int32(duration, 100, "Duration of the experiment [in seconds]");
-DEFINE_string(static_position, "30.286502,120.032669,100", "Static receiver position [log,lat,height]");
-DEFINE_string(dynamic_position, "", "Observer positions file, in .csv or .nmea format");
-DEFINE_string(filename_rinex_obs, "sim.16o", "Filename of output RINEX navigation file");
-DEFINE_string(filename_raw_data, "signal_out.bin", "Filename of output raw data file");
+ DECLARE_string(generator_binary);
+ DECLARE_string(rinex_nav_file);
+ DECLARE_int32(duration);
+ DECLARE_string(static_position);
+ DECLARE_string(dynamic_position);
+ DECLARE_string(filename_rinex_obs);
+ DECLARE_string(filename_raw_data);
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -131,7 +131,8 @@ int Obs_Gps_L1_System_Test::configure_generator()
     p1 = std::string("-rinex_nav_file=") + FLAGS_rinex_nav_file;
     if(FLAGS_dynamic_position.empty())
         {
-            p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(FLAGS_duration * 10);
+            p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(std::min(FLAGS_duration * 10, 3000));
+            if(FLAGS_duration > 300) std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
         }
     else
         {
@@ -162,7 +163,7 @@ int Obs_Gps_L1_System_Test::generate_signal()
         }
 
     wait_result = waitpid(pid, &child_status, 0);
-
+    if (wait_result == -1) perror("waitpid error");
     EXPECT_EQ(true, check_valid_rinex_obs(filename_rinex_obs));
     std::cout << "Signal and Observables RINEX files created."  << std::endl;
     return 0;
@@ -173,9 +174,7 @@ int Obs_Gps_L1_System_Test::configure_receiver()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
-    const double central_freq = 1575420000.0;
     const int sampling_rate_internal = baseband_sampling_freq;
-    const double gain_dB = 40.0;
 
     const int number_of_taps = 11;
     const int number_of_bands = 2;
@@ -214,9 +213,7 @@ int Obs_Gps_L1_System_Test::configure_receiver()
 
     const int display_rate_ms = 500;
     const int output_rate_ms = 1000;
-    const int averaging_depth = 10;
-
-    bool false_bool = false;
+    const int averaging_depth = 1;
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
 
@@ -361,7 +358,7 @@ int Obs_Gps_L1_System_Test::run_receiver()
             std::cout << "Failed to run command: " << argum2 << std::endl;
             return -1;
         }
-    char * without_trailing;
+    char * without_trailing = (char*)"0";
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
         {
             std::string aux = std::string(buffer);
@@ -411,7 +408,7 @@ void Obs_Gps_L1_System_Test::check_results()
                                 }
                             else
                                 {
-                                    dataobj = r_ref_data.getObs(prn, "P1",  r_ref_header);
+                                    dataobj = r_ref_data.getObs(prn, "C1C",  r_ref_header);
                                     double P1 = dataobj.data;
                                     std::pair<double, double> pseudo(sow,P1);
                                     pseudorange_ref.at(myprn).push_back(pseudo);
@@ -471,7 +468,7 @@ void Obs_Gps_L1_System_Test::check_results()
                                 }
                             else
                                 {
-                                    dataobj = r_meas_data.getObs(prn, "C1",  r_meas_header);
+                                    dataobj = r_meas_data.getObs(prn, "C1C",  r_meas_header);
                                     double P1 = dataobj.data;
                                     std::pair<double, double> pseudo(sow, P1);
                                     pseudorange_meas.at(myprn).push_back(pseudo);
@@ -594,8 +591,8 @@ void Obs_Gps_L1_System_Test::check_results()
                     mean_diff = mean_diff / number_obs;
                     mean_pr_diff_v.push_back(mean_diff);
                     std::cout << "-- Mean pseudorange difference for sat " << prn_id << ": " << mean_diff;
-                    // double stdev_ = compute_stdev(*iter_diff);
-                    // std::cout << " +/- " << stdev_ ;
+                    double stdev_ = compute_stdev(*iter_diff);
+                    std::cout << " +/- " << stdev_ ;
                     std::cout << " [m]" << std::endl;
                 }
             else

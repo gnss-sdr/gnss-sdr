@@ -57,7 +57,8 @@ Pvt_Solution::Pvt_Solution()
     b_valid_position = false;
     d_averaging_depth = 0;
     d_valid_observations = 0;
-    d_rx_dt_m = 0.0;
+    d_rx_pos = arma::zeros(3,1);
+    d_rx_dt_s = 0.0;
 }
 
 arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec & X_sat)
@@ -146,24 +147,24 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
 int Pvt_Solution::togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z)
 {
     /* Subroutine to calculate geodetic coordinates latitude, longitude,
-        height given Cartesian coordinates X,Y,Z, and reference ellipsoid
-        values semi-major axis (a) and the inverse of flattening (finv).
+       height given Cartesian coordinates X,Y,Z, and reference ellipsoid
+       values semi-major axis (a) and the inverse of flattening (finv).
 
-         The output units of angular quantities will be in decimal degrees
-          (15.5 degrees not 15 deg 30 min). The output units of h will be the
-          same as the units of X,Y,Z,a.
+       The output units of angular quantities will be in decimal degrees
+       (15.5 degrees not 15 deg 30 min). The output units of h will be the
+       same as the units of X,Y,Z,a.
 
-           Inputs:
+       Inputs:
                a           - semi-major axis of the reference ellipsoid
                finv        - inverse of flattening of the reference ellipsoid
                X,Y,Z       - Cartesian coordinates
 
-           Outputs:
+       Outputs:
                dphi        - latitude
                dlambda     - longitude
                h           - height above reference ellipsoid
 
-               Based in a Matlab function by Kai Borre
+       Based in a Matlab function by Kai Borre
      */
 
     *h = 0;

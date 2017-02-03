@@ -57,8 +57,8 @@ public:
     double CN0_dB_hz;               //!< Set by Tracking processing block
     double Carrier_Doppler_hz;      //!< Set by Tracking processing block
     double Carrier_phase_rads;      //!< Set by Tracking processing block
-    double Code_phase_secs;         //!< Set by Tracking processing block
     double Tracking_timestamp_secs; //!< Set by Tracking processing block
+    double Rem_code_phase_secs;     //!< Set by Tracking processing block
 
     bool Flag_valid_symbol_output; //!< Set by Tracking processing block
     int correlation_length_ms; //!< Set by Tracking processing block

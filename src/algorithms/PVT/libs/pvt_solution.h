@@ -51,7 +51,9 @@ public:
     double d_latitude_d; //!< RX position Latitude WGS84 [deg]
     double d_longitude_d; //!< RX position Longitude WGS84 [deg]
     double d_height_m; //!< RX position height WGS84 [m]
-    double d_rx_dt_m; //!< RX time offset [s]
+
+    arma::vec d_rx_pos;
+    double d_rx_dt_s; //!< RX time offset [s]
 
     boost::posix_time::ptime d_position_UTC_time;
 

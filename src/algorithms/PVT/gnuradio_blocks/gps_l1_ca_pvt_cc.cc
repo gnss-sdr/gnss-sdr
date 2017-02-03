@@ -227,22 +227,22 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     this->set_msg_handler(pmt::mp("telemetry"),
             boost::bind(&gps_l1_ca_pvt_cc::msg_handler_telemetry, this, _1));
 
-    //initialize kml_printer
+    // initialize kml_printer
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;
     d_kml_printer = std::make_shared<Kml_Printer>();
     d_kml_printer->set_headers(kml_dump_filename);
 
-    //initialize geojson_printer
+    // initialize geojson_printer
     std::string geojson_dump_filename;
     geojson_dump_filename = d_dump_filename;
     d_geojson_printer = std::make_shared<GeoJSON_Printer>();
     d_geojson_printer->set_headers(geojson_dump_filename);
 
-    //initialize nmea_printer
+    // initialize nmea_printer
     d_nmea_printer = std::make_shared<Nmea_Printer>(nmea_dump_filename, flag_nmea_tty_port, nmea_dump_devname);
 
-    //initialize rtcm_printer
+    // initialize rtcm_printer
     std::string rtcm_dump_filename;
     rtcm_dump_filename = d_dump_filename;
     d_rtcm_tcp_port = rtcm_tcp_port;
@@ -330,7 +330,7 @@ void gps_l1_ca_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchroniza
             d_last_status_print_seg = current_rx_seg;
             std::cout << "Current input signal time = " << current_rx_seg << " [s]" << std::endl << std::flush;
             //DLOG(INFO) << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-            //          << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+            //           << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
         }
 }
 
@@ -340,7 +340,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
 {
     gnss_observables_map.clear();
     d_sample_counter++;
-    Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
+    Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; // Get the input pointer
 
     print_receiver_status(in);
 
@@ -366,14 +366,18 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
     if (gnss_observables_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() > 0)
         {
             // compute on the fly PVT solution
-            //mod 8/4/2012 Set the PVT computation rate in this block
             if ((d_sample_counter % d_output_rate_ms) == 0)
                 {
                     bool pvt_result;
                     pvt_result = d_ls_pvt->get_PVT(gnss_observables_map, d_rx_time, d_flag_averaging);
                     if (pvt_result == true)
                         {
-                            if( first_fix == true)
+                            // correct the observable to account for the receiver clock offset
+                            for (std::map<int,Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
+                                {
+                                    it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->d_rx_dt_s * GPS_C_m_s;
+                                }
+                            if(first_fix == true)
                                 {
                                     std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
                                               << " UTC is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
@@ -399,7 +403,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                                             b_rinex_header_written = true; // do not write header anymore
                                         }
                                 }
-                            if(b_rinex_header_written) // Put here another condition to separate annotations (e.g 30 s)
+                            if(b_rinex_header_written)
                                 {
                                     // Limit the RINEX navigation output rate to 1/6 seg
                                     // Notice that d_sample_counter period is 1ms (for GPS correlators)

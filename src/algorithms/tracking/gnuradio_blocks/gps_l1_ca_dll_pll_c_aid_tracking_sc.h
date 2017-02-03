@@ -65,6 +65,7 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
                                    float dll_bw_hz,
                                    float pll_bw_narrow_hz,
                                    float dll_bw_narrow_hz,
+                                   int extend_correlation_ms,
                                    float early_late_space_chips);
 
 
@@ -97,6 +98,7 @@ private:
             float dll_bw_hz,
             float pll_bw_narrow_hz,
             float dll_bw_narrow_hz,
+            int extend_correlation_ms,
             float early_late_space_chips);
 
     gps_l1_ca_dll_pll_c_aid_tracking_sc(long if_freq,
@@ -108,6 +110,7 @@ private:
             float dll_bw_hz,
             float pll_bw_narrow_hz,
             float dll_bw_narrow_hz,
+            int extend_correlation_ms,
             float early_late_space_chips);
 
     // tracking configuration vars
@@ -135,6 +138,7 @@ private:
     double d_rem_code_phase_samples;
     double d_rem_code_phase_chips;
     double d_rem_carrier_phase_rad;
+    int d_rem_code_phase_integer_samples;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
@@ -156,6 +160,20 @@ private:
     double d_acc_carrier_phase_cycles;
     double d_code_phase_samples;
     double d_pll_to_dll_assist_secs_Ti;
+    double d_carr_phase_error_secs_Ti;
+    double d_code_error_chips_Ti;
+    double d_preamble_timestamp_s;
+    int d_extend_correlation_ms;
+    bool d_enable_extended_integration;
+    bool d_preamble_synchronized;
+    double d_code_error_filt_chips_s;
+    double d_code_error_filt_chips_Ti;
+    void msg_handler_preamble_index(pmt::pmt_t msg);
+
+    // symbol history to detect bit transition
+    std::deque<lv_16sc_t> d_E_history;
+    std::deque<lv_16sc_t> d_P_history;
+    std::deque<lv_16sc_t> d_L_history;
 
     //Integration period in samples
     int d_correlation_length_samples;

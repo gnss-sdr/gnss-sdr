@@ -287,6 +287,11 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
 
                     if (pvt_result == true)
                         {
+                            // correct the observable to account for the receiver clock offset
+                            for (std::map<int,Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
+                                {
+                                    it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->d_rx_dt_s * GPS_C_m_s;
+                                }
                             if( first_fix == true)
                                 {
                                     std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)

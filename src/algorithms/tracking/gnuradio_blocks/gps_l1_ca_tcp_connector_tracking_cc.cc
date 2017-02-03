@@ -456,11 +456,9 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
-            current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Tracking_timestamp_secs = d_sample_counter_seconds;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
-            current_synchro_data.Code_phase_secs = (double)d_code_phase_samples * (1/(float)d_fs_in);
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_symbol_output = true;
             current_synchro_data.correlation_length_ms=1;

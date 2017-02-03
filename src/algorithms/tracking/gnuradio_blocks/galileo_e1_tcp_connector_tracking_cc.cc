@@ -406,7 +406,6 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_rem_code_phase_samples)/(double)d_fs_in;
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
-            current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;

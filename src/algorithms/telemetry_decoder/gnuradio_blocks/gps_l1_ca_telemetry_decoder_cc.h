@@ -121,8 +121,8 @@ private:
 
     double d_preamble_time_seconds;
 
-    double d_TOW_at_Preamble;
-    double d_TOW_at_current_symbol;
+    long double d_TOW_at_Preamble;
+    long double d_TOW_at_current_symbol;
 
     double Prn_timestamp_at_preamble_ms;
     bool flag_TOW_set;

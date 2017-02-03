@@ -16,6 +16,9 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+
+add_subdirectory(unit-tests/signal-processing-blocks/libs)
+
 ################################################################################
 # Google Test - https://github.com/google/googletest
 ################################################################################
@@ -136,7 +139,7 @@ endif(ENABLE_CUDA)
 ################################################################################
 # Optional generator
 ################################################################################
-if(ENABLE_SYSTEM_TESTING_EXTRA)
+if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA)
    ExternalProject_Add(
       gnss-sim
       GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
@@ -152,31 +155,28 @@ if(ENABLE_SYSTEM_TESTING_EXTRA)
    add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
    add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
    add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv")
-   
+
    ################################################################################
    # Local installation of GPSTk http://www.gpstk.org/
    ################################################################################
    find_package(GPSTK)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-      set(gpstk_RELEASE "2.5")
-      set(gpstk_md5 "9d79f6838d274f5edfd46c780a6b1b72")
+      set(gpstk_RELEASE "2.9")
       ExternalProject_Add(
          gpstk-${gpstk_RELEASE}
-         URL https://sourceforge.net/projects/gpstk/files/gpstk/${gpstk_RELEASE}/gpstk-${gpstk_RELEASE}.src.tar.gz
-         URL_MD5 ${gpstk_md5}
-         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk
-         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk
-         CONFIGURE_COMMAND ""
-         BUILD_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/script_gpstk.sh -c
+         GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
+         GIT_TAG v${gpstk_RELEASE}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${gpstk_RELEASE}
+         CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
-         INSTALL_COMMAND ""
       )
-      set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/include CACHE PATH "Local GPSTK headers")
+      set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/include CACHE PATH "Local GPSTK headers")
       add_library(gpstk UNKNOWN IMPORTED)
-      set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+      set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
       add_dependencies(gpstk gpstk-${gpstk_RELEASE})
-      set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk/dev/install/bin/ )
+      set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/bin/ )
       add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
       set(gpstk_libs gpstk)
    else(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
@@ -185,10 +185,23 @@ if(ENABLE_SYSTEM_TESTING_EXTRA)
        set(GPSTK_BINDIR ${GPSTK_LIBRARY}/../bin/ )
        add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
    endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-endif(ENABLE_SYSTEM_TESTING_EXTRA)
+endif(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA)
 
 
-add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
+if(ENABLE_UNIT_TESTING_EXTRA)
+   add_definitions(-DEXTRA_TESTS)
+   if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
+      message(STATUS "Downloading some data files for testing...")
+      file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/gps_l2c_m_prn7_5msps.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat
+           SHOW_PROGRESS
+           EXPECTED_HASH MD5=a6fcbefe155137945d3c33c5ef7bd0f9 )
+   endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
+endif(ENABLE_UNIT_TESTING_EXTRA)
+file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
+file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
+file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
+
+add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/thirdparty/")
 
 include_directories(
      ${GTEST_INCLUDE_DIRECTORIES}
@@ -220,6 +233,8 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+     ${CMAKE_SOURCE_DIR}/src/tests/unit-tests/signal-processing-blocks/libs
+     ${CMAKE_SOURCE_DIR}/src/tests/common-files
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -237,6 +252,9 @@ include_directories(
 # Unit testing
 ################################################################################
 if(ENABLE_UNIT_TESTING)
+    if( ${ARMADILLO_VERSION_STRING} STRGREATER "5.300")  # make sure interp1 is present
+        add_definitions(-DMODERN_ARMADILLO)
+    endif( ${ARMADILLO_VERSION_STRING} STRGREATER "5.300") 
     add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 
     add_custom_command(TARGET run_tests POST_BUILD
@@ -261,6 +279,7 @@ if(ENABLE_UNIT_TESTING)
                                 signal_generator_blocks
                                 signal_generator_adapters
                                 pvt_gr_blocks
+                                signak_processing_testing_lib
                                 ${VOLK_GNSSSDR_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
     )
@@ -489,7 +508,7 @@ if(ENABLE_SYSTEM_TESTING)
     )
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
-        add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc )
+        add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc)
         if(NOT ${GTEST_DIR_LOCAL})
             add_dependencies(obs_gps_l1_system_test gtest-${gtest_RELEASE} )
         else(NOT ${GTEST_DIR_LOCAL})

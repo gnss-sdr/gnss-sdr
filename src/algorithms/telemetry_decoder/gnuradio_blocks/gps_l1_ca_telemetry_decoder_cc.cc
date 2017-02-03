@@ -145,6 +145,7 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
 int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
+
     int corr_value = 0;
     int preamble_diff_ms = 0;
 
@@ -182,7 +183,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                     d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs; // record the preamble sample stamp
                     DLOG(INFO)  << "Preamble detection for SAT " << this->d_satellite << "in[0][0].Tracking_timestamp_secs=" << round(in[0][0].Tracking_timestamp_secs * 1000.0);
                     //sync the symbol to bits integrator
-                    d_symbol_accumulator = 0;                    d_symbol_accumulator_counter = 0;
+                    d_symbol_accumulator = 0;
+                    d_symbol_accumulator_counter = 0;
                     d_frame_bit_index = 0;
                     d_stat = 1; // enter into frame pre-detection status
                 }
@@ -194,7 +196,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                             DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite  << "in[0][0].Tracking_timestamp_secs=" << round(in[0][0].Tracking_timestamp_secs * 1000.0);
                             d_GPS_FSM.Event_gps_word_preamble();
                             d_flag_preamble = true;
-                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs;// - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
+                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs; // record the PRN start sample index associated to the preamble
 
                             if (!d_flag_frame_sync)
                                 {
@@ -326,30 +328,29 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                  }
          }
      // output the frame
-     consume_each(1); //one by one
-     Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
-     //1. Copy the current tracking output
-     current_synchro_data = in[0][0];
-     //2. Add the telemetry decoder information
-     if (this->d_flag_preamble == true and d_GPS_FSM.d_nav.d_TOW > 0)
-         //update TOW at the preamble instant (todo: check for valid d_TOW)
-         // JAVI: 30/06/2014
-         // TOW, in GPS, is referred to the START of the SUBFRAME, that is, THE FIRST SYMBOL OF THAT SUBFRAME, NOT THE PREAMBLE.
-         // thus, no correction should be done. d_TOW_at_Preamble should be renamed to d_TOW_at_subframe_start.
-         // Sice we detected the preable, then, we are in the last symbol of that preamble, or just at the start of the first subframe symbol.
-         {
-             d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_SUBFRAME_SECONDS; //we decoded the current TOW when the last word of the subframe arrive, so, we have a lag of ONE SUBFRAME
-             d_TOW_at_current_symbol = d_TOW_at_Preamble;
-             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
-             if (flag_TOW_set == false)
-                 {
-                     flag_TOW_set = true;
-                 }
-         }
-     else
-         {
-             d_TOW_at_current_symbol = d_TOW_at_current_symbol + GPS_L1_CA_CODE_PERIOD;
-         }
+    consume_each(1); // one by one
+
+    Gnss_Synchro current_synchro_data; // structure to save the synchronization information and send the output object to the next block
+
+    //1. Copy the current tracking output
+    current_synchro_data = in[0][0];
+
+    //2. Add the telemetry decoder information
+    if (this->d_flag_preamble == true and d_GPS_FSM.d_nav.d_TOW > 0)
+        {
+            // update TOW at the preamble instant
+            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_L1_CA_CODE_PERIOD;
+            Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
+            d_TOW_at_current_symbol = d_TOW_at_Preamble;
+            if (flag_TOW_set == false)
+                {
+                    flag_TOW_set = true;
+                }
+        }
+    else
+        {
+            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GPS_L1_CA_CODE_PERIOD;
+        }
 
      current_synchro_data.d_TOW = d_TOW_at_Preamble;
      current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
@@ -361,7 +362,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
 
      if (flag_PLL_180_deg_phase_locked == true)
          {
-             //correct the accumulated phase for the costas loop phase shift, if required
+             //correct the accumulated phase for the Costas loop phase shift, if required
              current_synchro_data.Carrier_phase_rads += GPS_PI;
          }
 
@@ -407,6 +408,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
      d_decimation_output_factor = decimation;
  }
 
+
  void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
  {
      d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -434,7 +436,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                              d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
                              d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                              LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
-                                     << " Log file: " << d_dump_filename.c_str();
+                                       << " Log file: " << d_dump_filename.c_str();
                      }
                      catch (const std::ifstream::failure &e)
                      {

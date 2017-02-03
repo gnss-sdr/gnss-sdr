@@ -172,7 +172,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
     init();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
-    boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
+    boost::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx> msg_rx = GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -206,7 +206,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1);
     std::shared_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
-    boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
+    boost::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx> msg_rx = GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(gnss_synchro.Channel_ID);

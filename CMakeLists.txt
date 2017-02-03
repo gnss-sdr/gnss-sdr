@@ -61,6 +61,7 @@ option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
 option(ENABLE_PACKAGING "Enable software packaging" OFF)
 option(ENABLE_OWN_GLOG "Download glog and link it to gflags" OFF)
+option(ENABLE_OWN_ARMADILLO "Download and build Armadillo locally" OFF)
 option(ENABLE_LOG "Enable logging" ON)
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
@@ -875,7 +876,7 @@ if(OS_IS_LINUX)
 endif(OS_IS_LINUX)
 
 find_package(Armadillo)
-if(NOT ARMADILLO_FOUND)
+if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " Armadillo has not been found.")
      message(STATUS " Armadillo will be downloaded and built automatically ")
      message(STATUS " when doing 'make'. ")
@@ -924,11 +925,12 @@ if(NOT ARMADILLO_FOUND)
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
           DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo
      )
-else(NOT ARMADILLO_FOUND)
+     set(ARMADILLO_VERSION_STRING ${armadillo_RELEASE})
+else(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      set(armadillo_RELEASE ${ARMADILLO_VERSION_STRING})
      add_library(armadillo-${armadillo_RELEASE} UNKNOWN IMPORTED)
      set_property(TARGET armadillo-${armadillo_RELEASE} PROPERTY IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}")
-endif(NOT ARMADILLO_FOUND)
+endif(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
 
 
 

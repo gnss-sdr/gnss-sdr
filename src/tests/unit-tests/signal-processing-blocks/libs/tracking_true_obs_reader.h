@@ -28,16 +28,16 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_tracking_true_obs_reader_H
-#define GNSS_SDR_tracking_true_obs_reader_H
+#ifndef GNSS_SDR_TRACKING_TRUE_OBS_READER_H
+#define GNSS_SDR_TRACKING_TRUE_OBS_READER_H
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 
-class tracking_true_obs_reader {
-
+class tracking_true_obs_reader
+{
 public:
     ~tracking_true_obs_reader();
     bool read_binary_obs();
@@ -53,10 +53,8 @@ public:
     double tow;
 
 private:
-
     std::string d_dump_filename;
     std::ifstream d_dump_file;
-
 };
 
-#endif //GNSS_SDR_tracking_true_obs_reader_H
+#endif //GNSS_SDR_RACKING_TRUE_OBS_READER_H

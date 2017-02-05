@@ -28,16 +28,16 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_tracking_dump_reader_H
-#define GNSS_SDR_tracking_dump_reader_H
+#ifndef GNSS_SDR_TRACKING_DUMP_READER_H
+#define GNSS_SDR_TRACKING_DUMP_READER_H
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 
-class tracking_dump_reader {
-
+class tracking_dump_reader
+{
 public:
     ~tracking_dump_reader();
     bool read_binary_obs();
@@ -80,10 +80,8 @@ public:
     double aux2;
 
 private:
-
     std::string d_dump_filename;
     std::ifstream d_dump_file;
-
 };
 
-#endif //GNSS_SDR_tracking_dump_reader_H
+#endif //GNSS_SDR_TRACKING_DUMP_READER_H

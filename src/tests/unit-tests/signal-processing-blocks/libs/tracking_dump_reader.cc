@@ -78,8 +78,8 @@ bool tracking_dump_reader::restart()
 long int tracking_dump_reader::num_epochs()
 {
     std::ifstream::pos_type size;
-    int number_of_double_vars=11;
-    int number_of_float_vars=5;
+    int number_of_double_vars = 11;
+    int number_of_float_vars = 5;
     int epoch_size_bytes=sizeof(unsigned long int) +
             sizeof(double) * number_of_double_vars +
             sizeof(float) * number_of_float_vars;
@@ -113,8 +113,10 @@ bool tracking_dump_reader::open_obs_file(std::string out_file)
                     std::cout << "Problem opening Tracking dump Log file: " << d_dump_filename.c_str() << std::endl;
                     return false;
             }
-        }else{
-                return false;
+        }
+    else
+        {
+            return false;
         }
 }
 

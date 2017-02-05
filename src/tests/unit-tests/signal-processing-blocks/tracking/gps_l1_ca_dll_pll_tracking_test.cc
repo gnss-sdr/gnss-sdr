@@ -2,12 +2,12 @@
  * \file gps_l1_ca_dll_pll_tracking_test.cc
  * \brief  This class implements a tracking test for Galileo_E5a_DLL_PLL_Tracking
  *  implementation based on some input parameters.
- * \author Javier Arribas, 2015. jarribas(at)cttc.es
+ * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,11 +39,11 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
 #include <gtest/gtest.h>
+#include <sys/wait.h>
 #include "GPS_L1_CA.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
@@ -55,15 +55,6 @@
 #include "tracking_dump_reader.h"
 #include "signal_generator_flags.h"
 
-DECLARE_string(generator_binary);
-DECLARE_string(rinex_nav_file);
-DECLARE_int32(duration);
-DECLARE_int32(fs_gen_hz);
-DECLARE_string(static_position);
-DECLARE_string(dynamic_position);
-DECLARE_string(filename_rinex_obs);
-DECLARE_string(filename_raw_data);
-DECLARE_int32(test_satellite_PRN);
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTest_msg_rx;
@@ -82,7 +73,6 @@ private:
 public:
     int rx_message;
     ~GpsL1CADllPllTrackingTest_msg_rx(); //!< Default destructor
-
 };
 
 GpsL1CADllPllTrackingTest_msg_rx_sptr GpsL1CADllPllTrackingTest_msg_rx_make()
@@ -163,7 +153,6 @@ public:
 
     void configure_receiver();
 
-    gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
@@ -244,28 +233,28 @@ void GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec true_time_s,
     //1. True value interpolation to match the measurement times
 
     arma::vec true_value_interp;
-    arma::interp1(true_time_s,true_value,meas_time_s,true_value_interp);
+    arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
     arma::vec err;
 
-    err=meas_value-true_value_interp;
-    arma::vec err2=arma::square(err);
-    double rmse=sqrt(arma::mean(err2));
+    err = meas_value - true_value_interp;
+    arma::vec err2 = arma::square(err);
+    double rmse = sqrt(arma::mean(err2));
 
     //3. Mean err and variance
-    double error_mean=arma::mean(err);
-    double error_var=arma::var(err);
+    double error_mean = arma::mean(err);
+    double error_var = arma::var(err);
 
     // 5. Peaks
-    double max_error=arma::max(err);
-    double min_error=arma::min(err);
+    double max_error = arma::max(err);
+    double min_error = arma::min(err);
 
     //5. report
 
-    std::cout<< std::setprecision(10)<<"TRK Doppler RMSE="<<rmse
-            <<", mean="<<error_mean
-            <<", stdev="<<sqrt(error_var)<<" (max,min)="<<max_error<<","<<min_error<<" [Hz]"<<std::endl;
+    std::cout << std::setprecision(10) << "TRK Doppler RMSE=" << rmse
+              << ", mean=" << error_mean
+              << ", stdev="<< sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Hz]" << std::endl;
 
 }
 
@@ -277,28 +266,28 @@ void GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(arma::vec true_t
     //1. True value interpolation to match the measurement times
 
     arma::vec true_value_interp;
-    arma::interp1(true_time_s,true_value,meas_time_s,true_value_interp);
+    arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
     arma::vec err;
 
-    err=meas_value-true_value_interp;
-    arma::vec err2=arma::square(err);
-    double rmse=sqrt(arma::mean(err2));
+    err = meas_value - true_value_interp;
+    arma::vec err2 = arma::square(err);
+    double rmse = sqrt(arma::mean(err2));
 
     //3. Mean err and variance
-    double error_mean=arma::mean(err);
-    double error_var=arma::var(err);
+    double error_mean = arma::mean(err);
+    double error_var = arma::var(err);
 
     // 4. Peaks
-    double max_error=arma::max(err);
-    double min_error=arma::min(err);
+    double max_error = arma::max(err);
+    double min_error = arma::min(err);
 
     //5. report
 
-    std::cout<< std::setprecision(10)<<"TRK acc carrier phase RMSE="<<rmse
-            <<", mean="<<error_mean
-            <<", stdev="<<sqrt(error_var)<<" (max,min)="<<max_error<<","<<min_error<<" [Hz]"<<std::endl;
+    std::cout << std::setprecision(10) << "TRK acc carrier phase RMSE=" << rmse
+              << ", mean=" << error_mean
+              << ", stdev=" << sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Hz]" << std::endl;
 
 }
 
@@ -310,30 +299,31 @@ void GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec true_time_s,
     //1. True value interpolation to match the measurement times
 
     arma::vec true_value_interp;
-    arma::interp1(true_time_s,true_value,meas_time_s,true_value_interp);
+    arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
     arma::vec err;
 
-    err=meas_value-true_value_interp;
-    arma::vec err2=arma::square(err);
-    double rmse=sqrt(arma::mean(err2));
+    err = meas_value - true_value_interp;
+    arma::vec err2 = arma::square(err);
+    double rmse = sqrt(arma::mean(err2));
 
     //3. Mean err and variance
-    double error_mean=arma::mean(err);
-    double error_var=arma::var(err);
+    double error_mean = arma::mean(err);
+    double error_var = arma::var(err);
 
     // 4. Peaks
-    double max_error=arma::max(err);
-    double min_error=arma::min(err);
+    double max_error = arma::max(err);
+    double min_error = arma::min(err);
 
     //5. report
 
-    std::cout<< std::setprecision(10)<<"TRK code phase RMSE="<<rmse
-            <<", mean="<<error_mean
-            <<", stdev="<<sqrt(error_var)<<" (max,min)="<<max_error<<","<<min_error<<" [Chips]"<<std::endl;
+    std::cout << std::setprecision(10) << "TRK code phase RMSE=" << rmse
+              << ", mean=" << error_mean
+              << ", stdev=" << sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Chips]" << std::endl;
 
 }
+
 TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 {
     // Configure the signal generator
@@ -351,19 +341,17 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     //open true observables log file written by the simulator
     tracking_true_obs_reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
-    std::cout<<"Testing satellite PRN="<<test_satellite_PRN<<std::endl;
-    std::string true_obs_file=std::string("./gps_l1_ca_obs_prn");
+    std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
+    std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
     true_obs_file.append(std::to_string(test_satellite_PRN));
     true_obs_file.append(".dat");
     ASSERT_NO_THROW({
-        if (true_obs_data.open_obs_file(true_obs_file)==false)
+        if (true_obs_data.open_obs_file(true_obs_file) == false)
             {
                 throw std::exception();
             };
-    })<< "Failure opening true observables file" << std::endl;
+    }) << "Failure opening true observables file" << std::endl;
 
-
-    queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Tracking test");
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
     //std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
@@ -372,17 +360,17 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
     // load acquisition data based on the first epoch of the true observations
     ASSERT_NO_THROW({
-        if (true_obs_data.read_binary_obs()==false)
-        {
-            throw std::exception();
-        };
-    })<< "Failure reading true observables file" << std::endl;
+        if (true_obs_data.read_binary_obs() == false)
+            {
+                throw std::exception();
+            };
+    }) << "Failure reading true observables file" << std::endl;
 
     //restart the epoch counter
     true_obs_data.restart();
 
-    std::cout<<"Initial Doppler [Hz]="<<true_obs_data.doppler_l1_hz<<" Initial code delay [Chips]="<<true_obs_data.prn_delay_chips<<std::endl;
-    gnss_synchro.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS-true_obs_data.prn_delay_chips/GPS_L1_CA_CODE_LENGTH_CHIPS)*baseband_sampling_freq*GPS_L1_CA_CODE_PERIOD;
+    std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << std::endl;
+    gnss_synchro.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD;
     gnss_synchro.Acq_doppler_hz = true_obs_data.doppler_l1_hz;
     gnss_synchro.Acq_samplestamp_samples = 0;
 
@@ -414,83 +402,78 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        begin = tv.tv_sec * 1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
+        end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
 
     //check results
-     //load the true values
-     long int nepoch =true_obs_data.num_epochs();
-     std::cout<<"True observation epochs="<<nepoch<<std::endl;
+    //load the true values
+    long int nepoch = true_obs_data.num_epochs();
+    std::cout << "True observation epochs=" << nepoch << std::endl;
 
-     arma::vec true_timestamp_s=arma::zeros(nepoch,1);
-     arma::vec true_acc_carrier_phase_cycles=arma::zeros(nepoch,1);
-     arma::vec true_Doppler_Hz=arma::zeros(nepoch,1);
-     arma::vec true_prn_delay_chips=arma::zeros(nepoch,1);
-     arma::vec true_tow_s=arma::zeros(nepoch,1);
+    arma::vec true_timestamp_s = arma::zeros(nepoch, 1);
+    arma::vec true_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
+    arma::vec true_Doppler_Hz = arma::zeros(nepoch, 1);
+    arma::vec true_prn_delay_chips = arma::zeros(nepoch, 1);
+    arma::vec true_tow_s = arma::zeros(nepoch, 1);
 
-     long int epoch_counter=0;
-     while(true_obs_data.read_binary_obs())
-     {
-         true_timestamp_s(epoch_counter)=true_obs_data.signal_timestamp_s;
-         true_acc_carrier_phase_cycles(epoch_counter)=true_obs_data.acc_carrier_phase_cycles;
-         true_Doppler_Hz(epoch_counter)=true_obs_data.doppler_l1_hz;
-         true_prn_delay_chips(epoch_counter)=true_obs_data.prn_delay_chips;
-         true_tow_s(epoch_counter)=true_obs_data.tow;
-         epoch_counter++;
-     }
+    long int epoch_counter = 0;
+    while(true_obs_data.read_binary_obs())
+        {
+            true_timestamp_s(epoch_counter) = true_obs_data.signal_timestamp_s;
+            true_acc_carrier_phase_cycles(epoch_counter) = true_obs_data.acc_carrier_phase_cycles;
+            true_Doppler_Hz(epoch_counter) = true_obs_data.doppler_l1_hz;
+            true_prn_delay_chips(epoch_counter) = true_obs_data.prn_delay_chips;
+            true_tow_s(epoch_counter) = true_obs_data.tow;
+            epoch_counter++;
+        }
 
+    //load the measured values
+    tracking_dump_reader trk_dump;
+    ASSERT_NO_THROW({
+        if (trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")) == false)
+            {
+                throw std::exception();
+            };
+    }) << "Failure opening tracking dump file" << std::endl;
 
-     //load the measured values
-     tracking_dump_reader trk_dump;
-     ASSERT_NO_THROW({
-         if (trk_dump.open_obs_file(std::string("./tracking_ch_0.dat"))==false)
-             {
-                 throw std::exception();
-             };
-     })<< "Failure opening tracking dump file" << std::endl;
+    nepoch = trk_dump.num_epochs();
+    std::cout << "Measured observation epochs=" << nepoch << std::endl;
 
-     nepoch =trk_dump.num_epochs();
-     std::cout<<"Measured observation epochs="<<nepoch<<std::endl;
+    arma::vec trk_timestamp_s = arma::zeros(nepoch, 1);
+    arma::vec trk_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
+    arma::vec trk_Doppler_Hz = arma::zeros(nepoch, 1);
+    arma::vec trk_prn_delay_chips = arma::zeros(nepoch, 1);
 
-     arma::vec trk_timestamp_s=arma::zeros(nepoch,1);
-     arma::vec trk_acc_carrier_phase_cycles=arma::zeros(nepoch,1);
-     arma::vec trk_Doppler_Hz=arma::zeros(nepoch,1);
-     arma::vec trk_prn_delay_chips=arma::zeros(nepoch,1);
+    epoch_counter = 0;
+    while(trk_dump.read_binary_obs())
+        {
+            trk_timestamp_s(epoch_counter) = static_cast<double>(trk_dump.PRN_start_sample_count) / static_cast<double>(baseband_sampling_freq);
+            trk_acc_carrier_phase_cycles(epoch_counter) = trk_dump.acc_carrier_phase_rad / GPS_TWO_PI;
+            trk_Doppler_Hz(epoch_counter) = trk_dump.carrier_doppler_hz;
 
+            double delay_chips = GPS_L1_CA_CODE_LENGTH_CHIPS
+                    - GPS_L1_CA_CODE_LENGTH_CHIPS
+                    * (fmod((static_cast<double>(trk_dump.PRN_start_sample_count) + trk_dump.aux1) / static_cast<double>(baseband_sampling_freq), 1.0e-3) /1.0e-3);
 
-     epoch_counter=0;
-     while(trk_dump.read_binary_obs())
-     {
-         trk_timestamp_s(epoch_counter)=static_cast<double>(trk_dump.PRN_start_sample_count)/static_cast<double>(baseband_sampling_freq);
-         trk_acc_carrier_phase_cycles(epoch_counter)=trk_dump.acc_carrier_phase_rad/GPS_TWO_PI;
-         trk_Doppler_Hz(epoch_counter)=trk_dump.carrier_doppler_hz;
+            trk_prn_delay_chips(epoch_counter) = delay_chips;
+            epoch_counter++;
+        }
 
-         double delay_chips=GPS_L1_CA_CODE_LENGTH_CHIPS
-                 -GPS_L1_CA_CODE_LENGTH_CHIPS
-                 *(fmod((static_cast<double>(trk_dump.PRN_start_sample_count)+trk_dump.aux1)/static_cast<double>(baseband_sampling_freq),1.0e-3)/1.0e-3);
+    //Align initial measurements and cut the tracking pull-in transitory
+    double pull_in_offset_s = 1.0;
+    arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0) + pull_in_offset_s), 1, "first");
 
-         trk_prn_delay_chips(epoch_counter)=delay_chips;
-         epoch_counter++;
+    trk_timestamp_s = trk_timestamp_s.subvec(initial_meas_point(0), trk_timestamp_s.size() - 1);
+    trk_acc_carrier_phase_cycles = trk_acc_carrier_phase_cycles.subvec(initial_meas_point(0), trk_acc_carrier_phase_cycles.size() - 1);
+    trk_Doppler_Hz = trk_Doppler_Hz.subvec(initial_meas_point(0), trk_Doppler_Hz.size() - 1);
+    trk_prn_delay_chips = trk_prn_delay_chips.subvec(initial_meas_point(0), trk_prn_delay_chips.size() - 1);
 
-     }
-
-
-     //Align initial measurements and cut the tracking pull-in transitory
-
-     double pull_in_offset_s=1.0;
-     arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0)+pull_in_offset_s), 1, "first");
-
-     trk_timestamp_s=trk_timestamp_s.subvec(initial_meas_point(0),trk_timestamp_s.size()-1);
-     trk_acc_carrier_phase_cycles=trk_acc_carrier_phase_cycles.subvec(initial_meas_point(0),trk_acc_carrier_phase_cycles.size()-1);
-     trk_Doppler_Hz=trk_Doppler_Hz.subvec(initial_meas_point(0),trk_Doppler_Hz.size()-1);
-     trk_prn_delay_chips=trk_prn_delay_chips.subvec(initial_meas_point(0),trk_prn_delay_chips.size()-1);
-
-     check_results_doppler(true_timestamp_s,true_Doppler_Hz,trk_timestamp_s,trk_Doppler_Hz);
-     check_results_codephase(true_timestamp_s,true_prn_delay_chips,trk_timestamp_s,trk_prn_delay_chips);
-     check_results_acc_carrier_phase(true_timestamp_s,true_acc_carrier_phase_cycles,trk_timestamp_s,trk_acc_carrier_phase_cycles);
+    check_results_doppler(true_timestamp_s, true_Doppler_Hz, trk_timestamp_s, trk_Doppler_Hz);
+    check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips);
+    check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles);
 
     std::cout <<  "Signal tracking completed in " << (end - begin) << " microseconds" << std::endl;
 }

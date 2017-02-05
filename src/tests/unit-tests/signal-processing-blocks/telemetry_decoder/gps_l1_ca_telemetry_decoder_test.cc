@@ -44,7 +44,6 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
@@ -64,15 +63,6 @@
 #include "gps_l1_ca_dll_pll_c_aid_tracking.h"
 #include "signal_generator_flags.h"
 
-DECLARE_string(generator_binary);
-DECLARE_string(rinex_nav_file);
-DECLARE_int32(duration); // 20
-DECLARE_int32(fs_gen_hz);
-DECLARE_string(static_position);
-DECLARE_string(dynamic_position);
-DECLARE_string(filename_rinex_obs);
-DECLARE_string(filename_raw_data);
-DECLARE_int32(test_satellite_PRN);
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_msg_rx;
@@ -218,7 +208,6 @@ public:
 
     void configure_receiver();
 
-    gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
@@ -302,34 +291,33 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec true_time_s,
     //1. True value interpolation to match the measurement times
 
     arma::vec true_value_interp;
-    arma::interp1(true_time_s,true_value,meas_time_s,true_value_interp);
+    arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
     arma::vec err;
 
-    err=meas_value-true_value_interp;
-    arma::vec err2=arma::square(err);
-    double rmse=sqrt(arma::mean(err2));
+    err = meas_value - true_value_interp;
+    arma::vec err2 = arma::square(err);
+    double rmse = sqrt(arma::mean(err2));
 
     //3. Mean err and variance
-    double error_mean=arma::mean(err);
-    double error_var=arma::var(err);
+    double error_mean = arma::mean(err);
+    double error_var = arma::var(err);
 
     // 4. Peaks
-    double max_error=arma::max(err);
-    double min_error=arma::min(err);
+    double max_error = arma::max(err);
+    double min_error = arma::min(err);
 
     //5. report
 
-    std::cout<< std::setprecision(10)<<"TLM TOW RMSE="
-            <<rmse<<", mean="<<error_mean
-            <<", stdev="<<sqrt(error_var)<<" (max,min)="<<max_error<<","<<min_error<<" [Chips]"<<std::endl;
+    std::cout << std::setprecision(10) << "TLM TOW RMSE="
+              << rmse << ", mean=" << error_mean
+              << ", stdev=" << sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Chips]" << std::endl;
 
 }
 
 TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 {
-
     // Configure the signal generator
     configure_generator();
 
@@ -345,19 +333,17 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     //open true observables log file written by the simulator
     tracking_true_obs_reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
-    std::cout<<"Testing satellite PRN="<<test_satellite_PRN<<std::endl;
-    std::string true_obs_file=std::string("./gps_l1_ca_obs_prn");
+    std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
+    std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
     true_obs_file.append(std::to_string(test_satellite_PRN));
     true_obs_file.append(".dat");
     ASSERT_NO_THROW({
-        if (true_obs_data.open_obs_file(true_obs_file)==false)
+        if (true_obs_data.open_obs_file(true_obs_file) == false)
             {
                 throw std::exception();
             };
-    })<< "Failure opening true observables file" << std::endl;
+    }) << "Failure opening true observables file" << std::endl;
 
-
-    queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Telemetry_Decoder test");
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
     //std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
@@ -366,7 +352,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     // load acquisition data based on the first epoch of the true observations
     ASSERT_NO_THROW({
-        if (true_obs_data.read_binary_obs()==false)
+        if (true_obs_data.read_binary_obs() == false)
         {
             throw std::exception();
         };
@@ -375,8 +361,8 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     //restart the epoch counter
     true_obs_data.restart();
 
-    std::cout<<"Initial Doppler [Hz]="<<true_obs_data.doppler_l1_hz<<" Initial code delay [Chips]="<<true_obs_data.prn_delay_chips<<std::endl;
-    gnss_synchro.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS-true_obs_data.prn_delay_chips/GPS_L1_CA_CODE_LENGTH_CHIPS)*baseband_sampling_freq*GPS_L1_CA_CODE_PERIOD;
+    std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips <<s td::endl;
+    gnss_synchro.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chip s/ GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD;
     gnss_synchro.Acq_doppler_hz = true_obs_data.doppler_l1_hz;
     gnss_synchro.Acq_samplestamp_samples = 0;
 
@@ -414,68 +400,66 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        begin = tv.tv_sec * 1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
+        end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
 
     //check results
     //load the true values
-    long int nepoch =true_obs_data.num_epochs();
-    std::cout<<"True observation epochs="<<nepoch<<std::endl;
+    long int nepoch = true_obs_data.num_epochs();
+    std::cout << "True observation epochs=" << nepoch << std::endl;
 
-    arma::vec true_timestamp_s=arma::zeros(nepoch,1);
-    arma::vec true_acc_carrier_phase_cycles=arma::zeros(nepoch,1);
-    arma::vec true_Doppler_Hz=arma::zeros(nepoch,1);
-    arma::vec true_prn_delay_chips=arma::zeros(nepoch,1);
-    arma::vec true_tow_s=arma::zeros(nepoch,1);
+    arma::vec true_timestamp_s = arma::zeros(nepoch, 1);
+    arma::vec true_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
+    arma::vec true_Doppler_Hz = arma::zeros(nepoch, 1);
+    arma::vec true_prn_delay_chips = arma::zeros(nepoch, 1);
+    arma::vec true_tow_s = arma::zeros(nepoch, 1);
 
-    long int epoch_counter=0;
+    long int epoch_counter = 0;
     while(true_obs_data.read_binary_obs())
     {
-        true_timestamp_s(epoch_counter)=true_obs_data.signal_timestamp_s;
-        true_acc_carrier_phase_cycles(epoch_counter)=true_obs_data.acc_carrier_phase_cycles;
-        true_Doppler_Hz(epoch_counter)=true_obs_data.doppler_l1_hz;
-        true_prn_delay_chips(epoch_counter)=true_obs_data.prn_delay_chips;
-        true_tow_s(epoch_counter)=true_obs_data.tow;
+        true_timestamp_s(epoch_counter) = true_obs_data.signal_timestamp_s;
+        true_acc_carrier_phase_cycles(epoch_counter) = true_obs_data.acc_carrier_phase_cycles;
+        true_Doppler_Hz(epoch_counter) = true_obs_data.doppler_l1_hz;
+        true_prn_delay_chips(epoch_counter) = true_obs_data.prn_delay_chips;
+        true_tow_s(epoch_counter) = true_obs_data.tow;
         epoch_counter++;
     }
-
 
     //load the measured values
     tlm_dump_reader tlm_dump;
     ASSERT_NO_THROW({
-        if (tlm_dump.open_obs_file(std::string("./telemetry0.dat"))==false)
+        if (tlm_dump.open_obs_file(std::string("./telemetry0.dat")) == false)
             {
                 throw std::exception();
             };
-    })<< "Failure opening telemetry dump file" << std::endl;
+    }) << "Failure opening telemetry dump file" << std::endl;
 
-    nepoch =tlm_dump.num_epochs();
-    std::cout<<"Measured observation epochs="<<nepoch<<std::endl;
+    nepoch = tlm_dump.num_epochs();
+    std::cout << "Measured observation epochs=" << nepoch << std::endl;
 
-    arma::vec tlm_timestamp_s=arma::zeros(nepoch,1);
-    arma::vec tlm_TOW_at_Preamble=arma::zeros(nepoch,1);
-    arma::vec tlm_tow_s=arma::zeros(nepoch,1);
+    arma::vec tlm_timestamp_s = arma::zeros(nepoch, 1);
+    arma::vec tlm_TOW_at_Preamble = arma::zeros(nepoch, 1);
+    arma::vec tlm_tow_s = arma::zeros(nepoch, 1);
 
-    epoch_counter=0;
+    epoch_counter = 0;
     while(tlm_dump.read_binary_obs())
     {
-        tlm_timestamp_s(epoch_counter)=tlm_dump.Prn_timestamp_ms/1000.0;
-        tlm_TOW_at_Preamble(epoch_counter)=tlm_dump.d_TOW_at_Preamble;
-        tlm_tow_s(epoch_counter)=tlm_dump.TOW_at_current_symbol;
+        tlm_timestamp_s(epoch_counter) = tlm_dump.Prn_timestamp_ms / 1000.0;
+        tlm_TOW_at_Preamble(epoch_counter) = tlm_dump.d_TOW_at_Preamble;
+        tlm_tow_s(epoch_counter) = tlm_dump.TOW_at_current_symbol;
         epoch_counter++;
-
     }
 
     //Cut measurement initial transitory of the measurements
     arma::uvec initial_meas_point = arma::find(tlm_tow_s >= true_tow_s(0), 1, "first");
 
-    tlm_timestamp_s=tlm_timestamp_s.subvec(initial_meas_point(0),tlm_timestamp_s.size()-1);
-    tlm_tow_s=tlm_tow_s.subvec(initial_meas_point(0),tlm_tow_s.size()-1);
+    tlm_timestamp_s = tlm_timestamp_s.subvec(initial_meas_point(0), tlm_timestamp_s.size() - 1);
+    tlm_tow_s = tlm_tow_s.subvec(initial_meas_point(0), tlm_tow_s.size() - 1);
 
-    check_results(true_timestamp_s,true_tow_s,tlm_timestamp_s,tlm_tow_s);
+    check_results(true_timestamp_s, true_tow_s, tlm_timestamp_s, tlm_tow_s);
 
     std::cout <<  "Test completed in " << (end - begin) << " microseconds" << std::endl;
 }

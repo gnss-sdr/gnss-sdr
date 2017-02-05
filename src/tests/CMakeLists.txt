@@ -279,7 +279,7 @@ if(ENABLE_UNIT_TESTING)
                                 signal_generator_blocks
                                 signal_generator_adapters
                                 pvt_gr_blocks
-                                signak_processing_testing_lib
+                                signal_processing_testing_lib
                                 ${VOLK_GNSSSDR_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
     )

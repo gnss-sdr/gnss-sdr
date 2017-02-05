@@ -53,14 +53,6 @@
 #include "signal_generator_flags.h"
 
 
- DECLARE_string(generator_binary);
- DECLARE_string(rinex_nav_file);
- DECLARE_int32(duration);
- DECLARE_string(static_position);
- DECLARE_string(dynamic_position);
- DECLARE_string(filename_rinex_obs);
- DECLARE_string(filename_raw_data);
-
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;

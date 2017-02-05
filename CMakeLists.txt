@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -82,7 +82,7 @@ option(ENABLE_OWN_GPSTK "Force to download, build and link GPSTk for system test
 ###############################
 # GNSS-SDR version information
 ###############################
-set(THIS_IS_A_RELEASE OFF)   # only related to version name, no further implications.
+set(THIS_IS_A_RELEASE ON)   # only related to version name, no further implications.
 if(NOT ${THIS_IS_A_RELEASE})
     # Get the current working branch
     execute_process(
@@ -104,9 +104,9 @@ endif(NOT ${THIS_IS_A_RELEASE})
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT    0)
 if(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 8)
+    set(VERSION_INFO_MINOR_VERSION 9)
 else(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 8.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+    set(VERSION_INFO_MINOR_VERSION 9.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 endif(${THIS_IS_A_RELEASE})
 
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})

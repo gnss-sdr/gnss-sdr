@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -49,7 +49,7 @@ message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_MINOR_VERSION 0)
-set(VERSION_INFO_MAINT_VERSION 8.git)
+set(VERSION_INFO_MAINT_VERSION 9)
 include(VolkVersion) #setup version info
 
 

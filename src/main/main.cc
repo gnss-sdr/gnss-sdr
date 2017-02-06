@@ -8,7 +8,7 @@
 *
 * -------------------------------------------------------------------------
 *
-* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+* Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
 *
 * GNSS-SDR is a software defined Global Navigation
 * Satellite Systems receiver
@@ -31,7 +31,7 @@
 * -------------------------------------------------------------------------
 */
 #ifndef GNSS_SDR_VERSION
-#define GNSS_SDR_VERSION "0.0.8"
+#define GNSS_SDR_VERSION "0.0.9"
 #endif
 
 #ifndef GOOGLE_STRIP_LOG
@@ -41,32 +41,14 @@
 #include <ctime>
 #include <cstdlib>
 #include <memory>
-#include <queue>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/thread.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
 #include "control_thread.h"
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
-#include "gps_ephemeris.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_almanac.h"
-#include "gps_iono.h"
-#include "gps_cnav_iono.h"
-#include "gps_utc_model.h"
-#include "galileo_ephemeris.h"
-#include "galileo_almanac.h"
-#include "galileo_iono.h"
-#include "galileo_utc_model.h"
-#include "sbas_telemetry_data.h"
-#include "sbas_ionospheric_correction.h"
-#include "sbas_satellite_correction.h"
-#include "sbas_ephemeris.h"
-#include "sbas_time.h"
 
 #if CUDA_GPU_ACCEL
     // For the CUDA runtime routines (prefixed with "cuda_")

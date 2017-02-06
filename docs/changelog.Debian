@@ -1,5 +1,0 @@
-gnss-sdr (0.0.6) unstable; urgency=low
-
-  * First release that installs on the system and can generate deb packages.
-  
- -- Carles Fernandez-Prades <carles.fernandez@cttc.es>  Wed, 02 Sep 2015 02:03:00 +0100

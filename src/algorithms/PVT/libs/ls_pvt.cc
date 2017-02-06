@@ -82,80 +82,80 @@ arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
     arma::mat BBB;
     double traveltime = 0;
     for (int iter = 0; iter < 2; iter++)
-    {
-        B = B_pass;
-        int m = arma::size(B,0);
-        for (int i = 0; i < m; i++)
         {
-            int x = B(i,0);
-            int y = B(i,1);
-            if (iter == 0)
-            {
-                traveltime = 0.072;
-            }
+            B = B_pass;
+            int m = arma::size(B,0);
+            for (int i = 0; i < m; i++)
+                {
+                    int x = B(i,0);
+                    int y = B(i,1);
+                    if (iter == 0)
+                        {
+                            traveltime = 0.072;
+                        }
+                    else
+                        {
+                            int z = B(i,2);
+                            double rho = (x - pos(0)) * (x - pos(0)) + (y - pos(1)) * (y - pos(1)) + (z - pos(2)) * (z - pos(2));
+                            traveltime = sqrt(rho) / GPS_C_m_s;
+                        }
+                    double angle = traveltime * 7.292115147e-5;
+                    double cosa = cos(angle);
+                    double sina = sin(angle);
+                    B(i,0) =  cosa * x + sina * y;
+                    B(i,1) = -sina * x + cosa * y;
+                }// % i-loop
+
+            if (m > 3)
+                {
+                    BBB = arma::inv(B.t() * B) * B.t();
+                }
             else
-            {
-                int z = B(i,2);
-                double rho = (x - pos(0)) * (x - pos(0)) + (y - pos(1)) * (y - pos(1)) + (z - pos(2)) * (z - pos(2));
-                traveltime = sqrt(rho) / GPS_C_m_s;
-            }
-            double angle = traveltime * 7.292115147e-5;
-            double cosa = cos(angle);
-            double sina = sin(angle);
-            B(i,0) =  cosa * x + sina * y;
-            B(i,1) = -sina * x + cosa * y;
-        }// % i-loop
-
-        if (m > 3)
-        {
-            BBB = arma::inv(B.t() * B) * B.t();
-        }
-        else
-        {
-            BBB = arma::inv(B);
-        }
-        arma::vec e = arma::ones(m,1);
-        arma::vec alpha = arma::zeros(m,1);
-        for (int i = 0; i < m; i++)
-        {
-            alpha(i) = lorentz(B.row(i).t(), B.row(i).t()) / 2.0;
-        }
-        arma::mat BBBe = BBB * e;
-        arma::mat BBBalpha = BBB * alpha;
-        double a = lorentz(BBBe, BBBe);
-        double b = lorentz(BBBe, BBBalpha) - 1;
-        double c = lorentz(BBBalpha, BBBalpha);
-        double root = sqrt(b * b - a * c);
-        arma::vec r = {(-b - root) / a, (-b + root) / a};
-        arma::mat possible_pos = arma::zeros(4,2);
-        for (int i = 0; i < 2; i++)
-        {
-            possible_pos.col(i) = r(i) * BBBe + BBBalpha;
-            possible_pos(3,i) = -possible_pos(3,i);
-        }
-
-        arma::vec abs_omc = arma::zeros(2,1);
-        for (int j = 0; j < m; j++)
-        {
+                {
+                    BBB = arma::inv(B);
+                }
+            arma::vec e = arma::ones(m,1);
+            arma::vec alpha = arma::zeros(m,1);
+            for (int i = 0; i < m; i++)
+                {
+                    alpha(i) = lorentz(B.row(i).t(), B.row(i).t()) / 2.0;
+                }
+            arma::mat BBBe = BBB * e;
+            arma::mat BBBalpha = BBB * alpha;
+            double a = lorentz(BBBe, BBBe);
+            double b = lorentz(BBBe, BBBalpha) - 1;
+            double c = lorentz(BBBalpha, BBBalpha);
+            double root = sqrt(b * b - a * c);
+            arma::vec r = {(-b - root) / a, (-b + root) / a};
+            arma::mat possible_pos = arma::zeros(4,2);
             for (int i = 0; i < 2; i++)
-            {
-                double c_dt = possible_pos(3,i);
-                double calc = arma::norm(satpos.row(i).t() - possible_pos.col(i).rows(0,2)) + c_dt;
-                double omc = obs(j) - calc;
-                abs_omc(i) = std::abs(omc);
-            }
-        }// % j-loop
+                {
+                    possible_pos.col(i) = r(i) * BBBe + BBBalpha;
+                    possible_pos(3,i) = -possible_pos(3,i);
+                }
 
-        //discrimination between roots
-        if (abs_omc(0) > abs_omc(1))
-        {
-            pos = possible_pos.col(1);
-        }
-        else
-        {
-            pos = possible_pos.col(0);
-        }
-    }// % iter loop
+            arma::vec abs_omc = arma::zeros(2,1);
+            for (int j = 0; j < m; j++)
+                {
+                    for (int i = 0; i < 2; i++)
+                        {
+                            double c_dt = possible_pos(3,i);
+                            double calc = arma::norm(satpos.row(i).t() - possible_pos.col(i).rows(0,2)) + c_dt;
+                            double omc = obs(j) - calc;
+                            abs_omc(i) = std::abs(omc);
+                        }
+                } // % j-loop
+
+            // discrimination between roots
+            if (abs_omc(0) > abs_omc(1))
+                {
+                    pos = possible_pos.col(1);
+                }
+            else
+                {
+                    pos = possible_pos.col(0);
+                }
+        } // % iter loop
     return pos;
 }
 
@@ -164,7 +164,7 @@ double Ls_Pvt::lorentz(const arma::vec& x, const arma::vec& y)
 {
     // LORENTZ  Calculates the Lorentz inner product of the two
     //          4 by 1 vectors x and y
-    // Based ob code by:
+    // Based on code by:
     // Kai Borre 04-22-95
     // Copyright (c) by Kai Borre
     // $Revision: 1.0 $ $Date: 1997/09/26  $
@@ -182,7 +182,7 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
      *   Inputs:
      *       satpos      - Satellites positions in ECEF system: [X; Y; Z;]
      *       obs         - Observations - the pseudorange measurements to each satellite
-     *       w           - weigths vector
+     *       w           - weight vector
      *
      *   Returns:
      *       pos         - receiver position and receiver clock error
@@ -218,82 +218,82 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
 
     //=== Iteratively find receiver position ===================================
     for (int iter = 0; iter < nmbOfIterations; iter++)
-    {
-        for (int i = 0; i < nmbOfSatellites; i++)
         {
-            if (iter == 0)
-            {
-                //--- Initialize variables at the first iteration --------------
-                Rot_X = X.col(i); //Armadillo
-                trop = 0.0;
-            }
-            else
-            {
-                //--- Update equations -----------------------------------------
-                rho2 = (X(0, i) - pos(0)) *
-                        (X(0, i) - pos(0)) + (X(1, i) - pos(1)) *
-                        (X(1, i) - pos(1)) + (X(2, i) - pos(2)) *
-                        (X(2, i) - pos(2));
-                traveltime = sqrt(rho2) / GPS_C_m_s;
-
-                //--- Correct satellite position (do to earth rotation) --------
-                Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i)); //armadillo
-
-                //--- Find DOA and range of satellites
-                Ls_Pvt::topocent(&d_visible_satellites_Az[i],
-                        &d_visible_satellites_El[i],
-                        &d_visible_satellites_Distance[i],
-                        pos.subvec(0,2),
-                        Rot_X - pos.subvec(0, 2));
-                if(traveltime < 0.1 && nmbOfSatellites > 3)
+            for (int i = 0; i < nmbOfSatellites; i++)
                 {
-                    //--- Find receiver's height
-                    Ls_Pvt::togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
-                    // Add troposphere correction if the receiver is below the troposphere
-                    if (h > 15000)
-                    {
-                        //receiver is above the troposphere
-                        trop = 0.0;
-                    }
+                    if (iter == 0)
+                        {
+                            //--- Initialize variables at the first iteration --------------
+                            Rot_X = X.col(i); //Armadillo
+                            trop = 0.0;
+                        }
                     else
-                    {
-                        //--- Find delay due to troposphere (in meters)
-                        Ls_Pvt::tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
-                        if(trop > 5.0 ) trop = 0.0; //check for erratic values
-                    }
+                        {
+                            //--- Update equations -----------------------------------------
+                            rho2 = (X(0, i) - pos(0)) *
+                                   (X(0, i) - pos(0)) + (X(1, i) - pos(1)) *
+                                   (X(1, i) - pos(1)) + (X(2, i) - pos(2)) *
+                                   (X(2, i) - pos(2));
+                            traveltime = sqrt(rho2) / GPS_C_m_s;
+
+                            //--- Correct satellite position (do to earth rotation) --------
+                            Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i)); //armadillo
+
+                            //--- Find DOA and range of satellites
+                            Ls_Pvt::topocent(&d_visible_satellites_Az[i],
+                                    &d_visible_satellites_El[i],
+                                    &d_visible_satellites_Distance[i],
+                                    pos.subvec(0,2),
+                                    Rot_X - pos.subvec(0, 2));
+                            if(traveltime < 0.1 && nmbOfSatellites > 3)
+                                {
+                                    //--- Find receiver's height
+                                    Ls_Pvt::togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
+                                    // Add troposphere correction if the receiver is below the troposphere
+                                    if (h > 15000)
+                                        {
+                                            //receiver is above the troposphere
+                                            trop = 0.0;
+                                        }
+                                    else
+                                        {
+                                            //--- Find delay due to troposphere (in meters)
+                                            Ls_Pvt::tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                            if(trop > 5.0 ) trop = 0.0; //check for erratic values
+                                        }
+                                }
+                        }
+                    //--- Apply the corrections ----------------------------------------
+                    omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0, 2), 2) - pos(3) - trop); // Armadillo
+
+                    //--- Construct the A matrix ---------------------------------------
+                    //Armadillo
+                    A(i,0) = (-(Rot_X(0) - pos(0))) / obs(i);
+                    A(i,1) = (-(Rot_X(1) - pos(1))) / obs(i);
+                    A(i,2) = (-(Rot_X(2) - pos(2))) / obs(i);
+                    A(i,3) = 1.0;
                 }
-            }
-            //--- Apply the corrections ----------------------------------------
-            omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0, 2), 2) - pos(3) - trop); // Armadillo
 
-            //--- Construct the A matrix ---------------------------------------
-            //Armadillo
-            A(i,0) = (-(Rot_X(0) - pos(0))) / obs(i);
-            A(i,1) = (-(Rot_X(1) - pos(1))) / obs(i);
-            A(i,2) = (-(Rot_X(2) - pos(2))) / obs(i);
-            A(i,3) = 1.0;
+            //--- Find position update ---------------------------------------------
+            x = arma::solve(w*A, w*omc); // Armadillo
+
+            //--- Apply position update --------------------------------------------
+            pos = pos + x;
+            if (arma::norm(x,2) < 1e-4)
+                {
+                    break; // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
+                }
         }
-
-        //--- Find position update ---------------------------------------------
-        x = arma::solve(w*A, w*omc); // Armadillo
-
-        //--- Apply position update --------------------------------------------
-        pos = pos + x;
-        if (arma::norm(x,2) < 1e-4)
-        {
-            break; // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
-        }
-    }
 
     //-- compute the Dilution Of Precision values
     d_Q = arma::inv(arma::htrans(A) * A);
 
     // check the consistency of the PVT solution
-    if (((fabs(pos(3))*1000.0)/ GPS_C_m_s)>GPS_STARTOFFSET_ms*2)
-    {
-        LOG(WARNING)<<"Receiver time offset out of range! Estimated RX Time error [s]:"<<pos(3)/ GPS_C_m_s;
-        throw std::runtime_error("Receiver time offset out of range!");
-    }
+    if (((fabs(pos(3)) * 1000.0) / GPS_C_m_s) > GPS_STARTOFFSET_ms * 2)
+        {
+            LOG(WARNING) << "Receiver time offset out of range! Estimated RX Time error [s]:" << pos(3) / GPS_C_m_s;
+            throw std::runtime_error("Receiver time offset out of range!");
+        }
     return pos;
 }
 

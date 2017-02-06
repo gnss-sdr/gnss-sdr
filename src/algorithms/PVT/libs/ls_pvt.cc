@@ -54,8 +54,6 @@ arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
     //            IEEE Trans. Aerosp. and Elec. Systems, AES-21, Issue 1, pp. 56--59
     // Based on code by:
     // Kai Borre 04-30-95, improved by C.C. Goad 11-24-96
-    // Copyright (c) by Kai Borre
-    // $Revision: 1.0 $  $Date: 1997/09/26  $
     //
     //  Test values to use in debugging
     //  B_pass =[ -11716227.778 -10118754.628  21741083.973 22163882.029;
@@ -166,8 +164,6 @@ double Ls_Pvt::lorentz(const arma::vec& x, const arma::vec& y)
     //          4 by 1 vectors x and y
     // Based on code by:
     // Kai Borre 04-22-95
-    // Copyright (c) by Kai Borre
-    // $Revision: 1.0 $ $Date: 1997/09/26  $
     //
     //  M = diag([1 1 1 -1]);
     //  p = x'*M*y;

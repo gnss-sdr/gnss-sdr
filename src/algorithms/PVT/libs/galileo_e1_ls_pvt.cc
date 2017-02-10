@@ -139,10 +139,10 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
 
                     // SV ECEF DEBUG OUTPUT
                     DLOG(INFO) << "ECEF satellite SV ID=" << galileo_ephemeris_iter->second.i_satellite_PRN
-                            << " X=" << galileo_ephemeris_iter->second.d_satpos_X
-                            << " [m] Y=" << galileo_ephemeris_iter->second.d_satpos_Y
-                            << " [m] Z=" << galileo_ephemeris_iter->second.d_satpos_Z
-                            << " [m] PR_obs=" << obs(valid_obs) << " [m]";
+                               << " X=" << galileo_ephemeris_iter->second.d_satpos_X
+                               << " [m] Y=" << galileo_ephemeris_iter->second.d_satpos_Y
+                               << " [m] Z=" << galileo_ephemeris_iter->second.d_satpos_Z
+                               << " [m] PR_obs=" << obs(valid_obs) << " [m]";
 
                     valid_obs++;
                 }
@@ -194,8 +194,8 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                     cart2geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
                     d_rx_dt_s = rx_position_and_time(3)/GALILEO_C_m_s; // Convert RX time offset from meters to seconds
                     DLOG(INFO) << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
-                    << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                    << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_s << " [s]";
+                               << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+                               << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_s << " [s]";
 
                     // ###### Compute DOPs ########
                     compute_DOP();

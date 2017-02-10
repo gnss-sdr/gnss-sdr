@@ -42,7 +42,7 @@ gnss_sdr_supl_client::gnss_sdr_supl_client()
     lac = 0;
     ci = 0;
     supl_ctx_new(&ctx);
-    assist = {};
+    assist = supl_assist_t();
     server_port = 0;
     request = 0;
 }
@@ -55,7 +55,7 @@ void gnss_sdr_supl_client::print_assistance()
     if (assist.set & SUPL_RRLP_ASSIST_REFTIME)
         {
             fprintf(stdout, "T %ld %ld %ld %ld\n", assist.time.gps_week, assist.time.gps_tow,
-                    assist.time.stamp.tv_sec, assist.time.stamp.tv_usec);
+                    assist.time.stamp.tv_sec, static_cast<long>(assist.time.stamp.tv_usec));
         }
 
     if (assist.set & SUPL_RRLP_ASSIST_UTC)

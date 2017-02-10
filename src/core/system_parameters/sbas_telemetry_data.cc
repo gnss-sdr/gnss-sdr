@@ -442,7 +442,7 @@ int Sbas_Telemetry_Data::getbits(const unsigned char *buff, int pos, int len)
 Sbas_Telemetry_Data::gtime_t Sbas_Telemetry_Data::epoch2time(const double *ep)
 {
     const int doy[] = {1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
-    gtime_t time = {};
+    gtime_t time = gtime_t();
     int days, sec, year = (int)ep[0], mon = (int)ep[1], day = (int)ep[2];
 
     if (year < 1970 || 2099 < year || mon < 1 || 12 < mon) return time;

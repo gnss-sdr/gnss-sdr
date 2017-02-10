@@ -60,9 +60,9 @@ bool systemIsBigEndian()
 bool systemBytesAreBigEndian()
 {
     byte_and_samples b;
-    b.byte = static_cast< int8_t>(0x1B);
-
-    return b.samples.sample_0 == 0x3;
+    b.byte = static_cast<int8_t>(0x01);
+    if(*(char *)&b.byte == 1) return false;
+    else return true;
 }
 
 void swapEndianness( int8_t const *in, std::vector< int8_t > &out, size_t item_size, unsigned int ninput_items )

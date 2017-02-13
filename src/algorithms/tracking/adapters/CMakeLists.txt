@@ -21,6 +21,10 @@ if(ENABLE_CUDA)
      set(OPT_TRACKING_INCLUDE_DIRS ${OPT_TRACKING_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS})
 endif(ENABLE_CUDA)
 
+if(ENABLE_FPGA)
+     SET(OPT_TRACKING_ADAPTERS ${OPT_TRACKING_ADAPTERS} gps_l1_ca_dll_pll_c_aid_tracking_fpga.cc)
+endif(ENABLE_FPGA)
+
 set(TRACKING_ADAPTER_SOURCES 
      galileo_e1_dll_pll_veml_tracking.cc
      galileo_e1_tcp_connector_tracking.cc

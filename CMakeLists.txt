@@ -56,6 +56,7 @@ option(ENABLE_GPROF "Enable the use of the GNU profiler tool 'gprof'" OFF)
 option(ENABLE_PROFILING "Enable execution of volk_gnsssdr_profile at the end of the building" OFF)
 option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
 option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (experimental, requires CUDA SDK)" OFF)
+option(ENABLE_FPGA "Enable building of processing blocks implemented with FPGA (experimental, requires EZDMA driver)" OFF)
 
 # Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
@@ -1122,7 +1123,16 @@ else(ENABLE_CUDA)
     message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA." )
 endif(ENABLE_CUDA)
 
-
+###############################################################################
+# FPGA (OPTIONAL)
+###############################################################################
+if(ENABLE_FPGA)
+    message(STATUS "FPGA Acceleration will be enabled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_FPGA=OFF ../'" )
+else(ENABLE_FPGA)
+    message(STATUS "Fpga Acceleration will be not enabled." )
+    message(STATUS "Enable it with 'cmake -DENABLE_FPGA=ON ../' to add support for GPU-based acceleration using the FPGA." )
+endif(ENABLE_FPGA)
 
 ################################################################################
 # Setup of optional drivers

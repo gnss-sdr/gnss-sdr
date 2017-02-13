@@ -22,6 +22,10 @@ if(ENABLE_CUDA)
      set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} ${CUDA_LIBRARIES}) 
 endif(ENABLE_CUDA)
 
+if(ENABLE_FPGA)
+     set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc.cc)
+endif(ENABLE_FPGA)
+
 set(TRACKING_GR_BLOCKS_SOURCES
      galileo_e1_dll_pll_veml_tracking_cc.cc
      galileo_e1_tcp_connector_tracking_cc.cc
@@ -30,7 +34,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      galileo_e5a_dll_pll_tracking_cc.cc
      gps_l2_m_dll_pll_tracking_cc.cc
      gps_l1_ca_dll_pll_c_aid_tracking_cc.cc
-     gps_l1_ca_dll_pll_c_aid_tracking_sc.cc
+     gps_l1_ca_dll_pll_c_aid_tracking_sc.cc     
      ${OPT_TRACKING_BLOCKS}   
 )
 

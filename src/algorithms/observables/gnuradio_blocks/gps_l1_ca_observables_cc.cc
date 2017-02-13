@@ -262,7 +262,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
             }
             catch (const std::ifstream::failure& e)
             {
-                    LOG(WARNING) << "Exception writing observables dump file " << e.what() << std::endl;
+                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
             }
         }
 

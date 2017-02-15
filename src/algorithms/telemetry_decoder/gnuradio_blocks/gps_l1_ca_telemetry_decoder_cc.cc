@@ -105,6 +105,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     flag_TOW_set = false;
     d_average_count = 0;
     d_flag_preamble = false;
+    d_flag_new_tow_available=false;
     d_word_number = 0;
     d_decimation_output_factor = 1;
     d_channel = 0;
@@ -197,7 +198,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                             d_GPS_FSM.Event_gps_word_preamble();
                             d_flag_preamble = true;
                             d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs; // record the PRN start sample index associated to the preamble
-
                             if (!d_flag_frame_sync)
                                 {
                                     // send asynchronous message to tracking to inform of frame sync and extend correlation time
@@ -310,6 +310,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                                          break;
                                      }
                                      d_GPS_FSM.clear_flag_new_subframe();
+                                     d_flag_new_tow_available=true;
                                  }
 
                              d_flag_parity = true;
@@ -336,16 +337,14 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
     current_synchro_data = in[0][0];
 
     //2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true and d_GPS_FSM.d_nav.d_TOW > 0)
+    if (this->d_flag_preamble == true and d_flag_new_tow_available==true)
         {
             // update TOW at the preamble instant
             d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_L1_CA_CODE_PERIOD;
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
             d_TOW_at_current_symbol = d_TOW_at_Preamble;
-            if (flag_TOW_set == false)
-                {
-                    flag_TOW_set = true;
-                }
+            flag_TOW_set = true;
+            d_flag_new_tow_available=false;
         }
     else
         {
@@ -355,7 +354,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
      current_synchro_data.d_TOW = d_TOW_at_Preamble;
      current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
      current_synchro_data.d_TOW_hybrid_at_current_symbol = current_synchro_data.d_TOW_at_current_symbol; // to be  used in the hybrid configuration
-     current_synchro_data.Flag_valid_word = (d_flag_frame_sync == true and d_flag_parity == true and flag_TOW_set == true);
+     current_synchro_data.Flag_valid_word = flag_TOW_set;//(d_flag_frame_sync == true and d_flag_parity == true and flag_TOW_set == true);
      current_synchro_data.Flag_preamble = d_flag_preamble;
      current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
      current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;

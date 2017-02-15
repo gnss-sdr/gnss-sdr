@@ -156,7 +156,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
     // ****** SOLVE LEAST SQUARES******************************************************
     // ********************************************************************************
     d_valid_observations = valid_obs;
-    LOG(INFO) << "(new)PVT: valid observations=" << valid_obs;
+    DLOG(INFO) << "(new)PVT: valid observations=" << valid_obs;
 
     if (valid_obs >= 4)
         {
@@ -247,6 +247,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             {
                     d_rx_dt_s = 0; //reset rx time estimation
                     LOG(WARNING) << "Problem with the solver, invalid solution!" << e.what();
+                    LOG(WARNING) << "satpos=" << satpos;
+                    LOG(WARNING) << "obs=" << obs;
+                    LOG(WARNING) << "W=" << W;
                     b_valid_position = false;
             }
         }

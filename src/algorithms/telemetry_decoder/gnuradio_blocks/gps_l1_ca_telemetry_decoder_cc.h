@@ -104,6 +104,7 @@ private:
     unsigned int d_prev_GPS_frame_4bytes;
     bool d_flag_parity;
     bool d_flag_preamble;
+    bool d_flag_new_tow_available;
     int d_word_number;
 
     // output averaging and decimation

@@ -208,7 +208,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference * 1000.0) / 1000.0 + GPS_STARTOFFSET_ms / 1000.0;
+                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = d_TOW_reference + GPS_STARTOFFSET_ms / 1000.0;
 
                     if (d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].size() >= history_deep)
                         {

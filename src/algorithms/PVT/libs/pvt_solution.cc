@@ -132,7 +132,7 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
             iterations = iterations + 1;
             if (iterations > 100)
                 {
-                    LOG(WARNING) << "Failed to approximate h with desired precision. h-oldh= " << h - oldh;
+                    DLOG(WARNING) << "Failed to approximate h with desired precision. h-oldh= " << h - oldh;
                     break;
                 }
         }

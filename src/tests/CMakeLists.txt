@@ -136,6 +136,10 @@ if (ENABLE_CUDA)
 	add_definitions(-DCUDA_BLOCKS_TEST=1)
 endif(ENABLE_CUDA)
 
+if (ENABLE_FPGA)
+	add_definitions(-DFPGA_BLOCKS_TEST=1)
+endif(ENABLE_FPGA)
+
 ################################################################################
 # Optional generator
 ################################################################################

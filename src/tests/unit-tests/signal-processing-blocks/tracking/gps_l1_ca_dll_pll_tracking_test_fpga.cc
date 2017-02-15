@@ -42,6 +42,8 @@
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <sys/wait.h>
 #include "GPS_L1_CA.h"

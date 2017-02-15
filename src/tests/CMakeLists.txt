@@ -40,16 +40,14 @@ endif(GTEST_INCLUDE_DIRS)
 
 set(GTEST_COMPILER -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
 set(TOOLCHAIN_ARG "")
+if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+    set(GTEST_COMPILER "")
+    set(TOOLCHAIN_ARG "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/Toolchains/oe-sdk_cross.cmake")
+endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
 
 if(NOT ${GTEST_DIR_LOCAL})
      # if GTEST_DIR is not defined, we download and build it
      set(gtest_RELEASE 1.8.0)
-
-     if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
-         set(GTEST_COMPILER "")
-         set(TOOLCHAIN_ARG -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/Toolchains/oe-sdk_cross.cmake)
-     endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
-
      ExternalProject_Add(
          gtest-${gtest_RELEASE}
          GIT_REPOSITORY https://github.com/google/googletest
@@ -143,53 +141,73 @@ endif(ENABLE_FPGA)
 ################################################################################
 # Optional generator
 ################################################################################
-if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA)
+if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
+   if(ENABLE_FPGA)
+      set(CROSS_INSTALL_DIR "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
+      if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+          set(CROSS_INSTALL_DIR "${CROSS_INSTALL_DIR} -DBOOST_ROOT=$ENV{OECORE_TARGET_SYSROOT}/usr")
+      endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+   else(ENABLE_FPGA)
+      set(CROSS_INSTALL_DIR "")
+   endif(ENABLE_FPGA)
    ExternalProject_Add(
       gnss-sim
       GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
       GIT_TAG master
       SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gnss-sim
       BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim
-      CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG}
+      CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} ${CROSS_INSTALL_DIR}
       UPDATE_COMMAND ""
       PATCH_COMMAND ""
       INSTALL_COMMAND ""
    )
-   set(SW_GENERATOR_BIN ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim)
-   add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
-   add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
-   add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv")
+   if(ENABLE_FPGA)
+      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim DESTINATION bin/gnss_sim)
+      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n DESTINATION share/gnss-sim/brdc3540.14n)
+      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv DESTINATION share/gnss-sim/circle.csv)
+      set(SW_GENERATOR_BIN /usr/bin/gnss_sim)
+      add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
+      add_definitions(-DDEFAULT_RINEX_NAV="/usr/shared/gnss-sim/brdc3540.14n")
+      add_definitions(-DDEFAULT_POSITION_FILE="/usr/shared/gnss-sim/circle.csv")
+   else(ENABLE_FPGA)
+       set(SW_GENERATOR_BIN ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim)
+       add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
+       add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
+       add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv")
+   endif(ENABLE_FPGA)
 
    ################################################################################
    # Local installation of GPSTk http://www.gpstk.org/
    ################################################################################
    find_package(GPSTK)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-      set(gpstk_RELEASE "2.9")
-      ExternalProject_Add(
-         gpstk-${gpstk_RELEASE}
-         GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
-         GIT_TAG v${gpstk_RELEASE}
-         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}
-         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${gpstk_RELEASE}
-         CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
-         UPDATE_COMMAND ""
-         PATCH_COMMAND ""
-      )
-      set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/include CACHE PATH "Local GPSTK headers")
-      add_library(gpstk UNKNOWN IMPORTED)
-      set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
-      add_dependencies(gpstk gpstk-${gpstk_RELEASE})
-      set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/bin/ )
-      add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
-      set(gpstk_libs gpstk)
+      if(NOT ENABLE_FPGA)
+          set(gpstk_RELEASE "2.9")
+          ExternalProject_Add(
+             gpstk-${gpstk_RELEASE}
+             GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
+             GIT_TAG v${gpstk_RELEASE}
+             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}
+             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${gpstk_RELEASE}
+             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
+             UPDATE_COMMAND ""
+             PATCH_COMMAND ""
+          )
+          set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/include CACHE PATH "Local GPSTK headers")
+          add_library(gpstk UNKNOWN IMPORTED)
+          set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+          add_dependencies(gpstk gpstk-${gpstk_RELEASE})
+          set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/bin/ )
+          add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
+          set(gpstk_libs gpstk)
+      endif(NOT ENABLE_FPGA)    
    else(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
        set(gpstk_libs ${GPSTK_LIBRARIES})
        set(GPSTK_INCLUDE_DIRS ${GPSTK_INCLUDE_DIR})
        set(GPSTK_BINDIR ${GPSTK_LIBRARY}/../bin/ )
        add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
    endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-endif(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA)
+endif(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
 
 
 if(ENABLE_UNIT_TESTING_EXTRA)
@@ -258,7 +276,7 @@ include_directories(
 if(ENABLE_UNIT_TESTING)
     if( ${ARMADILLO_VERSION_STRING} STRGREATER "5.300")  # make sure interp1 is present
         add_definitions(-DMODERN_ARMADILLO)
-    endif( ${ARMADILLO_VERSION_STRING} STRGREATER "5.300") 
+    endif( ${ARMADILLO_VERSION_STRING} STRGREATER "5.300")
     add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 
     add_custom_command(TARGET run_tests POST_BUILD
@@ -291,6 +309,31 @@ if(ENABLE_UNIT_TESTING)
         add_dependencies(run_tests gtest-${gtest_RELEASE})
     endif(NOT ${GTEST_DIR_LOCAL})
 endif(ENABLE_UNIT_TESTING)
+
+if(ENABLE_FPGA)
+    add_executable(gps_l1_ca_dll_pll_tracking_test_fpga
+                   ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+                   ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test_fpga.cc )
+    target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga
+                             ${Boost_LIBRARIES}
+                             ${GFlags_LIBS}
+                             ${GLOG_LIBRARIES}
+                             ${GTEST_LIBRARIES}
+                             ${GNURADIO_RUNTIME_LIBRARIES}
+                             ${GNURADIO_BLOCKS_LIBRARIES}
+                             ${ARMADILLO_LIBRARIES}
+                             ${VOLK_LIBRARIES}
+                             channel_fsm
+                             gnss_sp_libs
+                             gnss_rx
+                             gnss_system_parameters
+                             signal_processing_testing_lib
+                             )
+    install(TARGETS gps_l1_ca_dll_pll_tracking_test_fpga
+            RUNTIME DESTINATION bin
+            COMPONENT "fpga-test"
+            )
+endif(ENABLE_FPGA)
 
 
 

@@ -216,11 +216,11 @@ if(ENABLE_UNIT_TESTING_EXTRA)
       message(STATUS "Downloading some data files for testing...")
       file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/gps_l2c_m_prn7_5msps.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat
            SHOW_PROGRESS
-           EXPECTED_HASH MD5=a6fcbefe155137945d3c33c5ef7bd0f9 )
-      if(ENABLE_FPGA)
-         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
-      endif(ENABLE_FPGA)    
+           EXPECTED_HASH MD5=a6fcbefe155137945d3c33c5ef7bd0f9 )    
    endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
+   if(ENABLE_FPGA)
+      install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
+   endif(ENABLE_FPGA)
 endif(ENABLE_UNIT_TESTING_EXTRA)
 
 if(ENABLE_FPGA)

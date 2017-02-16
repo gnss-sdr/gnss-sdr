@@ -330,7 +330,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    //generate_signal();
+    generate_signal();
 
     struct timeval tv;
     long long int begin = 0;

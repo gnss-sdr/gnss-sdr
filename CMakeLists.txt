@@ -77,7 +77,10 @@ if(ENABLE_SYSTEM_TESTING_EXTRA)
     set(ENABLE_SYSTEM_TESTING ON)
 endif(ENABLE_SYSTEM_TESTING_EXTRA)
 option(ENABLE_OWN_GPSTK "Force to download, build and link GPSTk for system tests, even if it is already installed" OFF)
-
+option(ENABLE_INSTALL_TESTS "Install QA code system-wide" OFF)
+if(ENABLE_FPGA)
+    set(ENABLE_INSTALL_TESTS ON)
+endif(ENABLE_FPGA)
 
 
 ###############################

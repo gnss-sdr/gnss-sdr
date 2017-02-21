@@ -402,6 +402,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                                 }
                             // UPDATE INTEGRATION TIME
                             CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_extend_correlation_ms) * GPS_L1_CA_CODE_PERIOD;
+                            d_code_loop_filter.set_pdi(CURRENT_INTEGRATION_TIME_S);
                             enable_dll_pll = true;
                         }
                     else
@@ -438,6 +439,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                                     //  perform basic (1ms) correlation
                                     // UPDATE INTEGRATION TIME
                                     CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in);
+                                    d_code_loop_filter.set_pdi(CURRENT_INTEGRATION_TIME_S);
                                     enable_dll_pll = true;
                                 }
                         }

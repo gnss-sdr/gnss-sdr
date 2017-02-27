@@ -47,7 +47,7 @@ pulse_blanking_cc_sptr make_pulse_blanking_cc(double Pfa);
 class pulse_blanking_cc : public gr::block
 {
 private:
-    friend pulse_blanking_cc_sptr pulse_blanking_cc(double Pfa);
+    friend pulse_blanking_cc_sptr make_pulse_blanking_cc(double Pfa);
     double d_Pfa;
 public:
     pulse_blanking_cc(double Pfa);

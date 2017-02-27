@@ -28,14 +28,13 @@
  * -------------------------------------------------------------------------
  */
 
-
 #include "pulse_blanking_cc.h"
-
+#include <cmath>
+#include <complex>
 #include <gnuradio/io_signature.h>
-#include <math.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <complex>
+
 
 pulse_blanking_cc_sptr make_pulse_blanking_cc(double Pfa)
 {
@@ -50,7 +49,7 @@ pulse_blanking_cc::pulse_blanking_cc(double Pfa) : gr::block("pulse_blanking_cc"
 {
     const int alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
     set_alignment(std::max(1, alignment_multiple));
-    d_Pfa=Pfa;
+    d_Pfa = Pfa;
 }
 
 
@@ -74,18 +73,18 @@ int pulse_blanking_cc::general_work (int noutput_items __attribute__((unused)), 
     var /= static_cast<float>(noutput_items);
     // compute pulse blanking threshold (Paper Borio 2016)
 
-    float Th=sqrt(-2.0*var*log10(d_Pfa));
+    float Th = sqrt(-2.0 * var * log10(d_Pfa));
 
     //apply the pulse blanking
     //todo: write volk kernel to optimize the blanking
     memcpy(out,in, sizeof(gr_complex)*noutput_items);
-    for (int n=0;n<noutput_items;n++)
-    {
-        if (std::abs(out[n])>Th)
+    for (int n = 0; n < noutput_items; n++)
         {
-            out[n]=gr_complex(0,0);
+            if (std::abs(out[n]) > Th)
+                {
+                    out[n] = gr_complex(0,0);
+                }
         }
-    }
     consume_each(noutput_items);
     return noutput_items;
 }

@@ -36,9 +36,9 @@
 #include <iostream>
 #include <unistd.h>
 #include <armadillo>
-#include <boost/thread.hpp>	// to test the FPGA we have to create a simultaneous task to send the samples using the DMA and stop the test
+#include <boost/thread.hpp>// to test the FPGA we have to create a simultaneous task to send the samples using the DMA and stop the test
 #include <boost/chrono.hpp> // temporary for debugging
-#include <stdio.h>			// FPGA read input file
+#include <stdio.h>// FPGA read input file
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -68,110 +68,106 @@
 #define MAX_INPUT_SAMPLES_TOTAL MAX_INPUT_SAMPLES_PER_TEST_CASE*MAX_NUM_TEST_CASES
 #define DMA_TRANSFER_SIZE 2046
 #define MIN_SAMPLES_REMAINING 20000 // number of remaining samples in the DMA that causes the CPU to stop the flowgraph (it has to be a bit alrger than 2x max packet size)
+
+
 void wait(int seconds)
 {
-  boost::this_thread::sleep_for(boost::chrono::seconds{seconds});
+    boost::this_thread::sleep_for(boost::chrono::seconds{seconds});
 }
 
 void send_tracking_gps_input_samples(FILE *ptr_myfile, int num_remaining_samples, gr::top_block_sptr top_block)
 {
-	int sample_pointer;
-	int num_samples_transferred = 0;
-	static int flowgraph_stopped = 0;
+    int sample_pointer;
+    int num_samples_transferred = 0;
+    static int flowgraph_stopped = 0;
 
-	char *buffer;
+    char *buffer;
 
-	   // DMA descriptor
-	   int tx_fd;
-	   tx_fd = open("/dev/loop_tx", O_WRONLY);
-	   if ( tx_fd < 0 )
-	   {
-		printf("can't open loop device\n");
-		exit(1);
-	   }
+    // DMA descriptor
+    int tx_fd;
+    tx_fd = open("/dev/loop_tx", O_WRONLY);
+    if ( tx_fd < 0 )
+        {
+            printf("can't open loop device\n");
+            exit(1);
+        }
 
-	buffer=(char *)malloc(DMA_TRANSFER_SIZE);
-	if (!buffer)
-	{
-		fprintf(stderr, "Memory error!");
-	}
+    buffer = (char *)malloc(DMA_TRANSFER_SIZE);
+    if (!buffer)
+        {
+            fprintf(stderr, "Memory error!");
+        }
 
+    while(num_remaining_samples > 0)
+        {
+            if (num_remaining_samples < MIN_SAMPLES_REMAINING)
+                {
+                    if (flowgraph_stopped == 0)
+                        {
+                            // stop top module
+                            top_block->stop();
+                            flowgraph_stopped = 1;
+                        }
+                }
+            if (num_remaining_samples > DMA_TRANSFER_SIZE)
+                {
 
-	while(num_remaining_samples >0)
-	{
-		if (num_remaining_samples < MIN_SAMPLES_REMAINING)
-		{
-			if (flowgraph_stopped == 0)
-			{
-				// stop top module
-				top_block->stop();
-				flowgraph_stopped = 1;
-			}
-		}
-		if (num_remaining_samples > DMA_TRANSFER_SIZE)
-		{
+                    fread(buffer, DMA_TRANSFER_SIZE, 1, ptr_myfile);
 
-			fread(buffer, DMA_TRANSFER_SIZE, 1, ptr_myfile);
+                    assert( DMA_TRANSFER_SIZE == write(tx_fd, &buffer[0], DMA_TRANSFER_SIZE) );
+                    num_remaining_samples = num_remaining_samples - DMA_TRANSFER_SIZE;
+                    num_samples_transferred  = num_samples_transferred  + DMA_TRANSFER_SIZE;
+                }
+            else
+                {
+                    fread(buffer, num_remaining_samples, 1, ptr_myfile);
 
-			assert( DMA_TRANSFER_SIZE == write(tx_fd, &buffer[0], DMA_TRANSFER_SIZE) );
-			num_remaining_samples = num_remaining_samples - DMA_TRANSFER_SIZE;
-			num_samples_transferred  = num_samples_transferred  + DMA_TRANSFER_SIZE;
-		}
-		else
-		{
-			fread(buffer, num_remaining_samples, 1, ptr_myfile);
+                    assert( num_remaining_samples == write(tx_fd, &buffer[0], num_remaining_samples) );
+                    num_samples_transferred = num_samples_transferred + num_remaining_samples;
+                    num_remaining_samples = 0;
+                }
+        }
 
-			assert( num_remaining_samples == write(tx_fd, &buffer[0], num_remaining_samples) );
-			num_samples_transferred = num_samples_transferred + num_remaining_samples;
-			num_remaining_samples = 0; 
-		}
-		
-	}
-
-
-
-
-	free(buffer);
-	close(tx_fd);
-	
-
+    free(buffer);
+    close(tx_fd);
 }
+
 
 // thread that sends the samples to the FPGA
 void thread(gr::top_block_sptr top_block, const char * file_name)
 {
-	
+    // file descriptor
+    FILE *ptr_myfile;
+    int fileLen;
 
-	// file descriptor
-	FILE *ptr_myfile;
-	int fileLen;
+    ptr_myfile = fopen(file_name,"rb");
+    if (!ptr_myfile)
+        {
+            printf("Unable to open file!");
+        }
 
-	ptr_myfile=fopen(file_name,"rb");
-	if (!ptr_myfile)
-	{
-		printf("Unable to open file!");
-	}
+    fseek(ptr_myfile, 0, SEEK_END);
+    fileLen = ftell(ptr_myfile);
+    fseek(ptr_myfile, 0, SEEK_SET);
 
-	fseek(ptr_myfile, 0, SEEK_END);
-	fileLen=ftell(ptr_myfile);
-	fseek(ptr_myfile, 0, SEEK_SET);
+    wait(20); // wait for some time to give time to the other thread to program the device
 
-	wait(20); // wait for some time to give time to the other thread to program the device
+    //send_tracking_gps_input_samples(tx_fd, ptr_myfile, fileLen);
+    send_tracking_gps_input_samples(ptr_myfile, fileLen, top_block);
 
-	//send_tracking_gps_input_samples(tx_fd, ptr_myfile, fileLen);
-	send_tracking_gps_input_samples(ptr_myfile, fileLen, top_block);
-
-	fclose(ptr_myfile);
-
+    fclose(ptr_myfile);
 }
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTestFpga_msg_rx;
 
+
 typedef boost::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx> GpsL1CADllPllTrackingTestFpga_msg_rx_sptr;
 
+
 GpsL1CADllPllTrackingTestFpga_msg_rx_sptr GpsL1CADllPllTrackingTestFpga_msg_rx_make();
+
 
 class GpsL1CADllPllTrackingTestFpga_msg_rx : public gr::block
 {
@@ -185,10 +181,12 @@ public:
     ~GpsL1CADllPllTrackingTestFpga_msg_rx(); //!< Default destructor
 };
 
+
 GpsL1CADllPllTrackingTestFpga_msg_rx_sptr GpsL1CADllPllTrackingTestFpga_msg_rx_make()
 {
     return GpsL1CADllPllTrackingTestFpga_msg_rx_sptr(new GpsL1CADllPllTrackingTestFpga_msg_rx());
 }
+
 
 void GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
@@ -204,24 +202,24 @@ void GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events(pmt::pmt_t msg)
     }
 }
 
+
 GpsL1CADllPllTrackingTestFpga_msg_rx::GpsL1CADllPllTrackingTestFpga_msg_rx() :
-            gr::block("GpsL1CADllPllTrackingTestFpga_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+                    gr::block("GpsL1CADllPllTrackingTestFpga_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
 
+
 GpsL1CADllPllTrackingTestFpga_msg_rx::~GpsL1CADllPllTrackingTestFpga_msg_rx()
 {}
-
 
 // ###########################################################
 
 
 class GpsL1CADllPllTrackingTestFpga: public ::testing::Test
 {
-
 public:
     std::string generator_binary;
     std::string p1;
@@ -335,13 +333,13 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
 }
 
+
 void GpsL1CADllPllTrackingTestFpga::check_results_doppler(arma::vec true_time_s,
         arma::vec true_value,
         arma::vec meas_time_s,
         arma::vec meas_value)
 {
     //1. True value interpolation to match the measurement times
-
     arma::vec true_value_interp;
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
@@ -361,12 +359,11 @@ void GpsL1CADllPllTrackingTestFpga::check_results_doppler(arma::vec true_time_s,
     double min_error = arma::min(err);
 
     //5. report
-
     std::cout << std::setprecision(10) << "TRK Doppler RMSE=" << rmse
               << ", mean=" << error_mean
               << ", stdev="<< sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Hz]" << std::endl;
-
 }
+
 
 void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(arma::vec true_time_s,
         arma::vec true_value,
@@ -374,7 +371,6 @@ void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(arma::vec tr
         arma::vec meas_value)
 {
     //1. True value interpolation to match the measurement times
-
     arma::vec true_value_interp;
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
@@ -394,12 +390,12 @@ void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(arma::vec tr
     double min_error = arma::min(err);
 
     //5. report
-
     std::cout << std::setprecision(10) << "TRK acc carrier phase RMSE=" << rmse
               << ", mean=" << error_mean
               << ", stdev=" << sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Hz]" << std::endl;
 
 }
+
 
 void GpsL1CADllPllTrackingTestFpga::check_results_codephase(arma::vec true_time_s,
         arma::vec true_value,
@@ -407,13 +403,11 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(arma::vec true_time_
         arma::vec meas_value)
 {
     //1. True value interpolation to match the measurement times
-
     arma::vec true_value_interp;
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
     arma::vec err;
-
     err = meas_value - true_value_interp;
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
@@ -427,16 +421,14 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(arma::vec true_time_
     double min_error = arma::min(err);
 
     //5. report
-
     std::cout << std::setprecision(10) << "TRK code phase RMSE=" << rmse
               << ", mean=" << error_mean
               << ", stdev=" << sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Chips]" << std::endl;
-
 }
+
 
 TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
 {
-	
     configure_generator();
 
     // DO not generate signal raw signal samples and observations RINEX file by default
@@ -478,38 +470,30 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     //restart the epoch counter
     true_obs_data.restart();
 
-    
     std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << std::endl;
     gnss_synchro.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD;
     gnss_synchro.Acq_doppler_hz = true_obs_data.doppler_l1_hz;
     gnss_synchro.Acq_samplestamp_samples = 0;
 
-    
     ASSERT_NO_THROW( {
         tracking->set_channel(gnss_synchro.Channel_ID);
     }) << "Failure setting channel." << std::endl;
 
-    
     ASSERT_NO_THROW( {
         tracking->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro." << std::endl;
 
-    
     ASSERT_NO_THROW( {
         tracking->connect(top_block);
     }) << "Failure connecting tracking to the top_block." << std::endl;
 
-    
     ASSERT_NO_THROW( {
         gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
         top_block->connect(tracking->get_right_block(), 0, sink, 0);
         top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of tracking test." << std::endl;
 
-
-
     tracking->start_tracking();
-
 
     // assemble again the file name in a null terminated string (not available by default in the main program flow)
     std::string file =  "./" + filename_raw_data;
@@ -517,7 +501,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
 
     // start thread that sends the DMA samples to the FPGA
     boost::thread t{thread, top_block, file_name};
-    
+
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
         begin = tv.tv_sec * 1000000 + tv.tv_usec;
@@ -529,9 +513,6 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
 
     // wait until child thread terminates
     t.join();
-
-
-
 
     //check results
     //load the true values
@@ -602,4 +583,3 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
 
     std::cout <<  "Signal tracking completed in " << (end - begin) << " microseconds" << std::endl;
 }
-

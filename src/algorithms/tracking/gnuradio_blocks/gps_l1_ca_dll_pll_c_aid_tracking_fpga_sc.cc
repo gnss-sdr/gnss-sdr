@@ -309,8 +309,6 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::~gps_l1_ca_dll_pll_c_aid_tracking_fpga
 int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-
-	
     // Block input data and block output stream pointers
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
@@ -321,8 +319,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
     double CURRENT_INTEGRATION_TIME_S = 0.0;
     double CORRECTED_INTEGRATION_TIME_S = 0.0;
     
-
-
     if (d_enable_tracking == true)
         {
             // Fill the acquisition data
@@ -655,11 +651,11 @@ void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::set_channel(unsigned int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (const std::ifstream::failure* e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e->what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e->what();
                     }
                 }
         }

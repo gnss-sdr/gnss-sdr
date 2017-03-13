@@ -130,12 +130,12 @@ if(OPENCL_FOUND)
     add_definitions(-DOPENCL_BLOCKS_TEST=1)
 endif(OPENCL_FOUND)
 
-if (ENABLE_CUDA)
-	add_definitions(-DCUDA_BLOCKS_TEST=1)
+if(ENABLE_CUDA)
+    add_definitions(-DCUDA_BLOCKS_TEST=1)
 endif(ENABLE_CUDA)
 
-if (ENABLE_FPGA)
-	add_definitions(-DFPGA_BLOCKS_TEST=1)
+if(ENABLE_FPGA)
+    add_definitions(-DFPGA_BLOCKS_TEST=1)
 endif(ENABLE_FPGA)
 
 ################################################################################

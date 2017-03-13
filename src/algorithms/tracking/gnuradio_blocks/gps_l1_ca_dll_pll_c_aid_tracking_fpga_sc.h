@@ -2,7 +2,7 @@
  * \file gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc.h
  * \brief Interface of a code DLL + carrier PLL tracking block
  * \author Marc Majoral, 2017. mmajoral(at)cttc.cat
- * 		   Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:

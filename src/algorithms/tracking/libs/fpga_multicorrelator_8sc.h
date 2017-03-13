@@ -61,22 +61,20 @@ public:
     void set_initial_sample(int samples_offset);
 
 private:
-
     const lv_16sc_t *d_local_code_in;
     lv_16sc_t *d_corr_out;
     float *d_shifts_chips;
     int d_code_length_chips;
     int d_n_correlators;
 
-
     // data related to the hardware module and the driver
-    char d_device_io_name[MAX_LENGTH_DEVICEIO_NAME];		// driver io name
-    int d_fd; 												// driver descriptor
-    volatile unsigned *d_map_base;							// driver memory map
+    char d_device_io_name[MAX_LENGTH_DEVICEIO_NAME];  // driver io name
+    int d_fd;                                         // driver descriptor
+    volatile unsigned *d_map_base;                    // driver memory map
 
     // configuration data received from the interface
-    unsigned int d_channel;									// channel number
-    unsigned d_ncorrelators;								// number of correlators
+    unsigned int d_channel;    // channel number
+    unsigned d_ncorrelators;   // number of correlators
     unsigned d_correlator_length_samples;
     float d_rem_code_phase_chips;
     float d_code_phase_step_chips;

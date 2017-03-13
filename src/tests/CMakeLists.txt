@@ -200,6 +200,10 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
           set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/bin/ )
           add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
           set(gpstk_libs gpstk)
+          set(OWN_GPSTK True)
+      else(NOT ENABLE_FPGA)
+          message(STATUS "GPSTk has not been found, try to install it on target.")
+          message(STATUS "Some extra tests requiring GPSTk will not be built.")
       endif(NOT ENABLE_FPGA)    
    else(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
        set(gpstk_libs ${GPSTK_LIBRARIES})
@@ -351,6 +355,80 @@ if(ENABLE_FPGA)
             COMPONENT "fpga-test" )
 endif(ENABLE_FPGA)
 
+
+
+################################################################################
+# System testing
+################################################################################
+if(ENABLE_SYSTEM_TESTING)
+    set(HOST_SYSTEM "Unknown")
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        set(HOST_SYSTEM "GNU/Linux ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCH_}")
+    endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set(HOST_SYSTEM "MacOS")
+    endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    add_definitions(-DHOST_SYSTEM="${HOST_SYSTEM}")
+    add_executable(ttff
+        ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/ttff_gps_l1.cc )
+    if(NOT ${GTEST_DIR_LOCAL})
+        add_dependencies(ttff gtest-${gtest_RELEASE})
+    else(NOT ${GTEST_DIR_LOCAL})
+        add_dependencies(ttff gtest)
+    endif(NOT ${GTEST_DIR_LOCAL})
+    target_link_libraries(ttff
+        ${Boost_LIBRARIES}
+        ${GFlags_LIBS}
+        ${GLOG_LIBRARIES}
+        ${GTEST_LIBRARIES}
+        ${GNURADIO_RUNTIME_LIBRARIES}
+        ${GNURADIO_BLOCKS_LIBRARIES}
+        ${GNURADIO_FILTER_LIBRARIES}
+        ${GNURADIO_ANALOG_LIBRARIES}
+        ${VOLK_GNSSSDR_LIBRARIES}
+        gnss_sp_libs
+        gnss_rx
+        gnss_system_parameters
+    )
+    if(ENABLE_INSTALL_TESTS)
+        if(EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
+            file(REMOVE ${CMAKE_SOURCE_DIR}/install/ttff)
+        endif(EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
+        install(TARGETS ttff RUNTIME DESTINATION bin COMPONENT "ttff")
+    else(ENABLE_INSTALL_TESTS)
+        add_custom_command(TARGET ttff POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:ttff>
+                           ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:ttff> )
+    endif(ENABLE_INSTALL_TESTS)
+
+    if(ENABLE_SYSTEM_TESTING_EXTRA)
+        if(GPSTK_FOUND OR OWN_GPSTK)
+            add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc)
+            if(NOT ${GTEST_DIR_LOCAL})
+                add_dependencies(obs_gps_l1_system_test gtest-${gtest_RELEASE} )
+            else(NOT ${GTEST_DIR_LOCAL})
+                add_dependencies(obs_gps_l1_system_test gtest)
+            endif(NOT ${GTEST_DIR_LOCAL})
+            include_directories(${GPSTK_INCLUDE_DIRS})
+            target_link_libraries(obs_gps_l1_system_test ${GFlags_LIBS}
+                                                         ${GLOG_LIBRARIES}
+                                                         ${GTEST_LIBRARIES}
+                                                         gnss_sp_libs
+                                                         gnss_rx
+                                                         ${gpstk_libs})
+            if(ENABLE_INSTALL_TESTS)
+                if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
+                    file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
+                endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
+                install(TARGETS obs_gps_l1_system_test RUNTIME DESTINATION bin COMPONENT "obs_gps_l1_system_test")
+            else(ENABLE_INSTALL_TESTS)                                            
+                add_custom_command(TARGET obs_gps_l1_system_test POST_BUILD
+                                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_gps_l1_system_test>
+                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_gps_l1_system_test> )
+            endif(ENABLE_INSTALL_TESTS)
+        endif(GPSTK_FOUND OR OWN_GPSTK)          
+    endif(ENABLE_SYSTEM_TESTING_EXTRA)
+endif(ENABLE_SYSTEM_TESTING)
 
 
 #########################################################
@@ -529,76 +607,3 @@ endif(NOT ${GTEST_DIR_LOCAL})
 
 add_dependencies(check control_thread_test flowgraph_test gnss_block_test
                  gnuradio_block_test trk_test)
-
-
-
-################################################################################
-# System testing
-################################################################################
-if(ENABLE_SYSTEM_TESTING)
-    set(HOST_SYSTEM "Unknown")
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        set(HOST_SYSTEM "GNU/Linux ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCH_}")
-    endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        set(HOST_SYSTEM "MacOS")
-    endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    add_definitions(-DHOST_SYSTEM="${HOST_SYSTEM}")
-    add_executable(ttff
-        ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/ttff_gps_l1.cc )
-    if(NOT ${GTEST_DIR_LOCAL})
-        add_dependencies(ttff gtest-${gtest_RELEASE})
-    else(NOT ${GTEST_DIR_LOCAL})
-        add_dependencies(ttff gtest)
-    endif(NOT ${GTEST_DIR_LOCAL})
-    target_link_libraries(ttff
-        ${Boost_LIBRARIES}
-        ${GFlags_LIBS}
-        ${GLOG_LIBRARIES}
-        ${GTEST_LIBRARIES}
-        ${GNURADIO_RUNTIME_LIBRARIES}
-        ${GNURADIO_BLOCKS_LIBRARIES}
-        ${GNURADIO_FILTER_LIBRARIES}
-        ${GNURADIO_ANALOG_LIBRARIES}
-        ${VOLK_GNSSSDR_LIBRARIES}
-        gnss_sp_libs
-        gnss_rx
-        gnss_system_parameters
-    )
-    if(ENABLE_INSTALL_TESTS)
-        if(EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
-            file(REMOVE ${CMAKE_SOURCE_DIR}/install/ttff)
-        endif(EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
-        install(TARGETS ttff RUNTIME DESTINATION bin COMPONENT "ttff")
-    else(ENABLE_INSTALL_TESTS)
-        add_custom_command(TARGET ttff POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:ttff>
-                           ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:ttff> )
-    endif(ENABLE_INSTALL_TESTS)
-
-    if(ENABLE_SYSTEM_TESTING_EXTRA)
-        add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc)
-        if(NOT ${GTEST_DIR_LOCAL})
-            add_dependencies(obs_gps_l1_system_test gtest-${gtest_RELEASE} )
-        else(NOT ${GTEST_DIR_LOCAL})
-            add_dependencies(obs_gps_l1_system_test gtest)
-        endif(NOT ${GTEST_DIR_LOCAL})
-        include_directories(${GPSTK_INCLUDE_DIRS})
-        target_link_libraries(obs_gps_l1_system_test ${GFlags_LIBS}
-                                                     ${GLOG_LIBRARIES}
-                                                     ${GTEST_LIBRARIES}
-                                                     gnss_sp_libs
-                                                     gnss_rx
-                                                     ${gpstk_libs})
-        if(ENABLE_INSTALL_TESTS)
-            if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-                file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-            endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-            install(TARGETS obs_gps_l1_system_test RUNTIME DESTINATION bin COMPONENT "obs_gps_l1_system_test")
-        else(ENABLE_INSTALL_TESTS)                                            
-            add_custom_command(TARGET obs_gps_l1_system_test POST_BUILD
-                               COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_gps_l1_system_test>
-                               ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_gps_l1_system_test> )
-        endif(ENABLE_INSTALL_TESTS)                       
-    endif(ENABLE_SYSTEM_TESTING_EXTRA)
-endif(ENABLE_SYSTEM_TESTING)

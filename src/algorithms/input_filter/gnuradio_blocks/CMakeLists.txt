@@ -24,8 +24,6 @@ set(INPUT_FILTER_GR_BLOCKS_SOURCES
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${GNURADIO_BLOCKS_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
@@ -36,3 +34,7 @@ list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
 add_library(input_filter_gr_blocks ${INPUT_FILTER_GR_BLOCKS_SOURCES} ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 target_link_libraries(input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES}  ${VOLK_GNSSSDR_LIBRARIES})
+
+if(NOT VOLK_GNSSSDR_FOUND)
+    add_dependencies(input_filter_gr_blocks volk_gnsssdr_module)
+endif(NOT VOLK_GNSSSDR_FOUND)

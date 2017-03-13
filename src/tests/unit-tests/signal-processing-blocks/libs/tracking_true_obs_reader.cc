@@ -40,7 +40,7 @@ bool tracking_true_obs_reader::read_binary_obs()
             d_dump_file.read((char *) &prn_delay_chips, sizeof(double));
             d_dump_file.read((char *) &tow, sizeof(double));
     }
-    catch (const std::ifstream::failure &e)
+    catch (const std::exception &e)
     {
             return false;
     }

@@ -57,11 +57,24 @@ concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
+using google::LogMessage;
+
+DECLARE_string(log_dir);
 
 int main(int argc, char **argv)
 {
     google::ParseCommandLineFlags(&argc, &argv, true);
     testing::InitGoogleTest(&argc, argv);
     google::InitGoogleLogging(argv[0]);
-    return RUN_ALL_TESTS();
+    int res = 0;
+    try
+    {
+            res = RUN_ALL_TESTS();
+    }
+    catch(...)
+    {
+            LOG(WARNING) << "Unexpected catch";
+    }
+    google::ShutDownCommandLineFlags();
+    return res;
 }

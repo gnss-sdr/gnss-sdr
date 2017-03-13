@@ -406,6 +406,7 @@ $ sudo make install
 
 Using this option, all SIMD instructions are exclusively accessed via VOLK, which automatically includes versions of each function for different SIMD instruction sets, then detects at runtime which to use, or if there are none, substitutes a generic, non-SIMD implementation.
 
+More details can be found in our tutorial about [GNSS-SDR configuration options at building time](http://gnss-sdr.org/docs/tutorials/using-git/ "Configuration options at building time").
 
 
 <a name="macosx">macOS and Mac OS X</a>
@@ -1288,7 +1289,7 @@ Publications and Credits
 
 If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate if you reference the following article to credit the GNSS-SDR project:
 
- * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, C. Avil&eacute;s, and L. Esteve, [GNSS-SDR: an open source tool for researchers and developers](http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/), in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011.
+ * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, C. Avil&eacute;s, and L. Esteve, [GNSS-SDR: an open source tool for researchers and developers](http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/), in Proceedings of the 24th International Technical Meeting of The Satellite Division of the Institute of Navigation (ION GNSS), Portland, Oregon, Sept. 19-23, 2011, pp. 780-794.
 
 For LaTeX users, this is the BibTeX entry for your convenience:
 
@@ -1296,10 +1297,11 @@ For LaTeX users, this is the BibTeX entry for your convenience:
 @INPROCEEDINGS{GNSS-SDR11,
  AUTHOR = {C.~{Fern\'{a}ndez--Prades} and J.~Arribas and P.~Closas and C.~Avil\'{e}s and L.~Esteve},
  TITLE = {{GNSS-SDR}: An Open Source Tool For Researchers and Developers},
- BOOKTITLE = {Proc. of the ION GNSS 2011 Conference},
+ BOOKTITLE = {Proc. of the 24th Intl. Technical Meeting of The Satellite Division of the Institute of Navigation},
  YEAR = {2011},
- address = {Portland, Oregon},
- month = {Sept.} }
+ PAGES = {780--794},
+ ADDRESS = {Portland, Oregon},
+ MONTH = {Sept.} }
 ~~~~~~
 
 

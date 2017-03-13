@@ -50,7 +50,8 @@
 #include "tracking_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_dll_pll_tracking.h"
+//#include "gps_l1_ca_dll_pll_tracking.h"
+#include "gps_l1_ca_dll_pll_c_aid_tracking.h"
 #include "tracking_true_obs_reader.h"
 #include "tracking_dump_reader.h"
 #include "signal_generator_flags.h"
@@ -353,8 +354,8 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     }) << "Failure opening true observables file" << std::endl;
 
     top_block = gr::make_top_block("Tracking test");
-    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
-    //std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
+    //std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
     boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx> msg_rx = GpsL1CADllPllTrackingTest_msg_rx_make();
 
@@ -400,6 +401,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
     tracking->start_tracking();
 
+
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
         begin = tv.tv_sec * 1000000 + tv.tv_usec;
@@ -413,28 +415,37 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     long int nepoch = true_obs_data.num_epochs();
     std::cout << "True observation epochs=" << nepoch << std::endl;
 
+
+
     arma::vec true_timestamp_s = arma::zeros(nepoch, 1);
     arma::vec true_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
     arma::vec true_Doppler_Hz = arma::zeros(nepoch, 1);
     arma::vec true_prn_delay_chips = arma::zeros(nepoch, 1);
     arma::vec true_tow_s = arma::zeros(nepoch, 1);
 
+	
     long int epoch_counter = 0;
     while(true_obs_data.read_binary_obs())
         {
+			
+				
             true_timestamp_s(epoch_counter) = true_obs_data.signal_timestamp_s;
             true_acc_carrier_phase_cycles(epoch_counter) = true_obs_data.acc_carrier_phase_cycles;
             true_Doppler_Hz(epoch_counter) = true_obs_data.doppler_l1_hz;
             true_prn_delay_chips(epoch_counter) = true_obs_data.prn_delay_chips;
             true_tow_s(epoch_counter) = true_obs_data.tow;
             epoch_counter++;
+            
+			            
         }
+
 
     //load the measured values
     tracking_dump_reader trk_dump;
     ASSERT_NO_THROW({
         if (trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")) == false)
             {
+					
                 throw std::exception();
             };
     }) << "Failure opening tracking dump file" << std::endl;
@@ -442,11 +453,12 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     nepoch = trk_dump.num_epochs();
     std::cout << "Measured observation epochs=" << nepoch << std::endl;
 
+
     arma::vec trk_timestamp_s = arma::zeros(nepoch, 1);
     arma::vec trk_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
     arma::vec trk_Doppler_Hz = arma::zeros(nepoch, 1);
     arma::vec trk_prn_delay_chips = arma::zeros(nepoch, 1);
-
+    
     epoch_counter = 0;
     while(trk_dump.read_binary_obs())
         {

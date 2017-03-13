@@ -2,6 +2,7 @@
  * \file gps_l1_ca_dll_pll_tracking_test.cc
  * \brief  This class implements a tracking test for Galileo_E5a_DLL_PLL_Tracking
  *  implementation based on some input parameters.
+ *  \author Marc Majoral, 2017. mmajoral(at)cttc.cat
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  *
@@ -35,6 +36,9 @@
 #include <iostream>
 #include <unistd.h>
 #include <armadillo>
+#include <boost/thread.hpp>	// to test the FPGA we have to create a simultaneous task to send the samples using the DMA and stop the test
+#include <boost/chrono.hpp> // temporary for debugging
+#include <stdio.h>			// FPGA read input file
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -52,12 +56,114 @@
 #include "tracking_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_synchro.h"
-//#include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking_fpga.h"
 #include "tracking_true_obs_reader.h"
 #include "tracking_dump_reader.h"
 #include "signal_generator_flags.h"
 #include "interleaved_byte_to_complex_short.h"
+
+
+#define MAX_NUM_TEST_CASES 20
+#define MAX_INPUT_SAMPLES_PER_TEST_CASE (8184)
+#define MAX_INPUT_SAMPLES_TOTAL MAX_INPUT_SAMPLES_PER_TEST_CASE*MAX_NUM_TEST_CASES
+#define DMA_TRANSFER_SIZE 2046
+#define MIN_SAMPLES_REMAINING 20000 // number of remaining samples in the DMA that causes the CPU to stop the flowgraph (it has to be a bit alrger than 2x max packet size)
+void wait(int seconds)
+{
+  boost::this_thread::sleep_for(boost::chrono::seconds{seconds});
+}
+
+void send_tracking_gps_input_samples(FILE *ptr_myfile, int num_remaining_samples, gr::top_block_sptr top_block)
+{
+	int sample_pointer;
+	int num_samples_transferred = 0;
+	static int flowgraph_stopped = 0;
+
+	char *buffer;
+
+	   // DMA descriptor
+	   int tx_fd;
+	   tx_fd = open("/dev/loop_tx", O_WRONLY);
+	   if ( tx_fd < 0 )
+	   {
+		printf("can't open loop device\n");
+		exit(1);
+	   }
+
+	buffer=(char *)malloc(DMA_TRANSFER_SIZE);
+	if (!buffer)
+	{
+		fprintf(stderr, "Memory error!");
+	}
+
+
+	while(num_remaining_samples >0)
+	{
+		if (num_remaining_samples < MIN_SAMPLES_REMAINING)
+		{
+			if (flowgraph_stopped == 0)
+			{
+				// stop top module
+				top_block->stop();
+				flowgraph_stopped = 1;
+			}
+		}
+		if (num_remaining_samples > DMA_TRANSFER_SIZE)
+		{
+
+			fread(buffer, DMA_TRANSFER_SIZE, 1, ptr_myfile);
+
+			assert( DMA_TRANSFER_SIZE == write(tx_fd, &buffer[0], DMA_TRANSFER_SIZE) );
+			num_remaining_samples = num_remaining_samples - DMA_TRANSFER_SIZE;
+			num_samples_transferred  = num_samples_transferred  + DMA_TRANSFER_SIZE;
+		}
+		else
+		{
+			fread(buffer, num_remaining_samples, 1, ptr_myfile);
+
+			assert( num_remaining_samples == write(tx_fd, &buffer[0], num_remaining_samples) );
+			num_samples_transferred = num_samples_transferred + num_remaining_samples;
+			num_remaining_samples = 0; 
+		}
+		
+	}
+
+
+
+
+	free(buffer);
+	close(tx_fd);
+	
+
+}
+
+// thread that sends the samples to the FPGA
+void thread(gr::top_block_sptr top_block, const char * file_name)
+{
+	
+
+	// file descriptor
+	FILE *ptr_myfile;
+	int fileLen;
+
+	ptr_myfile=fopen(file_name,"rb");
+	if (!ptr_myfile)
+	{
+		printf("Unable to open file!");
+	}
+
+	fseek(ptr_myfile, 0, SEEK_END);
+	fileLen=ftell(ptr_myfile);
+	fseek(ptr_myfile, 0, SEEK_SET);
+
+	wait(20); // wait for some time to give time to the other thread to program the device
+
+	//send_tracking_gps_input_samples(tx_fd, ptr_myfile, fileLen);
+	send_tracking_gps_input_samples(ptr_myfile, fileLen, top_block);
+
+	fclose(ptr_myfile);
+
+}
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
@@ -330,11 +436,11 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(arma::vec true_time_
 
 TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
 {
-    // Configure the signal generator
+	
     configure_generator();
 
-    // Generate signal raw signal samples and observations RINEX file
-    generate_signal();
+    // DO not generate signal raw signal samples and observations RINEX file by default
+    //generate_signal();
 
     struct timeval tv;
     long long int begin = 0;
@@ -357,7 +463,6 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     }) << "Failure opening true observables file" << std::endl;
 
     top_block = gr::make_top_block("Tracking test");
-    //std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTrackingFpga>(config.get(), "Tracking_1C", 1, 1);
 
     boost::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx> msg_rx = GpsL1CADllPllTrackingTestFpga_msg_rx_make();
@@ -373,44 +478,60 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     //restart the epoch counter
     true_obs_data.restart();
 
+    
     std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << std::endl;
     gnss_synchro.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD;
     gnss_synchro.Acq_doppler_hz = true_obs_data.doppler_l1_hz;
     gnss_synchro.Acq_samplestamp_samples = 0;
 
+    
     ASSERT_NO_THROW( {
         tracking->set_channel(gnss_synchro.Channel_ID);
     }) << "Failure setting channel." << std::endl;
 
+    
     ASSERT_NO_THROW( {
         tracking->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro." << std::endl;
 
+    
     ASSERT_NO_THROW( {
         tracking->connect(top_block);
     }) << "Failure connecting tracking to the top_block." << std::endl;
 
+    
     ASSERT_NO_THROW( {
-        std::string file =  "./" + filename_raw_data;
-        const char * file_name = file.c_str();
-        gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
-        interleaved_byte_to_complex_short_sptr  char_to_cshort = make_interleaved_byte_to_complex_short();
         gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
-        top_block->connect(file_source, 0, char_to_cshort, 0);
-        top_block->connect(char_to_cshort, 0, tracking->get_left_block(), 0);
         top_block->connect(tracking->get_right_block(), 0, sink, 0);
         top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of tracking test." << std::endl;
 
+
+
     tracking->start_tracking();
 
+
+    // assemble again the file name in a null terminated string (not available by default in the main program flow)
+    std::string file =  "./" + filename_raw_data;
+    const char * file_name = file.c_str();
+
+    // start thread that sends the DMA samples to the FPGA
+    boost::thread t{thread, top_block, file_name};
+    
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
         begin = tv.tv_sec * 1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
+        tracking.reset();
         gettimeofday(&tv, NULL);
         end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
+
+    // wait until child thread terminates
+    t.join();
+
+
+
 
     //check results
     //load the true values

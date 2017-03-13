@@ -1,11 +1,12 @@
 /*!
  * \file gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block
- * \author Javier Arribas, 2015. jarribas(at)cttc.es
+ * \author Marc Majoral, 2017. mmajoral(at)cttc.cat
+ *         Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -77,17 +78,6 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_fpga_sc(
 }
 
 
-
-void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::forecast (int noutput_items,
-        gr_vector_int &ninput_items_required)
-{
-    if (noutput_items != 0)
-        {
-            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; //set the required available samples in each call
-        }
-}
-
-
 void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::msg_handler_preamble_index(pmt::pmt_t msg)
 {
     //pmt::print(msg);
@@ -112,8 +102,9 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::gps_l1_ca_dll_pll_c_aid_tracking_fpga_
         float dll_bw_narrow_hz,
         int extend_correlation_ms,
         float early_late_space_chips) :
-        gr::block("gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)),
+        gr::block("gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc", gr::io_signature::make(0, 0, sizeof(lv_16sc_t)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+
 {
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
@@ -318,17 +309,19 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::~gps_l1_ca_dll_pll_c_aid_tracking_fpga
 int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
+
+	
     // Block input data and block output stream pointers
-    const lv_16sc_t* in = (lv_16sc_t*) input_items[0]; //PRN start block alignment
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
-    // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     // process vars
     double code_error_filt_secs_Ti = 0.0;
     double CURRENT_INTEGRATION_TIME_S = 0.0;
     double CORRECTED_INTEGRATION_TIME_S = 0.0;
+    
+
 
     if (d_enable_tracking == true)
         {
@@ -351,12 +344,15 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     *out[0] = current_synchro_data;
                     consume_each(samples_offset); // shift input to perform alignment with local replica
+                    multicorrelator_fpga_8sc.set_initial_sample(samples_offset);
+
                     return 1;
                 }
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
-            multicorrelator_fpga_8sc.set_input_output_vectors(d_correlator_outs_16sc, in);
+            //multicorrelator_fpga_8sc.set_input_output_vectors(d_correlator_outs_16sc, in);
+            multicorrelator_fpga_8sc.set_output_vectors(d_correlator_outs_16sc);
             multicorrelator_fpga_8sc.Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
                 d_carrier_phase_step_rad,
                 d_rem_code_phase_chips,
@@ -645,6 +641,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
 void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::set_channel(unsigned int channel)
 {
     d_channel = channel;
+    multicorrelator_fpga_8sc.set_channel(d_channel);
+
     LOG(INFO) << "Tracking Channel set to " << d_channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)

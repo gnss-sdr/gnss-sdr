@@ -1,8 +1,9 @@
 /*!
- * \file gps_l1_ca_dll_pll_c_aid_tracking.cc
+ * \file gps_l1_ca_dll_pll_c_aid_tracking_fpga.cc
  * \brief Implementation of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * \author Marc Majoral, 2017. mmajoral(at)cttc.cat
+ * 		   Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -12,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -56,7 +57,6 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
     int f_if;
     bool dump;
     std::string dump_filename;
-    //std::string default_item_type = "gr_complex";
     std::string default_item_type = "cshort";
     float pll_bw_hz;
     float pll_bw_narrow_hz;
@@ -64,7 +64,6 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
     float dll_bw_narrow_hz;
     float early_late_space_chips;
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    //vector_length = configuration->property(role + ".vector_length", 2048);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
@@ -82,24 +81,7 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            item_size_ = sizeof(gr_complex);
-//            tracking_cc = gps_l1_ca_dll_pll_c_aid_make_tracking_cc(
-//                    f_if,
-//                    fs_in,
-//                    vector_length,
-//                    dump,
-//                    dump_filename,
-//                    pll_bw_hz,
-//                    dll_bw_hz,
-//                    pll_bw_narrow_hz,
-//                    dll_bw_narrow_hz,
-//                    extend_correlation_ms,
-//                    early_late_space_chips);
-//            DLOG(INFO) << "tracking(" << tracking_cc->unique_id() << ")";
-//        }
-//    else if(item_type_.compare("cshort") == 0)
+
     if(item_type_.compare("cshort") == 0)
         {
             item_size_ = sizeof(lv_16sc_t);
@@ -119,8 +101,8 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
         }
     else
         {
-            //item_size_ = sizeof(gr_complex);
-	    item_size_ = sizeof(lv_16sc_t);
+
+	    	item_size_ = sizeof(lv_16sc_t);
 //            LOG(WARNING) << item_type_ << " unknown tracking item type";
             LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
         }
@@ -129,17 +111,14 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
 
 
 GpsL1CaDllPllCAidTrackingFpga::~GpsL1CaDllPllCAidTrackingFpga()
-{}
+{
+	printf("gspl1cadllpllcaidtrackingfpga destructor called\n");
+}
 
 
 void GpsL1CaDllPllCAidTrackingFpga::start_tracking()
 {
 
-//     if (item_type_.compare("gr_complex") == 0)
-//        {
-//            tracking_cc->start_tracking();
-//        }
-//    else if (item_type_.compare("cshort") == 0)
     if (item_type_.compare("cshort") == 0)
         {
             tracking_fpga_sc->start_tracking();
@@ -158,11 +137,6 @@ void GpsL1CaDllPllCAidTrackingFpga::set_channel(unsigned int channel)
 {
     channel_ = channel;
 
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            tracking_cc->set_channel(channel);
-//        }
-//    else if (item_type_.compare("cshort") == 0)
     if (item_type_.compare("cshort") == 0)
         {
             tracking_fpga_sc->set_channel(channel);
@@ -170,17 +144,12 @@ void GpsL1CaDllPllCAidTrackingFpga::set_channel(unsigned int channel)
     else
         {
 //            LOG(WARNING) << item_type_ << " unknown tracking item type";
-	    LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
+	    	LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
         }
 }
 
 void GpsL1CaDllPllCAidTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            tracking_cc->set_gnss_synchro(p_gnss_synchro);
-//        }
-//    else if (item_type_.compare("cshort") == 0)
     if (item_type_.compare("cshort") == 0)
         {
             tracking_fpga_sc->set_gnss_synchro(p_gnss_synchro);
@@ -188,7 +157,7 @@ void GpsL1CaDllPllCAidTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchr
     else
         {
 //            LOG(WARNING) << item_type_ << " unknown tracking item type";
-	    LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
+	    	LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
         }
 }
 
@@ -204,32 +173,29 @@ void GpsL1CaDllPllCAidTrackingFpga::disconnect(gr::top_block_sptr top_block)
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
+// CONVERT TO SOURCE
 gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_left_block()
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            return tracking_cc;
-//        }
-//    else if (item_type_.compare("cshort") == 0)
+
     if (item_type_.compare("cshort") == 0)
         {
+
+
+
             return tracking_fpga_sc;
         }
     else
         {
-//            LOG(WARNING) << item_type_ << " unknown tracking item type";
-	    LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
+
+
+            //LOG(WARNING) << item_type_ << " unknown tracking item type";
+	    	LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
             return nullptr;
         }
 }
 
 gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_right_block()
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            return tracking_cc;
-//        }
-//    else if (item_type_.compare("cshort") == 0)
     if (item_type_.compare("cshort") == 0)
         {
             return tracking_fpga_sc;
@@ -237,7 +203,7 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_right_block()
     else
         {
             //LOG(WARNING) << item_type_ << " unknown tracking item type";
-	    LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
+	    	LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
             return nullptr;
         }
 }

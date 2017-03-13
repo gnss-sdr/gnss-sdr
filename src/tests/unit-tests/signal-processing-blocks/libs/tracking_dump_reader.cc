@@ -54,7 +54,7 @@ bool tracking_dump_reader::read_binary_obs()
             d_dump_file.read((char *) &aux2, sizeof(double));
 
     }
-    catch (const std::ifstream::failure &e)
+    catch (const std::exception &e)
     {
             return false;
     }

@@ -1,7 +1,8 @@
 /*!
  * \file gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc.h
  * \brief Interface of a code DLL + carrier PLL tracking block
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * \author Marc Majoral, 2017. mmajoral(at)cttc.cat
+ * 		   Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -11,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,7 +49,6 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
-//#include "cpu_multicorrelator_16sc.h"
 #include "fpga_multicorrelator_8sc.h"
 
 class gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc;
@@ -85,8 +85,6 @@ public:
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
     friend gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr
@@ -132,8 +130,6 @@ private:
     float* d_local_code_shift_chips;
     //gr_complex* d_correlator_outs;
     lv_16sc_t* d_correlator_outs_16sc;
-    //cpu_multicorrelator multicorrelator_cpu;
-    //cpu_multicorrelator_16sc multicorrelator_cpu_16sc;
     fpga_multicorrelator_8sc multicorrelator_fpga_8sc;
 
     // remaining code phase and carrier phase between tracking loops

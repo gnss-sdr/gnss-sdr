@@ -132,6 +132,9 @@ DECLARE_string(log_dir);
 #endif
 #endif
 
+#if FPGA_BLOCKS_TEST
+#include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test_fpga.cc"
+#endif
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

@@ -1,8 +1,9 @@
 /*!
- * \file gps_l1_ca_dll_pll_c_aid_tracking.h
+ * \file gps_l1_ca_dll_pll_c_aid_tracking_fpga.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * \author Marc Majoral, 2017. mmajoral(at)cttc.cat
+ *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -12,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,8 +41,6 @@
 
 #include <string>
 #include "tracking_interface.h"
-//#include "gps_l1_ca_dll_pll_c_aid_tracking_cc.h"
-//#include "gps_l1_ca_dll_pll_c_aid_tracking_sc.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc.h"
 
 
@@ -78,6 +77,7 @@ public:
 
     void connect(gr::top_block_sptr top_block);
     void disconnect(gr::top_block_sptr top_block);
+    // CONVERT TO SOURCE
     gr::basic_block_sptr get_left_block();
     gr::basic_block_sptr get_right_block();
 
@@ -97,8 +97,6 @@ public:
     void start_tracking();
 
 private:
-    //gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr tracking_cc;
-    //gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr tracking_sc;
     gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr tracking_fpga_sc;
     size_t item_size_;
     std::string item_type_;

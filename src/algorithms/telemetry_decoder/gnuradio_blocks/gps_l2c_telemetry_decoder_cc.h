@@ -37,14 +37,19 @@
 #include <string>
 #include <utility> // for pair
 #include <vector>
-#include <boost/crc.hpp>
 #include <gnuradio/block.h>
 #include "gnss_satellite.h"
-#include "viterbi_decoder.h"
 #include "gps_cnav_navigation_message.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
 #include "concurrent_queue.h"
+
+extern "C" {
+    #include "cnav_msg.h"
+    #include "edc.h"
+    #include "bits.h"
+}
+
 #include "GPS_L2C.h"
 
 class gps_l2c_telemetry_decoder_cc;
@@ -72,19 +77,13 @@ public:
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    /*!
-     * \brief Function which tells the scheduler how many input items
-     *        are required to produce noutput_items output items.
-     */
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
     friend gps_l2c_telemetry_decoder_cc_sptr
     gps_l2c_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
     gps_l2c_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
-    void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
-    void align_samples();
+
 
     bool d_dump;
     Gnss_Satellite d_satellite;
@@ -93,59 +92,17 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
+    cnav_msg_decoder_t d_cnav_decoder;
+
+    int d_state;
+    int d_crc_error_count;
+
     double d_TOW_at_current_symbol;
     double d_TOW_at_Preamble;
     bool d_flag_valid_word;
 
-    bool d_flag_invert_input_symbols;
-    bool d_flag_invert_buffer_symbols;
     int d_decimation_output_factor;
     int d_average_count;
-    size_t d_block_size; //!< number of samples which are processed during one invocation of the algorithms
-    std::vector<double> d_sample_buf; //!< input buffer holding the samples to be processed in one block
-
-    typedef std::pair<int,std::vector<int>> msg_candiate_int_t;
-    typedef std::pair<int,std::vector<unsigned char>> msg_candiate_char_t;
-
-    // helper class for symbol alignment and Viterbi decoding
-    class symbol_aligner_and_decoder
-    {
-    public:
-        symbol_aligner_and_decoder();
-        ~symbol_aligner_and_decoder();
-        void reset();
-        bool get_bits(const std::vector<double> & symbols, std::vector<int> & bits);
-    private:
-        int d_KK;
-        Viterbi_Decoder * d_vd1;
-        Viterbi_Decoder * d_vd2;
-        double d_past_symbol;
-    } d_symbol_aligner_and_decoder;
-
-
-    // helper class for detecting the preamble and collect the corresponding message candidates
-    class frame_detector
-    {
-    public:
-        void reset();
-        void get_frame_candidates(const std::vector<int> & bits, std::vector<std::pair<int, std::vector<int>>> & msg_candidates);
-    private:
-        std::deque<int> d_buffer;
-    } d_frame_detector;
-
-
-    // helper class for checking the CRC of the message candidates
-    class crc_verifier
-    {
-    public:
-        void reset();
-        void get_valid_frames(const std::vector<msg_candiate_int_t> & msg_candidates, std::vector<msg_candiate_int_t> & valid_msgs);
-    private:
-        typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
-        crc_24_q_type d_checksum_agent;
-        void zerropad_front_and_convert_to_bytes(const std::vector<int> & msg_candidate, std::vector<unsigned char> & bytes);
-        void zerropad_back_and_convert_to_bytes(const std::vector<int> & msg_candidate, std::vector<unsigned char> & bytes);
-    } d_crc_verifier;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
 };

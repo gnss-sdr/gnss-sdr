@@ -65,6 +65,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs/libswiftcnav
      ${CMAKE_SOURCE_DIR}/src/algorithms/observables/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
@@ -141,6 +142,8 @@ target_link_libraries(gnss_rx ${Boost_LIBRARIES}
                               tracking_lib
                               tracking_adapters
                               channel_adapters
+                              telemetry_decoder_libswiftcnav
+                              telemetry_decoder_lib
                               telemetry_decoder_adapters
                               obs_adapters
                               pvt_adapters

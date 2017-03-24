@@ -255,7 +255,6 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
 
     d_flag_preamble = false;
     d_channel = 0;
-    Prn_timestamp_at_preamble_ms = 0;
     flag_TOW_set = false;
 }
 
@@ -489,8 +488,6 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
         //update TOW at the preamble instant
         //We expect a preamble each 10 seconds (FNAV page period)
         {
-            Prn_timestamp_at_preamble_ms = d_preamble_time_seconds * 1000;
-            //Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
             if (d_nav.flag_TOW_1 == true)
                 {
                     d_TOW_at_Preamble = d_nav.FNAV_TOW_1;
@@ -540,7 +537,6 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
 
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
-    current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;
 
     if(d_dump == true)
         {

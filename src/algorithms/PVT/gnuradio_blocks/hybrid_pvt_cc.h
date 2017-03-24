@@ -139,7 +139,7 @@ private:
     std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
     std::shared_ptr<Rtcm_Printer> d_rtcm_printer;
     double d_rx_time;
-    double d_TOW_at_curr_symbol_constellation;
+
     std::shared_ptr<hybrid_ls_pvt> d_ls_pvt;
     std::map<int,Gnss_Synchro> gnss_observables_map;
     bool observables_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b);

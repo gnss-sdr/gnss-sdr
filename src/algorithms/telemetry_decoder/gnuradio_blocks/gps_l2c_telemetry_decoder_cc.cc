@@ -148,13 +148,11 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
             }
 
         //update TOW at the preamble instant
-        double Prn_timestamp_at_preamble_ms = (in[0].Tracking_timestamp_secs * 1000.0);
         d_TOW_at_Preamble=(int)msg.tow;
         std::cout<<"["<<(int)msg.prn<<"] deco delay: "<<delay<<"[symbols]"<<std::endl;
         d_TOW_at_current_symbol=(double)msg.tow * 6.0 + (double)delay * GPS_L2_M_PERIOD + GPS_L2_M_PERIOD;
         current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
         current_synchro_data.Prn_timestamp_ms = in[0].Tracking_timestamp_secs * 1000.0;
-        current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;
         d_flag_valid_word=true;
     }
     else

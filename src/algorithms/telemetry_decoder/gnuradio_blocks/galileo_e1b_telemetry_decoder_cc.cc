@@ -169,7 +169,6 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     flag_even_word_arrived = 0;
     d_flag_preamble = false;
     d_channel = 0;
-    Prn_timestamp_at_preamble_ms = 0.0;
     flag_TOW_set = false;
     d_average_count = 0;
     d_decimation_output_factor = 1;
@@ -407,7 +406,6 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
         // Since we detected the preamble, then, we are in the last symbol of that preamble, or just at the start of the first page symbol.
         //flag preamble is true after the all page (even and odd) is received. I/NAV page period is 2 SECONDS
         {
-            Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
             if(d_nav.flag_TOW_5 == true) //page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
                     //std::cout<< "Using TOW_5 for timestamping" << std::endl;
@@ -461,7 +459,6 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
     //todo: move to observables: current_synchro_data.d_TOW_hybrid_at_current_symbol = current_synchro_data.d_TOW_at_current_symbol - delta_t; //delta_t = t_gal - t_gps  ---->  t_gps = t_gal -delta_t
     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
-    current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;
 
     if(d_dump == true)
         {

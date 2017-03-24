@@ -285,7 +285,7 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     d_sample_counter = 0;
     d_last_sample_nav_output = 0;
     d_rx_time = 0.0;
-    d_TOW_at_curr_symbol_constellation = 0.0;
+
     b_rinex_header_written = false;
     b_rinex_header_updated = false;
     rp = std::make_shared<Rinex_Printer>();
@@ -454,10 +454,9 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
         {
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
-                    gnss_observables_map.insert(std::pair<int,Gnss_Synchro>(i, in[i][0])); // store valid observables in a map.
-                    //d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
-                    d_TOW_at_curr_symbol_constellation = in[i][0].d_TOW_at_current_symbol; // d_TOW_at_current_symbol not corrected by delta t (just for debug)
-                    d_rx_time = in[i][0].d_TOW_at_current_symbol; // hybrid rx time, all the channels have the same RX timestamp (common RX time pseudoranges)
+                    // store valid observables in a map.
+                    gnss_observables_map.insert(std::pair<int,Gnss_Synchro>(i, in[i][0]));
+                    d_rx_time = in[i][0].RX_time; // hybrid rx time, all the channels have the same RX timestamp (common RX time pseudoranges, not corrected by delta t)
                     if(d_ls_pvt->gps_ephemeris_map.size() > 0)
                         {
                             std::map<int,Gps_Ephemeris>::iterator tmp_eph_iter = d_ls_pvt->gps_ephemeris_map.find(in[i][0].PRN);
@@ -524,7 +523,6 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
             if ((d_sample_counter % d_output_rate_ms) == 0)
                 {
                     bool pvt_result;
-                    //std::cout<<"obs map size at pvt="<<gnss_observables_map.size()<<std::endl;
                     pvt_result = d_ls_pvt->get_PVT(gnss_observables_map, d_rx_time, d_flag_averaging);
 
                     if (pvt_result == true)

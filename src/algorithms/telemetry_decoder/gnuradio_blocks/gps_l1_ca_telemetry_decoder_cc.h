@@ -111,7 +111,6 @@ private:
     int d_average_count;
     int d_decimation_output_factor;
 
-    //double d_preamble_duration_seconds;
     // navigation message vars
     Gps_Navigation_Message d_nav;
     GpsL1CaSubframeFsm d_GPS_FSM;
@@ -125,7 +124,6 @@ private:
     long double d_TOW_at_Preamble;
     long double d_TOW_at_current_symbol;
 
-    double Prn_timestamp_at_preamble_ms;
     bool flag_TOW_set;
     bool flag_PLL_180_deg_phase_locked;
 

@@ -279,7 +279,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
     // ****** SOLVE LEAST SQUARES******************************************************
     // ********************************************************************************
     d_valid_observations = valid_obs;
-
     LOG(INFO) << "HYBRID PVT: valid observations=" << valid_obs;
 
     if(valid_obs >= 4)
@@ -288,6 +287,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
             DLOG(INFO) << "satpos=" << satpos;
             DLOG(INFO) << "obs=" << obs;
             DLOG(INFO) << "W=" << W;
+
             try
             {
                     // check if this is the initial position computation
@@ -332,7 +332,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                                << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_s << " [s]";
 
                     // ###### Compute DOPs ########
-                    hybrid_ls_pvt::compute_DOP();
+                    compute_DOP();
 
                     // ######## LOG FILE #########
                     if(d_flag_dump_enabled == true)
@@ -379,6 +379,9 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
             {
                     d_rx_dt_s = 0; //reset rx time estimation
                     LOG(WARNING) << "Problem with the solver, invalid solution!" << e.what();
+                    LOG(WARNING) << "satpos=" << satpos;
+                    LOG(WARNING) << "obs=" << obs;
+                    LOG(WARNING) << "W=" << W;
                     b_valid_position = false;
             }
         }

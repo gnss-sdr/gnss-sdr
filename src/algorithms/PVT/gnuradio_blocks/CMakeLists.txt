@@ -17,8 +17,6 @@
 #
 
 set(PVT_GR_BLOCKS_SOURCES 
-	gps_l1_ca_pvt_cc.cc
-	galileo_e1_pvt_cc.cc
 	hybrid_pvt_cc.cc
 )
 

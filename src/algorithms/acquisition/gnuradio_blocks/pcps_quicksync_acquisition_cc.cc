@@ -197,7 +197,6 @@ void pcps_quicksync_acquisition_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Flag_preamble = false;
 
     //DLOG(INFO) << "START init";
     d_gnss_synchro->Acq_delay_samples = 0.0;

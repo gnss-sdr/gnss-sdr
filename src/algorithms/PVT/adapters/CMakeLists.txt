@@ -17,8 +17,6 @@
 #
 
 set(PVT_ADAPTER_SOURCES 
-	gps_l1_ca_pvt.cc
-	galileo_e1_pvt.cc
 	hybrid_pvt.cc
 )
 

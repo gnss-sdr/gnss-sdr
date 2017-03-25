@@ -29,7 +29,7 @@
  */
 
 #include "gps_cnav_utc_model.h"
-
+#include <cmath>
 
 Gps_CNAV_Utc_Model::Gps_CNAV_Utc_Model()
 {

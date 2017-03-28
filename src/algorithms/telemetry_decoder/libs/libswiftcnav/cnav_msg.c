@@ -84,11 +84,12 @@
  */
 static u32 _cnav_compute_crc(cnav_v27_part_t *part)
 {
-  u32 crc = crc24q_bits(0, part->decoded, GPS_CNAV_MSG_DATA_LENGTH,
-                        part->invert);
+    u32 crc = crc24q_bits(0, part->decoded, GPS_CNAV_MSG_DATA_LENGTH,
+            part->invert);
 
-  return crc;
+    return crc;
 }
+
 
 /**
  * Extracts CRC-24Q from a CNAV message buffer.
@@ -102,13 +103,15 @@ static u32 _cnav_compute_crc(cnav_v27_part_t *part)
  */
 static u32 _cnav_extract_crc(const cnav_v27_part_t *part)
 {
-  u32 crc = getbitu(part->decoded, GPS_CNAV_MSG_DATA_LENGTH,
-                    GPS_CNAV_MSG_CRC_LENGTH);
-  if (part->invert) {
-    crc ^= 0xFFFFFF;
-  }
-  return crc;
+    u32 crc = getbitu(part->decoded, GPS_CNAV_MSG_DATA_LENGTH,
+            GPS_CNAV_MSG_CRC_LENGTH);
+    if (part->invert)
+        {
+            crc ^= 0xFFFFFF;
+        }
+    return crc;
 }
+
 
 /**
  * Helper to rescan for preamble in the received buffer.
@@ -126,30 +129,34 @@ static u32 _cnav_extract_crc(const cnav_v27_part_t *part)
  */
 static void _cnav_rescan_preamble(cnav_v27_part_t *part)
 {
-  part->preamble_seen = false;
+    part->preamble_seen = false;
 
-  if (part->n_decoded > GPS_CNAV_PREAMBLE_LENGTH + 1) {
-	size_t i=0;
-	size_t j=0;
-    for (i = 1, j = part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH;
-         i < j; ++i) {
-      u32 c = getbitu(part->decoded, i, GPS_CNAV_PREAMBLE_LENGTH);
-      if (GPS_CNAV_PREAMBLE1 == c || GPS_CNAV_PREAMBLE2 == c) {
-        part->preamble_seen = true;
-        part->invert = (GPS_CNAV_PREAMBLE2 == c);
-        /* We shift the accumulated bits to the beginning of the buffer */
-        bitshl(part->decoded, sizeof(part->decoded), i);
-        part->n_decoded -= i;
-        break;
-      }
-    }
-  }
-  if (!part->preamble_seen && part->n_decoded >= GPS_CNAV_PREAMBLE_LENGTH) {
-    bitshl(part->decoded, sizeof(part->decoded),
-            part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH + 1);
-    part->n_decoded = GPS_CNAV_PREAMBLE_LENGTH - 1;
-  }
+    if (part->n_decoded > GPS_CNAV_PREAMBLE_LENGTH + 1)
+        {
+            size_t i = 0;
+            size_t j = 0;
+            for (i = 1, j = part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH; i < j; ++i)
+                {
+                    u32 c = getbitu(part->decoded, i, GPS_CNAV_PREAMBLE_LENGTH);
+                    if (GPS_CNAV_PREAMBLE1 == c || GPS_CNAV_PREAMBLE2 == c)
+                        {
+                            part->preamble_seen = true;
+                            part->invert = (GPS_CNAV_PREAMBLE2 == c);
+                            /* We shift the accumulated bits to the beginning of the buffer */
+                            bitshl(part->decoded, sizeof(part->decoded), i);
+                            part->n_decoded -= i;
+                            break;
+                        }
+                }
+        }
+    if (!part->preamble_seen && part->n_decoded >= GPS_CNAV_PREAMBLE_LENGTH)
+        {
+            bitshl(part->decoded, sizeof(part->decoded),
+                    part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH + 1);
+            part->n_decoded = GPS_CNAV_PREAMBLE_LENGTH - 1;
+        }
 }
+
 
 /**
  * Feed a symbol into Viterbi decoder instance.
@@ -167,109 +174,125 @@ static void _cnav_rescan_preamble(cnav_v27_part_t *part)
  */
 static void _cnav_add_symbol(cnav_v27_part_t *part, u8 ch)
 {
-  part->symbols[part->n_symbols++] = ch;
+    part->symbols[part->n_symbols++] = ch;
 
-  if (part->init) {
-    /* Initial step - load more symbols without decoding. */
-    if (part->n_symbols < (GPS_L2C_V27_INIT_BITS + GPS_L2C_V27_DECODE_BITS) * 2) {
-      return;
-    }
-    part->init = false;
-  }
-  else if (part->n_symbols < GPS_L2C_V27_DECODE_BITS * 2) {
-    /* Wait until decoding block is accumulated */
-    return;
-  }
-
-  /* Feed accumulated symbols into the buffer, reset the number of accumulated
-   * symbols. */
-  v27_update(&part->dec, part->symbols, part->n_symbols / 2);
-  part->n_symbols = 0;
-
-  /* Decode N+M bits, where:
-   * - N - Number of bits to put into decoded buffer
-   * - M - Number of bits in the tail to ignore.
-   */
-  unsigned char tmp_bits[ (GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS +
-                           CHAR_BIT - 1) / CHAR_BIT];
-
-  v27_chainback_likely(&part->dec, tmp_bits,
-                       GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS);
-
-  /* Read decoded bits and add them to the decoded buffer */
-  bitcopy(part->decoded, part->n_decoded, tmp_bits, 0, GPS_L2C_V27_DECODE_BITS);
-  part->n_decoded += GPS_L2C_V27_DECODE_BITS;
-
-  /* Depending on the decoder state, one of the following actions are
-   * possible:
-   * - If no message lock
-   *   - If no preamble seen - look for preamble
-   *   - If preamble seen - collect 300 bits
-   *     - If 300 bits are collected - verify CRC
-   *       - If CRC is OK - message lock is acquired
-   *       - If CRC fails - rescan for preamble
-   *         - If found - continue collecting 300 bits
-   *         - If not found - continue preamble wait
-   * - If message lock
-   *   - If 300 bits collected, compute CRC
-   *     - If CRC is OK, message can be decoded
-   *     - If CRC is not OK, discard data
-   */
-
-  bool retry = true;
-  while (retry) {
-    retry = false;
-
-    if (!part->preamble_seen) {
-      /* Rescan for preamble if possible. The first bit is ignored. */
-      _cnav_rescan_preamble(part);
-    }
-    if (part->preamble_seen && GPS_CNAV_MSG_LENGTH <= part->n_decoded) {
-
-      /* We have collected 300 bits starting from message preamble. Now try
-       * to compute CRC-24Q */
-      u32 crc  = _cnav_compute_crc(part);
-      u32 crc2 = _cnav_extract_crc(part);
-
-      if (part->message_lock) {
-        /* We have message lock */
-        part->crc_ok = (crc == crc2);
-        if (part->crc_ok) {
-          /* Reset message lock counter */
-          part->n_crc_fail = 0;
-        } else {
-          /* Increment message lock counter */
-          part->n_crc_fail++;
-          if (part->n_crc_fail > GPS_CNAV_LOCK_MAX_CRC_FAILS) {
-            /* CRC has failed too many times - drop the lock. */
-            part->n_crc_fail    = 0;
-            part->message_lock  = false;
-            part->preamble_seen = false;
-            /* Try to find a new preamble, reuse data from buffer. */
-            retry = true;
-          }
+    if (part->init)
+        {
+            /* Initial step - load more symbols without decoding. */
+            if (part->n_symbols < (GPS_L2C_V27_INIT_BITS + GPS_L2C_V27_DECODE_BITS) * 2)
+                {
+                    return;
+                }
+            part->init = false;
         }
-      } else if (crc == crc2) {
-        /* CRC match - message can be decoded */
-        part->message_lock = true;
-        part->crc_ok       = true;
-        part->n_crc_fail   = 0;
-      } else {
-        /* There is no message lock and the CRC check fails. Assume there is
-         * false positive lock - rescan for preamble. */
-        part->crc_ok = false;
-        part->preamble_seen = false;
+    else if (part->n_symbols < GPS_L2C_V27_DECODE_BITS * 2)
+        {
+            /* Wait until decoding block is accumulated */
+            return;
+        }
 
-        /* CRC mismatch - try to re-scan for preamble */
-        retry = true;
-      }
-    }
-    else
-    {
-      /* No preamble or preamble and less than 300 bits decoded */
-    }
-  }
+    /* Feed accumulated symbols into the buffer, reset the number of accumulated
+     * symbols. */
+    v27_update(&part->dec, part->symbols, part->n_symbols / 2);
+    part->n_symbols = 0;
+
+    /* Decode N+M bits, where:
+     * - N - Number of bits to put into decoded buffer
+     * - M - Number of bits in the tail to ignore.
+     */
+    unsigned char tmp_bits[ (GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS +
+            CHAR_BIT - 1) / CHAR_BIT];
+
+    v27_chainback_likely(&part->dec, tmp_bits,
+            GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS);
+
+    /* Read decoded bits and add them to the decoded buffer */
+    bitcopy(part->decoded, part->n_decoded, tmp_bits, 0, GPS_L2C_V27_DECODE_BITS);
+    part->n_decoded += GPS_L2C_V27_DECODE_BITS;
+
+    /* Depending on the decoder state, one of the following actions are
+     * possible:
+     * - If no message lock
+     *   - If no preamble seen - look for preamble
+     *   - If preamble seen - collect 300 bits
+     *     - If 300 bits are collected - verify CRC
+     *       - If CRC is OK - message lock is acquired
+     *       - If CRC fails - rescan for preamble
+     *         - If found - continue collecting 300 bits
+     *         - If not found - continue preamble wait
+     * - If message lock
+     *   - If 300 bits collected, compute CRC
+     *     - If CRC is OK, message can be decoded
+     *     - If CRC is not OK, discard data
+     */
+
+    bool retry = true;
+    while (retry)
+        {
+            retry = false;
+
+            if (!part->preamble_seen)
+                {
+                    /* Rescan for preamble if possible. The first bit is ignored. */
+                    _cnav_rescan_preamble(part);
+                }
+            if (part->preamble_seen && GPS_CNAV_MSG_LENGTH <= part->n_decoded)
+                {
+
+                    /* We have collected 300 bits starting from message preamble. Now try
+                     * to compute CRC-24Q */
+                    u32 crc  = _cnav_compute_crc(part);
+                    u32 crc2 = _cnav_extract_crc(part);
+
+                    if (part->message_lock)
+                        {
+                            /* We have message lock */
+                            part->crc_ok = (crc == crc2);
+                            if (part->crc_ok)
+                                {
+                                    /* Reset message lock counter */
+                                    part->n_crc_fail = 0;
+                                }
+                            else
+                                {
+                                    /* Increment message lock counter */
+                                    part->n_crc_fail++;
+                                    if (part->n_crc_fail > GPS_CNAV_LOCK_MAX_CRC_FAILS)
+                                        {
+                                            /* CRC has failed too many times - drop the lock. */
+                                            part->n_crc_fail    = 0;
+                                            part->message_lock  = false;
+                                            part->preamble_seen = false;
+                                            /* Try to find a new preamble, reuse data from buffer. */
+                                            retry = true;
+                                        }
+                                }
+                        }
+                    else if (crc == crc2)
+                        {
+                            /* CRC match - message can be decoded */
+                            part->message_lock = true;
+                            part->crc_ok       = true;
+                            part->n_crc_fail   = 0;
+                        }
+                    else
+                        {
+                            /* There is no message lock and the CRC check fails. Assume there is
+                             * false positive lock - rescan for preamble. */
+                            part->crc_ok = false;
+                            part->preamble_seen = false;
+
+                            /* CRC mismatch - try to re-scan for preamble */
+                            retry = true;
+                        }
+                }
+            else
+                {
+                    /* No preamble or preamble and less than 300 bits decoded */
+                }
+        }
 }
+
 
 /**
  * Invert message bits in the buffer.
@@ -282,11 +305,13 @@ static void _cnav_add_symbol(cnav_v27_part_t *part, u8 ch)
  */
 static void _cnav_msg_invert(cnav_v27_part_t *part)
 {
-  size_t i = 0;
-  for (i = 0; i < sizeof(part->decoded); i++) {
-    part->decoded[i] ^= 0xFFu;
-  }
+    size_t i = 0;
+    for (i = 0; i < sizeof(part->decoded); i++)
+        {
+            part->decoded[i] ^= 0xFFu;
+        }
 }
+
 
 /**
  * Performs CNAV message decoding.
@@ -310,38 +335,44 @@ static void _cnav_msg_invert(cnav_v27_part_t *part)
  */
 static bool _cnav_msg_decode(cnav_v27_part_t *part, cnav_msg_t *msg, u32 *delay)
 {
-  bool res = false;
-  if (GPS_CNAV_MSG_LENGTH <= part->n_decoded) {
-    if (part->crc_ok) {
-      /* CRC is OK */
-      if (part->invert) {
-        _cnav_msg_invert(part);
-      }
+    bool res = false;
+    if (GPS_CNAV_MSG_LENGTH <= part->n_decoded)
+        {
+            if (part->crc_ok)
+                {
+                    /* CRC is OK */
+                    if (part->invert)
+                        {
+                            _cnav_msg_invert(part);
+                        }
 
-      msg->prn    = getbitu(part->decoded, 8, 6);
-      msg->msg_id = getbitu(part->decoded, 14, 6);
-      msg->tow    = getbitu(part->decoded, 20, 17);
-      msg->alert  = getbitu(part->decoded, 37, 1) ? true : false;
+                    msg->prn    = getbitu(part->decoded, 8, 6);
+                    msg->msg_id = getbitu(part->decoded, 14, 6);
+                    msg->tow    = getbitu(part->decoded, 20, 17);
+                    msg->alert  = getbitu(part->decoded, 37, 1) ? true : false;
 
-      /* copy RAW message for GNSS-SDR */
-      memcpy(msg->raw_msg,part->decoded,GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS);
+                    /* copy RAW message for GNSS-SDR */
+                    memcpy(msg->raw_msg,part->decoded,GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS);
 
-      *delay = (part->n_decoded - GPS_CNAV_MSG_LENGTH + GPS_L2C_V27_DELAY_BITS)
-               * 2 + part->n_symbols;
+                    *delay = (part->n_decoded - GPS_CNAV_MSG_LENGTH + GPS_L2C_V27_DELAY_BITS) * 2 + part->n_symbols;
 
-      if (part->invert) {
-        _cnav_msg_invert(part);
-      }
-      res = true;
-    } else {
-      /* CRC mismatch - no decoding */
-    }
-    bitshl(part->decoded, sizeof(part->decoded), GPS_CNAV_MSG_LENGTH);
-    part->n_decoded -= GPS_CNAV_MSG_LENGTH;
-  }
+                    if (part->invert)
+                        {
+                            _cnav_msg_invert(part);
+                        }
+                    res = true;
+                }
+            else
+                {
+                    /* CRC mismatch - no decoding */
+                }
+            bitshl(part->decoded, sizeof(part->decoded), GPS_CNAV_MSG_LENGTH);
+            part->n_decoded -= GPS_CNAV_MSG_LENGTH;
+        }
 
-  return res;
+    return res;
 }
+
 
 /**
  * Initialize CNAV decoder.
@@ -355,20 +386,20 @@ static bool _cnav_msg_decode(cnav_v27_part_t *part, cnav_msg_t *msg, u32 *delay)
  */
 void cnav_msg_decoder_init(cnav_msg_decoder_t *dec)
 {
-  memset(dec, 0, sizeof(*dec));
-  v27_init(&dec->part1.dec,
-           dec->part1.decisions,
-           GPS_L2_V27_HISTORY_LENGTH_BITS,
-           cnav_msg_decoder_get_poly(),
-           0);
-  v27_init(&dec->part2.dec,
-           dec->part2.decisions,
-           GPS_L2_V27_HISTORY_LENGTH_BITS,
-           cnav_msg_decoder_get_poly(),
-           0);
-  dec->part1.init = true;
-  dec->part2.init = true;
-  _cnav_add_symbol(&dec->part2, 0x80);
+    memset(dec, 0, sizeof(*dec));
+    v27_init(&dec->part1.dec,
+            dec->part1.decisions,
+            GPS_L2_V27_HISTORY_LENGTH_BITS,
+            cnav_msg_decoder_get_poly(),
+            0);
+    v27_init(&dec->part2.dec,
+            dec->part2.decisions,
+            GPS_L2_V27_HISTORY_LENGTH_BITS,
+            cnav_msg_decoder_get_poly(),
+            0);
+    dec->part1.init = true;
+    dec->part2.init = true;
+    _cnav_add_symbol(&dec->part2, 0x80);
 }
 
 /**
@@ -394,28 +425,31 @@ void cnav_msg_decoder_init(cnav_msg_decoder_t *dec)
  * \retval false More data is required.
  */
 bool cnav_msg_decoder_add_symbol(cnav_msg_decoder_t *dec,
-                                 u8                  symbol,
-                                 cnav_msg_t         *msg,
-                                 u32                *pdelay)
+        u8 symbol,
+        cnav_msg_t *msg,
+        u32 *pdelay)
 {
-  _cnav_add_symbol(&dec->part1, symbol);
-  _cnav_add_symbol(&dec->part2, symbol);
+    _cnav_add_symbol(&dec->part1, symbol);
+    _cnav_add_symbol(&dec->part2, symbol);
 
-  if (dec->part1.message_lock) {
-    /* Flush data in decoder. */
-    dec->part2.n_decoded = 0;
-    dec->part2.n_symbols = 0;
-    return _cnav_msg_decode(&dec->part1, msg, pdelay);
-  }
-  if (dec->part2.message_lock) {
-    /* Flush data in decoder. */
-    dec->part1.n_decoded = 0;
-    dec->part1.n_symbols = 0;
-    return _cnav_msg_decode(&dec->part2, msg, pdelay);
-  }
+    if (dec->part1.message_lock)
+        {
+            /* Flush data in decoder. */
+            dec->part2.n_decoded = 0;
+            dec->part2.n_symbols = 0;
+            return _cnav_msg_decode(&dec->part1, msg, pdelay);
+        }
+    if (dec->part2.message_lock)
+        {
+            /* Flush data in decoder. */
+            dec->part1.n_decoded = 0;
+            dec->part1.n_symbols = 0;
+            return _cnav_msg_decode(&dec->part2, msg, pdelay);
+        }
 
-  return false;
+    return false;
 }
+
 
 /**
  * Provides a singleton polynomial object.
@@ -429,27 +463,28 @@ bool cnav_msg_decoder_add_symbol(cnav_msg_decoder_t *dec,
  */
 const v27_poly_t *cnav_msg_decoder_get_poly(void)
 {
-  static v27_poly_t instance;
-  static bool initialized = false;
+    static v27_poly_t instance;
+    static bool initialized = false;
 
-  if (!initialized) {
-    /* Coefficients for polynomial object */
-    const signed char coeffs[2] = { GPS_L2C_V27_POLY_A, GPS_L2C_V27_POLY_B };
+    if (!initialized)
+        {
+            /* Coefficients for polynomial object */
+            const signed char coeffs[2] = { GPS_L2C_V27_POLY_A, GPS_L2C_V27_POLY_B };
 
-    /* Racing condition handling: the data can be potential initialized more
-     * than once in case multiple threads request concurrent access. However,
-     * nature of the v27_poly_init() function and data alignment ensure that
-     * the data returned from the earlier finished call is consistent and can
-     * be used even when re-initialization is happening.
-     *
-     * Other possible approaches are:
-     * - Replace late initialization with an explicit call.
-     * - Use POSIX synchronization objects like pthread_once_t.
-     */
-    v27_poly_init(&instance, coeffs);
-    initialized = true;
-  }
-  return &instance;
+            /* Racing condition handling: the data can be potential initialized more
+             * than once in case multiple threads request concurrent access. However,
+             * nature of the v27_poly_init() function and data alignment ensure that
+             * the data returned from the earlier finished call is consistent and can
+             * be used even when re-initialization is happening.
+             *
+             * Other possible approaches are:
+             * - Replace late initialization with an explicit call.
+             * - Use POSIX synchronization objects like pthread_once_t.
+             */
+            v27_poly_init(&instance, coeffs);
+            initialized = true;
+        }
+    return &instance;
 }
 
 /** \} */

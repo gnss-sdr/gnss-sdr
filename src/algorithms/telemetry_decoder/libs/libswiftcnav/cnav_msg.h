@@ -62,11 +62,11 @@
  */
 typedef struct
 {
-  u8   prn;    /**< SV PRN. 0..31 */
-  u8   msg_id; /**< Message id. 0..31 */
-  u32  tow;    /**< GPS ToW in 6-second units. Multiply to 6 to get seconds. */
-  bool alert;  /**< CNAV message alert flag */
-  u8   raw_msg[GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS]; /**< RAW MSG for GNSS-SDR */
+    u8   prn;    /**< SV PRN. 0..31 */
+    u8   msg_id; /**< Message id. 0..31 */
+    u32  tow;    /**< GPS ToW in 6-second units. Multiply to 6 to get seconds. */
+    bool alert;  /**< CNAV message alert flag */
+    u8   raw_msg[GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS]; /**< RAW MSG for GNSS-SDR */
 } cnav_msg_t;
 
 /**
@@ -76,24 +76,24 @@ typedef struct
  * @sa cnav_msg_decoder_t
  */
 typedef struct {
-  v27_t          dec;           /**< Viterbi block decoder object */
-  v27_decision_t decisions[GPS_L2_V27_HISTORY_LENGTH_BITS];
-                                /**< Decision graph */
-  unsigned char  symbols[(GPS_L2C_V27_INIT_BITS + GPS_L2C_V27_DECODE_BITS) * 2];
-                                /**< Symbol buffer */
-  size_t         n_symbols;     /**< Count of symbols in the symbol buffer */
-  unsigned char  decoded[GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS];
-                                /**< Decode buffer */
-  size_t         n_decoded;     /**< Number of bits in the decode buffer */
-  bool           preamble_seen; /**< When true, the decode buffer is aligned on
-                                 *   preamble. */
-  bool           invert;        /**< When true, indicates the bits are inverted */
-  bool           message_lock;  /**< When true, indicates the message boundary
-                                 *   is found. */
-  bool           crc_ok;        /**< Flag that the last message had good CRC */
-  size_t         n_crc_fail;    /**< Counter for CRC failures */
-  bool           init;          /**< Initial state flag. When true, initial bits
-                                 *   do not produce output. */
+    v27_t          dec;           /**< Viterbi block decoder object */
+    v27_decision_t decisions[GPS_L2_V27_HISTORY_LENGTH_BITS];
+    /**< Decision graph */
+    unsigned char  symbols[(GPS_L2C_V27_INIT_BITS + GPS_L2C_V27_DECODE_BITS) * 2];
+    /**< Symbol buffer */
+    size_t         n_symbols;     /**< Count of symbols in the symbol buffer */
+    unsigned char  decoded[GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS];
+    /**< Decode buffer */
+    size_t         n_decoded;     /**< Number of bits in the decode buffer */
+    bool           preamble_seen; /**< When true, the decode buffer is aligned on
+     *   preamble. */
+    bool           invert;        /**< When true, indicates the bits are inverted */
+    bool           message_lock;  /**< When true, indicates the message boundary
+     *   is found. */
+    bool           crc_ok;        /**< Flag that the last message had good CRC */
+    size_t         n_crc_fail;    /**< Counter for CRC failures */
+    bool           init;          /**< Initial state flag. When true, initial bits
+     *   do not produce output. */
 } cnav_v27_part_t;
 
 /**
@@ -104,8 +104,8 @@ typedef struct {
  */
 typedef struct
 {
-  cnav_v27_part_t part1; /**< Decoder for odd symbol pairs */
-  cnav_v27_part_t part2; /**< Decoder for even symbol pairs */
+    cnav_v27_part_t part1; /**< Decoder for odd symbol pairs */
+    cnav_v27_part_t part2; /**< Decoder for even symbol pairs */
 } cnav_msg_decoder_t;
 
 const v27_poly_t *cnav_msg_decoder_get_poly(void);

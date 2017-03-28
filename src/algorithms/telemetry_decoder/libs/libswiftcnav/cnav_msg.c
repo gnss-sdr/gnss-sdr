@@ -129,7 +129,9 @@ static void _cnav_rescan_preamble(cnav_v27_part_t *part)
   part->preamble_seen = false;
 
   if (part->n_decoded > GPS_CNAV_PREAMBLE_LENGTH + 1) {
-    for (size_t i = 1, j = part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH;
+	size_t i=0;
+	size_t j=0;
+    for (i = 1, j = part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH;
          i < j; ++i) {
       u32 c = getbitu(part->decoded, i, GPS_CNAV_PREAMBLE_LENGTH);
       if (GPS_CNAV_PREAMBLE1 == c || GPS_CNAV_PREAMBLE2 == c) {
@@ -280,7 +282,8 @@ static void _cnav_add_symbol(cnav_v27_part_t *part, u8 ch)
  */
 static void _cnav_msg_invert(cnav_v27_part_t *part)
 {
-  for (size_t i = 0; i < sizeof(part->decoded); i++) {
+  size_t i = 0;
+  for (i = 0; i < sizeof(part->decoded); i++) {
     part->decoded[i] ^= 0xFFu;
   }
 }

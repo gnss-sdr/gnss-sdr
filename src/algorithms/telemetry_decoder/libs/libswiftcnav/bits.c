@@ -53,8 +53,8 @@ u8 parity(u32 x)
 u32 getbitu(const u8 *buff, u32 pos, u8 len)
 {
     u32 bits = 0;
-
-    for (u32 i = pos; i < pos + len; i++) {
+	u32 i=0;
+    for ( i= pos; i < pos + len; i++) {
       bits = (bits << 1) +
              ((buff[i/8] >> (7 - i%8)) & 1u);
     }
@@ -98,9 +98,9 @@ void setbitu(u8 *buff, u32 pos, u32 len, u32 data)
   u32 mask = 1u << (len - 1);
 
   if (len <= 0 || 32 < len)
-    return;
-
-  for (u32 i = pos; i < pos + len; i++, mask >>= 1) {
+    return; 
+  u32 i=0;
+  for (i = pos; i < pos + len; i++, mask >>= 1) {
     if (data & mask)
       buff[i/8] |= 1u << (7 - i % 8);
     else
@@ -156,7 +156,8 @@ void bitshl(void *buf, u32 size, u32 shift)
   } else {
     /* Create an accumulator: it will hold a value of two consecutive bytes */
     u32      acc   = *src++;
-    for (u32 i = 0; i < full_bytes; ++i) {
+	u32 i=0;
+    for (i = 0; i < full_bytes; ++i) {
       acc = (acc << CHAR_BIT) | *src++;
       *dst++ = acc >> byte_shift;
     }
@@ -188,8 +189,8 @@ void bitcopy(void *dst, u32 dst_index, const void *src, u32 src_index,
 {
   u32 limit1 = count / 32;
   u32 limit2 = count % 32;
-
-  for (u32 idx = 0; idx < limit1; ++idx) {
+	u32 idx=0;
+  for (idx = 0; idx < limit1; ++idx) {
     u32 tmp = getbitu(src, src_index, 32);
     setbitu(dst, dst_index, 32, tmp);
     src_index += 32;
@@ -212,7 +213,8 @@ void bitcopy(void *dst, u32 dst_index, const void *src, u32 src_index,
 u8 count_bits_u64(u64 v, u8 bv)
 {
   u8 r = 0;
-  for (int i = 0; i < 16; i++)
+int i =0;
+  for (i = 0; i < 16; i++)
     r += bitn[(v >> (i*4)) & 0xf];
   return bv == 1 ? r : 64 - r;
 }
@@ -228,7 +230,8 @@ u8 count_bits_u64(u64 v, u8 bv)
 u8 count_bits_u32(u32 v, u8 bv)
 {
   u8 r = 0;
-  for (int i = 0; i < 8; i++)
+	int i=0;
+  for (i = 0; i < 8; i++)
     r += bitn[(v >> (i*4)) & 0xf];
   return bv == 1 ? r : 32 - r;
 }
@@ -244,7 +247,8 @@ u8 count_bits_u32(u32 v, u8 bv)
 u8 count_bits_u16(u16 v, u8 bv)
 {
   u8 r = 0;
-  for (int i = 0; i < 4; i++)
+int i =0;
+  for (i= 0; i < 4; i++)
     r += bitn[(v >> (i*4)) & 0xf];
   return bv == 1 ? r : 16 - r;
 }
@@ -260,7 +264,8 @@ u8 count_bits_u16(u16 v, u8 bv)
 u8 count_bits_u8(u8 v, u8 bv)
 {
   u8 r = 0;
-  for (int i = 0; i < 2; i++)
+int i=0;
+  for (i = 0; i < 2; i++)
     r += bitn[(v >> (i*4)) & 0xf];
   return bv == 1 ? r : 8 - r;
 }

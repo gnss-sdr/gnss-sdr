@@ -1,10 +1,36 @@
-/* K=7 r=1/2 Viterbi decoder in portable C
- * Copyright Feb 2004, Phil Karn, KA9Q
- * May be used under the terms of the GNU Lesser General Public License (LGPL)
+/*!
+ * \file viterbi27.c
+ * \author Phil Karn, KA9Q
+ * \brief K=7 r=1/2 Viterbi decoder in portable C
+ *
+ * -------------------------------------------------------------------------
+ * This file was originally borrowed from libswiftnav
+ * <https://github.com/swift-nav/libswiftnav>,
+ * a portable C library implementing GNSS related functions and algorithms,
+ * and then modified by J. Arribas and C. Fernandez
+ *
+ * Copyright (C) 2004, Phil Karn, KA9Q
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * This file is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Lesser Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
 
+#include <stdlib.h>
 #include "fec.h"
 
 static inline int parity(int x)

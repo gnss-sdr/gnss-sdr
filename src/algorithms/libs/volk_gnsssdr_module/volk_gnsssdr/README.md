@@ -57,7 +57,7 @@ This figure shows the role of some VOLK_GNSSSDR kernels in the context of a GNSS
 
 If you use VOLK_GNSSSDR in your research and/or software, please cite the following paper:
 
- * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, [*Accelerating GNSS Software Receivers*](https://zenodo.org/record/266493#.WJR8j7bhB89), in Proc. of the ION GNSS+ 2016 Conference, pp. 44-61, Portland, Oregon, Sept. 12-16, 2016.
+ * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, [*Accelerating GNSS Software Receivers*](https://zenodo.org/record/266493), in Proc. of the ION GNSS+ 2016 Conference, pp. 44-61, Portland, Oregon, Sept. 12-16, 2016.
 
 Citations are useful for the continued development and maintenance of the library.
 

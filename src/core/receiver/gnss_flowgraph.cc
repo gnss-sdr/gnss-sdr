@@ -764,7 +764,7 @@ void GNSSFlowgraph::set_signals_list()
             std::string gnss_system;
             if((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) ) gnss_system = "GPS";
             if((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0) ) gnss_system = "Galileo";
-            if((gnss_signal.compare("1G") == 0)/* or (gnss_signal.compare("") == 0)*/) gnss_system = "Glonass";
+            if((gnss_signal.compare("1G") == 0)/*or (gnss_signal.compare("") == 0)*/) gnss_system = "Glonass";
             unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
             LOG(INFO) << "Channel " << i <<  " system " << gnss_system << ", signal " << gnss_signal <<", sat "<<sat;
             if (sat == 0) // 0 = not PRN in configuration file

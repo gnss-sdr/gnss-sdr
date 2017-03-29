@@ -747,7 +747,7 @@ void GNSSFlowgraph::set_signals_list()
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Glonass"),
-                            *available_gnss_prn_iter), std::string("5X")));
+                            *available_gnss_prn_iter), std::string("1G")));
                 }
         }
     /*

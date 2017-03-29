@@ -58,7 +58,6 @@ private:
     unsigned long int read_navigation_unsigned(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     signed long int read_navigation_signed(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     bool read_navigation_bool(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    void print_gps_word_bytes(unsigned int GPS_word);
 
     Gps_CNAV_Ephemeris ephemeris_record;
     Gps_CNAV_Iono iono_record;
@@ -68,7 +67,8 @@ public:
     double d_TOW;
     bool b_flag_ephemeris_1;
     bool b_flag_ephemeris_2;
-    bool b_flag_iono_valid; //!< If set, it indicates that the ionospheric parameters are filled (page 18 has arrived and decoded)
+    bool b_flag_iono_valid; //!< If set, it indicates that the ionospheric parameters are filled and are not yet readed by the get_iono
+    bool b_flag_utc_valid; //!< If set, it indicates that the utc parameters are filled and are not yet readed by the get_utc_model
 
     std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 
@@ -89,13 +89,13 @@ public:
     // public functions
     void reset();
 
-    void decode_page(std::vector<int> data);
+    void decode_page(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> data_bits);
     /*!
      * \brief Obtain a GPS SV Ephemeris class filled with current SV data
      */
     Gps_CNAV_Ephemeris get_ephemeris();
     /*!
-     * \brief Check if we have a new iono record stored in the galileo navigation class
+     * \brief Check if we have a new iono record stored in the GPS ephemeris class
      */
     bool have_new_iono();
     /*!
@@ -109,7 +109,12 @@ public:
     Gps_CNAV_Utc_Model get_utc_model();
 
     /*!
-     * \brief Check if we have a new ephemeris stored in the galileo navigation class
+     * \briefCheck if we have a new GPS UTC model record stored in the GPS ephemeris class
+     */
+    bool have_new_utc_model();
+
+    /*!
+     * \brief Check if we have a new ephemeris stored in the GPS ephemeris class
      */
     bool have_new_ephemeris();
 

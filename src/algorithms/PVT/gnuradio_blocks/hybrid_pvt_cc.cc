@@ -34,6 +34,9 @@
 #include <map>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/math/common_factor_rt.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/serialization/map.hpp>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
@@ -158,7 +161,7 @@ void hybrid_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
                     // update/insert new ephemeris record to the global ephemeris map
                     d_ls_pvt->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN] = *gps_cnav_ephemeris;
-                    DLOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
+                    LOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Iono>) )
                 {
@@ -323,6 +326,76 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
 hybrid_pvt_cc::~hybrid_pvt_cc()
 {
     msgctl(sysv_msqid, IPC_RMID, NULL);
+
+    //save GPS L2CM ephemeris to XML file
+    std::string file_name="eph_GPS_L2CM.xml";
+
+    if (d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
+        {
+            try
+                {
+                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->gps_cnav_ephemeris_map);
+                    ofs.close();
+                    LOG(INFO) << "Saved GPS L2CM Ephemeris map data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save GPS L2CM Ephemeris, map is empty";
+        }
+
+    //save GPS L1 CA ephemeris to XML file
+    file_name="eph_GPS_L1CA.xml";
+
+    if (d_ls_pvt->gps_ephemeris_map.size() > 0)
+        {
+            try
+                {
+                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->gps_ephemeris_map);
+                    ofs.close();
+                    LOG(INFO) << "Saved GPS L1 CA Ephemeris map data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save GPS L1 CA Ephemeris, map is empty";
+        }
+
+    //save Galileo E1 ephemeris to XML file
+    file_name="eph_Galileo_E1.xml";
+
+    if (d_ls_pvt->galileo_ephemeris_map.size() > 0)
+        {
+            try
+                {
+                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->galileo_ephemeris_map);
+                    ofs.close();
+                    LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save Galileo E1 Ephemeris, map is empty";
+        }
+
 }
 
 
@@ -451,6 +524,7 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
             if ((d_sample_counter % d_output_rate_ms) == 0)
                 {
                     bool pvt_result;
+                    //std::cout<<"obs map size at pvt="<<gnss_observables_map.size()<<std::endl;
                     pvt_result = d_ls_pvt->get_PVT(gnss_observables_map, d_rx_time, d_flag_averaging);
 
                     if (pvt_result == true)

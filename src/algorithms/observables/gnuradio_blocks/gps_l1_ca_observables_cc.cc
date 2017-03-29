@@ -249,7 +249,6 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                         {
                             tmp_double = current_gnss_synchro[i].d_TOW_at_current_symbol;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            //tmp_double = current_gnss_synchro[i].Prn_timestamp_ms;
                             tmp_double = current_gnss_synchro[i].Carrier_Doppler_hz;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].Carrier_phase_rads/GPS_TWO_PI;

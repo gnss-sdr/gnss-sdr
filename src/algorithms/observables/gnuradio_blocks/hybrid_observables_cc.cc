@@ -264,16 +264,16 @@ int hybrid_observables_cc::general_work (int noutput_items,
                         {
                             tmp_double = current_gnss_synchro[i].d_TOW_at_current_symbol;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            tmp_double = current_gnss_synchro[i].d_TOW_hybrid_at_current_symbol;
+                            //tmp_double = current_gnss_synchro[i].Prn_timestamp_ms;
+                            tmp_double = current_gnss_synchro[i].Carrier_Doppler_hz;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            tmp_double = current_gnss_synchro[i].Prn_timestamp_ms;
+                            tmp_double = current_gnss_synchro[i].Carrier_phase_rads/GPS_TWO_PI;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].Pseudorange_m;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            tmp_double = (double)(current_gnss_synchro[i].Flag_valid_pseudorange==true);
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].PRN;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
+
                         }
             }
             catch (const std::ifstream::failure& e)

@@ -95,12 +95,14 @@ const int32_t GPS_L2C_M_INIT_REG[115] =
 // NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200E Appendix III)
 
 #define GPS_CNAV_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
+#define GPS_CNAV_PREAMBLE_STR "10001011"
+#define GPS_CNAV_INV_PREAMBLE_STR "01110100"
 
 const int GPS_L2_CNAV_DATA_PAGE_BITS = 300; //!< GPS L2 CNAV page length, including preamble and CRC [bits]
 const int GPS_L2_SYMBOLS_PER_BIT = 2;
 const int GPS_L2_SAMPLES_PER_SYMBOL = 1;
+const int GPS_L2_CNAV_DATA_PAGE_SYMBOLS = 600;
 const int GPS_L2_CNAV_DATA_PAGE_DURATION_S = 12;
-const int GPS_L2_CNAV_DATA_PAGE_BITS_EXTENDED_BYTES = 304; //!< GPS L2 CNAV page length, including preamble and CRC [bits]
 
 // common to all messages
 const std::vector<std::pair<int,int> > CNAV_PRN( { {9,6} } );
@@ -127,15 +129,15 @@ const std::vector<std::pair<int,int> > CNAV_A_DOT({{108,25}});
 const double CNAV_A_DOT_LSB = TWO_N21;
 
 const std::vector<std::pair<int,int> > CNAV_DELTA_N0({{133,17}});
-const double CNAV_DELTA_N0_LSB = TWO_N44;
+const double CNAV_DELTA_N0_LSB = TWO_N44*GPS_L2_PI; //semi-circles to radians
 const std::vector<std::pair<int,int> > CNAV_DELTA_N0_DOT({{150,23}});
-const double CNAV_DELTA_N0_DOT_LSB = TWO_N57;
+const double CNAV_DELTA_N0_DOT_LSB = TWO_N57*GPS_L2_PI;//semi-circles to radians
 const std::vector<std::pair<int,int> > CNAV_M0({{173,33}});
-const double CNAV_M0_LSB = TWO_N32;
+const double CNAV_M0_LSB = TWO_N32*GPS_L2_PI;//semi-circles to radians
 const std::vector<std::pair<int,int> > CNAV_E_ECCENTRICITY({{206,33}});
 const double CNAV_E_ECCENTRICITY_LSB = TWO_N34;
 const std::vector<std::pair<int,int> > CNAV_OMEGA({{239,33}});
-const double CNAV_OMEGA_LSB = TWO_N32;
+const double CNAV_OMEGA_LSB = TWO_N32*GPS_L2_PI;//semi-circles to radians
 const std::vector<std::pair<int,int> > CNAV_INTEGRITY_FLAG({{272,1}});
 const std::vector<std::pair<int,int> > CNAV_L2_PHASING_FLAG({{273,1}});
 
@@ -144,13 +146,13 @@ const std::vector<std::pair<int,int> > CNAV_L2_PHASING_FLAG({{273,1}});
 const std::vector<std::pair<int,int> > CNAV_TOE2({{39,11}});
 const double CNAV_TOE2_LSB = 300.0;
 const std::vector<std::pair<int,int> > CNAV_OMEGA0({{50,33}});
-const double CNAV_OMEGA0_LSB = TWO_N32;
+const double CNAV_OMEGA0_LSB = TWO_N32*GPS_L2_PI;//semi-circles to radians
 const std::vector<std::pair<int,int> > CNAV_I0({{83,33}});
-const double CNAV_I0_LSB = TWO_N32;
+const double CNAV_I0_LSB = TWO_N32*GPS_L2_PI;//semi-circles to radians
 const std::vector<std::pair<int,int> > CNAV_DELTA_OMEGA_DOT({{116,17}}); //Relative to REF = -2.6 x 10-9 semi-circles/second.
-const double CNAV_DELTA_OMEGA_DOT_LSB = TWO_N44;
+const double CNAV_DELTA_OMEGA_DOT_LSB = TWO_N44*GPS_L2_PI;//semi-circles to radians
 const std::vector<std::pair<int,int> > CNAV_I0_DOT({{133,15}});
-const double CNAV_I0_DOT_LSB = TWO_N44;
+const double CNAV_I0_DOT_LSB = TWO_N44*GPS_L2_PI;//semi-circles to radians
 const std::vector<std::pair<int,int> > CNAV_CIS({{148,16}});
 const double CNAV_CIS_LSB = TWO_N30;
 const std::vector<std::pair<int,int> > CNAV_CIC({{164,16}});
@@ -209,6 +211,28 @@ const double CNAV_BETA2_LSB = TWO_P16;
 const std::vector<std::pair<int,int> > CNAV_BETA3({{249,8}});
 const double CNAV_BETA3_LSB = TWO_P16;
 const std::vector<std::pair<int,int> > CNAV_WNOP({{257,8}});
+
+
+// MESSAGE TYPE 33 (CLOCK and UTC)
+
+const std::vector<std::pair<int,int> > CNAV_A0({{128,16}});
+const double CNAV_A0_LSB = TWO_N35;
+const std::vector<std::pair<int,int> > CNAV_A1({{144,13}});
+const double CNAV_A1_LSB = TWO_N51;
+const std::vector<std::pair<int,int> > CNAV_A2({{157,7}});
+const double CNAV_A2_LSB = TWO_N68;
+const std::vector<std::pair<int,int> > CNAV_DELTA_TLS({{164,8}});
+const double CNAV_DELTA_TLS_LSB = 1;
+const std::vector<std::pair<int,int> > CNAV_TOT({{172,16}});
+const double CNAV_TOT_LSB = TWO_P4;
+const std::vector<std::pair<int,int> > CNAV_WN_OT({{188,13}});
+const double CNAV_WN_OT_LSB = 1;
+const std::vector<std::pair<int,int> > CNAV_WN_LSF({{201,13}});
+const double CNAV_WN_LSF_LSB = 1;
+const std::vector<std::pair<int,int> > CNAV_DN({{214,4}});
+const double CNAV_DN_LSB = 1;
+const std::vector<std::pair<int,int> > CNAV_DELTA_TLSF({{218,8}});
+const double CNAV_DELTA_TLSF_LSB = 1;
 
 
 // TODO: Add more frames (Almanac, etc...)

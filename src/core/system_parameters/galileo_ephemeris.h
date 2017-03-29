@@ -119,7 +119,7 @@ public:
     void serialize(Archive& archive, const unsigned int version)
     {
         using boost::serialization::make_nvp;
-
+        if(version){};
         archive & make_nvp("i_satellite_PRN",i_satellite_PRN);
         archive & make_nvp("M0_1", M0_1);
         archive & make_nvp("e_1", e_1);

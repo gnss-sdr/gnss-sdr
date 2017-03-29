@@ -16,27 +16,20 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(libswiftcnav)
-
-set(TELEMETRY_DECODER_LIB_SOURCES 
-     gps_l1_ca_subframe_fsm.cc 
-     viterbi_decoder.cc
+set(TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES 
+     cnav_msg.c
+     bits.c
+     edc.c
+     viterbi27.c   
 )
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
 )
 
-file(GLOB TELEMETRY_DECODER_LIB_HEADERS "*.h")
+file(GLOB TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS "*.h")
+list(SORT TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS)
 
-list(SORT TELEMETRY_DECODER_LIB_HEADERS)
-add_library(telemetry_decoder_lib ${TELEMETRY_DECODER_LIB_SOURCES} ${TELEMETRY_DECODER_LIB_HEADERS})
-source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
-target_link_libraries(telemetry_decoder_lib gnss_system_parameters)
+add_library(telemetry_decoder_libswiftcnav STATIC ${TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES} ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS})
+source_group(Headers FILES ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS})
+set_target_properties(telemetry_decoder_libswiftcnav PROPERTIES LINKER_LANGUAGE C)

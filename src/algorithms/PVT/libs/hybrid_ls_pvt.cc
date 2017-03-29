@@ -86,6 +86,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
     int GPS_week = 0;
     double utc = 0.0;
     double GST = 0.0;
+    double secondsperweek = 604800.0;
+
     //double utc_tx_corrected = 0.0; //utc computed at tx_time_corrected, added for Galileo constellation (in GPS utc is directly computed at TX_time_corrected_s)
     double TX_time_corrected_s = 0.0;
     double SV_clock_bias_s = 0.0;
@@ -196,8 +198,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                                     d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
 
                                     // SV ECEF DEBUG OUTPUT
-                                    DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
-                                               << " X=" << gps_ephemeris_iter->second.d_satpos_X
+                                    LOG(INFO) << "(new)ECEF GPS L1 CA satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
+                                               << " TX Time corrected="<<TX_time_corrected_s                                                << " X=" << gps_ephemeris_iter->second.d_satpos_X
                                                << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
                                                << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
                                                << " [m] PR_obs=" << obs(valid_obs) << " [m]";
@@ -205,7 +207,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                                     valid_obs++;
                                     // compute the UTC time for this SV (just to print the associated UTC timestamp)
                                     GPS_week = gps_ephemeris_iter->second.i_GPS_week;
-                                    utc = gps_utc_model.utc_time(TX_time_corrected_s, GPS_week);
                                 }
                             else // the ephemeris are not available for this SV
                                 {
@@ -233,7 +234,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
 
                                     // 3- compute the current ECEF position for this SV using corrected TX time
                                     TX_time_corrected_s = Tx_time - SV_clock_bias_s;
-                                    gps_cnav_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
+                                    //std::cout<<"TX time["<<gps_cnav_ephemeris_iter->second.i_satellite_PRN<<"]="<<TX_time_corrected_s<<std::endl;
+                                    double dtr = gps_cnav_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
 
                                     //store satellite positions in a matrix
                                     satpos.resize(3, valid_obs + 1);
@@ -243,15 +245,17 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
 
                                     // 4- fill the observations vector with the corrected observables
                                     obs.resize(valid_obs + 1, 1);
-                                    obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
+                                    obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr*GPS_C_m_s + SV_clock_bias_s * GPS_C_m_s;
                                     d_visible_satellites_IDs[valid_obs] = gps_cnav_ephemeris_iter->second.i_satellite_PRN;
                                     d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
 
                                     GPS_week = gps_cnav_ephemeris_iter->second.i_GPS_week;
+                                    GPS_week=GPS_week%1024; //Necessary due to the increase of WN bits in CNAV message (10 in GPS NAV and 13 in CNAV)
 
                                     // SV ECEF DEBUG OUTPUT
-                                    DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_cnav_ephemeris_iter->second.i_satellite_PRN
-                                               << " X=" << gps_cnav_ephemeris_iter->second.d_satpos_X
+                                    LOG(INFO) << "(new)ECEF GPS L2M satellite SV ID=" << gps_cnav_ephemeris_iter->second.i_satellite_PRN
+                                                << " TX Time corrected="<<TX_time_corrected_s
+                                                << " X=" << gps_cnav_ephemeris_iter->second.d_satpos_X
                                                << " [m] Y=" << gps_cnav_ephemeris_iter->second.d_satpos_Y
                                                << " [m] Z=" << gps_cnav_ephemeris_iter->second.d_satpos_Z
                                                << " [m] PR_obs=" << obs(valid_obs) << " [m]";
@@ -305,7 +309,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                     DLOG(INFO) << "Hybrid Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
                     DLOG(INFO) << "Accumulated rx clock error=" << d_rx_dt_s << " clock error for this iteration=" << rx_position_and_time(3) / GPS_C_m_s << " [s]";
 
-                    double secondsperweek = 604800.0;
                     // Compute GST and Gregorian time
                     if( GST != 0.0)
                         {

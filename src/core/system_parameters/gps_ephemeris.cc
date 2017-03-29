@@ -156,7 +156,7 @@ double Gps_Ephemeris::sv_clock_relativistic_term(double transmitTime)
     M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2.0 * GPS_PI), (2.0 * GPS_PI));
+    //M = fmod((M + 2.0 * GPS_PI), (2.0 * GPS_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
@@ -215,7 +215,7 @@ double Gps_Ephemeris::satellitePosition(double transmitTime)
     M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2.0 * GPS_PI), (2.0 * GPS_PI));
+    //M = fmod((M + 2.0 * GPS_PI), (2.0 * GPS_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
@@ -242,7 +242,7 @@ double Gps_Ephemeris::satellitePosition(double transmitTime)
     phi = nu + d_OMEGA;
 
     // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi), (2.0 * GPS_PI));
+    //phi = fmod((phi), (2.0 * GPS_PI));
 
     // Correct argument of latitude
     u = phi + d_Cuc * cos(2.0 * phi) +  d_Cus * sin(2.0 * phi);
@@ -257,7 +257,7 @@ double Gps_Ephemeris::satellitePosition(double transmitTime)
     Omega = d_OMEGA0 + (d_OMEGA_DOT - OMEGA_EARTH_DOT)*tk - OMEGA_EARTH_DOT * d_Toe;
 
     // Reduce to between 0 and 2*pi rad
-    Omega = fmod((Omega + 2.0 * GPS_PI), (2.0 * GPS_PI));
+    //Omega = fmod((Omega + 2.0 * GPS_PI), (2.0 * GPS_PI));
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);

@@ -33,6 +33,7 @@
 #include "gps_cnav_ephemeris.h"
 #include <cmath>
 #include "GPS_L2C.h"
+#include <iostream>
 
 Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
 {
@@ -153,7 +154,7 @@ double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
     M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2.0 * GPS_L2_PI), (2.0 * GPS_L2_PI));
+    //M = fmod((M + 2.0 * GPS_L2_PI), (2.0 * GPS_L2_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
@@ -193,11 +194,13 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     double r;
     double i;
     double Omega;
-    const double A_REF = 26559710.0; // See IS-GPS-200H,  pp. 163
+
+    const double A_REF = 26559710.0; // See IS-GPS-200H,  pp. 170
     double d_sqrt_A = sqrt(A_REF + d_DELTA_A);
+
+
     const double GM = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
     const double OMEGA_DOT_REF = -2.6e-9; // semicircles / s, see IS-GPS-200H pp. 164
-    double d_OMEGA_DOT = OMEGA_DOT_REF + d_DELTA_OMEGA_DOT;
     const double OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
     // Find satellite's position ----------------------------------------------
 
@@ -210,14 +213,19 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     // Computed mean motion
     n0 = sqrt(GM / (a*a*a));
 
+    // Mean motion difference from computed value
+
+    double delta_n_a=d_Delta_n+0.5*d_DELTA_DOT_N*tk;
+
     // Corrected mean motion
-    n = n0 + d_Delta_n;
+    n = n0 + delta_n_a;
 
     // Mean anomaly
     M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2 * GPS_L2_PI), (2 * GPS_L2_PI));
+    //M = fmod((M + 2 * GPS_L2_PI), (2 * GPS_L2_PI));
+
 
     // Initial guess of eccentric anomaly
     E = M;
@@ -244,7 +252,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     phi = nu + d_OMEGA;
 
     // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi), (2*GPS_L2_PI));
+    //phi = fmod((phi), (2*GPS_L2_PI));
 
     // Correct argument of latitude
     u = phi + d_Cuc * cos(2*phi) +  d_Cus * sin(2*phi);
@@ -256,10 +264,11 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     i = d_i_0 + d_IDOT * tk + d_Cic * cos(2*phi) + d_Cis * sin(2*phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
+    double d_OMEGA_DOT = OMEGA_DOT_REF*GPS_L2_PI + d_DELTA_OMEGA_DOT;
     Omega = d_OMEGA0 + (d_OMEGA_DOT - OMEGA_EARTH_DOT)*tk - OMEGA_EARTH_DOT * d_Toe1;
 
     // Reduce to between 0 and 2*pi rad
-    Omega = fmod((Omega + 2*GPS_L2_PI), (2*GPS_L2_PI));
+    //Omega = fmod((Omega + 2*GPS_L2_PI), (2*GPS_L2_PI));
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
@@ -281,5 +290,4 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     dtr_s -= 2.0 * sqrt(GM * a) * d_e_eccentricity * sin(E) / (GPS_L2_C_m_s * GPS_L2_C_m_s);
 
     return dtr_s;
-
 }

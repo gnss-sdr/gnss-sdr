@@ -177,12 +177,12 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                                     double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_m_s;
 
                                     // 2- compute the clock drift using the clock model (broadcast) for this SV, not including relativistic effect
-                                    SV_clock_bias_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time); //- gps_ephemeris_iter->second.d_TGD;
+                                    SV_clock_bias_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);
 
                                     // 3- compute the current ECEF position for this SV using corrected TX time and obtain clock bias including relativistic effect
                                     TX_time_corrected_s = Tx_time - SV_clock_bias_s;
                                     double dtr = gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
-
+                                    //std::cout<<"L1 Tx_time: "<<Tx_time<<" SV_clock_bias_s: "<<SV_clock_bias_s<<" dtr: "<<dtr<<std::endl;
                                     //store satellite positions in a matrix
                                     satpos.resize(3, valid_obs + 1);
                                     satpos(0, valid_obs) = gps_ephemeris_iter->second.d_satpos_X;
@@ -229,12 +229,11 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
 
                                     // 2- compute the clock drift using the clock model (broadcast) for this SV
                                     SV_clock_bias_s = gps_cnav_ephemeris_iter->second.sv_clock_drift(Tx_time);
-
                                     // 3- compute the current ECEF position for this SV using corrected TX time
                                     TX_time_corrected_s = Tx_time - SV_clock_bias_s;
                                     //std::cout<<"TX time["<<gps_cnav_ephemeris_iter->second.i_satellite_PRN<<"]="<<TX_time_corrected_s<<std::endl;
                                     double dtr = gps_cnav_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
-
+                                    //std::cout<<"L2 Tx_time: "<<Tx_time<<" SV_clock_bias_s: "<<SV_clock_bias_s<<" dtr: "<<dtr<<std::endl;
                                     //store satellite positions in a matrix
                                     satpos.resize(3, valid_obs + 1);
                                     satpos(0, valid_obs) = gps_cnav_ephemeris_iter->second.d_satpos_X;
@@ -243,7 +242,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
 
                                     // 4- fill the observations vector with the corrected observables
                                     obs.resize(valid_obs + 1, 1);
-                                    obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr*GPS_C_m_s + SV_clock_bias_s * GPS_C_m_s;
+                                    obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_m_s - d_rx_dt_s * GPS_C_m_s;
                                     d_visible_satellites_IDs[valid_obs] = gps_cnav_ephemeris_iter->second.i_satellite_PRN;
                                     d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
 

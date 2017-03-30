@@ -154,22 +154,19 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
         //* delay by the formulae:
         //* \code
         //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20
-        d_TOW_at_current_symbol=((double)msg.tow) * 6.0 + ((double)delay) * GPS_L2_M_PERIOD +GPS_L2_M_PERIOD;
-        current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
-        current_synchro_data.Prn_timestamp_ms = in[0].Tracking_timestamp_secs * 1000.0;
+        d_TOW_at_current_symbol=((double)msg.tow) * 6.0 + ((double)delay) * GPS_L2_M_PERIOD +12*GPS_L2_M_PERIOD;
         d_flag_valid_word=true;
     }
     else
     {
         d_TOW_at_current_symbol +=GPS_L2_M_PERIOD;
-        current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
-        current_synchro_data.Prn_timestamp_ms = in[0].Tracking_timestamp_secs * 1000.0;
         if (current_synchro_data.Flag_valid_symbol_output==false)
         {
             d_flag_valid_word=false;
         }
     }
-
+    current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
+    current_synchro_data.Prn_timestamp_ms = in[0].Tracking_timestamp_secs * 1000.0;
     current_synchro_data.Flag_valid_word=d_flag_valid_word;
 
 //    if (flag_PLL_180_deg_phase_locked == true)

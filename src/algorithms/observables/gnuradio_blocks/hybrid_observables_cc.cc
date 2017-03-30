@@ -100,7 +100,14 @@ hybrid_observables_cc::~hybrid_observables_cc()
 
 bool Hybrid_pairCompare_gnss_synchro_d_TOW_at_current_symbol(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
-    return (a.second.d_TOW_at_current_symbol) < (b.second.d_TOW_at_current_symbol);
+    if (a.second.d_TOW_at_current_symbol==b.second.d_TOW_at_current_symbol)
+    {
+        return (a.second.Prn_timestamp_ms/1000.0) > (b.second.Prn_timestamp_ms/1000.0);
+
+    }else{
+        return (a.second.d_TOW_at_current_symbol) < (b.second.d_TOW_at_current_symbol);
+    }
+
 }
 
 
@@ -179,6 +186,7 @@ int hybrid_observables_cc::general_work (int noutput_items,
             // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
             gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), Hybrid_pairCompare_gnss_synchro_d_TOW_at_current_symbol);
             double d_TOW_reference = gnss_synchro_iter->second.d_TOW_at_current_symbol;
+            //std::cout<<"OBS SV REF SAT: "<<gnss_synchro_iter->second.PRN<<std::endl;
             double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
 
             // Now compute RX time differences due to the PRN alignment in the correlators
@@ -196,6 +204,10 @@ int hybrid_observables_cc::general_work (int noutput_items,
                                     + GPS_STARTOFFSET_ms;
                     //convert to meters
                     pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
+                    //std::cout<<"["<<gnss_synchro_iter->second.PRN<<"] delta_rx_t: "<<delta_rx_time_ms
+                    //        <<" [ms] delta_TOW_ms: "<<(d_TOW_reference - gnss_synchro_iter->second.d_TOW_at_current_symbol) * 1000.0
+                    //        <<" Pr: "<<pseudorange_m<<" [m]"
+                    //        <<std::endl;
                     // update the pseudorange object
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
@@ -246,6 +258,8 @@ int hybrid_observables_cc::general_work (int noutput_items,
                     double tmp_double;
                     for (unsigned int i = 0; i < d_nchannels; i++)
                         {
+                            tmp_double = current_gnss_synchro[i].RX_time;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].d_TOW_at_current_symbol;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].Carrier_Doppler_hz;

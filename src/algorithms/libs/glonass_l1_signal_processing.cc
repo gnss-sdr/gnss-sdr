@@ -78,7 +78,6 @@ void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest,/* signed int _pr
                 }
         }
 
-    /* TODO: Implement the chip shifting*/
     /* Set the delay */
     delay = _code_length;
     delay += _chip_shift;

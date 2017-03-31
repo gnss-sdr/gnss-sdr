@@ -32,8 +32,8 @@
  */
 
 
-#ifndef GNSS_SDR_GPS_L1_CA_H_
-#define GNSS_SDR_GPS_L1_CA_H_
+#ifndef GNSS_SDR_GLONASS_L1_CA_H_
+#define GNSS_SDR_GLONASS_L1_CA_H_
 
 #include <vector>
 #include <utility> // std::pair
@@ -250,4 +250,4 @@ const std::vector<std::pair<int,int>> HEALTH_SV22({{247,6}});
 const std::vector<std::pair<int,int>> HEALTH_SV23({{253,6}});
 const std::vector<std::pair<int,int>> HEALTH_SV24({{259,6}});
 
-#endif /* GNSS_SDR_GPS_L1_CA_H_ */
+#endif /* GNSS_SDR_GLONASS_L1_CA_H_ */

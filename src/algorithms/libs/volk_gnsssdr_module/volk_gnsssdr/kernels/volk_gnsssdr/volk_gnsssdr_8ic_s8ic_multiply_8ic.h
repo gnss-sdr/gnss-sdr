@@ -73,7 +73,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, 
     lv_8sc_t* c = cVector;
     const lv_8sc_t* a = aVector;
 
-    mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+    mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
     y = _mm_set1_epi16(*(short*)&scalar);
     imagy = _mm_srli_si128(y, 1);
@@ -166,7 +166,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, 
     lv_8sc_t* c = cVector;
     const lv_8sc_t* a = aVector;
 
-    mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+    mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
     y = _mm_set1_epi16(*(short*)&scalar);
     imagy = _mm_srli_si128(y, 1);

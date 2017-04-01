@@ -127,7 +127,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
         {
             __m128i x, y, mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc, realcacc, imagcacc;
 
-            mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+            mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
@@ -204,7 +204,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
         {
             __m128i x, y, mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc, realcacc, imagcacc;
 
-            mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+            mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
@@ -279,7 +279,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
         {
             __m128i x, y, mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc, realcacc, imagcacc;
 
-            mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+            mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 
@@ -355,7 +355,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, c
         {
             __m128i x, y, mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc, realcacc, imagcacc;
 
-            mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+            mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
 

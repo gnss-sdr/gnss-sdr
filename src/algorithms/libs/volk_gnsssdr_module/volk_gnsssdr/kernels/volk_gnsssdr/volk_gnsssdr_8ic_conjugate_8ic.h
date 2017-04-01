@@ -71,7 +71,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_avx(lv_8sc_t* cVector, const
 
     __m256 tmp;
     __m128i tmp128lo, tmp128hi;
-    __m256 conjugator1 = _mm256_castsi256_ps(_mm256_setr_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255));
+    __m256 conjugator1 = _mm256_castsi256_ps(_mm256_setr_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF));
     __m128i conjugator2 = _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1);
 
     for (i = 0; i < sse_iters; ++i)
@@ -140,7 +140,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_sse3(lv_8sc_t* cVector, cons
     const lv_8sc_t* a = aVector;
     __m128i tmp;
 
-    __m128i conjugator1 = _mm_setr_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+    __m128i conjugator1 = _mm_setr_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
     __m128i conjugator2 = _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1);
 
     for (i = 0; i < sse_iters; ++i)
@@ -190,7 +190,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_avx(lv_8sc_t* cVector, const
 
     __m256 tmp;
     __m128i tmp128lo, tmp128hi;
-    __m256 conjugator1 = _mm256_castsi256_ps(_mm256_setr_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255));
+    __m256 conjugator1 = _mm256_castsi256_ps(_mm256_setr_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF));
     __m128i conjugator2 = _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1);
 
     for (i = 0; i < sse_iters; ++i)
@@ -257,7 +257,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_sse3(lv_8sc_t* cVector, cons
     const lv_8sc_t* a = aVector;
     __m128i tmp;
 
-    __m128i conjugator1 = _mm_setr_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+    __m128i conjugator1 = _mm_setr_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
     __m128i conjugator2 = _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1);
 
     for (i = 0; i < sse_iters; ++i)

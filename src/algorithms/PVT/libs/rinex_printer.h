@@ -277,6 +277,8 @@ private:
      */
     void lengthCheck(const std::string & line);
 
+    double fake_cnav_iode;
+
     /*
      * If the string is bigger than length, truncate it from the right.
      * otherwise, add pad characters to its right.

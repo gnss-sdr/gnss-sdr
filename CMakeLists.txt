@@ -520,11 +520,11 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
                                 -DCMAKE_C_FLAGS=${C_FLAGS}
                                 -DCMAKE_INCLUDE_PATH=${Boost_INCLUDE_DIR}
+                                -DENABLE_ORC=OFF
                                 ${STRIP_VOLK_GNSSSDR_PROFILE}
                                 ${USE_THIS_PYTHON} )
     if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
         set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} 
-                                    -DENABLE_ORC=OFF
                                     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
                                     -DCROSSCOMPILE_MULTILIB=TRUE )
     endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})

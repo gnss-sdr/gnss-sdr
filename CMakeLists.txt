@@ -520,11 +520,11 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
                                 -DCMAKE_C_FLAGS=${C_FLAGS}
                                 -DCMAKE_INCLUDE_PATH=${Boost_INCLUDE_DIR}
+                                -DENABLE_ORC=OFF
                                 ${STRIP_VOLK_GNSSSDR_PROFILE}
                                 ${USE_THIS_PYTHON} )
     if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
         set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} 
-                                    -DENABLE_ORC=OFF
                                     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
                                     -DCROSSCOMPILE_MULTILIB=TRUE )
     endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
@@ -891,8 +891,8 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
          set(armadillo_MD5 "8116185e1d7391eed3bf6c500f81b4d8")
          set(ARMA_FILE_EXTENSION "gz")
      else(CMAKE_VERSION VERSION_LESS 3.1)
-         set(armadillo_RELEASE 7.800.1)
-         set(armadillo_MD5 "e094351771c40a6e06e1a9c1ffdfc2b8")
+         set(armadillo_RELEASE 7.800.2)
+         set(armadillo_MD5 "c601f3a5ec6d50666aa3a539fa20e6ca")
          set(ARMA_FILE_EXTENSION "xz")
      endif(CMAKE_VERSION VERSION_LESS 3.1)
 

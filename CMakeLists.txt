@@ -508,9 +508,9 @@ if(NOT VOLK_GNSSSDR_FOUND)
 
     set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     set(C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-    if(CMAKE_CROSSCOMPILING)  
-        set(VOLK_GNSSSDR_COMPILER "") 
-    else(CMAKE_CROSSCOMPILING)   
+    if(CMAKE_CROSSCOMPILING)
+        set(VOLK_GNSSSDR_COMPILER "")
+    else(CMAKE_CROSSCOMPILING)
         set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
     endif(CMAKE_CROSSCOMPILING)
     set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
@@ -524,7 +524,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 ${STRIP_VOLK_GNSSSDR_PROFILE}
                                 ${USE_THIS_PYTHON} )
     if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
-        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} 
+        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
                                     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
                                     -DCROSSCOMPILE_MULTILIB=TRUE )
     endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
@@ -672,7 +672,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
                            GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
      set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)
-     
+
      # Ensure that aclocal and libtool are present
      if(OS_IS_LINUX)
          if(EXISTS "/usr/bin/libtoolize")
@@ -882,26 +882,17 @@ endif(OS_IS_LINUX)
 find_package(Armadillo)
 if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " Armadillo has not been found.")
-     message(STATUS " Armadillo will be downloaded and built automatically ")
+     message(STATUS " Armadillo will be downloaded and built automatically")
      message(STATUS " when doing 'make'. ")
-
-     if(CMAKE_VERSION VERSION_LESS 3.1)
-         # ExternalProject in CMake > 3.1 cannot open .xz files
-         set(armadillo_RELEASE 6.700.7)
-         set(armadillo_MD5 "8116185e1d7391eed3bf6c500f81b4d8")
-         set(ARMA_FILE_EXTENSION "gz")
-     else(CMAKE_VERSION VERSION_LESS 3.1)
-         set(armadillo_RELEASE 7.800.2)
-         set(armadillo_MD5 "c601f3a5ec6d50666aa3a539fa20e6ca")
-         set(ARMA_FILE_EXTENSION "xz")
-     endif(CMAKE_VERSION VERSION_LESS 3.1)
+     set(armadillo_BRANCH 7.800.x)
+     set(armadillo_RELEASE ${armadillo_BRANCH})
 
      ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-         URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.${ARMA_FILE_EXTENSION}
-         DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
-         URL_MD5 ${armadillo_MD5}
+         GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
+         GIT_TAG ${armadillo_BRANCH}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
          CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF
          BUILD_IN_SOURCE 1
          BUILD_COMMAND make
@@ -1314,4 +1305,3 @@ add_custom_target(uninstall
 # Add subdirectories (in order of deps)
 ########################################################################
 add_subdirectory(src)
-

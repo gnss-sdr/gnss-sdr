@@ -916,10 +916,6 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      endif(NOT GFORTRAN)
      set(ARMADILLO_LIBRARIES ${BLAS} ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
      set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
-     # Save a copy at the thirdparty folder
-     file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-          DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo
-     )
      set(ARMADILLO_VERSION_STRING ${armadillo_RELEASE})
 else(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      set(armadillo_RELEASE ${ARMADILLO_VERSION_STRING})

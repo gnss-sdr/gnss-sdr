@@ -893,8 +893,8 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
          GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
          GIT_TAG ${armadillo_BRANCH}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
          CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF
-         BUILD_IN_SOURCE 1
          BUILD_COMMAND make
          UPDATE_COMMAND ""
          INSTALL_COMMAND ""
@@ -902,7 +902,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
 
      # Set up variables
      ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
-     set(ARMADILLO_INCLUDE_DIRS ${binary_dir}/include )
+     set(ARMADILLO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include )
      find_library(LAPACK NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
      if(OS_IS_MACOSX)
          find_library(BLAS blas)

@@ -21,12 +21,11 @@ iterations of all versions that your machine can execute and annotates
 which is the fastest, which will then be selected at runtime when
 executing GNSS-SDR. In this way, we can address at the same time
 [portability](http://gnss-sdr.org/design-forces/portability/) (by
-creating executables that will run in nearly all
-processor architectures) and
+creating executables that will run in nearly all processor
+architectures) and
 [efficiency](http://gnss-sdr.org/design-forces/efficiency/) (by
-providing custom
-implementations specially designed to take advantage of the specific
-processor that is running the code).
+providing custom implementations specially designed to take advantage of
+the specific processor that is running the code).
 
 These kernels have some specific features (e.g. saturation arithmetics)
 that are aimed to GNSS signal processing, but could make them not

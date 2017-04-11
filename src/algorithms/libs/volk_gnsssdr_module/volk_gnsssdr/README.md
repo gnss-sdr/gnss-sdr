@@ -1,5 +1,4 @@
-# Welcome to VOLK_GNSSSDR, the Vector-Optimized Library of Kernels for
-GNSS-SDR
+# Welcome to VOLK_GNSSSDR, the Vector-Optimized Library of Kernels for GNSS-SDR
 
 VOLK_GNSSSDR is a sub-project of GNSS-SDR. This library provides a set
 of extra kernels that can be used stand-alone or in combination with
@@ -47,8 +46,7 @@ First, make sure that the required dependencies are installed in you
 machine:
 
 ~~~~~~ 
-$ sudo apt-get install git cmake python-mako python-six libboost-dev
-libbbost-filesystem
+$ sudo apt-get install git cmake python-mako python-six libboost-dev libbbost-filesystem
 ~~~~~~ 
 
 In order to build and install the library, go to the base folder of the
@@ -99,8 +97,7 @@ the following paper:
 
  * C. Fernández-Prades, J. Arribas, P. Closas, [*Accelerating
 GNSS Software Receivers*](https://zenodo.org/record/266493), in Proc. of
-the ION GNSS+ 2016 Conference, pp. 44-61, Portland, Oregon, Sept. 12-16,
-2016.
+the ION GNSS+ 2016 Conference, pp. 44-61, Portland, Oregon, Sept. 12-16, 2016.
 
 Citations are useful for the continued development and maintenance of
 the library.

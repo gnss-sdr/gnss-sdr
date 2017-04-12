@@ -41,7 +41,7 @@ it is not found by CMake on your system at configure time.
 However, you can install and use VOLK_GNSSSDR kernels as you use VOLK's,
 independently from GNSS-SDR.
 
-First, make sure that the required dependencies are installed in you
+First, make sure that the required dependencies are installed in your
 machine:
 
 ~~~~~~ 

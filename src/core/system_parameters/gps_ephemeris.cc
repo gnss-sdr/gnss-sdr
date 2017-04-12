@@ -117,14 +117,21 @@ double Gps_Ephemeris::check_t(double time)
 // 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
 double Gps_Ephemeris::sv_clock_drift(double transmitTime)
 {
+//    double dt;
+//    dt = check_t(transmitTime - d_Toc);
+//
+//    for (int i = 0; i < 2; i++)
+//        {
+//            dt -= d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt);
+//        }
+//    d_satClkDrift = d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt);
+
+
     double dt;
     dt = check_t(transmitTime - d_Toc);
-
-    for (int i = 0; i < 2; i++)
-        {
-            dt -= d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt);
-        }
-    d_satClkDrift = d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt);
+    d_satClkDrift = d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt) + sv_clock_relativistic_term(transmitTime);
+    //Correct satellite group delay
+    d_satClkDrift-=d_TGD;
 
     return d_satClkDrift;
 }

@@ -384,6 +384,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         channels_.at(who)->set_signal(available_GNSS_signals_.front());
         available_GNSS_signals_.pop_front();
         usleep(100);
+        LOG(INFO) << "Channel "<< who << " Starting acquisition " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
         channels_.at(who)->start_acquisition();
         break;
     case 1:

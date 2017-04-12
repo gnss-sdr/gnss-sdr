@@ -116,8 +116,6 @@ private:
     Gnss_Satellite d_satellite;
     int d_channel;
 
-    double d_preamble_time_seconds;
-
     double d_TOW_at_Preamble;
     double d_TOW_at_current_symbol;
 

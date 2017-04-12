@@ -158,7 +158,6 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_stat = 0;
     d_preamble_index = 0;
 
-    d_preamble_time_seconds = 0;
     d_flag_frame_sync = false;
 
     d_flag_parity = false;
@@ -370,11 +369,11 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
                             d_CRC_error_counter = 0;
                             d_flag_preamble = true; //valid preamble indicator (initialized to false every work())
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
-                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs; // - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
-                                    LOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
+                                    DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
+                                            << in[0][0].Tracking_sample_counter << " [samples]";
                                 }
                         }
                     else
@@ -456,29 +455,28 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
             current_synchro_data.Flag_valid_word = false;
         }
 
-    current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
+    current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
     //todo: move to observables: current_synchro_data.d_TOW_hybrid_at_current_symbol = current_synchro_data.d_TOW_at_current_symbol - delta_t; //delta_t = t_gal - t_gps  ---->  t_gps = t_gal -delta_t
-    current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
 
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
             {
-                    double tmp_double;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
-                    tmp_double = current_synchro_data.Prn_timestamp_ms;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
-                    tmp_double = d_TOW_at_Preamble;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                double tmp_double;
+                unsigned long int tmp_ulong_int;
+                tmp_double = d_TOW_at_current_symbol;
+                d_dump_file.write((char*)&tmp_double, sizeof(double));
+                tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
+                d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
+                tmp_double = d_TOW_at_Preamble;
+                d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
-            catch (const std::ifstream::failure& e)
+            catch (const std::ifstream::failure & e)
             {
                     LOG(WARNING) << "Exception writing observables dump file " << e.what();
             }
         }
-    //todo: implement averaging
     d_average_count++;
 
     if (d_average_count == d_decimation_output_factor)

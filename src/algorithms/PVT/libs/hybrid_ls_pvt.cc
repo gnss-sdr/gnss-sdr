@@ -72,6 +72,160 @@ hybrid_ls_pvt::~hybrid_ls_pvt()
 }
 
 
+gtime_t hybrid_ls_pvt::epoch2time(const double *ep)
+{
+    const int doy[]={1,32,60,91,121,152,182,213,244,274,305,335};
+    gtime_t time={0};
+    int days,sec,year=(int)ep[0],mon=(int)ep[1],day=(int)ep[2];
+
+    if (year<1970||2099<year||mon<1||12<mon) return time;
+
+    /* leap year if year%4==0 in 1901-2099 */
+    days=(year-1970)*365+(year-1969)/4+doy[mon-1]+day-2+(year%4==0&&mon>=3?1:0);
+    sec=(int)floor(ep[5]);
+    time.time=(time_t)days*86400+(int)ep[3]*3600+(int)ep[4]*60+sec;
+    time.sec=ep[5]-sec;
+    return time;
+}
+
+gtime_t hybrid_ls_pvt::gpst2time(int week, double sec)
+{
+	const static double gpst0[]={1980,1, 6,0,0,0}; /* gps time reference */
+    gtime_t t=epoch2time(gpst0);
+
+    if (sec<-1E9||1E9<sec) sec=0.0;
+    t.time+=86400*7*week+(int)sec;
+    t.sec=sec-(int)sec;
+    return t;
+}
+
+void hybrid_ls_pvt::time2str(gtime_t t, char *s, int n)
+{
+    double ep[6];
+
+    if (n<0) n=0; else if (n>12) n=12;
+    if (1.0-t.sec<0.5/pow(10.0,n)) {t.time++; t.sec=0.0;};
+    time2epoch(t,ep);
+    sprintf(s,"%04.0f/%02.0f/%02.0f %02.0f:%02.0f:%0*.*f",ep[0],ep[1],ep[2],
+            ep[3],ep[4],n<=0?2:n+3,n<=0?0:n,ep[5]);
+}
+
+double hybrid_ls_pvt::time2gpst(gtime_t t, int *week)
+{
+	const static double gpst0[]={1980,1, 6,0,0,0}; /* gps time reference */
+    gtime_t t0=epoch2time(gpst0);
+    time_t sec=t.time-t0.time;
+    int w=(int)(sec/(86400*7));
+
+    if (week) *week=w;
+    return (double)(sec-w*86400*7)+t.sec;
+}
+
+void hybrid_ls_pvt::time2epoch(gtime_t t, double *ep)
+{
+    const int mday[]={ /* # of days in a month */
+        31,28,31,30,31,30,31,31,30,31,30,31,31,28,31,30,31,30,31,31,30,31,30,31,
+        31,29,31,30,31,30,31,31,30,31,30,31,31,28,31,30,31,30,31,31,30,31,30,31
+    };
+    int days,sec,mon,day;
+
+    /* leap year if year%4==0 in 1901-2099 */
+    days=(int)(t.time/86400);
+    sec=(int)(t.time-(time_t)days*86400);
+    for (day=days%1461,mon=0;mon<48;mon++) {
+        if (day>=mday[mon]) day-=mday[mon]; else break;
+    }
+    ep[0]=1970+days/1461*4+mon/12; ep[1]=mon%12+1; ep[2]=day+1;
+    ep[3]=sec/3600; ep[4]=sec%3600/60; ep[5]=sec%60+t.sec;
+}
+
+char* hybrid_ls_pvt::time_str(gtime_t t, int n)
+{
+    static char buff[64];
+    time2str(t,buff,n);
+    return buff;
+}
+
+
+/* time difference -------------------------------------------------------------
+* difference between gtime_t structs
+* args   : gtime_t t1,t2    I   gtime_t structs
+* return : time difference (t1-t2) (s)
+*-----------------------------------------------------------------------------*/
+double hybrid_ls_pvt::timediff(gtime_t t1, gtime_t t2)
+{
+    return difftime(t1.time,t2.time)+t1.sec-t2.sec;
+}
+
+/* add time --------------------------------------------------------------------
+* add time to gtime_t struct
+* args   : gtime_t t        I   gtime_t struct
+*          double sec       I   time to add (s)
+* return : gtime_t struct (t+sec)
+*-----------------------------------------------------------------------------*/
+gtime_t hybrid_ls_pvt::timeadd(gtime_t t, double sec)
+{
+    double tt;
+
+    t.sec+=sec; tt=floor(t.sec); t.time+=(int)tt; t.sec-=tt;
+    return t;
+}
+
+
+gtime_t hybrid_ls_pvt::utc2gpst(gtime_t t)
+{
+	const int MAXLEAPS=64;
+	static double leaps[MAXLEAPS+1][7]={ /* leap seconds (y,m,d,h,m,s,utc-gpst) */
+	    {2017,1,1,0,0,0,-18},
+	    {2015,7,1,0,0,0,-17},
+	    {2012,7,1,0,0,0,-16},
+	    {2009,1,1,0,0,0,-15},
+	    {2006,1,1,0,0,0,-14},
+	    {1999,1,1,0,0,0,-13},
+	    {1997,7,1,0,0,0,-12},
+	    {1996,1,1,0,0,0,-11},
+	    {1994,7,1,0,0,0,-10},
+	    {1993,7,1,0,0,0, -9},
+	    {1992,7,1,0,0,0, -8},
+	    {1991,1,1,0,0,0, -7},
+	    {1990,1,1,0,0,0, -6},
+	    {1988,1,1,0,0,0, -5},
+	    {1985,7,1,0,0,0, -4},
+	    {1983,7,1,0,0,0, -3},
+	    {1982,7,1,0,0,0, -2},
+	    {1981,7,1,0,0,0, -1},
+	    {0}
+	};
+    int i;
+    for (i=0;leaps[i][0]>0;i++) {
+        if (timediff(t,epoch2time(leaps[i]))>=0.0) return timeadd(t,-leaps[i][6]);
+    }
+    return t;
+}
+
+gtime_t hybrid_ls_pvt::timeget(void)
+{
+	static double timeoffset_=0.0;        /* time offset (s) */
+    double ep[6]={0};
+
+    struct timeval tv;
+    struct tm *tt;
+
+    if (!gettimeofday(&tv,NULL)&&(tt=gmtime(&tv.tv_sec))) {
+        ep[0]=tt->tm_year+1900; ep[1]=tt->tm_mon+1; ep[2]=tt->tm_mday;
+        ep[3]=tt->tm_hour; ep[4]=tt->tm_min; ep[5]=tt->tm_sec+tv.tv_usec*1E-6;
+    }
+    return timeadd(epoch2time(ep),timeoffset_);
+}
+
+int hybrid_ls_pvt::adjgpsweek(int week)
+{
+    int w;
+    (void)time2gpst(utc2gpst(timeget()),&w);
+    if (w<1560) w=1560; /* use 2009/12/1 if time is earlier than 2009/12/1 */
+    return week+(w-week+512)/1024*1024;
+}
+
 bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, double Rx_time, bool flag_averaging)
 {
     std::map<int,Gnss_Synchro>::iterator gnss_observables_iter;
@@ -98,6 +252,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
     // ****** PREPARE THE LEAST SQUARES DATA (SV POSITIONS MATRIX AND OBS VECTORS) ****
     // ********************************************************************************
     int valid_obs = 0; //valid observations counter
+
 
     for(gnss_observables_iter = gnss_observables_map.begin();
             gnss_observables_iter != gnss_observables_map.end();
@@ -181,8 +336,9 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
 
                                     // 3- compute the current ECEF position for this SV using corrected TX time and obtain clock bias including relativistic effect
                                     TX_time_corrected_s = Tx_time - SV_clock_bias_s;
-                                    double dtr = gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
-                                    //std::cout<<"L1 Tx_time: "<<Tx_time<<" SV_clock_bias_s: "<<SV_clock_bias_s<<" dtr: "<<dtr<<std::endl;
+                                    //compute satellite position, clock bias + relativistic correction
+                                    double dts = gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
+
                                     //store satellite positions in a matrix
                                     satpos.resize(3, valid_obs + 1);
                                     satpos(0, valid_obs) = gps_ephemeris_iter->second.d_satpos_X;
@@ -190,8 +346,14 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                                     satpos(2, valid_obs) = gps_ephemeris_iter->second.d_satpos_Z;
 
                                     // 4- fill the observations vector with the corrected pseudoranges
+                                    // compute code bias: TGD for single frequency
+                                    // See IS-GPS-200E section 20.3.3.3.3.2
+                                    double sqrt_Gamma=GPS_L1_FREQ_HZ/GPS_L2_FREQ_HZ;
+                                    double Gamma=sqrt_Gamma*sqrt_Gamma;
+                                    double P1_P2=(1.0-Gamma)*(gps_ephemeris_iter->second.d_TGD* GPS_C_m_s);
+                                    double Code_bias_m= P1_P2/(1.0-Gamma);
                                     obs.resize(valid_obs + 1, 1);
-                                    obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_m_s - d_rx_dt_s * GPS_C_m_s;
+                                    obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dts * GPS_C_m_s-Code_bias_m-d_rx_dt_s * GPS_C_m_s;
                                     d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
                                     d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
 
@@ -202,6 +364,19 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                                                << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
                                                << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
                                                << " [m] PR_obs=" << obs(valid_obs) << " [m]";
+
+                                    //*** debug
+                                    if (valid_obs==0)
+                                    {
+                                    	gtime_t rx_time=gpst2time(adjgpsweek(gps_ephemeris_iter->second.i_GPS_week),Rx_time);
+                                    	gtime_t tx_time=gpst2time(adjgpsweek(gps_ephemeris_iter->second.i_GPS_week),Tx_time);
+                                    	printf("RINEX RX TIME: %s,%f, TX TIME: %s,%f\n\r",time_str(rx_time,3),rx_time.sec,time_str(tx_time,3),tx_time.sec);
+                                    }
+                                    std::flush(std::cout);
+                                    gtime_t tx_time_corr=gpst2time(adjgpsweek(gps_ephemeris_iter->second.i_GPS_week),TX_time_corrected_s);
+                                    printf("SAT TX TIME [%i]: %s,%f PR:%f dt:%f\n\r",valid_obs,time_str(tx_time_corr,3),tx_time_corr.sec, obs(valid_obs),dts);
+                                    std::flush(std::cout);
+                                    //*** end debug
 
                                     valid_obs++;
                                     // compute the UTC time for this SV (just to print the associated UTC timestamp)

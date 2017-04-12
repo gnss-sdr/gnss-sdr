@@ -1,5 +1,5 @@
 /*!
- * \file tlm_dump_reader.cc
+ * \file observables_dump_reader.cc
  * \brief Helper file for unit testing
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
@@ -28,15 +28,22 @@
  * -------------------------------------------------------------------------
  */
 
-#include "tlm_dump_reader.h"
+#include "observables_dump_reader.h"
 
-bool tlm_dump_reader::read_binary_obs()
+bool observables_dump_reader::read_binary_obs()
 {
     try
     {
-            d_dump_file.read((char *) &TOW_at_current_symbol, sizeof(double));
-            d_dump_file.read((char *) &Tracking_sample_counter, sizeof(double));
-            d_dump_file.read((char *) &d_TOW_at_Preamble, sizeof(double));
+        for(int i=0;i<n_channels;i++)
+        {
+
+            d_dump_file.read((char *) &RX_time[i], sizeof(double));
+            d_dump_file.read((char *) &TOW_at_current_symbol_s[i], sizeof(double));
+            d_dump_file.read((char *) &Carrier_Doppler_hz[i], sizeof(double));
+            d_dump_file.read((char *) &Acc_carrier_phase_hz[i], sizeof(double));
+            d_dump_file.read((char *) &Pseudorange_m[i], sizeof(double));
+            d_dump_file.read((char *) &PRN[i], sizeof(double));
+        }
     }
     catch (const std::ifstream::failure &e)
     {
@@ -45,7 +52,7 @@ bool tlm_dump_reader::read_binary_obs()
     return true;
 }
 
-bool tlm_dump_reader::restart()
+bool observables_dump_reader::restart()
 {
     if (d_dump_file.is_open())
         {
@@ -59,10 +66,10 @@ bool tlm_dump_reader::restart()
         }
 }
 
-long int tlm_dump_reader::num_epochs()
+long int observables_dump_reader::num_epochs()
 {
     std::ifstream::pos_type size;
-    int number_of_vars_in_epoch = 3;
+    int number_of_vars_in_epoch = n_channels*6;
     int epoch_size_bytes = sizeof(double) * number_of_vars_in_epoch;
     std::ifstream tmpfile( d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
@@ -77,7 +84,7 @@ long int tlm_dump_reader::num_epochs()
         }
 }
 
-bool tlm_dump_reader::open_obs_file(std::string out_file)
+bool observables_dump_reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
@@ -86,7 +93,7 @@ bool tlm_dump_reader::open_obs_file(std::string out_file)
                     d_dump_filename=out_file;
                     d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
-                    std::cout << "TLM dump enabled, Log file: " << d_dump_filename.c_str() << std::endl;
+                    std::cout << "Observables sum file opened, Log file: " << d_dump_filename.c_str() << std::endl;
                     return true;
             }
             catch (const std::ifstream::failure & e)
@@ -101,10 +108,26 @@ bool tlm_dump_reader::open_obs_file(std::string out_file)
         }
 }
 
-tlm_dump_reader::~tlm_dump_reader()
+observables_dump_reader::observables_dump_reader(int n_channels_)
+{
+    n_channels=n_channels_;
+    RX_time=new double[n_channels];
+    TOW_at_current_symbol_s=new double[n_channels];
+    Carrier_Doppler_hz=new double[n_channels];
+    Acc_carrier_phase_hz=new double[n_channels];
+    Pseudorange_m=new double[n_channels];
+    PRN=new double[n_channels];
+}
+observables_dump_reader::~observables_dump_reader()
 {
     if (d_dump_file.is_open() == true)
         {
             d_dump_file.close();
         }
+    delete[] RX_time;
+    delete[] TOW_at_current_symbol_s;
+    delete[] Carrier_Doppler_hz;
+    delete[] Acc_carrier_phase_hz;
+    delete[] Pseudorange_m;
+    delete[] PRN;
 }

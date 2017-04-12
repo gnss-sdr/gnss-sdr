@@ -298,13 +298,13 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
     // Set Observables
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.dump", "false");
     config->set_property("Observables.dump_filename", "./observables.dat");
     config->set_property("Observables.averaging_depth", std::to_string(100));
 
     // Set PVT
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("PVT.implementation", "Hybrid_PVT");
     config->set_property("PVT.averaging_depth", std::to_string(averaging_depth));
     config->set_property("PVT.flag_averaging", "true");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));

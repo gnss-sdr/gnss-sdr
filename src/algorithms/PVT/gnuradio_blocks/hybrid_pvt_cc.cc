@@ -409,7 +409,7 @@ bool hybrid_pvt_cc::observables_pairCompare_min(const std::pair<int,Gnss_Synchro
 void hybrid_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronization_data)
 {
     // Print the current receiver status using std::cout every second
-    int current_rx_seg = floor(channels_synchronization_data[0][0].Tracking_timestamp_secs);
+    int current_rx_seg = floor((double)channels_synchronization_data[0][0].Tracking_sample_counter/(double)channels_synchronization_data[0][0].fs);
     if ( current_rx_seg != d_last_status_print_seg)
         {
             d_last_status_print_seg = current_rx_seg;
@@ -456,7 +456,7 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                 {
                     // store valid observables in a map.
                     gnss_observables_map.insert(std::pair<int,Gnss_Synchro>(i, in[i][0]));
-                    d_rx_time = in[i][0].RX_time; // hybrid rx time, all the channels have the same RX timestamp (common RX time pseudoranges, not corrected by delta t)
+                    d_rx_time = in[i][0].RX_time;
                     if(d_ls_pvt->gps_ephemeris_map.size() > 0)
                         {
                             std::map<int,Gps_Ephemeris>::iterator tmp_eph_iter = d_ls_pvt->gps_ephemeris_map.find(in[i][0].PRN);
@@ -528,6 +528,7 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                     if (pvt_result == true)
                         {
                             // correct the observable to account for the receiver clock offset
+
                              for (std::map<int,Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
                                  {
                                      it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->d_rx_dt_s * GPS_C_m_s;

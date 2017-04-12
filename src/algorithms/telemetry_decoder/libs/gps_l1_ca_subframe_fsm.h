@@ -83,7 +83,7 @@ public:
     int d_subframe_ID;
     bool d_flag_new_subframe;
     char d_GPS_frame_4bytes[GPS_WORD_LENGTH];
-    double d_preamble_time_ms;
+    //double d_preamble_time_ms;
 
     void gps_word_to_subframe(int position); //!< inserts the word in the correct position of the subframe
 

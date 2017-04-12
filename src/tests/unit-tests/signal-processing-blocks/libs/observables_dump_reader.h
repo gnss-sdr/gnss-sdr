@@ -1,5 +1,5 @@
 /*!
- * \file tlm_dump_reader.h
+ * \file observables_dump_reader.h
  * \brief Helper file for unit testing
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
@@ -28,31 +28,38 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TLM_DUMP_READER_H
-#define GNSS_SDR_TLM_DUMP_READER_H
+#ifndef GNSS_SDR_OBSERVABLES_DUMP_READER_H
+#define GNSS_SDR_OBSERVABLES_DUMP_READER_H
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 
-class tlm_dump_reader
+class observables_dump_reader
 {
 public:
-    ~tlm_dump_reader();
+    observables_dump_reader(int n_channels);
+    ~observables_dump_reader();
     bool read_binary_obs();
     bool restart();
     long int num_epochs();
     bool open_obs_file(std::string out_file);
 
-    //telemetry decoder dump variables
-    double TOW_at_current_symbol;
-    unsigned long int Tracking_sample_counter;
-    double d_TOW_at_Preamble;
+
+    //dump variables
+
+    double* RX_time;
+    double* TOW_at_current_symbol_s;
+    double* Carrier_Doppler_hz;
+    double* Acc_carrier_phase_hz;
+    double* Pseudorange_m;
+    double* PRN;
 
 private:
+    int n_channels;
     std::string d_dump_filename;
     std::ifstream d_dump_file;
 };
 
-#endif //GNSS_SDR_TLM_DUMP_READER_H
+#endif //GNSS_SDR_OBSERVABLES_DUMP_READER_H

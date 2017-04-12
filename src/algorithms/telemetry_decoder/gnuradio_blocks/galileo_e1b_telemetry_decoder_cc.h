@@ -117,8 +117,6 @@ private:
     int d_average_count;
     int d_decimation_output_factor;
 
-    double d_preamble_time_seconds;
-
     double d_TOW_at_Preamble;
     double d_TOW_at_current_symbol;
 

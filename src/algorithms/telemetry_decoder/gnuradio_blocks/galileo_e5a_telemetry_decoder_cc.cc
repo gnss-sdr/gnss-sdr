@@ -241,7 +241,6 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
     d_state = 0;
     d_preamble_lock = false;
     d_preamble_index = 0;
-    d_preamble_time_seconds = 0;
     d_flag_frame_sync = false;
     d_current_symbol = 0;
     d_prompt_counter = 0;
@@ -444,12 +443,11 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                                         {
                                             d_CRC_error_counter = 0;
                                             d_flag_preamble = true; //valid preamble indicator (initialized to false every work())
-                                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs - (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD); //record the PRN start sample index associated to the preamble start.
                                             if (!d_flag_frame_sync)
                                                 {
                                                     d_flag_frame_sync = true;
-                                                    LOG(INFO) <<" Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
-                                                }
+                                                    DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
+                                                            << in[0][0].Tracking_sample_counter << " [samples]";                                                }
                                             d_symbol_counter = 0; // d_page_symbols start right after preamble and finish at the end of next preamble.
                                         }
                                     else
@@ -535,23 +533,23 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
             current_synchro_data.Flag_valid_word = false;
         }
 
-    current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
-    current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
+    current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
 
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
             {
-                    double tmp_double;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
-                    tmp_double = current_synchro_data.Prn_timestamp_ms;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
-                    tmp_double = d_TOW_at_Preamble;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                double tmp_double;
+                unsigned long int tmp_ulong_int;
+                tmp_double = d_TOW_at_current_symbol;
+                d_dump_file.write((char*)&tmp_double, sizeof(double));
+                tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
+                d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
+                tmp_double = d_TOW_at_Preamble;
+                d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
-            catch (const std::ifstream::failure& e)
+            catch (const std::ifstream::failure & e)
             {
                     LOG(WARNING) << "Exception writing observables dump file " << e.what();
             }

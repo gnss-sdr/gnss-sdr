@@ -95,7 +95,6 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_symbol_accumulator = 0;
     d_symbol_accumulator_counter = 0;
     d_frame_bit_index = 0;
-    d_preamble_time_seconds = 0;
     d_flag_frame_sync = false;
     d_GPS_frame_4bytes = 0;
     d_prev_GPS_frame_4bytes = 0;
@@ -180,8 +179,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                 {
                     d_GPS_FSM.Event_gps_word_preamble();
                     //record the preamble sample stamp
-                    d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs; // record the preamble sample stamp
-                    DLOG(INFO)  << "Preamble detection for SAT " << this->d_satellite << "in[0][0].Tracking_timestamp_secs=" << round(in[0][0].Tracking_timestamp_secs * 1000.0);
+                    d_preamble_time_samples = in[0][0].Tracking_sample_counter; // record the preamble sample stamp
+                    DLOG(INFO)  << "Preamble detection for SAT " << this->d_satellite << "in[0][0].Tracking_sample_counter=" << in[0][0].Tracking_sample_counter;
                     //sync the symbol to bits integrator
                     d_symbol_accumulator = 0;
                     d_symbol_accumulator_counter = 0;
@@ -190,17 +189,17 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                 }
             else if (d_stat == 1) //check 6 seconds of preamble separation
                 {
-                    preamble_diff_ms = round((in[0][0].Tracking_timestamp_secs - d_preamble_time_seconds) * 1000.0);
+                    preamble_diff_ms = round((((double)in[0][0].Tracking_sample_counter - d_preamble_time_samples)/(double)in[0][0].fs) * 1000.0);
                     if (abs(preamble_diff_ms - GPS_SUBFRAME_MS) < 1)
                         {
-                            DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite  << "in[0][0].Tracking_timestamp_secs=" << round(in[0][0].Tracking_timestamp_secs * 1000.0);
+                            DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;
                             d_GPS_FSM.Event_gps_word_preamble();
                             d_flag_preamble = true;
-                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs; // record the PRN start sample index associated to the preamble
+                            d_preamble_time_samples = in[0][0].Tracking_sample_counter; // record the PRN start sample index associated to the preamble
                             if (!d_flag_frame_sync)
                                 {
                                     // send asynchronous message to tracking to inform of frame sync and extend correlation time
-                                    pmt::pmt_t value = pmt::from_double(d_preamble_time_seconds - 0.001);
+                                    pmt::pmt_t value = pmt::from_double((double)d_preamble_time_samples/(double)in[0][0].fs - 0.001);
                                     this->message_port_pub(pmt::mp("preamble_timestamp_s"), value);
                                     d_flag_frame_sync = true;
                                     if (corr_value < 0)
@@ -212,7 +211,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                                         {
                                             flag_PLL_180_deg_phase_locked = false;
                                         }
-                                    DLOG(INFO)  << " Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
+                                    DLOG(INFO)  << " Frame sync SAT " << this->d_satellite << " with preamble start at " << (double)d_preamble_time_samples/(double)in[0][0].fs << " [s]";
                                 }
                         }
                 }
@@ -221,7 +220,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
         {
             if (d_stat == 1)
                 {
-                    preamble_diff_ms = round((in[0][0].Tracking_timestamp_secs - d_preamble_time_seconds) * 1000.0);
+                    preamble_diff_ms =  round((((double)in[0][0].Tracking_sample_counter - (double)d_preamble_time_samples)/(double)in[0][0].fs) * 1000.0);
                     if (preamble_diff_ms > GPS_SUBFRAME_MS+1)
                         {
                             DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff_ms;
@@ -274,7 +273,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                      if (gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(d_GPS_frame_4bytes))
                          {
                              memcpy(&d_GPS_FSM.d_GPS_frame_4bytes, &d_GPS_frame_4bytes, sizeof(char)*4);
-                             d_GPS_FSM.d_preamble_time_ms = d_preamble_time_seconds * 1000.0;
+                             //d_GPS_FSM.d_preamble_time_ms = d_preamble_time_seconds * 1000.0;
                              d_GPS_FSM.Event_gps_word_valid();
                              // send TLM data to PVT using asynchronous message queues
                              if (d_GPS_FSM.d_flag_new_subframe == true)
@@ -350,9 +349,9 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
             d_TOW_at_current_symbol = d_TOW_at_current_symbol + GPS_L1_CA_CODE_PERIOD;
         }
 
-     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
-     current_synchro_data.Flag_valid_word = flag_TOW_set;//(d_flag_frame_sync == true and d_flag_parity == true and flag_TOW_set == true);
-     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
+     current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
+     current_synchro_data.Flag_valid_word = flag_TOW_set;
+
 
      if (flag_PLL_180_deg_phase_locked == true)
          {
@@ -366,10 +365,11 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
              try
              {
                      double tmp_double;
+                     unsigned long int tmp_ulong_int;
                      tmp_double = d_TOW_at_current_symbol;
                      d_dump_file.write((char*)&tmp_double, sizeof(double));
-                     tmp_double = current_synchro_data.Prn_timestamp_ms;
-                     d_dump_file.write((char*)&tmp_double, sizeof(double));
+                     tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
+                     d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
                      tmp_double = d_TOW_at_Preamble;
                      d_dump_file.write((char*)&tmp_double, sizeof(double));
              }
@@ -378,8 +378,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                      LOG(WARNING) << "Exception writing observables dump file " << e.what();
              }
          }
-
-     //todo: implement averaging
 
      d_average_count++;
      if (d_average_count == d_decimation_output_factor)

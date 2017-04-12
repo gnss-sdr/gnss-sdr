@@ -103,7 +103,7 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
     Gnss_Synchro *out = (Gnss_Synchro *) output_items[0];     // output
 
     // store the time stamp of the first sample in the processed sample block
-    double sample_stamp = in[0].Tracking_timestamp_secs;
+    double sample_stamp = in[0].Tracking_sample_counter/in[0].fs;
 
     // copy correlation samples into samples vector
     for (int i = 0; i < noutput_items; i++)

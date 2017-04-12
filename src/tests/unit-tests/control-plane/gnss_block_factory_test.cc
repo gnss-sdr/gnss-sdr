@@ -304,11 +304,11 @@ TEST(GNSS_Block_Factory_Test, InstantiateObservables)
 TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaObservables)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    configuration->set_property("Observables.implementation", "Hybrid_Observables");
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<GNSSBlockInterface> observables = factory->GetObservables(configuration);
     EXPECT_STREQ("Observables", observables->role().c_str());
-    EXPECT_STREQ("GPS_L1_CA_Observables", observables->implementation().c_str());
+    EXPECT_STREQ("Hybrid_Observables", observables->implementation().c_str());
 }
 
 
@@ -328,12 +328,12 @@ TEST(GNSS_Block_Factory_Test, InstantiatePvt)
 TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPvt)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    configuration->set_property("PVT.implementation", "Hybrid_PVT");
     std::unique_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<GNSSBlockInterface> pvt_ = factory->GetPVT(configuration);
     std::shared_ptr<PvtInterface> pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);
     EXPECT_STREQ("PVT", pvt->role().c_str());
-    EXPECT_STREQ("GPS_L1_CA_PVT", pvt->implementation().c_str());
+    EXPECT_STREQ("Hybrid_PVT", pvt->implementation().c_str());
 }
 
 

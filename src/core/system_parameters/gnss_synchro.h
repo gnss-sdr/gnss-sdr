@@ -52,20 +52,21 @@ public:
     unsigned long int Acq_samplestamp_samples; //!< Set by Acquisition processing block
     bool Flag_valid_acquisition; //!< Set by Acquisition processing block
     //Tracking
+    long int fs;           //!< Set by Tracking processing block
     double Prompt_I;                //!< Set by Tracking processing block
     double Prompt_Q;                //!< Set by Tracking processing block
     double CN0_dB_hz;               //!< Set by Tracking processing block
     double Carrier_Doppler_hz;      //!< Set by Tracking processing block
     double Carrier_phase_rads;      //!< Set by Tracking processing block
-    double Tracking_timestamp_secs; //!< Set by Tracking processing block
+    double Code_phase_samples;      //!< Set by Tracking processing block
+    unsigned long int Tracking_sample_counter; //!< Set by Tracking processing block
 
     bool Flag_valid_symbol_output; //!< Set by Tracking processing block
     int correlation_length_ms; //!< Set by Tracking processing block
 
     //Telemetry Decoder
-    double Prn_timestamp_ms;        //!< Set by Telemetry Decoder processing block
     bool Flag_valid_word;           //!< Set by Telemetry Decoder processing block
-    double d_TOW_at_current_symbol; //!< Set by Telemetry Decoder processing block
+    double TOW_at_current_symbol_s; //!< Set by Telemetry Decoder processing block
 
     // Observables
     double Pseudorange_m;           //!< Set by Observables processing block

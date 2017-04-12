@@ -216,7 +216,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared_ptr<ConfigurationInterface> configuration)
 {
-    std::string default_implementation = "GPS_L1_CA_Observables";
+    std::string default_implementation = "Hybrid_Observables";
     std::string implementation = configuration->property("Observables.implementation", default_implementation);
     LOG(INFO) << "Getting Observables with implementation " << implementation;
     unsigned int Galileo_channels = configuration->property("Channels_1B.count", 0);
@@ -230,7 +230,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<ConfigurationInterface> configuration)
 {
-    std::string default_implementation = "Pass_Through";
+    std::string default_implementation = "Hybrid_PVT";
     std::string implementation = configuration->property("PVT.implementation", default_implementation);
     LOG(INFO) << "Getting PVT with implementation " << implementation;
     unsigned int Galileo_channels =configuration->property("Channels_1B.count", 0);

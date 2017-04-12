@@ -59,7 +59,7 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
         {
             default_depth = 100;
         }
-    unsigned int history_deep = configuration->property(role + ".averaging_depth", default_depth);
+    unsigned int history_deep = configuration->property(role + ".history_depth", default_depth);
     observables_ = hybrid_make_observables_cc(in_streams_, dump_, dump_filename_, history_deep);
     DLOG(INFO) << "pseudorange(" << observables_->unique_id() << ")";
 }

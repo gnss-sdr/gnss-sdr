@@ -308,13 +308,14 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
             acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
             samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
             d_sample_counter = d_sample_counter + samples_offset; // count for the processed samples
             d_pull_in = false;
             // take into account the carrier cycles accumulated in the pull in signal alignment
             d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * samples_offset;
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+            current_synchro_data.fs=d_fs_in;
             *out[0] = current_synchro_data;
             consume_each(samples_offset); // shift input to perform alignment with local replica
             return 1;
@@ -345,13 +346,16 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
         code_error_chips = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2]); // [chips/Ti] //early and late
         // Code discriminator filter
         code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); // [chips/second]
-        double code_error_filt_secs = (GPS_L1_CA_CODE_PERIOD * code_error_filt_chips) / GPS_L1_CA_CODE_RATE_HZ; // [seconds]
+        double T_chip_seconds = 1.0 / static_cast<double>(d_code_freq_chips);
+        double T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
+        double code_error_filt_secs = (T_prn_seconds * code_error_filt_chips*T_chip_seconds); //[seconds]
+        //double code_error_filt_secs = (GPS_L1_CA_CODE_PERIOD * code_error_filt_chips) / GPS_L1_CA_CODE_RATE_HZ; // [seconds]
 
         // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
         // keep alignment parameters for the next input buffer
         // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
-        double T_chip_seconds =  1.0 / static_cast<double>(d_code_freq_chips);
-        double T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
+        //double T_chip_seconds =  1.0 / static_cast<double>(d_code_freq_chips);
+        //double T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
         double T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
         double K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
         d_current_prn_length_samples = round(K_blk_samples); // round to a discrete number of samples
@@ -407,8 +411,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
         // ########### Output the tracking data to navigation and PVT ##########
         current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs[1]).real());
         current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs[1]).imag());
-        // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample
-        current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter + d_current_prn_length_samples) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+        current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+        current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
         current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
         current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
         current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
@@ -422,11 +426,12 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             d_correlator_outs[n] = gr_complex(0,0);
         }
 
-        current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter + d_current_prn_length_samples) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+        current_synchro_data.Tracking_sample_counter =d_sample_counter + d_current_prn_length_samples;
         current_synchro_data.System = {'G'};
     }
 
     //assign the GNURadio block output data
+    current_synchro_data.fs=d_fs_in;
     *out[0] = current_synchro_data;
     if(d_dump)
     {

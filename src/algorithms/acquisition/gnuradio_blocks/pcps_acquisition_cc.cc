@@ -162,6 +162,7 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
     // Here we want to create a buffer that looks like this:
     // [ 0 0 0 ... 0 c_0 c_1 ... c_L]
     // where c_i is the local code and there are L zeros and L chips
+    gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
     if( d_bit_transition_flag )
         {
             int offset = d_fft_size/2;
@@ -216,6 +217,7 @@ void pcps_acquisition_cc::init()
 
 void pcps_acquisition_cc::set_state(int state)
 {
+    gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
     d_state = state;
     if (d_state == 1)
         {
@@ -236,6 +238,42 @@ void pcps_acquisition_cc::set_state(int state)
 }
 
 
+void pcps_acquisition_cc::send_positive_acquisition()
+{
+    // 6.1- Declare positive acquisition using a message port
+    //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    DLOG(INFO) << "positive acquisition"
+    << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+    << "sample_stamp " << d_sample_counter
+    << "test statistics value " << d_test_statistics
+    << "test statistics threshold " << d_threshold
+    << "code phase " << d_gnss_synchro->Acq_delay_samples
+    << "doppler " << d_gnss_synchro->Acq_doppler_hz
+    << "magnitude " << d_mag
+    << "input signal power " << d_input_power;
+
+    this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
+
+}
+
+void pcps_acquisition_cc::send_negative_acquisition()
+{
+    // 6.2- Declare negative acquisition using a message port
+    //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    DLOG(INFO) << "negative acquisition"
+    << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+    << "sample_stamp " << d_sample_counter
+    << "test statistics value " << d_test_statistics
+    << "test statistics threshold " << d_threshold
+    << "code phase " << d_gnss_synchro->Acq_delay_samples
+    << "doppler " << d_gnss_synchro->Acq_doppler_hz
+    << "magnitude " << d_mag
+    << "input signal power " << d_input_power;
+
+    this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
+
+}
+
 int pcps_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items __attribute__((unused)))
@@ -251,8 +289,6 @@ int pcps_acquisition_cc::general_work(int noutput_items,
      * 6. Declare positive or negative acquisition using a message port
      */
 
-    int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
-
     switch (d_state)
     {
     case 0:
@@ -267,14 +303,11 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     d_mag = 0.0;
                     d_input_power = 0.0;
                     d_test_statistics = 0.0;
-
                     d_state = 1;
                 }
 
             d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
             consume_each(ninput_items[0]);
-
-            //DLOG(INFO) << "Consumed " << ninput_items[0] << " items";
 
             break;
         }
@@ -293,16 +326,14 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
             d_input_power = 0.0;
             d_mag = 0.0;
-
             d_sample_counter += d_fft_size; // sample counter
-
             d_well_count++;
 
-            DLOG(INFO) << "Channel: " << d_channel
+            DLOG(INFO)<< "Channel: " << d_channel
                     << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                     << " ,sample stamp: " << d_sample_counter << ", threshold: "
                     << d_threshold << ", doppler_max: " << d_doppler_max
-                    << ", doppler_step: " << d_doppler_step;
+                    << ", doppler_step: " << d_doppler_step<<std::endl;
 
             if (d_use_CFAR_algorithm_flag == true)
                 {
@@ -404,11 +435,15 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                 {
                     if (d_test_statistics > d_threshold)
                         {
-                            d_state = 2; // Positive acquisition
+                            d_state = 0; // Positive acquisition
+                            d_active = false;
+                            send_positive_acquisition();
                         }
                     else if (d_well_count == d_max_dwells)
                         {
-                            d_state = 3; // Negative acquisition
+                            d_state = 0;
+                            d_active = false;
+                            send_negative_acquisition();
                         }
                 }
             else
@@ -417,69 +452,23 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                         {
                             if (d_test_statistics > d_threshold)
                                 {
-                                    d_state = 2; // Positive acquisition
+                                    d_state = 0; // Positive acquisition
+                                    d_active = false;
+                                    send_positive_acquisition();
                                 }
                             else
                                 {
-                                    d_state = 3; // Negative acquisition
+                                    d_state = 0; // Negative acquisition
+                                    d_active = false;
+                                    send_negative_acquisition();
                                 }
                         }
                 }
 
             consume_each(1);
-
-            DLOG(INFO) << "Done. Consumed 1 item.";
-
             break;
         }
 
-    case 2:
-        {
-            // 6.1- Declare positive acquisition using a message port
-            DLOG(INFO) << "positive acquisition";
-            DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
-            DLOG(INFO) << "sample_stamp " << d_sample_counter;
-            DLOG(INFO) << "test statistics value " << d_test_statistics;
-            DLOG(INFO) << "test statistics threshold " << d_threshold;
-            DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
-            DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
-            DLOG(INFO) << "magnitude " << d_mag;
-            DLOG(INFO) << "input signal power " << d_input_power;
-
-            d_active = false;
-            d_state = 0;
-            d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
-            consume_each(ninput_items[0]);
-
-            acquisition_message = 1;
-            this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
-
-            break;
-        }
-
-    case 3:
-        {
-            // 6.2- Declare negative acquisition using a message port
-            DLOG(INFO) << "negative acquisition";
-            DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
-            DLOG(INFO) << "sample_stamp " << d_sample_counter;
-            DLOG(INFO) << "test statistics value " << d_test_statistics;
-            DLOG(INFO) << "test statistics threshold " << d_threshold;
-            DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
-            DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
-            DLOG(INFO) << "magnitude " << d_mag;
-            DLOG(INFO) << "input signal power " << d_input_power;
-
-            d_active = false;
-            d_state = 0;
-
-            d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
-            consume_each(ninput_items[0]);
-            acquisition_message = 2;
-            this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
-
-            break;
-        }
     }
 
     return noutput_items;

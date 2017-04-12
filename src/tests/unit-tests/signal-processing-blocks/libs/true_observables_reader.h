@@ -28,31 +28,33 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TLM_DUMP_READER_H
-#define GNSS_SDR_TLM_DUMP_READER_H
+#ifndef GNSS_SDR_TRUE_OBSERVABLES_READER_H
+#define GNSS_SDR_TRUE_OBSERVABLES_READER_H
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 
-class tlm_dump_reader
+class true_observables_reader
 {
 public:
-    ~tlm_dump_reader();
+    ~true_observables_reader();
     bool read_binary_obs();
     bool restart();
     long int num_epochs();
     bool open_obs_file(std::string out_file);
 
-    //telemetry decoder dump variables
-    double TOW_at_current_symbol;
-    unsigned long int Tracking_sample_counter;
-    double d_TOW_at_Preamble;
+    double gps_time_sec[12];
+    double doppler_l1_hz[12];
+    double acc_carrier_phase_l1_cycles[12];
+    double dist_m[12];
+    double carrier_phase_l1_cycles[12];
+    double prn[12];
 
 private:
     std::string d_dump_filename;
     std::ifstream d_dump_file;
 };
 
-#endif //GNSS_SDR_TLM_DUMP_READER_H
+#endif //GNSS_SDR_TRUE_OBSERVABLES_READER_H

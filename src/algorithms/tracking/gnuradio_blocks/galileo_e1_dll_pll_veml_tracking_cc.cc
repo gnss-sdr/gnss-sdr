@@ -289,8 +289,9 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_current_prn_length_samples - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
-                    samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+                    samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
+                    current_synchro_data.fs=d_fs_in;
                     *out[0] = current_synchro_data;
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
@@ -335,7 +336,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
             //Code phase accumulator
             double code_error_filt_secs;
             code_error_filt_secs = (Galileo_E1_CODE_PERIOD * code_error_filt_chips) / Galileo_E1_CODE_CHIP_RATE_HZ; //[seconds]
-            //code_error_filt_secs=T_prn_seconds*code_error_filt_chips*T_chip_seconds*static_cast<float>(d_fs_in); //[seconds]
             d_acc_code_phase_secs = d_acc_code_phase_secs  + code_error_filt_secs;
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
@@ -349,8 +349,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
             T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
-            d_current_prn_length_samples = std::round(K_blk_samples); //round to a discrete samples
-            //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
+            d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
             if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
@@ -393,7 +392,8 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
             current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
             current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
             // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!)
-            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+            current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
             //compute remnant code phase samples AFTER the Tracking timestamp
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
@@ -409,13 +409,15 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
         *d_Prompt = gr_complex(0,0);
         *d_Late = gr_complex(0,0);
         // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-        current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+        current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
     }
     //assign the GNURadio block output data
     current_synchro_data.System = {'E'};
     std::string str_aux = "1B";
     const char * str = str_aux.c_str(); // get a C style null terminated string
     std::memcpy((void*)current_synchro_data.Signal, str, 3);
+
+    current_synchro_data.fs=d_fs_in;
     *out[0] = current_synchro_data;
 
     if(d_dump)

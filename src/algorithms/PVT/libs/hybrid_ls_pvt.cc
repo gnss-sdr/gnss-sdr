@@ -32,6 +32,8 @@
 #include "hybrid_ls_pvt.h"
 #include <glog/logging.h>
 #include "Galileo_E1.h"
+#include "GPS_L1_CA.h"
+#include "GPS_L2C.h"
 
 
 using google::LogMessage;
@@ -192,8 +194,14 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                                     satpos(2, valid_obs) = gps_ephemeris_iter->second.d_satpos_Z;
 
                                     // 4- fill the observations vector with the corrected pseudoranges
+                                    // compute code bias: TGD for single frequency
+                                    // See IS-GPS-200E section 20.3.3.3.3.2
+                                    double sqrt_Gamma=GPS_L1_FREQ_HZ/GPS_L2_FREQ_HZ;
+                                    double Gamma=sqrt_Gamma*sqrt_Gamma;
+                                    double P1_P2=(1.0-Gamma)*(gps_ephemeris_iter->second.d_TGD* GPS_C_m_s);
+                                    double Code_bias_m= P1_P2/(1.0-Gamma);
                                     obs.resize(valid_obs + 1, 1);
-                                    obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_m_s - d_rx_dt_s * GPS_C_m_s;
+                                    obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_m_s-Code_bias_m-d_rx_dt_s * GPS_C_m_s;
                                     d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
                                     d_visible_satellites_CN0_dB[valid_obs] = gnss_observables_iter->second.CN0_dB_hz;
 

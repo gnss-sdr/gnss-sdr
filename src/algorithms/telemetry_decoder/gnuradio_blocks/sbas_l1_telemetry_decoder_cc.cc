@@ -140,7 +140,7 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
 
             // compute message sample stamp
             // and fill messages in SBAS raw message objects
-            std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
+            //std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
             for(std::vector<msg_candiate_char_t>::const_iterator it = valid_msgs.begin();
                     it != valid_msgs.end(); ++it)
                 {
@@ -156,17 +156,17 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
                             << " relative_preamble_start=" << it->first
                             << " message_sample_offset=" << message_sample_offset
                             << ")";
-                    Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);
-                    sbas_raw_msgs.push_back(sbas_raw_msg);
+                    //Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);
+                    //sbas_raw_msgs.push_back(sbas_raw_msg);
                 }
 
             // parse messages
             // and send them to the SBAS raw message queue
-            for(std::vector<Sbas_Raw_Msg>::iterator it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); it++)
-                {
-                    std::cout << "SBAS message type " << it->get_msg_type() << " from PRN" << it->get_prn() << " received" << std::endl;
-                    sbas_telemetry_data.update(*it);
-                }
+            //for(std::vector<Sbas_Raw_Msg>::iterator it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); it++)
+            //    {
+                    //std::cout << "SBAS message type " << it->get_msg_type() << " from PRN" << it->get_prn() << " received" << std::endl;
+                    //sbas_telemetry_data.update(*it);
+            //    }
 
             // clear all processed samples in the input buffer
             d_sample_buf.clear();

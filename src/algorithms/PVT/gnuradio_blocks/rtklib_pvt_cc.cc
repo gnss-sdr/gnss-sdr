@@ -1,7 +1,7 @@
 /*!
- * \file hybrid_pvt_cc.cc
- * \brief Implementation of a Position Velocity and Time computation block for GPS L1 C/A
- * \author Javier Arribas, 2013. jarribas(at)cttc.es
+ * \file rtklib_pvt_cc.cc
+ * \brief Interface of a Position Velocity and Time computation block
+ * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "hybrid_pvt_cc.h"
+#include "rtklib_pvt_cc.h"
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -43,8 +43,8 @@
 
 using google::LogMessage;
 
-hybrid_pvt_cc_sptr
-hybrid_make_pvt_cc(unsigned int nchannels,
+rtklib_pvt_cc_sptr
+rtklib_make_pvt_cc(unsigned int nchannels,
         bool dump,
         std::string dump_filename,
         int averaging_depth,
@@ -62,7 +62,7 @@ hybrid_make_pvt_cc(unsigned int nchannels,
         std::string rtcm_dump_devname,
         const unsigned int type_of_receiver)
 {
-    return hybrid_pvt_cc_sptr(new hybrid_pvt_cc(nchannels,
+    return rtklib_pvt_cc_sptr(new rtklib_pvt_cc(nchannels,
             dump,
             dump_filename,
             averaging_depth,
@@ -82,7 +82,7 @@ hybrid_make_pvt_cc(unsigned int nchannels,
 }
 
 
-void hybrid_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
+void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
 {
     try {
             if( pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Ephemeris>) )
@@ -191,18 +191,18 @@ void hybrid_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
 }
 
 
-std::map<int,Gps_Ephemeris> hybrid_pvt_cc::get_GPS_L1_ephemeris_map()
+std::map<int,Gps_Ephemeris> rtklib_pvt_cc::get_GPS_L1_ephemeris_map()
 {
     return d_ls_pvt->gps_ephemeris_map;
 }
 
 
-hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename,
+rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename,
         int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port,
         std::string nmea_dump_filename, std::string nmea_dump_devname,
         bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port,
         unsigned short rtcm_station_id, std::map<int,int> rtcm_msg_rate_ms, std::string rtcm_dump_devname, const unsigned int type_of_receiver) :
-                gr::block("hybrid_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
+                gr::block("rtklib_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
                 gr::io_signature::make(0, 0, sizeof(gr_complex)))
 
 {
@@ -216,7 +216,7 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
 
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));
-    this->set_msg_handler(pmt::mp("telemetry"), boost::bind(&hybrid_pvt_cc::msg_handler_telemetry, this, _1));
+    this->set_msg_handler(pmt::mp("telemetry"), boost::bind(&rtklib_pvt_cc::msg_handler_telemetry, this, _1));
 
     //initialize kml_printer
     std::string kml_dump_filename;
@@ -278,7 +278,7 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     d_averaging_depth = averaging_depth;
     d_flag_averaging = flag_averaging;
 
-    d_ls_pvt = std::make_shared<hybrid_ls_pvt>((int)nchannels, dump_ls_pvt_filename, d_dump);
+    d_ls_pvt = std::make_shared<rtklib_solver>((int)nchannels, dump_ls_pvt_filename, d_dump);
     d_ls_pvt->set_averaging_depth(d_averaging_depth);
 
     d_sample_counter = 0;
@@ -322,7 +322,7 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
 
 
 
-hybrid_pvt_cc::~hybrid_pvt_cc()
+rtklib_pvt_cc::~rtklib_pvt_cc()
 {
     msgctl(sysv_msqid, IPC_RMID, NULL);
 
@@ -399,13 +399,13 @@ hybrid_pvt_cc::~hybrid_pvt_cc()
 
 
 
-bool hybrid_pvt_cc::observables_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
+bool rtklib_pvt_cc::observables_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
     return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
 }
 
 
-void hybrid_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronization_data)
+void rtklib_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronization_data)
 {
     // Print the current receiver status using std::cout every second
     int current_rx_seg = floor((double)channels_synchronization_data[0][0].Tracking_sample_counter/(double)channels_synchronization_data[0][0].fs);
@@ -419,7 +419,7 @@ void hybrid_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronizatio
 }
 
 
-bool hybrid_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
+bool rtklib_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 {
     /* Fill Sys V message structures */
     int msgsend_size;
@@ -435,7 +435,7 @@ bool hybrid_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 }
 
 
-int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int rtklib_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items __attribute__((unused)))
 {
     d_sample_counter++;

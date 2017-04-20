@@ -1,9 +1,7 @@
 /*!
- * \file hybrid_pvt.cc
- * \brief  Implementation of an adapter of a HYBRID PVT solver block to a
- * PvtInterface
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *
+ * \file rtklib_pvt.cc
+ * \brief Interface of a Position Velocity and Time computation block
+ * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -31,7 +29,7 @@
  */
 
 
-#include "hybrid_pvt.h"
+#include "rtklib_pvt.h"
 #include <glog/logging.h>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
@@ -42,7 +40,7 @@
 
 using google::LogMessage;
 
-HybridPvt::HybridPvt(ConfigurationInterface* configuration,
+RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams) :
@@ -169,12 +167,12 @@ HybridPvt::HybridPvt(ConfigurationInterface* configuration,
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count = 0)) type_of_receiver = 22;
 
     // make PVT object
-    pvt_ = hybrid_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver);
+    pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 
 
-bool HybridPvt::save_assistance_to_XML()
+bool RtklibPvt::save_assistance_to_XML()
 {
     LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename_;
     std::map<int,Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
@@ -204,13 +202,13 @@ bool HybridPvt::save_assistance_to_XML()
 }
 
 
-HybridPvt::~HybridPvt()
+RtklibPvt::~RtklibPvt()
 {
     save_assistance_to_XML();
 }
 
 
-void HybridPvt::connect(gr::top_block_sptr top_block)
+void RtklibPvt::connect(gr::top_block_sptr top_block)
 {
     if(top_block) { /* top_block is not null */};
     // Nothing to connect internally
@@ -218,20 +216,20 @@ void HybridPvt::connect(gr::top_block_sptr top_block)
 }
 
 
-void HybridPvt::disconnect(gr::top_block_sptr top_block)
+void RtklibPvt::disconnect(gr::top_block_sptr top_block)
 {
     if(top_block) { /* top_block is not null */};
     // Nothing to disconnect
 }
 
 
-gr::basic_block_sptr HybridPvt::get_left_block()
+gr::basic_block_sptr RtklibPvt::get_left_block()
 {
     return pvt_;
 }
 
 
-gr::basic_block_sptr HybridPvt::get_right_block()
+gr::basic_block_sptr RtklibPvt::get_right_block()
 {
     return pvt_; // this is a sink, nothing downstream
 }

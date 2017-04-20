@@ -92,6 +92,7 @@
 #include "sbas_l1_telemetry_decoder.h"
 #include "hybrid_observables.h"
 #include "hybrid_pvt.h"
+#include "rtklib_pvt.h"
 
 #if OPENCL_BLOCKS
 #include "gps_l1_ca_pcps_opencl_acquisition.h"
@@ -1069,6 +1070,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Hybrid_PVT") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new HybridPvt(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("RTKLIB_PVT") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new RtklibPvt(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

@@ -41,7 +41,6 @@
 #include <gnuradio/block.h>
 #include "gnss_satellite.h"
 #include "viterbi_decoder.h"
-#include "sbas_telemetry_data.h"
 
 class sbas_l1_telemetry_decoder_cc;
 
@@ -159,8 +158,6 @@ private:
         void zerropad_back_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
     } d_crc_verifier;
 
-
-    Sbas_Telemetry_Data sbas_telemetry_data;
 };
 
 #endif

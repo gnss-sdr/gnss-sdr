@@ -61,7 +61,6 @@
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "galileo_navigation_message.h"
-#include "sbas_telemetry_data.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "gnss_synchro.h"
@@ -214,7 +213,7 @@ public:
     /*!
      *  \brief Writes raw SBAS messages into the RINEX file
      */
-    void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
+    //void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
 
     void update_nav_header(std::fstream & out, const Gps_Utc_Model & gps_utc, const Gps_Iono & gps_iono);
 

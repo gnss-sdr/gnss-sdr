@@ -1,8 +1,7 @@
 /*!
- * \file hybrid_pvt.h
- * \brief Interface of an adapter of a HYBRID PVT solver block to a
- * PvtInterface.
- * \author Javier Arribas, 2013. jarribas(at)cttc.es
+ * \file rtklib_pvt.h
+ * \brief Interface of a Position Velocity and Time computation block
+ * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -31,12 +30,12 @@
 
 
 
-#ifndef GNSS_SDR_HYBRID_PVT_H_
-#define GNSS_SDR_HYBRID_PVT_H_
+#ifndef GNSS_SDR_RTKLIB_PVT_H_
+#define GNSS_SDR_RTKLIB_PVT_H_
 
 #include <string>
 #include "pvt_interface.h"
-#include "hybrid_pvt_cc.h"
+#include "rtklib_pvt_cc.h"
 
 
 class ConfigurationInterface;
@@ -44,15 +43,15 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a PvtInterface for Galileo E1
  */
-class HybridPvt : public PvtInterface
+class RtklibPvt : public PvtInterface
 {
 public:
-    HybridPvt(ConfigurationInterface* configuration,
+    RtklibPvt(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams);
 
-    virtual ~HybridPvt();
+    virtual ~RtklibPvt();
 
     std::string role()
     {
@@ -62,7 +61,7 @@ public:
     //!  Returns "Hybrid_Pvt"
     std::string implementation()
     {
-        return "Hybrid_PVT";
+        return "RTKLIB_PVT";
     }
 
     void connect(gr::top_block_sptr top_block);
@@ -82,7 +81,7 @@ public:
     }
 
 private:
-    hybrid_pvt_cc_sptr pvt_;
+    rtklib_pvt_cc_sptr pvt_;
     bool dump_;
     std::string dump_filename_;
     std::string role_;

@@ -16,9 +16,16 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(PVT_ADAPTER_SOURCES 
-	hybrid_pvt.cc
-	rtklib_pvt.cc
+add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
+
+set(RTKLIB_LIB_SOURCES 
+     rtklib_rtkcmn.cc
+     rtklib_ephemeris.cc
+     rtklib_preceph.cc
+     rtklib_sbas.cc
+     rtklib_ionex.cc
+     rtklib_pntpos.cc
+     rtklib_conversions.cc
 )
 
 include_directories(
@@ -26,18 +33,28 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
-     ${ARMADILLO_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
+     ${ARMADILLO_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
 )
+file(GLOB RTKLIB_LIB_HEADERS "*.h")
+list(SORT RTKLIB_LIB_HEADERS)
+add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
+source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
+add_dependencies(rtklib_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
 
-file(GLOB PVT_ADAPTER_HEADERS "*.h")
-list(SORT PVT_ADAPTER_HEADERS)
-add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
-source_group(Headers FILES ${PVT_ADAPTER_HEADERS})
-target_link_libraries(pvt_adapters pvt_gr_blocks ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
+#set_property(SOURCE rtklib_rtkcmn.cc APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-missing-field-initializers ")
+
+target_link_libraries(
+    rtklib_lib 
+    ${Boost_LIBRARIES} 
+    ${GFlags_LIBS} 
+    ${GLOG_LIBRARIES} 
+    ${ARMADILLO_LIBRARIES}
+    ${BLAS}
+    ${LAPACK}
+    )
+    
+#MESSAGE( STATUS "*****************BLAS:         " ${BLAS} )
+    

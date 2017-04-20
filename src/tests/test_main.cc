@@ -58,12 +58,6 @@
 #include "galileo_utc_model.h"
 
 #include "sbas_ephemeris.h"
-#include "sbas_telemetry_data.h"
-#include "sbas_ionospheric_correction.h"
-#include "sbas_satellite_correction.h"
-#include "sbas_time.h"
-
-
 
 using google::LogMessage;
 

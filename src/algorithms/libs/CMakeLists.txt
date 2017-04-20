@@ -16,6 +16,7 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+add_subdirectory(rtklib)
 
 set(GNSS_SPLIBS_SOURCES
 	gps_l2c_signal.cc

@@ -48,10 +48,22 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *-----------------------------------------------------------------------------*/
+* history : 2010/07/28 1.0  moved from rtkcmn.c
+*                           changed api:
+*                               pntpos()
+*                           deleted api:
+*                               pntvel()
+*           2011/01/12 1.1  add option to include unhealthy satellite
+*                           reject duplicated observation data
+*                           changed api: ionocorr()
+*           2011/11/08 1.2  enable snr mask for single-mode (rtklib_2.4.1_p3)
+*           2012/12/25 1.3  add variable snr mask
+*           2014/05/26 1.4  support galileo and beidou
+*           2015/03/19 1.5  fix bug on ionosphere correction for GLO and BDS
+*-----------------------------------------------------------------------------*/
 
-#ifndef GNSS_SDR_RTKLIB_PNTPOS_H_
-#define GNSS_SDR_RTKLIB_PNTPOS_H_
+#ifndef RTKLIB_PNTPOS_H_
+#define RTKLIB_PNTPOS_H_
 
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
@@ -165,4 +177,4 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
                   const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
                   char *msg);
 
-#endif /* GNSS_SDR_RTKLIB_PNTPOS_H_ */
+#endif /* RTKLIB_PNTPOS_H_ */

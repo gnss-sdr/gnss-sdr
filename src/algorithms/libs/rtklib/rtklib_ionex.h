@@ -1,5 +1,5 @@
 /*!
- * \file rtklib_ionex.h
+ * \file rtklib_ionex.cc
  * \brief ionex functions
  * \authors <ul>
  *          <li> 2007-2013, T. Takasu
@@ -47,24 +47,29 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * References:
- *     [1] S.Schear, W.Gurtner and J.Feltens, IONEX: The IONosphere Map EXchange
- *         Format Version 1, February 25, 1998
- *     [2] S.Schaer, R.Markus, B.Gerhard and A.S.Timon, Daily Global Ionosphere
- *         Maps based on GPS Carrier Phase Data Routinely producted by CODE
- *         Analysis Center, Proceeding of the IGS Analysis Center Workshop, 1996
- *
- *-----------------------------------------------------------------------------*/
-
-#ifndef GNSS_SDR_RTKLIB_IONEX_H_
-#define GNSS_SDR_RTKLIB_IONEX_H_
+*
+* references:
+*     [1] S.Schear, W.Gurtner and J.Feltens, IONEX: The IONosphere Map EXchange
+*         Format Version 1, February 25, 1998
+*     [2] S.Schaer, R.Markus, B.Gerhard and A.S.Timon, Daily Global Ionosphere
+*         Maps based on GPS Carrier Phase Data Routinely producted by CODE
+*         Analysis Center, Proceeding of the IGS Analysis Center Workshop, 1996
+*
+* version : $Revision:$ $Date:$
+* history : 2011/03/29 1.0 new
+*           2013/03/05 1.1 change api readtec()
+*                          fix problem in case of lat>85deg or lat<-85deg
+*           2014/02/22 1.2 fix problem on compiled as C++
+*-----------------------------------------------------------------------------*/
+#ifndef RTKLIB_IONEX_H_
+#define RTKLIB_IONEX_H_
 
 #include "rtklib_rtkcmn.h"
 
-const double VAR_NOTEC = 30.0 * 30.0;   /* variance of no tec */
-const double MIN_EL = 0.0;         /* min elevation angle (rad) */
-const double MIN_HGT = -1000.0;     /* min user height (m) */
+#define SQR(x)      ((x)*(x))
+#define VAR_NOTEC   SQR(30.0)   /* variance of no tec */
+#define MIN_EL      0.0         /* min elevation angle (rad) */
+#define MIN_HGT     -1000.0     /* min user height (m) */
 
 int getindex(double value, const double *range);
 
@@ -87,4 +92,4 @@ int iondelay(gtime_t time, const tec_t *tec, const double *pos,
 int iontec(gtime_t time, const nav_t *nav, const double *pos,
                   const double *azel, int opt, double *delay, double *var);
 
-#endif /* GNSS_SDR_RTKLIB_IONEX_H_ */
+#endif /* SRC_ALGORITHMS_PVT_LIBS_RTKLIB_IONEX_H_ */

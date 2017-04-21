@@ -36,7 +36,6 @@
 #include <vector>
 #include <utility> // std::pair
 #include "MATH_CONSTANTS.h"
-#include "gnss_frequencies.h"
 
 // Physical constants
 const double GPS_L2_C_m_s       = 299792458.0;      //!< The speed of light, [m/s]
@@ -49,7 +48,7 @@ const double GPS_L2_F               = -4.442807633e-10; //!< Constant, [s/(m)^(1
 
 
 // carrier and code frequencies
-const double GPS_L2_FREQ_HZ = FREQ2;          //!< L2 [Hz]
+const double GPS_L2_FREQ_HZ = 1.2276e9;          //!< L2 [Hz]
 
 const double GPS_L2_M_CODE_RATE_HZ = 0.5115e6;   //!< GPS L2 M code rate [chips/s]
 const int GPS_L2_M_CODE_LENGTH_CHIPS = 10230;    //!< GPS L2 M code length [chips]

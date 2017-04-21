@@ -37,7 +37,6 @@
 #include <vector>
 #include <utility> // std::pair
 #include "MATH_CONSTANTS.h"
-#include "gnss_frequencies.h"
 
 // Physical constants
 const double GALILEO_PI = 3.1415926535898; //!< Pi as defined in GALILEO ICD
@@ -49,7 +48,7 @@ const double GALILEO_C_m_ms = 299792.4580; //!< The speed of light, [m/ms]
 const double GALILEO_F = -4.442807309e-10; //!< Constant, [s/(m)^(1/2)]
 
 // carrier and code frequencies
-const double Galileo_E1_FREQ_HZ = FREQ1;             //!< Galileo E1 carrier frequency [Hz]
+const double Galileo_E1_FREQ_HZ = 1.57542e9;             //!< Galileo E1 carrier frequency [Hz]
 const double Galileo_E1_CODE_CHIP_RATE_HZ = 1.023e6;     //!< Galileo E1 code rate [chips/s]
 const double Galileo_E1_CODE_PERIOD = 0.004;             //!< Galileo E1 code period [s]
 const double Galileo_E1_SUB_CARRIER_A_RATE_HZ = 1.023e6; //!< Galileo E1 sub-carrier 'a' rate [Hz]

@@ -48,355 +48,299 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef RTKLIB_H_
-#define RTKLIB_H_
+
+#ifndef GNSS_SDR_RTKLIB_H_
+#define GNSS_SDR_RTKLIB_H_
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <cstring>
-#include <math.h>
+#include <cmath>
 #include <time.h>
 #include <ctype.h>
+#include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 
-#define thread_t    pthread_t
-#define lock_t      pthread_mutex_t
-#define initlock(f) pthread_mutex_init(f,NULL)
-#define lock(f)     pthread_mutex_lock(f)
-#define unlock(f)   pthread_mutex_unlock(f)
-#define FILEPATHSEP '/'
 
-#define PI          3.1415926535897932  /* pi */
-#define D2R         (PI/180.0)          /* deg to rad */
-#define R2D         (180.0/PI)          /* rad to deg */
-#define CLIGHT      299792458.0         /* speed of light (m/s) */
-#define SC2RAD      3.1415926535898     /* semi-circle to radian (IS-GPS) */
-#define AU          149597870691.0      /* 1 AU (m) */
-#define AS2R        (D2R/3600.0)        /* arc sec to radian */
+const int FILEPATHSEP = '/';
 
-#define OMGE        7.2921151467E-5     /* earth angular velocity (IS-GPS) (rad/s) */
+const double RE_WGS84 = 6378137.0;             //!< earth semimajor axis (WGS84) (m)
+const double FE_WGS84 = (1.0 / 298.257223563); //!< earth flattening (WGS84)
 
-#define RE_WGS84    6378137.0           /* earth semimajor axis (WGS84) (m) */
-#define FE_WGS84    (1.0/298.257223563) /* earth flattening (WGS84) */
+const double HION = 350000.0;                  //!<  ionosphere height (m)
 
-#define HION        350000.0            /* ionosphere height (m) */
+const unsigned int POLYCRC32 = 0xEDB88320u;    //!<  CRC32 polynomial
+const unsigned int POLYCRC24Q = 0x1864CFBu;    //!<  CRC24Q polynomial
 
-#define P2_5        0.03125             /* 2^-5 */
-#define P2_6        0.015625            /* 2^-6 */
-#define P2_11       4.882812500000000E-04 /* 2^-11 */
-#define P2_15       3.051757812500000E-05 /* 2^-15 */
-#define P2_17       7.629394531250000E-06 /* 2^-17 */
-#define P2_19       1.907348632812500E-06 /* 2^-19 */
-#define P2_20       9.536743164062500E-07 /* 2^-20 */
-#define P2_21       4.768371582031250E-07 /* 2^-21 */
-#define P2_23       1.192092895507810E-07 /* 2^-23 */
-#define P2_24       5.960464477539063E-08 /* 2^-24 */
-#define P2_27       7.450580596923828E-09 /* 2^-27 */
-#define P2_29       1.862645149230957E-09 /* 2^-29 */
-#define P2_30       9.313225746154785E-10 /* 2^-30 */
-#define P2_31       4.656612873077393E-10 /* 2^-31 */
-#define P2_32       2.328306436538696E-10 /* 2^-32 */
-#define P2_33       1.164153218269348E-10 /* 2^-33 */
-#define P2_35       2.910383045673370E-11 /* 2^-35 */
-#define P2_38       3.637978807091710E-12 /* 2^-38 */
-#define P2_39       1.818989403545856E-12 /* 2^-39 */
-#define P2_40       9.094947017729280E-13 /* 2^-40 */
-#define P2_43       1.136868377216160E-13 /* 2^-43 */
-#define P2_48       3.552713678800501E-15 /* 2^-48 */
-#define P2_50       8.881784197001252E-16 /* 2^-50 */
-#define P2_55       2.775557561562891E-17 /* 2^-55 */
+const unsigned int PMODE_SINGLE = 0;           //!<  positioning mode: single
+const unsigned int PMODE_DGPS = 1;             //!<  positioning mode: DGPS/DGNSS
+const unsigned int PMODE_KINEMA = 2;           //!<  positioning mode: kinematic
+const unsigned int PMODE_STATIC = 3;           //!<  positioning mode: static
+const unsigned int PMODE_MOVEB = 4;            //!<  positioning mode: moving-base
+const unsigned int PMODE_FIXED = 5;            //!<  positioning mode: fixed
+const unsigned int PMODE_PPP_KINEMA = 6;       //!<  positioning mode: PPP-kinemaric
+const unsigned int PMODE_PPP_STATIC = 7;       //!<  positioning mode: PPP-static
+const unsigned int PMODE_PPP_FIXED = 8;        //!<  positioning mode: PPP-fixed
 
-#define POLYCRC32   0xEDB88320u /* CRC32 polynomial */
-#define POLYCRC24Q  0x1864CFBu  /* CRC24Q polynomial */
+const unsigned int SOLF_LLH = 0;               //!<  solution format: lat/lon/height
+const unsigned int SOLF_XYZ = 1;               //!<  solution format: x/y/z-ecef
+const unsigned int SOLF_ENU = 2;               //!<  solution format: e/n/u-baseline
+const unsigned int SOLF_NMEA = 3;              //!<  solution format: NMEA-183
+const unsigned int SOLF_STAT = 4;              //!<  solution format: solution status
+const unsigned int SOLF_GSIF = 5;              //!<  solution format: GSI F1/F2
 
-#define PMODE_SINGLE 0                  /* positioning mode: single */
-#define PMODE_DGPS   1                  /* positioning mode: DGPS/DGNSS */
-#define PMODE_KINEMA 2                  /* positioning mode: kinematic */
-#define PMODE_STATIC 3                  /* positioning mode: static */
-#define PMODE_MOVEB  4                  /* positioning mode: moving-base */
-#define PMODE_FIXED  5                  /* positioning mode: fixed */
-#define PMODE_PPP_KINEMA 6              /* positioning mode: PPP-kinemaric */
-#define PMODE_PPP_STATIC 7              /* positioning mode: PPP-static */
-#define PMODE_PPP_FIXED 8               /* positioning mode: PPP-fixed */
+const unsigned int SOLQ_NONE = 0;              //!<  solution status: no solution
+const unsigned int SOLQ_FIX = 1;               //!<  solution status: fix
+const unsigned int SOLQ_FLOAT = 2;             //!<  solution status: float
+const unsigned int SOLQ_SBAS = 3;              //!<  solution status: SBAS
+const unsigned int SOLQ_DGPS = 4;              //!<  solution status: DGPS/DGNSS
+const unsigned int SOLQ_SINGLE = 5;            //!<  solution status: single
+const unsigned int SOLQ_PPP = 6;               //!<  solution status: PPP
+const unsigned int SOLQ_DR = 7;                //!<  solution status: dead reckoning
+const unsigned int MAXSOLQ = 7;                //!<  max number of solution status
 
-#define SOLF_LLH    0                   /* solution format: lat/lon/height */
-#define SOLF_XYZ    1                   /* solution format: x/y/z-ecef */
-#define SOLF_ENU    2                   /* solution format: e/n/u-baseline */
-#define SOLF_NMEA   3                   /* solution format: NMEA-183 */
-#define SOLF_STAT   4                   /* solution format: solution status */
-#define SOLF_GSIF   5                   /* solution format: GSI F1/F2 */
+const unsigned int TIMES_GPST = 0;             //!<  time system: gps time
+const unsigned int TIMES_UTC = 1;              //!<  time system: utc
+const unsigned int TIMES_JST = 2;              //!<  time system: jst
 
-#define SOLQ_NONE   0                   /* solution status: no solution */
-#define SOLQ_FIX    1                   /* solution status: fix */
-#define SOLQ_FLOAT  2                   /* solution status: float */
-#define SOLQ_SBAS   3                   /* solution status: SBAS */
-#define SOLQ_DGPS   4                   /* solution status: DGPS/DGNSS */
-#define SOLQ_SINGLE 5                   /* solution status: single */
-#define SOLQ_PPP    6                   /* solution status: PPP */
-#define SOLQ_DR     7                   /* solution status: dead reconing */
-#define MAXSOLQ     7                   /* max number of solution status */
+const unsigned int MAXFREQ = 7;                //!<  max NFREQ
 
-#define TIMES_GPST  0                   /* time system: gps time */
-#define TIMES_UTC   1                   /* time system: utc */
-#define TIMES_JST   2                   /* time system: jst */
+const unsigned int MAXLEAPS = 64;              //!<  max number of leap seconds table */
+const double DTTOL = 0.005;                    //!<  tolerance of time difference (s) */
 
-#define MAXFREQ     7                   /* max NFREQ */
+const unsigned int NFREQ = 3;
+const unsigned int NEXOBS = 0;                 //!<  number of extended obs codes */
+const unsigned int MAXANT = 64;                //!<  max length of station name/antenna type */
 
-#define FREQ1       1.57542E9           /* L1/E1  frequency (Hz) */
-#define FREQ2       1.22760E9           /* L2     frequency (Hz) */
-#define FREQ5       1.17645E9           /* L5/E5a frequency (Hz) */
-#define FREQ6       1.27875E9           /* E6/LEX frequency (Hz) */
-#define FREQ7       1.20714E9           /* E5b    frequency (Hz) */
-#define FREQ8       1.191795E9          /* E5a+b  frequency (Hz) */
-#define FREQ9       2.492028E9          /* S      frequency (Hz) */
-#define FREQ1_GLO   1.60200E9           /* GLONASS G1 base frequency (Hz) */
-#define DFRQ1_GLO   0.56250E6           /* GLONASS G1 bias frequency (Hz/n) */
-#define FREQ2_GLO   1.24600E9           /* GLONASS G2 base frequency (Hz) */
-#define DFRQ2_GLO   0.43750E6           /* GLONASS G2 bias frequency (Hz/n) */
-#define FREQ3_GLO   1.202025E9          /* GLONASS G3 frequency (Hz) */
-#define FREQ1_CMP   1.561098E9          /* BeiDou B1 frequency (Hz) */
-#define FREQ2_CMP   1.20714E9           /* BeiDou B2 frequency (Hz) */
-#define FREQ3_CMP   1.26852E9           /* BeiDou B3 frequency (Hz) */
+const unsigned int MINPRNGPS = 1;              //!<   min satellite PRN number of GPS */
+const unsigned int MAXPRNGPS = 32;             //!<   max satellite PRN number of GPS */
+const unsigned int NSATGPS = (MAXPRNGPS - MINPRNGPS + 1); //!<   number of GPS satellites */
+const unsigned int NSYSGPS = 1;
 
-#define MAXLEAPS    64                  /* max number of leap seconds table */
-#define DTTOL       0.005               /* tolerance of time difference (s) */
+const int SYS_NONE = 0x00;               //!<   navigation system: none */
+const int SYS_GPS = 0x01;                //!<   navigation system: GPS */
+const int SYS_SBS = 0x02;                //!<   navigation system: SBAS */
+const int SYS_GLO = 0x04;                //!<   navigation system: GLONASS */
+const int SYS_GAL = 0x08;                //!<   navigation system: Galileo */
+const int SYS_QZS = 0x10;                //!<   navigation system: QZSS */
+const int SYS_BDS = 0x20;                //!<   navigation system: BeiDou */
+const int SYS_IRN = 0x40;                //!<   navigation system: IRNS */
+const int SYS_LEO = 0x80;                //!<   navigation system: LEO */
+const int SYS_ALL = 0xFF;                //!<   navigation system: all */
 
-#define NFREQ 	3
-#define NEXOBS	0                   /* number of extended obs codes */
-#define MAXANT      64                  /* max length of station name/antenna type */
-
-#define MINPRNGPS   1                   /* min satellite PRN number of GPS */
-#define MAXPRNGPS   32                  /* max satellite PRN number of GPS */
-#define NSATGPS     (MAXPRNGPS-MINPRNGPS+1) /* number of GPS satellites */
-#define NSYSGPS     1
-
-#define SYS_NONE    0x00                /* navigation system: none */
-#define SYS_GPS     0x01                /* navigation system: GPS */
-#define SYS_SBS     0x02                /* navigation system: SBAS */
-#define SYS_GLO     0x04                /* navigation system: GLONASS */
-#define SYS_GAL     0x08                /* navigation system: Galileo */
-#define SYS_QZS     0x10                /* navigation system: QZSS */
-#define SYS_CMP     0x20                /* navigation system: BeiDou */
-#define SYS_IRN     0x40                /* navigation system: IRNS */
-#define SYS_LEO     0x80                /* navigation system: LEO */
-#define SYS_ALL     0xFF                /* navigation system: all */
-
-#define CODE_NONE   0                   /* obs code: none or unknown */
-#define CODE_L1C    1                   /* obs code: L1C/A,G1C/A,E1C (GPS,GLO,GAL,QZS,SBS) */
-#define CODE_L1P    2                   /* obs code: L1P,G1P    (GPS,GLO) */
-#define CODE_L1W    3                   /* obs code: L1 Z-track (GPS) */
-#define CODE_L1Y    4                   /* obs code: L1Y        (GPS) */
-#define CODE_L1M    5                   /* obs code: L1M        (GPS) */
-#define CODE_L1N    6                   /* obs code: L1codeless (GPS) */
-#define CODE_L1S    7                   /* obs code: L1C(D)     (GPS,QZS) */
-#define CODE_L1L    8                   /* obs code: L1C(P)     (GPS,QZS) */
-#define CODE_L1E    9                   /* (not used) */
-#define CODE_L1A    10                  /* obs code: E1A        (GAL) */
-#define CODE_L1B    11                  /* obs code: E1B        (GAL) */
-#define CODE_L1X    12                  /* obs code: E1B+C,L1C(D+P) (GAL,QZS) */
-#define CODE_L1Z    13                  /* obs code: E1A+B+C,L1SAIF (GAL,QZS) */
-#define CODE_L2C    14                  /* obs code: L2C/A,G1C/A (GPS,GLO) */
-#define CODE_L2D    15                  /* obs code: L2 L1C/A-(P2-P1) (GPS) */
-#define CODE_L2S    16                  /* obs code: L2C(M)     (GPS,QZS) */
-#define CODE_L2L    17                  /* obs code: L2C(L)     (GPS,QZS) */
-#define CODE_L2X    18                  /* obs code: L2C(M+L),B1I+Q (GPS,QZS,CMP) */
-#define CODE_L2P    19                  /* obs code: L2P,G2P    (GPS,GLO) */
-#define CODE_L2W    20                  /* obs code: L2 Z-track (GPS) */
-#define CODE_L2Y    21                  /* obs code: L2Y        (GPS) */
-#define CODE_L2M    22                  /* obs code: L2M        (GPS) */
-#define CODE_L2N    23                  /* obs code: L2codeless (GPS) */
-#define CODE_L5I    24                  /* obs code: L5/E5aI    (GPS,GAL,QZS,SBS) */
-#define CODE_L5Q    25                  /* obs code: L5/E5aQ    (GPS,GAL,QZS,SBS) */
-#define CODE_L5X    26                  /* obs code: L5/E5aI+Q/L5B+C (GPS,GAL,QZS,IRN,SBS) */
-#define CODE_L7I    27                  /* obs code: E5bI,B2I   (GAL,CMP) */
-#define CODE_L7Q    28                  /* obs code: E5bQ,B2Q   (GAL,CMP) */
-#define CODE_L7X    29                  /* obs code: E5bI+Q,B2I+Q (GAL,CMP) */
-#define CODE_L6A    30                  /* obs code: E6A        (GAL) */
-#define CODE_L6B    31                  /* obs code: E6B        (GAL) */
-#define CODE_L6C    32                  /* obs code: E6C        (GAL) */
-#define CODE_L6X    33                  /* obs code: E6B+C,LEXS+L,B3I+Q (GAL,QZS,CMP) */
-#define CODE_L6Z    34                  /* obs code: E6A+B+C    (GAL) */
-#define CODE_L6S    35                  /* obs code: LEXS       (QZS) */
-#define CODE_L6L    36                  /* obs code: LEXL       (QZS) */
-#define CODE_L8I    37                  /* obs code: E5(a+b)I   (GAL) */
-#define CODE_L8Q    38                  /* obs code: E5(a+b)Q   (GAL) */
-#define CODE_L8X    39                  /* obs code: E5(a+b)I+Q (GAL) */
-#define CODE_L2I    40                  /* obs code: B1I        (BDS) */
-#define CODE_L2Q    41                  /* obs code: B1Q        (BDS) */
-#define CODE_L6I    42                  /* obs code: B3I        (BDS) */
-#define CODE_L6Q    43                  /* obs code: B3Q        (BDS) */
-#define CODE_L3I    44                  /* obs code: G3I        (GLO) */
-#define CODE_L3Q    45                  /* obs code: G3Q        (GLO) */
-#define CODE_L3X    46                  /* obs code: G3I+Q      (GLO) */
-#define CODE_L1I    47                  /* obs code: B1I        (BDS) */
-#define CODE_L1Q    48                  /* obs code: B1Q        (BDS) */
-#define CODE_L5A    49                  /* obs code: L5A SPS    (IRN) */
-#define CODE_L5B    50                  /* obs code: L5B RS(D)  (IRN) */
-#define CODE_L5C    51                  /* obs code: L5C RS(P)  (IRN) */
-#define CODE_L9A    52                  /* obs code: SA SPS     (IRN) */
-#define CODE_L9B    53                  /* obs code: SB RS(D)   (IRN) */
-#define CODE_L9C    54                  /* obs code: SC RS(P)   (IRN) */
-#define CODE_L9X    55                  /* obs code: SB+C       (IRN) */
-#define MAXCODE     55                  /* max number of obs code */
+const unsigned int CODE_NONE = 0;        //!<   obs code: none or unknown */
+const unsigned int CODE_L1C = 1;         //!<   obs code: L1C/A,G1C/A,E1C (GPS,GLO,GAL,QZS,SBS) */
+const unsigned int CODE_L1P = 2;         //!<   obs code: L1P,G1P    (GPS,GLO) */
+const unsigned int CODE_L1W = 3;         //!<   obs code: L1 Z-track (GPS) */
+const unsigned int CODE_L1Y = 4;         //!<   obs code: L1Y        (GPS) */
+const unsigned int CODE_L1M = 5;         //!<   obs code: L1M        (GPS) */
+const unsigned int CODE_L1N = 6;         //!<   obs code: L1codeless (GPS) */
+const unsigned int CODE_L1S = 7;         //!<   obs code: L1C(D)     (GPS,QZS) */
+const unsigned int CODE_L1L = 8;         //!<   obs code: L1C(P)     (GPS,QZS) */
+const unsigned int CODE_L1E = 9;         //!<   (not used) */
+const unsigned int CODE_L1A = 10;        //!<   obs code: E1A        (GAL) */
+const unsigned int CODE_L1B = 11;        //!<   obs code: E1B        (GAL) */
+const unsigned int CODE_L1X = 12;        //!<   obs code: E1B+C,L1C(D+P) (GAL,QZS) */
+const unsigned int CODE_L1Z = 13;        //!<   obs code: E1A+B+C,L1SAIF (GAL,QZS) */
+const unsigned int CODE_L2C = 14;        //!<   obs code: L2C/A,G1C/A (GPS,GLO) */
+const unsigned int CODE_L2D = 15;        //!<   obs code: L2 L1C/A-(P2-P1) (GPS) */
+const unsigned int CODE_L2S = 16;        //!<   obs code: L2C(M)     (GPS,QZS) */
+const unsigned int CODE_L2L = 17;        //!<   obs code: L2C(L)     (GPS,QZS) */
+const unsigned int CODE_L2X = 18;        //!<   obs code: L2C(M+L),B1I+Q (GPS,QZS,BDS) */
+const unsigned int CODE_L2P = 19;        //!<   obs code: L2P,G2P    (GPS,GLO) */
+const unsigned int CODE_L2W = 20;        //!<   obs code: L2 Z-track (GPS) */
+const unsigned int CODE_L2Y = 21;        //!<   obs code: L2Y        (GPS) */
+const unsigned int CODE_L2M = 22;        //!<   obs code: L2M        (GPS) */
+const unsigned int CODE_L2N = 23;        //!<   obs code: L2codeless (GPS) */
+const unsigned int CODE_L5I = 24;        //!<   obs code: L5/E5aI    (GPS,GAL,QZS,SBS) */
+const unsigned int CODE_L5Q = 25;        //!<   obs code: L5/E5aQ    (GPS,GAL,QZS,SBS) */
+const unsigned int CODE_L5X = 26;        //!<   obs code: L5/E5aI+Q/L5B+C (GPS,GAL,QZS,IRN,SBS) */
+const unsigned int CODE_L7I = 27;        //!<   obs code: E5bI,B2I   (GAL,BDS) */
+const unsigned int CODE_L7Q = 28;        //!<   obs code: E5bQ,B2Q   (GAL,BDS) */
+const unsigned int CODE_L7X = 29;        //!<   obs code: E5bI+Q,B2I+Q (GAL,BDS) */
+const unsigned int CODE_L6A = 30;        //!<   obs code: E6A        (GAL) */
+const unsigned int CODE_L6B = 31;        //!<   obs code: E6B        (GAL) */
+const unsigned int CODE_L6C = 32;        //!<   obs code: E6C        (GAL) */
+const unsigned int CODE_L6X = 33;        //!<   obs code: E6B+C,LEXS+L,B3I+Q (GAL,QZS,BDS) */
+const unsigned int CODE_L6Z = 34;        //!<   obs code: E6A+B+C    (GAL) */
+const unsigned int CODE_L6S = 35;        //!<   obs code: LEXS       (QZS) */
+const unsigned int CODE_L6L = 36;        //!<   obs code: LEXL       (QZS) */
+const unsigned int CODE_L8I = 37;        //!<   obs code: E5(a+b)I   (GAL) */
+const unsigned int CODE_L8Q = 38;        //!<   obs code: E5(a+b)Q   (GAL) */
+const unsigned int CODE_L8X = 39;        //!<   obs code: E5(a+b)I+Q (GAL) */
+const unsigned int CODE_L2I = 40;        //!<   obs code: B1I        (BDS) */
+const unsigned int CODE_L2Q = 41;        //!<   obs code: B1Q        (BDS) */
+const unsigned int CODE_L6I = 42;        //!<   obs code: B3I        (BDS) */
+const unsigned int CODE_L6Q = 43;        //!<   obs code: B3Q        (BDS) */
+const unsigned int CODE_L3I = 44;        //!<   obs code: G3I        (GLO) */
+const unsigned int CODE_L3Q = 45;        //!<   obs code: G3Q        (GLO) */
+const unsigned int CODE_L3X = 46;        //!<   obs code: G3I+Q      (GLO) */
+const unsigned int CODE_L1I = 47;        //!<   obs code: B1I        (BDS) */
+const unsigned int CODE_L1Q = 48;        //!<   obs code: B1Q        (BDS) */
+const unsigned int CODE_L5A = 49;        //!<   obs code: L5A SPS    (IRN) */
+const unsigned int CODE_L5B = 50;        //!<   obs code: L5B RS(D)  (IRN) */
+const unsigned int CODE_L5C = 51;        //!<   obs code: L5C RS(P)  (IRN) */
+const unsigned int CODE_L9A = 52;        //!<   obs code: SA SPS     (IRN) */
+const unsigned int CODE_L9B = 53;        //!<   obs code: SB RS(D)   (IRN) */
+const unsigned int CODE_L9C = 54;        //!<   obs code: SC RS(P)   (IRN) */
+const unsigned int CODE_L9X = 55;        //!<   obs code: SB+C       (IRN) */
+const unsigned int MAXCODE = 55;         //!<   max number of obs code */
 
 #ifdef ENAGLO
-#define MINPRNGLO   1                   /* min satellite slot number of GLONASS */
-#define MAXPRNGLO   27                  /* max satellite slot number of GLONASS */
-#define NSATGLO     (MAXPRNGLO-MINPRNGLO+1) /* number of GLONASS satellites */
-#define NSYSGLO     1
+const unsigned int MINPRNGLO = 1;                   //!<   min satellite slot number of GLONASS */
+const unsigned int MAXPRNGLO = 27;                  //!<   max satellite slot number of GLONASS */
+const unsigned int NSATGLO = (MAXPRNGLO - MINPRNGLO + 1); //!<   number of GLONASS satellites */
+const unsigned int NSYSGLO = 1;
 #else
-#define MINPRNGLO   0
-#define MAXPRNGLO   0
-#define NSATGLO     0
-#define NSYSGLO     0
+const unsigned int MINPRNGLO = 0;
+const unsigned int MAXPRNGLO = 0;
+const unsigned int NSATGLO = 0;
+const unsigned int NSYSGLO = 0;
 #endif
+
 #ifdef ENAGAL
-#define MINPRNGAL   1                   /* min satellite PRN number of Galileo */
-#define MAXPRNGAL   30                  /* max satellite PRN number of Galileo */
-#define NSATGAL    (MAXPRNGAL-MINPRNGAL+1) /* number of Galileo satellites */
-#define NSYSGAL     1
+const unsigned int MINPRNGAL = 1;                   //!<   min satellite PRN number of Galileo */
+const unsigned int MAXPRNGAL = 30;                  //!<   max satellite PRN number of Galileo */
+const unsigned int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1); //!<   number of Galileo satellites */
+const unsigned int NSYSGAL = 1;
 #else
-#define MINPRNGAL   0
-#define MAXPRNGAL   0
-#define NSATGAL     0
-#define NSYSGAL     0
+const unsigned int MINPRNGAL = 0;
+const unsigned int MAXPRNGAL = 0;
+const unsigned int NSATGAL = 0;
+const unsigned int NSYSGAL =  0;
 #endif
+
 #ifdef ENAQZS
-#define MINPRNQZS   193                 /* min satellite PRN number of QZSS */
-#define MAXPRNQZS   199                 /* max satellite PRN number of QZSS */
-#define MINPRNQZS_S 183                 /* min satellite PRN number of QZSS SAIF */
-#define MAXPRNQZS_S 189                 /* max satellite PRN number of QZSS SAIF */
-#define NSATQZS     (MAXPRNQZS-MINPRNQZS+1) /* number of QZSS satellites */
-#define NSYSQZS     1
+const unsigned int MINPRNQZS = 193;                 //!<  min satellite PRN number of QZSS */
+const unsigned int MAXPRNQZS = 199;                 //!<   max satellite PRN number of QZSS */
+const unsigned int MINPRNQZS_S = 183;               //!<   min satellite PRN number of QZSS SAIF */
+const unsigned int MAXPRNQZS_S = 189;               //!<   max satellite PRN number of QZSS SAIF */
+const unsigned int NSATQZS  = (MAXPRNQZS - MINPRNQZS + 1); //!<   number of QZSS satellites */
+const unsigned int NSYSQZS = 1;
 #else
-#define MINPRNQZS   0
-#define MAXPRNQZS   0
-#define MINPRNQZS_S 0
-#define MAXPRNQZS_S 0
-#define NSATQZS     0
-#define NSYSQZS     0
+const unsigned int MINPRNQZS = 0;
+const unsigned int MAXPRNQZS = 0;
+const unsigned int MINPRNQZS_S = 0;
+const unsigned int MAXPRNQZS_S = 0;
+const unsigned int NSATQZS = 0;
+const unsigned int NSYSQZS = 0;
 #endif
-#ifdef ENACMP
-#define MINPRNCMP   1                   /* min satellite sat number of BeiDou */
-#define MAXPRNCMP   35                  /* max satellite sat number of BeiDou */
-#define NSATCMP     (MAXPRNCMP-MINPRNCMP+1) /* number of BeiDou satellites */
-#define NSYSCMP     1
+
+#ifdef ENABDS
+const unsigned int MINPRNBDS = 1;                   //!<   min satellite sat number of BeiDou */
+const unsigned int MAXPRNBDS = 35;                  //!<   max satellite sat number of BeiDou */
+const unsigned int NSATBDS = (MAXPRNBDS - MINPRNCM + 1); //!<   number of BeiDou satellites */
+const unsigned int NSYSBDS = 1;
 #else
-#define MINPRNCMP   0
-#define MAXPRNCMP   0
-#define NSATCMP     0
-#define NSYSCMP     0
+const unsigned int MINPRNBDS = 0;
+const unsigned int MAXPRNBDS = 0;
+const unsigned int NSATBDS = 0;
+const unsigned int NSYSBDS = 0;
 #endif
+
 #ifdef ENAIRN
-#define MINPRNIRN   1                   /* min satellite sat number of IRNSS */
-#define MAXPRNIRN   7                   /* max satellite sat number of IRNSS */
-#define NSATIRN     (MAXPRNIRN-MINPRNIRN+1) /* number of IRNSS satellites */
-#define NSYSIRN     1
+const unsigned int MINPRNIRN = 1;                   //!<   min satellite sat number of IRNSS */
+const unsigned int MAXPRNIRN = 7;                   //!<  max satellite sat number of IRNSS */
+const unsigned int NSATIRN = (MAXPRNIRN - MINPRNIRN + 1); //!<   number of IRNSS satellites */
+const unsigned int NSYSIRN = 1;
 #else
-#define MINPRNIRN   0
-#define MAXPRNIRN   0
-#define NSATIRN     0
-#define NSYSIRN     0
+const unsigned int MINPRNIRN = 0;
+const unsigned int MAXPRNIRN = 0;
+const unsigned int NSATIRN = 0;
+const unsigned int NSYSIRN = 0;
 #endif
 #ifdef ENALEO
-#define MINPRNLEO   1                   /* min satellite sat number of LEO */
-#define MAXPRNLEO   10                  /* max satellite sat number of LEO */
-#define NSATLEO     (MAXPRNLEO-MINPRNLEO+1) /* number of LEO satellites */
-#define NSYSLEO     1
+const unsigned int MINPRNLEO = 1;                  //!<   min satellite sat number of LEO */
+const unsigned int NSATLEO = 10;                   //!<   max satellite sat number of LEO */
+const unsigned int NSATLEO = (MAXPRNLEO - MINPRNLEO + 1); //!<   number of LEO satellites */
+const unsigned int NSYSLEO = 1;
 #else
-#define MINPRNLEO   0
-#define MAXPRNLEO   0
-#define NSATLEO     0
-#define NSYSLEO     0
+const unsigned int MINPRNLEO = 0;
+const unsigned int MAXPRNLEO = 0;
+const unsigned int NSATLEO = 0;
+const unsigned int NSYSLEO = 0;
 #endif
 
-#define NSYS        (NSYSGPS+NSYSGLO+NSYSGAL+NSYSQZS+NSYSCMP+NSYSIRN+NSYSLEO) /* number of systems */
+const unsigned int NSYS = (NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS + NSYSBDS + NSYSIRN + NSYSLEO); /* number of systems */
 
-#define MINPRNSBS   120                 /* min satellite PRN number of SBAS */
-#define MAXPRNSBS   142                 /* max satellite PRN number of SBAS */
-#define NSATSBS     (MAXPRNSBS-MINPRNSBS+1) /* number of SBAS satellites */
+const unsigned int MINPRNSBS = 120;                 //!<   min satellite PRN number of SBAS */
+const unsigned int MAXPRNSBS = 142;                 //!<   max satellite PRN number of SBAS */
+const unsigned int NSATSBS = (MAXPRNSBS - MINPRNSBS + 1); //!<   number of SBAS satellites */
 
-#define MAXSAT      (NSATGPS+NSATGLO+NSATGAL+NSATQZS+NSATCMP+NSATIRN+NSATSBS+NSATLEO)
+const unsigned int MAXSAT = (NSATGPS + NSATGLO + NSATGAL + NSATQZS + NSATBDS + NSATIRN + NSATSBS + NSATLEO);
 
-#define MAXNIGP     201                 /* max number of IGP in SBAS band */
-
-
-#define MAXCODE     55                  /* max number of obs code */
-
-#define MAXSTA      255
+const unsigned int MAXSTA = 255;
 
 #ifndef MAXOBS
-#define MAXOBS      64                  /* max number of obs in an epoch */
+const unsigned int MAXOBS = 64;          //!<    max number of obs in an epoch */
 #endif
 
-#define MAXRCV      64                  /* max receiver number (1 to MAXRCV) */
-#define MAXOBSTYPE  64                  /* max number of obs type in RINEX */
-#define DTTOL       0.005               /* tolerance of time difference (s) */
-#define MAXDTOE     7200.0              /* max time difference to GPS Toe (s) */
-#define MAXDTOE_QZS 7200.0              /* max time difference to QZSS Toe (s) */
-#define MAXDTOE_GAL 10800.0             /* max time difference to Galileo Toe (s) */
-#define MAXDTOE_CMP 21600.0             /* max time difference to BeiDou Toe (s) */
-#define MAXDTOE_GLO 1800.0              /* max time difference to GLONASS Toe (s) */
-#define MAXDTOE_SBS 360.0               /* max time difference to SBAS Toe (s) */
-#define MAXDTOE_S   86400.0             /* max time difference to ephem toe (s) for other */
-#define MAXGDOP     300.0               /* max GDOP */
+const unsigned int MAXRCV = 64;          //!<    max receiver number (1 to MAXRCV) */
+const unsigned int MAXOBSTYPE = 64;      //!<    max number of obs type in RINEX */
+const double MAXDTOE = 7200.0;           //!<    max time difference to GPS Toe (s) */
+const double MAXDTOE_QZS = 7200.0;       //!<    max time difference to QZSS Toe (s) */
+const double MAXDTOE_GAL = 10800.0;      //!<    max time difference to Galileo Toe (s) */
+const double MAXDTOE_BDS = 21600.0;      //!<    max time difference to BeiDou Toe (s) */
+const double MAXDTOE_GLO = 1800.0;       //!<    max time difference to GLONASS Toe (s) */
+const double MAXDTOE_SBS = 360.0;        //!<    max time difference to SBAS Toe (s) */
+const double MAXDTOE_S =  86400.0;       //!<    max time difference to ephem toe (s) for other */
+const double MAXGDOP = 300.0;            //!<    max GDOP */
 
-#define MAXSBSAGEF  30.0                /* max age of SBAS fast correction (s) */
-#define MAXSBSAGEL  1800.0              /* max age of SBAS long term corr (s) */
-#define MAXSBSURA   8                   /* max URA of SBAS satellite */
-#define MAXBAND     10                  /* max SBAS band of IGP */
-#define MAXNIGP     201                 /* max number of IGP in SBAS band */
-#define MAXNGEO     4                   /* max number of GEO satellites */
+const unsigned int MAXSBSURA = 8;        //!<    max URA of SBAS satellite */
+const unsigned int MAXBAND = 10;         //!<    max SBAS band of IGP */
+const unsigned int MAXNIGP = 201;        //!<    max number of IGP in SBAS band */
+const unsigned int MAXNGEO = 4;          //!<    max number of GEO satellites */
 
-#define MAXSOLMSG   8191                /* max length of solution message */
-#define MAXERRMSG   4096                /* max length of error/warning message */
+const unsigned int MAXSOLMSG = 8191;     //!<    max length of solution message */
+const unsigned int MAXERRMSG = 4096;     //!<    max length of error/warning message */
 
-#define IONOOPT_OFF 0                   /* ionosphere option: correction off */
-#define IONOOPT_BRDC 1                  /* ionosphere option: broadcast model */
-#define IONOOPT_SBAS 2                  /* ionosphere option: SBAS model */
-#define IONOOPT_IFLC 3                  /* ionosphere option: L1/L2 or L1/L5 iono-free LC */
-#define IONOOPT_EST 4                   /* ionosphere option: estimation */
-#define IONOOPT_TEC 5                   /* ionosphere option: IONEX TEC model */
-#define IONOOPT_QZS 6                   /* ionosphere option: QZSS broadcast model */
-#define IONOOPT_LEX 7                   /* ionosphere option: QZSS LEX ionospehre */
-#define IONOOPT_STEC 8                  /* ionosphere option: SLANT TEC model */
+const unsigned int IONOOPT_OFF = 0;      //!<    ionosphere option: correction off */
+const unsigned int IONOOPT_BRDC = 1;     //!<    ionosphere option: broadcast model */
+const unsigned int IONOOPT_SBAS = 2;     //!<    ionosphere option: SBAS model */
+const unsigned int IONOOPT_IFLC = 3;     //!<    ionosphere option: L1/L2 or L1/L5 iono-free LC */
+const unsigned int IONOOPT_EST = 4;      //!<    ionosphere option: estimation */
+const unsigned int IONOOPT_TEC = 5;      //!<    ionosphere option: IONEX TEC model */
+const unsigned int IONOOPT_QZS = 6;      //!<    ionosphere option: QZSS broadcast model */
+const unsigned int IONOOPT_LEX = 7;      //!<    ionosphere option: QZSS LEX ionospehre */
+const unsigned int IONOOPT_STEC = 8;     //!<    ionosphere option: SLANT TEC model */
 
-#define TROPOPT_OFF 0                   /* troposphere option: correction off */
-#define TROPOPT_SAAS 1                  /* troposphere option: Saastamoinen model */
-#define TROPOPT_SBAS 2                  /* troposphere option: SBAS model */
-#define TROPOPT_EST 3                   /* troposphere option: ZTD estimation */
-#define TROPOPT_ESTG 4                  /* troposphere option: ZTD+grad estimation */
-#define TROPOPT_ZTD 5                   /* troposphere option: ZTD correction */
+const unsigned int TROPOPT_OFF = 0;      //!<    troposphere option: correction off */
+const unsigned int TROPOPT_SAAS = 1;     //!<    troposphere option: Saastamoinen model */
+const unsigned int TROPOPT_SBAS = 2;     //!<    troposphere option: SBAS model */
+const unsigned int TROPOPT_EST = 3;      //!<    troposphere option: ZTD estimation */
+const unsigned int TROPOPT_ESTG = 4;     //!<    troposphere option: ZTD+grad estimation */
+const unsigned int TROPOPT_ZTD = 5;      //!<    troposphere option: ZTD correction */
 
-#define EPHOPT_BRDC 0                   /* ephemeris option: broadcast ephemeris */
-#define EPHOPT_PREC 1                   /* ephemeris option: precise ephemeris */
-#define EPHOPT_SBAS 2                   /* ephemeris option: broadcast + SBAS */
-#define EPHOPT_SSRAPC 3                 /* ephemeris option: broadcast + SSR_APC */
-#define EPHOPT_SSRCOM 4                 /* ephemeris option: broadcast + SSR_COM */
-#define EPHOPT_LEX  5                   /* ephemeris option: QZSS LEX ephemeris */
+const unsigned int EPHOPT_BRDC = 0;      //!<    ephemeris option: broadcast ephemeris */
+const unsigned int EPHOPT_PREC = 1;      //!<    ephemeris option: precise ephemeris */
+const unsigned int EPHOPT_SBAS = 2;      //!<    ephemeris option: broadcast + SBAS */
+const unsigned int EPHOPT_SSRAPC = 3;    //!<    ephemeris option: broadcast + SSR_APC */
+const unsigned int EPHOPT_SSRCOM = 4;    //!<    ephemeris option: broadcast + SSR_COM */
+const unsigned int EPHOPT_LEX = 5;       //!<    ephemeris option: QZSS LEX ephemeris */
 
-#define EFACT_GPS   1.0                 /* error factor: GPS */
-#define EFACT_GLO   1.5                 /* error factor: GLONASS */
-#define EFACT_GAL   1.0                 /* error factor: Galileo */
-#define EFACT_QZS   1.0                 /* error factor: QZSS */
-#define EFACT_CMP   1.0                 /* error factor: BeiDou */
-#define EFACT_IRN   1.5                 /* error factor: IRNSS */
-#define EFACT_SBS   3.0                 /* error factor: SBAS */
+const double EFACT_GPS = 1.0;            //!<    error factor: GPS */
+const double EFACT_GLO = 1.5;            //!<    error factor: GLONASS */
+const double EFACT_GAL = 1.0;            //!<    error factor: Galileo */
+const double EFACT_QZS = 1.0;            //!<    error factor: QZSS */
+const double EFACT_BDS = 1.0;            //!<    error factor: BeiDou */
+const double EFACT_IRN = 1.5;            //!<    error factor: IRNSS */
+const double EFACT_SBS = 3.0;            //!<    error factor: SBAS */
 
 
-#define MAXEXFILE   1024                /* max number of expanded files */
-#define MAXSBSAGEF  30.0                /* max age of SBAS fast correction (s) */
-#define MAXSBSAGEL  1800.0              /* max age of SBAS long term corr (s) */
-#define MAXSBSURA   8                   /* max URA of SBAS satellite */
-#define MAXBAND     10                  /* max SBAS band of IGP */
-#define MAXNIGP     201                 /* max number of IGP in SBAS band */
+const unsigned int MAXEXFILE = 1024;     //!<    max number of expanded files */
+const double MAXSBSAGEF = 30.0;          //!<    max age of SBAS fast correction (s) */
+const double MAXSBSAGEL = 1800.0;        //!<    max age of SBAS long term corr (s) */
+
 
 typedef void fatalfunc_t(const char *); /* fatal callback function type */
+
 
 typedef struct {        /* time struct */
     time_t time;        /* time (s) expressed by standard time_t */
     double sec;         /* fraction of second under 1 s */
 } gtime_t;
+
 
 typedef struct {        /* observation data record */
     gtime_t time;       /* receiver sampling time (GPST) */
@@ -409,10 +353,12 @@ typedef struct {        /* observation data record */
     float  D[NFREQ+NEXOBS]; /* observation data doppler frequency (Hz) */
 } obsd_t;
 
+
 typedef struct {        /* observation data */
     int n,nmax;         /* number of obervation data/allocated */
     obsd_t *data;       /* observation data records */
 } obs_t;
+
 
 typedef struct {        /* earth rotation parameter data type */
     double mjd;         /* mjd (days) */
@@ -422,10 +368,12 @@ typedef struct {        /* earth rotation parameter data type */
     double lod;         /* length of day (s/day) */
 } erpd_t;
 
+
 typedef struct {        /* earth rotation parameter type */
     int n,nmax;         /* number and max number of data */
     erpd_t *data;       /* earth rotation parameter data */
 } erp_t;
+
 
 typedef struct {        /* antenna parameter type */
     int sat;            /* satellite number (0:receiver) */
@@ -437,10 +385,12 @@ typedef struct {        /* antenna parameter type */
                         /* el=90,85,...,0 or nadir=0,1,2,3,... (deg) */
 } pcv_t;
 
+
 typedef struct {        /* antenna parameters type */
     int n,nmax;         /* number of data/allocated */
     pcv_t *pcv;         /* antenna parameters data */
 } pcvs_t;
+
 
 typedef struct {        /* almanac type */
     int sat;            /* satellite number */
@@ -454,14 +404,15 @@ typedef struct {        /* almanac type */
     double f0,f1;       /* SV clock parameters (af0,af1) */
 } alm_t;
 
+
 typedef struct {        /* GPS/QZS/GAL broadcast ephemeris type */
     int sat;            /* satellite number */
     int iode,iodc;      /* IODE,IODC */
     int sva;            /* SV accuracy (URA index) */
     int svh;            /* SV health (0:ok) */
     int week;           /* GPS/QZS: gps week, GAL: galileo week */
-    int code;           /* GPS/QZS: code on L2, GAL/CMP: data sources */
-    int flag;           /* GPS/QZS: L2 P data flag, CMP: nav type */
+    int code;           /* GPS/QZS: code on L2, GAL/BDS: data sources */
+    int flag;           /* GPS/QZS: L2 P data flag, BDS: nav type */
     gtime_t toe,toc,ttr; /* Toe,Toc,T_trans */
                         /* SV orbit parameters */
     double A,e,i0,OMG0,omg,M0,deln,OMGd,idot;
@@ -472,9 +423,10 @@ typedef struct {        /* GPS/QZS/GAL broadcast ephemeris type */
     double tgd[4];      /* group delay parameters */
                         /* GPS/QZS:tgd[0]=TGD */
                         /* GAL    :tgd[0]=BGD E5a/E1,tgd[1]=BGD E5b/E1 */
-                        /* CMP    :tgd[0]=BGD1,tgd[1]=BGD2 */
+                        /* BDS    :tgd[0]=BGD1,tgd[1]=BGD2 */
     double Adot,ndot;   /* Adot,ndot for CNAV */
 } eph_t;
+
 
 typedef struct {        /* GLONASS broadcast ephemeris type */
     int sat;            /* satellite number */
@@ -501,12 +453,14 @@ typedef struct {        /* precise ephemeris type */
     float  vco[MAXSAT][3]; /* satellite velocity covariance (m^2) */
 } peph_t;
 
+
 typedef struct {        /* precise clock type */
     gtime_t time;       /* time (GPST) */
     int index;          /* clock index for multiple files */
     double clk[MAXSAT][1]; /* satellite clock (s) */
     float  std[MAXSAT][1]; /* satellite clock std (s) */
 } pclk_t;
+
 
 typedef struct {        /* SBAS ephemeris type */
     int sat;            /* satellite number */
@@ -519,6 +473,7 @@ typedef struct {        /* SBAS ephemeris type */
     double acc[3];      /* satellite acceleration (m/s^2) (ecef) */
     double af0,af1;     /* satellite clock-offset/drift (s,s/s) */
 } seph_t;
+
 
 typedef struct {        /* norad two line element data type */
     char name [32];     /* common name */
@@ -541,10 +496,12 @@ typedef struct {        /* norad two line element data type */
     int rev;            /* revolution number at epoch */
 } tled_t;
 
+
 typedef struct {        /* norad two line element type */
     int n,nmax;         /* number/max number of two line element data */
     tled_t *data;       /* norad two line element data */
 } tle_t;
+
 
 typedef struct {        /* TEC grid type */
     gtime_t time;       /* epoch time (GPST) */
@@ -557,11 +514,13 @@ typedef struct {        /* TEC grid type */
     float *rms;         /* RMS values (tecu) */
 } tec_t;
 
+
 typedef struct {        /* satellite fcb data type */
     gtime_t ts,te;      /* start/end time (GPST) */
     double bias[MAXSAT][3]; /* fcb value   (cyc) */
     double std [MAXSAT][3]; /* fcb std-dev (cyc) */
 } fcbd_t;
+
 
 typedef struct {        /* SBAS message type */
     int week,tow;       /* receiption time */
@@ -569,10 +528,12 @@ typedef struct {        /* SBAS message type */
     unsigned char msg[29]; /* SBAS message (226bit) padded by 0 */
 } sbsmsg_t;
 
+
 typedef struct {        /* SBAS messages type */
     int n,nmax;         /* number of SBAS messages/allocated */
     sbsmsg_t *msgs;     /* SBAS messages */
 } sbs_t;
+
 
 typedef struct {        /* SBAS fast correction type */
     gtime_t t0;         /* time of applicability (TOF) */
@@ -584,6 +545,7 @@ typedef struct {        /* SBAS fast correction type */
     short ai;           /* degradation factor indicator */
 } sbsfcorr_t;
 
+
 typedef struct {        /* SBAS long term satellite error correction type */
     gtime_t t0;         /* correction time */
     int iode;           /* IODE (issue of date ephemeris) */
@@ -592,11 +554,13 @@ typedef struct {        /* SBAS long term satellite error correction type */
     double daf0,daf1;   /* delta clock-offset/drift (s,s/s) */
 } sbslcorr_t;
 
+
 typedef struct {        /* SBAS satellite correction type */
     int sat;            /* satellite number */
     sbsfcorr_t fcorr;   /* fast correction */
     sbslcorr_t lcorr;   /* long term correction */
 } sbssatp_t;
+
 
 typedef struct {        /* SBAS satellite corrections type */
     int iodp;           /* IODP (issue of date mask) */
@@ -605,12 +569,14 @@ typedef struct {        /* SBAS satellite corrections type */
     sbssatp_t sat[MAXSAT]; /* satellite correction */
 } sbssat_t;
 
+
 typedef struct {        /* SBAS ionospheric correction type */
     gtime_t t0;         /* correction time */
     short lat,lon;      /* latitude/longitude (deg) */
     short give;         /* GIVI+1 */
     float delay;        /* vertical delay estimate (m) */
 } sbsigp_t;
+
 
 typedef struct {        /* IGP band type */
     short x;            /* longitude/latitude (deg) */
@@ -619,11 +585,13 @@ typedef struct {        /* IGP band type */
     unsigned char bite; /* IGP mask end bit */
 } sbsigpband_t;
 
+
 typedef struct {        /* SBAS ionospheric corrections type */
     int iodi;           /* IODI (issue of date ionos corr) */
     int nigp;           /* number of igps */
     sbsigp_t igp[MAXNIGP]; /* ionospheric correction */
 } sbsion_t;
+
 
 typedef struct {        /* DGPS/GNSS correction type */
     gtime_t t0;         /* correction time */
@@ -632,6 +600,7 @@ typedef struct {        /* DGPS/GNSS correction type */
     int iod;            /* issue of data (IOD) */
     double udre;        /* UDRE */
 } dgps_t;
+
 
 typedef struct {        /* SSR correction type */
     gtime_t t0[6];      /* epoch time (GPST) {eph,clk,hrclk,ura,bias,pbias} */
@@ -652,6 +621,7 @@ typedef struct {        /* SSR correction type */
     unsigned char update; /* update flag (0:no update,1:update) */
 } ssr_t;
 
+
 typedef struct {        /* QZSS LEX message type */
     int prn;            /* satellite PRN number */
     int type;           /* message type */
@@ -662,10 +632,12 @@ typedef struct {        /* QZSS LEX message type */
     unsigned char msg[212]; /* LEX message data part 1695 bits */
 } lexmsg_t;
 
+
 typedef struct {        /* QZSS LEX messages type */
     int n,nmax;         /* number of LEX messages and allocated */
     lexmsg_t *msgs;     /* LEX messages */
 } lex_t;
+
 
 typedef struct {        /* QZSS LEX ephemeris type */
     gtime_t toe;        /* epoch time (GPST) */
@@ -682,12 +654,14 @@ typedef struct {        /* QZSS LEX ephemeris type */
     double isc[8];      /* ISC */
 } lexeph_t;
 
+
 typedef struct {        /* QZSS LEX ionosphere correction type */
     gtime_t t0;         /* epoch time (GPST) */
     double tspan;       /* valid time span (s) */
     double pos0[2];     /* reference position {lat,lon} (rad) */
     double coef[3][2];  /* coefficients lat x lon (3 x 2) */
 } lexion_t;
+
 
 typedef struct {        /* stec data type */
     gtime_t time;       /* time (GPST) */
@@ -698,11 +672,13 @@ typedef struct {        /* stec data type */
     unsigned char flag; /* fix flag */
 } stec_t;
 
+
 typedef struct {        /* trop data type */
     gtime_t time;       /* time (GPST) */
     double trp[3];      /* zenith tropos delay/gradient (m) */
     float std[3];       /* std-dev (m) */
 } trop_t;
+
 
 typedef struct {        /* ppp corrections type */
     int nsta;           /* number of stations */
@@ -713,6 +689,7 @@ typedef struct {        /* ppp corrections type */
     stec_t *stec[MAXSTA]; /* stec data */
     trop_t *trop[MAXSTA]; /* trop data */
 } pppcorr_t;
+
 
 typedef struct {        /* navigation data type */
     int n,nmax;         /* number of broadcast ephemeris */
@@ -761,6 +738,7 @@ typedef struct {        /* navigation data type */
     pppcorr_t pppcorr;  /* ppp corrections */
 } nav_t;
 
+
 typedef struct {        /* station parameter type */
     char name   [MAXANT]; /* marker name */
     char marker [MAXANT]; /* marker number */
@@ -776,6 +754,7 @@ typedef struct {        /* station parameter type */
     double del[3];      /* antenna position delta (e/n/u or x/y/z) (m) */
     double hgt;         /* antenna height (m) */
 } sta_t;
+
 
 typedef struct {        /* solution type */
     gtime_t time;       /* time (GPST) */
@@ -793,6 +772,7 @@ typedef struct {        /* solution type */
     float thres;        /* AR ratio threshold for valiation */
 } sol_t;
 
+
 typedef struct {        /* solution buffer type */
     int n,nmax;         /* number of solution/max number of buffer */
     int cyclic;         /* cyclic buffer flag */
@@ -803,6 +783,7 @@ typedef struct {        /* solution buffer type */
     unsigned char buff[MAXSOLMSG+1]; /* message buffer */
     int nb;             /* number of byte in message buffer */
 } solbuf_t;
+
 
 typedef struct {        /* solution status type */
     gtime_t time;       /* time (GPST) */
@@ -819,10 +800,12 @@ typedef struct {        /* solution status type */
     unsigned short rejc;  /* reject counter */
 } solstat_t;
 
+
 typedef struct {        /* solution status buffer type */
     int n,nmax;         /* number of solution/max number of buffer */
     solstat_t *data;    /* solution status data */
 } solstatbuf_t;
+
 
 typedef struct {        /* RTCM control struct type */
     int staid;          /* station id */
@@ -855,6 +838,7 @@ typedef struct {        /* RTCM control struct type */
     char opt[256];      /* RTCM dependent options */
 } rtcm_t;
 
+
 typedef struct {        /* download url type */
     char type[32];      /* data type */
     char path[1024];    /* url path */
@@ -862,12 +846,14 @@ typedef struct {        /* download url type */
     double tint;        /* time interval (s) */
 } url_t;
 
+
 typedef struct {        /* option type */
     const char *name;   /* option name */
     int format;         /* option format (0:int,1:double,2:string,3:enum) */
     void *var;          /* pointer to option variable */
     const char *comment; /* option comment/enum labels/unit */
 } opt_t;
+
 
 typedef struct {        /* extended receiver error model */
     int ena[4];         /* model enabled */
@@ -877,10 +863,12 @@ typedef struct {        /* extended receiver error model */
     double gloicb [NFREQ]; /* glonass interchannel bias (m/fn) */
 } exterr_t;
 
+
 typedef struct {        /* SNR mask type */
     int ena[2];         /* enable flag {rover,base} */
     double mask[NFREQ][9]; /* mask (dBHz) at 5,10,...85 deg */
 } snrmask_t;
+
 
 typedef struct {        /* processing options type */
     int mode;           /* positioning mode (PMODE_???) */
@@ -944,6 +932,7 @@ typedef struct {        /* processing options type */
     char pppopt[256];   /* ppp option */
 } prcopt_t;
 
+
 typedef struct {        /* solution options type */
     int posf;           /* solution format (SOLF_???) */
     int times;          /* time system (TIMES_???) */
@@ -964,7 +953,6 @@ typedef struct {        /* solution options type */
     char prog[64];      /* program name */
     double maxsolstd;   /* max std-dev for solution output (m) (0:all) */
 } solopt_t;
-
 
 
 typedef struct {        /* satellite status type */
@@ -990,6 +978,7 @@ typedef struct {        /* satellite status type */
     double  ph[2][NFREQ]; /* previous carrier-phase observable (cycle) */
 } ssat_t;
 
+
 typedef struct {        /* ambiguity control type */
     gtime_t epoch[4];   /* last epoch */
     int n[4];           /* number of epochs */
@@ -998,6 +987,7 @@ typedef struct {        /* ambiguity control type */
     int fixcnt;         /* fix count */
     char flags[MAXSAT]; /* fix flags */
 } ambc_t;
+
 
 typedef struct {        /* RTK control/result type */
     sol_t  sol;         /* RTK solution */
@@ -1014,6 +1004,7 @@ typedef struct {        /* RTK control/result type */
     prcopt_t opt;       /* processing options */
 } rtk_t;
 
+
 typedef struct half_cyc_tag {  /* half-cycle correction list type */
     unsigned char sat;  /* satellite number */
     unsigned char freq; /* frequency number (0:L1,1:L2,2:L5) */
@@ -1024,21 +1015,23 @@ typedef struct half_cyc_tag {  /* half-cycle correction list type */
 } half_cyc_t;
 
 
-const double chisqr[100]={      /* chi-sqr(n) (alpha=0.001) */
-    10.8,13.8,16.3,18.5,20.5,22.5,24.3,26.1,27.9,29.6,
-    31.3,32.9,34.5,36.1,37.7,39.3,40.8,42.3,43.8,45.3,
-    46.8,48.3,49.7,51.2,52.6,54.1,55.5,56.9,58.3,59.7,
-    61.1,62.5,63.9,65.2,66.6,68.0,69.3,70.7,72.1,73.4,
-    74.7,76.0,77.3,78.6,80.0,81.3,82.6,84.0,85.4,86.7,
-    88.0,89.3,90.6,91.9,93.3,94.7,96.0,97.4,98.7,100 ,
-    101 ,102 ,103 ,104 ,105 ,107 ,108 ,109 ,110 ,112 ,
-    113 ,114 ,115 ,116 ,118 ,119 ,120 ,122 ,123 ,125 ,
-    126 ,127 ,128 ,129 ,131 ,132 ,133 ,134 ,135 ,137 ,
-    138 ,139 ,140 ,142 ,143 ,144 ,145 ,147 ,148 ,149
+const double chisqr[100] = {      /* chi-sqr(n) (alpha=0.001) */
+    10.8, 13.8, 16.3, 18.5, 20.5, 22.5, 24.3, 26.1, 27.9, 29.6,
+    31.3, 32.9, 34.5, 36.1, 37.7, 39.3, 40.8, 42.3, 43.8, 45.3,
+    46.8, 48.3, 49.7, 51.2, 52.6, 54.1, 55.5, 56.9, 58.3, 59.7,
+    61.1, 62.5, 63.9, 65.2, 66.6, 68.0, 69.3, 70.7, 72.1, 73.4,
+    74.7, 76.0, 77.3, 78.6, 80.0, 81.3, 82.6, 84.0, 85.4, 86.7,
+    88.0, 89.3, 90.6, 91.9, 93.3, 94.7, 96.0, 97.4, 98.7, 100 ,
+    101 , 102 , 103 , 104 , 105 , 107 , 108 , 109 , 110 , 112 ,
+    113 , 114 , 115 , 116 , 118 , 119 , 120 , 122 , 123 , 125 ,
+    126 , 127 , 128 , 129 , 131 , 132 , 133 , 134 , 135 , 137 ,
+    138 , 139 , 140 , 142 , 143 , 144 , 145 , 147 , 148 , 149
 };
-const double lam_carr[MAXFREQ]={ /* carrier wave length (m) */
-    CLIGHT/FREQ1,CLIGHT/FREQ2,CLIGHT/FREQ5,CLIGHT/FREQ6,CLIGHT/FREQ7,
-    CLIGHT/FREQ8,CLIGHT/FREQ9
+
+
+const double lam_carr[MAXFREQ] = { /* carrier wave length (m) */
+    SPEED_OF_LIGHT / FREQ1, SPEED_OF_LIGHT / FREQ2, SPEED_OF_LIGHT / FREQ5, SPEED_OF_LIGHT / FREQ6, SPEED_OF_LIGHT / FREQ7,
+    SPEED_OF_LIGHT / FREQ8, SPEED_OF_LIGHT / FREQ9
 };
 
 #endif

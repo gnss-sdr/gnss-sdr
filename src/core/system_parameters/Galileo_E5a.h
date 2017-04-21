@@ -35,11 +35,11 @@
 #include <vector>
 #include <utility> // std::pair
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 
-// Physical constants already defined in E1
 
 // Carrier and code frequencies
-const double Galileo_E5a_FREQ_HZ = 1.176450e9;             //!< Galileo E5a carrier frequency [Hz]
+const double Galileo_E5a_FREQ_HZ = FREQ5;             //!< Galileo E5a carrier frequency [Hz]
 const double Galileo_E5a_CODE_CHIP_RATE_HZ = 1.023e7;     //!< Galileo E5a code rate [chips/s]
 const double Galileo_E5a_I_TIERED_CODE_PERIOD = 0.020;             //!< Galileo E5a-I tiered code period [s]
 const double Galileo_E5a_Q_TIERED_CODE_PERIOD = 0.100;             //!< Galileo E5a-Q tiered code period [s]

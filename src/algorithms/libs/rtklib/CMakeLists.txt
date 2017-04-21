@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2017  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -38,13 +38,12 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
 )
+
 file(GLOB RTKLIB_LIB_HEADERS "*.h")
 list(SORT RTKLIB_LIB_HEADERS)
 add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
 add_dependencies(rtklib_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
-
-#set_property(SOURCE rtklib_rtkcmn.cc APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-missing-field-initializers ")
 
 target_link_libraries(
     rtklib_lib 
@@ -55,6 +54,4 @@ target_link_libraries(
     ${BLAS}
     ${LAPACK}
     )
-    
-#MESSAGE( STATUS "*****************BLAS:         " ${BLAS} )
-    
+

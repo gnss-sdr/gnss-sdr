@@ -48,132 +48,44 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
-*
-* options : -DLAPACK   use LAPACK/BLAS
-*           -DMKL      use Intel MKL
-*           -DTRACE    enable debug trace
-*           -DWIN32    use WIN32 API
-*           -DNOCALLOC no use calloc for zero matrix
-*           -DIERS_MODEL use GMF instead of NMF
-*           -DDLL      built for shared library
-*           -DCPUTIME_IN_GPST cputime operated in gpst
-*
-* references :
-*     [1] IS-GPS-200D, Navstar GPS Space Segment/Navigation User Interfaces,
-*         7 March, 2006
-*     [2] RTCA/DO-229C, Minimum operational performanc standards for global
-*         positioning system/wide area augmentation system airborne equipment,
-*         RTCA inc, November 28, 2001
-*     [3] M.Rothacher, R.Schmid, ANTEX: The Antenna Exchange Format Version 1.4,
-*         15 September, 2010
-*     [4] A.Gelb ed., Applied Optimal Estimation, The M.I.T Press, 1974
-*     [5] A.E.Niell, Global mapping functions for the atmosphere delay at radio
-*         wavelengths, Jounal of geophysical research, 1996
-*     [6] W.Gurtner and L.Estey, RINEX The Receiver Independent Exchange Format
-*         Version 3.00, November 28, 2007
-*     [7] J.Kouba, A Guide to using International GNSS Service (IGS) products,
-*         May 2009
-*     [8] China Satellite Navigation Office, BeiDou navigation satellite system
-*         signal in space interface control document, open service signal B1I
-*         (version 1.0), Dec 2012
-*     [9] J.Boehm, A.Niell, P.Tregoning and H.Shuh, Global Mapping Function
-*         (GMF): A new empirical mapping function base on numerical weather
-*         model data, Geophysical Research Letters, 33, L07304, 2006
-*     [10] GLONASS/GPS/Galileo/Compass/SBAS NV08C receiver series BINR interface
-*         protocol specification ver.1.3, August, 2012
-*
-* version : $Revision: 1.1 $ $Date: 2008/07/17 21:48:06 $
-* history : 2007/01/12 1.0 new
-*           2007/03/06 1.1 input initial rover pos of pntpos()
-*                          update only effective states of filter()
-*                          fix bug of atan2() domain error
-*           2007/04/11 1.2 add function antmodel()
-*                          add gdop mask for pntpos()
-*                          change constant MAXDTOE value
-*           2007/05/25 1.3 add function execcmd(),expandpath()
-*           2008/06/21 1.4 add funciton sortobs(),uniqeph(),screent()
-*                          replace geodist() by sagnac correction way
-*           2008/10/29 1.5 fix bug of ionosphereic mapping function
-*                          fix bug of seasonal variation term of tropmapf
-*           2008/12/27 1.6 add function tickget(), sleepms(), tracenav(),
-*                          xyz2enu(), satposv(), pntvel(), covecef()
-*           2009/03/12 1.7 fix bug on error-stop when localtime() returns NULL
-*           2009/03/13 1.8 fix bug on time adjustment for summer time
-*           2009/04/10 1.9 add function adjgpsweek(),getbits(),getbitu()
-*                          add function geph2pos()
-*           2009/06/08 1.10 add function seph2pos()
-*           2009/11/28 1.11 change function pntpos()
-*                           add function tracegnav(),tracepeph()
-*           2009/12/22 1.12 change default parameter of ionos std
-*                           valid under second for timeget()
-*           2010/07/28 1.13 fix bug in tropmapf()
-*                           added api:
-*                               obs2code(),code2obs(),cross3(),normv3(),
-*                               gst2time(),time2gst(),time_str(),timeset(),
-*                               deg2dms(),dms2deg(),searchpcv(),antmodel_s(),
-*                               tracehnav(),tracepclk(),reppath(),reppaths(),
-*                               createdir()
-*                           changed api:
-*                               readpcv(),
-*                           deleted api:
-*                               uniqeph()
-*           2010/08/20 1.14 omit to include mkl header files
-*                           fix bug on chi-sqr(n) table
-*           2010/12/11 1.15 added api:
-*                               freeobs(),freenav(),ionppp()
-*           2011/05/28 1.16 fix bug on half-hour offset by time2epoch()
-*                           added api:
-*                               uniqnav()
-*           2012/06/09 1.17 add a leap second after 2012-6-30
-*           2012/07/15 1.18 add api setbits(),setbitu(),utc2gmst()
-*                           fix bug on interpolation of antenna pcv
-*                           fix bug on str2num() for string with over 256 char
-*                           add api readblq(),satexclude(),setcodepri(),
-*                           getcodepri()
-*                           change api obs2code(),code2obs(),antmodel()
-*           2012/12/25 1.19 fix bug on satwavelen(),code2obs(),obs2code()
-*                           add api testsnr()
-*           2013/01/04 1.20 add api gpst2bdt(),bdt2gpst(),bdt2time(),time2bdt()
-*                           readblq(),readerp(),geterp(),crc16()
-*                           change api eci2ecef(),sunmoonpos()
-*           2013/03/26 1.21 tickget() uses clock_gettime() for linux
-*           2013/05/08 1.22 fix bug on nutation coefficients for ast_args()
-*           2013/06/02 1.23 add #ifdef for undefined CLOCK_MONOTONIC_RAW
-*           2013/09/01 1.24 fix bug on interpolation of satellite antenna pcv
-*           2013/09/06 1.25 fix bug on extrapolation of erp
-*           2014/04/27 1.26 add SYS_LEO for satellite system
-*                           add BDS L1 code for RINEX 3.02 and RTCM 3.2
-*                           support BDS L1 in satwavelen()
-*           2014/05/29 1.27 fix bug on obs2code() to search obs code table
-*           2014/08/26 1.28 fix problem on output of uncompress() for tar file
-*                           add function to swap trace file with keywords
-*           2014/10/21 1.29 strtok() -> strtok_r() in expath() for thread-safe
-*                           add bdsmodear in procopt_default
-*           2015/03/19 1.30 fix bug on interpolation of erp values in geterp()
-*                           add leap second insertion before 2015/07/01 00:00
-*                           add api read_leaps()
-*           2015/05/31 1.31 delte api windupcorr()
-*           2015/08/08 1.32 add compile option CPUTIME_IN_GPST
-*                           add api add_fatal()
-*                           support usno leapsec.dat for api read_leaps()
-*           2016/01/23 1.33 enable septentrio
-*           2016/02/05 1.34 support GLONASS for savenav(), loadnav()
-*           2016/06/11 1.35 delete trace() in reppath() to avoid deadlock
-*           2016/07/01 1.36 support IRNSS
-*                           add leap second before 2017/1/1 00:00:00
-*           2016/07/29 1.37 rename api compress() -> rtk_uncompress()
-*                           rename api crc16()    -> rtk_crc16()
-*                           rename api crc24q()   -> rtk_crc24q()
-*                           rename api crc32()    -> rtk_crc32()
-*           2016/08/20 1.38 fix type incompatibility in win64 environment
-*                           change constant _POSIX_C_SOURCE 199309 -> 199506
-*           2016/08/21 1.39 fix bug on week overflow in time2gpst()/gpst2time()
-*           2016/09/05 1.40 fix bug on invalid nav data read in readnav()
-*           2016/09/17 1.41 suppress warnings
-*           2016/09/19 1.42 modify api deg2dms() to consider numerical error
-*-----------------------------------------------------------------------------*/
-#ifndef RTKLIB_RTKCMN_H_
-#define RTKLIB_RTKCMN_H_
+ *
+ * options : -DLAPACK   use LAPACK/BLAS
+ *           -DMKL      use Intel MKL
+ *           -DTRACE    enable debug trace
+ *           -DWIN32    use WIN32 API
+ *           -DNOCALLOC no use calloc for zero matrix
+ *           -DIERS_MODEL use GMF instead of NMF
+ *           -DDLL      built for shared library
+ *           -DCPUTIME_IN_GPST cputime operated in gpst
+ *
+ * references :
+ *     [1] IS-GPS-200D, Navstar GPS Space Segment/Navigation User Interfaces,
+ *         7 March, 2006
+ *     [2] RTCA/DO-229C, Minimum operational performanc standards for global
+ *         positioning system/wide area augmentation system airborne equipment,
+ *         RTCA inc, November 28, 2001
+ *     [3] M.Rothacher, R.Schmid, ANTEX: The Antenna Exchange Format Version 1.4,
+ *         15 September, 2010
+ *     [4] A.Gelb ed., Applied Optimal Estimation, The M.I.T Press, 1974
+ *     [5] A.E.Niell, Global mapping functions for the atmosphere delay at radio
+ *         wavelengths, Jounal of geophysical research, 1996
+ *     [6] W.Gurtner and L.Estey, RINEX The Receiver Independent Exchange Format
+ *         Version 3.00, November 28, 2007
+ *     [7] J.Kouba, A Guide to using International GNSS Service (IGS) products,
+ *         May 2009
+ *     [8] China Satellite Navigation Office, BeiDou navigation satellite system
+ *         signal in space interface control document, open service signal B1I
+ *         (version 1.0), Dec 2012
+ *     [9] J.Boehm, A.Niell, P.Tregoning and H.Shuh, Global Mapping Function
+ *         (GMF): A new empirical mapping function base on numerical weather
+ *         model data, Geophysical Research Letters, 33, L07304, 2006
+ *     [10] GLONASS/GPS/Galileo/Compass/SBAS NV08C receiver series BINR interface
+ *         protocol specification ver.1.3, August, 2012
+ *
+ *-----------------------------------------------------------------------------*/
+
+#ifndef GNSS_SDR_RTKLIB_RTKCMN_H_
+#define GNSS_SDR_RTKLIB_RTKCMN_H_
 
 #include "rtklib.h"
 
@@ -360,4 +272,4 @@ void csmooth(obs_t *obs, int ns);
 int rtk_uncompress(const char *file, char *uncfile);
 int expath(const char *path, char *paths[], int nmax);
 
-#endif /* RTKLIB_RTKCMN_H_ */
+#endif /* GNSS_SDR_RTKLIB_RTKCMN_H_ */

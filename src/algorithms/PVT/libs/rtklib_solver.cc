@@ -217,8 +217,8 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
         nav_data.n=valid_obs;
         for (int i=0; i< MAXSAT;i++)
         {
-            nav_data.lam[i][0]=CLIGHT/FREQ1; /* L1/E1 */
-            nav_data.lam[i][1]=CLIGHT/FREQ2; /* L2 */
+            nav_data.lam[i][0]=SPEED_OF_LIGHT/FREQ1; /* L1/E1 */
+            nav_data.lam[i][1]=SPEED_OF_LIGHT/FREQ2; /* L2 */
         }
 
         result=pntpos(obs_data, valid_obs, &nav_data, &rtklib_opt, &old_pvt_sol, NULL, NULL,rtklib_msg);

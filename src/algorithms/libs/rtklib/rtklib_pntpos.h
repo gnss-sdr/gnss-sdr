@@ -60,7 +60,7 @@
 
 /* constants -----------------------------------------------------------------*/
 
-#define SQR(x)      ((x)*(x))
+//#define SQR(x)      ((x)*(x))
 
 #define NX          (4+3)       /* # of estimated parameters */
 

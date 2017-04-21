@@ -90,18 +90,18 @@ double var_uraeph(int ura)
             2.4, 3.4, 4.85, 6.85, 9.65, 13.65, 24.0, 48.0, 96.0, 192.0, 384.0, 768.0, 1536.0,
             3072.0, 6144.0
     };
-    return ura < 0 || 15 < ura ? std::pow(2, 6144.0) : std::pow(2, ura_value[ura]);
+    return ura < 0 || 15 < ura ? std::pow(2.0, 6144.0) : std::pow(2.0, ura_value[ura]);
 }
 
 
 /* variance by ura ssr (ref [4]) ---------------------------------------------*/
 double var_urassr(int ura)
 {
-    double std;
-    if (ura <= 0) return std::pow(2, DEFURASSR);
-    if (ura >= 63) return std::pow(2, 5.4665);
-    std = (pow(3.0, (ura >> 3) & 7) * (1.0 + (ura & 7) / 4.0) - 1.0) * 1e-3;
-    return std::pow(2, std);
+    double std_;
+    if (ura <= 0) return std::pow(2.0, DEFURASSR);
+    if (ura >= 63) return std::pow(2.0, 5.4665);
+    std_ = (std::pow(3.0, (ura >> 3) & 7) * (1.0 + (ura & 7) / 4.0) - 1.0) * 1e-3;
+    return std::pow(2.0, std_);
 }
 
 
@@ -134,7 +134,7 @@ void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts)
     for (n = 0, E = M, Ek = 0.0; fabs(E - Ek) > RTOL_KEPLER && n < MAX_ITER_KEPLER; n++)
         {
             Ek = E;
-            E -= (E-alm->e * sin(E) - M) / (1.0 - alm->e * cos(E));
+            E -= (E - alm->e * sin(E) - M) / (1.0 - alm->e * cos(E));
         }
     if (n >= MAX_ITER_KEPLER)
         {
@@ -275,7 +275,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     *dts = eph->f0 + eph->f1 * tk + eph->f2 * tk * tk;
 
     /* relativity correction */
-    *dts -= 2.0 * sqrt(mu * eph->A) * eph-> e* sinE / std::pow(2, SPEED_OF_LIGHT);
+    *dts -= 2.0 * sqrt(mu * eph->A) * eph-> e* sinE / std::pow(2.0, SPEED_OF_LIGHT);
 
     /* position and clock error variance */
     *var = var_uraeph(eph->sva);
@@ -285,7 +285,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
 /* glonass orbit differential equations --------------------------------------*/
 void deq(const double *x, double *xdot, const double *acc)
 {
-    double a, b, c, r2 = dot(x, x, 3), r3 = r2 * sqrt(r2), omg2 = std::pow(2, OMGE_GLO);
+    double a, b, c, r2 = dot(x, x, 3), r3 = r2 * sqrt(r2), omg2 = std::pow(2.0, OMGE_GLO);
 
     if (r2 <= 0.0)
         {
@@ -293,7 +293,7 @@ void deq(const double *x, double *xdot, const double *acc)
             return;
         }
     /* ref [2] A.3.1.2 with bug fix for xdot[4],xdot[5] */
-    a = 1.5 * J2_GLO * MU_GLO * std::pow(2, RE_GLO) / r2 / r3; /* 3/2*J2*mu*Ae^2/r^5 */
+    a = 1.5 * J2_GLO * MU_GLO * std::pow(2.0, RE_GLO) / r2 / r3; /* 3/2*J2*mu*Ae^2/r^5 */
     b = 5.0 * x[2] * x[2] / r2;                    /* 5*z^2/r^2 */
     c = -MU_GLO / r3 - a * (1.0 - b);                /* -mu/r^3-a(1-b) */
     xdot[0] = x[3];
@@ -336,9 +336,9 @@ double geph2clk(gtime_t time, const geph_t *geph)
 
     for (i = 0; i < 2; i++)
         {
-            t-=-geph->taun + geph->gamn*t;
+            t -= -geph->taun + geph->gamn * t;
         }
-    return -geph->taun + geph->gamn*t;
+    return -geph->taun + geph->gamn * t;
 }
 
 
@@ -362,21 +362,21 @@ void geph2pos(gtime_t time, const geph_t *geph, double *rs, double *dts,
 
     t = timediff(time, geph->toe);
 
- *dts=-geph->taun+geph->gamn*t;
+    *dts = -geph->taun + geph->gamn * t;
 
-    for (i = 0;i<3;i++)
+    for (i = 0; i < 3; i++)
         {
-        x[i  ] = geph->pos[i];
-        x[i+3] = geph->vel[i];
-    }
-    for (tt = t<0.0?-TSTEP:TSTEP;fabs(t)>1E-9;t-=tt)
+            x[i  ] = geph->pos[i];
+            x[i+3] = geph->vel[i];
+        }
+    for (tt = t < 0.0 ? - TSTEP : TSTEP; fabs(t) > 1e-9; t -= tt)
         {
-        if (fabs(t)<TSTEP) tt = t;
-        glorbit(tt, x, geph->acc);
-    }
-    for (i = 0;i<3;i++) rs[i] = x[i];
+            if (fabs(t) < TSTEP) tt = t;
+            glorbit(tt, x, geph->acc);
+        }
+    for (i = 0; i < 3; i++) rs[i] = x[i];
 
- *var = std::pow(2, ERREPH_GLO);
+    *var = std::pow(2.0, ERREPH_GLO);
 }
 
 
@@ -858,7 +858,7 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
                 {
                     if (!ephclk(time[i], teph, obs[i].sat, nav, dts + i * 2)) continue;
                     dts[1 + i * 2] = 0.0;
-                    *var = std::pow(2, STD_BRDCCLK);
+                    *var = std::pow(2.0, STD_BRDCCLK);
                 }
         }
     for (i = 0; i < n && i < MAXOBS; i++)

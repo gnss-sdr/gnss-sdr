@@ -193,6 +193,7 @@ const unsigned int MAXPRNIRN = 0;
 const unsigned int NSATIRN = 0;
 const unsigned int NSYSIRN = 0;
 #endif
+
 #ifdef ENALEO
 const unsigned int MINPRNLEO = 1;                  //!<   min satellite sat number of LEO
 const unsigned int NSATLEO = 10;                   //!<   max satellite sat number of LEO
@@ -269,7 +270,6 @@ const double EFACT_QZS = 1.0;            //!<    error factor: QZSS
 const double EFACT_BDS = 1.0;            //!<    error factor: BeiDou
 const double EFACT_IRN = 1.5;            //!<    error factor: IRNSS
 const double EFACT_SBS = 3.0;            //!<    error factor: SBAS
-
 
 const unsigned int MAXEXFILE = 1024;     //!<    max number of expanded files
 const double MAXSBSAGEF = 30.0;          //!<    max age of SBAS fast correction (s)

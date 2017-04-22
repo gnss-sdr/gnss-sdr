@@ -296,15 +296,15 @@ int readionexb(FILE *fp, const double *lats, const double *lons,
 
                     for (m = 0; m < n; m++)
                         {
-                            if (m%16 == 0 && !fgets(buff, sizeof(buff), fp)) break;
+                            if (m % 16 == 0 && !fgets(buff, sizeof(buff), fp)) break;
 
                             j = getindex(lon[0] + lon[2] * m, p->lons);
                             if ((index = dataindex(i, j, k, p->ndata)) < 0) continue;
 
-                            if ((x = str2num(buff, m%16*5, 5)) == 9999.0) continue;
+                            if ((x = str2num(buff, m % 16 * 5, 5)) == 9999.0) continue;
 
-                            if (type == 1) p->data[index] = x * pow(10.0, nexp);
-                            else p->rms[index] = (float)(x * pow(10.0, nexp));
+                            if (type == 1) p->data[index] = x * std::pow(10.0, nexp);
+                            else p->rms[index] = (float)(x * std::pow(10.0, nexp));
                         }
                 }
         }

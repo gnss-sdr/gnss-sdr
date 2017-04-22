@@ -90,7 +90,7 @@ double var_uraeph(int ura)
             2.4, 3.4, 4.85, 6.85, 9.65, 13.65, 24.0, 48.0, 96.0, 192.0, 384.0, 768.0, 1536.0,
             3072.0, 6144.0
     };
-    return ura < 0 || 15 < ura ? std::pow(2.0, 6144.0) : std::pow(2.0, ura_value[ura]);
+    return ura < 0 || 15 < ura ? std::pow(6144.0, 2.0) : std::pow(ura_value[ura], 2.0);
 }
 
 
@@ -98,10 +98,10 @@ double var_uraeph(int ura)
 double var_urassr(int ura)
 {
     double std_;
-    if (ura <= 0) return std::pow(2.0, DEFURASSR);
-    if (ura >= 63) return std::pow(2.0, 5.4665);
-    std_ = (std::pow(3.0, (ura >> 3) & 7) * (1.0 + (ura & 7) / 4.0) - 1.0) * 1e-3;
-    return std::pow(2.0, std_);
+    if (ura <= 0) return std::pow(DEFURASSR, 2.0);
+    if (ura >= 63) return std::pow(5.4665, 2.0);
+    std_ = (std::pow((ura >> 3) & 7, 2.0) * (1.0 + (ura & 7) / 4.0) - 1.0) * 1e-3;
+    return std::pow(std_, 2.0);
 }
 
 
@@ -275,7 +275,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     *dts = eph->f0 + eph->f1 * tk + eph->f2 * tk * tk;
 
     /* relativity correction */
-    *dts -= 2.0 * sqrt(mu * eph->A) * eph-> e* sinE / std::pow(2.0, SPEED_OF_LIGHT);
+    *dts -= 2.0 * sqrt(mu * eph->A) * eph-> e* sinE / std::pow(SPEED_OF_LIGHT, 2.0);
 
     /* position and clock error variance */
     *var = var_uraeph(eph->sva);
@@ -285,7 +285,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
 /* glonass orbit differential equations --------------------------------------*/
 void deq(const double *x, double *xdot, const double *acc)
 {
-    double a, b, c, r2 = dot(x, x, 3), r3 = r2 * sqrt(r2), omg2 = std::pow(2.0, OMGE_GLO);
+    double a, b, c, r2 = dot(x, x, 3), r3 = r2 * sqrt(r2), omg2 = std::pow(OMGE_GLO, 2.0);
 
     if (r2 <= 0.0)
         {
@@ -293,7 +293,7 @@ void deq(const double *x, double *xdot, const double *acc)
             return;
         }
     /* ref [2] A.3.1.2 with bug fix for xdot[4],xdot[5] */
-    a = 1.5 * J2_GLO * MU_GLO * std::pow(2.0, RE_GLO) / r2 / r3; /* 3/2*J2*mu*Ae^2/r^5 */
+    a = 1.5 * J2_GLO * MU_GLO * std::pow(RE_GLO, 2.0) / r2 / r3; /* 3/2*J2*mu*Ae^2/r^5 */
     b = 5.0 * x[2] * x[2] / r2;                    /* 5*z^2/r^2 */
     c = -MU_GLO / r3 - a * (1.0 - b);                /* -mu/r^3-a(1-b) */
     xdot[0] = x[3];
@@ -376,7 +376,7 @@ void geph2pos(gtime_t time, const geph_t *geph, double *rs, double *dts,
         }
     for (i = 0; i < 3; i++) rs[i] = x[i];
 
-    *var = std::pow(2.0, ERREPH_GLO);
+    *var = std::pow(ERREPH_GLO, 2.0);
 }
 
 
@@ -858,7 +858,7 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
                 {
                     if (!ephclk(time[i], teph, obs[i].sat, nav, dts + i * 2)) continue;
                     dts[1 + i * 2] = 0.0;
-                    *var = std::pow(2.0, STD_BRDCCLK);
+                    *var = std::pow(STD_BRDCCLK, 2.0);
                 }
         }
     for (i = 0; i < n && i < MAXOBS; i++)

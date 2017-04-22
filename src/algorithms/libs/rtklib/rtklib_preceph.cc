@@ -218,7 +218,7 @@ void readsp3b(FILE *fp, char type, int *sats, int ns, double *bfact,
                                         }
                                     if ((base = bfact[j < 3 ? 0 : 1]) > 0.0 && std > 0.0)
                                         {
-                                            peph.std[sat-1][j] = (float)(pow(base, std)*(j < 3 ? 1e-3 : 1e-12));
+                                            peph.std[sat-1][j] = (float)(std::pow(base, std)*(j < 3 ? 1e-3 : 1e-12));
                                         }
                             }
                             else if (v) { /* velocity */
@@ -228,7 +228,7 @@ void readsp3b(FILE *fp, char type, int *sats, int ns, double *bfact,
                                         }
                                     if ((base = bfact[j < 3 ? 0 : 1]) > 0.0 && std > 0.0)
                                         {
-                                            peph.vst[sat-1][j] = (float)(pow(base, std)*(j < 3 ? 1e-7 : 1e-16));
+                                            peph.vst[sat-1][j] = (float)(std::pow(base, std)*(j < 3 ? 1e-7 : 1e-16));
                                         }
                             }
                         }
@@ -662,9 +662,9 @@ int pephpos(gtime_t time, int sat, const nav_t *nav, double *rs,
             std = norm(s, 3);
 
             /* extrapolation error for orbit */
-            if      (t[0   ] > 0.0) std += EXTERR_EPH * pow(2, t[0   ]) / 2.0;
-            else if (t[NMAX] < 0.0) std += EXTERR_EPH * pow(2, t[NMAX]) / 2.0;
-            *vare = pow(2, std);
+            if      (t[0   ] > 0.0) std += EXTERR_EPH * std::pow(t[0   ], 2.0) / 2.0;
+            else if (t[NMAX] < 0.0) std += EXTERR_EPH * std::pow(t[NMAX], 2.0) / 2.0;
+            *vare = std::pow(std, 2.0);
         }
     /* linear interpolation for clock */
     t[0] = timediff(time, nav->peph[index  ].time);
@@ -696,7 +696,7 @@ int pephpos(gtime_t time, int sat, const nav_t *nav, double *rs,
         {
             dts[0] = 0.0;
         }
-    if (varc) *varc = std::pow(2, std);
+    if (varc) *varc = std::pow(std, 2.0);
     return 1;
 }
 
@@ -752,7 +752,7 @@ int pephclk(gtime_t time, int sat, const nav_t *nav, double *dts,
             trace(3, "prec clock outage %s sat=%2d\n", time_str(time, 0), sat);
             return 0;
         }
-    if (varc) *varc = std::pow(2, std);
+    if (varc) *varc = std::pow(std, 2.0);
     return 1;
 }
 
@@ -795,7 +795,7 @@ void satantoff(gtime_t time, const double *rs, int sat, const nav_t *nav,
 
     if (NFREQ < 2 || lam[j] == 0.0 || lam[k] == 0.0) return;
 
-    gamma = std::pow(2, lam[k]) / std::pow(2, lam[j]);
+    gamma = std::pow(lam[k], 2.0) / std::pow(lam[j], 2.0);
     C1 = gamma / (gamma - 1.0);
     C2 = -1.0 / (gamma - 1.0);
 

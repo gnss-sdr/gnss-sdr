@@ -58,9 +58,9 @@ double varerr(const prcopt_t *opt, double el, int sys)
 {
     double fact, varr;
     fact = sys == SYS_GLO ? EFACT_GLO : (sys == SYS_SBS ? EFACT_SBS : EFACT_GPS);
-    varr = std::pow(2.0, opt->err[0]) * (std::pow(2.0, opt->err[1]) + std::pow(2.0, opt->err[2]) / sin(el));
-    if (opt->ionoopt == IONOOPT_IFLC) varr *= std::pow(2.0, 3.0); /* iono-free */
-    return std::pow(2.0, fact) * varr;
+    varr = std::pow(opt->err[0], 2.0) * (std::pow(opt->err[1], 2.0) + std::pow(opt->err[2], 2.0) / sin(el));
+    if (opt->ionoopt == IONOOPT_IFLC) varr *= std::pow(2, 3.0); /* iono-free */
+    return std::pow(fact, 2.0) * varr;
 }
 
 
@@ -95,7 +95,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
-    if (NFREQ >= 3 && (sys & (SYS_GAL | SYS_SBS))) j = 2;
+    if (NFREQ>=3&&(sys&(SYS_GAL|SYS_SBS))) j = 2;
 
     if (NFREQ<2 || lam[i] == 0.0 || lam[j] == 0.0)
         {
@@ -105,7 +105,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
 
     /* test snr mask */
-    if (iter > 0)
+    if (iter>0)
         {
             if (testsnr(0, i, azel[1], obs->SNR[i] * 0.25, &opt->snrmask))
                 {
@@ -122,7 +122,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                         }
                 }
         }
-    gamma = std::pow(2.0, lam[j]) / std::pow(2.0, lam[i]); /* f1^2/f2^2 */
+    gamma = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0); /* f1^2/f2^2 */
     P1 = obs->P[i];
     P2 = obs->P[j];
     P1_P2 = nav->cbias[obs->sat-1][0];
@@ -153,7 +153,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
     if (opt->sateph == EPHOPT_SBAS) PC -= P1_C1; /* sbas clock based C1 */
 
-    *var = std::pow(2.0, ERR_CBIAS);
+    *var = std::pow(ERR_CBIAS, 2.0);
 
     return PC;
 }
@@ -182,7 +182,7 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
     if (ionoopt == IONOOPT_BRDC)
         {
             *ion = ionmodel(time, nav->ion_gps, pos, azel);
-            *var = std::pow(2.0, *ion*ERR_BRDCI);
+            *var = SQR(*ion*ERR_BRDCI);
             return 1;
         }
     /* sbas ionosphere model */
@@ -196,10 +196,10 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
             return iontec(time, nav, pos, azel, 1, ion, var);
         }
     /* qzss broadcast model */
-    if (ionoopt == IONOOPT_QZS && norm(nav->ion_qzs, 8) > 0.0)
+    if (ionoopt == IONOOPT_QZS && norm(nav->ion_qzs, 8)>0.0)
         {
             *ion = ionmodel(time, nav->ion_qzs, pos, azel);
-            *var = std::pow(2.0, *ion * ERR_BRDCI);
+            *var = std::pow(*ion * ERR_BRDCI, 2.0);
             return 1;
         }
     /* lex ionosphere model */
@@ -207,7 +207,7 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
     //    return lexioncorr(time, nav, pos, azel, ion, var);
     //}
     *ion = 0.0;
-    *var = ionoopt == IONOOPT_OFF ? std::pow(2.0, ERR_ION) : 0.0;
+    *var = ionoopt == IONOOPT_OFF ? std::pow(ERR_ION, 2.0) : 0.0;
     return 1;
 }
 
@@ -234,7 +234,7 @@ int tropcorr(gtime_t time, const nav_t *nav, const double *pos,
     if (tropopt == TROPOPT_SAAS || tropopt == TROPOPT_EST || tropopt == TROPOPT_ESTG)
         {
             *trp = tropmodel(time, pos, azel, REL_HUMI);
-            *var = std::pow(2.0, ERR_SAAS / (sin(azel[1]) + 0.1));
+            *var = SQR(ERR_SAAS / (sin(azel[1]) + 0.1));
             return 1;
         }
     /* sbas troposphere model */
@@ -245,7 +245,7 @@ int tropcorr(gtime_t time, const nav_t *nav, const double *pos,
         }
     /* no correction */
     *trp = 0.0;
-    *var = tropopt == TROPOPT_OFF ? std::pow(2.0, ERR_TROP) : 0.0;
+    *var = tropopt == TROPOPT_OFF ? std::pow(ERR_TROP, 2.0) : 0.0;
     return 1;
 }
 
@@ -314,7 +314,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             /* GPS-L1 -> L1/B1 */
             if ((lam_L1 = nav->lam[obs[i].sat - 1][0]) > 0.0)
                 {
-                    dion *= pow(2.0, lam_L1 / lam_carr[0]);
+                    dion *= std::pow(lam_L1 / lam_carr[0], 2.0);
                 }
             /* tropospheric corrections */
             if (!tropcorr(obs[i].time, nav, pos, azel + i*2,
@@ -517,7 +517,7 @@ int raim_fde(const obsd_t *obs,  int n,  const double *rs,
             for (j = nvsat = 0, rms_e = 0.0; j < n - 1; j++)
                 {
                     if (!vsat_e[j]) continue;
-                    rms_e += std::pow(2.0, resp_e[j]);
+                    rms_e += std::pow(resp_e[j], 2.0);
                     nvsat++;
                 }
             if (nvsat < 5)

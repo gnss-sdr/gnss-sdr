@@ -78,7 +78,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_u_sse3(unsigned char* cChar, c
             x = _mm_lddqu_si128((__m128i*)a);
             y = _mm_lddqu_si128((__m128i*)b);
 
-            mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+            mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
             x1 = _mm_srli_si128(x, 1);
             x1 = _mm_and_si128(x1, mult1);
             x2 = _mm_and_si128(x, mult1);
@@ -144,7 +144,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_a_sse3(unsigned char* cChar, c
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);
 
-            mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+            mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
             x1 = _mm_srli_si128(x, 1);
             x1 = _mm_and_si128(x1, mult1);
             x2 = _mm_and_si128(x, mult1);

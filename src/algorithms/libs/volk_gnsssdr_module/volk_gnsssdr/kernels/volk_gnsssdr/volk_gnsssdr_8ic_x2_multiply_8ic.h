@@ -73,7 +73,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse2(lv_8sc_t* cVector, co
     const lv_8sc_t* a = aVector;
     const lv_8sc_t* b = bVector;
 
-    mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+    mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
     for(number = 0; number < sse_iters; number++)
         {
@@ -131,7 +131,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse4_1(lv_8sc_t* cVector, 
     const lv_8sc_t* b = bVector;
 
     _mm_setzero_si128();
-    mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+    mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
     for(number = 0; number < sse_iters; number++)
         {
@@ -202,7 +202,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse2(lv_8sc_t* cVector, co
     const lv_8sc_t* a = aVector;
     const lv_8sc_t* b = bVector;
 
-    mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+    mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
     for(number = 0; number < sse_iters; number++)
         {
@@ -260,7 +260,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse4_1(lv_8sc_t* cVector, 
     const lv_8sc_t* b = bVector;
 
     _mm_setzero_si128();
-    mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+    mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
     for(number = 0; number < sse_iters; number++)
         {

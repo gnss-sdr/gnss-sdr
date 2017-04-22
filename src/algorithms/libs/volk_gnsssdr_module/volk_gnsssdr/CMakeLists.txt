@@ -76,6 +76,14 @@ if(MSVC)
     add_compile_options(/wo4838)
 endif(MSVC)
 
+# allow 'large' files in 32 bit builds
+if(UNIX)
+    add_definitions( -D_LARGEFILE_SOURCE
+                     -D_FILE_OFFSET_BITS=64
+                     -D_LARGE_FILES
+                   )
+endif(UNIX)
+
 ########################################################################
 # Dependencies setup
 ########################################################################

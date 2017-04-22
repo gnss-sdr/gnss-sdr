@@ -110,14 +110,14 @@ const unsigned int MAXFREQ = 7;                //!<  max NFREQ
 const unsigned int MAXLEAPS = 64;              //!<  max number of leap seconds table
 const double DTTOL = 0.005;                    //!<  tolerance of time difference (s)
 
-const unsigned int NFREQ = 3;
-const unsigned int NEXOBS = 0;                 //!<  number of extended obs codes
-const unsigned int MAXANT = 64;                //!<  max length of station name/antenna type
+const int NFREQ = 3;
+const int NEXOBS = 0;                 //!<  number of extended obs codes
+const int MAXANT = 64;                //!<  max length of station name/antenna type
 
-const unsigned int MINPRNGPS = 1;              //!<   min satellite PRN number of GPS
-const unsigned int MAXPRNGPS = 32;             //!<   max satellite PRN number of GPS
-const unsigned int NSATGPS = (MAXPRNGPS - MINPRNGPS + 1); //!<   number of GPS satellites
-const unsigned int NSYSGPS = 1;
+const int MINPRNGPS = 1;              //!<   min satellite PRN number of GPS
+const int MAXPRNGPS = 32;             //!<   max satellite PRN number of GPS
+const int NSATGPS = (MAXPRNGPS - MINPRNGPS + 1); //!<   number of GPS satellites
+const int NSYSGPS = 1;
 
 const int SYS_NONE = 0x00;               //!<   navigation system: none
 const int SYS_GPS = 0x01;                //!<   navigation system: GPS
@@ -131,97 +131,97 @@ const int SYS_LEO = 0x80;                //!<   navigation system: LEO
 const int SYS_ALL = 0xFF;                //!<   navigation system: all
 
 #ifdef ENAGLO
-const unsigned int MINPRNGLO = 1;                   //!<   min satellite slot number of GLONASS
-const unsigned int MAXPRNGLO = 27;                  //!<   max satellite slot number of GLONASS
-const unsigned int NSATGLO = (MAXPRNGLO - MINPRNGLO + 1); //!<   number of GLONASS satellites
-const unsigned int NSYSGLO = 1;
+const int MINPRNGLO = 1;                   //!<   min satellite slot number of GLONASS
+const int MAXPRNGLO = 27;                  //!<   max satellite slot number of GLONASS
+const int NSATGLO = (MAXPRNGLO - MINPRNGLO + 1); //!<   number of GLONASS satellites
+const int NSYSGLO = 1;
 #else
-const unsigned int MINPRNGLO = 0;
-const unsigned int MAXPRNGLO = 0;
-const unsigned int NSATGLO = 0;
-const unsigned int NSYSGLO = 0;
+const int MINPRNGLO = 0;
+const int MAXPRNGLO = 0;
+const int NSATGLO = 0;
+const int NSYSGLO = 0;
 #endif
 
 #ifdef ENAGAL
-const unsigned int MINPRNGAL = 1;                   //!<   min satellite PRN number of Galileo
-const unsigned int MAXPRNGAL = 30;                  //!<   max satellite PRN number of Galileo
-const unsigned int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1); //!<   number of Galileo satellites
-const unsigned int NSYSGAL = 1;
+const int MINPRNGAL = 1;                   //!<   min satellite PRN number of Galileo
+const int MAXPRNGAL = 30;                  //!<   max satellite PRN number of Galileo
+const int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1); //!<   number of Galileo satellites
+const int NSYSGAL = 1;
 #else
-const unsigned int MINPRNGAL = 0;
-const unsigned int MAXPRNGAL = 0;
-const unsigned int NSATGAL = 0;
-const unsigned int NSYSGAL =  0;
+const int MINPRNGAL = 0;
+const int MAXPRNGAL = 0;
+const int NSATGAL = 0;
+const int NSYSGAL =  0;
 #endif
 
 #ifdef ENAQZS
-const unsigned int MINPRNQZS = 193;                 //!<  min satellite PRN number of QZSS
-const unsigned int MAXPRNQZS = 199;                 //!<   max satellite PRN number of QZSS
-const unsigned int MINPRNQZS_S = 183;               //!<   min satellite PRN number of QZSS SAIF
-const unsigned int MAXPRNQZS_S = 189;               //!<   max satellite PRN number of QZSS SAIF
-const unsigned int NSATQZS  = (MAXPRNQZS - MINPRNQZS + 1); //!<   number of QZSS satellites
-const unsigned int NSYSQZS = 1;
+const int MINPRNQZS = 193;                 //!<  min satellite PRN number of QZSS
+const int MAXPRNQZS = 199;                 //!<   max satellite PRN number of QZSS
+const int MINPRNQZS_S = 183;               //!<   min satellite PRN number of QZSS SAIF
+const int MAXPRNQZS_S = 189;               //!<   max satellite PRN number of QZSS SAIF
+const int NSATQZS  = (MAXPRNQZS - MINPRNQZS + 1); //!<   number of QZSS satellites
+const int NSYSQZS = 1;
 #else
-const unsigned int MINPRNQZS = 0;
-const unsigned int MAXPRNQZS = 0;
-const unsigned int MINPRNQZS_S = 0;
-const unsigned int MAXPRNQZS_S = 0;
-const unsigned int NSATQZS = 0;
-const unsigned int NSYSQZS = 0;
+const int MINPRNQZS = 0;
+const int MAXPRNQZS = 0;
+const int MINPRNQZS_S = 0;
+const int MAXPRNQZS_S = 0;
+const int NSATQZS = 0;
+const int NSYSQZS = 0;
 #endif
 
 #ifdef ENABDS
-const unsigned int MINPRNBDS = 1;                   //!<   min satellite sat number of BeiDou
-const unsigned int MAXPRNBDS = 35;                  //!<   max satellite sat number of BeiDou
-const unsigned int NSATBDS = (MAXPRNBDS - MINPRNCM + 1); //!<   number of BeiDou satellites
-const unsigned int NSYSBDS = 1;
+const int MINPRNBDS = 1;                   //!<   min satellite sat number of BeiDou
+const int MAXPRNBDS = 35;                  //!<   max satellite sat number of BeiDou
+const int NSATBDS = (MAXPRNBDS - MINPRNCM + 1); //!<   number of BeiDou satellites
+const int NSYSBDS = 1;
 #else
-const unsigned int MINPRNBDS = 0;
-const unsigned int MAXPRNBDS = 0;
-const unsigned int NSATBDS = 0;
-const unsigned int NSYSBDS = 0;
+const int MINPRNBDS = 0;
+const int MAXPRNBDS = 0;
+const int NSATBDS = 0;
+const int NSYSBDS = 0;
 #endif
 
 #ifdef ENAIRN
-const unsigned int MINPRNIRN = 1;                   //!<   min satellite sat number of IRNSS
-const unsigned int MAXPRNIRN = 7;                   //!<  max satellite sat number of IRNSS
-const unsigned int NSATIRN = (MAXPRNIRN - MINPRNIRN + 1); //!<   number of IRNSS satellites
-const unsigned int NSYSIRN = 1;
+const int MINPRNIRN = 1;                   //!<   min satellite sat number of IRNSS
+const int MAXPRNIRN = 7;                   //!<  max satellite sat number of IRNSS
+const int NSATIRN = (MAXPRNIRN - MINPRNIRN + 1); //!<   number of IRNSS satellites
+const int NSYSIRN = 1;
 #else
-const unsigned int MINPRNIRN = 0;
-const unsigned int MAXPRNIRN = 0;
-const unsigned int NSATIRN = 0;
-const unsigned int NSYSIRN = 0;
+const int MINPRNIRN = 0;
+const int MAXPRNIRN = 0;
+const int NSATIRN = 0;
+const int NSYSIRN = 0;
 #endif
 
 #ifdef ENALEO
-const unsigned int MINPRNLEO = 1;                  //!<   min satellite sat number of LEO
-const unsigned int NSATLEO = 10;                   //!<   max satellite sat number of LEO
-const unsigned int NSATLEO = (MAXPRNLEO - MINPRNLEO + 1); //!<   number of LEO satellites
-const unsigned int NSYSLEO = 1;
+const int MINPRNLEO = 1;                  //!<   min satellite sat number of LEO
+const int NSATLEO = 10;                   //!<   max satellite sat number of LEO
+const int NSATLEO = (MAXPRNLEO - MINPRNLEO + 1); //!<   number of LEO satellites
+const int NSYSLEO = 1;
 #else
-const unsigned int MINPRNLEO = 0;
-const unsigned int MAXPRNLEO = 0;
-const unsigned int NSATLEO = 0;
-const unsigned int NSYSLEO = 0;
+const int MINPRNLEO = 0;
+const int MAXPRNLEO = 0;
+const int NSATLEO = 0;
+const int NSYSLEO = 0;
 #endif
 
-const unsigned int NSYS = (NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS + NSYSBDS + NSYSIRN + NSYSLEO); //!< number of systems
+const int NSYS = (NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS + NSYSBDS + NSYSIRN + NSYSLEO); //!< number of systems
 
-const unsigned int MINPRNSBS = 120;                 //!<   min satellite PRN number of SBAS
-const unsigned int MAXPRNSBS = 142;                 //!<   max satellite PRN number of SBAS
-const unsigned int NSATSBS = (MAXPRNSBS - MINPRNSBS + 1); //!<   number of SBAS satellites
+const int MINPRNSBS = 120;                 //!<   min satellite PRN number of SBAS
+const int MAXPRNSBS = 142;                 //!<   max satellite PRN number of SBAS
+const int NSATSBS = (MAXPRNSBS - MINPRNSBS + 1); //!<   number of SBAS satellites
 
-const unsigned int MAXSAT = (NSATGPS + NSATGLO + NSATGAL + NSATQZS + NSATBDS + NSATIRN + NSATSBS + NSATLEO);
+const int MAXSAT = (NSATGPS + NSATGLO + NSATGAL + NSATQZS + NSATBDS + NSATIRN + NSATSBS + NSATLEO);
 
-const unsigned int MAXSTA = 255;
+const int MAXSTA = 255;
 
 #ifndef MAXOBS
-const unsigned int MAXOBS = 64;          //!<    max number of obs in an epoch
+const int MAXOBS = 64;          //!<    max number of obs in an epoch
 #endif
 
-const unsigned int MAXRCV = 64;          //!<    max receiver number (1 to MAXRCV)
-const unsigned int MAXOBSTYPE = 64;      //!<    max number of obs type in RINEX
+const int MAXRCV = 64;          //!<    max receiver number (1 to MAXRCV)
+const int MAXOBSTYPE = 64;      //!<    max number of obs type in RINEX
 const double MAXDTOE = 7200.0;           //!<    max time difference to GPS Toe (s)
 const double MAXDTOE_QZS = 7200.0;       //!<    max time difference to QZSS Toe (s)
 const double MAXDTOE_GAL = 10800.0;      //!<    max time difference to Galileo Toe (s)
@@ -231,13 +231,13 @@ const double MAXDTOE_SBS = 360.0;        //!<    max time difference to SBAS Toe
 const double MAXDTOE_S =  86400.0;       //!<    max time difference to ephem toe (s) for other
 const double MAXGDOP = 300.0;            //!<    max GDOP
 
-const unsigned int MAXSBSURA = 8;        //!<    max URA of SBAS satellite
-const unsigned int MAXBAND = 10;         //!<    max SBAS band of IGP
-const unsigned int MAXNIGP = 201;        //!<    max number of IGP in SBAS band
-const unsigned int MAXNGEO = 4;          //!<    max number of GEO satellites
+const int MAXSBSURA = 8;        //!<    max URA of SBAS satellite
+const int MAXBAND = 10;         //!<    max SBAS band of IGP
+const int MAXNIGP = 201;        //!<    max number of IGP in SBAS band
+const int MAXNGEO = 4;          //!<    max number of GEO satellites
 
-const unsigned int MAXSOLMSG = 8191;     //!<    max length of solution message
-const unsigned int MAXERRMSG = 4096;     //!<    max length of error/warning message
+const int MAXSOLMSG = 8191;     //!<    max length of solution message
+const int MAXERRMSG = 4096;     //!<    max length of error/warning message
 
 const unsigned int IONOOPT_OFF = 0;      //!<    ionosphere option: correction off
 const unsigned int IONOOPT_BRDC = 1;     //!<    ionosphere option: broadcast model
@@ -271,7 +271,7 @@ const double EFACT_BDS = 1.0;            //!<    error factor: BeiDou
 const double EFACT_IRN = 1.5;            //!<    error factor: IRNSS
 const double EFACT_SBS = 3.0;            //!<    error factor: SBAS
 
-const unsigned int MAXEXFILE = 1024;     //!<    max number of expanded files
+const int MAXEXFILE = 1024;     //!<    max number of expanded files
 const double MAXSBSAGEF = 30.0;          //!<    max age of SBAS fast correction (s)
 const double MAXSBSAGEL = 1800.0;        //!<    max age of SBAS long term corr (s)
 

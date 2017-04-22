@@ -105,9 +105,9 @@ const unsigned int TIMES_GPST = 0;             //!<  time system: gps time
 const unsigned int TIMES_UTC = 1;              //!<  time system: utc
 const unsigned int TIMES_JST = 2;              //!<  time system: jst
 
-const unsigned int MAXFREQ = 7;                //!<  max NFREQ
+const int MAXFREQ = 7;                //!<  max NFREQ
 
-const unsigned int MAXLEAPS = 64;              //!<  max number of leap seconds table
+const int MAXLEAPS = 64;              //!<  max number of leap seconds table
 const double DTTOL = 0.005;                    //!<  tolerance of time difference (s)
 
 const int NFREQ = 3;

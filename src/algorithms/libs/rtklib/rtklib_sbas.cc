@@ -647,7 +647,7 @@ void sbsoutmsg(FILE *fp, sbsmsg_t *sbsmsg)
 
 
 /* search igps ---------------------------------------------------------------*/
-void searchigp(gtime_t time, const double *pos, const sbsion_t *ion,
+void searchigp(gtime_t time __attribute__((unused)), const double *pos, const sbsion_t *ion,
         const sbsigp_t **igp, double *x, double *y)
 {
     int i,latp[2],lonp[4];

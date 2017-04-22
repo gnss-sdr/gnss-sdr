@@ -614,7 +614,7 @@ int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
 
 /* estimate receiver velocity ------------------------------------------------*/
 void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
-        const nav_t *nav, const prcopt_t *opt, sol_t *sol,
+        const nav_t *nav, const prcopt_t *opt __attribute__((unused)), sol_t *sol,
         const double *azel, const int *vsat)
 {
     double x[4] = {0}, dx[4], Q[16], *v, *H;

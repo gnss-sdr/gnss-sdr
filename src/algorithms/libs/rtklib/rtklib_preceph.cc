@@ -144,7 +144,7 @@ int addpeph(nav_t *nav, peph_t *peph)
 
 
 /* read sp3 body -------------------------------------------------------------*/
-void readsp3b(FILE *fp, char type, int *sats, int ns, double *bfact,
+void readsp3b(FILE *fp, char type, int *sats __attribute__((unused)), int ns, double *bfact,
         char *tsys, int index, int opt, nav_t *nav)
 {
     peph_t peph;

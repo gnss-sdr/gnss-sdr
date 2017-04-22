@@ -80,7 +80,7 @@ const double MAXAGESSR = 90.0;            /* max age of ssr orbit and clock (s) 
 const double MAXAGESSR_HRCLK = 10.0;      /* max age of ssr high-rate clock (s) */
 const double STD_BRDCCLK = 30.0;          /* error of broadcast clock (m) */
 
-const unsigned int MAX_ITER_KEPLER = 30;        /* max number of iteration of Kelpler */
+const int MAX_ITER_KEPLER = 30;        /* max number of iteration of Kelpler */
 
 
 /* variance by ura ephemeris (ref [1] 20.3.3.3.1.1) --------------------------*/

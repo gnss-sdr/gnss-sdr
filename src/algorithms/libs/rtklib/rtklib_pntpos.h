@@ -59,18 +59,15 @@
 #include "rtklib_ionex.h"
 
 /* constants -----------------------------------------------------------------*/
+const int NX = 4 + 3;          //!< # of estimated parameters
 
-//#define SQR(x)      ((x)*(x))
-
-#define NX          (4+3)       /* # of estimated parameters */
-
-#define MAXITR      10          /* max number of iteration for point pos */
-#define ERR_ION     5.0         /* ionospheric delay std (m) */
-#define ERR_TROP    3.0         /* tropspheric delay std (m) */
-#define ERR_SAAS    0.3         /* saastamoinen model error std (m) */
-#define ERR_BRDCI   0.5         /* broadcast iono model error factor */
-#define ERR_CBIAS   0.3         /* code bias error std (m) */
-#define REL_HUMI    0.7         /* relative humidity for saastamoinen model */
+const int MAXITR = 10;         //!< max number of iteration for point pos
+const double ERR_ION = 5.0;    //!< ionospheric delay std (m)
+const double ERR_TROP = 3.0;   //!< tropspheric delay std (m)
+const double ERR_SAAS = 0.3;   //!< saastamoinen model error std (m)
+const double ERR_BRDCI = 0.5;  //!< broadcast iono model error factor
+const double ERR_CBIAS = 0.3;  //!< code bias error std (m)
+const double REL_HUMI = 0.7;   //!< relative humidity for saastamoinen model
 
 /* pseudorange measurement error variance ------------------------------------*/
 double varerr(const prcopt_t *opt, double el, int sys);

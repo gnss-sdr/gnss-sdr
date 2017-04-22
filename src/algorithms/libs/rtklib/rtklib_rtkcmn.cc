@@ -114,7 +114,7 @@ const solopt_t solopt_default = { /* defaults solution output options */
         0, 1, 0, 0, 0, 0,                 /* degf, outhead, outopt, datum, height, geoid */
         0, 0, 0,                       /* solstatic, sstat, trace */
         {0.0, 0.0},                  /* nmeaintv */
-        " ",""                      /* separator/program name */
+        " ", "", 0                      /* separator/program name */
 };
 
 
@@ -2046,10 +2046,10 @@ void eci2ecef(gtime_t tutc, const double *erpv, double *U, double *gmst)
     if (gmst) *gmst = gmst_;
 
     trace(5, "gmst=%.12f gast=%.12f\n", gmst_, gast);
-    trace(5, "P=\n"); tracemat(5, P, 3, 3, 15, 12);
-    trace(5, "N=\n"); tracemat(5, N, 3, 3, 15, 12);
-    trace(5, "W=\n"); tracemat(5, W, 3, 3, 15, 12);
-    trace(5, "U=\n"); tracemat(5, U, 3, 3, 15, 12);
+    trace(5, "P=\n"); //tracemat(5, P, 3, 3, 15, 12);
+    trace(5, "N=\n"); //tracemat(5, N, 3, 3, 15, 12);
+    trace(5, "W=\n"); //tracemat(5, W, 3, 3, 15, 12);
+    trace(5, "U=\n"); //tracemat(5, U, 3, 3, 15, 12);
 }
 
 
@@ -3120,10 +3120,10 @@ void freenav(nav_t *nav, int opt)
 //}
 //#else
 
-void traceopen(const char *file) {}
-void traceclose(void) {}
-void tracelevel(int level) {}
-void trace   (int level, const char *format, ...)
+//void traceopen(const char *file) {}
+//void traceclose(void) {}
+//void tracelevel(int level) {}
+void trace (int level  __attribute__((unused)), const char *format  __attribute__((unused)), ...)
 {
     /* va_list ap;*/
     /* print error message to stderr */
@@ -3131,15 +3131,15 @@ void trace   (int level, const char *format, ...)
     va_start(ap,format);
     vfprintf(stdout,format,ap); va_end(ap);*/
 }
-void tracet  (int level, const char *format, ...) {}
-void tracemat(int level, const double *A, int n, int m, int p, int q) {}
-void traceobs(int level, const obsd_t *obs, int n) {}
-void tracenav(int level, const nav_t *nav) {}
-void tracegnav(int level, const nav_t *nav) {}
-void tracehnav(int level, const nav_t *nav) {}
-void tracepeph(int level, const nav_t *nav) {}
-void tracepclk(int level, const nav_t *nav) {}
-void traceb  (int level, const unsigned char *p, int n) {}
+//void tracet  (int level, const char *format, ...) {}
+//void tracemat(int level, const double *A, int n, int m, int p, int q) {}
+//void traceobs(int level, const obsd_t *obs, int n) {}
+//void tracenav(int level, const nav_t *nav) {}
+//void tracegnav(int level, const nav_t *nav) {}
+//void tracehnav(int level, const nav_t *nav) {}
+//void tracepeph(int level, const nav_t *nav) {}
+//void tracepclk(int level, const nav_t *nav) {}
+//void traceb  (int level, const unsigned char *p, int n) {}
 
 //#endif /* TRACE */
 
@@ -3165,8 +3165,7 @@ int execcmd(const char *cmd)
 void createdir(const char *path)
 {
     char buff[1024], *p;
-
-    tracet(3, "createdir: path=%s\n", path);
+    //tracet(3, "createdir: path=%s\n", path);
 
     strcpy(buff, path);
     if (!(p = strrchr(buff, FILEPATHSEP))) return;

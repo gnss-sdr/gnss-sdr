@@ -213,7 +213,7 @@ void readsp3b(FILE *fp, char type, int *sats, int ns, double *bfact,
                             if (buff[0] == 'P') { /* position */
                                     if (val != 0.0 && fabs(val - 999999.999999) >= 1e-6)
                                         {
-                                            peph.pos[sat-1][j] = val*(j<3?1000.0:1e-6);
+                                            peph.pos[sat-1][j] = val*(j < 3 ? 1000.0 : 1e-6);
                                             v = 1; /* valid epoch */
                                         }
                                     if ((base = bfact[j < 3 ? 0 : 1]) > 0.0 && std > 0.0)
@@ -224,7 +224,7 @@ void readsp3b(FILE *fp, char type, int *sats, int ns, double *bfact,
                             else if (v) { /* velocity */
                                     if (val != 0.0 && fabs(val - 999999.999999) >= 1e-6)
                                         {
-                                            peph.vel[sat-1][j] = val*( j < 3 ? 0.1 : 1e-10);
+                                            peph.vel[sat-1][j] = val*(j < 3 ? 0.1 : 1e-10);
                                         }
                                     if ((base = bfact[j < 3 ? 0 : 1]) > 0.0 && std > 0.0)
                                         {

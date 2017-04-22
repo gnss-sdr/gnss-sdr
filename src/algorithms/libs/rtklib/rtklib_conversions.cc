@@ -52,7 +52,7 @@
 
 obsd_t obs_to_rtklib(Gnss_Synchro gnss_synchro, int week)
 {
-    obsd_t rtklib_obs;
+    obsd_t rtklib_obs = {};
     rtklib_obs.D[0] = gnss_synchro.Carrier_Doppler_hz;
     rtklib_obs.P[0] = gnss_synchro.Pseudorange_m;
     rtklib_obs.L[0] = gnss_synchro.Carrier_phase_rads;//todo: check units
@@ -66,7 +66,7 @@ obsd_t obs_to_rtklib(Gnss_Synchro gnss_synchro, int week)
 
 eph_t eph_to_rtklib(Galileo_Ephemeris gal_eph)
 {
-    eph_t rtklib_sat;
+    eph_t rtklib_sat = {};
     rtklib_sat.sat = gal_eph.i_satellite_PRN;
     rtklib_sat.A = gal_eph.A_1*gal_eph.A_1;
     rtklib_sat.M0 = gal_eph.M0_1;
@@ -114,7 +114,7 @@ eph_t eph_to_rtklib(Galileo_Ephemeris gal_eph)
 
 eph_t eph_to_rtklib(Gps_Ephemeris gps_eph)
 {
-    eph_t rtklib_sat;
+    eph_t rtklib_sat = {};
     rtklib_sat.sat = gps_eph.i_satellite_PRN;
     rtklib_sat.A = gps_eph.d_sqrt_A*gps_eph.d_sqrt_A;
     rtklib_sat.M0 = gps_eph.d_M_0;
@@ -164,7 +164,7 @@ eph_t eph_to_rtklib(Gps_Ephemeris gps_eph)
 
 eph_t eph_to_rtklib(Gps_CNAV_Ephemeris gps_cnav_eph)
 {
-    eph_t rtklib_sat;
+    eph_t rtklib_sat = {};
     rtklib_sat.sat = gps_cnav_eph.i_satellite_PRN;
     const double A_REF = 26559710.0; // See IS-GPS-200H,  pp. 170
     rtklib_sat.A = A_REF + gps_cnav_eph.d_DELTA_A;

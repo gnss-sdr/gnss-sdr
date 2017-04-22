@@ -95,7 +95,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
-    if (NFREQ>=3&&(sys&(SYS_GAL|SYS_SBS))) j = 2;
+    if (NFREQ >= 3 && (sys & (SYS_GAL | SYS_SBS))) j = 2;
 
     if (NFREQ<2 || lam[i] == 0.0 || lam[j] == 0.0)
         {

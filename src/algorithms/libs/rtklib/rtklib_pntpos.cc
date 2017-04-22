@@ -223,7 +223,7 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
  *          double *var      O   tropospheric delay variance (m^2)
  * return : status(1:ok,0:error)
  *-----------------------------------------------------------------------------*/
-int tropcorr(gtime_t time, const nav_t *nav, const double *pos,
+int tropcorr(gtime_t time, const nav_t *nav __attribute__((unused)), const double *pos,
         const double *azel, int tropopt, double *trp, double *var)
 {
     trace(4, "tropcorr: time=%s opt=%d pos=%.3f %.3f azel=%.3f %.3f\n",

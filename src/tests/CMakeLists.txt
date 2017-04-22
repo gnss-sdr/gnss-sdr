@@ -390,6 +390,7 @@ if(ENABLE_SYSTEM_TESTING)
         gnss_rx
         gnss_system_parameters
     )
+
     if(ENABLE_INSTALL_TESTS)
         if(EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
             file(REMOVE ${CMAKE_SOURCE_DIR}/install/ttff)
@@ -402,6 +403,39 @@ if(ENABLE_SYSTEM_TESTING)
     endif(ENABLE_INSTALL_TESTS)
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
+        add_executable(position_test
+             ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/position_test.cc )
+        if(NOT ${GTEST_DIR_LOCAL})
+             add_dependencies(position_test gtest-${gtest_RELEASE})
+        else(NOT ${GTEST_DIR_LOCAL})
+             add_dependencies(position_test gtest)
+        endif(NOT ${GTEST_DIR_LOCAL})
+        target_link_libraries(position_test
+             ${Boost_LIBRARIES}
+             ${GFlags_LIBS}
+             ${GLOG_LIBRARIES}
+             ${GTEST_LIBRARIES}
+             ${GNURADIO_RUNTIME_LIBRARIES}
+             ${GNURADIO_BLOCKS_LIBRARIES}
+             ${GNURADIO_FILTER_LIBRARIES}
+             ${GNURADIO_ANALOG_LIBRARIES}
+             ${VOLK_GNSSSDR_LIBRARIES}
+             gnss_sp_libs
+             gnss_rx
+             gnss_system_parameters
+        )
+
+        if(ENABLE_INSTALL_TESTS)
+             if(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
+                  file(REMOVE ${CMAKE_SOURCE_DIR}/install/position_test)
+             endif(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
+             install(TARGETS position_test RUNTIME DESTINATION bin COMPONENT "position_test")
+        else(ENABLE_INSTALL_TESTS)
+             add_custom_command(TARGET position_test POST_BUILD
+                                COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:position_test>
+                                ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:position_test> )
+        endif(ENABLE_INSTALL_TESTS)
+         
         if(GPSTK_FOUND OR OWN_GPSTK)
             add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc)
             if(NOT ${GTEST_DIR_LOCAL})
@@ -416,6 +450,7 @@ if(ENABLE_SYSTEM_TESTING)
                                                          gnss_sp_libs
                                                          gnss_rx
                                                          ${gpstk_libs})
+
             if(ENABLE_INSTALL_TESTS)
                 if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
                     file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
@@ -428,6 +463,7 @@ if(ENABLE_SYSTEM_TESTING)
             endif(ENABLE_INSTALL_TESTS)
         endif(GPSTK_FOUND OR OWN_GPSTK)          
     endif(ENABLE_SYSTEM_TESTING_EXTRA)
+    
 endif(ENABLE_SYSTEM_TESTING)
 
 

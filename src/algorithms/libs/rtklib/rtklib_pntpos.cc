@@ -182,7 +182,7 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
     if (ionoopt == IONOOPT_BRDC)
         {
             *ion = ionmodel(time, nav->ion_gps, pos, azel);
-            *var = SQR(*ion*ERR_BRDCI);
+            *var = std::pow(*ion * ERR_BRDCI, 2.0);
             return 1;
         }
     /* sbas ionosphere model */
@@ -234,7 +234,7 @@ int tropcorr(gtime_t time, const nav_t *nav, const double *pos,
     if (tropopt == TROPOPT_SAAS || tropopt == TROPOPT_EST || tropopt == TROPOPT_ESTG)
         {
             *trp = tropmodel(time, pos, azel, REL_HUMI);
-            *var = SQR(ERR_SAAS / (sin(azel[1]) + 0.1));
+            *var = std::pow(ERR_SAAS / (sin(azel[1]) + 0.1), 2.0);
             return 1;
         }
     /* sbas troposphere model */

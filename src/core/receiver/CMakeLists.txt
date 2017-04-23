@@ -80,7 +80,7 @@ include_directories(
      ${OPT_RECEIVER_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
-     
+
 if(Boost_VERSION LESS 105000)
      add_definitions(-DOLD_BOOST=1)
 endif(Boost_VERSION LESS 105000)
@@ -102,12 +102,14 @@ if(ENABLE_FLEXIBAND)
 endif(ENABLE_FLEXIBAND)
 
 if(ENABLE_OSMOSDR)
-    add_definitions(-DOSMOSDR_DRIVER=1)
+    if(GROSMOSDR_FOUND)
+        add_definitions(-DOSMOSDR_DRIVER=1)
+    endif(GROSMOSDR_FOUND)
 endif(ENABLE_OSMOSDR)
 
-if(ENABLE_UHD)
+if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
     add_definitions(-DUHD_DRIVER=1)
-endif(ENABLE_UHD)
+endif(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
 
 #Enable OpenCL if found in the system
 if(OPENCL_FOUND)

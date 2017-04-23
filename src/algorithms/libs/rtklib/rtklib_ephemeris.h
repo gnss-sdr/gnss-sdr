@@ -47,38 +47,12 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-* history : 2010/07/28 1.1  moved from rtkcmn.c
-*                           added api:
-*                               eph2clk(),geph2clk(),seph2clk(),satantoff()
-*                               satposs()
-*                           changed api:
-*                               eph2pos(),geph2pos(),satpos()
-*                           deleted api:
-*                               satposv(),satposiode()
-*           2010/08/26 1.2  add ephemeris option EPHOPT_LEX
-*           2010/09/09 1.3  fix problem when precise clock outage
-*           2011/01/12 1.4  add api alm2pos()
-*                           change api satpos(),satposs()
-*                           enable valid unhealthy satellites and output status
-*                           fix bug on exception by glonass ephem computation
-*           2013/01/10 1.5  support beidou (compass)
-*                           use newton's method to solve kepler eq.
-*                           update ssr correction algorithm
-*           2013/03/20 1.6  fix problem on ssr clock relativitic correction
-*           2013/09/01 1.7  support negative pseudorange
-*                           fix bug on variance in case of ura ssr = 63
-*           2013/11/11 1.8  change constant MAXAGESSR 70.0 -> 90.0
-*           2014/10/24 1.9  fix bug on return of var_uraeph() if ura<0||15<ura
-*           2014/12/07 1.10 modify MAXDTOE for qzss,gal and bds
-*                           test max number of iteration for Kepler
-*           2015/08/26 1.11 update RTOL_ELPLER 1E-14 -> 1E-13
-*                           set MAX_ITER_KEPLER for alm2pos()
-*-----------------------------------------------------------------------------*/
+ *
+ *-----------------------------------------------------------------------------*/
 
 
-#ifndef RTKLIB_EPHEMERIS_H_
-#define RTKLIB_EPHEMERIS_H_
+#ifndef GNSS_SDR_RTKLIB_EPHEMERIS_H_
+#define GNSS_SDR_RTKLIB_EPHEMERIS_H_
 
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
@@ -122,4 +96,4 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
 
 
 
-#endif /* RTKLIB_EPHEMERIS_H_ */
+#endif /* GNSS_SDR_RTKLIB_EPHEMERIS_H_ */

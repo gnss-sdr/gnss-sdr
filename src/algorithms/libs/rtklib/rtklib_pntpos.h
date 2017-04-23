@@ -48,22 +48,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
-* history : 2010/07/28 1.0  moved from rtkcmn.c
-*                           changed api:
-*                               pntpos()
-*                           deleted api:
-*                               pntvel()
-*           2011/01/12 1.1  add option to include unhealthy satellite
-*                           reject duplicated observation data
-*                           changed api: ionocorr()
-*           2011/11/08 1.2  enable snr mask for single-mode (rtklib_2.4.1_p3)
-*           2012/12/25 1.3  add variable snr mask
-*           2014/05/26 1.4  support galileo and beidou
-*           2015/03/19 1.5  fix bug on ionosphere correction for GLO and BDS
-*-----------------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------------*/
 
-#ifndef RTKLIB_PNTPOS_H_
-#define RTKLIB_PNTPOS_H_
+#ifndef GNSS_SDR_RTKLIB_PNTPOS_H_
+#define GNSS_SDR_RTKLIB_PNTPOS_H_
 
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
@@ -71,18 +59,15 @@
 #include "rtklib_ionex.h"
 
 /* constants -----------------------------------------------------------------*/
+const int NX = 4 + 3;          //!< # of estimated parameters
 
-#define SQR(x)      ((x)*(x))
-
-#define NX          (4+3)       /* # of estimated parameters */
-
-#define MAXITR      10          /* max number of iteration for point pos */
-#define ERR_ION     5.0         /* ionospheric delay std (m) */
-#define ERR_TROP    3.0         /* tropspheric delay std (m) */
-#define ERR_SAAS    0.3         /* saastamoinen model error std (m) */
-#define ERR_BRDCI   0.5         /* broadcast iono model error factor */
-#define ERR_CBIAS   0.3         /* code bias error std (m) */
-#define REL_HUMI    0.7         /* relative humidity for saastamoinen model */
+const int MAXITR = 10;         //!< max number of iteration for point pos
+const double ERR_ION = 5.0;    //!< ionospheric delay std (m)
+const double ERR_TROP = 3.0;   //!< tropspheric delay std (m)
+const double ERR_SAAS = 0.3;   //!< saastamoinen model error std (m)
+const double ERR_BRDCI = 0.5;  //!< broadcast iono model error factor
+const double ERR_CBIAS = 0.3;  //!< code bias error std (m)
+const double REL_HUMI = 0.7;   //!< relative humidity for saastamoinen model
 
 /* pseudorange measurement error variance ------------------------------------*/
 double varerr(const prcopt_t *opt, double el, int sys);
@@ -177,4 +162,4 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
                   const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
                   char *msg);
 
-#endif /* RTKLIB_PNTPOS_H_ */
+#endif /* GNSS_SDR_RTKLIB_PNTPOS_H_ */

@@ -48,57 +48,29 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
-*
-* references :
-*     [1] S.Hilla, The Extended Standard Product 3 Orbit Format (SP3-c),
-*         12 February, 2007
-*     [2] J.Ray, W.Gurtner, RINEX Extensions to Handle Clock Information,
-*         27 August, 1998
-*     [3] D.D.McCarthy, IERS Technical Note 21, IERS Conventions 1996, July 1996
-*     [4] D.A.Vallado, Fundamentals of Astrodynamics and Applications 2nd ed,
-*         Space Technology Library, 2004
-*
-* version : $Revision: 1.1 $ $Date: 2008/07/17 21:48:06 $
-* history : 2009/01/18 1.0  new
-*           2009/01/31 1.1  fix bug on numerical error to read sp3a ephemeris
-*           2009/05/15 1.2  support glonass,galileo,qzs
-*           2009/12/11 1.3  support wild-card expansion of file path
-*           2010/07/21 1.4  added api:
-*                               eci2ecef(),sunmoonpos(),peph2pos(),satantoff(),
-*                               readdcb()
-*                           changed api:
-*                               readsp3()
-*                           deleted api:
-*                               eph2posp()
-*           2010/09/09 1.5  fix problem when precise clock outage
-*           2011/01/23 1.6  support qzss satellite code
-*           2011/09/12 1.7  fix problem on precise clock outage
-*                           move sunmmonpos() to rtkcmn.c
-*           2011/12/01 1.8  modify api readsp3()
-*                           precede later ephemeris if ephemeris is NULL
-*                           move eci2ecef() to rtkcmn.c
-*           2013/05/08 1.9  fix bug on computing std-dev of precise clocks
-*           2013/11/20 1.10 modify option for api readsp3()
-*           2014/04/03 1.11 accept extenstion including sp3,eph,SP3,EPH
-*           2014/05/23 1.12 add function to read sp3 velocity records
-*                           change api: satantoff()
-*           2014/08/31 1.13 add member cov and vco in peph_t sturct
-*           2014/10/13 1.14 fix bug on clock error variance in peph2pos()
-*           2015/05/10 1.15 add api readfcb()
-*                           modify api readdcb()
-*-----------------------------------------------------------------------------*/
-#ifndef RTKLIB_PRECEPH_H_
-#define RTKLIB_PRECEPH_H_
+ *
+ * References :
+ *     [1] S.Hilla, The Extended Standard Product 3 Orbit Format (SP3-c),
+ *         12 February, 2007
+ *     [2] J.Ray, W.Gurtner, RINEX Extensions to Handle Clock Information,
+ *         27 August, 1998
+ *     [3] D.D.McCarthy, IERS Technical Note 21, IERS Conventions 1996, July 1996
+ *     [4] D.A.Vallado, Fundamentals of Astrodynamics and Applications 2nd ed,
+ *         Space Technology Library, 2004
+ *
+ *-----------------------------------------------------------------------------*/
+
+#ifndef GNSS_SDR_RTKLIB_PRECEPH_H_
+#define GNSS_SDR_RTKLIB_PRECEPH_H_
 
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
 
-#define SQR(x)      ((x)*(x))
 
-#define NMAX        10              /* order of polynomial interpolation */
-#define MAXDTE      900.0           /* max time difference to ephem time (s) */
-#define EXTERR_CLK  1E-3            /* extrapolation error for clock (m/s) */
-#define EXTERR_EPH  5E-7            /* extrapolation error for ephem (m/s^2) */
+const int NMAX = 10;              /* order of polynomial interpolation */
+const double MAXDTE = 900.0;      /* max time difference to ephem time (s) */
+const double EXTERR_CLK = 1e-3;   /* extrapolation error for clock (m/s) */
+const double EXTERR_EPH = 5e-7;   /* extrapolation error for ephem (m/s^2) */
 
 int code2sys(char code);
 int readsp3h(FILE *fp, gtime_t *time, char *type, int *sats,
@@ -133,4 +105,4 @@ void satantoff(gtime_t time, const double *rs, int sat, const nav_t *nav,
 int peph2pos(gtime_t time, int sat, const nav_t *nav, int opt,
                     double *rs, double *dts, double *var);
 
-#endif //RTKLIB_PRECEPH_H_
+#endif // GNSS_SDR_RTKLIB_PRECEPH_H_

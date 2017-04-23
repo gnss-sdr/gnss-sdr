@@ -49,7 +49,7 @@ const double GPS_L2_F               = -4.442807633e-10; //!< Constant, [s/(m)^(1
 
 
 // carrier and code frequencies
-const double GPS_L2_FREQ_HZ = FREQ2;          //!< L2 [Hz]
+const double GPS_L2_FREQ_HZ = FREQ2;             //!< L2 [Hz]
 
 const double GPS_L2_M_CODE_RATE_HZ = 0.5115e6;   //!< GPS L2 M code rate [chips/s]
 const int GPS_L2_M_CODE_LENGTH_CHIPS = 10230;    //!< GPS L2 M code length [chips]

@@ -48,7 +48,7 @@ const double F               = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
 
 
 // carrier and code frequencies
-const double GPS_L1_FREQ_HZ              = FREQ1; //!< L1 [Hz]
+const double GPS_L1_FREQ_HZ              = FREQ1;     //!< L1 [Hz]
 const double GPS_L1_CA_CODE_RATE_HZ      = 1.023e6;   //!< GPS L1 C/A code rate [chips/s]
 const double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;    //!< GPS L1 C/A code length [chips]
 const double GPS_L1_CA_CODE_PERIOD       = 0.001;     //!< GPS L1 C/A code period [seconds]
@@ -83,7 +83,7 @@ const int GPS_WORD_LENGTH = 4;                      //!< CRC + GPS WORD (-2 -1 0
 const int GPS_SUBFRAME_LENGTH = 40;                 //!< GPS_WORD_LENGTH x 10 = 40 bytes
 const int GPS_SUBFRAME_BITS = 300;                  //!< Number of bits per subframe in the NAV message [bits]
 const int GPS_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [seconds]
-const int GPS_SUBFRAME_MS = 6000;                 //!< Subframe duration [seconds]
+const int GPS_SUBFRAME_MS = 6000;                   //!< Subframe duration [seconds]
 const int GPS_WORD_BITS = 30;                       //!< Number of bits per word in the NAV message [bits]
 
 // GPS NAVIGATION MESSAGE STRUCTURE

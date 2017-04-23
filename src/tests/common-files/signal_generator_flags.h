@@ -41,7 +41,7 @@ DEFINE_string(static_position, "30.286502,120.032669,100", "Static receiver posi
 DEFINE_string(dynamic_position, "", "Observer positions file, in .csv or .nmea format");
 DEFINE_string(filename_rinex_obs, "sim.16o", "Filename of output RINEX navigation file");
 DEFINE_string(filename_raw_data, "signal_out.bin", "Filename of output raw data file");
-DEFINE_int32(fs_gen_hz, 2600000, "Samppling frequency [Hz]");
+DEFINE_int32(fs_gen_hz, 2600000, "Sampling frequency [sps]");
 DEFINE_int32(test_satellite_PRN, 1, "PRN of the satellite under test (must be visible during the observation time)");
 DEFINE_int32(test_satellite_PRN2, 2, "PRN of the satellite under test (must be visible during the observation time)");
 

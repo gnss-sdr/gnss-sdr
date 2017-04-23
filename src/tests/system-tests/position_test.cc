@@ -30,6 +30,7 @@
  */
 
 #include <cmath>
+#include <fstream>
 #include <numeric>
 #include <thread>
 #include <gflags/gflags.h>
@@ -39,6 +40,7 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "in_memory_configuration.h"
+#include "MATH_CONSTANTS.h"
 #include "signal_generator_flags.h"
 
 
@@ -56,7 +58,7 @@ public:
     std::string p4;
     std::string p5;
 
-    const double baseband_sampling_freq = 2.6e6;
+    const double baseband_sampling_freq = static_cast<double>(FLAGS_fs_gen_hz);
 
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
@@ -94,11 +96,15 @@ void Position_Gps_L1_System_Test::geodetic2Ecef(const double latitude, const dou
     double aux_x, aux_y, aux_z;
 
     // Convert to ECEF (See https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#From_geodetic_to_ECEF_coordinates )
-    double N = std::pow(a, 2.0) / sqrt( std::pow(a, 2.0) * std::pow(cos(latitude), 2.0) + std::pow(b, 2.0) * std::pow(sin(latitude), 2.0));
+    const double cLat = cos(latitude);
+    const double cLon = cos(longitude);
+    const double sLon = sin(longitude);
+    const double sLat = sin(latitude);
+    double N = std::pow(a, 2.0) / sqrt(std::pow(a, 2.0) * std::pow(cLat, 2.0) + std::pow(b, 2.0) * std::pow(sLat, 2.0));
 
-    aux_x = (N + altitude) * cos(latitude) * cos(longitude);
-    aux_y = (N + altitude) * cos(latitude) * sin(longitude);
-    aux_z = ((std::pow(b, 2.0) / std::pow(a, 2.0)) * N + altitude) * sin(latitude);
+    aux_x = (N + altitude) * cLat * cLon;
+    aux_y = (N + altitude) * cLat * sLon;
+    aux_z = ((std::pow(b, 2.0) / std::pow(a, 2.0)) * N + altitude) * sLat;
 
     *x = aux_x;
     *y = aux_y;
@@ -109,9 +115,8 @@ void Position_Gps_L1_System_Test::geodetic2Ecef(const double latitude, const dou
 void Position_Gps_L1_System_Test::geodetic2Enu(const double latitude, const double longitude, const double altitude,
         double* east, double* north, double* up)
 {
-    // Reference : https://github.com/ethz-asl/geodetic_utils/blob/master/include/geodetic_utils/geodetic_conv.hpp
     double x, y, z;
-    const double d2r = 3.1415926535898 / 180.0;
+    const double d2r = PI / 180.0;
 
     geodetic2Ecef(latitude * d2r, longitude * d2r, altitude, &x, &y, &z);
 
@@ -163,9 +168,9 @@ double Position_Gps_L1_System_Test::compute_stdev_precision(const std::vector<do
 }
 
 
-double Position_Gps_L1_System_Test::compute_stdev_accuracy(const std::vector<double> & vec, double ref)
+double Position_Gps_L1_System_Test::compute_stdev_accuracy(const std::vector<double> & vec, const double ref)
 {
-    double mean__ = ref;
+    const double mean__ = ref;
     double accum__ = 0.0;
     std::for_each (std::begin(vec), std::end(vec), [&](const double d) {
         accum__ += (d - mean__) * (d - mean__);
@@ -482,6 +487,13 @@ void Position_Gps_L1_System_Test::check_results()
     double sigma_N_2_accuracy = std::pow(compute_stdev_accuracy(pos_n, 0.0), 2.0);
     double sigma_U_2_accuracy = std::pow(compute_stdev_accuracy(pos_u, 0.0), 2.0);
 
+    double sum__e = std::accumulate(pos_e.begin(), pos_e.end(), 0.0);
+    double mean__e = sum__e / pos_e.size();
+    double sum__n = std::accumulate(pos_n.begin(), pos_n.end(), 0.0);
+    double mean__n = sum__n / pos_n.size();
+    double sum__u = std::accumulate(pos_u.begin(), pos_u.end(), 0.0);
+    double mean__u = sum__u / pos_u.size();
+
     std::cout << "---- ACCURACY ----" << std::endl;
     std::cout << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
     std::cout << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
@@ -490,6 +502,8 @@ void Position_Gps_L1_System_Test::check_results()
     std::cout << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
     std::cout << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
     std::cout << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+    std::cout << "Bias 2D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0)) << " [m]" << std::endl;
+    std::cout << "Bias 3D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0) + std::pow(mean__u, 2.0)) << " [m]" << std::endl;
     std::cout << std::endl;
 
     std::cout << "---- PRECISION ----" << std::endl;
@@ -500,7 +514,6 @@ void Position_Gps_L1_System_Test::check_results()
     std::cout << "90% SAS = " << 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
     std::cout << "MRSE = " << sqrt(sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
     std::cout << "SEP = " << 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-
 
     // Sanity Check
     double precision_SEP =  0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
@@ -516,7 +529,7 @@ TEST_F(Position_Gps_L1_System_Test, Position_system_test)
     // Generate signal raw signal samples and observations RINEX file
     if(!FLAGS_disable_generator)
         {
-    generate_signal();
+            generate_signal();
         }
 
     // Configure receiver

@@ -62,6 +62,6 @@ eph_t eph_to_rtklib(Galileo_Ephemeris gal_eph);
 eph_t eph_to_rtklib(Gps_Ephemeris gps_eph);
 eph_t eph_to_rtklib(Gps_CNAV_Ephemeris gps_cnav_eph);
 
-obsd_t obs_to_rtklib(Gnss_Synchro gnss_synchro, int week);
+obsd_t insert_obs_to_rtklib(obsd_t rtklib_obs, Gnss_Synchro gnss_synchro, int week, int band);
 
 #endif /* GNSS_SDR_RTKLIB_CONVERSIONS_H_ */

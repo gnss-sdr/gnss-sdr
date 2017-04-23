@@ -52,19 +52,17 @@
 #include "rtklib_conversions.h"
 
 
-obsd_t obs_to_rtklib(Gnss_Synchro gnss_synchro, int week)
+obsd_t insert_obs_to_rtklib(obsd_t rtklib_obs, Gnss_Synchro gnss_synchro, int week, int band)
 {
-    obsd_t rtklib_obs = {};
-    rtklib_obs.D[0] = gnss_synchro.Carrier_Doppler_hz;
-    rtklib_obs.P[0] = gnss_synchro.Pseudorange_m;
-    rtklib_obs.L[0] = gnss_synchro.Carrier_phase_rads;//todo: check units
-    //rtklib_obs.SNR = gnss_synchro.CN0_dB_hz;
-    rtklib_obs.sat = gnss_synchro.PRN;
-    rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
+    rtklib_obs.D[band]=gnss_synchro.Carrier_Doppler_hz;
+    rtklib_obs.P[band]=gnss_synchro.Pseudorange_m;
+    rtklib_obs.L[band]=gnss_synchro.Carrier_phase_rads;//todo: check units
+    //rtklib_obs.SNR=gnss_synchro.CN0_dB_hz;
+    rtklib_obs.sat=gnss_synchro.PRN;
+    rtklib_obs.time=gpst2time(adjgpsweek(week),gnss_synchro.RX_time);
     //printf("OBS RX TIME [%i]: %s,%f\n\r",rtklib_obs.sat,time_str(rtklib_obs.time,3),rtklib_obs.time.sec);
     return rtklib_obs;
 }
-
 
 eph_t eph_to_rtklib(Galileo_Ephemeris gal_eph)
 {

@@ -149,7 +149,11 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                 //convert ephemeris from GNSS-SDR class to RTKLIB structure
                 eph_data[valid_obs]=eph_to_rtklib(galileo_ephemeris_iter->second);
                 //convert observation from GNSS-SDR class to RTKLIB structure
-                obs_data[valid_obs]=obs_to_rtklib(gnss_observables_iter->second, galileo_ephemeris_iter->second.WN_5);
+                obsd_t newobs={};
+                obs_data[valid_obs]=insert_obs_to_rtklib(newobs,
+                		gnss_observables_iter->second,
+                		galileo_ephemeris_iter->second.WN_5,
+                		0);
                 valid_obs++;
             }
             else // the ephemeris are not available for this SV
@@ -170,7 +174,11 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                     //convert ephemeris from GNSS-SDR class to RTKLIB structure
                     eph_data[valid_obs]=eph_to_rtklib(gps_ephemeris_iter->second);
                     //convert observation from GNSS-SDR class to RTKLIB structure
-                    obs_data[valid_obs]=obs_to_rtklib(gnss_observables_iter->second, gps_ephemeris_iter->second.i_GPS_week);
+                    obsd_t newobs={};
+                    obs_data[valid_obs]=insert_obs_to_rtklib(newobs,
+                    		gnss_observables_iter->second,
+                    		gps_ephemeris_iter->second.i_GPS_week,
+                    		0);
                     valid_obs++;
                 }
                 else // the ephemeris are not available for this SV
@@ -183,11 +191,37 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.end())
                 {
-                    //convert ephemeris from GNSS-SDR class to RTKLIB structure
-                    eph_data[valid_obs]=eph_to_rtklib(gps_cnav_ephemeris_iter->second);
-                    //convert observation from GNSS-SDR class to RTKLIB structure
-                    obs_data[valid_obs]=obs_to_rtklib(gnss_observables_iter->second, gps_cnav_ephemeris_iter->second.i_GPS_week);
-                    valid_obs++;
+                	// 1. Find the same satellite in GPS L1 band
+                    gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                    if (gps_ephemeris_iter != gps_ephemeris_map.end())
+                    {
+                    	// 2. If found, replace the existing GPS L1 ephemeris with the GPS L2 ephemeris
+                    	// (more precise!), and attach the L2 observation to the L1 observation in RTKLIB structure
+                    	for (int i=0;i<valid_obs;i++)
+                    	{
+                    		if (eph_data[i].sat==gnss_observables_iter->second.PRN)
+                    		{
+                    			eph_data[i]=eph_to_rtklib(gps_cnav_ephemeris_iter->second);
+                    			obs_data[valid_obs]=insert_obs_to_rtklib(obs_data[valid_obs],
+                                		gnss_observables_iter->second,
+                                		gps_cnav_ephemeris_iter->second.i_GPS_week,
+                                		1);//Band 2 (L2)
+                    			std::cout<<"L2 observation attached!"<<std::endl;
+                    			break;
+                    		}
+                    	}
+                    }else{
+                    	// 3. If not found, insert the GPS L2 ephemeris and the observation
+                        //convert ephemeris from GNSS-SDR class to RTKLIB structure
+                        eph_data[valid_obs]=eph_to_rtklib(gps_cnav_ephemeris_iter->second);
+                        //convert observation from GNSS-SDR class to RTKLIB structure
+                        obsd_t newobs={};
+                        obs_data[valid_obs]=insert_obs_to_rtklib(newobs,
+                        		gnss_observables_iter->second,
+                        		gps_cnav_ephemeris_iter->second.i_GPS_week,
+                        		1);//Band 2 (L2)
+                        valid_obs++;
+                    }
                 }
                 else // the ephemeris are not available for this SV
                 {

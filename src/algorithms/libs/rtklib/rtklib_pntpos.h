@@ -48,7 +48,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *-----------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------*/
 
 #ifndef GNSS_SDR_RTKLIB_PNTPOS_H_
 #define GNSS_SDR_RTKLIB_PNTPOS_H_
@@ -60,7 +60,6 @@
 
 /* constants -----------------------------------------------------------------*/
 const int NX = 4 + 3;          //!< # of estimated parameters
-
 const int MAXITR = 10;         //!< max number of iteration for point pos
 const double ERR_ION = 5.0;    //!< ionospheric delay std (m)
 const double ERR_TROP = 3.0;   //!< tropspheric delay std (m)

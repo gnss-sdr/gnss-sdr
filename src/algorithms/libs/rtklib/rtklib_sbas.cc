@@ -49,8 +49,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *
- * option : -DRRCENA  enable rrc correction
- *
  * References :
  *     [1] RTCA/DO-229C, Minimum operational performanc standards for global
  *         positioning system/wide area augmentation system airborne equipment,
@@ -59,7 +57,8 @@
  *         Interface Specification for QZSS, Japan Aerospace Exploration Agency,
  *         July 31, 2009
  *
- *-----------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------*/
+
 #include "rtklib_sbas.h"
 
 

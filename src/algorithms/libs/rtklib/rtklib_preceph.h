@@ -58,7 +58,7 @@
  *     [4] D.A.Vallado, Fundamentals of Astrodynamics and Applications 2nd ed,
  *         Space Technology Library, 2004
  *
- *-----------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------*/
 
 #ifndef GNSS_SDR_RTKLIB_PRECEPH_H_
 #define GNSS_SDR_RTKLIB_PRECEPH_H_

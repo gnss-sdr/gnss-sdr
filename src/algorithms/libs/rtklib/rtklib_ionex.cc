@@ -47,15 +47,15 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* references:
-*     [1] S.Schear, W.Gurtner and J.Feltens, IONEX: The IONosphere Map EXchange
-*         Format Version 1, February 25, 1998
-*     [2] S.Schaer, R.Markus, B.Gerhard and A.S.Timon, Daily Global Ionosphere
-*         Maps based on GPS Carrier Phase Data Routinely producted by CODE
-*         Analysis Center, Proceeding of the IGS Analysis Center Workshop, 1996
-*
-*-----------------------------------------------------------------------------*/
+ *
+ * References:
+ *     [1] S.Schear, W.Gurtner and J.Feltens, IONEX: The IONosphere Map EXchange
+ *         Format Version 1, February 25, 1998
+ *     [2] S.Schaer, R.Markus, B.Gerhard and A.S.Timon, Daily Global Ionosphere
+ *         Maps based on GPS Carrier Phase Data Routinely producted by CODE
+ *         Analysis Center, Proceeding of the IGS Analysis Center Workshop, 1996
+ *
+ *----------------------------------------------------------------------------*/
 
 #include "rtklib_ionex.h"
 

@@ -49,16 +49,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *
- * options : -DLAPACK   use LAPACK/BLAS
- *           -DMKL      use Intel MKL
- *           -DTRACE    enable debug trace
- *           -DWIN32    use WIN32 API
- *           -DNOCALLOC no use calloc for zero matrix
- *           -DIERS_MODEL use GMF instead of NMF
- *           -DDLL      built for shared library
- *           -DCPUTIME_IN_GPST cputime operated in gpst
- *
- * references :
+ * References :
  *     [1] IS-GPS-200D, Navstar GPS Space Segment/Navigation User Interfaces,
  *         7 March, 2006
  *     [2] RTCA/DO-229C, Minimum operational performanc standards for global
@@ -82,7 +73,7 @@
  *     [10] GLONASS/GPS/Galileo/Compass/SBAS NV08C receiver series BINR interface
  *         protocol specification ver.1.3, August, 2012
  *
- *-----------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------*/
 
 #ifndef GNSS_SDR_RTKLIB_RTKCMN_H_
 #define GNSS_SDR_RTKLIB_RTKCMN_H_

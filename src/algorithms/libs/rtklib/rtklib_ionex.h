@@ -55,7 +55,7 @@
  *         Maps based on GPS Carrier Phase Data Routinely producted by CODE
  *         Analysis Center, Proceeding of the IGS Analysis Center Workshop, 1996
  *
- *-----------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------*/
 
 #ifndef GNSS_SDR_RTKLIB_IONEX_H_
 #define GNSS_SDR_RTKLIB_IONEX_H_

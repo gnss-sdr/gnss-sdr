@@ -48,7 +48,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *-----------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------*/
 
 
 #ifndef GNSS_SDR_RTKLIB_EPHEMERIS_H_

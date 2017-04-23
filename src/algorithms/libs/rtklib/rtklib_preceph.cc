@@ -58,7 +58,8 @@
  *     [4] D.A.Vallado, Fundamentals of Astrodynamics and Applications 2nd ed,
  *         Space Technology Library, 2004
  *
- *-----------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------*/
+
 #include "rtklib_preceph.h"
 
 

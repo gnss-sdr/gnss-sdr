@@ -18,13 +18,14 @@
 
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
-set(RTKLIB_LIB_SOURCES 
+set(RTKLIB_LIB_SOURCES
      rtklib_rtkcmn.cc
      rtklib_ephemeris.cc
      rtklib_preceph.cc
      rtklib_sbas.cc
      rtklib_ionex.cc
      rtklib_pntpos.cc
+     rtklib_rtkpos.cc
      rtklib_conversions.cc
 )
 
@@ -46,12 +47,11 @@ source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
 add_dependencies(rtklib_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
 
 target_link_libraries(
-    rtklib_lib 
-    ${Boost_LIBRARIES} 
-    ${GFlags_LIBS} 
-    ${GLOG_LIBRARIES} 
+    rtklib_lib
+    ${Boost_LIBRARIES}
+    ${GFlags_LIBS}
+    ${GLOG_LIBRARIES}
     ${ARMADILLO_LIBRARIES}
     ${BLAS}
     ${LAPACK}
     )
-

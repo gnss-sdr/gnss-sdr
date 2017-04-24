@@ -63,10 +63,10 @@
 #define GNSS_SDR_RTKLIB_SBAS_H_
 
 #include "rtklib.h"
-#include "rtklib_rtkcmn.h"
+
 /* constants -----------------------------------------------------------------*/
 
-#define WEEKOFFSET  1024        /* gps week offset for NovAtel OEM-3 */
+const int WEEKOFFSET = 1024;        /* gps week offset for NovAtel OEM-3 */
 
 /* sbas igp definition -------------------------------------------------------*/
 static const short

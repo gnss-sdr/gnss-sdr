@@ -55,50 +55,163 @@
 #define GNSS_SDR_RTKLIB_RKTPOS_H_
 
 #include "rtklib.h"
+#include "rtklib_rtkcmn.h"
 
-double varerr(const prcopt_t *opt, double el, int sys);
-double gettgd(int sat, const nav_t *nav);
-double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
-              int iter, const prcopt_t *opt, double *var);
-int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
-             const double *azel, int ionoopt, double *ion, double *var);
+/* constants/macros ----------------------------------------------------------*/
+const double VAR_POS = std::pow(30.0, 2.0); /* initial variance of receiver pos (m^2) */
+const double VAR_VEL = std::pow(10.0, 2.0); /* initial variance of receiver vel ((m/s)^2) */
+const double VAR_ACC =  std::pow(10.0, 2.0); /* initial variance of receiver acc ((m/ss)^2) */
+const double VAR_HWBIAS = std::pow(1.0, 2.0);  /* initial variance of h/w bias ((m/MHz)^2) */
+const double VAR_GRA = std::pow(0.001, 2.0); /* initial variance of gradient (m^2) */
+const double INIT_ZWD = 0.15;     /* initial zwd (m) */
 
-int tropcorr(gtime_t time, const nav_t *nav, const double *pos,
-             const double *azel, int tropopt, double *trp, double *var);
+const double PRN_HWBIA = 1E-6;    /* process noise of h/w bias (m/MHz/sqrt(s)) */
+const double MAXAC = 30.0;     /* max accel for doppler slip detection (m/s^2) */
 
-int rescode(int iter, const obsd_t *obs, int n, const double *rs,
-            const double *dts, const double *vare, const int *svh,
-            const nav_t *nav, const double *x, const prcopt_t *opt,
-            double *v, double *H, double *var, double *azel, int *vsat,
-            double *resp, int *ns);
+const double VAR_HOLDAMB = 0.001;    /* constraint to hold ambiguity (cycle^2) */
 
-int valsol(const double *azel, const int *vsat, int n,
-           const prcopt_t *opt, const double *v, int nv, int nx,
-           char *msg);
+const double TTOL_MOVEB = (1.0+2*DTTOL);
+/* time sync tolerance for moving-baseline (s) */
 
-int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
-           const double *vare, const int *svh, const nav_t *nav,
-           const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
-           double *resp, char *msg);
+/* number of parameters (pos,ionos,tropos,hw-bias,phase-bias,real,estimated) */
+#define NF_RTK(opt)     ((opt)->ionoopt==IONOOPT_IFLC?1:(opt)->nf)
+#define NP_RTK(opt)     ((opt)->dynamics==0?3:9)
+#define NI_RTK(opt)     ((opt)->ionoopt!=IONOOPT_EST?0:MAXSAT)
+#define NT_RTK(opt)     ((opt)->tropopt<TROPOPT_EST?0:((opt)->tropopt<TROPOPT_ESTG?2:6))
+#define NL_RTK(opt)     ((opt)->glomodear!=2?0:NFREQGLO)
+#define NB_RTK(opt)     ((opt)->mode<=PMODE_DGPS?0:MAXSAT*NF_RTK(opt))
+#define NR_RTK(opt)     (NP_RTK(opt)+NI_RTK(opt)+NT_RTK(opt)+NL_RTK(opt))
+#define NX_RTK(opt)     (NR_RTK(opt)+NB_RTK(opt))
 
-int raim_fde(const obsd_t *obs, int n, const double *rs,
-             const double *dts, const double *vare, const int *svh,
-             const nav_t *nav, const prcopt_t *opt, sol_t *sol,
-             double *azel, int *vsat, double *resp, char *msg);
+/* state variable index */
+#define II_RTK(s,opt)   (NP_RTK(opt)+(s)-1)                 /* ionos (s:satellite no) */
+#define IT_RTK(r,opt)   (NP_RTK(opt)+NI_RTK(opt)+NT_RTK(opt)/2*(r)) /* tropos (r:0=rov,1:ref) */
+#define IL_RTK(f,opt)   (NP_RTK(opt)+NI_RTK(opt)+NT_RTK(opt)+(f))   /* receiver h/w bias */
+#define IB_RTK(s,f,opt) (NR_RTK(opt)+MAXSAT*(f)+(s)-1) /* phase bias (s:satno,f:freq) */
 
-int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
-           const nav_t *nav, const double *rr, const double *x,
-           const double *azel, const int *vsat, double *v, double *H);
 
-void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
-            const nav_t *nav, const prcopt_t *opt, sol_t *sol,
-            const double *azel, const int *vsat);
+static int resamb_WLNL(rtk_t *rtk, const obsd_t *obs, const int *sat,
+                       const int *iu, const int *ir, int ns, const nav_t *nav,
+                       const double *azel) {return 0;}
+static int resamb_TCAR(rtk_t *rtk, const obsd_t *obs, const int *sat,
+                       const int *iu, const int *ir, int ns, const nav_t *nav,
+                       const double *azel) {return 0;}
 
-int pntpos(const obsd_t *obs, int n, const nav_t *nav,
-           const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
-           char *msg);
+/* global variables ----------------------------------------------------------*/
+static int statlevel = 0;          /* rtk status output level (0:off) */
+static FILE *fp_stat = NULL;       /* rtk status file pointer */
+static char file_stat[1024] = "";  /* rtk status file original path */
+static gtime_t time_stat = {0};    /* rtk status file time */
 
-int lexioncorr(gtime_t time, const nav_t *nav, const double *pos,
-               const double *azel, double *delay, double *var);
+
+int rtkopenstat(const char *file, int level);
+
+void rtkclosestat(void);
+
+int rtkoutstat(rtk_t *rtk, char *buff);
+
+void swapsolstat(void);
+
+void outsolstat(rtk_t *rtk);
+
+void errmsg(rtk_t *rtk, const char *format, ...);
+
+double sdobs(const obsd_t *obs, int i, int j, int f);
+
+double gfobs_L1L2(const obsd_t *obs, int i, int j, const double *lam);
+
+double gfobs_L1L5(const obsd_t *obs, int i, int j, const double *lam);
+
+double varerr(int sat, int sys, double el, double bl, double dt, int f,
+        const prcopt_t *opt);
+
+
+double baseline(const double *ru, const double *rb, double *dr);
+
+void initx(rtk_t *rtk, double xi, double var, int i);
+
+int selsat(const obsd_t *obs, double *azel, int nu, int nr,
+        const prcopt_t *opt, int *sat, int *iu, int *ir);
+
+void udpos(rtk_t *rtk, double tt);
+
+void udion(rtk_t *rtk, double tt, double bl, const int *sat, int ns);
+
+void udtrop(rtk_t *rtk, double tt, double bl);
+
+void udrcvbias(rtk_t *rtk, double tt);
+
+void detslp_ll(rtk_t *rtk, const obsd_t *obs, int i, int rcv);
+void detslp_gf_L1L2(rtk_t *rtk, const obsd_t *obs, int i, int j,
+        const nav_t *nav);
+
+void detslp_gf_L1L5(rtk_t *rtk, const obsd_t *obs, int i, int j,
+        const nav_t *nav);
+
+void detslp_dop(rtk_t *rtk, const obsd_t *obs, int i, int rcv,
+        const nav_t *nav);
+
+void udbias(rtk_t *rtk, double tt, const obsd_t *obs, const int *sat,
+        const int *iu, const int *ir, int ns, const nav_t *nav);
+
+void udstate(rtk_t *rtk, const obsd_t *obs, const int *sat,
+        const int *iu, const int *ir, int ns, const nav_t *nav);
+
+void zdres_sat(int base, double r, const obsd_t *obs, const nav_t *nav,
+        const double *azel, const double *dant,
+        const prcopt_t *opt, double *y);
+
+int zdres(int base, const obsd_t *obs, int n, const double *rs,
+        const double *dts, const int *svh, const nav_t *nav,
+        const double *rr, const prcopt_t *opt, int index, double *y,
+        double *e, double *azel);
+
+int validobs(int i, int j, int f, int nf, double *y);
+
+void ddcov(const int *nb, int n, const double *Ri, const double *Rj,
+        int nv, double *R);
+
+int constbl(rtk_t *rtk, const double *x, const double *P, double *v,
+        double *H, double *Ri, double *Rj, int index);
+
+double prectrop(gtime_t time, const double *pos, int r,
+        const double *azel, const prcopt_t *opt, const double *x,
+        double *dtdx);
+
+double gloicbcorr(int sat1, int sat2, const prcopt_t *opt, double lam1,
+        double lam2, int f);
+
+int test_sys(int sys, int m);
+
+int ddres(rtk_t *rtk, const nav_t *nav, double dt, const double *x,
+        const double *P, const int *sat, double *y, double *e,
+        double *azel, const int *iu, const int *ir, int ns, double *v,
+        double *H, double *R, int *vflg);
+
+double intpres(gtime_t time, const obsd_t *obs, int n, const nav_t *nav,
+        rtk_t *rtk, double *y);
+
+
+int ddmat(rtk_t *rtk, double *D);
+
+void restamb(rtk_t *rtk, const double *bias, int nb, double *xa);
+
+void holdamb(rtk_t *rtk, const double *xa);
+
+int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa);
+
+int valpos(rtk_t *rtk, const double *v, const double *R, const int *vflg,
+        int nv, double thres);
+
+int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
+        const nav_t *nav);
+
+void rtkinit(rtk_t *rtk, const prcopt_t *opt);
+
+void rtkfree(rtk_t *rtk);
+
+int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
+
+
 
 #endif

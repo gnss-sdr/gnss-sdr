@@ -60,7 +60,7 @@
 #ifndef GNSS_SDR_RTKLIB_IONEX_H_
 #define GNSS_SDR_RTKLIB_IONEX_H_
 
-#include "rtklib_rtkcmn.h"
+#include "rtklib.h"
 
 const double VAR_NOTEC = 30.0 * 30.0;   /* variance of no tec */
 const double MIN_EL = 0.0;         /* min elevation angle (rad) */

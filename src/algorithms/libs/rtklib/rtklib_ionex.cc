@@ -58,7 +58,7 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_ionex.h"
-
+#include "rtklib_rtkcmn.h"
 
 /* get index -----------------------------------------------------------------*/
 int getindex(double value, const double *range)

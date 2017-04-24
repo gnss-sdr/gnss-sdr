@@ -55,18 +55,13 @@
 
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
-#include "rtklib_ephemeris.h"
-#include "rtklib_ionex.h"
 
 /* constants -----------------------------------------------------------------*/
 const int NX = 4 + 3;          //!< # of estimated parameters
 const int MAXITR = 10;         //!< max number of iteration for point pos
 const double ERR_ION = 5.0;    //!< ionospheric delay std (m)
 const double ERR_TROP = 3.0;   //!< tropspheric delay std (m)
-const double ERR_SAAS = 0.3;   //!< saastamoinen model error std (m)
-const double ERR_BRDCI = 0.5;  //!< broadcast iono model error factor
-const double ERR_CBIAS = 0.3;  //!< code bias error std (m)
-const double REL_HUMI = 0.7;   //!< relative humidity for saastamoinen model
+
 
 /* pseudorange measurement error variance ------------------------------------*/
 double varerr(const prcopt_t *opt, double el, int sys);

@@ -64,7 +64,6 @@
 #define GNSS_SDR_RTKLIB_PRECEPH_H_
 
 #include "rtklib.h"
-#include "rtklib_rtkcmn.h"
 
 
 const int NMAX = 10;              /* order of polynomial interpolation */

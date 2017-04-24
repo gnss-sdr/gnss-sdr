@@ -51,7 +51,9 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_ephemeris.h"
-
+#include "rtklib_rtkcmn.h"
+#include "rtklib_sbas.h"
+#include "rtklib_preceph.h"
 
 /* constants ------------------------------------------------------*/
 

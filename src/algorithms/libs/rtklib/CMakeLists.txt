@@ -25,6 +25,9 @@ set(RTKLIB_LIB_SOURCES
      rtklib_sbas.cc
      rtklib_ionex.cc
      rtklib_pntpos.cc
+     rtklib_ppp.cc
+     rtklib_tides.cc
+     rtklib_lambda.cc
      rtklib_rtkpos.cc
      rtklib_conversions.cc
 )

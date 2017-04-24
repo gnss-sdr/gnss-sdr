@@ -50,14 +50,15 @@
  *
  *----------------------------------------------------------------------------*/
 
-#include <stdarg.h>
-#include <ctype.h>
+#include "rtklib_rtkcmn.h"
+//#include <stdarg.h>
+//#include <ctype.h>
 #include <dirent.h>
-#include <time.h>
+//#include <time.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "rtklib_rtkcmn.h"
+
 
 const double gpst0[] = {1980, 1,  6, 0, 0, 0}; /* gps time reference */
 const double gst0 [] = {1999, 8, 22, 0, 0, 0}; /* galileo system time reference */
@@ -3005,13 +3006,15 @@ void freenav(nav_t *nav, int opt)
 //    va_start(ap,format); vfprintf(fp_trace,format,ap); va_end(ap);
 //    fflush(fp_trace);
 //}
-//extern void tracemat(int level, const double *A, int n, int m, int p, int q)
-//{
+void tracemat(int level, const double *A, int n, int m, int p, int q)
+{
 //    if (!fp_trace||level>level_trace) return;
 //    matfprint(A,n,m,p,q,fp_trace); fflush(fp_trace);
-//}
-//extern void traceobs(int level, const obsd_t *obs, int n)
-//{
+}
+
+
+void traceobs(int level, const obsd_t *obs, int n)
+{
 //    char str[64],id[16];
 //    int i;
 //
@@ -3025,7 +3028,7 @@ void freenav(nav_t *nav, int opt)
 //              obs[i].code[1],obs[i].SNR[0]*0.25,obs[i].SNR[1]*0.25);
 //    }
 //    fflush(fp_trace);
-//}
+}
 //extern void tracenav(int level, const nav_t *nav)
 //{
 //    char s1[64],s2[64],id[16];
@@ -3434,10 +3437,10 @@ void dops(int ns, const double *azel, double elmin, double *dop)
     matmul("NT", 4, 4, n, 1.0, H, H, 0.0, Q);
     if (!matinv(Q, 4))
         {
-            dop[0] = SQRT(Q[0]+Q[5]+Q[10]+Q[15]); /* GDOP */
-            dop[1] = SQRT(Q[0]+Q[5]+Q[10]);       /* PDOP */
-            dop[2] = SQRT(Q[0]+Q[5]);             /* HDOP */
-            dop[3] = SQRT(Q[10]);                 /* VDOP */
+            dop[0] = std::sqrt(Q[0]+Q[5]+Q[10]+Q[15]); /* GDOP */
+            dop[1] = std::sqrt(Q[0]+Q[5]+Q[10]);       /* PDOP */
+            dop[2] = std::sqrt(Q[0]+Q[5]);             /* HDOP */
+            dop[3] = std::sqrt(Q[10]);                 /* VDOP */
         }
 }
 

@@ -61,7 +61,7 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_preceph.h"
-
+#include "rtklib_rtkcmn.h"
 
 /* satellite code to satellite system ----------------------------------------*/
 int code2sys(char code)

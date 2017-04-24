@@ -1,8 +1,8 @@
 /*!
- * \file rtklib_ephemeris.h
- * \brief satellite ephemeris and clock functions
+ * \file rtklib_tides.h
+ * \brief Tidal displacement corrections
  * \authors <ul>
- *          <li> 2007-2013, T. Takasu
+ *          <li> 2015, T. Takasu
  *          <li> 2017, Javier Arribas
  *          <li> 2017, Carles Fernandez
  *          </ul>
@@ -20,7 +20,7 @@
  * or included in GNSS-SDR.
  *
  * -------------------------------------------------------------------------
- * Copyright (C) 2007-2013, T. Takasu
+ * Copyright (C) 2015, T. Takasu
  * Copyright (C) 2017, Javier Arribas
  * Copyright (C) 2017, Carles Fernandez
  * All rights reserved.
@@ -48,50 +48,45 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ * References:
+ *     [1] D.D.McCarthy, IERS Technical Note 21, IERS Conventions 1996, July 1996
+ *     [2] D.D.McCarthy and G.Petit, IERS Technical Note 32, IERS Conventions
+ *         2003, November 2003
+ *     [3] D.A.Vallado, Fundamentals of Astrodynamics and Applications 2nd ed,
+ *         Space Technology Library, 2004
+ *     [4] J.Kouba, A Guide to using International GNSS Service (IGS) products,
+ *         May 2009
+ *     [5] G.Petit and B.Luzum (eds), IERS Technical Note No. 36, IERS
+ *         Conventions (2010), 2010
  *----------------------------------------------------------------------------*/
 
 
-#ifndef GNSS_SDR_RTKLIB_EPHEMERIS_H_
-#define GNSS_SDR_RTKLIB_EPHEMERIS_H_
+#ifndef GNSS_SDR_RTKLIB_TIDES_H_
+#define GNSS_SDR_RTKLIB_TIDES_H_
+
 
 #include "rtklib.h"
 
 
-double var_uraeph(int ura);
-double var_urassr(int ura);
-void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts);
-double eph2clk(gtime_t time, const eph_t *eph);
-void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
-                    double *var);
-void deq(const double *x, double *xdot, const double *acc);
-void glorbit(double t, double *x, const double *acc);
-double geph2clk(gtime_t time, const geph_t *geph);
+const double GME = 3.986004415E+14; /* earth gravitational constant */
+const double GMS = 1.327124E+20;    /* sun gravitational constant */
+const double GMM = 4.902801E+12;    /* moon gravitational constant */
 
-void geph2pos(gtime_t time, const geph_t *geph, double *rs, double *dts,
-                     double *var);
-double seph2clk(gtime_t time, const seph_t *seph);
-void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
-                     double *var);
-eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav);
-geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav);
-seph_t *selseph(gtime_t time, int sat, const nav_t *nav);
-int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-                  double *dts);
-//satellite position and clock by broadcast ephemeris
-int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-                  int iode, double *rs, double *dts, double *var, int *svh);
-int satpos_sbas(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-                        double *rs, double *dts, double *var, int *svh);
-int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-                      int opt, double *rs, double *dts, double *var, int *svh);
+void tide_pl(const double *eu, const double *rp, double GMp,
+        const double *pos, double *dr);
 
-int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
-                  const nav_t *nav, double *rs, double *dts, double *var,
-                  int *svh);
-void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
-                    int ephopt, double *rs, double *dts, double *var, int *svh);
+void tide_solid(const double *rsun, const double *rmoon,
+        const double *pos, const double *E, double gmst, int opt,
+        double *dr);
+
+void tide_oload(gtime_t tut, const double *odisp, double *denu);
+
+void iers_mean_pole(gtime_t tut, double *xp_bar, double *yp_bar);
 
 
+void tide_pole(gtime_t tut, const double *pos, const double *erpv,
+        double *denu);
 
-
-#endif /* GNSS_SDR_RTKLIB_EPHEMERIS_H_ */
+void tidedisp(gtime_t tutc, const double *rr, int opt, const erp_t *erp,
+        const double *odisp, double *dr);
+#endif

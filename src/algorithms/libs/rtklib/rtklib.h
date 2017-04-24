@@ -71,6 +71,9 @@ const double RE_WGS84 = 6378137.0;             //!< earth semimajor axis (WGS84)
 const double FE_WGS84 = (1.0 / 298.257223563); //!< earth flattening (WGS84)
 
 const double HION = 350000.0;                  //!<  ionosphere height (m)
+const double PRN_HWBIAS = 1e-6;                //!<  process noise of h/w bias (m/MHz/sqrt(s))
+
+const double INT_SWAP_STAT = 86400.0;          //!<  swap interval of solution status file (s)
 
 const unsigned int POLYCRC32 = 0xEDB88320u;    //!<  CRC32 polynomial
 const unsigned int POLYCRC24Q = 0x1864CFBu;    //!<  CRC24Q polynomial
@@ -106,12 +109,20 @@ const unsigned int TIMES_GPST = 0;             //!<  time system: gps time
 const unsigned int TIMES_UTC = 1;              //!<  time system: utc
 const unsigned int TIMES_JST = 2;              //!<  time system: jst
 
+
+const double ERR_SAAS = 0.3;                   //!<  saastamoinen model error std (m)
+const double ERR_BRDCI = 0.5;                  //!<  broadcast iono model error factor
+const double ERR_CBIAS = 0.3;                  //!<  code bias error std (m)
+const double REL_HUMI = 0.7;                   //!<  relative humidity for saastamoinen model
+const double GAP_RESION = 120;                 //!<  default gap to reset ionos parameters (ep)
+
 const int MAXFREQ = 7;                //!<  max NFREQ
 
 const int MAXLEAPS = 64;              //!<  max number of leap seconds table
 const double DTTOL = 0.005;                    //!<  tolerance of time difference (s)
 
-const int NFREQ = 3;
+const int NFREQ = 3;                  //!<   number of carrier frequencies
+const int NFREQGLO = 2;               //!<   number of carrier frequencies of GLONASS
 const int NEXOBS = 0;                 //!<  number of extended obs codes
 const int MAXANT = 64;                //!<  max length of station name/antenna type
 
@@ -130,6 +141,8 @@ const int SYS_BDS = 0x20;                //!<   navigation system: BeiDou
 const int SYS_IRN = 0x40;                //!<   navigation system: IRNS
 const int SYS_LEO = 0x80;                //!<   navigation system: LEO
 const int SYS_ALL = 0xFF;                //!<   navigation system: all
+
+
 
 #ifdef ENAGLO
 const int MINPRNGLO = 1;                   //!<   min satellite slot number of GLONASS
@@ -272,10 +285,18 @@ const double EFACT_BDS = 1.0;            //!<    error factor: BeiDou
 const double EFACT_IRN = 1.5;            //!<    error factor: IRNSS
 const double EFACT_SBS = 3.0;            //!<    error factor: SBAS
 
-const int MAXEXFILE = 1024;     //!<    max number of expanded files
+const int MAXEXFILE = 1024;              //!<    max number of expanded files
 const double MAXSBSAGEF = 30.0;          //!<    max age of SBAS fast correction (s)
 const double MAXSBSAGEL = 1800.0;        //!<    max age of SBAS long term corr (s)
 
+const unsigned int ARMODE_OFF = 0;       //!< AR mode: off
+const unsigned int ARMODE_CONT = 1;      //!< AR mode: continuous
+const unsigned int ARMODE_INST = 2;      //!< AR mode: instantaneous
+const unsigned int ARMODE_FIXHOLD = 3;   //!< AR mode: fix and hold
+const unsigned int ARMODE_WLNL = 4;      //!< AR mode: wide lane/narrow lane
+const unsigned int ARMODE_TCAR = 5;      //!< AR mode: triple carrier ar
+
+const int POSOPT_RINEX = 3;              //!< pos option: rinex header pos */
 
 typedef void fatalfunc_t(const char *); //!<  fatal callback function type
 

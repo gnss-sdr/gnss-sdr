@@ -81,6 +81,25 @@
 #include "rtklib.h"
 
 
+/* coordinate rotation matrix ------------------------------------------------*/
+#define Rx(t,X) do { \
+    (X)[0]=1.0; (X)[1]=(X)[2]=(X)[3]=(X)[6]=0.0; \
+    (X)[4]=(X)[8]=cos(t); (X)[7]=sin(t); (X)[5]=-(X)[7]; \
+} while (0)
+
+#define Ry(t,X) do { \
+    (X)[4]=1.0; (X)[1]=(X)[3]=(X)[5]=(X)[7]=0.0; \
+    (X)[0]=(X)[8]=cos(t); (X)[2]=sin(t); (X)[6]=-(X)[2]; \
+} while (0)
+
+#define Rz(t,X) do { \
+    (X)[8]=1.0; (X)[2]=(X)[5]=(X)[6]=(X)[7]=0.0; \
+    (X)[0]=(X)[4]=cos(t); (X)[3]=sin(t); (X)[1]=-(X)[3]; \
+} while (0)
+
+
+
+
 void fatalerr(const char *format, ...);
 int satno(int sys, int prn);
 int satsys(int sat, int *prn);
@@ -164,21 +183,6 @@ void enu2ecef(const double *pos, const double *e, double *r);
 void covenu(const double *pos, const double *P, double *Q);
 void covecef(const double *pos, const double *Q, double *P);
 
-/* coordinate rotation matrix ------------------------------------------------*/
-#define Rx(t,X) do { \
-    (X)[0]=1.0; (X)[1]=(X)[2]=(X)[3]=(X)[6]=0.0; \
-    (X)[4]=(X)[8]=cos(t); (X)[7]=sin(t); (X)[5]=-(X)[7]; \
-} while (0)
-
-#define Ry(t,X) do { \
-    (X)[4]=1.0; (X)[1]=(X)[3]=(X)[5]=(X)[7]=0.0; \
-    (X)[0]=(X)[8]=cos(t); (X)[2]=sin(t); (X)[6]=-(X)[2]; \
-} while (0)
-
-#define Rz(t,X) do { \
-    (X)[8]=1.0; (X)[2]=(X)[5]=(X)[6]=(X)[7]=0.0; \
-    (X)[0]=(X)[4]=cos(t); (X)[3]=sin(t); (X)[1]=-(X)[3]; \
-} while (0)
 
 void ast_args(double t, double *f);
 void nut_iau1980(double t, const double *f, double *dpsi, double *deps);
@@ -215,8 +219,8 @@ void freenav(nav_t *nav, int opt);
 //void tracelevel(int level);
 void trace   (int level, const char *format, ...);
 //void tracet  (int level, const char *format, ...);
-//void tracemat(int level, const double *A, int n, int m, int p, int q);
-//void traceobs(int level, const obsd_t *obs, int n);
+void tracemat(int level, const double *A, int n, int m, int p, int q);
+void traceobs(int level, const obsd_t *obs, int n);
 //void tracenav(int level, const nav_t *nav);
 //void tracegnav(int level, const nav_t *nav);
 //void tracehnav(int level, const nav_t *nav);
@@ -235,7 +239,7 @@ double satwavelen(int sat, int frq, const nav_t *nav);
 double geodist(const double *rs, const double *rr, double *e);
 double satazel(const double *pos, const double *e, double *azel);
 
-#define SQRT(x)     ((x)<0.0?0.0:sqrt(x));
+//#define SQRT(x)     ((x)<0.0?0.0:sqrt(x))
 void dops(int ns, const double *azel, double elmin, double *dop);
 double ionmodel(gtime_t t, const double *ion, const double *pos,
                        const double *azel);

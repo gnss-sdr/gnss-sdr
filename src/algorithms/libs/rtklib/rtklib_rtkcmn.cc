@@ -106,7 +106,7 @@ const prcopt_t prcopt_default = { /* defaults processing options */
         {}, {}, {},                 /* baseline, ru, rb */
         {"",""},                    /* anttype */
         {} , {}, {},              /* antdel, pcv, exsats */
-        0, 0, 0, {"",""}, {}, 0, {{},{}}, {}, 0, {}
+        0, 0, 0, {"",""}, {}, 0, {{},{}}, { {}, {{},{}}, {{},{}}, {}, {} }, 0, {}
 };
 
 

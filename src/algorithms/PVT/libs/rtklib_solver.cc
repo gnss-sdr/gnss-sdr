@@ -87,7 +87,7 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
             {},{},{},                /* baseline,ru,rb */
             {"",""},                    /* anttype */
             {},{},{},             /* antdel,pcv,exsats */
-            0, 0, 0, {"",""}, {}, 0, {{},{}}, {}, 0, {}
+            0, 0, 0, {"",""}, {}, 0, {{},{}}, { {}, {{},{}}, {{},{}}, {}, {} }, 0, {}
     };
     rtklib_opt = default_opt;
 

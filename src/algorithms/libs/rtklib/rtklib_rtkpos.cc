@@ -1933,7 +1933,7 @@ int ddmat(rtk_t *rtk, double *D)
     {
         sol_t sol0={ {0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
         ambc_t ambc0={{ {0,0}, {0, 0}, {0, 0}, {0, 0} }, {}, {}, {} , 0, {}};
-        ssat_t ssat0={0, 0, 0, {}};
+        ssat_t ssat0={0, 0, 0, 0.0};
         int i;
 
         trace(3,"rtkinit :\n");

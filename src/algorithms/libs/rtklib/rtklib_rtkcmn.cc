@@ -89,7 +89,7 @@ double leaps[MAXLEAPS+1][7] = { /* leap seconds (y,m,d,h,m,s,utc-gpst) */
 
 const prcopt_t prcopt_default = { /* defaults processing options */
         PMODE_SINGLE, 0, 2, SYS_GPS,    /* mode, soltype, nf, navsys */
-        15.0*D2R, {},            /* elmin, snrmask */
+        15.0*D2R, {{}, {{},{}} } ,            /* elmin, snrmask */
         0, 1, 1, 1,                     /* sateph, modear, glomodear, bdsmodear */
         5, 0, 10, 1,                    /* maxout, minlock, minfix, armaxiter */
         0, 0, 0, 0,                     /* estion, esttrop, dynamics, tidecorr */
@@ -106,7 +106,7 @@ const prcopt_t prcopt_default = { /* defaults processing options */
         {}, {}, {},                 /* baseline, ru, rb */
         {"",""},                    /* anttype */
         {}, {}, {},              /* antdel, pcv, exsats */
-        {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+        0, 0, 0, {"",""}, 0, 0, {}, {}, 0, 0
 };
 
 
@@ -1166,7 +1166,7 @@ int str2time(const char *s, int i, int n, gtime_t *t)
 gtime_t epoch2time(const double *ep)
 {
     const int doy[] = {1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
-    gtime_t time = {};
+    gtime_t time = {0, 0};
     int days, sec, year = (int)ep[0], mon = (int)ep[1], day = (int)ep[2];
 
     if (year<1970 || 2099<year || mon<1 || 12<mon) return time;
@@ -1625,8 +1625,8 @@ int adjgpsweek(int week)
  *-----------------------------------------------------------------------------*/
 unsigned int tickget(void)
 {
-    struct timespec tp = {};
-    struct timeval  tv = {};
+    struct timespec tp = {0, 0};
+    struct timeval  tv = {0, 0};
 
 #ifdef CLOCK_MONOTONIC_RAW
     /* linux kernel > 2.6.28 */
@@ -1653,7 +1653,7 @@ unsigned int tickget(void)
  *-----------------------------------------------------------------------------*/
 void sleepms(int ms)
 {
-    struct timespec ts;
+    struct timespec ts = {0, 0};
     if (ms <= 0) return;
     ts.tv_sec = (time_t)(ms/1000);
     ts.tv_nsec = (long)(ms%1000*1000000);
@@ -2092,7 +2092,7 @@ void addpcv(const pcv_t *pcv,  pcvs_t *pcvs)
 int readngspcv(const char *file, pcvs_t *pcvs)
 {
     FILE *fp;
-    static const pcv_t pcv0 = {};
+    static const pcv_t pcv0 = {0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} };
     pcv_t pcv;
     double neu[3];
     int n = 0;
@@ -2146,7 +2146,7 @@ int readngspcv(const char *file, pcvs_t *pcvs)
 int readantex(const char *file, pcvs_t *pcvs)
 {
     FILE *fp;
-    static const pcv_t pcv0 = {};
+    static const pcv_t pcv0 = {0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} };
     pcv_t pcv;
     double neu[3];
     int i, f, freq = 0, state = 0, freqs[] = {1, 2, 5, 6, 7, 8, 0};
@@ -2767,8 +2767,9 @@ int screent(gtime_t time, gtime_t ts, gtime_t te, double tint)
 int readnav(const char *file, nav_t *nav)
 {
     FILE *fp;
-    eph_t eph0 = {};
-    geph_t geph0 = {};
+    eph_t eph0 = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {} };
+    geph_t geph0 = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {}, {}, {}, 0.0, 0.0, 0.0};
     char buff[4096], *p;
     long toe_time, tof_time, toc_time, ttr_time;
     int i, sat, prn;
@@ -3006,14 +3007,16 @@ void freenav(nav_t *nav, int opt)
 //    va_start(ap,format); vfprintf(fp_trace,format,ap); va_end(ap);
 //    fflush(fp_trace);
 //}
-void tracemat(int level, const double *A, int n, int m, int p, int q)
+void tracemat(int level __attribute__((unused)), const double *A __attribute__((unused)),
+int n __attribute__((unused)), int m __attribute__((unused)), int p __attribute__((unused)),
+int q __attribute__((unused)))
 {
 //    if (!fp_trace||level>level_trace) return;
 //    matfprint(A,n,m,p,q,fp_trace); fflush(fp_trace);
 }
 
 
-void traceobs(int level, const obsd_t *obs, int n)
+void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__((unused)), int n __attribute__((unused)))
 {
 //    char str[64],id[16];
 //    int i;

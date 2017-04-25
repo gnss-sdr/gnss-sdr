@@ -69,13 +69,13 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     //RTKLIB PVT solver options
     /* defaults processing options */
     prcopt_t default_opt={PMODE_SINGLE,0,2,SYS_GPS,   /* mode,soltype,nf,navsys */
-            15.0*D2R,{{}, {{},{}} },           /* elmin,snrmask */
+            15.0*D2R, {},           /* elmin,snrmask */
             0,1,1,1,                    /* sateph,modear,glomodear,bdsmodear */
             5,0,10,1,                   /* maxout,minlock,minfix,armaxiter */
             0,0,0,0,                    /* estion,esttrop,dynamics,tidecorr */
             1,0,0,0,0,                  /* niter,codesmooth,intpref,sbascorr,sbassatsel */
             0,0,                        /* rovpos,refpos */
-            {100.0,100.0},              /* eratio[] */
+            {100.0,100.0,100.0},              /* eratio[] */
             {100.0,0.003,0.003,0.0,1.0}, /* err[] */
             {30.0,0.03,0.3},            /* std[] */
             {1E-4,1E-3,1E-4,1E-1,1E-2,0.0}, /* prn[] */
@@ -86,7 +86,7 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
             {},{},{},                /* baseline,ru,rb */
             {"",""},                    /* anttype */
             {},{},{},             /* antdel,pcv,exsats */
-            0, 0, 0, {"",""}, 0, 0, {}, {}, 0, 0
+            0, 0, 0, {"",""}, {}, 0, {{},{}}, {}, 0, {}
     };
     rtklib_opt = default_opt;
 
@@ -214,10 +214,10 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                     }else{
                     	// 3. If not found, insert the GPS L2 ephemeris and the observation
                         //convert ephemeris from GNSS-SDR class to RTKLIB structure
-                        eph_data[valid_obs]=eph_to_rtklib(gps_cnav_ephemeris_iter->second);
+                        eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                         //convert observation from GNSS-SDR class to RTKLIB structure
-                        obsd_t newobs={};
-                        obs_data[valid_obs]=insert_obs_to_rtklib(newobs,
+                        obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                        obs_data[valid_obs] = insert_obs_to_rtklib(newobs,
                         		gnss_observables_iter->second,
                         		gps_cnav_ephemeris_iter->second.i_GPS_week,
                         		1);//Band 2 (L2)

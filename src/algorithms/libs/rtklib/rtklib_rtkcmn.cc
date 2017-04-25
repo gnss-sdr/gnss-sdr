@@ -89,13 +89,13 @@ double leaps[MAXLEAPS+1][7] = { /* leap seconds (y,m,d,h,m,s,utc-gpst) */
 
 const prcopt_t prcopt_default = { /* defaults processing options */
         PMODE_SINGLE, 0, 2, SYS_GPS,    /* mode, soltype, nf, navsys */
-        15.0*D2R, {{}, {{},{}} } ,            /* elmin, snrmask */
+        15.0*D2R, {} ,            /* elmin, snrmask */
         0, 1, 1, 1,                     /* sateph, modear, glomodear, bdsmodear */
         5, 0, 10, 1,                    /* maxout, minlock, minfix, armaxiter */
         0, 0, 0, 0,                     /* estion, esttrop, dynamics, tidecorr */
         1, 0, 0, 0, 0,                   /* niter, codesmooth, intpref, sbascorr, sbassatsel */
         0, 0,                         /* rovpos, refpos */
-        {100.0, 100.0},               /* eratio[] */
+        {100.0, 100.0, 100.0},               /* eratio[] */
         {100.0, 0.003, 0.003, 0.0, 1.0},  /* err[] */
         {30.0, 0.03, 0.3},             /* std[] */
         {1e-4, 1e-3, 1e-4, 1e-1, 1e-2, 0.0},  /* prn[] */
@@ -105,8 +105,8 @@ const prcopt_t prcopt_default = { /* defaults processing options */
         30.0, 30.0, 30.0,              /* maxtdif, maxinno, maxgdop */
         {}, {}, {},                 /* baseline, ru, rb */
         {"",""},                    /* anttype */
-        {{}, {}} , {}, {},              /* antdel, pcv, exsats */
-        0, 0, 0, {"",""}, 0, 0, {}, 0, '0'
+        {} , {}, {},              /* antdel, pcv, exsats */
+        0, 0, 0, {"",""}, {}, 0, {{},{}}, {}, 0, {}
 };
 
 

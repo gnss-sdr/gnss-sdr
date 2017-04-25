@@ -253,15 +253,15 @@ const int MAXNGEO = 4;          //!<    max number of GEO satellites
 const int MAXSOLMSG = 8191;     //!<    max length of solution message
 const int MAXERRMSG = 4096;     //!<    max length of error/warning message
 
-const unsigned int IONOOPT_OFF = 0;      //!<    ionosphere option: correction off
-const unsigned int IONOOPT_BRDC = 1;     //!<    ionosphere option: broadcast model
-const unsigned int IONOOPT_SBAS = 2;     //!<    ionosphere option: SBAS model
-const unsigned int IONOOPT_IFLC = 3;     //!<    ionosphere option: L1/L2 or L1/L5 iono-free LC
-const unsigned int IONOOPT_EST = 4;      //!<    ionosphere option: estimation
-const unsigned int IONOOPT_TEC = 5;      //!<    ionosphere option: IONEX TEC model
-const unsigned int IONOOPT_QZS = 6;      //!<    ionosphere option: QZSS broadcast model
-const unsigned int IONOOPT_LEX = 7;      //!<    ionosphere option: QZSS LEX ionospehre
-const unsigned int IONOOPT_STEC = 8;     //!<    ionosphere option: SLANT TEC model
+const int IONOOPT_OFF = 0;      //!<    ionosphere option: correction off
+const int IONOOPT_BRDC = 1;     //!<    ionosphere option: broadcast model
+const int IONOOPT_SBAS = 2;     //!<    ionosphere option: SBAS model
+const int IONOOPT_IFLC = 3;     //!<    ionosphere option: L1/L2 or L1/L5 iono-free LC
+const int IONOOPT_EST = 4;      //!<    ionosphere option: estimation
+const int IONOOPT_TEC = 5;      //!<    ionosphere option: IONEX TEC model
+const int IONOOPT_QZS = 6;      //!<    ionosphere option: QZSS broadcast model
+const int IONOOPT_LEX = 7;      //!<    ionosphere option: QZSS LEX ionospehre
+const int IONOOPT_STEC = 8;     //!<    ionosphere option: SLANT TEC model
 
 const int TROPOPT_OFF = 0;      //!<    troposphere option: correction off
 const int TROPOPT_SAAS = 1;     //!<    troposphere option: Saastamoinen model

@@ -49,11 +49,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 
+#include "rtklib_solver.h"
 #include <glog/logging.h>
 #include "rtklib_conversions.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
-#include "rtklib_solver.h"
+
 
 using google::LogMessage;
 
@@ -69,7 +70,7 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     //RTKLIB PVT solver options
     /* defaults processing options */
     prcopt_t default_opt={PMODE_SINGLE,0,2,SYS_GPS,   /* mode,soltype,nf,navsys */
-            15.0*D2R, {},           /* elmin,snrmask */
+            15.0*D2R, { {}, {{},{}} },           /* elmin,snrmask */
             0,1,1,1,                    /* sateph,modear,glomodear,bdsmodear */
             5,0,10,1,                   /* maxout,minlock,minfix,armaxiter */
             0,0,0,0,                    /* estion,esttrop,dynamics,tidecorr */

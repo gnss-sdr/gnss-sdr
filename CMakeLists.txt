@@ -451,6 +451,16 @@ endif()
 
 
 ################################################################################
+# Lib4cpp - http://log4cpp.sourceforge.net/
+################################################################################
+find_package(Log4cpp)
+if(NOT LOG4CPP_FOUND)
+    message(FATAL_ERROR "*** Lib4cpp is required to build gnss-sdr")
+endif()
+
+
+
+################################################################################
 # volk_gnsssdr module - GNSS-SDR's own VOLK library
 ################################################################################
 find_package(VolkGnssSdr)

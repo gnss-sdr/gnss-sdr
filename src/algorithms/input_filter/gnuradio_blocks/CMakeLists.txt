@@ -33,7 +33,8 @@ file(GLOB INPUT_FILTER_GR_BLOCKS_HEADERS "*.h")
 list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
 add_library(input_filter_gr_blocks ${INPUT_FILTER_GR_BLOCKS_SOURCES} ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
-target_link_libraries(input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES}  ${VOLK_GNSSSDR_LIBRARIES})
+
+target_link_libraries(input_filter_gr_blocks ${GNURADIO_FILTER_LIBRARIES}  ${VOLK_GNSSSDR_LIBRARIES} ${LOG4CPP_LIBRARIES})
 
 if(NOT VOLK_GNSSSDR_FOUND)
     add_dependencies(input_filter_gr_blocks volk_gnsssdr_module)

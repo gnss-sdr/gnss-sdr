@@ -1931,9 +1931,9 @@ int ddmat(rtk_t *rtk, double *D)
      *-----------------------------------------------------------------------------*/
     void rtkinit(rtk_t *rtk, const prcopt_t *opt)
     {
-        sol_t sol0={{0}};
-        ambc_t ambc0={{{0}}};
-        ssat_t ssat0={0};
+        sol_t sol0={ {0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
+        ambc_t ambc0={{ {0,0}, {0, 0}, {0, 0}, {0, 0} }, {}, {}, {} , 0, {}};
+        ssat_t ssat0={0, 0, 0, {}};
         int i;
 
         trace(3,"rtkinit :\n");
@@ -2036,7 +2036,7 @@ int ddmat(rtk_t *rtk, double *D)
     int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     {
         prcopt_t *opt=&rtk->opt;
-        sol_t solb={{0}};
+        sol_t solb={ {0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
         gtime_t time;
         int i,nu,nr;
         char msg[128]="";

@@ -300,7 +300,7 @@ void combpeph(nav_t *nav,  int opt)
 void readsp3(const char *file, nav_t *nav, int opt)
 {
     FILE *fp;
-    gtime_t time = {};
+    gtime_t time = {0, 0};
     double bfact[2] = {};
     int i, j, n, ns, sats[MAXSAT] = {};
     char *efiles[MAXEXFILE], *ext, type = ' ', tsys[4] = "";
@@ -355,8 +355,8 @@ void readsp3(const char *file, nav_t *nav, int opt)
  *-----------------------------------------------------------------------------*/
 int readsap(const char *file, gtime_t time, nav_t *nav)
 {
-    pcvs_t pcvs = {};
-    pcv_t pcv0 = {}, *pcv;
+    pcvs_t pcvs = {0, 0};
+    pcv_t pcv0 = { 0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} }, *pcv;
     int i;
 
     trace(3, "readsap : file=%s time=%s\n", file, time_str(time, 0));

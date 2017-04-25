@@ -481,7 +481,7 @@ int raim_fde(const obsd_t *obs,  int n,  const double *rs,
         double *azel, int *vsat,  double *resp, char *msg)
 {
     obsd_t *obs_e;
-    sol_t sol_e = {};
+    sol_t sol_e = { {0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
     char tstr[32], name[16], msg_e[128];
     double *rs_e, *dts_e, *vare_e, *azel_e, *resp_e, rms_e, rms = 100.0;
     int i, j, k, nvsat, stat = 0, *svh_e, *vsat_e, sat = 0;

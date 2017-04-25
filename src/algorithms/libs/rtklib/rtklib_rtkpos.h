@@ -101,7 +101,7 @@ static int resamb_TCAR(rtk_t *rtk, const obsd_t *obs, const int *sat,
 static int statlevel = 0;          /* rtk status output level (0:off) */
 static FILE *fp_stat = NULL;       /* rtk status file pointer */
 static char file_stat[1024] = "";  /* rtk status file original path */
-static gtime_t time_stat = {0};    /* rtk status file time */
+static gtime_t time_stat = {0, 0};    /* rtk status file time */
 
 
 int rtkopenstat(const char *file, int level);

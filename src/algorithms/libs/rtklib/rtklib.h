@@ -78,15 +78,15 @@ const double INT_SWAP_STAT = 86400.0;          //!<  swap interval of solution s
 const unsigned int POLYCRC32 = 0xEDB88320u;    //!<  CRC32 polynomial
 const unsigned int POLYCRC24Q = 0x1864CFBu;    //!<  CRC24Q polynomial
 
-const unsigned int PMODE_SINGLE = 0;           //!<  positioning mode: single
-const unsigned int PMODE_DGPS = 1;             //!<  positioning mode: DGPS/DGNSS
-const unsigned int PMODE_KINEMA = 2;           //!<  positioning mode: kinematic
-const unsigned int PMODE_STATIC = 3;           //!<  positioning mode: static
-const unsigned int PMODE_MOVEB = 4;            //!<  positioning mode: moving-base
-const unsigned int PMODE_FIXED = 5;            //!<  positioning mode: fixed
-const unsigned int PMODE_PPP_KINEMA = 6;       //!<  positioning mode: PPP-kinemaric
-const unsigned int PMODE_PPP_STATIC = 7;       //!<  positioning mode: PPP-static
-const unsigned int PMODE_PPP_FIXED = 8;        //!<  positioning mode: PPP-fixed
+const int PMODE_SINGLE = 0;           //!<  positioning mode: single
+const int PMODE_DGPS = 1;             //!<  positioning mode: DGPS/DGNSS
+const int PMODE_KINEMA = 2;           //!<  positioning mode: kinematic
+const int PMODE_STATIC = 3;           //!<  positioning mode: static
+const int PMODE_MOVEB = 4;            //!<  positioning mode: moving-base
+const int PMODE_FIXED = 5;            //!<  positioning mode: fixed
+const int PMODE_PPP_KINEMA = 6;       //!<  positioning mode: PPP-kinemaric
+const int PMODE_PPP_STATIC = 7;       //!<  positioning mode: PPP-static
+const int PMODE_PPP_FIXED = 8;        //!<  positioning mode: PPP-fixed
 
 const unsigned int SOLF_LLH = 0;               //!<  solution format: lat/lon/height
 const unsigned int SOLF_XYZ = 1;               //!<  solution format: x/y/z-ecef
@@ -263,12 +263,12 @@ const unsigned int IONOOPT_QZS = 6;      //!<    ionosphere option: QZSS broadca
 const unsigned int IONOOPT_LEX = 7;      //!<    ionosphere option: QZSS LEX ionospehre
 const unsigned int IONOOPT_STEC = 8;     //!<    ionosphere option: SLANT TEC model
 
-const unsigned int TROPOPT_OFF = 0;      //!<    troposphere option: correction off
-const unsigned int TROPOPT_SAAS = 1;     //!<    troposphere option: Saastamoinen model
-const unsigned int TROPOPT_SBAS = 2;     //!<    troposphere option: SBAS model
-const unsigned int TROPOPT_EST = 3;      //!<    troposphere option: ZTD estimation
-const unsigned int TROPOPT_ESTG = 4;     //!<    troposphere option: ZTD+grad estimation
-const unsigned int TROPOPT_ZTD = 5;      //!<    troposphere option: ZTD correction
+const int TROPOPT_OFF = 0;      //!<    troposphere option: correction off
+const int TROPOPT_SAAS = 1;     //!<    troposphere option: Saastamoinen model
+const int TROPOPT_SBAS = 2;     //!<    troposphere option: SBAS model
+const int TROPOPT_EST = 3;      //!<    troposphere option: ZTD estimation
+const int TROPOPT_ESTG = 4;     //!<    troposphere option: ZTD+grad estimation
+const int TROPOPT_ZTD = 5;      //!<    troposphere option: ZTD correction
 
 const unsigned int EPHOPT_BRDC = 0;      //!<    ephemeris option: broadcast ephemeris
 const unsigned int EPHOPT_PREC = 1;      //!<    ephemeris option: precise ephemeris

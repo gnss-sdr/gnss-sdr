@@ -90,7 +90,7 @@ tec_t *addtec(const double *lats, const double *lons, const double *hgts,
         double rb, nav_t *nav)
 {
     tec_t *p, *nav_tec;
-    gtime_t time0 = {};
+    gtime_t time0 = {0, 0};
     int i, n, ndata[3];
 
     trace(3, "addtec  :\n");
@@ -234,7 +234,7 @@ int readionexb(FILE *fp, const double *lats, const double *lons,
         const double *hgts, double rb, double nexp, nav_t *nav)
 {
     tec_t *p = NULL;
-    gtime_t time = {};
+    gtime_t time = {0, 0};
     double lat, lon[3], hgt, x;
     int i, j, k, n, m, index, type = 0;
     char buff[1024], *label = buff + 60;

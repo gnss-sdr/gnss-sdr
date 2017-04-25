@@ -218,7 +218,7 @@ int decode_sbstype7(const sbsmsg_t *msg, sbssat_t *sbssat)
 /* decode type 9: geo navigation message -------------------------------------*/
 int decode_sbstype9(const sbsmsg_t *msg, nav_t *nav)
 {
-    seph_t seph = {};
+    seph_t seph = { 0, {0,0}, {0,0}, 0, 0, {}, {}, {}, 0.0, 0.0 };
     int i, sat, t;
 
     trace(4, "decode_sbstype9:\n");
@@ -619,7 +619,7 @@ int sbsreadmsgt(const char *file, int sel, gtime_t ts, gtime_t te,
 
 int sbsreadmsg(const char *file, int sel, sbs_t *sbs)
 {
-    gtime_t ts = {}, te = {};
+    gtime_t ts = {0, 0}, te = {0, 0};
 
     trace(3, "sbsreadmsg: file=%s sel=%d\n", file, sel);
 

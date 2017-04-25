@@ -201,7 +201,7 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                     	// (more precise!), and attach the L2 observation to the L1 observation in RTKLIB structure
                     	for (int i=0;i<valid_obs;i++)
                     	{
-                    		if (eph_data[i].sat==gnss_observables_iter->second.PRN)
+                    		if (eph_data[i].sat == static_cast<int>(gnss_observables_iter->second.PRN))
                     		{
                     			eph_data[i]=eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                     			obs_data[valid_obs]=insert_obs_to_rtklib(obs_data[valid_obs],

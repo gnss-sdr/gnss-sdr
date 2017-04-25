@@ -150,7 +150,7 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                 //convert ephemeris from GNSS-SDR class to RTKLIB structure
                 eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
                 //convert observation from GNSS-SDR class to RTKLIB structure
-                obsd_t newobs = {{0,0}, '0', '0', '0', 0.0, 0.0, 0.0};
+                obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
                 obs_data[valid_obs] = insert_obs_to_rtklib(newobs,
                 		gnss_observables_iter->second,
                 		galileo_ephemeris_iter->second.WN_5,
@@ -175,7 +175,7 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                     //convert ephemeris from GNSS-SDR class to RTKLIB structure
                     eph_data[valid_obs]=eph_to_rtklib(gps_ephemeris_iter->second);
                     //convert observation from GNSS-SDR class to RTKLIB structure
-                    obsd_t newobs = {{0,0}, '0', '0', '0', 0.0, 0.0, 0.0};
+                    obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
                     obs_data[valid_obs]=insert_obs_to_rtklib(newobs,
                     		gnss_observables_iter->second,
                     		gps_ephemeris_iter->second.i_GPS_week,

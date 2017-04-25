@@ -100,13 +100,13 @@ const prcopt_t prcopt_default = { /* defaults processing options */
         {30.0, 0.03, 0.3},             /* std[] */
         {1e-4, 1e-3, 1e-4, 1e-1, 1e-2, 0.0},  /* prn[] */
         5E-12,                       /* sclkstab */
-        {3.0, 0.9999, 0.25, 0.1, 0.05},  /* thresar */
+        {3.0, 0.9999, 0.25, 0.1, 0.05, 0, 0, 0},  /* thresar */
         0.0, 0.0, 0.05,                /* elmaskar, almaskhold, thresslip */
         30.0, 30.0, 30.0,              /* maxtdif, maxinno, maxgdop */
         {}, {}, {},                 /* baseline, ru, rb */
         {"",""},                    /* anttype */
-        {}, {}, {},              /* antdel, pcv, exsats */
-        0, 0, 0, {"",""}, 0, 0, {}, {}, 0, 0
+        {{}, {}} , {}, {},              /* antdel, pcv, exsats */
+        0, 0, 0, {"",""}, 0, 0, {}, 0, '0'
 };
 
 

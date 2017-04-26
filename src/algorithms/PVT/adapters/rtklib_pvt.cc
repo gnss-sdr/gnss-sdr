@@ -169,7 +169,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     //RTKLIB PVT solver options
     /* defaults processing options */
-    rtklib_options = {PMODE_SINGLE,0,2,SYS_GPS,   /* mode,soltype,nf,navsys */
+    prcopt_t default_opt={PMODE_SINGLE,0,2,SYS_GPS,   /* mode,soltype,nf,navsys */
             15.0*D2R, { {}, {{},{}} },           /* elmin,snrmask */
             0,1,1,1,                    /* sateph,modear,glomodear,bdsmodear */
             5,0,10,1,                   /* maxout,minlock,minfix,armaxiter */
@@ -179,8 +179,8 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             {100.0,100.0,100.0},              /* eratio[] */
             {100.0,0.003,0.003,0.0,1.0}, /* err[] */
             {30.0,0.03,0.3},            /* std[] */
-            {1e-4,1e-3,1e-4,1e-1,1e-2,0.0}, /* prn[] */
-            5e-12,                      /* sclkstab */
+            {1E-4,1E-3,1E-4,1E-1,1E-2,0.0}, /* prn[] */
+            5E-12,                      /* sclkstab */
             {3.0,0.9999,0.25,0.1,0.05}, /* thresar */
             0.0,0.0,0.05,               /* elmaskar,almaskhold,thresslip */
             30.0,30.0,30.0,             /* maxtdif,maxinno,maxgdop */
@@ -189,7 +189,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             {},{},{},             /* antdel,pcv,exsats */
             0, 0, 0, {"",""}, {}, 0, {{},{}}, { {}, {{},{}}, {{},{}}, {}, {} }, 0, {}
     };
-
+    rtklib_options=default_opt;
     // make PVT object
     pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtklib_options);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";

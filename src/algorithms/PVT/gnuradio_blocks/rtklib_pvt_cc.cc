@@ -60,7 +60,8 @@ rtklib_make_pvt_cc(unsigned int nchannels,
         unsigned short rtcm_station_id,
         std::map<int,int> rtcm_msg_rate_ms,
         std::string rtcm_dump_devname,
-        const unsigned int type_of_receiver)
+        const unsigned int type_of_receiver,
+        prcopt_t rtklib_opt)
 {
     return rtklib_pvt_cc_sptr(new rtklib_pvt_cc(nchannels,
             dump,
@@ -78,7 +79,8 @@ rtklib_make_pvt_cc(unsigned int nchannels,
             rtcm_station_id,
             rtcm_msg_rate_ms,
             rtcm_dump_devname,
-            type_of_receiver));
+            type_of_receiver,
+            rtklib_opt));
 }
 
 
@@ -201,7 +203,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
         int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port,
         std::string nmea_dump_filename, std::string nmea_dump_devname,
         bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port,
-        unsigned short rtcm_station_id, std::map<int,int> rtcm_msg_rate_ms, std::string rtcm_dump_devname, const unsigned int type_of_receiver) :
+        unsigned short rtcm_station_id, std::map<int,int> rtcm_msg_rate_ms, std::string rtcm_dump_devname, const unsigned int type_of_receiver, prcopt_t rtklib_opt) :
                 gr::block("rtklib_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
                 gr::io_signature::make(0, 0, sizeof(gr_complex)))
 
@@ -278,7 +280,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     d_averaging_depth = averaging_depth;
     d_flag_averaging = flag_averaging;
 
-    d_ls_pvt = std::make_shared<rtklib_solver>((int)nchannels, dump_ls_pvt_filename, d_dump);
+    d_ls_pvt = std::make_shared<rtklib_solver>((int)nchannels, dump_ls_pvt_filename, d_dump, rtklib_opt);
     d_ls_pvt->set_averaging_depth(d_averaging_depth);
 
     d_sample_counter = 0;

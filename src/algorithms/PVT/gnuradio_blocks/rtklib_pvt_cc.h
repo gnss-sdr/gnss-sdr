@@ -66,7 +66,8 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int n_channels,
                                               unsigned short rtcm_station_id,
                                               std::map<int,int> rtcm_msg_rate_ms,
                                               std::string rtcm_dump_devname,
-                                              const unsigned int type_of_receiver);
+                                              const unsigned int type_of_receiver,
+                                              prcopt_t rtklib_opt);
 
 /*!
  * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
@@ -90,7 +91,8 @@ private:
                                                          unsigned short rtcm_station_id,
                                                          std::map<int,int> rtcm_msg_rate_ms,
                                                          std::string rtcm_dump_devname,
-                                                         const unsigned int type_of_receiver);
+                                                         const unsigned int type_of_receiver,
+                                                         prcopt_t rtklib_opt);
     rtklib_pvt_cc(unsigned int nchannels,
                       bool dump, std::string dump_filename,
                       int averaging_depth,
@@ -106,7 +108,8 @@ private:
                       unsigned short rtcm_station_id,
                       std::map<int,int> rtcm_msg_rate_ms,
                       std::string rtcm_dump_devname,
-                      const unsigned int type_of_receiver);
+                      const unsigned int type_of_receiver,
+                      prcopt_t rtklib_opt);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 

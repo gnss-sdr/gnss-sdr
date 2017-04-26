@@ -58,7 +58,7 @@
 
 using google::LogMessage;
 
-rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file)
+rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, prcopt_t rtklib_opt)
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
@@ -67,29 +67,7 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     count_valid_position = 0;
     d_flag_averaging = false;
 
-    //RTKLIB PVT solver options
-    /* defaults processing options */
-    prcopt_t default_opt={PMODE_SINGLE,0,2,SYS_GPS,   /* mode,soltype,nf,navsys */
-            15.0*D2R, { {}, {{},{}} },           /* elmin,snrmask */
-            0,1,1,1,                    /* sateph,modear,glomodear,bdsmodear */
-            5,0,10,1,                   /* maxout,minlock,minfix,armaxiter */
-            0,0,0,0,                    /* estion,esttrop,dynamics,tidecorr */
-            1,0,0,0,0,                  /* niter,codesmooth,intpref,sbascorr,sbassatsel */
-            0,0,                        /* rovpos,refpos */
-            {100.0,100.0,100.0},              /* eratio[] */
-            {100.0,0.003,0.003,0.0,1.0}, /* err[] */
-            {30.0,0.03,0.3},            /* std[] */
-            {1E-4,1E-3,1E-4,1E-1,1E-2,0.0}, /* prn[] */
-            5E-12,                      /* sclkstab */
-            {3.0,0.9999,0.25,0.1,0.05}, /* thresar */
-            0.0,0.0,0.05,               /* elmaskar,almaskhold,thresslip */
-            30.0,30.0,30.0,             /* maxtdif,maxinno,maxgdop */
-            {},{},{},                /* baseline,ru,rb */
-            {"",""},                    /* anttype */
-            {},{},{},             /* antdel,pcv,exsats */
-            0, 0, 0, {"",""}, {}, 0, {{},{}}, { {}, {{},{}}, {{},{}}, {}, {} }, 0, {}
-    };
-    rtklib_opt = default_opt;
+    rtklib_options = rtklib_opt;
 
     old_pvt_sol = {{0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0},
                   '0', '0', '0', 0, 0, 0 };
@@ -257,7 +235,7 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
             nav_data.lam[i][1]=SPEED_OF_LIGHT/FREQ2; /* L2 */
         }
 
-        result=pntpos(obs_data, valid_obs, &nav_data, &rtklib_opt, &old_pvt_sol, NULL, NULL,rtklib_msg);
+        result=pntpos(obs_data, valid_obs, &nav_data, &rtklib_options, &old_pvt_sol, NULL, NULL,rtklib_msg);
         if(result==0)
         {
             DLOG(INFO)<<"RTKLIB pntpos error message: "<<rtklib_msg;

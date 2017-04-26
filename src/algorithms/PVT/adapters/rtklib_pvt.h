@@ -82,12 +82,13 @@ public:
 
 private:
     rtklib_pvt_cc_sptr pvt_;
+    prcopt_t rtklib_options;
     bool dump_;
     std::string dump_filename_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    
+
     std::string eph_xml_filename_;
     bool save_assistance_to_XML();
 };

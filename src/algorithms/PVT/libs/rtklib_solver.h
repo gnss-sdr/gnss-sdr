@@ -70,7 +70,7 @@ class rtklib_solver : public Pvt_Solution
 private:
 
 public:
-    rtklib_solver(int nchannels,std::string dump_filename, bool flag_dump_to_file, prcopt_t rtklib_opt);
+    rtklib_solver(int nchannels,std::string dump_filename, bool flag_dump_to_file, const prcopt_t & rtklib_opt);
     ~rtklib_solver();
 
     bool get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, double Rx_time, bool flag_averaging);

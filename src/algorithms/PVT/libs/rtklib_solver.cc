@@ -58,7 +58,7 @@
 
 using google::LogMessage;
 
-rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, prcopt_t rtklib_opt)
+rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, const prcopt_t & rtklib_opt)
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;

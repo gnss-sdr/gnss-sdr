@@ -169,7 +169,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     //RTKLIB PVT solver options
     /* defaults processing options */
-    rtklib_options={PMODE_SINGLE,0,2,SYS_GPS,   /* mode,soltype,nf,navsys */
+    rtklib_options = {PMODE_SINGLE,0,2,SYS_GPS,   /* mode,soltype,nf,navsys */
             15.0*D2R, { {}, {{},{}} },           /* elmin,snrmask */
             0,1,1,1,                    /* sateph,modear,glomodear,bdsmodear */
             5,0,10,1,                   /* maxout,minlock,minfix,armaxiter */

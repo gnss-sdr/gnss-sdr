@@ -92,7 +92,7 @@ private:
                                                          std::map<int,int> rtcm_msg_rate_ms,
                                                          std::string rtcm_dump_devname,
                                                          const unsigned int type_of_receiver,
-                                                         prcopt_t rtklib_opt);
+                                                         const prcopt_t rtklib_opt);
     rtklib_pvt_cc(unsigned int nchannels,
                       bool dump, std::string dump_filename,
                       int averaging_depth,
@@ -109,7 +109,7 @@ private:
                       std::map<int,int> rtcm_msg_rate_ms,
                       std::string rtcm_dump_devname,
                       const unsigned int type_of_receiver,
-                      prcopt_t rtklib_opt);
+                      const prcopt_t rtklib_opt);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 

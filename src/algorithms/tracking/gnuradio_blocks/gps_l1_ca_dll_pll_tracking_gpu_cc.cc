@@ -319,6 +319,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items __attribu
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
                     current_synchro_data.fs=d_fs_in;
+                    current_synchro_data.correlation_length_ms = 1;
                     *out[0] = current_synchro_data;
                     d_sample_counter += samples_offset; //count for the processed samples
                     d_pull_in = false;
@@ -453,6 +454,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items __attribu
                 }
 
             current_synchro_data.System = {'G'};
+            current_synchro_data.correlation_length_ms = 1;
             current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
         }
 

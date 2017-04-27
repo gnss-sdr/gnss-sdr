@@ -188,6 +188,7 @@ int hybrid_observables_cc::general_work (int noutput_items,
                         gnss_synchro_map.end(),
                         Hybrid_pairCompare_gnss_synchro_sample_counter);
                 T_rx_s = (double)gnss_synchro_map_iter->second.Tracking_sample_counter/(double)gnss_synchro_map_iter->second.fs;
+                T_rx_s = floor(T_rx_s*1000.0)/1000.0;// truncate to ms
                 T_rx_s +=past_history_s; //increase T_rx to have a minimum past history to interpolate
             }
 
@@ -216,25 +217,25 @@ int hybrid_observables_cc::general_work (int noutput_items,
                             int distance=std::distance(d_gnss_synchro_history_queue[i].begin(), gnss_synchro_deque_iter);
                             if (distance>0)
                             {
-                                double T_rx_channel_prev=(double)d_gnss_synchro_history_queue[i].at(distance-1).Tracking_sample_counter/(double)gnss_synchro_deque_iter->fs;
-                                double delta_T_rx_s_prev=T_rx_channel_prev-T_rx_s;
-                                if (fabs(delta_T_rx_s_prev)<fabs(delta_T_rx_s))
-                                {
-                                    realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(
-                                        d_gnss_synchro_history_queue[i].at(distance-1).Channel_ID,
-                                        d_gnss_synchro_history_queue[i].at(distance-1)));
-                                    adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID,
-                                            *gnss_synchro_deque_iter));
-                                }else{
+//                                double T_rx_channel_prev=(double)d_gnss_synchro_history_queue[i].at(distance-1).Tracking_sample_counter/(double)gnss_synchro_deque_iter->fs;
+//                                double delta_T_rx_s_prev=T_rx_channel_prev-T_rx_s;
+//                                if (fabs(delta_T_rx_s_prev)<fabs(delta_T_rx_s))
+//                                {
+ //                                   realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(
+//                                        d_gnss_synchro_history_queue[i].at(distance-1).Channel_ID,
+//                                        d_gnss_synchro_history_queue[i].at(distance-1)));
+//                                    adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID,
+//                                            *gnss_synchro_deque_iter));
+//                                }else{
                                     realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID,
                                             *gnss_synchro_deque_iter));
                                     adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(
                                         d_gnss_synchro_history_queue[i].at(distance-1).Channel_ID,
                                         d_gnss_synchro_history_queue[i].at(distance-1)));
-                                }
-                            }else{
-                                realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID,
-                                        *gnss_synchro_deque_iter));
+//                                }
+//                            }else{
+//                                realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID,
+//                                        *gnss_synchro_deque_iter));
                             }
 
                         }else{
@@ -254,6 +255,9 @@ int hybrid_observables_cc::general_work (int noutput_items,
                         realigned_gnss_synchro_map.end(),
                         Hybrid_pairCompare_gnss_synchro_d_TOW);
                 double d_TOW_reference = gnss_synchro_map_iter->second.TOW_at_current_symbol_s;
+//                std::cout << std::fixed;
+//                std::cout << std::setprecision(2);
+//                std::cout<<"d_TOW_reference:"<<d_TOW_reference*1000.0<<std::endl;
                 double d_ref_PRN_phase_samples = gnss_synchro_map_iter->second.Code_phase_samples;
                 //std::cout<<"OBS SV REF SAT: "<<gnss_synchro_map_iter->second.PRN<<std::endl;
 

@@ -533,7 +533,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
             current_synchro_data.Flag_valid_word = false;
         }
 
-    current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
+    current_synchro_data.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol*1000.0)/1000.0;
 
     if(d_dump == true)
         {

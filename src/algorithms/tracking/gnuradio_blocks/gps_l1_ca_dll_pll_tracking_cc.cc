@@ -316,6 +316,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.fs=d_fs_in;
+            current_synchro_data.correlation_length_ms = 1;
             *out[0] = current_synchro_data;
             consume_each(samples_offset); // shift input to perform alignment with local replica
             return 1;
@@ -428,6 +429,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
 
         current_synchro_data.Tracking_sample_counter =d_sample_counter + d_current_prn_length_samples;
         current_synchro_data.System = {'G'};
+        current_synchro_data.correlation_length_ms = 1;
     }
 
     //assign the GNURadio block output data

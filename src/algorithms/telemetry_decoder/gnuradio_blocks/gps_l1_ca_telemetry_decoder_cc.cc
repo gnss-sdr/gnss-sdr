@@ -340,7 +340,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
             // update TOW at the preamble instant
             d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_L1_CA_CODE_PERIOD;
 
-            d_TOW_at_current_symbol = d_TOW_at_Preamble;
+            d_TOW_at_current_symbol = floor(d_TOW_at_Preamble*1000.0)/1000.0;
             flag_TOW_set = true;
             d_flag_new_tow_available=false;
         }

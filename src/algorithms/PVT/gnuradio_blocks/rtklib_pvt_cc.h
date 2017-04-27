@@ -141,7 +141,6 @@ private:
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
     std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
     std::shared_ptr<Rtcm_Printer> d_rtcm_printer;
-    double d_rx_time;
 
     std::shared_ptr<rtklib_solver> d_ls_pvt;
     prcopt_t rtklib_options;

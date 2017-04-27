@@ -167,18 +167,22 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count = 0)) type_of_receiver = 22;
 
     //RTKLIB PVT solver options
-    int positioning_mode = configuration->property(role + ".positioning_mode", PMODE_SINGLE);  /* (PMODE_XXX) see rtklib.h */
+    int positioning_mode = configuration->property(role + ".positioning_mode", PMODE_SINGLE);  /* (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     if( (positioning_mode < 0) || (positioning_mode > 8) )
         {
             //warn user and set the default
             positioning_mode = PMODE_SINGLE;
         }
 
-    int navigation_system = configuration->property(role + ".navigation_system", SYS_GPS);  /* (SYS_XXX) see rtklib.h */
-    if( (navigation_system < 0) || (navigation_system > 8) )
+    int nsys = 0;
+    if ((gps_1C_count > 0) || (gps_2S_count > 0)) nsys += SYS_GPS;
+    if ((gal_1B_count > 0) || (gal_E5a_count > 0) || (gal_E5b_count > 0)) nsys += SYS_GAL;
+    int navigation_system = configuration->property(role + ".navigation_system", nsys);  /* (SYS_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    /* GPS: 1   SBAS: 2   GPS+SBAS: 3 Galileo: 8  Galileo+GPS: 9 GPS+SBAS+Galileo: 11 All: 255 */
+    if( (navigation_system < 1) || (navigation_system > 255) )
         {
             //warn user and set the default
-            navigation_system = SYS_GPS;
+            navigation_system = nsys;
         }
 
     double elevation_mask = configuration->property(role + ".elevation_mask", 15.0);
@@ -188,11 +192,36 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             elevation_mask = 15.0;
         }
 
-    int number_of_frequencies = configuration->property(role + ".num_bands", 2); /* (1:L1, 2:L1+L2, 3:L1+L2+L5) */
+    int num_bands = 0;
+    if ((gps_1C_count > 0) || (gal_1B_count > 0)) num_bands = 1;
+    if (((gps_1C_count > 0) || (gal_1B_count > 0)) && (gps_2S_count > 0) ) num_bands = 2;
+    if (((gps_1C_count > 0) || (gal_1B_count > 0)) && (gps_2S_count > 0) && ((gal_E5a_count > 0) || (gal_E5a_count > 0))) num_bands = 3;
+    int number_of_frequencies = configuration->property(role + ".num_bands", num_bands); /* (1:L1, 2:L1+L2, 3:L1+L2+L5) */
     if( (number_of_frequencies < 1) || (number_of_frequencies > 3) )
         {
             //warn user and set the default
-            number_of_frequencies = 2;
+            number_of_frequencies = num_bands;
+        }
+
+    int trop_model = configuration->property(role + ".trop_model", 0); /*  (TROPOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    if( (trop_model < 0) || (trop_model > 5) )
+        {
+            //warn user and set the default
+            trop_model = 0;
+        }
+
+    int iono_model = configuration->property(role + ".iono_model", 0); /*  (IONOOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    if( (iono_model < 0) || (iono_model > 8) )
+        {
+            //warn user and set the default
+            iono_model = 0; /* 0: ionosphere option: correction off */
+        }
+
+    int dynamics_model = configuration->property(role + ".dynamics_model", 0); /*  dynamics model (0:none, 1:velocity, 2:accel) */
+    if( (dynamics_model < 0) || (dynamics_model > 2) )
+        {
+            //warn user and set the default
+            dynamics_model = 0;
         }
 
     double bias_0 = configuration->property(role + ".bias_0", 30.0);
@@ -213,7 +242,11 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     double sigma_pos = configuration->property(role + ".sigma_pos", 0.0);
 
-    prcopt_t rtklib_configuration_options = {positioning_mode, /* positioning mode (PMODE_XXX) see rtklib.h */
+    double threshold_reject_innovation = configuration->property(role + ".threshold_reject_innovation", 30.0); /* reject threshold of innovation (m) */
+
+    double threshold_reject_gdop = configuration->property(role + ".threshold_reject_gdop", 30.0); /* reject threshold of GDOP */
+
+    prcopt_t rtklib_configuration_options = {positioning_mode, /* positioning mode (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
             0,   /* solution type (0:forward,1:backward,2:combined) */
             number_of_frequencies, /* number of frequencies (1:L1, 2:L1+L2, 3:L1+L2+L5)*/
             navigation_system,     /* navigation system  */
@@ -227,15 +260,15 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             0,   /* min lock count to fix ambiguity */
             10,  /* min fix count to hold ambiguity */
             1,   /* max iteration to resolve ambiguity */
-            0,   /* ionosphere option (IONOOPT_XXX) */
-            0,   /* troposphere option (TROPOPT_XXX) */
-            0,   /* dynamics model (0:none,1:velociy,2:accel) */
+            iono_model,      /* ionosphere option (IONOOPT_XXX) */
+            trop_model,      /* troposphere option (TROPOPT_XXX) */
+            dynamics_model,  /* dynamics model (0:none, 1:velocity, 2:accel) */
             0,   /* earth tide correction (0:off,1:solid,2:solid+otl+pole) */
             1,   /* number of filter iteration */
             0,   /* code smoothing window size (0:none) */
             0,   /* interpolate reference obs (for post mission) */
-            0,   /* SBAS correction options */
-            0,   /* SBAS satellite selection (0:all) */
+            0,   /* sbssat_t sbssat  SBAS correction options */
+            0,   /* sbsion_t sbsion[MAXBAND+1] SBAS satellite selection (0:all) */
             0,   /* rover position for fixed mode */
             0,   /* base position for relative mode */
                  /*    0:pos in prcopt,  1:average of single pos, */
@@ -250,15 +283,15 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             0.0,   /* elevation mask to hold ambiguity (deg) */
             0.05,  /* slip threshold of geometry-free phase (m) */
             30.0,  /* max difference of time (sec) */
-            30.0,  /* reject threshold of innovation (m) */
-            30.0,  /* reject threshold of gdop */
+            threshold_reject_innovation,  /* reject threshold of innovation (m) */
+            threshold_reject_gdop,  /* reject threshold of gdop */
             {},    /* double baseline[2] baseline length constraint {const,sigma} (m) */
             {},    /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
-            {},    /* double rb[3]   base position for relative mode {x,y,z} (ecef) (m) */
+            {},    /* double rb[3]  base position for relative mode {x,y,z} (ecef) (m) */
             {"",""},   /* char anttype[2][MAXANT]  antenna types {rover,base}  */
             {},    /* double antdel[2][3]   antenna delta {{rov_e,rov_n,rov_u},{ref_e,ref_n,ref_u}} */
             {},    /* pcv_t pcvr[2]   receiver antenna parameters {rov,base} */
-            {},    /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded,2:included) */
+            {},    /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded, 2:included) */
             0,     /* max averaging epoches */
             0,     /* initialize by restart */
             0,     /* output single by dgps/float/fix/ppp outage*/

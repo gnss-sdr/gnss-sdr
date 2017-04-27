@@ -166,30 +166,113 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     if( (gps_1C_count != 0) && (gps_2S_count != 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 21;
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count = 0)) type_of_receiver = 22;
 
-
     //RTKLIB PVT solver options
-    /* defaults processing options */
-    prcopt_t default_opt={PMODE_SINGLE,0,2,SYS_GPS,   /* mode,soltype,nf,navsys */
-            15.0*D2R, { {}, {{},{}} },           /* elmin,snrmask */
-            0,1,1,1,                    /* sateph,modear,glomodear,bdsmodear */
-            5,0,10,1,                   /* maxout,minlock,minfix,armaxiter */
-            0,0,0,0,                    /* estion,esttrop,dynamics,tidecorr */
-            1,0,0,0,0,                  /* niter,codesmooth,intpref,sbascorr,sbassatsel */
-            0,0,                        /* rovpos,refpos */
-            {100.0,100.0,100.0},              /* eratio[] */
-            {100.0,0.003,0.003,0.0,1.0}, /* err[] */
-            {30.0,0.03,0.3},            /* std[] */
-            {1E-4,1E-3,1E-4,1E-1,1E-2,0.0}, /* prn[] */
-            5E-12,                      /* sclkstab */
-            {3.0,0.9999,0.25,0.1,0.05}, /* thresar */
-            0.0,0.0,0.05,               /* elmaskar,almaskhold,thresslip */
-            30.0,30.0,30.0,             /* maxtdif,maxinno,maxgdop */
-            {},{},{},                /* baseline,ru,rb */
-            {"",""},                    /* anttype */
-            {},{},{},             /* antdel,pcv,exsats */
-            0, 0, 0, {"",""}, {}, 0, {{},{}}, { {}, {{},{}}, {{},{}}, {}, {} }, 0, {}
+    int positioning_mode = configuration->property(role + ".positioning_mode", PMODE_SINGLE);  /* (PMODE_XXX) see rtklib.h */
+    if( (positioning_mode < 0) || (positioning_mode > 8) )
+        {
+            //warn user and set the default
+            positioning_mode = PMODE_SINGLE;
+        }
+
+    int navigation_system = configuration->property(role + ".navigation_system", SYS_GPS);  /* (SYS_XXX) see rtklib.h */
+    if( (navigation_system < 0) || (navigation_system > 8) )
+        {
+            //warn user and set the default
+            navigation_system = SYS_GPS;
+        }
+
+    double elevation_mask = configuration->property(role + ".elevation_mask", 15.0);
+    if( (elevation_mask < 0.0) || (elevation_mask > 90.0) )
+        {
+            //warn user and set the default
+            elevation_mask = 15.0;
+        }
+
+    int number_of_frequencies = configuration->property(role + ".num_bands", 2); /* (1:L1, 2:L1+L2, 3:L1+L2+L5) */
+    if( (number_of_frequencies < 1) || (number_of_frequencies > 3) )
+        {
+            //warn user and set the default
+            number_of_frequencies = 2;
+        }
+
+    double bias_0 = configuration->property(role + ".bias_0", 30.0);
+
+    double iono_0 = configuration->property(role + ".iono_0", 0.03);
+
+    double trop_0 = configuration->property(role + ".trop_0", 0.3);
+
+    double sigma_bias = configuration->property(role + ".sigma_bias", 1e-4);
+
+    double sigma_iono = configuration->property(role + ".sigma_iono", 1e-3);
+
+    double sigma_trop = configuration->property(role + ".sigma_trop", 1e-4);
+
+    double sigma_acch = configuration->property(role + ".sigma_acch", 1e-1);
+
+    double sigma_accv = configuration->property(role + ".sigma_accv", 1e-2);
+
+    double sigma_pos = configuration->property(role + ".sigma_pos", 0.0);
+
+    prcopt_t rtklib_configuration_options = {positioning_mode, /* positioning mode (PMODE_XXX) see rtklib.h */
+            0,   /* solution type (0:forward,1:backward,2:combined) */
+            number_of_frequencies, /* number of frequencies (1:L1, 2:L1+L2, 3:L1+L2+L5)*/
+            navigation_system,     /* navigation system  */
+            elevation_mask * D2R,  /* elevation mask angle (degrees) */
+            { {}, {{},{}} },       /* snrmask_t snrmask    SNR mask */
+            0,   /* satellite ephemeris/clock (EPHOPT_XXX) */
+            1,   /* AR mode (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
+            1,   /* GLONASS AR mode (0:off,1:on,2:auto cal,3:ext cal) */
+            1,   /* BeiDou AR mode (0:off,1:on) */
+            5,   /* obs outage count to reset bias */
+            0,   /* min lock count to fix ambiguity */
+            10,  /* min fix count to hold ambiguity */
+            1,   /* max iteration to resolve ambiguity */
+            0,   /* ionosphere option (IONOOPT_XXX) */
+            0,   /* troposphere option (TROPOPT_XXX) */
+            0,   /* dynamics model (0:none,1:velociy,2:accel) */
+            0,   /* earth tide correction (0:off,1:solid,2:solid+otl+pole) */
+            1,   /* number of filter iteration */
+            0,   /* code smoothing window size (0:none) */
+            0,   /* interpolate reference obs (for post mission) */
+            0,   /* SBAS correction options */
+            0,   /* SBAS satellite selection (0:all) */
+            0,   /* rover position for fixed mode */
+            0,   /* base position for relative mode */
+                 /*    0:pos in prcopt,  1:average of single pos, */
+                 /*    2:read from file, 3:rinex header, 4:rtcm pos */
+            {100.0,100.0,100.0},         /* eratio[NFREQ] code/phase error ratio */
+            {100.0,0.003,0.003,0.0,1.0}, /* err[5]:  measurement error factor [0]:reserved, [1-3]:error factor a/b/c of phase (m) , [4]:doppler frequency (hz) */
+            {bias_0,iono_0,trop_0},      /* std[3]: initial-state std [0]bias,[1]iono [2]trop*/
+            {sigma_bias,sigma_iono,sigma_trop,sigma_acch,sigma_accv,sigma_pos}, /* prn[6] process-noise std */
+            5e-12,                       /* sclkstab: satellite clock stability (sec/sec) */
+            {3.0,0.9999,0.25,0.1,0.05},  /* thresar[8]: AR validation threshold */
+            0.0,   /* elevation mask of AR for rising satellite (deg) */
+            0.0,   /* elevation mask to hold ambiguity (deg) */
+            0.05,  /* slip threshold of geometry-free phase (m) */
+            30.0,  /* max difference of time (sec) */
+            30.0,  /* reject threshold of innovation (m) */
+            30.0,  /* reject threshold of gdop */
+            {},    /* double baseline[2] baseline length constraint {const,sigma} (m) */
+            {},    /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
+            {},    /* double rb[3]   base position for relative mode {x,y,z} (ecef) (m) */
+            {"",""},   /* char anttype[2][MAXANT]  antenna types {rover,base}  */
+            {},    /* double antdel[2][3]   antenna delta {{rov_e,rov_n,rov_u},{ref_e,ref_n,ref_u}} */
+            {},    /* pcv_t pcvr[2]   receiver antenna parameters {rov,base} */
+            {},    /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded,2:included) */
+            0,     /* max averaging epoches */
+            0,     /* initialize by restart */
+            0,     /* output single by dgps/float/fix/ppp outage*/
+            {"",""},  /* char rnxopt[2][256]   rinex options {rover,base} */
+            {},    /*  posopt[6] positioning options */
+            0,     /* solution sync mode (0:off,1:on) */
+            {{},{}},  /*  odisp[2][6*11] ocean tide loading parameters {rov,base} */
+            { {}, {{},{}}, {{},{}}, {}, {} },  /*  exterr_t exterr   extended receiver error model */
+            0,     /* disable L2-AR */
+            {}     /* char pppopt[256]   ppp option */
     };
-    rtklib_options=default_opt;
+
+    rtklib_options = rtklib_configuration_options;
+
     // make PVT object
     pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtklib_options);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";

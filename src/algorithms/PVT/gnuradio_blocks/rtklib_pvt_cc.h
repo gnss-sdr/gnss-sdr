@@ -123,7 +123,6 @@ private:
     int d_rtcm_MT1097_rate_ms;
     int d_rtcm_MSM_rate_ms;
 
-    void print_receiver_status(Gnss_Synchro** channels_synchronization_data);
     int d_last_status_print_seg; //for status printer
 
     unsigned int d_nchannels;
@@ -133,7 +132,6 @@ private:
     bool d_flag_averaging;
     int d_output_rate_ms;
     int d_display_rate_ms;
-    long unsigned int d_sample_counter;
     long unsigned int d_last_sample_nav_output;
 
     std::shared_ptr<Rinex_Printer> rp;

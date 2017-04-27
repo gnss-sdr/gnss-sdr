@@ -266,7 +266,7 @@ int Position_Gps_L1_System_Test::configure_receiver()
     const float dll_bw_narrow_hz = 2.0;
     const int extend_correlation_ms = 1;
 
-    const int display_rate_ms = 500;
+    const int display_rate_ms = 1000;
     const int output_rate_ms = 1000;
     const int averaging_depth = 1;
 

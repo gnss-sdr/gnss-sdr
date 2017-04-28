@@ -123,6 +123,7 @@ private:
     int d_rtcm_MT1097_rate_ms;
     int d_rtcm_MSM_rate_ms;
 
+    void print_receiver_status(Gnss_Synchro** channels_synchronization_data);
     int d_last_status_print_seg; //for status printer
 
     unsigned int d_nchannels;
@@ -132,14 +133,16 @@ private:
     bool d_flag_averaging;
     int d_output_rate_ms;
     int d_display_rate_ms;
-    long unsigned int d_last_sample_nav_output;
+    //long unsigned int d_sample_counter;
+    //long unsigned int d_last_sample_nav_output;
 
     std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_dump;
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
     std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
     std::shared_ptr<Rtcm_Printer> d_rtcm_printer;
-
+    double d_rx_time;
+    double last_pvt_display_T_rx_s;
     std::shared_ptr<rtklib_solver> d_ls_pvt;
     prcopt_t rtklib_options;
     std::map<int,Gnss_Synchro> gnss_observables_map;

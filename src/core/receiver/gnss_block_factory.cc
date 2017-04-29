@@ -231,14 +231,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<ConfigurationInterface> configuration)
 {
-    std::string default_implementation = "Hybrid_PVT";
+    std::string default_implementation = "RTKLIB_PVT";
     std::string implementation = configuration->property("PVT.implementation", default_implementation);
     LOG(INFO) << "Getting PVT with implementation " << implementation;
-    unsigned int Galileo_channels =configuration->property("Channels_1B.count", 0);
+    unsigned int Galileo_channels = configuration->property("Channels_1B.count", 0);
     Galileo_channels += configuration->property("Channels_5X.count", 0);
-    unsigned int GPS_channels =configuration->property("Channels_1C.count", 0);
+    unsigned int GPS_channels = configuration->property("Channels_1C.count", 0);
     GPS_channels += configuration->property("Channels_2S.count", 0);
-    return GetBlock(configuration, "PVT", implementation, Galileo_channels + GPS_channels, 1);
+    return GetBlock(configuration, "PVT", implementation, Galileo_channels + GPS_channels, 0);
 }
 
 

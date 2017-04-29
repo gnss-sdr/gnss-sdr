@@ -206,7 +206,7 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     const int extend_correlation_ms = 1;
 
     const int display_rate_ms = 500;
-    const int output_rate_ms =  500;
+    const int output_rate_ms =  100;
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
 
@@ -654,7 +654,7 @@ void Obs_Gps_L1_System_Test::check_results()
 
     double stdev_dp = compute_stdev(mean_doppler_v);
     std::cout << "Doppler error stdev = " << stdev_dp << " [Hz]" << std::endl;
-    ASSERT_LT(stdev_dp, 1.0);
+    ASSERT_LT(stdev_dp, 10.0);
 }
 
 

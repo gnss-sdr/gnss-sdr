@@ -206,8 +206,7 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     const int extend_correlation_ms = 1;
 
     const int display_rate_ms = 500;
-    const int output_rate_ms = 1000;
-    const int averaging_depth = 1;
+    const int output_rate_ms =  500;
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
 
@@ -306,9 +305,7 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     config->set_property("Observables.averaging_depth", std::to_string(100));
 
     // Set PVT
-    config->set_property("PVT.implementation", "Hybrid_PVT");
-    config->set_property("PVT.averaging_depth", std::to_string(averaging_depth));
-    config->set_property("PVT.flag_averaging", "true");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");
@@ -596,7 +593,7 @@ void Obs_Gps_L1_System_Test::check_results()
         }
     double stdev_pr = compute_stdev(mean_pr_diff_v);
     std::cout << "Pseudorange diff error stdev = " << stdev_pr << " [m]" << std::endl;
-    ASSERT_LT(stdev_pr, 1.0);
+    ASSERT_LT(stdev_pr, 10.0);
 
     // Compute carrier phase error
     prn_id = 0;

@@ -54,8 +54,8 @@ hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_f
 
 
 hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history) :
-                                                                                gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
-                                                                                        gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
+          gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+                                             gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_dump = dump;

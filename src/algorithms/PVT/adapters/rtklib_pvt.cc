@@ -68,6 +68,14 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     std::string nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);
     std::string nmea_dump_devname = configuration->property(role + ".nmea_dump_devname", default_nmea_dump_devname);
 
+    // RINEX version
+    int rinex_version = configuration->property(role + ".rinex_version", 3);
+    if( (rinex_version < 2) || (rinex_version > 3) )
+        {
+            //warn user and set the default
+            rinex_version = 3;
+        }
+
     // RTCM Printer settings
     bool flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
     std::string rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", default_rtcm_dump_devname);
@@ -303,7 +311,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     rtklib_options = rtklib_configuration_options;
 
     // make PVT object
-    pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_,  output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtklib_options);
+    pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_,  output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, rinex_version, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtklib_options);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 

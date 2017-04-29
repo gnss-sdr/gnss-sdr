@@ -43,8 +43,8 @@
 
 using google::LogMessage;
 
-rtklib_pvt_cc_sptr
-rtklib_make_pvt_cc(unsigned int nchannels,
+
+rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int nchannels,
         bool dump,
         std::string dump_filename,
         int output_rate_ms,
@@ -52,6 +52,7 @@ rtklib_make_pvt_cc(unsigned int nchannels,
         bool flag_nmea_tty_port,
         std::string nmea_dump_filename,
         std::string nmea_dump_devname,
+        int rinex_version,
         bool flag_rtcm_server,
         bool flag_rtcm_tty_port,
         unsigned short rtcm_tcp_port,
@@ -69,6 +70,7 @@ rtklib_make_pvt_cc(unsigned int nchannels,
             flag_nmea_tty_port,
             nmea_dump_filename,
             nmea_dump_devname,
+            rinex_version,
             flag_rtcm_server,
             flag_rtcm_tty_port,
             rtcm_tcp_port,
@@ -198,10 +200,10 @@ std::map<int,Gps_Ephemeris> rtklib_pvt_cc::get_GPS_L1_ephemeris_map()
 
 rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename,
         int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port,
-        std::string nmea_dump_filename, std::string nmea_dump_devname,
+        std::string nmea_dump_filename, std::string nmea_dump_devname, int rinex_version,
         bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port,
         unsigned short rtcm_station_id, std::map<int,int> rtcm_msg_rate_ms, std::string rtcm_dump_devname, const unsigned int type_of_receiver, const prcopt_t rtklib_opt) :
-              gr::block("rtklib_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
+              gr::sync_block("rtklib_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
               gr::io_signature::make(0, 0, 0))
 {
     d_output_rate_ms = output_rate_ms;
@@ -291,7 +293,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
 
     b_rinex_header_written = false;
     b_rinex_header_updated = false;
-    rp = std::make_shared<Rinex_Printer>();
+    rp = std::make_shared<Rinex_Printer>(rinex_version);
 
     d_last_status_print_seg = 0;
 
@@ -323,7 +325,6 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
             throw new std::exception();
         }
 }
-
 
 
 rtklib_pvt_cc::~rtklib_pvt_cc()
@@ -424,10 +425,10 @@ bool rtklib_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 }
 
 
-int rtklib_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items __attribute__((unused)))
+int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items __attribute__((unused)))
 {
-    for(int epoch = 0; epoch < ninput_items[0]; epoch++)
+    for(int epoch = 0; epoch < noutput_items; epoch++)
         {
             bool flag_display_pvt = false;
             bool flag_compute_pvt_output = false;
@@ -1150,6 +1151,5 @@ int rtklib_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                 }
         }
 
-    consume_each(ninput_items[0]);
     return noutput_items;
 }

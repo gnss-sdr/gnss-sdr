@@ -37,7 +37,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
-#include <gnuradio/block.h>
+#include <gnuradio/sync_block.h>
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "geojson_printer.h"
@@ -58,6 +58,7 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int n_channels,
                                               bool flag_nmea_tty_port,
                                               std::string nmea_dump_filename,
                                               std::string nmea_dump_devname,
+                                              int rinex_version,
                                               bool flag_rtcm_server,
                                               bool flag_rtcm_tty_port,
                                               unsigned short rtcm_tcp_port,
@@ -70,7 +71,7 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int n_channels,
 /*!
  * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
  */
-class rtklib_pvt_cc : public gr::block
+class rtklib_pvt_cc : public gr::sync_block
 {
 private:
     friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int nchannels,
@@ -81,6 +82,7 @@ private:
                                                          bool flag_nmea_tty_port,
                                                          std::string nmea_dump_filename,
                                                          std::string nmea_dump_devname,
+                                                         int rinex_version,
                                                          bool flag_rtcm_server,
                                                          bool flag_rtcm_tty_port,
                                                          unsigned short rtcm_tcp_port,
@@ -89,21 +91,6 @@ private:
                                                          std::string rtcm_dump_devname,
                                                          const unsigned int type_of_receiver,
                                                          const prcopt_t rtklib_opt);
-    rtklib_pvt_cc(unsigned int nchannels,
-                      bool dump, std::string dump_filename,
-                      int output_rate_ms,
-                      int display_rate_ms,
-                      bool flag_nmea_tty_port,
-                      std::string nmea_dump_filename,
-                      std::string nmea_dump_devname,
-                      bool flag_rtcm_server,
-                      bool flag_rtcm_tty_port,
-                      unsigned short rtcm_tcp_port,
-                      unsigned short rtcm_station_id,
-                      std::map<int,int> rtcm_msg_rate_ms,
-                      std::string rtcm_dump_devname,
-                      const unsigned int type_of_receiver,
-                      const prcopt_t rtklib_opt);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 
@@ -125,8 +112,6 @@ private:
 
     int d_output_rate_ms;
     int d_display_rate_ms;
-    //long unsigned int d_sample_counter;
-    //long unsigned int d_last_sample_nav_output;
 
     std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_dump;
@@ -159,6 +144,23 @@ private:
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
 
 public:
+    rtklib_pvt_cc(unsigned int nchannels,
+                    bool dump, std::string dump_filename,
+                    int output_rate_ms,
+                    int display_rate_ms,
+                    bool flag_nmea_tty_port,
+                    std::string nmea_dump_filename,
+                    std::string nmea_dump_devname,
+                    int rinex_version,
+                    bool flag_rtcm_server,
+                    bool flag_rtcm_tty_port,
+                    unsigned short rtcm_tcp_port,
+                    unsigned short rtcm_station_id,
+                    std::map<int,int> rtcm_msg_rate_ms,
+                    std::string rtcm_dump_devname,
+                    const unsigned int type_of_receiver,
+                    const prcopt_t rtklib_opt);
+
     /*!
      * \brief Get latest set of GPS L1 ephemeris from PVT block
      *
@@ -166,10 +168,10 @@ public:
      */
     std::map<int,Gps_Ephemeris> get_GPS_L1_ephemeris_map();
 
-    ~rtklib_pvt_cc (); //!< Default destructor
+    ~rtklib_pvt_cc(); //!< Default destructor
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items); //!< PVT Signal Processing
+    int work (int noutput_items, gr_vector_const_void_star &input_items,
+            gr_vector_void_star &output_items); //!< PVT Signal Processing
 };
 
 #endif

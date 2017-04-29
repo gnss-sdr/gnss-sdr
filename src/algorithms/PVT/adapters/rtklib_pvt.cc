@@ -57,10 +57,6 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-    // moving average depth parameters
-    int averaging_depth = configuration->property(role + ".averaging_depth", 10);
-    bool flag_averaging = configuration->property(role + ".flag_averaging", false);
-
     // output rate
     int output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
 
@@ -307,7 +303,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     rtklib_options = rtklib_configuration_options;
 
     // make PVT object
-    pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtklib_options);
+    pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_,  output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtklib_options);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 

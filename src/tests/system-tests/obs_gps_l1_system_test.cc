@@ -672,7 +672,10 @@ TEST_F(Obs_Gps_L1_System_Test, Observables_system_test)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    generate_signal();
+    if(!FLAGS_disable_generator)
+        {
+            generate_signal();
+        }
 
     std::cout << "Validating generated reference RINEX obs file: " << FLAGS_filename_rinex_obs << " ..." << std::endl;
     bool is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + FLAGS_filename_rinex_obs);

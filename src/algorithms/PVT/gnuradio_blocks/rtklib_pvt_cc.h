@@ -53,8 +53,6 @@ typedef boost::shared_ptr<rtklib_pvt_cc> rtklib_pvt_cc_sptr;
 rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int n_channels,
                                               bool dump,
                                               std::string dump_filename,
-                                              int averaging_depth,
-                                              bool flag_averaging,
                                               int output_rate_ms,
                                               int display_rate_ms,
                                               bool flag_nmea_tty_port,
@@ -78,8 +76,6 @@ private:
     friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int nchannels,
                                                          bool dump,
                                                          std::string dump_filename,
-                                                         int averaging_depth,
-                                                         bool flag_averaging,
                                                          int output_rate_ms,
                                                          int display_rate_ms,
                                                          bool flag_nmea_tty_port,
@@ -95,8 +91,6 @@ private:
                                                          const prcopt_t rtklib_opt);
     rtklib_pvt_cc(unsigned int nchannels,
                       bool dump, std::string dump_filename,
-                      int averaging_depth,
-                      bool flag_averaging,
                       int output_rate_ms,
                       int display_rate_ms,
                       bool flag_nmea_tty_port,
@@ -123,14 +117,12 @@ private:
     int d_rtcm_MT1097_rate_ms;
     int d_rtcm_MSM_rate_ms;
 
-    void print_receiver_status(Gnss_Synchro** channels_synchronization_data);
     int d_last_status_print_seg; //for status printer
 
     unsigned int d_nchannels;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    int d_averaging_depth;
-    bool d_flag_averaging;
+
     int d_output_rate_ms;
     int d_display_rate_ms;
     //long unsigned int d_sample_counter;
@@ -143,6 +135,13 @@ private:
     std::shared_ptr<Rtcm_Printer> d_rtcm_printer;
     double d_rx_time;
     double last_pvt_display_T_rx_s;
+    double last_RTCM_1019_output_time;
+    double last_RTCM_1045_output_time;
+    double last_RTCM_1077_output_time;
+    double last_RTCM_1097_output_time;
+    double last_RTCM_MSM_output_time;
+    double last_RINEX_obs_output_time;
+    double last_RINEX_nav_output_time;
     std::shared_ptr<rtklib_solver> d_ls_pvt;
     prcopt_t rtklib_options;
     std::map<int,Gnss_Synchro> gnss_observables_map;

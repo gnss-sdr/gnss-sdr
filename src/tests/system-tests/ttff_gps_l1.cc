@@ -220,9 +220,7 @@ void TTFF_GPS_L1_CA_Test::config_1()
     config->set_property("Observables.dump_filename", "./observables.dat");
 
     // Set PVT
-    config->set_property("PVT.implementation", "Hybrid_PVT");
-    config->set_property("PVT.averaging_depth", std::to_string(averaging_depth));
-    config->set_property("PVT.flag_averaging", "true");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");

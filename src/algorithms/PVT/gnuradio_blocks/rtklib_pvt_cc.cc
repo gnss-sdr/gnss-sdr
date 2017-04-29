@@ -324,6 +324,8 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
             std::cout << "GNSS-SDR can not create message queues!" << std::endl;
             throw new std::exception();
         }
+    gettimeofday(&tv, NULL);
+    begin = tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
 
@@ -557,7 +559,9 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                       << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
                                             ttff_msgbuf ttff;
                                             ttff.mtype = 1;
-                                            ttff.ttff = 0; //d_sample_counter;
+                                            gettimeofday(&tv, NULL);
+                                            long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+                                            ttff.ttff = static_cast<double>(end - begin) / 1000000.0;
                                             send_sys_v_ttff_msg(ttff);
                                             first_fix = false;
                                         }

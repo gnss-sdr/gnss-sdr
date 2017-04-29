@@ -279,8 +279,8 @@ void receive_msg()
                     ttff_msg = msg.ttff;
                     if( (ttff_msg != 0) && (ttff_msg != -1))
                         {
-                            TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor) );
-                            LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor ) << "[s]";
+                            TTFF_v.push_back(ttff_msg);
+                            LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg << "[s]";
                             // Stop the receiver
                             while(((msqid_stop = msgget(key_stop, 0644))) == -1){}
                             double msgsend_size = sizeof(msg_stop.ttff);

@@ -723,8 +723,8 @@ void detslp_gf_L1L5(rtk_t *rtk, const obsd_t *obs, int i, int j,
 
 
 /* detect cycle slip by doppler and phase difference -------------------------*/
-void detslp_dop(rtk_t *rtk, const obsd_t *obs, int i, int rcv,
-        const nav_t *nav)
+void detslp_dop(rtk_t *rtk __attribute__((unused)), const obsd_t *obs __attribute__((unused)), int i __attribute__((unused)), int rcv __attribute__((unused)),
+        const nav_t *nav __attribute__((unused)))
 {
     /* detection with doppler disabled because of clock-jump issue (v.2.3.0) */
 #if 0
@@ -1517,6 +1517,7 @@ void restamb(rtk_t *rtk, const double *bias, int nb __attribute((unused)), doubl
         }
 }
 
+
 /* hold integer ambiguity ----------------------------------------------------*/
 void holdamb(rtk_t *rtk, const double *xa)
 {
@@ -1563,6 +1564,7 @@ void holdamb(rtk_t *rtk, const double *xa)
         }
     free(v); free(H);
 }
+
 
 /* resolve integer ambiguity by LAMBDA ---------------------------------------*/
 int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa)
@@ -1659,6 +1661,7 @@ int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa)
     return nb; /* number of ambiguities */
 }
 
+
 /* validation of solution ----------------------------------------------------*/
 int valpos(rtk_t *rtk,  const double *v, const double *R, const int *vflg,
         int nv, double thres)
@@ -1706,6 +1709,7 @@ int valpos(rtk_t *rtk,  const double *v, const double *R, const int *vflg,
 #endif
     return stat;
 }
+
 
 /* relative positioning ------------------------------------------------------*/
 int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
@@ -1908,6 +1912,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
     return stat != SOLQ_NONE;
 }
 
+
 /* initialize rtk control ------------------------------------------------------
  * initialize rtk control struct
  * args   : rtk_t    *rtk    IO  rtk control/result struct
@@ -2053,7 +2058,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                     return 0;
                 }
         }
-    if (time.time != 0) rtk->tt=timediff(rtk->sol.time, time);
+    if (time.time != 0) rtk->tt = timediff(rtk->sol.time, time);
 
     /* single point positioning */
     if (opt->mode == PMODE_SINGLE)
@@ -2099,7 +2104,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             for (i = 0;i<6;i++) rtk->rb[i] = solb.rr[i];
 
             /* time-synchronized position of base station */
-            for (i = 0;i<3;i++) rtk->rb[i]+=rtk->rb[i+3]*rtk->sol.age;
+            for (i = 0;i<3;i++) rtk->rb[i] += rtk->rb[i+3]*rtk->sol.age;
         }
     else
         {

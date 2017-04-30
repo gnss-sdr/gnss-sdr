@@ -91,7 +91,7 @@ const double TTOL_MOVEB = (1.0+2*DTTOL);
 
 
 static int resamb_WLNL(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
-                       const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns, const nav_t *nav __attribute((unused)),
+                       const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns __attribute__((unused)), const nav_t *nav __attribute((unused)),
                        const double *azel __attribute((unused))) {return 0;}
 static int resamb_TCAR(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
                        const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns __attribute((unused)), const nav_t *nav __attribute((unused)),

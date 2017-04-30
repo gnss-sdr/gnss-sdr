@@ -31,22 +31,27 @@
 #include "rtklib_conversions.h"
 #include "rtklib_rtkcmn.h"
 
-obsd_t insert_obs_to_rtklib(obsd_t rtklib_obs, Gnss_Synchro gnss_synchro, int week, int band)
+obsd_t insert_obs_to_rtklib(obsd_t & rtklib_obs, const Gnss_Synchro & gnss_synchro, int week, int band)
 {
     rtklib_obs.D[band] = gnss_synchro.Carrier_Doppler_hz;
     rtklib_obs.P[band] = gnss_synchro.Pseudorange_m;
-    rtklib_obs.L[band] = gnss_synchro.Carrier_phase_rads;//todo: check units
-    //rtklib_obs.SNR=gnss_synchro.CN0_dB_hz;
+    rtklib_obs.L[band] = gnss_synchro.Carrier_phase_rads / (2.0 * PI);
+
+    double CN0_dB_Hz_est = gnss_synchro.CN0_dB_hz;
+    if (CN0_dB_Hz_est > 63.75) CN0_dB_Hz_est = 63.75;
+    if (CN0_dB_Hz_est < 0.0) CN0_dB_Hz_est = 0.0;
+    unsigned char CN0_dB_Hz = static_cast<unsigned char>(std::round(CN0_dB_Hz_est / 0.25 ));
+    rtklib_obs.SNR[band] = CN0_dB_Hz;
     rtklib_obs.sat = gnss_synchro.PRN;
     rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
     //printf("OBS RX TIME [%i]: %s,%f\n\r",rtklib_obs.sat,time_str(rtklib_obs.time,3),rtklib_obs.time.sec);
     return rtklib_obs;
 }
 
-eph_t eph_to_rtklib(Galileo_Ephemeris gal_eph)
+eph_t eph_to_rtklib(const Galileo_Ephemeris & gal_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
     rtklib_sat.sat = gal_eph.i_satellite_PRN;
     rtklib_sat.A = gal_eph.A_1 * gal_eph.A_1;
     rtklib_sat.M0 = gal_eph.M0_1;
@@ -92,10 +97,10 @@ eph_t eph_to_rtklib(Galileo_Ephemeris gal_eph)
 }
 
 
-eph_t eph_to_rtklib(Gps_Ephemeris gps_eph)
+eph_t eph_to_rtklib(const Gps_Ephemeris & gps_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
     rtklib_sat.sat = gps_eph.i_satellite_PRN;
     rtklib_sat.A = gps_eph.d_sqrt_A * gps_eph.d_sqrt_A;
     rtklib_sat.M0 = gps_eph.d_M_0;
@@ -143,10 +148,10 @@ eph_t eph_to_rtklib(Gps_Ephemeris gps_eph)
 }
 
 
-eph_t eph_to_rtklib(Gps_CNAV_Ephemeris gps_cnav_eph)
+eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris & gps_cnav_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
     rtklib_sat.sat = gps_cnav_eph.i_satellite_PRN;
     const double A_REF = 26559710.0; // See IS-GPS-200H,  pp. 170
     rtklib_sat.A = A_REF + gps_cnav_eph.d_DELTA_A;

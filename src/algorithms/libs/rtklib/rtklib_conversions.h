@@ -37,10 +37,10 @@
 #include "gps_ephemeris.h"
 #include "gps_cnav_ephemeris.h"
 
-eph_t eph_to_rtklib(Galileo_Ephemeris gal_eph);
-eph_t eph_to_rtklib(Gps_Ephemeris gps_eph);
-eph_t eph_to_rtklib(Gps_CNAV_Ephemeris gps_cnav_eph);
+eph_t eph_to_rtklib(const Galileo_Ephemeris & gal_eph);
+eph_t eph_to_rtklib(const Gps_Ephemeris & gps_eph);
+eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris & gps_cnav_eph);
 
-obsd_t insert_obs_to_rtklib(obsd_t rtklib_obs, Gnss_Synchro gnss_synchro, int week, int band);
+obsd_t insert_obs_to_rtklib(obsd_t & rtklib_obs, const Gnss_Synchro & gnss_synchro, int week, int band);
 
 #endif /* GNSS_SDR_RTKLIB_CONVERSIONS_H_ */

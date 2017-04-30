@@ -60,7 +60,7 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int nchannels,
         std::map<int,int> rtcm_msg_rate_ms,
         std::string rtcm_dump_devname,
         const unsigned int type_of_receiver,
-        const prcopt_t rtklib_opt)
+        rtk_t & rtk)
 {
     return rtklib_pvt_cc_sptr(new rtklib_pvt_cc(nchannels,
             dump,
@@ -78,7 +78,7 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int nchannels,
             rtcm_msg_rate_ms,
             rtcm_dump_devname,
             type_of_receiver,
-            rtklib_opt));
+            rtk));
 }
 
 
@@ -202,7 +202,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
         int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port,
         std::string nmea_dump_filename, std::string nmea_dump_devname, int rinex_version,
         bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port,
-        unsigned short rtcm_station_id, std::map<int,int> rtcm_msg_rate_ms, std::string rtcm_dump_devname, const unsigned int type_of_receiver, const prcopt_t rtklib_opt) :
+        unsigned short rtcm_station_id, std::map<int,int> rtcm_msg_rate_ms, std::string rtcm_dump_devname, const unsigned int type_of_receiver, rtk_t & rtk) :
               gr::sync_block("rtklib_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
               gr::io_signature::make(0, 0, 0))
 {
@@ -214,7 +214,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     std::string dump_ls_pvt_filename = dump_filename;
     type_of_rx = type_of_receiver;
 
-    rtklib_options = rtklib_opt;
+    rtklib_options = rtk.opt;
 
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));

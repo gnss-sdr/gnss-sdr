@@ -67,7 +67,7 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int n_channels,
                                               std::map<int,int> rtcm_msg_rate_ms,
                                               std::string rtcm_dump_devname,
                                               const unsigned int type_of_receiver,
-                                              prcopt_t rtklib_opt);
+                                              rtk_t & rtk);
 
 /*!
  * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
@@ -91,7 +91,7 @@ private:
                                                          std::map<int,int> rtcm_msg_rate_ms,
                                                          std::string rtcm_dump_devname,
                                                          const unsigned int type_of_receiver,
-                                                         const prcopt_t rtklib_opt);
+                                                         rtk_t & rtk);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 
@@ -162,7 +162,7 @@ public:
                     std::map<int,int> rtcm_msg_rate_ms,
                     std::string rtcm_dump_devname,
                     const unsigned int type_of_receiver,
-                    const prcopt_t rtklib_opt);
+                    rtk_t & rtk);
 
     /*!
      * \brief Get latest set of GPS L1 ephemeris from PVT block

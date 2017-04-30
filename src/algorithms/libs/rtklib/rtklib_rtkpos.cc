@@ -380,10 +380,10 @@ double gfobs_L1L5(const obsd_t *obs, int i, int j, const double *lam)
 
 
 /* single-differenced measurement error variance -----------------------------*/
-double varerr(int sat, int sys, double el, double bl, double dt, int f,
+double varerr(int sat __attribute((unused)), int sys, double el, double bl, double dt, int f,
         const prcopt_t *opt)
 {
-    double a, b, c = opt->err[3]*bl/1E4, d = SPEED_OF_LIGHT*opt->sclkstab*dt, fact = 1.0;
+    double a, b, c = opt->err[3]*bl/1e4, d = SPEED_OF_LIGHT * opt->sclkstab*dt, fact = 1.0;
     double sinel = sin(el);
     int i = sys == SYS_GLO ? 1 : (sys == SYS_GAL ? 2 : 0), nf = NF_RTK(opt);
 
@@ -392,13 +392,13 @@ double varerr(int sat, int sys, double el, double bl, double dt, int f,
         { /* code */
             a = opt->exterr.cerr[i][  (f-nf)*2];
             b = opt->exterr.cerr[i][1+(f-nf)*2];
-            if (sys == SYS_SBS) {a*=EFACT_SBS; b*=EFACT_SBS;}
+            if (sys == SYS_SBS) {a *= EFACT_SBS; b *= EFACT_SBS;}
         }
     else if (f<nf && opt->exterr.ena[1])
         { /* phase */
             a = opt->exterr.perr[i][  f*2];
             b = opt->exterr.perr[i][1+f*2];
-            if (sys == SYS_SBS) {a*=EFACT_SBS; b*=EFACT_SBS;}
+            if (sys == SYS_SBS) {a *= EFACT_SBS; b *= EFACT_SBS;}
         }
     else
         { /* normal error model */
@@ -559,7 +559,7 @@ void udion(rtk_t *rtk, double tt, double bl, const int *sat, int ns)
 
 
 /* temporal update of tropospheric parameters --------------------------------*/
-void udtrop(rtk_t *rtk, double tt, double bl)
+void udtrop(rtk_t *rtk, double tt, double bl __attribute((unused)))
 {
     int i, j, k;
 
@@ -575,12 +575,12 @@ void udtrop(rtk_t *rtk, double tt, double bl)
 
                     if (rtk->opt.tropopt >= TROPOPT_ESTG)
                         {
-                            for (k = 0;k<2;k++) initx(rtk, 1E-6, VAR_GRA, ++j);
+                            for (k = 0;k<2;k++) initx(rtk, 1e-6, VAR_GRA, ++j);
                         }
                 }
             else
                 {
-                    rtk->P[j+j*rtk->nx]+=std::pow(rtk->opt.prn[2],  2.0)*tt;
+                    rtk->P[j+j*rtk->nx] += std::pow(rtk->opt.prn[2],  2.0)*tt;
 
                     if (rtk->opt.tropopt >= TROPOPT_ESTG)
                         {
@@ -728,30 +728,30 @@ void detslp_dop(rtk_t *rtk, const obsd_t *obs, int i, int rcv,
 {
     /* detection with doppler disabled because of clock-jump issue (v.2.3.0) */
 #if 0
-    int f,sat=obs[i].sat;
+    int f,sat = obs[i].sat;
     double tt,dph,dpt,lam,thres;
 
     trace(3,"detslp_dop: i=%d rcv=%d\n",i,rcv);
 
-    for (f=0;f<rtk->opt.nf;f++)
+    for (f = 0;f<rtk->opt.nf;f++)
         {
-            if (obs[i].L[f]==0.0||obs[i].D[f]==0.0||rtk->ph[rcv-1][sat-1][f]==0.0)
+            if (obs[i].L[f] == 0.0 || obs[i].D[f] == 0.0 || rtk->ph[rcv-1][sat-1][f] == 0.0)
                 {
                     continue;
                 }
-            if (fabs(tt=timediff(obs[i].time,rtk->pt[rcv-1][sat-1][f]))<DTTOL) continue;
-            if ((lam=nav->lam[sat-1][f])<=0.0) continue;
+            if (fabs(tt = timediff(obs[i].time,rtk->pt[rcv-1][sat-1][f]))<DTTOL) continue;
+            if ((lam = nav->lam[sat-1][f])<=0.0) continue;
 
             /* cycle slip threshold (cycle) */
-            thres=MAXACC*tt*tt/2.0/lam+rtk->opt.err[4]*fabs(tt)*4.0;
+            thres = MAXACC*tt*tt/2.0/lam+rtk->opt.err[4]*fabs(tt)*4.0;
 
             /* phase difference and doppler x time (cycle) */
-            dph=obs[i].L[f]-rtk->ph[rcv-1][sat-1][f];
-            dpt=-obs[i].D[f]*tt;
+            dph = obs[i].L[f]-rtk->ph[rcv-1][sat-1][f];
+            dpt = -obs[i].D[f]*tt;
 
             if (fabs(dph-dpt)<=thres) continue;
 
-            rtk->slip[sat-1][f]|=1;
+            rtk->slip[sat-1][f]| = 1;
 
             errmsg(rtk,"slip detected (sat=%2d rcv=%d L%d=%.3f %.3f thres=%.3f)\n",
                     sat,rcv,f+1,dph,dpt,thres);
@@ -772,7 +772,7 @@ void udbias(rtk_t *rtk, double tt, const obsd_t *obs, const int *sat,
     for (i = 0;i<ns;i++)
         {
             /* detect cycle slip by LLI */
-            for (f = 0;f<rtk->opt.nf;f++) rtk->ssat[sat[i]-1].slip[f]&=0xFC;
+            for (f = 0;f<rtk->opt.nf;f++) rtk->ssat[sat[i]-1].slip[f] &= 0xFC;
             detslp_ll(rtk, obs, iu[i], 1);
             detslp_ll(rtk, obs, ir[i], 2);
 
@@ -1133,7 +1133,7 @@ double prectrop(gtime_t time, const double *pos, int r,
 
 
 /* glonass inter-channel bias correction -------------------------------------*/
-double gloicbcorr(int sat1, int sat2, const prcopt_t *opt, double lam1,
+double gloicbcorr(int sat1 __attribute((unused)), int sat2 __attribute((unused)), const prcopt_t *opt, double lam1,
         double lam2, int f)
 {
     double dfreq;
@@ -1436,12 +1436,10 @@ int ddmat(rtk_t *rtk, double *D)
 
     for (m = 0;m<4;m++)
         { /* m=0:gps/qzs/sbs, 1:glo, 2:gal, 3:bds */
-
             nofix = (m == 1 && rtk->opt.glomodear == 0) || (m == 3 && rtk->opt.bdsmodear == 0);
 
             for (f = 0, k = na;f<nf;f++, k+=MAXSAT)
                 {
-
                     for (i = k;i<k+MAXSAT;i++)
                         {
 #if 0
@@ -1449,687 +1447,674 @@ int ddmat(rtk_t *rtk, double *D)
                                     !rtk->ssat[i-k].vsat[f])
                                 {
 #else
-                                    if (rtk->x[i] == 0.0 || !test_sys(rtk->ssat[i-k].sys, m) ||
+                            if (rtk->x[i] == 0.0 || !test_sys(rtk->ssat[i-k].sys, m) ||
                                             !rtk->ssat[i-k].vsat[f] || !rtk->ssat[i-k].half[f])
-                                        {
-#endif
-                                            continue;
-                                        }
-                                    if (rtk->ssat[i-k].lock[f]>0 && !(rtk->ssat[i-k].slip[f]&2) &&
-                                            rtk->ssat[i-k].azel[1] >= rtk->opt.elmaskar && !nofix)
-                                        {
-                                            rtk->ssat[i-k].fix[f] = 2; /* fix */
-                                            break;
-                                        }
-                                    else rtk->ssat[i-k].fix[f] = 1;
-                                }
-                            for (j = k;j<k+MAXSAT;j++)
                                 {
-                                    if (i == j || rtk->x[j] == 0.0 || !test_sys(rtk->ssat[j-k].sys, m) ||
-                                            !rtk->ssat[j-k].vsat[f])
-                                        {
-                                            continue;
-                                        }
-                                    if (rtk->ssat[j-k].lock[f]>0 && !(rtk->ssat[j-k].slip[f]&2) &&
-                                            rtk->ssat[i-k].vsat[f] &&
-                                            rtk->ssat[j-k].azel[1] >= rtk->opt.elmaskar && !nofix)
-                                        {
-                                            D[i+(na+nb)*nx] =  1.0;
-                                            D[j+(na+nb)*nx] = -1.0;
-                                            nb++;
-                                            rtk->ssat[j-k].fix[f] = 2; /* fix */
-                                        }
-                                    else rtk->ssat[j-k].fix[f] = 1;
+#endif
+                                    continue;
                                 }
+                            if (rtk->ssat[i-k].lock[f]>0 && !(rtk->ssat[i-k].slip[f]&2) &&
+                                    rtk->ssat[i-k].azel[1] >= rtk->opt.elmaskar && !nofix)
+                                {
+                                    rtk->ssat[i-k].fix[f] = 2; /* fix */
+                                    break;
+                                }
+                            else rtk->ssat[i-k].fix[f] = 1;
+                       }
+                   for (j = k;j<k+MAXSAT;j++)
+                        {
+                            if (i == j || rtk->x[j] == 0.0 || !test_sys(rtk->ssat[j-k].sys, m) ||
+                                    !rtk->ssat[j-k].vsat[f])
+                                {
+                                    continue;
+                                }
+                            if (rtk->ssat[j-k].lock[f]>0 && !(rtk->ssat[j-k].slip[f]&2) &&
+                                        rtk->ssat[i-k].vsat[f] &&
+                                        rtk->ssat[j-k].azel[1] >= rtk->opt.elmaskar && !nofix)
+                                {
+                                    D[i+(na+nb)*nx] =  1.0;
+                                    D[j+(na+nb)*nx] = -1.0;
+                                    nb++;
+                                    rtk->ssat[j-k].fix[f] = 2; /* fix */
+                                }
+                                else rtk->ssat[j-k].fix[f] = 1;
                         }
                 }
-            trace(5, "D=\n"); tracemat(5, D, nx, na+nb, 2, 0);
-            return nb;
+        }
+     trace(5, "D=\n"); tracemat(5, D, nx, na+nb, 2, 0);
+     return nb;
+}
+
+
+/* restore single-differenced ambiguity --------------------------------------*/
+void restamb(rtk_t *rtk, const double *bias, int nb __attribute((unused)), double *xa)
+{
+    int i, n, m, f, index[MAXSAT], nv = 0, nf = NF_RTK(&rtk->opt);
+
+    trace(3, "restamb :\n");
+
+    for (i = 0;i<rtk->nx;i++) xa[i] = rtk->x [i];
+    for (i = 0;i<rtk->na;i++) xa[i] = rtk->xa[i];
+
+    for (m = 0;m<4;m++) for (f = 0;f<nf;f++)
+        {
+            for (n = i = 0;i<MAXSAT;i++)
+                {
+                    if (!test_sys(rtk->ssat[i].sys, m) || rtk->ssat[i].fix[f] != 2)
+                        {
+                            continue;
+                        }
+                    index[n++] = IB_RTK(i+1, f, &rtk->opt);
+                }
+            if (n<2) continue;
+
+            xa[index[0]] = rtk->x[index[0]];
+
+            for (i = 1;i<n;i++)
+                {
+                    xa[index[i]] = xa[index[0]]-bias[nv++];
+                }
+        }
+}
+
+/* hold integer ambiguity ----------------------------------------------------*/
+void holdamb(rtk_t *rtk, const double *xa)
+{
+    double *v, *H, *R;
+    int i, n, m, f, info, index[MAXSAT], nb = rtk->nx-rtk->na, nv = 0, nf = NF_RTK(&rtk->opt);
+
+    trace(3, "holdamb :\n");
+
+    v = mat(nb, 1); H = zeros(nb, rtk->nx);
+
+    for (m = 0;m<4;m++) for (f = 0;f<nf;f++)
+        {
+            for (n = i = 0;i<MAXSAT;i++)
+                {
+                    if (!test_sys(rtk->ssat[i].sys, m) || rtk->ssat[i].fix[f] != 2 ||
+                            rtk->ssat[i].azel[1]<rtk->opt.elmaskhold)
+                        {
+                            continue;
+                        }
+                    index[n++] = IB_RTK(i+1, f, &rtk->opt);
+                    rtk->ssat[i].fix[f] = 3; /* hold */
+                }
+            /* constraint to fixed ambiguity */
+            for (i = 1;i<n;i++)
+                {
+                    v[nv] = (xa[index[0]]-xa[index[i]])-(rtk->x[index[0]]-rtk->x[index[i]]);
+
+                    H[index[0]+nv*rtk->nx] =  1.0;
+                    H[index[i]+nv*rtk->nx] = -1.0;
+                    nv++;
+                }
+        }
+    if (nv>0)
+        {
+            R = zeros(nv, nv);
+            for (i = 0;i<nv;i++) R[i+i*nv] = VAR_HOLDAMB;
+
+            /* update states with constraints */
+            if ((info = filter(rtk->x, rtk->P, H, v, R, rtk->nx, nv)))
+                {
+                    errmsg(rtk, "filter error (info=%d)\n", info);
+                }
+            free(R);
+        }
+    free(v); free(H);
+}
+
+/* resolve integer ambiguity by LAMBDA ---------------------------------------*/
+int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa)
+{
+    prcopt_t *opt = &rtk->opt;
+    int i, j, ny, nb, info, nx = rtk->nx, na = rtk->na;
+    double *D, *DP, *y, *Qy, *b, *db, *Qb, *Qab, *QQ, s[2];
+
+    trace(3, "resamb_LAMBDA : nx=%d\n", nx);
+
+    rtk->sol.ratio = 0.0;
+
+    if (rtk->opt.mode <= PMODE_DGPS || rtk->opt.modear == ARMODE_OFF ||
+            rtk->opt.thresar[0]<1.0)
+        {
+            return 0;
+        }
+    /* single to double-difference transformation matrix (D') */
+    D = zeros(nx, nx);
+    if ((nb = ddmat(rtk, D)) <= 0)
+        {
+            errmsg(rtk, "no valid double-difference\n");
+            free(D);
+            return 0;
+        }
+    ny = na+nb; y = mat(ny, 1); Qy = mat(ny, ny); DP = mat(ny, nx);
+    b = mat(nb, 2); db = mat(nb, 1); Qb = mat(nb, nb); Qab = mat(na, nb); QQ = mat(na, nb);
+
+    /* transform single to double-differenced phase-bias (y=D'*x, Qy=D'*P*D) */
+    matmul("TN", ny,  1, nx, 1.0, D , rtk->x, 0.0, y );
+    matmul("TN", ny, nx, nx, 1.0, D , rtk->P, 0.0, DP);
+    matmul("NN", ny, ny, nx, 1.0, DP, D     , 0.0, Qy);
+
+    /* phase-bias covariance (Qb) and real-parameters to bias covariance (Qab) */
+    for (i = 0;i<nb;i++) for (j = 0;j<nb;j++) Qb [i+j*nb] = Qy[na+i+(na+j)*ny];
+    for (i = 0;i<na;i++) for (j = 0;j<nb;j++) Qab[i+j*na] = Qy[   i+(na+j)*ny];
+
+    trace(4, "N(0)="); tracemat(4, y+na, 1, nb, 10, 3);
+
+    /* lambda/mlambda integer least-square estimation */
+    if (!(info = lambda(nb, 2, y+na, Qb, b, s)))
+        {
+            trace(4, "N(1)="); tracemat(4, b   , 1, nb, 10, 3);
+            trace(4, "N(2)="); tracemat(4, b+nb, 1, nb, 10, 3);
+
+            rtk->sol.ratio = s[0]>0 ? (float)(s[1]/s[0]) : 0.0f;
+            if (rtk->sol.ratio>999.9) rtk->sol.ratio = 999.9f;
+
+            /* validation by popular ratio-test */
+            if (s[0] <= 0.0 || s[1]/s[0] >= opt->thresar[0])
+                {
+                    /* transform float to fixed solution (xa=xa-Qab*Qb\(b0-b)) */
+                    for (i = 0;i<na;i++)
+                        {
+                            rtk->xa[i] = rtk->x[i];
+                            for (j = 0;j<na;j++) rtk->Pa[i+j*na] = rtk->P[i+j*nx];
+                        }
+                    for (i = 0;i<nb;i++)
+                        {
+                            bias[i] = b[i];
+                            y[na+i] -= b[i];
+                        }
+                    if (!matinv(Qb, nb))
+                        {
+                            matmul("NN", nb, 1, nb,  1.0, Qb , y+na, 0.0, db);
+                            matmul("NN", na, 1, nb, -1.0, Qab, db  , 1.0, rtk->xa);
+
+                            /* covariance of fixed solution (Qa=Qa-Qab*Qb^-1*Qab') */
+                            matmul("NN", na, nb, nb,  1.0, Qab, Qb , 0.0, QQ);
+                            matmul("NT", na, na, nb, -1.0, QQ , Qab, 1.0, rtk->Pa);
+
+                            trace(3, "resamb : validation ok (nb=%d ratio=%.2f s=%.2f/%.2f)\n",
+                                    nb, s[0] == 0.0 ? 0.0 : s[1]/s[0], s[0], s[1]);
+
+                            /* restore single-differenced ambiguity */
+                            restamb(rtk, bias, nb, xa);
+                        }
+                    else nb = 0;
+                }
+            else
+                { /* validation failed */
+                    errmsg(rtk, "ambiguity validation failed (nb=%d ratio=%.2f s=%.2f/%.2f)\n",
+                            nb, s[1]/s[0], s[0], s[1]);
+                    nb = 0;
+                }
+        }
+    else
+        {
+            errmsg(rtk, "lambda error (info=%d)\n", info);
+        }
+    free(D); free(y); free(Qy); free(DP);
+    free(b); free(db); free(Qb); free(Qab); free(QQ);
+
+    return nb; /* number of ambiguities */
+}
+
+/* validation of solution ----------------------------------------------------*/
+int valpos(rtk_t *rtk,  const double *v, const double *R, const int *vflg,
+        int nv, double thres)
+{
+#if 0
+    prcopt_t *opt = &rtk->opt;
+    double vv = 0.0;
+#endif
+    double fact = thres*thres;
+    int i, stat = 1, sat1, sat2, type, freq;
+    char stype;
+
+    trace(3, "valpos  : nv=%d thres=%.1f\n", nv, thres);
+
+    /* post-fit residual test */
+    for (i = 0;i<nv;i++)
+        {
+            if (v[i]*v[i] <= fact*R[i+i*nv]) continue;
+            sat1 = (vflg[i]>>16)&0xFF;
+            sat2 = (vflg[i]>> 8)&0xFF;
+            type = (vflg[i]>> 4)&0xF;
+            freq = vflg[i]&0xF;
+            stype = type == 0 ? 'L' : (type == 1 ? 'L' : 'C');
+            errmsg(rtk, "large residual (sat=%2d-%2d %s%d v=%6.3f sig=%.3f)\n",
+                    sat1, sat2, stype, freq+1, v[i], std::sqrt(R[i+i*nv]));
+        }
+#if 0 /* omitted v.2.4.0 */
+    if (stat&&nv>NP(opt))
+        {
+            /* chi-square validation */
+            for (i = 0; i<nv; i++) vv += v[i]*v[i]/R[i+i*nv];
+
+            if (vv > chisqr[nv-NP(opt)-1])
+                {
+                    errmsg(rtk,"residuals validation failed (nv=%d np=%d vv=%.2f cs=%.2f)\n",
+                            nv, NP(opt), vv, chisqr[nv-NP(opt)-1]);
+                    stat = 0;
+                }
+            else
+                {
+                    trace(3,"valpos : validation ok (%s nv=%d np=%d vv=%.2f cs=%.2f)\n",
+                            rtk->tstr, nv, NP(opt), vv, chisqr[nv-NP(opt)-1]);
+                }
+        }
+#endif
+    return stat;
+}
+
+/* relative positioning ------------------------------------------------------*/
+int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
+        const nav_t *nav)
+{
+    prcopt_t *opt = &rtk->opt;
+    gtime_t time = obs[0].time;
+    double *rs, *dts, *var, *y, *e, *azel, *v, *H, *R, *xp, *Pp, *xa, *bias, dt;
+    int i, j, f, n = nu+nr, ns, ny, nv, sat[MAXSAT], iu[MAXSAT], ir[MAXSAT], niter;
+    int info, vflg[MAXOBS*NFREQ*2+1], svh[MAXOBS*2];
+    int stat = rtk->opt.mode <= PMODE_DGPS ? SOLQ_DGPS : SOLQ_FLOAT;
+    int nf = opt->ionoopt == IONOOPT_IFLC ? 1 : opt->nf;
+
+    trace(3, "relpos  : nx=%d nu=%d nr=%d\n", rtk->nx, nu, nr);
+
+    dt = timediff(time, obs[nu].time);
+
+    rs = mat(6, n); dts = mat(2, n); var = mat(1, n); y = mat(nf*2, n); e = mat(3, n);
+    azel = zeros(2, n);
+
+    for (i = 0;i<MAXSAT;i++)
+        {
+            rtk->ssat[i].sys = satsys(i+1, NULL);
+            for (j = 0;j<NFREQ;j++) rtk->ssat[i].vsat[j] = rtk->ssat[i].snr[j] = 0;
+        }
+    /* satellite positions/clocks */
+    satposs(time, obs, n, nav, opt->sateph, rs, dts, var, svh);
+
+    /* undifferenced residuals for base station */
+    if (!zdres(1, obs+nu, nr, rs+nu*6, dts+nu*2, svh+nu, nav, rtk->rb, opt, 1,
+            y+nu*nf*2, e+nu*3, azel+nu*2))
+        {
+            errmsg(rtk, "initial base station position error\n");
+
+            free(rs); free(dts); free(var); free(y); free(e); free(azel);
+            return 0;
+        }
+    /* time-interpolation of residuals (for post-processing) */
+    if (opt->intpref)
+        {
+            dt = intpres(time, obs+nu, nr, nav, rtk, y+nu*nf*2);
+        }
+    /* select common satellites between rover and base-station */
+    if ((ns = selsat(obs, azel, nu, nr, opt, sat, iu, ir)) <= 0)
+        {
+            errmsg(rtk, "no common satellite\n");
+
+            free(rs); free(dts); free(var); free(y); free(e); free(azel);
+            return 0;
+        }
+    /* temporal update of states */
+    udstate(rtk, obs, sat, iu, ir, ns, nav);
+
+    trace(4, "x(0)="); tracemat(4, rtk->x, 1, NR_RTK(opt), 13, 4);
+
+    xp = mat(rtk->nx, 1); Pp = zeros(rtk->nx, rtk->nx); xa = mat(rtk->nx, 1);
+    matcpy(xp, rtk->x, rtk->nx, 1);
+
+    ny = ns*nf*2+2;
+    v = mat(ny, 1); H = zeros(rtk->nx, ny); R = mat(ny, ny); bias = mat(rtk->nx, 1);
+
+    /* add 2 iterations for baseline-constraint moving-base */
+    niter = opt->niter+(opt->mode == PMODE_MOVEB && opt->baseline[0]>0.0 ? 2 : 0);
+
+    for (i = 0;i<niter;i++)
+        {
+            /* undifferenced residuals for rover */
+            if (!zdres(0, obs, nu, rs, dts, svh, nav, xp, opt, 0, y, e, azel))
+                {
+                    errmsg(rtk, "rover initial position error\n");
+                    stat = SOLQ_NONE;
+                    break;
+                }
+            /* double-differenced residuals and partial derivatives */
+            if ((nv = ddres(rtk, nav, dt, xp, Pp, sat, y, e, azel, iu, ir, ns, v, H, R, vflg))<1)
+                {
+                    errmsg(rtk, "no double-differenced residual\n");
+                    stat = SOLQ_NONE;
+                    break;
+                }
+            /* kalman filter measurement update */
+            matcpy(Pp, rtk->P, rtk->nx, rtk->nx);
+            if ((info = filter(xp, Pp, H, v, R, rtk->nx, nv)))
+                {
+                    errmsg(rtk, "filter error (info=%d)\n", info);
+                    stat = SOLQ_NONE;
+                    break;
+                }
+            trace(4, "x(%d)=", i+1); tracemat(4, xp, 1, NR_RTK(opt), 13, 4);
+        }
+    if (stat != SOLQ_NONE && zdres(0, obs, nu, rs, dts, svh, nav, xp, opt, 0, y, e, azel))
+        {
+            /* post-fit residuals for float solution */
+            nv = ddres(rtk, nav, dt, xp, Pp, sat, y, e, azel, iu, ir, ns, v, NULL, R, vflg);
+
+            /* validation of float solution */
+            if (valpos(rtk, v, R, vflg, nv, 4.0))
+                {
+                    /* update state and covariance matrix */
+                    matcpy(rtk->x, xp, rtk->nx, 1);
+                    matcpy(rtk->P, Pp, rtk->nx, rtk->nx);
+
+                    /* update ambiguity control struct */
+                    rtk->sol.ns = 0;
+                    for (i = 0;i<ns;i++) for (f = 0;f<nf;f++)
+                        {
+                            if (!rtk->ssat[sat[i]-1].vsat[f]) continue;
+                            rtk->ssat[sat[i]-1].lock[f]++;
+                            rtk->ssat[sat[i]-1].outc[f] = 0;
+                            if (f == 0) rtk->sol.ns++; /* valid satellite count by L1 */
+                        }
+                    /* lack of valid satellites */
+                    if (rtk->sol.ns<4) stat = SOLQ_NONE;
+                }
+            else stat = SOLQ_NONE;
+        }
+    /* resolve integer ambiguity by WL-NL */
+    if (stat != SOLQ_NONE && rtk->opt.modear == ARMODE_WLNL)
+        {
+            if (resamb_WLNL(rtk, obs, sat, iu, ir, ns, nav, azel))
+                {
+                    stat = SOLQ_FIX;
+                }
+        }
+    /* resolve integer ambiguity by TCAR */
+    else if (stat != SOLQ_NONE && rtk->opt.modear == ARMODE_TCAR)
+        {
+            if (resamb_TCAR(rtk, obs, sat, iu, ir, ns, nav, azel))
+                {
+                    stat = SOLQ_FIX;
+                }
+        }
+    /* resolve integer ambiguity by LAMBDA */
+    else if (stat != SOLQ_NONE && resamb_LAMBDA(rtk, bias, xa)>1)
+        {
+            if (zdres(0, obs, nu, rs, dts, svh, nav, xa, opt, 0, y, e, azel))
+                {
+                    /* post-fit reisiduals for fixed solution */
+                    nv = ddres(rtk, nav, dt, xa, NULL, sat, y, e, azel, iu, ir, ns, v, NULL, R, vflg);
+
+                    /* validation of fixed solution */
+                    if (valpos(rtk, v, R, vflg, nv, 4.0))
+                        {
+                            /* hold integer ambiguity */
+                            if (++rtk->nfix >= rtk->opt.minfix &&
+                                    rtk->opt.modear == ARMODE_FIXHOLD)
+                                {
+                                    holdamb(rtk, xa);
+                                }
+                            stat = SOLQ_FIX;
+                        }
+                }
         }
 
-
-    /* restore single-differenced ambiguity --------------------------------------*/
-    void restamb(rtk_t *rtk, const double *bias, int nb, double *xa)
-    {
-        int i, n, m, f, index[MAXSAT], nv = 0, nf = NF_RTK(&rtk->opt);
-
-        trace(3, "restamb :\n");
-
-        for (i = 0;i<rtk->nx;i++) xa[i] = rtk->x [i];
-        for (i = 0;i<rtk->na;i++) xa[i] = rtk->xa[i];
-
-        for (m = 0;m<4;m++) for (f = 0;f<nf;f++)
-            {
-
-                for (n = i = 0;i<MAXSAT;i++)
-                    {
-                        if (!test_sys(rtk->ssat[i].sys, m) || rtk->ssat[i].fix[f] != 2)
-                            {
-                                continue;
-                            }
-                        index[n++] = IB_RTK(i+1, f, &rtk->opt);
-                    }
-                if (n<2) continue;
-
-                xa[index[0]] = rtk->x[index[0]];
-
-                for (i = 1;i<n;i++)
-                    {
-                        xa[index[i]] = xa[index[0]]-bias[nv++];
-                    }
-            }
-    }
-
-
-    /* hold integer ambiguity ----------------------------------------------------*/
-    void holdamb(rtk_t *rtk, const double *xa)
-    {
-        double *v, *H, *R;
-        int i, n, m, f, info, index[MAXSAT], nb = rtk->nx-rtk->na, nv = 0, nf = NF_RTK(&rtk->opt);
-
-        trace(3, "holdamb :\n");
-
-        v = mat(nb, 1); H = zeros(nb, rtk->nx);
-
-        for (m = 0;m<4;m++) for (f = 0;f<nf;f++)
-            {
-
-                for (n = i = 0;i<MAXSAT;i++)
-                    {
-                        if (!test_sys(rtk->ssat[i].sys, m) || rtk->ssat[i].fix[f] != 2 ||
-                                rtk->ssat[i].azel[1]<rtk->opt.elmaskhold)
-                            {
-                                continue;
-                            }
-                        index[n++] = IB_RTK(i+1, f, &rtk->opt);
-                        rtk->ssat[i].fix[f] = 3; /* hold */
-                    }
-                /* constraint to fixed ambiguity */
-                for (i = 1;i<n;i++) {
-                        v[nv] = (xa[index[0]]-xa[index[i]])-(rtk->x[index[0]]-rtk->x[index[i]]);
-
-                        H[index[0]+nv*rtk->nx] =  1.0;
-                        H[index[i]+nv*rtk->nx] = -1.0;
-                        nv++;
+    /* save solution status */
+    if (stat == SOLQ_FIX)
+        {
+            for (i = 0;i<3;i++)
+                {
+                    rtk->sol.rr[i] = rtk->xa[i];
+                    rtk->sol.qr[i] = (float)rtk->Pa[i+i*rtk->na];
                 }
-            }
-        if (nv>0)
-            {
-                R = zeros(nv, nv);
-                for (i = 0;i<nv;i++) R[i+i*nv] = VAR_HOLDAMB;
-
-                /* update states with constraints */
-                if ((info = filter(rtk->x, rtk->P, H, v, R, rtk->nx, nv)))
-                    {
-                        errmsg(rtk, "filter error (info=%d)\n", info);
-                    }
-                free(R);
-            }
-        free(v); free(H);
-    }
-
-
-    /* resolve integer ambiguity by LAMBDA ---------------------------------------*/
-    int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa)
-    {
-        prcopt_t *opt = &rtk->opt;
-        int i, j, ny, nb, info, nx = rtk->nx, na = rtk->na;
-        double *D, *DP, *y, *Qy, *b, *db, *Qb, *Qab, *QQ, s[2];
-
-        trace(3, "resamb_LAMBDA : nx=%d\n", nx);
-
-        rtk->sol.ratio = 0.0;
-
-        if (rtk->opt.mode <= PMODE_DGPS || rtk->opt.modear == ARMODE_OFF ||
-                rtk->opt.thresar[0]<1.0)
-            {
-                return 0;
-            }
-        /* single to double-difference transformation matrix (D') */
-        D = zeros(nx, nx);
-        if ((nb = ddmat(rtk, D)) <= 0)
-            {
-                errmsg(rtk, "no valid double-difference\n");
-                free(D);
-                return 0;
-            }
-        ny = na+nb; y = mat(ny, 1); Qy = mat(ny, ny); DP = mat(ny, nx);
-        b = mat(nb, 2); db = mat(nb, 1); Qb = mat(nb, nb); Qab = mat(na, nb); QQ = mat(na, nb);
-
-        /* transform single to double-differenced phase-bias (y=D'*x, Qy=D'*P*D) */
-        matmul("TN", ny,  1, nx, 1.0, D , rtk->x, 0.0, y );
-        matmul("TN", ny, nx, nx, 1.0, D , rtk->P, 0.0, DP);
-        matmul("NN", ny, ny, nx, 1.0, DP, D     , 0.0, Qy);
-
-        /* phase-bias covariance (Qb) and real-parameters to bias covariance (Qab) */
-        for (i = 0;i<nb;i++) for (j = 0;j<nb;j++) Qb [i+j*nb] = Qy[na+i+(na+j)*ny];
-        for (i = 0;i<na;i++) for (j = 0;j<nb;j++) Qab[i+j*na] = Qy[   i+(na+j)*ny];
-
-        trace(4, "N(0)="); tracemat(4, y+na, 1, nb, 10, 3);
-
-        /* lambda/mlambda integer least-square estimation */
-        if (!(info = lambda(nb, 2, y+na, Qb, b, s)))
-            {
-
-                trace(4, "N(1)="); tracemat(4, b   , 1, nb, 10, 3);
-                trace(4, "N(2)="); tracemat(4, b+nb, 1, nb, 10, 3);
-
-                rtk->sol.ratio = s[0]>0 ? (float)(s[1]/s[0]) : 0.0f;
-                if (rtk->sol.ratio>999.9) rtk->sol.ratio = 999.9f;
-
-                /* validation by popular ratio-test */
-                if (s[0] <= 0.0 || s[1]/s[0] >= opt->thresar[0])
-                    {
-                        /* transform float to fixed solution (xa=xa-Qab*Qb\(b0-b)) */
-                        for (i = 0;i<na;i++)
-                            {
-                                rtk->xa[i] = rtk->x[i];
-                                for (j = 0;j<na;j++) rtk->Pa[i+j*na] = rtk->P[i+j*nx];
-                            }
-                        for (i = 0;i<nb;i++)
-                            {
-                                bias[i] = b[i];
-                                y[na+i] -= b[i];
-                            }
-                        if (!matinv(Qb, nb))
-                            {
-                                matmul("NN", nb, 1, nb,  1.0, Qb , y+na, 0.0, db);
-                                matmul("NN", na, 1, nb, -1.0, Qab, db  , 1.0, rtk->xa);
-
-                                /* covariance of fixed solution (Qa=Qa-Qab*Qb^-1*Qab') */
-                                matmul("NN", na, nb, nb,  1.0, Qab, Qb , 0.0, QQ);
-                                matmul("NT", na, na, nb, -1.0, QQ , Qab, 1.0, rtk->Pa);
-
-                                trace(3, "resamb : validation ok (nb=%d ratio=%.2f s=%.2f/%.2f)\n",
-                                        nb, s[0] == 0.0 ? 0.0 : s[1]/s[0], s[0], s[1]);
-
-                                /* restore single-differenced ambiguity */
-                                restamb(rtk, bias, nb, xa);
-                            }
-                        else nb = 0;
-                    }
-                else
-                    { /* validation failed */
-                        errmsg(rtk, "ambiguity validation failed (nb=%d ratio=%.2f s=%.2f/%.2f)\n",
-                                nb, s[1]/s[0], s[0], s[1]);
-                        nb = 0;
-                    }
-            }
-        else
-            {
-                errmsg(rtk, "lambda error (info=%d)\n", info);
-            }
-        free(D); free(y); free(Qy); free(DP);
-        free(b); free(db); free(Qb); free(Qab); free(QQ);
-
-        return nb; /* number of ambiguities */
-    }
-
-
-    /* validation of solution ----------------------------------------------------*/
-    int valpos(rtk_t *rtk,  const double *v, const double *R, const int *vflg,
-            int nv, double thres)
-    {
-#if 0
-        prcopt_t *opt=&rtk->opt;
-        double vv=0.0;
-#endif
-        double fact = thres*thres;
-        int i, stat = 1, sat1, sat2, type, freq;
-        char stype;
-
-        trace(3, "valpos  : nv=%d thres=%.1f\n", nv, thres);
-
-        /* post-fit residual test */
-        for (i = 0;i<nv;i++)
-            {
-                if (v[i]*v[i] <= fact*R[i+i*nv]) continue;
-                sat1 = (vflg[i]>>16)&0xFF;
-                sat2 = (vflg[i]>> 8)&0xFF;
-                type = (vflg[i]>> 4)&0xF;
-                freq = vflg[i]&0xF;
-                stype = type == 0 ? 'L' : (type == 1 ? 'L' : 'C');
-                errmsg(rtk, "large residual (sat=%2d-%2d %s%d v=%6.3f sig=%.3f)\n",
-                        sat1, sat2, stype, freq+1, v[i], std::sqrt(R[i+i*nv]));
-            }
-#if 0 /* omitted v.2.4.0 */
-        if (stat&&nv>NP(opt))
-            {
-
-                /* chi-square validation */
-                for (i=0;i<nv;i++) vv+=v[i]*v[i]/R[i+i*nv];
-
-                if (vv>chisqr[nv-NP(opt)-1])
-                    {
-                        errmsg(rtk,"residuals validation failed (nv=%d np=%d vv=%.2f cs=%.2f)\n",
-                                nv,NP(opt),vv,chisqr[nv-NP(opt)-1]);
-                        stat=0;
-                    }
-                else
-                    {
-                        trace(3,"valpos : validation ok (%s nv=%d np=%d vv=%.2f cs=%.2f)\n",
-                                rtk->tstr,nv,NP(opt),vv,chisqr[nv-NP(opt)-1]);
-                    }
-            }
-#endif
-        return stat;
-    }
-
-
-    /* relative positioning ------------------------------------------------------*/
-    int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
-            const nav_t *nav)
-    {
-        prcopt_t *opt = &rtk->opt;
-        gtime_t time = obs[0].time;
-        double *rs, *dts, *var, *y, *e, *azel, *v, *H, *R, *xp, *Pp, *xa, *bias, dt;
-        int i, j, f, n = nu+nr, ns, ny, nv, sat[MAXSAT], iu[MAXSAT], ir[MAXSAT], niter;
-        int info, vflg[MAXOBS*NFREQ*2+1], svh[MAXOBS*2];
-        int stat = rtk->opt.mode <= PMODE_DGPS ? SOLQ_DGPS : SOLQ_FLOAT;
-        int nf = opt->ionoopt == IONOOPT_IFLC ? 1 : opt->nf;
-
-        trace(3, "relpos  : nx=%d nu=%d nr=%d\n", rtk->nx, nu, nr);
-
-        dt = timediff(time, obs[nu].time);
-
-        rs = mat(6, n); dts = mat(2, n); var = mat(1, n); y = mat(nf*2, n); e = mat(3, n);
-        azel = zeros(2, n);
-
-        for (i = 0;i<MAXSAT;i++)
-            {
-                rtk->ssat[i].sys = satsys(i+1, NULL);
-                for (j = 0;j<NFREQ;j++) rtk->ssat[i].vsat[j] = rtk->ssat[i].snr[j] = 0;
-            }
-        /* satellite positions/clocks */
-        satposs(time, obs, n, nav, opt->sateph, rs, dts, var, svh);
-
-        /* undifferenced residuals for base station */
-        if (!zdres(1, obs+nu, nr, rs+nu*6, dts+nu*2, svh+nu, nav, rtk->rb, opt, 1,
-                y+nu*nf*2, e+nu*3, azel+nu*2))
-            {
-                errmsg(rtk, "initial base station position error\n");
-
-                free(rs); free(dts); free(var); free(y); free(e); free(azel);
-                return 0;
-            }
-        /* time-interpolation of residuals (for post-processing) */
-        if (opt->intpref)
-            {
-                dt = intpres(time, obs+nu, nr, nav, rtk, y+nu*nf*2);
-            }
-        /* select common satellites between rover and base-station */
-        if ((ns = selsat(obs, azel, nu, nr, opt, sat, iu, ir)) <= 0)
-            {
-                errmsg(rtk, "no common satellite\n");
-
-                free(rs); free(dts); free(var); free(y); free(e); free(azel);
-                return 0;
-            }
-        /* temporal update of states */
-        udstate(rtk, obs, sat, iu, ir, ns, nav);
-
-        trace(4, "x(0)="); tracemat(4, rtk->x, 1, NR_RTK(opt), 13, 4);
-
-        xp = mat(rtk->nx, 1); Pp = zeros(rtk->nx, rtk->nx); xa = mat(rtk->nx, 1);
-        matcpy(xp, rtk->x, rtk->nx, 1);
-
-        ny = ns*nf*2+2;
-        v = mat(ny, 1); H = zeros(rtk->nx, ny); R = mat(ny, ny); bias = mat(rtk->nx, 1);
-
-        /* add 2 iterations for baseline-constraint moving-base */
-        niter = opt->niter+(opt->mode == PMODE_MOVEB && opt->baseline[0]>0.0 ? 2 : 0);
-
-        for (i = 0;i<niter;i++)
-            {
-                /* undifferenced residuals for rover */
-                if (!zdres(0, obs, nu, rs, dts, svh, nav, xp, opt, 0, y, e, azel))
-                    {
-                        errmsg(rtk, "rover initial position error\n");
-                        stat = SOLQ_NONE;
-                        break;
-                    }
-                /* double-differenced residuals and partial derivatives */
-                if ((nv = ddres(rtk, nav, dt, xp, Pp, sat, y, e, azel, iu, ir, ns, v, H, R, vflg))<1)
-                    {
-                        errmsg(rtk, "no double-differenced residual\n");
-                        stat = SOLQ_NONE;
-                        break;
-                    }
-                /* kalman filter measurement update */
-                matcpy(Pp, rtk->P, rtk->nx, rtk->nx);
-                if ((info = filter(xp, Pp, H, v, R, rtk->nx, nv)))
-                    {
-                        errmsg(rtk, "filter error (info=%d)\n", info);
-                        stat = SOLQ_NONE;
-                        break;
-                    }
-                trace(4, "x(%d)=", i+1); tracemat(4, xp, 1, NR_RTK(opt), 13, 4);
-            }
-        if (stat != SOLQ_NONE && zdres(0, obs, nu, rs, dts, svh, nav, xp, opt, 0, y, e, azel))
-            {
-
-                /* post-fit residuals for float solution */
-                nv = ddres(rtk, nav, dt, xp, Pp, sat, y, e, azel, iu, ir, ns, v, NULL, R, vflg);
-
-                /* validation of float solution */
-                if (valpos(rtk, v, R, vflg, nv, 4.0))
-                    {
-
-                        /* update state and covariance matrix */
-                        matcpy(rtk->x, xp, rtk->nx, 1);
-                        matcpy(rtk->P, Pp, rtk->nx, rtk->nx);
-
-                        /* update ambiguity control struct */
-                        rtk->sol.ns = 0;
-                        for (i = 0;i<ns;i++) for (f = 0;f<nf;f++)
-                            {
-                                if (!rtk->ssat[sat[i]-1].vsat[f]) continue;
-                                rtk->ssat[sat[i]-1].lock[f]++;
-                                rtk->ssat[sat[i]-1].outc[f] = 0;
-                                if (f == 0) rtk->sol.ns++; /* valid satellite count by L1 */
-                            }
-                        /* lack of valid satellites */
-                        if (rtk->sol.ns<4) stat = SOLQ_NONE;
-                    }
-                else stat = SOLQ_NONE;
-            }
-        /* resolve integer ambiguity by WL-NL */
-        if (stat != SOLQ_NONE && rtk->opt.modear == ARMODE_WLNL)
-            {
-                if (resamb_WLNL(rtk, obs, sat, iu, ir, ns, nav, azel))
-                    {
-                        stat = SOLQ_FIX;
-                    }
-            }
-        /* resolve integer ambiguity by TCAR */
-        else if (stat != SOLQ_NONE && rtk->opt.modear == ARMODE_TCAR)
-            {
-                if (resamb_TCAR(rtk, obs, sat, iu, ir, ns, nav, azel))
-                    {
-                        stat = SOLQ_FIX;
-                    }
-            }
-        /* resolve integer ambiguity by LAMBDA */
-        else if (stat != SOLQ_NONE && resamb_LAMBDA(rtk, bias, xa)>1)
-            {
-
-                if (zdres(0, obs, nu, rs, dts, svh, nav, xa, opt, 0, y, e, azel))
-                    {
-
-                        /* post-fit reisiduals for fixed solution */
-                        nv = ddres(rtk, nav, dt, xa, NULL, sat, y, e, azel, iu, ir, ns, v, NULL, R, vflg);
-
-                        /* validation of fixed solution */
-                        if (valpos(rtk, v, R, vflg, nv, 4.0))
-                            {
-
-                                /* hold integer ambiguity */
-                                if (++rtk->nfix >= rtk->opt.minfix &&
-                                        rtk->opt.modear == ARMODE_FIXHOLD)
-                                    {
-                                        holdamb(rtk, xa);
-                                    }
-                                stat = SOLQ_FIX;
-                            }
-                    }
-            }
-        /* save solution status */
-        if (stat == SOLQ_FIX)
-            {
-                for (i = 0;i<3;i++)
-                    {
-                        rtk->sol.rr[i] = rtk->xa[i];
-                        rtk->sol.qr[i] = (float)rtk->Pa[i+i*rtk->na];
-                    }
-                rtk->sol.qr[3] = (float)rtk->Pa[1];
-                rtk->sol.qr[4] = (float)rtk->Pa[1+2*rtk->na];
-                rtk->sol.qr[5] = (float)rtk->Pa[2];
-            }
-        else
-            {
-                for (i = 0;i<3;i++)
-                    {
-                        rtk->sol.rr[i] = rtk->x[i];
-                        rtk->sol.qr[i] = (float)rtk->P[i+i*rtk->nx];
-                    }
-                rtk->sol.qr[3] = (float)rtk->P[1];
-                rtk->sol.qr[4] = (float)rtk->P[1+2*rtk->nx];
-                rtk->sol.qr[5] = (float)rtk->P[2];
-                rtk->nfix = 0;
-            }
-        for (i = 0;i<n;i++) for (j = 0;j<nf;j++)
-            {
-                if (obs[i].L[j] == 0.0) continue;
-                rtk->ssat[obs[i].sat-1].pt[obs[i].rcv-1][j] = obs[i].time;
-                rtk->ssat[obs[i].sat-1].ph[obs[i].rcv-1][j] = obs[i].L[j];
-            }
-        for (i = 0;i<ns;i++) for (j = 0;j<nf;j++)
-            {
-
-                /* output snr of rover receiver */
-                rtk->ssat[sat[i]-1].snr[j] = obs[iu[i]].SNR[j];
-            }
-        for (i = 0;i<MAXSAT;i++) for (j = 0;j<nf;j++)
-            {
-                if (rtk->ssat[i].fix[j] == 2 && stat != SOLQ_FIX) rtk->ssat[i].fix[j] = 1;
-                if (rtk->ssat[i].slip[j]&1) rtk->ssat[i].slipc[j]++;
-            }
-        free(rs); free(dts); free(var); free(y); free(e); free(azel);
-        free(xp); free(Pp);  free(xa);  free(v); free(H); free(R); free(bias);
-
-        if (stat != SOLQ_NONE) rtk->sol.stat = stat;
-
-        return stat != SOLQ_NONE;
-    }
-
-
-    /* initialize rtk control ------------------------------------------------------
-     * initialize rtk control struct
-     * args   : rtk_t    *rtk    IO  rtk control/result struct
-     *          prcopt_t *opt    I   positioning options (see rtklib.h)
-     * return : none
-     *-----------------------------------------------------------------------------*/
-    void rtkinit(rtk_t *rtk,  const prcopt_t *opt)
-    {
-        sol_t sol0 = { {0,  0},  {},  {},  {},  '0',  '0',  '0',  0.0,  0.0,  0.0};
-        ambc_t ambc0 = {{ {0, 0},  {0,  0},  {0,  0},  {0,  0} },  {},  {},  {} ,  0,  {}};
-        ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{0,0},{0,0}}, {{},{}}};
-        int i;
-
-        trace(3, "rtkinit :\n");
-
-        rtk->sol = sol0;
-        for (i = 0;i<6;i++) rtk->rb[i] = 0.0;
-        rtk->nx = opt->mode <= PMODE_FIXED ? NX_RTK(opt) : pppnx(opt);
-        rtk->na = opt->mode <= PMODE_FIXED ? NR_RTK(opt) : pppnx(opt);
-        rtk->tt = 0.0;
-        rtk->x = zeros(rtk->nx, 1);
-        rtk->P = zeros(rtk->nx, rtk->nx);
-        rtk->xa = zeros(rtk->na, 1);
-        rtk->Pa = zeros(rtk->na, rtk->na);
-        rtk->nfix = rtk->neb = 0;
-        for (i = 0;i<MAXSAT;i++)
-            {
-                rtk->ambc[i] = ambc0;
-                rtk->ssat[i] = ssat0;
-            }
-        for (i = 0;i<MAXERRMSG;i++) rtk->errbuf[i] = 0;
-        rtk->opt = *opt;
-    }
-
-
-    /* free rtk control ------------------------------------------------------------
-     * free memory for rtk control struct
-     * args   : rtk_t    *rtk    IO  rtk control/result struct
-     * return : none
-     *-----------------------------------------------------------------------------*/
-    void rtkfree(rtk_t *rtk)
-    {
-        trace(3, "rtkfree :\n");
-
-        rtk->nx = rtk->na = 0;
-        free(rtk->x ); rtk->x  = NULL;
-        free(rtk->P ); rtk->P  = NULL;
-        free(rtk->xa); rtk->xa = NULL;
-        free(rtk->Pa); rtk->Pa = NULL;
-    }
-
-
-    /* precise positioning ---------------------------------------------------------
-     * input observation data and navigation message, compute rover position by
-     * precise positioning
-     * args   : rtk_t *rtk       IO  rtk control/result struct
-     *            rtk->sol       IO  solution
-     *                .time      O   solution time
-     *                .rr[]      IO  rover position/velocity
-     *                               (I:fixed mode,O:single mode)
-     *                .dtr[0]    O   receiver clock bias (s)
-     *                .dtr[1]    O   receiver glonass-gps time offset (s)
-     *                .Qr[]      O   rover position covarinace
-     *                .stat      O   solution status (SOLQ_???)
-     *                .ns        O   number of valid satellites
-     *                .age       O   age of differential (s)
-     *                .ratio     O   ratio factor for ambiguity validation
-     *            rtk->rb[]      IO  base station position/velocity
-     *                               (I:relative mode,O:moving-base mode)
-     *            rtk->nx        I   number of all states
-     *            rtk->na        I   number of integer states
-     *            rtk->ns        O   number of valid satellite
-     *            rtk->tt        O   time difference between current and previous (s)
-     *            rtk->x[]       IO  float states pre-filter and post-filter
-     *            rtk->P[]       IO  float covariance pre-filter and post-filter
-     *            rtk->xa[]      O   fixed states after AR
-     *            rtk->Pa[]      O   fixed covariance after AR
-     *            rtk->ssat[s]   IO  sat(s+1) status
-     *                .sys       O   system (SYS_???)
-     *                .az   [r]  O   azimuth angle   (rad) (r=0:rover,1:base)
-     *                .el   [r]  O   elevation angle (rad) (r=0:rover,1:base)
-     *                .vs   [r]  O   data valid single     (r=0:rover,1:base)
-     *                .resp [f]  O   freq(f+1) pseudorange residual (m)
-     *                .resc [f]  O   freq(f+1) carrier-phase residual (m)
-     *                .vsat [f]  O   freq(f+1) data vaild (0:invalid,1:valid)
-     *                .fix  [f]  O   freq(f+1) ambiguity flag
-     *                               (0:nodata,1:float,2:fix,3:hold)
-     *                .slip [f]  O   freq(f+1) slip flag
-     *                               (bit8-7:rcv1 LLI, bit6-5:rcv2 LLI,
-     *                                bit2:parity unknown, bit1:slip)
-     *                .lock [f]  IO  freq(f+1) carrier lock count
-     *                .outc [f]  IO  freq(f+1) carrier outage count
-     *                .slipc[f]  IO  freq(f+1) cycle slip count
-     *                .rejc [f]  IO  freq(f+1) data reject count
-     *                .gf        IO  geometry-free phase (L1-L2) (m)
-     *                .gf2       IO  geometry-free phase (L1-L5) (m)
-     *            rtk->nfix      IO  number of continuous fixes of ambiguity
-     *            rtk->neb       IO  bytes of error message buffer
-     *            rtk->errbuf    IO  error message buffer
-     *            rtk->tstr      O   time string for debug
-     *            rtk->opt       I   processing options
-     *          obsd_t *obs      I   observation data for an epoch
-     *                               obs[i].rcv=1:rover,2:reference
-     *                               sorted by receiver and satellte
-     *          int    n         I   number of observation data
-     *          nav_t  *nav      I   navigation messages
-     * return : status (0:no solution,1:valid solution)
-     * notes  : before calling function, base station position rtk->sol.rb[] should
-     *          be properly set for relative mode except for moving-baseline
-     *-----------------------------------------------------------------------------*/
-    int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
-    {
-        prcopt_t *opt = &rtk->opt;
-        sol_t solb = { {0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
-        gtime_t time;
-        int i, nu, nr;
-        char msg[128] = "";
-
-        trace(3, "rtkpos  : time=%s n=%d\n", time_str(obs[0].time, 3), n);
-        trace(4, "obs=\n"); traceobs(4, obs, n);
-        /*trace(5,"nav=\n"); tracenav(5,nav);*/
-
-        /* set base staion position */
-        if (opt->refpos <= POSOPT_RINEX && opt->mode != PMODE_SINGLE &&
-                opt->mode != PMODE_MOVEB)
-            {
-                for (i = 0;i<6;i++) rtk->rb[i] = i<3 ? opt->rb[i] : 0.0;
-            }
-        /* count rover/base station observations */
-        for (nu = 0;nu   <n && obs[nu   ].rcv == 1;nu++) ;
-        for (nr = 0;nu+nr<n && obs[nu+nr].rcv == 2;nr++) ;
-
-        time = rtk->sol.time; /* previous epoch */
-
-        /* rover position by single point positioning */
-        if (!pntpos(obs, nu, nav, &rtk->opt, &rtk->sol, NULL, rtk->ssat, msg))
-            {
-                errmsg(rtk, "point pos error (%s)\n", msg);
-
-                if (!rtk->opt.dynamics)
-                    {
-                        outsolstat(rtk);
-                        return 0;
-                    }
-            }
-        if (time.time != 0) rtk->tt=timediff(rtk->sol.time, time);
-
-        /* single point positioning */
-        if (opt->mode == PMODE_SINGLE)
-            {
-                outsolstat(rtk);
-                return 1;
-            }
-        /* suppress output of single solution */
-        if (!opt->outsingle)
-            {
-                rtk->sol.stat = SOLQ_NONE;
-            }
-        /* precise point positioning */
-        if (opt->mode >= PMODE_PPP_KINEMA)
-            {
-                pppos(rtk, obs, nu, nav);
-                outsolstat(rtk);
-                return 1;
-            }
-        /* check number of data of base station and age of differential */
-        if (nr == 0)
-            {
-                errmsg(rtk, "no base station observation data for rtk\n");
-                outsolstat(rtk);
-                return 1;
-            }
-        if (opt->mode == PMODE_MOVEB)
-            { /*  moving baseline */
-
-                /* estimate position/velocity of base station */
-                if (!pntpos(obs+nu, nr, nav, &rtk->opt, &solb, NULL, NULL, msg))
-                    {
-                        errmsg(rtk, "base station position error (%s)\n", msg);
-                        return 0;
-                    }
-                rtk->sol.age = (float)timediff(rtk->sol.time, solb.time);
-
-                if (fabs(rtk->sol.age)>TTOL_MOVEB)
-                    {
-                        errmsg(rtk, "time sync error for moving-base (age=%.1f)\n", rtk->sol.age);
-                        return 0;
-                    }
-                for (i = 0;i<6;i++) rtk->rb[i] = solb.rr[i];
-
-                /* time-synchronized position of base station */
-                for (i = 0;i<3;i++) rtk->rb[i]+=rtk->rb[i+3]*rtk->sol.age;
-            }
-        else
-            {
-                rtk->sol.age = (float)timediff(obs[0].time, obs[nu].time);
-
-                if (fabs(rtk->sol.age)>opt->maxtdiff)
-                    {
-                        errmsg(rtk, "age of differential error (age=%.1f)\n", rtk->sol.age);
-                        outsolstat(rtk);
-                        return 1;
-                    }
-            }
-        /* relative potitioning */
-        relpos(rtk, obs, nu, nr, nav);
-        outsolstat(rtk);
-
-        return 1;
-    }
+            rtk->sol.qr[3] = (float)rtk->Pa[1];
+            rtk->sol.qr[4] = (float)rtk->Pa[1+2*rtk->na];
+            rtk->sol.qr[5] = (float)rtk->Pa[2];
+        }
+    else
+        {
+            for (i = 0;i<3;i++)
+                {
+                    rtk->sol.rr[i] = rtk->x[i];
+                    rtk->sol.qr[i] = (float)rtk->P[i+i*rtk->nx];
+                }
+            rtk->sol.qr[3] = (float)rtk->P[1];
+            rtk->sol.qr[4] = (float)rtk->P[1+2*rtk->nx];
+            rtk->sol.qr[5] = (float)rtk->P[2];
+            rtk->nfix = 0;
+        }
+    for (i = 0;i<n;i++) for (j = 0;j<nf;j++)
+        {
+            if (obs[i].L[j] == 0.0) continue;
+            rtk->ssat[obs[i].sat-1].pt[obs[i].rcv-1][j] = obs[i].time;
+            rtk->ssat[obs[i].sat-1].ph[obs[i].rcv-1][j] = obs[i].L[j];
+        }
+    for (i = 0;i<ns;i++) for (j = 0;j<nf;j++)
+        {
+            /* output snr of rover receiver */
+            rtk->ssat[sat[i]-1].snr[j] = obs[iu[i]].SNR[j];
+        }
+    for (i = 0;i<MAXSAT;i++) for (j = 0;j<nf;j++)
+        {
+            if (rtk->ssat[i].fix[j] == 2 && stat != SOLQ_FIX) rtk->ssat[i].fix[j] = 1;
+            if (rtk->ssat[i].slip[j]&1) rtk->ssat[i].slipc[j]++;
+        }
+    free(rs); free(dts); free(var); free(y); free(e); free(azel);
+    free(xp); free(Pp);  free(xa);  free(v); free(H); free(R); free(bias);
+
+    if (stat != SOLQ_NONE) rtk->sol.stat = stat;
+
+    return stat != SOLQ_NONE;
+}
+
+/* initialize rtk control ------------------------------------------------------
+ * initialize rtk control struct
+ * args   : rtk_t    *rtk    IO  rtk control/result struct
+ *          prcopt_t *opt    I   positioning options (see rtklib.h)
+ * return : none
+ *-----------------------------------------------------------------------------*/
+void rtkinit(rtk_t *rtk,  const prcopt_t *opt)
+{
+    sol_t sol0 = { {0,  0},  {},  {},  {},  '0',  '0',  '0',  0.0,  0.0,  0.0};
+    ambc_t ambc0 = {{ {0, 0},  {0,  0},  {0,  0},  {0,  0} },  {},  {},  {} ,  0,  {}};
+    ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{0,0},{0,0}}, {{},{}}};
+    int i;
+
+    trace(3, "rtkinit :\n");
+
+    rtk->sol = sol0;
+    for (i = 0;i<6;i++) rtk->rb[i] = 0.0;
+    rtk->nx = opt->mode <= PMODE_FIXED ? NX_RTK(opt) : pppnx(opt);
+    rtk->na = opt->mode <= PMODE_FIXED ? NR_RTK(opt) : pppnx(opt);
+    rtk->tt = 0.0;
+    rtk->x = zeros(rtk->nx, 1);
+    rtk->P = zeros(rtk->nx, rtk->nx);
+    rtk->xa = zeros(rtk->na, 1);
+    rtk->Pa = zeros(rtk->na, rtk->na);
+    rtk->nfix = rtk->neb = 0;
+    for (i = 0;i<MAXSAT;i++)
+        {
+            rtk->ambc[i] = ambc0;
+            rtk->ssat[i] = ssat0;
+        }
+    for (i = 0;i<MAXERRMSG;i++) rtk->errbuf[i] = 0;
+    rtk->opt = *opt;
+}
+
+
+/* free rtk control ------------------------------------------------------------
+ * free memory for rtk control struct
+ * args   : rtk_t    *rtk    IO  rtk control/result struct
+ * return : none
+ *-----------------------------------------------------------------------------*/
+void rtkfree(rtk_t *rtk)
+{
+    trace(3, "rtkfree :\n");
+
+    rtk->nx = rtk->na = 0;
+    free(rtk->x ); rtk->x  = NULL;
+    free(rtk->P ); rtk->P  = NULL;
+    free(rtk->xa); rtk->xa = NULL;
+    free(rtk->Pa); rtk->Pa = NULL;
+}
+
+
+/* precise positioning ---------------------------------------------------------
+ * input observation data and navigation message, compute rover position by
+ * precise positioning
+ * args   : rtk_t *rtk       IO  rtk control/result struct
+ *            rtk->sol       IO  solution
+ *                .time      O   solution time
+ *                .rr[]      IO  rover position/velocity
+ *                               (I:fixed mode,O:single mode)
+ *                .dtr[0]    O   receiver clock bias (s)
+ *                .dtr[1]    O   receiver glonass-gps time offset (s)
+ *                .Qr[]      O   rover position covarinace
+ *                .stat      O   solution status (SOLQ_???)
+ *                .ns        O   number of valid satellites
+ *                .age       O   age of differential (s)
+ *                .ratio     O   ratio factor for ambiguity validation
+ *            rtk->rb[]      IO  base station position/velocity
+ *                               (I:relative mode,O:moving-base mode)
+ *            rtk->nx        I   number of all states
+ *            rtk->na        I   number of integer states
+ *            rtk->ns        O   number of valid satellite
+ *            rtk->tt        O   time difference between current and previous (s)
+ *            rtk->x[]       IO  float states pre-filter and post-filter
+ *            rtk->P[]       IO  float covariance pre-filter and post-filter
+ *            rtk->xa[]      O   fixed states after AR
+ *            rtk->Pa[]      O   fixed covariance after AR
+ *            rtk->ssat[s]   IO  sat(s+1) status
+ *                .sys       O   system (SYS_???)
+ *                .az   [r]  O   azimuth angle   (rad) (r=0:rover,1:base)
+ *                .el   [r]  O   elevation angle (rad) (r=0:rover,1:base)
+ *                .vs   [r]  O   data valid single     (r=0:rover,1:base)
+ *                .resp [f]  O   freq(f+1) pseudorange residual (m)
+ *                .resc [f]  O   freq(f+1) carrier-phase residual (m)
+ *                .vsat [f]  O   freq(f+1) data vaild (0:invalid,1:valid)
+ *                .fix  [f]  O   freq(f+1) ambiguity flag
+ *                               (0:nodata,1:float,2:fix,3:hold)
+ *                .slip [f]  O   freq(f+1) slip flag
+ *                               (bit8-7:rcv1 LLI, bit6-5:rcv2 LLI,
+ *                                bit2:parity unknown, bit1:slip)
+ *                .lock [f]  IO  freq(f+1) carrier lock count
+ *                .outc [f]  IO  freq(f+1) carrier outage count
+ *                .slipc[f]  IO  freq(f+1) cycle slip count
+ *                .rejc [f]  IO  freq(f+1) data reject count
+ *                .gf        IO  geometry-free phase (L1-L2) (m)
+ *                .gf2       IO  geometry-free phase (L1-L5) (m)
+ *            rtk->nfix      IO  number of continuous fixes of ambiguity
+ *            rtk->neb       IO  bytes of error message buffer
+ *            rtk->errbuf    IO  error message buffer
+ *            rtk->tstr      O   time string for debug
+ *            rtk->opt       I   processing options
+ *          obsd_t *obs      I   observation data for an epoch
+ *                               obs[i].rcv=1:rover,2:reference
+ *                               sorted by receiver and satellte
+ *          int    n         I   number of observation data
+ *          nav_t  *nav      I   navigation messages
+ * return : status (0:no solution,1:valid solution)
+ * notes  : before calling function, base station position rtk->sol.rb[] should
+ *          be properly set for relative mode except for moving-baseline
+ *-----------------------------------------------------------------------------*/
+int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
+{
+    prcopt_t *opt = &rtk->opt;
+    sol_t solb = { {0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
+    gtime_t time;
+    int i, nu, nr;
+    char msg[128] = "";
+
+    trace(3, "rtkpos  : time=%s n=%d\n", time_str(obs[0].time, 3), n);
+    trace(4, "obs=\n"); traceobs(4, obs, n);
+    /*trace(5,"nav=\n"); tracenav(5,nav);*/
+
+    /* set base staion position */
+    if (opt->refpos <= POSOPT_RINEX && opt->mode != PMODE_SINGLE &&
+            opt->mode != PMODE_MOVEB)
+        {
+            for (i = 0;i<6;i++) rtk->rb[i] = i<3 ? opt->rb[i] : 0.0;
+        }
+    /* count rover/base station observations */
+    for (nu = 0;nu   <n && obs[nu   ].rcv == 1;nu++) ;
+    for (nr = 0;nu+nr<n && obs[nu+nr].rcv == 2;nr++) ;
+
+    time = rtk->sol.time; /* previous epoch */
+
+    /* rover position by single point positioning */
+    if (!pntpos(obs, nu, nav, &rtk->opt, &rtk->sol, NULL, rtk->ssat, msg))
+        {
+            errmsg(rtk, "point pos error (%s)\n", msg);
+
+            if (!rtk->opt.dynamics)
+                {
+                    outsolstat(rtk);
+                    return 0;
+                }
+        }
+    if (time.time != 0) rtk->tt=timediff(rtk->sol.time, time);
+
+    /* single point positioning */
+    if (opt->mode == PMODE_SINGLE)
+        {
+            outsolstat(rtk);
+            return 1;
+        }
+    /* suppress output of single solution */
+    if (!opt->outsingle)
+        {
+            rtk->sol.stat = SOLQ_NONE;
+        }
+    /* precise point positioning */
+    if (opt->mode >= PMODE_PPP_KINEMA)
+        {
+            pppos(rtk, obs, nu, nav);
+            outsolstat(rtk);
+            return 1;
+        }
+    /* check number of data of base station and age of differential */
+    if (nr == 0)
+        {
+            errmsg(rtk, "no base station observation data for rtk\n");
+            outsolstat(rtk);
+            return 1;
+        }
+    if (opt->mode == PMODE_MOVEB)
+        { /*  moving baseline */
+
+            /* estimate position/velocity of base station */
+            if (!pntpos(obs+nu, nr, nav, &rtk->opt, &solb, NULL, NULL, msg))
+                {
+                    errmsg(rtk, "base station position error (%s)\n", msg);
+                    return 0;
+                }
+            rtk->sol.age = (float)timediff(rtk->sol.time, solb.time);
+
+            if (fabs(rtk->sol.age)>TTOL_MOVEB)
+                {
+                    errmsg(rtk, "time sync error for moving-base (age=%.1f)\n", rtk->sol.age);
+                    return 0;
+                }
+            for (i = 0;i<6;i++) rtk->rb[i] = solb.rr[i];
+
+            /* time-synchronized position of base station */
+            for (i = 0;i<3;i++) rtk->rb[i]+=rtk->rb[i+3]*rtk->sol.age;
+        }
+    else
+        {
+            rtk->sol.age = (float)timediff(obs[0].time, obs[nu].time);
+
+            if (fabs(rtk->sol.age)>opt->maxtdiff)
+                {
+                    errmsg(rtk, "age of differential error (age=%.1f)\n", rtk->sol.age);
+                    outsolstat(rtk);
+                    return 1;
+                }
+        }
+    /* relative potitioning */
+    relpos(rtk, obs, nu, nr, nav);
+    outsolstat(rtk);
+
+    return 1;
+}

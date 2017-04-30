@@ -83,30 +83,6 @@ public:
 private:
     rtklib_pvt_cc_sptr pvt_;
 
-    sol_t  sol_  = {{0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, '0', '0', '0', 0, 0, 0 };
-    ambc_t ambc_ = { {{0,0}, {0,0}, {0,0}, {0,0}}, {0, 0, 0, 0}, {}, {}, 0, {'0'}};
-    ssat_t ssat_ =  { '0', /* navigation system */
-            '0', /* valid satellite flag single */
-            {0.0}, /* azel[2] azimuth/elevation angles {az,el} (rad) */
-            {0.0}, /* residuals of pseudorange (m) */
-            {0.0}, /* residuals of carrier-phase (m) */
-            {'0'}, /* valid satellite flag */
-            {'0'}, /* signal strength (0.25 dBHz) */
-            {'0'}, /* ambiguity fix flag (1:fix,2:float,3:hold) */
-            {'0'}, /* cycle-slip flag */
-            {'0'}, /* half-cycle valid flag */
-            {},    /* lock counter of phase */
-            {},    /* obs outage counter of phase */
-            {},    /* cycle-slip counter */
-            {},    /* reject counter */
-            0.0,   /* geometry-free phase L1-L2 (m) */
-            0.0,   /* geometry-free phase L1-L5 (m) */
-            0.0,   /* MW-LC (m) */
-            0.0,   /* phase windup (cycle) */
-            {{{0,0}},{{0,0}}},  /* previous carrier-phase time */
-            {{},{}} /* previous carrier-phase observable (cycle) */
-    };
-
     rtk_t rtk;
 
     bool dump_;

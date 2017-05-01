@@ -171,29 +171,13 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count = 0)) type_of_receiver = 22;
 
     //RTKLIB PVT solver options
+
+    // Settings 1
     int positioning_mode = configuration->property(role + ".positioning_mode", PMODE_SINGLE);  /* (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     if( (positioning_mode < 0) || (positioning_mode > 8) )
         {
             //warn user and set the default
             positioning_mode = PMODE_SINGLE;
-        }
-
-    int nsys = 0;
-    if ((gps_1C_count > 0) || (gps_2S_count > 0)) nsys += SYS_GPS;
-    if ((gal_1B_count > 0) || (gal_E5a_count > 0) || (gal_E5b_count > 0)) nsys += SYS_GAL;
-    int navigation_system = configuration->property(role + ".navigation_system", nsys);  /* (SYS_XXX) see src/algorithms/libs/rtklib/rtklib.h */
-    /* GPS: 1   SBAS: 2   GPS+SBAS: 3 Galileo: 8  Galileo+GPS: 9 GPS+SBAS+Galileo: 11 All: 255 */
-    if( (navigation_system < 1) || (navigation_system > 255) )
-        {
-            //warn user and set the default
-            navigation_system = nsys;
-        }
-
-    double elevation_mask = configuration->property(role + ".elevation_mask", 15.0);
-    if( (elevation_mask < 0.0) || (elevation_mask > 90.0) )
-        {
-            //warn user and set the default
-            elevation_mask = 15.0;
         }
 
     int num_bands = 0;
@@ -207,18 +191,11 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             number_of_frequencies = num_bands;
         }
 
-    int trop_model = configuration->property(role + ".trop_model", 0); /*  (TROPOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
-    if( (trop_model < 0) || (trop_model > 5) )
+    double elevation_mask = configuration->property(role + ".elevation_mask", 15.0);
+    if( (elevation_mask < 0.0) || (elevation_mask > 90.0) )
         {
             //warn user and set the default
-            trop_model = 0;
-        }
-
-    int iono_model = configuration->property(role + ".iono_model", 0); /*  (IONOOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
-    if( (iono_model < 0) || (iono_model > 8) )
-        {
-            //warn user and set the default
-            iono_model = 0; /* 0: ionosphere option: correction off */
+            elevation_mask = 15.0;
         }
 
     int dynamics_model = configuration->property(role + ".dynamics_model", 0); /*  dynamics model (0:none, 1:velocity, 2:accel) */
@@ -228,27 +205,101 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             dynamics_model = 0;
         }
 
+    int iono_model = configuration->property(role + ".iono_model", 0); /*  (IONOOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    if( (iono_model < 0) || (iono_model > 8) )
+        {
+            //warn user and set the default
+            iono_model = 0; /* 0: ionosphere option: correction off */
+        }
+
+
+    int trop_model = configuration->property(role + ".trop_model", 0); /*  (TROPOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    if( (trop_model < 0) || (trop_model > 5) )
+        {
+            //warn user and set the default
+            trop_model = 0;
+        }
+
+    /* RTKLIB positioning options */
+    int sat_PCV = 0; /*  Set whether the satellite antenna PCV (phase center variation) model is used or not. This feature requires a Satellite Antenna PCV File. */
+    int rec_PCV = 0; /*  Set whether the receiver antenna PCV (phase center variation) model is used or not. This feature requires a Receiver Antenna PCV File. */
+    int phwindup = 0; /* Set whether the phase windup correction for PPP modes is applied or not. Only applicable to PPP‐* modes.*/
+    int reject_GPS_IIA = 0; /* Set whether the GPS Block IIA satellites in eclipse are excluded or not.
+                               The eclipsing Block IIA satellites often degrade the PPP solutions due to unpredicted behavior of yaw‐attitude. Only applicable to PPP‐* modes.*/
+
+    int raim_fde = 0; /* Set whether RAIM (receiver autonomous integrity monitoring) FDE (fault detection and exclusion) feature is enabled or not.
+                         In case of RAIM FDE enabled, a satellite is excluded if SSE (sum of squared errors) of residuals is over a threshold.
+                         The excluded satellite is selected to indicate the minimum SSE. */
+
+
+    int nsys = 0;
+    if ((gps_1C_count > 0) || (gps_2S_count > 0)) nsys += SYS_GPS;
+    if ((gal_1B_count > 0) || (gal_E5a_count > 0) || (gal_E5b_count > 0)) nsys += SYS_GAL;
+    int navigation_system = configuration->property(role + ".navigation_system", nsys);  /* (SYS_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    if( (navigation_system < 1) || (navigation_system > 255) ) /* GPS: 1   SBAS: 2   GPS+SBAS: 3 Galileo: 8  Galileo+GPS: 9 GPS+SBAS+Galileo: 11 All: 255 */
+        {
+            //warn user and set the default
+            navigation_system = nsys;
+        }
+
+    // Settings 2
+    int integer_ambiguity_resolution_gps = configuration->property(role + ".AR_GPS", 1); /* Integer Ambiguity Resolution mode for GPS (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
+    if( (integer_ambiguity_resolution_gps < 0) || (integer_ambiguity_resolution_gps > 4) )
+        {
+            //warn user and set the default
+            integer_ambiguity_resolution_gps = 1;
+        }
+    int integer_ambiguity_resolution_glo = configuration->property(role + ".AR_GLO", 1); /* Integer Ambiguity Resolution mode for GLONASS (0:off,1:on,2:auto cal,3:ext cal) */
+    if( (integer_ambiguity_resolution_glo < 0) || (integer_ambiguity_resolution_glo > 3) )
+        {
+            //warn user and set the default
+            integer_ambiguity_resolution_glo = 1;
+        }
+
+    int integer_ambiguity_resolution_bds = configuration->property(role + ".AR_DBS", 1); /* Integer Ambiguity Resolution mode for BEIDOU (0:off,1:on) */
+    if( (integer_ambiguity_resolution_bds < 0) || (integer_ambiguity_resolution_bds > 1) )
+        {
+            //warn user and set the default
+            integer_ambiguity_resolution_bds = 1;
+        }
+
+    //int max_iter_resolve_ambiguity =  configuration->property(role + ".max_iter_resolve_ambiguity", 1);
+
+    int min_lock_to_fix_ambiguity =  configuration->property(role + ".min_lock_to_fix_ambiguity", 0); /* Set the minimum lock count to fix integer ambiguity.
+                                                                                                         If the lock count is less than the value, the ambiguity is excluded from the fixed integer vector. */
+
+    double min_elevation_to_fix_ambiguity =  configuration->property(role + ".min_elevation_to_fix_ambiguity", 0.0); /* Set the minimum eveation (deg) to fix integer ambiguity.
+                                                                                                                        If the elevation of the satellite is less than the value, the ambiguity is excluded from the fixed integer vector. */
+
+    int outage_reset_ambiguity =  configuration->property(role + ".outage_reset_ambiguity", 5); /* Set the outage count to reset ambiguity. If the data outage count is over the value, the estimated ambiguity is reset to the initial value.  */
+
+    double slip_threshold = configuration->property(role + ".slip_threshold", 0.05); /* set the cycle‐slip threshold (m) of geometry‐free LC carrier‐phase difference between epochs */
+
+    double threshold_reject_gdop = configuration->property(role + ".threshold_reject_gdop", 30.0); /* reject threshold of GDOP. If the GDOP is over the value, the observable is excluded for the estimation process as an outlier. */
+
+    double threshold_reject_innovation = configuration->property(role + ".threshold_reject_innovation", 30.0); /* reject threshold of innovation (m). If the innovation is over the value, the observable is excluded for the estimation process as an outlier. */
+
+    /// Statistics
     double bias_0 = configuration->property(role + ".bias_0", 30.0);
 
     double iono_0 = configuration->property(role + ".iono_0", 0.03);
 
     double trop_0 = configuration->property(role + ".trop_0", 0.3);
 
-    double sigma_bias = configuration->property(role + ".sigma_bias", 1e-4);
+    double sigma_bias = configuration->property(role + ".sigma_bias", 1e-4); /* Set the process noise standard deviation of carrier‐phase
+                                                                                bias (ambiguity) (cycle/sqrt(s)) */
 
-    double sigma_iono = configuration->property(role + ".sigma_iono", 1e-3);
+    double sigma_iono = configuration->property(role + ".sigma_iono", 1e-3); /* Set the process noise standard deviation of vertical ionospheric delay per 10 km baseline (m/sqrt(s)). */
 
-    double sigma_trop = configuration->property(role + ".sigma_trop", 1e-4);
+    double sigma_trop = configuration->property(role + ".sigma_trop", 1e-4); /* Set the process noise standard deviation of zenith tropospheric delay (m/sqrt(s)). */
 
-    double sigma_acch = configuration->property(role + ".sigma_acch", 1e-1);
+    double sigma_acch = configuration->property(role + ".sigma_acch", 1e-1); /* Set the process noise standard deviation of the receiver acceleration as
+                                                                                the horizontal component. (m/s2/sqrt(s)). If Receiver Dynamics is set to OFF, they are not used. */
 
-    double sigma_accv = configuration->property(role + ".sigma_accv", 1e-2);
+    double sigma_accv = configuration->property(role + ".sigma_accv", 1e-2);  /* Set the process noise standard deviation of the receiver acceleration as
+                                                                                the vertical component. (m/s2/sqrt(s)). If Receiver Dynamics is set to OFF, they are not used. */
 
     double sigma_pos = configuration->property(role + ".sigma_pos", 0.0);
-
-    double threshold_reject_innovation = configuration->property(role + ".threshold_reject_innovation", 30.0); /* reject threshold of innovation (m) */
-
-    double threshold_reject_gdop = configuration->property(role + ".threshold_reject_gdop", 30.0); /* reject threshold of GDOP */
 
     prcopt_t rtklib_configuration_options = {positioning_mode, /* positioning mode (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
             0,   /* solution type (0:forward,1:backward,2:combined) */
@@ -257,11 +308,11 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             elevation_mask * D2R,  /* elevation mask angle (degrees) */
             { {}, {{},{}} },       /* snrmask_t snrmask    SNR mask */
             0,   /* satellite ephemeris/clock (EPHOPT_XXX) */
-            1,   /* AR mode (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
-            1,   /* GLONASS AR mode (0:off,1:on,2:auto cal,3:ext cal) */
-            1,   /* BeiDou AR mode (0:off,1:on) */
-            5,   /* obs outage count to reset bias */
-            0,   /* min lock count to fix ambiguity */
+            integer_ambiguity_resolution_gps,   /* AR mode (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
+            integer_ambiguity_resolution_glo,   /* GLONASS AR mode (0:off,1:on,2:auto cal,3:ext cal) */
+            integer_ambiguity_resolution_bds,   /* BeiDou AR mode (0:off,1:on) */
+            outage_reset_ambiguity,   /* obs outage count to reset bias */
+            min_lock_to_fix_ambiguity,   /* min lock count to fix ambiguity */
             10,  /* min fix count to hold ambiguity */
             1,   /* max iteration to resolve ambiguity */
             iono_model,      /* ionosphere option (IONOOPT_XXX) */
@@ -283,9 +334,9 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             {sigma_bias,sigma_iono,sigma_trop,sigma_acch,sigma_accv,sigma_pos}, /* prn[6] process-noise std */
             5e-12,                       /* sclkstab: satellite clock stability (sec/sec) */
             {3.0,0.9999,0.25,0.1,0.05},  /* thresar[8]: AR validation threshold */
-            0.0,   /* elevation mask of AR for rising satellite (deg) */
+            min_elevation_to_fix_ambiguity,   /* elevation mask of AR for rising satellite (deg) */
             0.0,   /* elevation mask to hold ambiguity (deg) */
-            0.05,  /* slip threshold of geometry-free phase (m) */
+            slip_threshold,  /* slip threshold of geometry-free phase (m) */
             30.0,  /* max difference of time (sec) */
             threshold_reject_innovation,  /* reject threshold of innovation (m) */
             threshold_reject_gdop,  /* reject threshold of gdop */
@@ -298,14 +349,14 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             {},    /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded, 2:included) */
             0,     /* max averaging epoches */
             0,     /* initialize by restart */
-            0,     /* output single by dgps/float/fix/ppp outage*/
+            0,     /* output single by dgps/float/fix/ppp outage */
             {"",""},  /* char rnxopt[2][256]   rinex options {rover,base} */
-            {},    /*  posopt[6] positioning options */
+            {sat_PCV,rec_PCV,phwindup,reject_GPS_IIA,raim_fde},    /*  posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
             0,     /* solution sync mode (0:off,1:on) */
             {{},{}},  /*  odisp[2][6*11] ocean tide loading parameters {rov,base} */
             { {}, {{},{}}, {{},{}}, {}, {} },  /*  exterr_t exterr   extended receiver error model */
             0,     /* disable L2-AR */
-            {}     /* char pppopt[256]   ppp option */
+            {}     /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
     };
 
     sol_t sol_ = {{0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, '0', '0', '0', 0, 0, 0 };

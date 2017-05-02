@@ -48,6 +48,7 @@
 #include "channel_interface.h"
 #include "gnss_block_factory.h"
 
+
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8
 
 using google::LogMessage;
@@ -312,6 +313,13 @@ void GNSSFlowgraph::connect()
                 {
                     LOG(INFO) << "Channel " << i << " connected to observables in standby mode";
                 }
+            //connect the sample counter to the channel 0
+            if (i==0)
+            {
+                ch_out_sample_counter=gnss_sdr_make_sample_counter();
+                top_block_->connect(channels_.at(i)->get_right_block(),0,ch_out_sample_counter,0);
+
+            }
         }
 
     /*

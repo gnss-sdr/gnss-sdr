@@ -45,6 +45,7 @@
 #include <gnuradio/msg_queue.h>
 #include "GPS_L1_CA.h"
 #include "gnss_signal.h"
+#include "gnss_sdr_sample_counter.h"
 
 class GNSSBlockInterface;
 class ChannelInterface;
@@ -136,6 +137,7 @@ private:
     std::shared_ptr<GNSSBlockInterface> pvt_;
 
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
+    gnss_sdr_sample_counter_sptr ch_out_sample_counter;
     gr::top_block_sptr top_block_;
     boost::shared_ptr<gr::msg_queue> queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;

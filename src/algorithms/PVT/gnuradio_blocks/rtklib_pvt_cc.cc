@@ -214,8 +214,6 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     std::string dump_ls_pvt_filename = dump_filename;
     type_of_rx = type_of_receiver;
 
-    rtklib_options = rtk.opt;
-
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));
     this->set_msg_handler(pmt::mp("telemetry"), boost::bind(&rtklib_pvt_cc::msg_handler_telemetry, this, _1));
@@ -278,7 +276,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     d_dump_filename.append("_raw.dat");
     dump_ls_pvt_filename.append("_ls_pvt.dat");
 
-    d_ls_pvt = std::make_shared<rtklib_solver>((int)nchannels, dump_ls_pvt_filename, d_dump, rtklib_options);
+    d_ls_pvt = std::make_shared<rtklib_solver>((int)nchannels, dump_ls_pvt_filename, d_dump, rtk);
     d_ls_pvt->set_averaging_depth(1);
 
     d_rx_time = 0.0;

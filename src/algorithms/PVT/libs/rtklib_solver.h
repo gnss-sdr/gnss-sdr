@@ -55,7 +55,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include "rtklib_pntpos.h"
+#include "rtklib_rtkpos.h"
 #include "galileo_navigation_message.h"
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
@@ -70,7 +70,7 @@ class rtklib_solver : public Pvt_Solution
 private:
 
 public:
-    rtklib_solver(int nchannels,std::string dump_filename, bool flag_dump_to_file, const prcopt_t & rtklib_opt);
+    rtklib_solver(int nchannels,std::string dump_filename, bool flag_dump_to_file, rtk_t & rtk);
     ~rtklib_solver();
 
     bool get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, double Rx_time, bool flag_averaging);
@@ -94,8 +94,8 @@ public:
 
     bool d_flag_dump_enabled;
 
-    prcopt_t rtklib_options;
-    sol_t   old_pvt_sol;
+    sol_t pvt_sol;
+    rtk_t rtk_;
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;

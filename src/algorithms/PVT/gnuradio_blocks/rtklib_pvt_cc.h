@@ -129,7 +129,7 @@ private:
     double last_RINEX_obs_output_time;
     double last_RINEX_nav_output_time;
     std::shared_ptr<rtklib_solver> d_ls_pvt;
-    prcopt_t rtklib_options;
+
     std::map<int,Gnss_Synchro> gnss_observables_map;
     bool observables_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b);
 

@@ -128,7 +128,7 @@ double varerr(int sat, int sys, double el, double bl, double dt, int f,
 
 double baseline(const double *ru, const double *rb, double *dr);
 
-void initx(rtk_t *rtk, double xi, double var, int i);
+void initx_rtk(rtk_t *rtk, double xi, double var, int i);
 
 int selsat(const obsd_t *obs, double *azel, int nu, int nr,
         const prcopt_t *opt, int *sat, int *iu, int *ir);

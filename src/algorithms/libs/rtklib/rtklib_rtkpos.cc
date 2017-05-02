@@ -422,7 +422,7 @@ double baseline(const double *ru, const double *rb, double *dr)
 
 
 /* initialize state and covariance -------------------------------------------*/
-void initx(rtk_t *rtk, double xi, double var, int i)
+void initx_rtk(rtk_t *rtk, double xi, double var, int i)
 {
     int j;
     rtk->x[i] = xi;
@@ -465,17 +465,17 @@ void udpos(rtk_t *rtk, double tt)
     /* fixed mode */
     if (rtk->opt.mode == PMODE_FIXED)
         {
-            for (i = 0;i<3;i++) initx(rtk, rtk->opt.ru[i], 1E-8, i);
+            for (i = 0;i<3;i++) initx_rtk(rtk, rtk->opt.ru[i], 1E-8, i);
             return;
         }
     /* initialize position for first epoch */
     if (norm(rtk->x, 3)  <= 0.0)
         {
-            for (i = 0;i<3;i++) initx(rtk, rtk->sol.rr[i], VAR_POS, i);
+            for (i = 0;i<3;i++) initx_rtk(rtk, rtk->sol.rr[i], VAR_POS, i);
             if (rtk->opt.dynamics)
                 {
-                    for (i = 3;i<6;i++) initx(rtk, rtk->sol.rr[i], VAR_VEL, i);
-                    for (i = 6;i<9;i++) initx(rtk, 1E-6, VAR_ACC, i);
+                    for (i = 3;i<6;i++) initx_rtk(rtk, rtk->sol.rr[i], VAR_VEL, i);
+                    for (i = 6;i<9;i++) initx_rtk(rtk, 1E-6, VAR_ACC, i);
                 }
         }
     /* static mode */
@@ -484,7 +484,7 @@ void udpos(rtk_t *rtk, double tt)
     /* kinmatic mode without dynamics */
     if (!rtk->opt.dynamics)
         {
-            for (i = 0;i<3;i++) initx(rtk, rtk->sol.rr[i], VAR_POS, i);
+            for (i = 0;i<3;i++) initx_rtk(rtk, rtk->sol.rr[i], VAR_POS, i);
             return;
         }
     /* check variance of estimated postion */
@@ -493,9 +493,9 @@ void udpos(rtk_t *rtk, double tt)
     if (var>VAR_POS)
         {
             /* reset position with large variance */
-            for (i = 0;i<3;i++) initx(rtk, rtk->sol.rr[i], VAR_POS, i);
-            for (i = 3;i<6;i++) initx(rtk, rtk->sol.rr[i], VAR_VEL, i);
-            for (i = 6;i<9;i++) initx(rtk, 1E-6, VAR_ACC, i);
+            for (i = 0;i<3;i++) initx_rtk(rtk, rtk->sol.rr[i], VAR_POS, i);
+            for (i = 3;i<6;i++) initx_rtk(rtk, rtk->sol.rr[i], VAR_VEL, i);
+            for (i = 6;i<9;i++) initx_rtk(rtk, 1E-6, VAR_ACC, i);
             trace(2, "reset rtk position due to large variance: var=%.3f\n", var);
             return;
         }
@@ -545,7 +545,7 @@ void udion(rtk_t *rtk, double tt, double bl, const int *sat, int ns)
 
             if (rtk->x[j] == 0.0)
                 {
-                    initx(rtk, 1E-6, std::pow(rtk->opt.std[1]*bl/1e4,  2.0), j);
+                    initx_rtk(rtk, 1E-6, std::pow(rtk->opt.std[1]*bl/1e4,  2.0), j);
                 }
             else
                 {
@@ -571,11 +571,11 @@ void udtrop(rtk_t *rtk, double tt, double bl __attribute((unused)))
 
             if (rtk->x[j] == 0.0)
                 {
-                    initx(rtk, INIT_ZWD, std::pow(rtk->opt.std[2],  2.0), j); /* initial zwd */
+                    initx_rtk(rtk, INIT_ZWD, std::pow(rtk->opt.std[2],  2.0), j); /* initial zwd */
 
                     if (rtk->opt.tropopt >= TROPOPT_ESTG)
                         {
-                            for (k = 0;k<2;k++) initx(rtk, 1e-6, VAR_GRA, ++j);
+                            for (k = 0;k<2;k++) initx_rtk(rtk, 1e-6, VAR_GRA, ++j);
                         }
                 }
             else
@@ -607,12 +607,12 @@ void udrcvbias(rtk_t *rtk, double tt)
 
             if (rtk->x[j] == 0.0)
                 {
-                    initx(rtk, 1E-6, VAR_HWBIAS, j);
+                    initx_rtk(rtk, 1E-6, VAR_HWBIAS, j);
                 }
             /* hold to fixed solution */
             else if (rtk->nfix >= rtk->opt.minfix && rtk->sol.ratio>rtk->opt.thresar[0])
                 {
-                    initx(rtk, rtk->xa[j], rtk->Pa[j+j*rtk->na], j);
+                    initx_rtk(rtk, rtk->xa[j], rtk->Pa[j+j*rtk->na], j);
                 }
             else
                 {
@@ -801,11 +801,11 @@ void udbias(rtk_t *rtk, double tt, const obsd_t *obs, const int *sat,
 
                     if (rtk->opt.modear == ARMODE_INST && rtk->x[IB_RTK(i, f, &rtk->opt)] != 0.0)
                         {
-                            initx(rtk, 0.0, 0.0, IB_RTK(i, f, &rtk->opt));
+                            initx_rtk(rtk, 0.0, 0.0, IB_RTK(i, f, &rtk->opt));
                         }
                     else if (reset && rtk->x[IB_RTK(i, f, &rtk->opt)] != 0.0)
                         {
-                            initx(rtk, 0.0, 0.0, IB_RTK(i, f, &rtk->opt));
+                            initx_rtk(rtk, 0.0, 0.0, IB_RTK(i, f, &rtk->opt));
                             trace(3, "udbias : obs outage counter overflow (sat=%3d L%d n=%d)\n",
                                     i, f+1, rtk->ssat[i-1].outc[f]);
                         }
@@ -871,7 +871,7 @@ void udbias(rtk_t *rtk, double tt, const obsd_t *obs, const int *sat,
             for (i = 0;i<ns;i++)
                 {
                     if (bias[i] == 0.0 || rtk->x[IB_RTK(sat[i], f, &rtk->opt)] != 0.0) continue;
-                    initx(rtk, bias[i], std::pow(rtk->opt.std[0],  2.0), IB_RTK(sat[i], f, &rtk->opt));
+                    initx_rtk(rtk, bias[i], std::pow(rtk->opt.std[0],  2.0), IB_RTK(sat[i], f, &rtk->opt));
                 }
             free(bias);
         }

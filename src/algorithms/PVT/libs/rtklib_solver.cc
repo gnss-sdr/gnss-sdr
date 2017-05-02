@@ -58,7 +58,7 @@
 
 using google::LogMessage;
 
-rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, const prcopt_t & rtklib_opt)
+rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file,  rtk_t & rtk)
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
@@ -66,10 +66,9 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     d_flag_dump_enabled = flag_dump_to_file;
     count_valid_position = 0;
     d_flag_averaging = false;
+    rtk_ = rtk;
 
-    rtklib_options = rtklib_opt;
-
-    old_pvt_sol = {{0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0},
+    pvt_sol = {{0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0},
                   '0', '0', '0', 0, 0, 0 };
 
     // ############# ENABLE DATA FILE LOG #################
@@ -235,24 +234,25 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
             nav_data.lam[i][1]=SPEED_OF_LIGHT/FREQ2; /* L2 */
         }
 
-        result=pntpos(obs_data, valid_obs, &nav_data, &rtklib_options, &old_pvt_sol, NULL, NULL,rtklib_msg);
+        result = rtkpos(&rtk_, obs_data, valid_obs, &nav_data);
         if(result==0)
         {
-            DLOG(INFO)<<"RTKLIB pntpos error message: "<<rtklib_msg;
+            DLOG(INFO)<<"RTKLIB rtkpos error message: "<<rtk_.errbuf;
             d_rx_dt_s = 0; //reset rx time estimation
         }else{
+            pvt_sol=rtk_.sol;
             b_valid_position=true;
             arma::vec rx_position_and_time(4);
-            rx_position_and_time(0)=old_pvt_sol.rr[0];
-            rx_position_and_time(1)=old_pvt_sol.rr[1];
-            rx_position_and_time(2)=old_pvt_sol.rr[2];
-            rx_position_and_time(3)=old_pvt_sol.dtr[0];
+            rx_position_and_time(0)=pvt_sol.rr[0];
+            rx_position_and_time(1)=pvt_sol.rr[1];
+            rx_position_and_time(2)=pvt_sol.rr[2];
+            rx_position_and_time(3)=pvt_sol.dtr[0];
             d_rx_pos = rx_position_and_time.rows(0, 2); // save ECEF position for the next iteration
             d_rx_dt_s += rx_position_and_time(3) / GPS_C_m_s; // accumulate the rx time error for the next iteration [meters]->[seconds]
             DLOG(INFO) << "Hybrid Position at TOW=" << Rx_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
 
             boost::posix_time::ptime p_time;
-            gtime_t rtklib_utc_time=gpst2utc(old_pvt_sol.time);
+            gtime_t rtklib_utc_time=gpst2utc(pvt_sol.time);
             p_time=boost::posix_time::from_time_t(rtklib_utc_time.time);
             p_time+=boost::posix_time::microseconds(round(rtklib_utc_time.sec*1e6));
             d_position_UTC_time = p_time;

@@ -44,6 +44,7 @@ obsd_t insert_obs_to_rtklib(obsd_t & rtklib_obs, const Gnss_Synchro & gnss_synch
     rtklib_obs.SNR[band] = CN0_dB_Hz;
     rtklib_obs.sat = gnss_synchro.PRN;
     rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
+    rtklib_obs.rcv = 1;
     //printf("OBS RX TIME [%i]: %s,%f\n\r",rtklib_obs.sat,time_str(rtklib_obs.time,3),rtklib_obs.time.sec);
     return rtklib_obs;
 }

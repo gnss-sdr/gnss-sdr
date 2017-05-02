@@ -231,7 +231,6 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
                          In case of RAIM FDE enabled, a satellite is excluded if SSE (sum of squared errors) of residuals is over a threshold.
                          The excluded satellite is selected to indicate the minimum SSE. */
 
-
     int nsys = 0;
     if ((gps_1C_count > 0) || (gps_2S_count > 0)) nsys += SYS_GPS;
     if ((gal_1B_count > 0) || (gal_E5a_count > 0) || (gal_E5b_count > 0)) nsys += SYS_GAL;
@@ -263,12 +262,13 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             integer_ambiguity_resolution_bds = 1;
         }
 
-    //int max_iter_resolve_ambiguity =  configuration->property(role + ".max_iter_resolve_ambiguity", 1);
+    double min_ratio_to_fix_ambiguity = configuration->property(role + ".min_ratio_to_fix_ambiguity", 3.0); /* Set the integer ambiguity validation threshold for ratio‐test,
+                                                                                                               which uses the ratio of squared residuals of the best integer vector to the second‐best vector. */
 
     int min_lock_to_fix_ambiguity =  configuration->property(role + ".min_lock_to_fix_ambiguity", 0); /* Set the minimum lock count to fix integer ambiguity.
                                                                                                          If the lock count is less than the value, the ambiguity is excluded from the fixed integer vector. */
 
-    double min_elevation_to_fix_ambiguity =  configuration->property(role + ".min_elevation_to_fix_ambiguity", 0.0); /* Set the minimum eveation (deg) to fix integer ambiguity.
+    double min_elevation_to_fix_ambiguity =  configuration->property(role + ".min_elevation_to_fix_ambiguity", 0.0); /* Set the minimum elevation (deg) to fix integer ambiguity.
                                                                                                                         If the elevation of the satellite is less than the value, the ambiguity is excluded from the fixed integer vector. */
 
     int outage_reset_ambiguity =  configuration->property(role + ".outage_reset_ambiguity", 5); /* Set the outage count to reset ambiguity. If the data outage count is over the value, the estimated ambiguity is reset to the initial value.  */
@@ -278,6 +278,12 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     double threshold_reject_gdop = configuration->property(role + ".threshold_reject_gdop", 30.0); /* reject threshold of GDOP. If the GDOP is over the value, the observable is excluded for the estimation process as an outlier. */
 
     double threshold_reject_innovation = configuration->property(role + ".threshold_reject_innovation", 30.0); /* reject threshold of innovation (m). If the innovation is over the value, the observable is excluded for the estimation process as an outlier. */
+
+    int number_filter_iter = configuration->property(role + ".number_filter_iter", 1); /* Set the number of iteration in the measurement update of the estimation filter.
+                                                                                         If the baseline length is very short like 1 m, the iteration may be effective to handle
+                                                                                         the nonlinearity of measurement equation. */
+
+
 
     /// Statistics
     double bias_0 = configuration->property(role + ".bias_0", 30.0);
@@ -319,11 +325,11 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             trop_model,      /* troposphere option (TROPOPT_XXX) */
             dynamics_model,  /* dynamics model (0:none, 1:velocity, 2:accel) */
             0,   /* earth tide correction (0:off,1:solid,2:solid+otl+pole) */
-            1,   /* number of filter iteration */
+            number_filter_iter,   /* number of filter iteration */
             0,   /* code smoothing window size (0:none) */
             0,   /* interpolate reference obs (for post mission) */
             0,   /* sbssat_t sbssat  SBAS correction options */
-            0,   /* sbsion_t sbsion[MAXBAND+1] SBAS satellite selection (0:all) */
+            {},  /* sbsion_t sbsion[MAXBAND+1] SBAS satellite selection (0:all) */
             0,   /* rover position for fixed mode */
             0,   /* base position for relative mode */
                  /*    0:pos in prcopt,  1:average of single pos, */
@@ -333,7 +339,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             {bias_0,iono_0,trop_0},      /* std[3]: initial-state std [0]bias,[1]iono [2]trop*/
             {sigma_bias,sigma_iono,sigma_trop,sigma_acch,sigma_accv,sigma_pos}, /* prn[6] process-noise std */
             5e-12,                       /* sclkstab: satellite clock stability (sec/sec) */
-            {3.0,0.9999,0.25,0.1,0.05},  /* thresar[8]: AR validation threshold */
+            {min_ratio_to_fix_ambiguity,0.9999,0.25,0.1,0.05,0.0,0.0,0.0},  /* thresar[8]: AR validation threshold */
             min_elevation_to_fix_ambiguity,   /* elevation mask of AR for rising satellite (deg) */
             0.0,   /* elevation mask to hold ambiguity (deg) */
             slip_threshold,  /* slip threshold of geometry-free phase (m) */
@@ -343,8 +349,8 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             {},    /* double baseline[2] baseline length constraint {const,sigma} (m) */
             {},    /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
             {},    /* double rb[3]  base position for relative mode {x,y,z} (ecef) (m) */
-            {"",""},   /* char anttype[2][MAXANT]  antenna types {rover,base}  */
-            {},    /* double antdel[2][3]   antenna delta {{rov_e,rov_n,rov_u},{ref_e,ref_n,ref_u}} */
+            {"",""},    /* char anttype[2][MAXANT]  antenna types {rover,base}  */
+            {{},{}},    /* double antdel[2][3]   antenna delta {{rov_e,rov_n,rov_u},{ref_e,ref_n,ref_u}} */
             {},    /* pcv_t pcvr[2]   receiver antenna parameters {rov,base} */
             {},    /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded, 2:included) */
             0,     /* max averaging epoches */

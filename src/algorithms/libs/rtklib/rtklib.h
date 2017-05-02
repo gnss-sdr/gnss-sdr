@@ -270,12 +270,12 @@ const int TROPOPT_EST = 3;      //!<    troposphere option: ZTD estimation
 const int TROPOPT_ESTG = 4;     //!<    troposphere option: ZTD+grad estimation
 const int TROPOPT_ZTD = 5;      //!<    troposphere option: ZTD correction
 
-const unsigned int EPHOPT_BRDC = 0;      //!<    ephemeris option: broadcast ephemeris
-const unsigned int EPHOPT_PREC = 1;      //!<    ephemeris option: precise ephemeris
-const unsigned int EPHOPT_SBAS = 2;      //!<    ephemeris option: broadcast + SBAS
-const unsigned int EPHOPT_SSRAPC = 3;    //!<    ephemeris option: broadcast + SSR_APC
-const unsigned int EPHOPT_SSRCOM = 4;    //!<    ephemeris option: broadcast + SSR_COM
-const unsigned int EPHOPT_LEX = 5;       //!<    ephemeris option: QZSS LEX ephemeris
+const int EPHOPT_BRDC = 0;      //!<    ephemeris option: broadcast ephemeris
+const int EPHOPT_PREC = 1;      //!<    ephemeris option: precise ephemeris
+const int EPHOPT_SBAS = 2;      //!<    ephemeris option: broadcast + SBAS
+const int EPHOPT_SSRAPC = 3;    //!<    ephemeris option: broadcast + SSR_APC
+const int EPHOPT_SSRCOM = 4;    //!<    ephemeris option: broadcast + SSR_COM
+const int EPHOPT_LEX = 5;       //!<    ephemeris option: QZSS LEX ephemeris
 
 const double EFACT_GPS = 1.0;            //!<    error factor: GPS
 const double EFACT_GLO = 1.5;            //!<    error factor: GLONASS
@@ -289,12 +289,12 @@ const int MAXEXFILE = 1024;              //!<    max number of expanded files
 const double MAXSBSAGEF = 30.0;          //!<    max age of SBAS fast correction (s)
 const double MAXSBSAGEL = 1800.0;        //!<    max age of SBAS long term corr (s)
 
-const unsigned int ARMODE_OFF = 0;       //!< AR mode: off
-const unsigned int ARMODE_CONT = 1;      //!< AR mode: continuous
-const unsigned int ARMODE_INST = 2;      //!< AR mode: instantaneous
-const unsigned int ARMODE_FIXHOLD = 3;   //!< AR mode: fix and hold
-const unsigned int ARMODE_WLNL = 4;      //!< AR mode: wide lane/narrow lane
-const unsigned int ARMODE_TCAR = 5;      //!< AR mode: triple carrier ar
+const int ARMODE_OFF = 0;       //!< AR mode: off
+const int ARMODE_CONT = 1;      //!< AR mode: continuous
+const int ARMODE_INST = 2;      //!< AR mode: instantaneous
+const int ARMODE_FIXHOLD = 3;   //!< AR mode: fix and hold
+const int ARMODE_WLNL = 4;      //!< AR mode: wide lane/narrow lane
+const int ARMODE_TCAR = 5;      //!< AR mode: triple carrier ar
 
 const int POSOPT_RINEX = 3;              //!< pos option: rinex header pos */
 
@@ -444,7 +444,7 @@ typedef struct {        /* SBAS ephemeris type */
 typedef struct {        /* norad two line element data type */
     char name [32];     /* common name */
     char alias[32];     /* alias name */
-    char satno[16];     /* satellilte catalog number */
+    char satno[16];     /* satellite catalog number */
     char satclass;      /* classification */
     char desig[16];     /* international designator */
     gtime_t epoch;      /* element set epoch (UTC) */
@@ -734,8 +734,8 @@ typedef struct {        /* solution type */
     unsigned char stat; /* solution status (SOLQ_???) */
     unsigned char ns;   /* number of valid satellites */
     float age;          /* age of differential (s) */
-    float ratio;        /* AR ratio factor for valiation */
-    float thres;        /* AR ratio threshold for valiation */
+    float ratio;        /* AR ratio factor for validation */
+    float thres;        /* AR ratio threshold for validation */
 } sol_t;
 
 

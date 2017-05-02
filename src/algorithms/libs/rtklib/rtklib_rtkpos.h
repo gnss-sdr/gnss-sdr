@@ -89,21 +89,6 @@ const double TTOL_MOVEB = (1.0+2*DTTOL);
 #define IL_RTK(f,opt)   (NP_RTK(opt)+NI_RTK(opt)+NT_RTK(opt)+(f))   /* receiver h/w bias */
 #define IB_RTK(s,f,opt) (NR_RTK(opt)+MAXSAT*(f)+(s)-1) /* phase bias (s:satno,f:freq) */
 
-
-static int resamb_WLNL(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
-                       const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns __attribute__((unused)), const nav_t *nav __attribute((unused)),
-                       const double *azel __attribute((unused))) {return 0;}
-static int resamb_TCAR(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
-                       const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns __attribute((unused)), const nav_t *nav __attribute((unused)),
-                       const double *azel __attribute((unused))) {return 0;}
-
-/* global variables ----------------------------------------------------------*/
-static int statlevel = 0;          /* rtk status output level (0:off) */
-static FILE *fp_stat = NULL;       /* rtk status file pointer */
-static char file_stat[1024] = "";  /* rtk status file original path */
-static gtime_t time_stat = {0, 0};    /* rtk status file time */
-
-
 int rtkopenstat(const char *file, int level);
 
 void rtkclosestat(void);

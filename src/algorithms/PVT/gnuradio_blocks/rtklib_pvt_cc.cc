@@ -434,8 +434,8 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
             bool flag_compute_pvt_output = false;
             bool flag_write_RTCM_1019_output = false;
             bool flag_write_RTCM_1045_output = false;
-            bool flag_write_RTCM_1077_output = false;
-            bool flag_write_RTCM_1097_output = false;
+            // bool flag_write_RTCM_1077_output = false;
+            // bool flag_write_RTCM_1097_output = false;
             bool flag_write_RTCM_MSM_output = false;
             bool flag_write_RINEX_obs_output = false;
             bool flag_write_RINEX_nav_output = false;

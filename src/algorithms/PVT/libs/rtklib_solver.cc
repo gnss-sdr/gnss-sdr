@@ -224,7 +224,6 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
     if (valid_obs>0)
     {
         int result=0;
-        char rtklib_msg[128];
         nav_t nav_data;
         nav_data.eph=eph_data;
         nav_data.n=valid_obs;

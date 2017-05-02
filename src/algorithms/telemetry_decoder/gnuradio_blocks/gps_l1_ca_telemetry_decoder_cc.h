@@ -59,10 +59,6 @@ public:
     ~gps_l1_ca_telemetry_decoder_cc();
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
-    /*!
-     * \brief Set decimation factor to average the GPS synchronization estimation output from the tracking module.
-     */
-    void set_decimation(int decimation);
 
     /*!
      * \brief This is where all signal processing takes place

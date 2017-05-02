@@ -59,10 +59,6 @@ GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* c
     telemetry_decoder_ = galileo_e1b_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
 
-    //decimation factor
-    int decimation_factor = configuration->property(role + ".decimation_factor", 1);
-    telemetry_decoder_->set_decimation(decimation_factor);
-
     channel_ = 0;
 }
 

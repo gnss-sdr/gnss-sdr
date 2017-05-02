@@ -378,28 +378,11 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                      LOG(WARNING) << "Exception writing observables dump file " << e.what();
              }
          }
-
-     d_average_count++;
-     if (d_average_count == d_decimation_output_factor)
-         {
-             d_average_count = 0;
-             //3. Make the output (copy the object contents to the GNURadio reserved memory)
-             *out[0] = current_synchro_data;
-             //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
-             return 1;
-         }
-     else
-         {
-             return 0;
-         }
+     //3. Make the output (copy the object contents to the GNURadio reserved memory)
+     *out[0] = current_synchro_data;
+     //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
+     return 1;
  }
-
-
- void gps_l1_ca_telemetry_decoder_cc::set_decimation(int decimation)
- {
-     d_decimation_output_factor = decimation;
- }
-
 
  void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
  {

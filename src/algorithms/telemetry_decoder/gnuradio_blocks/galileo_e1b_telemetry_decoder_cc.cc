@@ -169,8 +169,6 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_flag_preamble = false;
     d_channel = 0;
     flag_TOW_set = false;
-    d_average_count = 0;
-    d_decimation_output_factor = 1;
 }
 
 
@@ -265,16 +263,16 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             //debug
             std::cout << "Galileo almanac received!" << std::endl;
-            LOG(INFO) << "GPS_to_Galileo time conversion:";
-            LOG(INFO) << "A0G=" << tmp_obj->A_0G_10;
-            LOG(INFO) << "A1G=" << tmp_obj->A_1G_10;
-            LOG(INFO) << "T0G=" << tmp_obj->t_0G_10;
-            LOG(INFO) << "WN_0G_10=" << tmp_obj->WN_0G_10;
-            LOG(INFO) << "Current parameters:";
-            LOG(INFO) << "d_TOW_at_current_symbol=" << d_TOW_at_current_symbol;
-            LOG(INFO) << "d_nav.WN_0=" << d_nav.WN_0;
+            DLOG(INFO) << "GPS_to_Galileo time conversion:";
+            DLOG(INFO) << "A0G=" << tmp_obj->A_0G_10;
+            DLOG(INFO) << "A1G=" << tmp_obj->A_1G_10;
+            DLOG(INFO) << "T0G=" << tmp_obj->t_0G_10;
+            DLOG(INFO) << "WN_0G_10=" << tmp_obj->WN_0G_10;
+            DLOG(INFO) << "Current parameters:";
+            DLOG(INFO) << "d_TOW_at_current_symbol=" << d_TOW_at_current_symbol;
+            DLOG(INFO) << "d_nav.WN_0=" << d_nav.WN_0;
             delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (d_TOW_at_current_symbol - tmp_obj->t_0G_10 + 604800 * (fmod((d_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
-            LOG(INFO) << "delta_t=" << delta_t << "[s]";
+            DLOG(INFO) << "delta_t=" << delta_t << "[s]";
         }
 }
 
@@ -476,27 +474,11 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
                     LOG(WARNING) << "Exception writing observables dump file " << e.what();
             }
         }
-    d_average_count++;
+    //3. Make the output (copy the object contents to the GNURadio reserved memory)
+    *out[0] = current_synchro_data;
+    //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
+    return 1;
 
-    if (d_average_count == d_decimation_output_factor)
-        {
-            d_average_count = 0;
-            //3. Make the output (copy the object contents to the GNURadio reserved memory)
-            *out[0] = current_synchro_data;
-            //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
-            return 1;
-        }
-    else
-        {
-            return 0;
-        }
-
-}
-
-
-void galileo_e1b_telemetry_decoder_cc::set_decimation(int decimation)
-{
-    d_decimation_output_factor = decimation;
 }
 
 

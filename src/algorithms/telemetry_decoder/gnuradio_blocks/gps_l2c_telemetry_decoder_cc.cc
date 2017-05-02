@@ -47,7 +47,6 @@ gps_l2c_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
 }
 
 
-
 gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
         Gnss_Satellite satellite, bool dump) : gr::block("gps_l2c_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
@@ -61,9 +60,7 @@ gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "GPS L2C M TELEMETRY PROCESSING: satellite " << d_satellite;
-    d_decimation_output_factor = 0;
     //set_output_multiple (1);
-    d_average_count = 0;
     d_channel = 0;
     d_flag_valid_word = false;
     d_TOW_at_current_symbol = 0;
@@ -76,16 +73,9 @@ gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
 }
 
 
-
 gps_l2c_telemetry_decoder_cc::~gps_l2c_telemetry_decoder_cc()
 {
     d_dump_file.close();
-}
-
-
-void gps_l2c_telemetry_decoder_cc::set_decimation(int decimation)
-{
-    d_decimation_output_factor = decimation;
 }
 
 
@@ -196,18 +186,9 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
         }
 
 
-    d_average_count++;
-    if (d_average_count == d_decimation_output_factor)
-    {
-        d_average_count = 0;
-        //3. Make the output (copy the object contents to the GNURadio reserved memory)
-        out[0] = current_synchro_data;
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
+    //3. Make the output (copy the object contents to the GNURadio reserved memory)
+    out[0] = current_synchro_data;
+    return 1;
 }
 
 

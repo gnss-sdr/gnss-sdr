@@ -59,9 +59,6 @@ GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configura
     telemetry_decoder_ = gps_l2c_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
 
-    //decimation factor
-    int decimation_factor = configuration->property(role + ".decimation_factor", 1);
-    telemetry_decoder_->set_decimation(decimation_factor);
     LOG(INFO) << "global navigation message queue assigned to telemetry_decoder (" << telemetry_decoder_->unique_id() << ")" << "role " << role;
     channel_ = 0;
 }

@@ -109,6 +109,8 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_decimation_output_factor = 1;
     d_channel = 0;
     flag_PLL_180_deg_phase_locked = false;
+    //set minimum output buffer to avoid deadlock when combined with other GNSS systems or signals with slower symbol rates
+    this->set_min_output_buffer(3000);
 }
 
 
@@ -380,7 +382,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
          }
      //3. Make the output (copy the object contents to the GNURadio reserved memory)
      *out[0] = current_synchro_data;
-     //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
      return 1;
  }
 

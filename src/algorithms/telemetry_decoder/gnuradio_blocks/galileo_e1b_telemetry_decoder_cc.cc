@@ -454,6 +454,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
         }
 
     current_synchro_data.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol*1000.0)/1000.0;
+    current_synchro_data.TOW_at_current_symbol_s -=delta_t; //Galileo to GPS TOW
 
     if(d_dump == true)
         {

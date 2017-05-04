@@ -236,7 +236,7 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
         result = rtkpos(&rtk_, obs_data, valid_obs, &nav_data);
         if(result==0)
         {
-            DLOG(INFO)<<"RTKLIB rtkpos error message: "<<rtk_.errbuf;
+            LOG(INFO)<<"RTKLIB rtkpos error message: "<<rtk_.errbuf;
             d_rx_dt_s = 0; //reset rx time estimation
         }else{
             pvt_sol=rtk_.sol;

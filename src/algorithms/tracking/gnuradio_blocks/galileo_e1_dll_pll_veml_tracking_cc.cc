@@ -392,7 +392,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
             current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
             current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
             // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!)
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter;
             current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
             //compute remnant code phase samples AFTER the Tracking timestamp
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
@@ -409,7 +409,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
         *d_Prompt = gr_complex(0,0);
         *d_Late = gr_complex(0,0);
         // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-        current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+        current_synchro_data.Tracking_sample_counter = d_sample_counter;
     }
     //assign the GNURadio block output data
     current_synchro_data.System = {'E'};

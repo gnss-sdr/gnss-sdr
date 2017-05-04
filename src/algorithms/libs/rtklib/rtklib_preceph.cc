@@ -268,7 +268,7 @@ void combpeph(nav_t *nav,  int opt)
                 {
                     for (k = 0; k < MAXSAT; k++)
                         {
-                            if (norm(nav->peph[j].pos[k], 4) <= 0.0) continue;
+                            if (norm_rtk(nav->peph[j].pos[k], 4) <= 0.0) continue;
                             for (m = 0;m < 4; m++) nav->peph[i].pos[k][m] = nav->peph[j].pos[k][m];
                             for (m = 0;m < 4; m++) nav->peph[i].std[k][m] = nav->peph[j].std[k][m];
                             for (m = 0;m < 4; m++) nav->peph[i].vel[k][m] = nav->peph[j].vel[k][m];
@@ -633,7 +633,7 @@ int pephpos(gtime_t time, int sat, const nav_t *nav, double *rs,
     for (j = 0; j <= NMAX; j++)
         {
             t[j] = timediff(nav->peph[i+j].time, time);
-            if (norm(nav->peph[i+j].pos[sat-1], 3) <= 0.0)
+            if (norm_rtk(nav->peph[i+j].pos[sat-1], 3) <= 0.0)
                 {
                     trace(3, "prec ephem outage %s sat=%2d\n", time_str(time, 0), sat);
                     return 0;
@@ -661,7 +661,7 @@ int pephpos(gtime_t time, int sat, const nav_t *nav, double *rs,
     if (vare)
         {
             for (i = 0; i < 3; i++) s[i] = nav->peph[index].std[sat-1][i];
-            std = norm(s, 3);
+            std = norm_rtk(s, 3);
 
             /* extrapolation error for orbit */
             if      (t[0   ] > 0.0) std += EXTERR_EPH * std::pow(t[0   ], 2.0) / 2.0;

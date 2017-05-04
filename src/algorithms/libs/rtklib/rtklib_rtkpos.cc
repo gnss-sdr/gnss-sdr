@@ -430,7 +430,7 @@ double baseline(const double *ru, const double *rb, double *dr)
 {
     int i;
     for (i = 0;i<3;i++) dr[i] = ru[i]-rb[i];
-    return norm(dr, 3);
+    return norm_rtk(dr, 3);
 }
 
 
@@ -482,7 +482,7 @@ void udpos(rtk_t *rtk, double tt)
             return;
         }
     /* initialize position for first epoch */
-    if (norm(rtk->x, 3)  <= 0.0)
+    if (norm_rtk(rtk->x, 3)  <= 0.0)
         {
             for (i = 0;i<3;i++) initx_rtk(rtk, rtk->sol.rr[i], VAR_POS, i);
             if (rtk->opt.dynamics)
@@ -990,7 +990,7 @@ int zdres(int base, const obsd_t *obs, int n, const double *rs,
 
     for (i = 0;i<n*nf*2;i++) y[i] = 0.0;
 
-    if (norm(rr, 3) <= 0.0) return 0; /* no receiver position */
+    if (norm_rtk(rr, 3) <= 0.0) return 0; /* no receiver position */
 
     for (i = 0;i<3;i++) rr_[i] = rr[i];
 
@@ -1089,7 +1089,7 @@ int constbl(rtk_t *rtk, const double *x, const double *P, double *v,
             xb[i] = rtk->rb[i]+rtk->rb[i+3]*rtk->sol.age;
             b[i] = x[i]-xb[i];
         }
-    bb = norm(b, 3);
+    bb = norm_rtk(b, 3);
 
     /* approximate variance of solution */
     if (P)

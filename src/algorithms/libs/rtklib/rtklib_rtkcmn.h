@@ -124,7 +124,7 @@ int *imat(int n, int m);
 double *zeros(int n, int m);
 double *eye(int n);
 double dot(const double *a, const double *b, int n);
-double norm(const double *a, int n);
+double norm_rtk(const double *a, int n);
 void cross3(const double *a, const double *b, double *c);
 int normv3(const double *a, double *b);
 void matcpy(double *A, const double *B, int n, int m);

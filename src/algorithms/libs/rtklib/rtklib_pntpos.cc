@@ -198,7 +198,7 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
             return iontec(time, nav, pos, azel, 1, ion, var);
         }
     /* qzss broadcast model */
-    if (ionoopt == IONOOPT_QZS && norm(nav->ion_qzs, 8)>0.0)
+    if (ionoopt == IONOOPT_QZS && norm_rtk(nav->ion_qzs, 8)>0.0)
         {
             *ion = ionmodel(time, nav->ion_qzs, pos, azel);
             *var = std::pow(*ion * ERR_BRDCI, 2.0);
@@ -436,7 +436,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                 }
             for (j = 0; j < NX; j++) x[j] += dx[j];
 
-            if (norm(dx, NX) < 1e-4)
+            if (norm_rtk(dx, NX) < 1e-4)
                 {
                     sol->type = 0;
                     sol->time = timeadd(obs[0].time, -x[3] / SPEED_OF_LIGHT);
@@ -584,7 +584,7 @@ int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
         {
             lam = nav->lam[obs[i].sat-1][0];
 
-            if (obs[i].D[0] == 0.0 || lam == 0.0 || !vsat[i] || norm(rs + 3 + i * 6, 3) <= 0.0)
+            if (obs[i].D[0] == 0.0 || lam == 0.0 || !vsat[i] || norm_rtk(rs + 3 + i * 6, 3) <= 0.0)
                 {
                     continue;
                 }
@@ -639,7 +639,7 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
 
             for (j = 0; j < 4; j++) x[j] += dx[j];
 
-            if (norm(dx, 4) < 1e-6)
+            if (norm_rtk(dx, 4) < 1e-6)
                 {
                     for (i = 0; i < 3; i++) sol->rr[i+3] = x[i];
                     break;

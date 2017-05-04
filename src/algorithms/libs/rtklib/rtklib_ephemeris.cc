@@ -692,10 +692,10 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
         {
             dclk += ssr->hrclk;
         }
-    if (norm(deph, 3) > MAXECORSSR || fabs(dclk) > MAXCCORSSR)
+    if (norm_rtk(deph, 3) > MAXECORSSR || fabs(dclk) > MAXCCORSSR)
         {
             trace(3, "invalid ssr correction: %s deph=%.1f dclk=%.1f\n",
-                    time_str(time, 0), norm(deph, 3), dclk);
+                    time_str(time, 0), norm_rtk(deph, 3), dclk);
             *svh = -1;
             return 0;
         }

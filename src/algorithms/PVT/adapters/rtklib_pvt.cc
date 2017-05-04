@@ -283,8 +283,6 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
                                                                                          If the baseline length is very short like 1 m, the iteration may be effective to handle
                                                                                          the nonlinearity of measurement equation. */
 
-
-
     /// Statistics
     double bias_0 = configuration->property(role + ".bias_0", 30.0);
 
@@ -307,12 +305,16 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     double sigma_pos = configuration->property(role + ".sigma_pos", 0.0);
 
+    snrmask_t snrmask = { {}, {{},{}} };
+    sbssat_t sbssat;
+    sbsion_t sbsion[MAXBAND+1] = {};
+
     prcopt_t rtklib_configuration_options = {positioning_mode, /* positioning mode (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
             0,   /* solution type (0:forward,1:backward,2:combined) */
             number_of_frequencies, /* number of frequencies (1:L1, 2:L1+L2, 3:L1+L2+L5)*/
             navigation_system,     /* navigation system  */
             elevation_mask * D2R,  /* elevation mask angle (degrees) */
-            { {}, {{},{}} },       /* snrmask_t snrmask    SNR mask */
+            snrmask,       /* snrmask_t snrmask    SNR mask */
             0,   /* satellite ephemeris/clock (EPHOPT_XXX) */
             integer_ambiguity_resolution_gps,   /* AR mode (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
             integer_ambiguity_resolution_glo,   /* GLONASS AR mode (0:off,1:on,2:auto cal,3:ext cal) */
@@ -355,7 +357,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             {},    /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded, 2:included) */
             0,     /* max averaging epoches */
             0,     /* initialize by restart */
-            0,     /* output single by dgps/float/fix/ppp outage */
+            1,     /* output single by dgps/float/fix/ppp outage */
             {"",""},  /* char rnxopt[2][256]   rinex options {rover,base} */
             {sat_PCV,rec_PCV,phwindup,reject_GPS_IIA,raim_fde},    /*  posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
             0,     /* solution sync mode (0:off,1:on) */
@@ -391,19 +393,27 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             {{},{}} /* previous carrier-phase observable (cycle) */
     };
 
+    int nx = 0; /* Number of estimated states */
+    if(positioning_mode <= PMODE_FIXED) nx = 4 + 3;
+    if(positioning_mode >= PMODE_PPP_KINEMA) nx = NX_PPP(&rtklib_configuration_options);
+    int na = NR_PPP(&rtklib_configuration_options);
+    double x[nx];
+    double Px[nx];
+    double xa[na];
+    double Pa[na];
     rtk = { sol_,  /* RTK solution */
             {},          /* base position/velocity (ecef) (m|m/s) */
-            0,           /* number of float states */
-            0,           /* number of fixed states */
+            nx,           /* number of float states */
+            na,           /* number of fixed states */
             output_rate_ms / 1000.0,  /* time difference between current and previous (s) */
-            {},          /* float states */
-            {},          /* float states covariance */
-            {},          /* fixed states */
-            {},          /* fixed states covariance */
+            x,          /* float states */
+            Px,          /* float states covariance */
+            xa,          /* fixed states */
+            Pa,          /* fixed states covariance */
             3,           /* number of continuous fixes of ambiguity */
             {ambc_},     /* ambiguity control */
             {ssat_},     /* satellite status */
-            0,           /* bytes in error message buffer */
+            128,           /* bytes in error message buffer */
             {'0'},       /* error message buffer */
             rtklib_configuration_options /* processing options */
     };

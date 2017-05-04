@@ -298,6 +298,26 @@ const int ARMODE_TCAR = 5;      //!< AR mode: triple carrier ar
 
 const int POSOPT_RINEX = 3;              //!< pos option: rinex header pos */
 
+
+/* number and index of states for PPP */
+#define NF_PPP(opt)     ((opt)->ionoopt==IONOOPT_IFLC?1:(opt)->nf)
+#define NP_PPP(opt)     ((opt)->dynamics?9:3)
+#define NC_PPP(opt)     (NSYS)
+#define NT_PPP(opt)     ((opt)->tropopt<TROPOPT_EST?0:((opt)->tropopt==TROPOPT_EST?1:3))
+#define NI_PPP(opt)     ((opt)->ionoopt==IONOOPT_EST?MAXSAT:0)
+#define ND_PPP(opt)     ((opt)->nf>=3?1:0)
+#define NR_PPP(opt)     (NP_PPP(opt)+NC_PPP(opt)+NT_PPP(opt)+NI_PPP(opt)+ND_PPP(opt))
+#define NB_PPP(opt)     (NF_PPP(opt)*MAXSAT)
+#define NX_PPP(opt)     (NR_PPP(opt)+NB_PPP(opt))
+#define IC_PPP(s,opt)   (NP_PPP(opt)+(s))
+#define IT_PPP(opt)     (NP_PPP(opt)+NC_PPP(opt))
+#define II_PPP(s,opt)   (NP_PPP(opt)+NC_PPP(opt)+NT_PPP(opt)+(s)-1)
+#define ID_PPP(opt)     (NP_PPP(opt)+NC_PPP(opt)+NT_PPP(opt)+NI_PPP(opt))
+#define IB_PPP(s,f,opt) (NR_PPP(opt)+MAXSAT*(f)+(s)-1)
+
+
+
+
 typedef void fatalfunc_t(const char *); //!<  fatal callback function type
 
 

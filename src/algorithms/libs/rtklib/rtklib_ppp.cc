@@ -220,7 +220,7 @@ void testeclipse(const obsd_t *obs, int n, const nav_t *nav, double *rs)
         {
             type = nav->pcvs[obs[i].sat-1].type;
 
-            if ((r = norm(rs+i*6, 3)) <= 0.0) continue;
+            if ((r = norm_rtk(rs+i*6, 3)) <= 0.0) continue;
 
             /* only block IIA */
             if (*type && !strstr(type, "BLOCK IIA")) continue;
@@ -329,7 +329,7 @@ int model_phw(gtime_t time, int sat, const char *type, int opt,
             ds[i] = exs[i]-ek[i]*dot(ek, exs, 3)-eks[i];
             dr[i] = exr[i]-ek[i]*dot(ek, exr, 3)+ekr[i];
         }
-    cosp = dot(ds, dr, 3)/norm(ds, 3)/norm(dr, 3);
+    cosp = dot(ds, dr, 3)/norm_rtk(ds, 3)/norm_rtk(dr, 3);
     if      (cosp < -1.0) cosp = -1.0;
     else if (cosp> 1.0) cosp =  1.0;
     ph = acos(cosp)/2.0/PI;
@@ -539,7 +539,7 @@ void udpos_ppp(rtk_t *rtk)
             return;
         }
     /* initialize position for first epoch */
-    if (norm(rtk->x, 3) <= 0.0)
+    if (norm_rtk(rtk->x, 3) <= 0.0)
         {
             for (i = 0;i < 3;i++) initx(rtk, rtk->sol.rr[i], VAR_POS_PPP, i);
         }
@@ -1329,7 +1329,7 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                     matcpy(rtk->Pa, Pp, rtk->nx, rtk->nx);
 
                     for (i = 0;i < 3;i++) std[i] = sqrt(Pp[i+i*rtk->nx]);
-                    if (norm(std, 3) < MAX_STD_FIX) stat = SOLQ_FIX;
+                    if (norm_rtk(std, 3) < MAX_STD_FIX) stat = SOLQ_FIX;
                 }
             else
                 {

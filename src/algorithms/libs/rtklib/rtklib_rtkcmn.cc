@@ -54,6 +54,7 @@
 //#include <stdarg.h>
 //#include <ctype.h>
 #include <dirent.h>
+#include <iostream>
 //#include <time.h>
 #include <sys/time.h>
 #include <sys/stat.h>
@@ -842,9 +843,9 @@ double dot(const double *a, const double *b, int n)
  *          int    n         I   size of vector a
  * return : || a ||
  *-----------------------------------------------------------------------------*/
-double norm(const double *a, int n)
+double norm_rtk(const double *a, int n)
 {
-    return sqrt(dot(a, a, n));
+      return std::sqrt(dot(a, a, n));
 }
 
 
@@ -871,7 +872,7 @@ void cross3(const double *a, const double *b, double *c)
 int normv3(const double *a, double *b)
 {
     double r;
-    if ((r = norm(a, 3)) <= 0.0) return 0;
+    if ((r = norm_rtk(a, 3)) <= 0.0) return 0;
     b[0] = a[0]/r;
     b[1] = a[1]/r;
     b[2] = a[2]/r;
@@ -3378,9 +3379,9 @@ double geodist(const double *rs, const double *rr, double *e)
     double r;
     int i;
 
-    if (norm(rs, 3)<RE_WGS84) return -1.0;
+    if (norm_rtk(rs, 3)<RE_WGS84) return -1.0;
     for (i = 0; i<3; i++) e[i] = rs[i]-rr[i];
-    r = norm(e, 3);
+    r = norm_rtk(e, 3);
     for (i = 0; i<3; i++) e[i]/=r;
     return r+DEFAULT_OMEGA_EARTH_DOT*(rs[0]*rr[1]-rs[1]*rr[0])/SPEED_OF_LIGHT;
 }
@@ -3467,7 +3468,7 @@ double ionmodel(gtime_t t, const double *ion, const double *pos,
     int week;
 
     if (pos[2]<-1e3 || azel[1] <= 0) return 0.0;
-    if (norm(ion, 8) <= 0.0) ion = ion_default;
+    if (norm_rtk(ion, 8) <= 0.0) ion = ion_default;
 
     /* earth centered angle (semi-circle) */
     psi = 0.0137/(azel[1]/PI+0.11)-0.022;

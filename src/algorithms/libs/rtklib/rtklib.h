@@ -156,17 +156,10 @@ const int NSATGLO = 0;
 const int NSYSGLO = 0;
 #endif
 
-#ifdef ENAGAL
 const int MINPRNGAL = 1;                   //!<   min satellite PRN number of Galileo
 const int MAXPRNGAL = 30;                  //!<   max satellite PRN number of Galileo
 const int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1); //!<   number of Galileo satellites
 const int NSYSGAL = 1;
-#else
-const int MINPRNGAL = 0;
-const int MAXPRNGAL = 0;
-const int NSATGAL = 0;
-const int NSYSGAL =  0;
-#endif
 
 #ifdef ENAQZS
 const int MINPRNQZS = 193;                 //!<  min satellite PRN number of QZSS

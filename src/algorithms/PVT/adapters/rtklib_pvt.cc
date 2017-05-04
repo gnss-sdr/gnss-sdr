@@ -306,8 +306,6 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     double sigma_pos = configuration->property(role + ".sigma_pos", 0.0);
 
     snrmask_t snrmask = { {}, {{},{}} };
-    sbssat_t sbssat;
-    sbsion_t sbsion[MAXBAND+1] = {};
 
     prcopt_t rtklib_configuration_options = {positioning_mode, /* positioning mode (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
             0,   /* solution type (0:forward,1:backward,2:combined) */
@@ -398,9 +396,9 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     if(positioning_mode >= PMODE_PPP_KINEMA) nx = NX_PPP(&rtklib_configuration_options);
     int na = NR_PPP(&rtklib_configuration_options);
     double x[nx];
-    double Px[nx];
+    double Px[nx*nx];
     double xa[na];
-    double Pa[na];
+    double Pa[na*na];
     rtk = { sol_,  /* RTK solution */
             {},          /* base position/velocity (ecef) (m|m/s) */
             nx,           /* number of float states */

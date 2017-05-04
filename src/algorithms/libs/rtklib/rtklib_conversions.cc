@@ -42,7 +42,18 @@ obsd_t insert_obs_to_rtklib(obsd_t & rtklib_obs, const Gnss_Synchro & gnss_synch
     if (CN0_dB_Hz_est < 0.0) CN0_dB_Hz_est = 0.0;
     unsigned char CN0_dB_Hz = static_cast<unsigned char>(std::round(CN0_dB_Hz_est / 0.25 ));
     rtklib_obs.SNR[band] = CN0_dB_Hz;
-    rtklib_obs.sat = gnss_synchro.PRN;
+    //Galileo is the third satellite system for RTKLIB, so, add the required offset to discriminate Galileo ephemeris
+    switch(gnss_synchro.System)
+    {
+        case 'G':
+            rtklib_obs.sat = gnss_synchro.PRN;
+            break;
+        case 'E':
+            rtklib_obs.sat = gnss_synchro.PRN+NSATGPS+NSATGLO;
+            break;
+        default:
+            rtklib_obs.sat = gnss_synchro.PRN;
+    }
     rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
     rtklib_obs.rcv = 1;
     //printf("OBS RX TIME [%i]: %s,%f\n\r",rtklib_obs.sat,time_str(rtklib_obs.time,3),rtklib_obs.time.sec);
@@ -53,7 +64,8 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris & gal_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
-    rtklib_sat.sat = gal_eph.i_satellite_PRN;
+    //Galileo is the third satellite system for RTKLIB, so, add the required offset to discriminate Galileo ephemeris
+    rtklib_sat.sat = gal_eph.i_satellite_PRN+NSATGPS+NSATGLO;
     rtklib_sat.A = gal_eph.A_1 * gal_eph.A_1;
     rtklib_sat.M0 = gal_eph.M0_1;
     rtklib_sat.deln = gal_eph.delta_n_3;

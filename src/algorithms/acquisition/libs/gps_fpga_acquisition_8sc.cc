@@ -36,7 +36,7 @@
 #include "gps_fpga_acquisition_8sc.h"
 #include <cmath>
 
-// FPGA stuff
+// allocate memory dynamically
 #include <new>
 
 // libraries used by DMA test code and GIPO test code
@@ -62,7 +62,6 @@
 #include "GPS_L1_CA.h"
 
 #define PAGE_SIZE 0x10000
-//#define MAX_LENGTH_DEVICEIO_NAME 50
 #define CODE_RESAMPLER_NUM_BITS_PRECISION 20
 #define CODE_PHASE_STEP_CHIPS_NUM_NBITS CODE_RESAMPLER_NUM_BITS_PRECISION
 #define pwrtwo(x) (1 << (x))
@@ -228,25 +227,9 @@ void gps_fpga_acquisition_8sc::fpga_configure_acquisition_local_code(lv_16sc_t f
 		tmp = fft_local_code[k].real();
 		tmp2 = fft_local_code[k].imag();
 		local_code = (tmp & 0xFF) | ((tmp2*256) & 0xFF00); // put together the real part and the imaginary part
-		if (k < 20)
-		{
-			printf("tmp tmp2 local_code = %d %d %d\n", tmp, tmp2, local_code);
-		}
 		d_map_base[4] = 0x0C000000 | (local_code & 0xFFFF);
 	}
 
-	FILE *f;
-	f = fopen("captured_local_code_dec.txt", "w");
-	if (!f)
-	{
-		printf("Unable to open file!");
-	}
-	for(k=0;k< d_nsamples_total;k++)
-	{
-		fprintf(f,"%d\n",fft_local_code[k].real());	// real part
-		fprintf(f,"%d\n",fft_local_code[k].imag());	// real part
-	}
-	fclose(f);
 }
 
 
@@ -282,9 +265,6 @@ void gps_fpga_acquisition_8sc::configure_acquisition()
 	d_map_base[1] = d_nsamples_total;
 	d_map_base[2] = d_nsamples;
 
-	printf("nsamples = %d\n", d_nsamples);
-	printf("nsamples_total = %d\n", d_nsamples_total);
-	printf("d_select_queue = %d\n", d_select_queue);
 
 }
 
@@ -307,19 +287,14 @@ void gps_fpga_acquisition_8sc::read_acquisition_results(uint32_t* max_index, flo
 {
 	unsigned readval = 0;
 	readval = d_map_base[0];
-	printf("RESULT : result valid = %d\n", readval);
 	readval = d_map_base[1];
 	*initial_sample = readval;
-	printf("RESULT : initial sample = %d\n", *initial_sample);
 	readval = d_map_base[2];
 	*max_magnitude = (float) readval;
-	printf("RESULT : max_magnitude = %f\n", *max_magnitude);
 	readval = d_map_base[4];
 	*power_sum = (float) readval;
-	printf("RESULT : power sum = %f\n", *power_sum);
 	readval = d_map_base[3];
 	*max_index = readval;
-	printf("RESULT : max_index = %d\n", *max_index); // to avoid result_read line to stay high
 
 }
 

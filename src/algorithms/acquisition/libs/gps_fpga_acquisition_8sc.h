@@ -1,9 +1,8 @@
 /*!
  * \file fpga_acquisition_8sc.h
- * \brief High optimized FPGA vector correlator class for lv_16sc_t (short int complex)
+ * \brief High optimized FPGA vector correlator class for lv_16sc_t (short int complex).
  * \authors <ul>
  * 			<li> Marc Majoral, 2017. mmajoral(at)cttc.cat
- *          <li> Javier Arribas, 2016. jarribas(at)cttc.es
  *          </ul>
  *
  * Class that controls and executes a high optimized vector correlator
@@ -50,7 +49,6 @@ class gps_fpga_acquisition_8sc
 public:
     gps_fpga_acquisition_8sc();
     ~gps_fpga_acquisition_8sc();
-    //bool init(int max_signal_length_samples, int n_correlators);
     bool init(unsigned int fft_size, unsigned int nsamples_total, long d_freq, unsigned int doppler_max, unsigned int doppler_step, int num_doppler_bins, long fs_in, unsigned select_queue);
     bool set_local_code(gr_complex* fft_codes); //int code_length_chips, const lv_16sc_t* local_code_in, float *shifts_chips);
     bool free();
@@ -79,29 +77,11 @@ private:
     unsigned int d_nsamples; // number of samples not including padding
     unsigned int d_select_queue =0; // queue selection
 
-//    unsigned int d_channel;    // channel number
-//    unsigned d_ncorrelators;   // number of correlators
-//    unsigned d_correlator_length_samples;
-//    float d_rem_code_phase_chips;
-//    float d_code_phase_step_chips;
-//    float d_rem_carrier_phase_in_rad;
-//    float d_phase_step_rad;
-    
-    // configuration data computed in the format that the FPGA expects
-//    unsigned *d_initial_index;
-//    unsigned *d_initial_interp_counter;
-//    unsigned d_code_phase_step_chips_num;
-//    int d_rem_carr_phase_rad_int;
-//    int d_phase_step_rad_int;
-//    unsigned d_initial_sample_counter;
-
     // FPGA private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);
     void fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[]);
     void configure_acquisition();
 
-
-    //void fpga_acquisition_8sc::run_acquisition(void);
 };
 
 

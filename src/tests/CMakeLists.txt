@@ -266,6 +266,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs

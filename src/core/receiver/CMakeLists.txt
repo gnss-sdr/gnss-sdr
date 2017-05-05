@@ -59,6 +59,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
@@ -139,6 +140,7 @@ target_link_libraries(gnss_rx ${Boost_LIBRARIES}
                               resampler_adapters
                               acq_adapters
                               tracking_lib
+                              acquisition_lib
                               tracking_adapters
                               channel_adapters
                               telemetry_decoder_adapters

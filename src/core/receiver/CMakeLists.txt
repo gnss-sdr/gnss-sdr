@@ -36,6 +36,10 @@ if(ENABLE_CUDA)
      set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS})
 endif(ENABLE_CUDA)
 
+if(ENABLE_FPGA)
+     add_definitions(-DENABLE_FPGA=1)
+endif(ENABLE_FPGA)
+
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)

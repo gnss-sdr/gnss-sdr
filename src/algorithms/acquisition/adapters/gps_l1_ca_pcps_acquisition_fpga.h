@@ -70,7 +70,7 @@ public:
      */
     std::string implementation()
     {
-        return "GPS_L1_CA_PCPS_Acquisition";
+        return "GPS_L1_CA_PCPS_Acquisition_Fpga";
     }
     size_t item_size()
     {

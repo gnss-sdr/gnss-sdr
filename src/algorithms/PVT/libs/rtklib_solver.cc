@@ -185,7 +185,6 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                                 		gnss_observables_iter->second,
                                 		gps_cnav_ephemeris_iter->second.i_GPS_week,
                                 		1);//Band 2 (L2)
-                    			std::cout<<"L2 observation attached!"<<std::endl;
                     			break;
                     		}
                     	}
@@ -218,7 +217,6 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
     // **********************************************************************
     // ****** SOLVE PVT******************************************************
     // **********************************************************************
-    d_valid_observations = valid_obs;
 
     b_valid_position = false;
     if (valid_obs>0)
@@ -231,6 +229,7 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
         {
             nav_data.lam[i][0]=SPEED_OF_LIGHT/FREQ1; /* L1/E1 */
             nav_data.lam[i][1]=SPEED_OF_LIGHT/FREQ2; /* L2 */
+            nav_data.lam[i][2]=SPEED_OF_LIGHT/FREQ5; /* L2 */
         }
 
         result = rtkpos(&rtk_, obs_data, valid_obs, &nav_data);
@@ -238,7 +237,9 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
         {
             LOG(INFO)<<"RTKLIB rtkpos error message: "<<rtk_.errbuf;
             d_rx_dt_s = 0; //reset rx time estimation
+            d_valid_observations = 0;
         }else{
+            d_valid_observations=rtk_.sol.ns; //record the number of valid satellites used by the PVT solver
             pvt_sol=rtk_.sol;
             b_valid_position=true;
             arma::vec rx_position_and_time(4);
@@ -248,7 +249,7 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
             rx_position_and_time(3)=pvt_sol.dtr[0];
             d_rx_pos = rx_position_and_time.rows(0, 2); // save ECEF position for the next iteration
             d_rx_dt_s += rx_position_and_time(3) / GPS_C_m_s; // accumulate the rx time error for the next iteration [meters]->[seconds]
-            DLOG(INFO) << "Hybrid Position at TOW=" << Rx_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
+            DLOG(INFO) << "RTKLIB Position at TOW=" << Rx_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
 
             boost::posix_time::ptime p_time;
             gtime_t rtklib_utc_time=gpst2utc(pvt_sol.time);
@@ -257,7 +258,7 @@ bool rtklib_solver::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
             d_position_UTC_time = p_time;
             cart2geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
 
-            DLOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
+            DLOG(INFO) << "RTKLIB Position at " << boost::posix_time::to_simple_string(p_time)
             << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
             << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_s << " [s]";
 

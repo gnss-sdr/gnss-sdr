@@ -180,7 +180,7 @@ void rtkclosestat(void)
 
 
 /* write solution status to buffer -------------------------------------------*/
-void rtkoutstat(rtk_t *rtk,  char *buff)
+void rtkoutstat(rtk_t *rtk,  char *buff __attribute__((unused)))
 {
     ssat_t *ssat;
     double tow, pos[3], vel[3], acc[3], vela[3] = {0}, acca[3] = {0}, xa[3];

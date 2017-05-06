@@ -173,7 +173,7 @@ double conffunc(int N, double B, double sig)
 
 
 /* average LC ----------------------------------------------------------------*/
-void average_LC(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav,
+void average_LC(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav __attribute__((unused)),
         const double *azel)
 {
     ambc_t *amb;
@@ -917,7 +917,7 @@ void testeclipse(const obsd_t *obs, int n, const nav_t *nav, double *rs)
 
 
 /* measurement error variance ------------------------------------------------*/
-double varerr(int sat, int sys, double el, int type, const prcopt_t *opt)
+double varerr(int sat __attribute__((unused)), int sys, double el, int type, const prcopt_t *opt)
 {
     double a, b, a2, b2, fact = 1.0;
     double sinel = sin(el);
@@ -1050,9 +1050,9 @@ double gettgd_ppp(int sat, const nav_t *nav)
 
 
 /* slant ionospheric delay ---------------------------------------------------*/
-int corr_ion(gtime_t time, const nav_t *nav, int sat, const double *pos,
+int corr_ion(gtime_t time, const nav_t *nav, int sat __attribute__((unused)), const double *pos,
         const double *azel, int ionoopt, double *ion, double *var,
-        int *brk)
+        int *brk __attribute__((unused)))
 {
 #ifdef EXTSTEC
     double rate;
@@ -1446,7 +1446,7 @@ double prectrop(gtime_t time, const double *pos, const double *azel,
 
 
 /* phase and code residuals --------------------------------------------------*/
-int res_ppp(int iter, const obsd_t *obs, int n, const double *rs,
+int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const double *rs,
         const double *dts, const double *vare, const int *svh,
         const nav_t *nav, const double *x, rtk_t *rtk, double *v,
         double *H, double *R, double *azel)

@@ -2135,7 +2135,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     if (opt->refpos <= POSOPT_RINEX && opt->mode != PMODE_SINGLE &&
             opt->mode != PMODE_MOVEB)
         {
-            for (i = 0;i<6;i++) rtk->rb[i] = i<3 ? opt->rb[i] : 0.0;
+            for (i = 0;i<6;i++) rtk->rb[i] = i < 3 ? opt->rb[i] : 0.0;
         }
     /* count rover/base station observations */
     for (nu = 0;nu   <n && obs[nu   ].rcv == 1;nu++) ;
@@ -2205,7 +2205,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         {
             rtk->sol.age = (float)timediff(obs[0].time, obs[nu].time);
 
-            if (fabs(rtk->sol.age)>opt->maxtdiff)
+            if (fabs(rtk->sol.age) > opt->maxtdiff)
                 {
                     errmsg(rtk, "age of differential error (age=%.1f)\n", rtk->sol.age);
                     outsolstat(rtk);

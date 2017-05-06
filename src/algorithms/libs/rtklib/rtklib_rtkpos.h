@@ -93,7 +93,7 @@ int rtkopenstat(const char *file, int level);
 
 void rtkclosestat(void);
 
-int rtkoutstat(rtk_t *rtk, char *buff);
+void rtkoutstat(rtk_t *rtk);
 
 void swapsolstat(void);
 

@@ -394,7 +394,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     int nx = 0; /* Number of estimated states */
     if(positioning_mode <= PMODE_FIXED) nx = 4 + 3;
     if(positioning_mode >= PMODE_PPP_KINEMA) nx = NX_PPP(&rtklib_configuration_options);
-    int na = NR_PPP(&rtklib_configuration_options);
+    int na = NP_PPP(&rtklib_configuration_options);std::cout << "NP_PPP: " << na << std::endl;
     double x[nx];
     double Px[nx*nx];
     double xa[na];
@@ -411,7 +411,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             3,           /* number of continuous fixes of ambiguity */
             {ambc_},     /* ambiguity control */
             {ssat_},     /* satellite status */
-            128,           /* bytes in error message buffer */
+            256,           /* bytes in error message buffer */
             {'0'},       /* error message buffer */
             rtklib_configuration_options /* processing options */
     };

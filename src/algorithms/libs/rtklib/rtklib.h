@@ -156,10 +156,17 @@ const int NSATGLO = 0;
 const int NSYSGLO = 0;
 #endif
 
+#ifdef ENAGAL
 const int MINPRNGAL = 1;                   //!<   min satellite PRN number of Galileo
 const int MAXPRNGAL = 30;                  //!<   max satellite PRN number of Galileo
 const int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1); //!<   number of Galileo satellites
 const int NSYSGAL = 1;
+#else
+const int MINPRNGAL = 0;
+const int MAXPRNGAL = 0;
+const int NSATGAL = 0;
+const int NSYSGAL =  0;
+#endif
 
 #ifdef ENAQZS
 const int MINPRNQZS = 193;                 //!<  min satellite PRN number of QZSS
@@ -261,7 +268,9 @@ const int TROPOPT_SAAS = 1;     //!<    troposphere option: Saastamoinen model
 const int TROPOPT_SBAS = 2;     //!<    troposphere option: SBAS model
 const int TROPOPT_EST = 3;      //!<    troposphere option: ZTD estimation
 const int TROPOPT_ESTG = 4;     //!<    troposphere option: ZTD+grad estimation
-const int TROPOPT_ZTD = 5;      //!<    troposphere option: ZTD correction
+const int TROPOPT_COR = 5;      //!<    troposphere option: ZTD correction
+const int TROPOPT_CORG = 6;     //!<    troposphere option: ZTD+grad correction
+
 
 const int EPHOPT_BRDC = 0;      //!<    ephemeris option: broadcast ephemeris
 const int EPHOPT_PREC = 1;      //!<    ephemeris option: precise ephemeris
@@ -286,32 +295,24 @@ const int ARMODE_OFF = 0;       //!< AR mode: off
 const int ARMODE_CONT = 1;      //!< AR mode: continuous
 const int ARMODE_INST = 2;      //!< AR mode: instantaneous
 const int ARMODE_FIXHOLD = 3;   //!< AR mode: fix and hold
-const int ARMODE_WLNL = 4;      //!< AR mode: wide lane/narrow lane
-const int ARMODE_TCAR = 5;      //!< AR mode: triple carrier ar
+const int ARMODE_PPPAR = 4;     //!< AR mode: PPP-AR
+const int ARMODE_PPPAR_ILS = 5; //!< AR mode: AR mode: PPP-AR ILS
+const int ARMODE_WLNL = 6;
+const int ARMODE_TCAR = 7;
+
 
 const int POSOPT_RINEX = 3;              //!< pos option: rinex header pos */
 
-
-/* number and index of states for PPP */
-#define NF_PPP(opt)     ((opt)->ionoopt==IONOOPT_IFLC?1:(opt)->nf)
-#define NP_PPP(opt)     ((opt)->dynamics?9:3)
-#define NC_PPP(opt)     (NSYS)
-#define NT_PPP(opt)     ((opt)->tropopt<TROPOPT_EST?0:((opt)->tropopt==TROPOPT_EST?1:3))
-#define NI_PPP(opt)     ((opt)->ionoopt==IONOOPT_EST?MAXSAT:0)
-#define ND_PPP(opt)     ((opt)->nf>=3?1:0)
-#define NR_PPP(opt)     (NP_PPP(opt)+NC_PPP(opt)+NT_PPP(opt)+NI_PPP(opt)+ND_PPP(opt))
-#define NB_PPP(opt)     (NF_PPP(opt)*MAXSAT)
-#define NX_PPP(opt)     (NR_PPP(opt)+NB_PPP(opt))
-#define IC_PPP(s,opt)   (NP_PPP(opt)+(s))
-#define IT_PPP(opt)     (NP_PPP(opt)+NC_PPP(opt))
-#define II_PPP(s,opt)   (NP_PPP(opt)+NC_PPP(opt)+NT_PPP(opt)+(s)-1)
-#define ID_PPP(opt)     (NP_PPP(opt)+NC_PPP(opt)+NT_PPP(opt)+NI_PPP(opt))
-#define IB_PPP(s,f,opt) (NR_PPP(opt)+MAXSAT*(f)+(s)-1)
-
-
-
-
 typedef void fatalfunc_t(const char *); //!<  fatal callback function type
+
+
+#define NP_PPP(opt)     ((opt)->dynamics?9:3) /* number of pos solution */
+#define IC_PPP(s,opt)   (NP_PPP(opt)+(s))      /* state index of clocks (s=0:gps,1:glo) */
+#define IT_PPP(opt)     (IC_PPP(0,opt)+NSYS)   /* state index of tropos */
+#define NR_PPP(opt)     (IT_PPP(opt)+((opt)->tropopt<TROPOPT_EST?0:((opt)->tropopt==TROPOPT_EST?1:3)))
+                                       /* number of solutions */
+#define IB_PPP(s,opt)   (NR_PPP(opt)+(s)-1)    /* state index of phase bias */
+#define NX_PPP(opt)     (IB_PPP(MAXSAT,opt)+1) /* number of estimated states */
 
 
 typedef struct {        /* time struct */
@@ -457,7 +458,7 @@ typedef struct {        /* SBAS ephemeris type */
 typedef struct {        /* norad two line element data type */
     char name [32];     /* common name */
     char alias[32];     /* alias name */
-    char satno[16];     /* satellite catalog number */
+    char satno[16];     /* satellilte catalog number */
     char satclass;      /* classification */
     char desig[16];     /* international designator */
     gtime_t epoch;      /* element set epoch (UTC) */
@@ -747,8 +748,8 @@ typedef struct {        /* solution type */
     unsigned char stat; /* solution status (SOLQ_???) */
     unsigned char ns;   /* number of valid satellites */
     float age;          /* age of differential (s) */
-    float ratio;        /* AR ratio factor for validation */
-    float thres;        /* AR ratio threshold for validation */
+    float ratio;        /* AR ratio factor for valiation */
+    float thres;        /* AR ratio threshold for valiation */
 } sol_t;
 
 
@@ -976,7 +977,7 @@ typedef struct {        /* RTK control/result type */
     double *x, *P;      /* float states and their covariance */
     double *xa,*Pa;     /* fixed states and their covariance */
     int nfix;           /* number of continuous fixes of ambiguity */
-    ambc_t ambc[MAXSAT]; /* ambibuity control */
+    ambc_t ambc[MAXSAT]; /* ambiguity control */
     ssat_t ssat[MAXSAT]; /* satellite status */
     int neb;            /* bytes in error message buffer */
     char errbuf[MAXERRMSG]; /* error message buffer */

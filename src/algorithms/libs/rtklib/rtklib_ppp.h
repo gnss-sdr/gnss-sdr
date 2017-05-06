@@ -56,78 +56,130 @@
 
 #include "rtklib.h"
 
-#define MAX_PPP(x,y)    ((x)>(y)?(x):(y))
-#define ROUND_PPP(x)    (int)floor((x)+0.5)
 
-const int MAX_ITER =  8;               /* max number of iterations */
-const double MAX_STD_FIX = 0.15;            /* max std-dev (3d) to fix solution */
-const int MIN_NSAT_SOL = 4;              /* min satellite number for solution */
-const double THRES_REJECT = 4.0;            /* reject threshold of posfit-res (sigma) */
+#define SQR(x)      ((x)*(x))
+#define MIN(x,y)    ((x)<=(y)?(x):(y))
+#define ROUND(x)        (int)floor((x)+0.5)
 
-const double THRES_MW_JUMP = 10.0;
+#define SWAP_I(x,y)     do {int _z=x; x=y; y=_z;} while (0)
+#define SWAP_D(x,y)     do {double _z=x; x=y; y=_z;} while (0)
 
-const double VAR_POS_PPP =  std::pow(60.0, 2.0);       /* init variance receiver position (m^2) */
-const double VAR_CLK = std::pow(60.0, 2.0);       /* init variance receiver clock (m^2) */
-const double VAR_ZTD = std::pow( 0.6, 2.0);      /* init variance ztd (m^2) */
-const double VAR_GRA_PPP = std::pow(0.01, 2.0);       /* init variance gradient (m^2) */
-const double VAR_DCB = std::pow(30.0, 2.0);       /* init variance dcb (m^2) */
-const double VAR_BIAS = std::pow(60.0, 2.0);       /* init variance phase-bias (m^2) */
-const double VAR_IONO = std::pow(60.0, 2.0);       /* init variance iono-delay */
-const double VAR_GLO_IFB = std::pow( 0.6, 2.0);       /* variance of glonass ifb */
+#define MIN_ARC_GAP     300.0       /* min arc gap (s) */
+#define CONST_AMB       0.001       /* constraint to fixed ambiguity */
+#define THRES_RES       0.3         /* threashold of residuals test (m) */
+#define LOG_PI          1.14472988584940017 /* log(pi) */
+#define SQRT2           1.41421356237309510 /* sqrt(2) */
 
-const double EFACT_GPS_L5 = 10.0;           /* error factor of GPS/QZS L5 */
+#define AS2R        (D2R/3600.0)    /* arc sec to radian */
+//#define GME         3.986004415E+14 /* earth gravitational constant */
+//const double GMS = 1.327124E+20;    /* sun gravitational constant */
+//#define GMM         4.902801E+12    /* moon gravitational constant */
 
-const double MUDOT_GPS = (0.00836*D2R);   /* average angular velocity GPS (rad/s) */
-const double MUDOT_GLO = (0.00888*D2R);   /* average angular velocity GLO (rad/s) */
-const double EPS0_GPS = (13.5*D2R);      /* max shadow crossing angle GPS (rad) */
-const double EPS0_GLO = (14.2*D2R);      /* max shadow crossing angle GLO (rad) */
-const double T_POSTSHADOW = 1800.0;         /* post-shadow recovery time (s) */
-const double QZS_EC_BETA = 20.0;            /* max beta angle for qzss Ec (deg) */
+                                    /* initial variances */
+#define VAR_POS     SQR(100.0)      /*   receiver position (m^2) */
+#define VAR_CLK     SQR(100.0)      /*   receiver clock (m^2) */
+#define VAR_ZTD     SQR(  0.3)      /*   ztd (m^2) */
+#define VAR_GRA     SQR(0.001)      /*   gradient (m^2) */
+#define VAR_BIAS    SQR(100.0)      /*   phase-bias (m^2) */
+
+#define VAR_IONO_OFF SQR(10.0)      /* variance of iono-model-off */
+
+#define ERR_SAAS    0.3             /* saastamoinen model error std (m) */
+#define ERR_BRDCI   0.5             /* broadcast iono model error factor */
+#define ERR_CBIAS   0.3             /* code bias error std (m) */
+#define REL_HUMI    0.7             /* relative humidity for saastamoinen model */
+
+#define NP(opt)     ((opt)->dynamics?9:3) /* number of pos solution */
+#define IC(s,opt)   (NP(opt)+(s))      /* state index of clocks (s=0:gps,1:glo) */
+#define IT(opt)     (IC(0,opt)+NSYS)   /* state index of tropos */
+#define NR(opt)     (IT(opt)+((opt)->tropopt<TROPOPT_EST?0:((opt)->tropopt==TROPOPT_EST?1:3)))
+                                       /* number of solutions */
+#define IB(s,opt)   (NR(opt)+(s)-1)    /* state index of phase bias */
+#define NX(opt)     (IB(MAXSAT,opt)+1) /* number of estimated states */
+
+
+
+double lam_LC(int i, int j, int k);
+
+double L_LC(int i, int j, int k, const double *L);
+
+double P_LC(int i, int j, int k, const double *P);
+
+double var_LC(int i, int j, int k, double sig);
+
+double q_gamma(double a, double x, double log_gamma_a);
+
+double p_gamma(double a, double x, double log_gamma_a);
+
+double f_erfc(double x);
+
+double conffunc(int N, double B, double sig);
+
+void average_LC(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav,
+                       const double *azel);
+
+int fix_amb_WL(rtk_t *rtk, const nav_t *nav, int sat1, int sat2, int *NW);
+
+int is_depend(int sat1, int sat2, int *flgs, int *max_flg);
+
+int sel_amb(int *sat1, int *sat2, double *N, double *var, int n);
+
+int fix_sol(rtk_t *rtk, const int *sat1, const int *sat2,
+                   const double *NC, int n);
+
+int fix_amb_ROUND(rtk_t *rtk, int *sat1, int *sat2, const int *NW, int n);
+
+int fix_amb_ILS(rtk_t *rtk, int *sat1, int *sat2, int *NW, int n);
+
+
+int pppamb(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav,
+                  const double *azel);
 
 
 
 
-int pppcorr_read(pppcorr_t *corr, const char *file);
-void pppcorr_free(pppcorr_t *corr);
-int pppcorr_trop(const pppcorr_t *corr, gtime_t time, const double *pos,
-        double *trp, double *std);
-int pppcorr_stec(const pppcorr_t *corr, gtime_t time, const double *pos,
-        double *ion, double *std);
-int ppp_ar(rtk_t *rtk, const obsd_t *obs, int n, int *exc,
-        const nav_t *nav, const double *azel, double *x, double *P);
 
-double STD(rtk_t *rtk, int i);
-int pppoutstat(rtk_t *rtk, char *buff);
+void pppoutsolstat(rtk_t *rtk, int level, FILE *fp);
+
+void tide_pl(const double *eu, const double *rp, double GMp,
+                    const double *pos, double *dr);
+
+void tide_solid(const double *rsun, const double *rmoon,
+                const double *pos, const double *E, double gmst, int opt,
+                double *dr);
+
+void tide_oload(gtime_t tut, const double *odisp, double *denu);
+
+void iers_mean_pole(gtime_t tut, double *xp_bar, double *yp_bar);
+
+void tide_pole(gtime_t tut, const double *pos, const double *erpv,
+                     double *denu);
+
+void tidedisp(gtime_t tutc, const double *rr, int opt, const erp_t *erp,
+                                          const double *odisp, double *dr);
+
 void testeclipse(const obsd_t *obs, int n, const nav_t *nav, double *rs);
-double yaw_nominal(double beta, double mu);
-double yaw_angle(int sat, const char *type, int opt, double beta, double mu,
-        double *yaw);
-int sat_yaw(gtime_t time, int sat, const char *type, int opt,
-        const double *rs, double *exs, double *eys);
 
+double varerr(int sat, int sys, double el, int type, const prcopt_t *opt);
 
-int model_phw(gtime_t time, int sat, const char *type, int opt,
-        const double *rs, const double *rr, double *phw);
-
-double varerr(int sat, int sys, double el, int freq, int type,
-        const prcopt_t *opt);
 void initx(rtk_t *rtk, double xi, double var, int i);
 
+int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
+                  const prcopt_t *opt, const double *dantr, const double *dants,
+                  double phw, double *meas, double *var);
+
+double gettgd_ppp(int sat, const nav_t *nav);
+
+int corr_ion(gtime_t time, const nav_t *nav, int sat, const double *pos,
+                    const double *azel, int ionoopt, double *ion, double *var,
+                    int *brk);
+
+int corrmeas(const obsd_t *obs, const nav_t *nav, const double *pos,
+                                        const double *azel, const prcopt_t *opt,
+                                        const double *dantr, const double *dants, double phw,
+                                        double *meas, double *var, int *brk);
+
 double gfmeas(const obsd_t *obs, const nav_t *nav);
-
-double mwmeas(const obsd_t *obs, const nav_t *nav);
-
-void corr_meas(const obsd_t *obs, const nav_t *nav, const double *azel,
-        const prcopt_t *opt, const double *dantr,
-        const double *dants, double phw, double *L, double *P,
-        double *Lc, double *Pc);
-
-
-void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n);
-
-void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
-
-void detslp_mw(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
 
 void udpos_ppp(rtk_t *rtk);
 
@@ -135,51 +187,28 @@ void udclk_ppp(rtk_t *rtk);
 
 void udtrop_ppp(rtk_t *rtk);
 
-void udiono_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
+void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n);
 
-void uddcb_ppp(rtk_t *rtk);
+void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
 
 void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
-
 
 void udstate_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
 
 void satantpcv(const double *rs, const double *rr, const pcv_t *pcv,
-        double *dant);
+                      double *dant);
 
-double trop_model_prec(gtime_t time, const double *pos,
-        const double *azel, const double *x, double *dtdx,
-        double *var);
+double prectrop(gtime_t time, const double *pos, const double *azel,
+                                             const prcopt_t *opt, const double *x, double *dtdx,
+                                             double *var);
 
-int model_trop(gtime_t time, const double *pos, const double *azel,
-        const prcopt_t *opt, const double *x, double *dtdx,
-        const nav_t *nav, double *dtrp, double *var);
-
-int model_iono(gtime_t time, const double *pos, const double *azel,
-        const prcopt_t *opt, int sat, const double *x,
-        const nav_t *nav, double *dion, double *var);
-
-
-int const_corr(const obsd_t *obs, int n, const int *exc,
-        const nav_t *nav, const double *x, const double *pos,
-        const double *azel, rtk_t *rtk, double *v, double *H,
-        double *var);
-
-int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
-        const double *dts, const double *var_rs, const int *svh,
-        const double *dr, int *exc, const nav_t *nav,
-        const double *x, rtk_t *rtk, double *v, double *H, double *R,
-        double *azel);
+int res_ppp(int iter, const obsd_t *obs, int n, const double *rs,
+            const double *dts, const double *vare, const int *svh,
+            const nav_t *nav, const double *x, rtk_t *rtk, double *v,
+            double *H, double *R, double *azel);
 
 int pppnx(const prcopt_t *opt);
 
-void update_stat(rtk_t *rtk, const obsd_t *obs, int n, int stat);
-
-int test_hold_amb(rtk_t *rtk);
-
-
 void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
-
-
 
 #endif

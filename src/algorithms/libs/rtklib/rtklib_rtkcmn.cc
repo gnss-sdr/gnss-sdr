@@ -454,25 +454,13 @@ int satexclude(int sat, int svh, const prcopt_t *opt)
 {
     int sys = satsys(sat, NULL);
 
-    if (svh<0)
-        {
-        trace(3, "ephemeris unavailable: sat=%3d svh=%02X\n", sat, svh);
-        return 1; /* ephemeris unavailable */
-        }
+    if (svh<0) return 1; /* ephemeris unavailable */
 
     if (opt)
         {
-            if (opt->exsats[sat-1] == 1)
-                {
-                trace(3, "excluded satellite: sat=%3d svh=%02X\n", sat, svh);
-                return 1; /* excluded satellite */
-                }
+            if (opt->exsats[sat-1] == 1) return 1; /* excluded satellite */
             if (opt->exsats[sat-1] == 2) return 0; /* included satellite */
-            if (!(sys&opt->navsys))
-                {
-                trace(3, "unselected sat sys: sat=%3d svh=%02X\n", sat, svh);
-                return 1; /* unselected sat sys */
-                }
+            if (!(sys&opt->navsys)) return 1; /* unselected sat sys */
         }
     if (sys == SYS_QZS) svh&=0xFE; /* mask QZSS LEX health */
     if (svh)
@@ -3144,12 +3132,12 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //void tracelevel(int level) {}
 void trace (int level  __attribute__((unused)), const char *format  __attribute__((unused)), ...)
 {
-    /*va_list ap;*/
-    /* print error message to stderr */
-    /*printf("RTKLIB TRACE[%i]:",level);
-    va_start(ap,format);
-    vfprintf(stdout,format,ap);
-    va_end(ap);*/
+// va_list ap;
+ /* print error message to stderr */
+// printf("RTKLIB TRACE[%i]:",level);
+// va_start(ap,format);
+// vfprintf(stdout,format,ap);
+// va_end(ap);
 }
 //void tracet  (int level, const char *format, ...) {}
 //void tracemat(int level, const double *A, int n, int m, int p, int q) {}

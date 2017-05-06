@@ -382,7 +382,10 @@ int Position_Gps_L1_System_Test::configure_receiver()
     config->set_property("PVT.rtcm_dump_devname", "/dev/pts/1");
     config->set_property("PVT.dump", "false");
     config->set_property("PVT.rinex_version", std::to_string(2));
-
+    config->set_property("PVT.positioning_mode", std::to_string(7));
+    config->set_property("PVT.iono_model", std::to_string(0));
+    config->set_property("PVT.trop_model", std::to_string(0));
+    config->set_property("PVT.AR_GPS", std::to_string(4));
     return 0;
 }
 

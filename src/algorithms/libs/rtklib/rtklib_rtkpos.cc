@@ -51,7 +51,6 @@
  *
  *----------------------------------------------------------------------------*/
 
-#include <iostream>
 #include "rtklib_rtkpos.h"
 #include "rtklib_pntpos.h"
 #include "rtklib_ephemeris.h"

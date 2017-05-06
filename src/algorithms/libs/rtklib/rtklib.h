@@ -88,26 +88,26 @@ const int PMODE_PPP_KINEMA = 6;       //!<  positioning mode: PPP-kinemaric
 const int PMODE_PPP_STATIC = 7;       //!<  positioning mode: PPP-static
 const int PMODE_PPP_FIXED = 8;        //!<  positioning mode: PPP-fixed
 
-const unsigned int SOLF_LLH = 0;               //!<  solution format: lat/lon/height
-const unsigned int SOLF_XYZ = 1;               //!<  solution format: x/y/z-ecef
-const unsigned int SOLF_ENU = 2;               //!<  solution format: e/n/u-baseline
-const unsigned int SOLF_NMEA = 3;              //!<  solution format: NMEA-183
-const unsigned int SOLF_STAT = 4;              //!<  solution format: solution status
-const unsigned int SOLF_GSIF = 5;              //!<  solution format: GSI F1/F2
+const int SOLF_LLH = 0;               //!<  solution format: lat/lon/height
+const int SOLF_XYZ = 1;               //!<  solution format: x/y/z-ecef
+const int SOLF_ENU = 2;               //!<  solution format: e/n/u-baseline
+const int SOLF_NMEA = 3;              //!<  solution format: NMEA-183
+const int SOLF_STAT = 4;              //!<  solution format: solution status
+const int SOLF_GSIF = 5;              //!<  solution format: GSI F1/F2
 
-const unsigned int SOLQ_NONE = 0;              //!<  solution status: no solution
-const unsigned int SOLQ_FIX = 1;               //!<  solution status: fix
-const unsigned int SOLQ_FLOAT = 2;             //!<  solution status: float
-const unsigned int SOLQ_SBAS = 3;              //!<  solution status: SBAS
-const unsigned int SOLQ_DGPS = 4;              //!<  solution status: DGPS/DGNSS
-const unsigned int SOLQ_SINGLE = 5;            //!<  solution status: single
-const unsigned int SOLQ_PPP = 6;               //!<  solution status: PPP
-const unsigned int SOLQ_DR = 7;                //!<  solution status: dead reckoning
-const unsigned int MAXSOLQ = 7;                //!<  max number of solution status
+const int SOLQ_NONE = 0;              //!<  solution status: no solution
+const int SOLQ_FIX = 1;               //!<  solution status: fix
+const int SOLQ_FLOAT = 2;             //!<  solution status: float
+const int SOLQ_SBAS = 3;              //!<  solution status: SBAS
+const int SOLQ_DGPS = 4;              //!<  solution status: DGPS/DGNSS
+const int SOLQ_SINGLE = 5;            //!<  solution status: single
+const int SOLQ_PPP = 6;               //!<  solution status: PPP
+const int SOLQ_DR = 7;                //!<  solution status: dead reckoning
+const int MAXSOLQ = 7;                //!<  max number of solution status
 
-const unsigned int TIMES_GPST = 0;             //!<  time system: gps time
-const unsigned int TIMES_UTC = 1;              //!<  time system: utc
-const unsigned int TIMES_JST = 2;              //!<  time system: jst
+const int TIMES_GPST = 0;             //!<  time system: gps time
+const int TIMES_UTC = 1;              //!<  time system: utc
+const int TIMES_JST = 2;              //!<  time system: jst
 
 
 const double ERR_SAAS = 0.3;                   //!<  saastamoinen model error std (m)
@@ -156,17 +156,10 @@ const int NSATGLO = 0;
 const int NSYSGLO = 0;
 #endif
 
-#ifdef ENAGAL
 const int MINPRNGAL = 1;                   //!<   min satellite PRN number of Galileo
 const int MAXPRNGAL = 30;                  //!<   max satellite PRN number of Galileo
 const int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1); //!<   number of Galileo satellites
 const int NSYSGAL = 1;
-#else
-const int MINPRNGAL = 0;
-const int MAXPRNGAL = 0;
-const int NSATGAL = 0;
-const int NSYSGAL =  0;
-#endif
 
 #ifdef ENAQZS
 const int MINPRNQZS = 193;                 //!<  min satellite PRN number of QZSS
@@ -309,8 +302,7 @@ typedef void fatalfunc_t(const char *); //!<  fatal callback function type
 #define NP_PPP(opt)     ((opt)->dynamics?9:3) /* number of pos solution */
 #define IC_PPP(s,opt)   (NP_PPP(opt)+(s))      /* state index of clocks (s=0:gps,1:glo) */
 #define IT_PPP(opt)     (IC_PPP(0,opt)+NSYS)   /* state index of tropos */
-#define NR_PPP(opt)     (IT_PPP(opt)+((opt)->tropopt<TROPOPT_EST?0:((opt)->tropopt==TROPOPT_EST?1:3)))
-                                       /* number of solutions */
+#define NR_PPP(opt)     (IT_PPP(opt)+((opt)->tropopt<TROPOPT_EST?0:((opt)->tropopt==TROPOPT_EST?1:3))) /* number of solutions */
 #define IB_PPP(s,opt)   (NR_PPP(opt)+(s)-1)    /* state index of phase bias */
 #define NX_PPP(opt)     (IB_PPP(MAXSAT,opt)+1) /* number of estimated states */
 
@@ -458,7 +450,7 @@ typedef struct {        /* SBAS ephemeris type */
 typedef struct {        /* norad two line element data type */
     char name [32];     /* common name */
     char alias[32];     /* alias name */
-    char satno[16];     /* satellilte catalog number */
+    char satno[16];     /* satellite catalog number */
     char satclass;      /* classification */
     char desig[16];     /* international designator */
     gtime_t epoch;      /* element set epoch (UTC) */
@@ -748,8 +740,8 @@ typedef struct {        /* solution type */
     unsigned char stat; /* solution status (SOLQ_???) */
     unsigned char ns;   /* number of valid satellites */
     float age;          /* age of differential (s) */
-    float ratio;        /* AR ratio factor for valiation */
-    float thres;        /* AR ratio threshold for valiation */
+    float ratio;        /* AR ratio factor for validation */
+    float thres;        /* AR ratio threshold for validation */
 } sol_t;
 
 

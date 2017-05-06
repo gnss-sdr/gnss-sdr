@@ -454,27 +454,27 @@ int satexclude(int sat, int svh, const prcopt_t *opt)
 {
     int sys = satsys(sat, NULL);
 
-    if (svh<0)
+    if (svh < 0)
         {
-        trace(3, "ephemeris unavailable: sat=%3d svh=%02X\n", sat, svh);
-        return 1; /* ephemeris unavailable */
+            trace(3, "ephemeris unavailable: sat=%3d svh=%02X\n", sat, svh);
+            return 1; /* ephemeris unavailable */
         }
 
     if (opt)
         {
             if (opt->exsats[sat-1] == 1)
                 {
-                trace(3, "excluded satellite: sat=%3d svh=%02X\n", sat, svh);
-                return 1; /* excluded satellite */
+                    trace(3, "excluded satellite: sat=%3d svh=%02X\n", sat, svh);
+                    return 1; /* excluded satellite */
                 }
             if (opt->exsats[sat-1] == 2) return 0; /* included satellite */
             if (!(sys&opt->navsys))
                 {
-                trace(3, "unselected sat sys: sat=%3d svh=%02X\n", sat, svh);
-                return 1; /* unselected sat sys */
+                    trace(3, "unselected sat sys: sat=%3d svh=%02X\n", sat, svh);
+                    return 1; /* unselected sat sys */
                 }
         }
-    if (sys == SYS_QZS) svh&=0xFE; /* mask QZSS LEX health */
+    if (sys == SYS_QZS) svh &= 0xFE; /* mask QZSS LEX health */
     if (svh)
         {
             trace(3, "unhealthy satellite: sat=%3d svh=%02X\n", sat, svh);
@@ -3147,9 +3147,9 @@ void trace (int level  __attribute__((unused)), const char *format  __attribute_
     /*va_list ap;*/
     /* print error message to stderr */
     /*printf("RTKLIB TRACE[%i]:",level);
-    va_start(ap,format);
-    vfprintf(stdout,format,ap);
-    va_end(ap);*/
+       va_start(ap,format);
+       vfprintf(stdout,format,ap);
+       va_end(ap);*/
 }
 //void tracet  (int level, const char *format, ...) {}
 //void tracemat(int level, const double *A, int n, int m, int p, int q) {}
@@ -4012,4 +4012,53 @@ int expath(const char *path, char *paths[], int nmax)
     for (i = 0; i<n; i++) trace(3, "expath  : file=%s\n", paths[i]);
 
     return n;
+}
+
+/* From RTKLIB 2.4.2 */
+void windupcorr(gtime_t time, const double *rs, const double *rr, double *phw)
+{
+    double ek[3], exs[3], eys[3], ezs[3], ess[3], exr[3], eyr[3], eks[3], ekr[3], E[9];
+    double dr[3], ds[3], drs[3], r[3], pos[3], rsun[3], cosp, ph, erpv[5]={0};
+    int i;
+
+    trace(4, "windupcorr: time=%s\n", time_str(time, 0));
+
+    /* sun position in ecef */
+    sunmoonpos(gpst2utc(time), erpv, rsun, NULL, NULL);
+
+    /* unit vector satellite to receiver */
+    for (i = 0; i < 3; i++) r[i] = rr[i]-rs[i];
+    if (!normv3(r, ek)) return;
+
+    /* unit vectors of satellite antenna */
+    for (i = 0; i < 3; i++) r[i] = -rs[i];
+    if (!normv3(r, ezs)) return;
+    for (i = 0; i < 3; i++) r[i] = rsun[i]-rs[i];
+    if (!normv3(r, ess)) return;
+    cross3(ezs, ess, r);
+    if (!normv3(r, eys)) return;
+    cross3(eys, ezs, exs);
+
+    /* unit vectors of receiver antenna */
+    ecef2pos(rr, pos);
+    xyz2enu(pos, E);
+    exr[0] =  E[1]; exr[1] =  E[4]; exr[2] =  E[7]; /* x = north */
+    eyr[0] = -E[0]; eyr[1] = -E[3]; eyr[2] = -E[6]; /* y = west  */
+
+    /* phase windup effect */
+    cross3(ek, eys, eks);
+    cross3(ek, eyr, ekr);
+    for (i = 0; i < 3; i++)
+        {
+            ds[i] = exs[i]-ek[i]*dot(ek, exs, 3)-eks[i];
+            dr[i] = exr[i]-ek[i]*dot(ek, exr, 3)+ekr[i];
+        }
+    cosp = dot(ds, dr, 3) / norm_rtk(ds, 3) / norm_rtk(dr, 3);
+    if      (cosp < -1.0) cosp = -1.0;
+    else if (cosp >  1.0) cosp =  1.0;
+    ph = acos(cosp)/2.0/PI;
+    cross3(ds, dr, drs);
+    if (dot(ek, drs, 3) < 0.0) ph = -ph;
+
+    *phw = ph + floor(*phw - ph + 0.5); /* in cycle */
 }

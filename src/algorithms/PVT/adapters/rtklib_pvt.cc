@@ -395,6 +395,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     if(positioning_mode <= PMODE_FIXED) nx = 4 + 3;
     if(positioning_mode >= PMODE_PPP_KINEMA) nx = NX_PPP(&rtklib_configuration_options);
     int na = NP_PPP(&rtklib_configuration_options);
+
     double x[nx];
     double Px[nx*nx];
     double xa[na];

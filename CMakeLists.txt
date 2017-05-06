@@ -271,6 +271,14 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 # Append -O2 optimization flag for Debug builds
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 
+# allow 'large' files in 32 bit builds
+if(UNIX)
+    add_definitions( -D_LARGEFILE_SOURCE
+                     -D_FILE_OFFSET_BITS=64
+                     -D_LARGE_FILES
+                   )
+endif(UNIX)
+
 
 
 ################################################################################
@@ -329,7 +337,6 @@ if(OS_IS_LINUX)
     find_package(Threads REQUIRED)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(OS_IS_LINUX)
-
 
 
 ################################################################################
@@ -444,6 +451,16 @@ endif()
 
 
 ################################################################################
+# Lib4cpp - http://log4cpp.sourceforge.net/
+################################################################################
+find_package(Log4cpp)
+if(NOT LOG4CPP_FOUND)
+    message(FATAL_ERROR "*** Lib4cpp is required to build gnss-sdr")
+endif()
+
+
+
+################################################################################
 # volk_gnsssdr module - GNSS-SDR's own VOLK library
 ################################################################################
 find_package(VolkGnssSdr)
@@ -508,9 +525,9 @@ if(NOT VOLK_GNSSSDR_FOUND)
 
     set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     set(C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-    if(CMAKE_CROSSCOMPILING)  
-        set(VOLK_GNSSSDR_COMPILER "") 
-    else(CMAKE_CROSSCOMPILING)   
+    if(CMAKE_CROSSCOMPILING)
+        set(VOLK_GNSSSDR_COMPILER "")
+    else(CMAKE_CROSSCOMPILING)
         set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
     endif(CMAKE_CROSSCOMPILING)
     set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
@@ -524,7 +541,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 ${STRIP_VOLK_GNSSSDR_PROFILE}
                                 ${USE_THIS_PYTHON} )
     if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
-        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} 
+        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
                                     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
                                     -DCROSSCOMPILE_MULTILIB=TRUE )
     endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
@@ -672,7 +689,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
                            GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
      set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)
-     
+
      # Ensure that aclocal and libtool are present
      if(OS_IS_LINUX)
          if(EXISTS "/usr/bin/libtoolize")
@@ -882,28 +899,19 @@ endif(OS_IS_LINUX)
 find_package(Armadillo)
 if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " Armadillo has not been found.")
-     message(STATUS " Armadillo will be downloaded and built automatically ")
+     message(STATUS " Armadillo will be downloaded and built automatically")
      message(STATUS " when doing 'make'. ")
-
-     if(CMAKE_VERSION VERSION_LESS 3.1)
-         # ExternalProject in CMake > 3.1 cannot open .xz files
-         set(armadillo_RELEASE 6.700.7)
-         set(armadillo_MD5 "8116185e1d7391eed3bf6c500f81b4d8")
-         set(ARMA_FILE_EXTENSION "gz")
-     else(CMAKE_VERSION VERSION_LESS 3.1)
-         set(armadillo_RELEASE 7.800.2)
-         set(armadillo_MD5 "c601f3a5ec6d50666aa3a539fa20e6ca")
-         set(ARMA_FILE_EXTENSION "xz")
-     endif(CMAKE_VERSION VERSION_LESS 3.1)
+     set(armadillo_BRANCH 7.800.x)
+     set(armadillo_RELEASE ${armadillo_BRANCH})
 
      ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-         URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.${ARMA_FILE_EXTENSION}
-         DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
-         URL_MD5 ${armadillo_MD5}
-         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF
-         BUILD_IN_SOURCE 1
+         GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
+         GIT_TAG ${armadillo_BRANCH}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
+         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=-std=c++11
          BUILD_COMMAND make
          UPDATE_COMMAND ""
          INSTALL_COMMAND ""
@@ -911,7 +919,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
 
      # Set up variables
      ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
-     set(ARMADILLO_INCLUDE_DIRS ${binary_dir}/include )
+     set(ARMADILLO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include )
      find_library(LAPACK NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
      if(OS_IS_MACOSX)
          find_library(BLAS blas)
@@ -925,10 +933,6 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      endif(NOT GFORTRAN)
      set(ARMADILLO_LIBRARIES ${BLAS} ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
      set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
-     # Save a copy at the thirdparty folder
-     file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-          DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo
-     )
      set(ARMADILLO_VERSION_STRING ${armadillo_RELEASE})
 else(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      set(armadillo_RELEASE ${ARMADILLO_VERSION_STRING})
@@ -1180,8 +1184,17 @@ if($ENV{RTLSDR_DRIVER})
 endif($ENV{RTLSDR_DRIVER})
 
 if(ENABLE_OSMOSDR)
-    message(STATUS "The driver for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled." )
-    message(STATUS "You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ../'" )
+    find_package(GrOsmoSDR)
+    if(GROSMOSDR_FOUND)
+        message(STATUS "The driver for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled." )
+        message(STATUS "You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ../'" )
+    else(GROSMOSDR_FOUND)
+        if(ENABLE_PACKAGING)
+           message(WARNING "gr-osmosdr has not been found. Source blocks depending on it will NOT be built.")
+        else(ENABLE_PACKAGING)
+           message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional OSMOSDR driver")
+        endif(ENABLE_PACKAGING)
+    endif(GROSMOSDR_FOUND)
 else(ENABLE_OSMOSDR)
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled." )
     message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)" )
@@ -1314,4 +1327,3 @@ add_custom_target(uninstall
 # Add subdirectories (in order of deps)
 ########################################################################
 add_subdirectory(src)
-

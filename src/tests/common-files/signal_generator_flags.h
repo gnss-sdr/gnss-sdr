@@ -33,7 +33,7 @@
 
 #include <gflags/gflags.h>
 
-
+DEFINE_bool(disable_generator, false, "Disable the signal generator (a external signal file must be available for the test)");
 DEFINE_string(generator_binary, std::string(SW_GENERATOR_BIN), "Path of software-defined signal generator binary");
 DEFINE_string(rinex_nav_file, std::string(DEFAULT_RINEX_NAV), "Input RINEX navigation file");
 DEFINE_int32(duration, 100, "Duration of the experiment [in seconds, max = 300]");

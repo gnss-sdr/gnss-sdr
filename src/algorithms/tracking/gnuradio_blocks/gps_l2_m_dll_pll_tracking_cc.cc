@@ -259,7 +259,7 @@ void gps_l2_m_dll_pll_tracking_cc::start_tracking()
     sys = sys_.substr(0,1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) <<" whith Doppler="<<d_acq_carrier_doppler_hz<<" [Hz]"<< std::endl;
+    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " with Doppler=" << d_acq_carrier_doppler_hz << " [Hz]" << std::endl;
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
 

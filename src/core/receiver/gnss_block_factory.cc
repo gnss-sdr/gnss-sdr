@@ -1060,7 +1060,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         }
 
     // OBSERVABLES -----------------------------------------------------------------
-    else if (implementation.compare("Hybrid_Observables") == 0)
+    else if ((implementation.compare("Hybrid_Observables") == 0) || (implementation.compare("GPS_L1_CA_Observables") == 0) || (implementation.compare("GPS_L2C_Observables") == 0) ||
+    (implementation.compare("Galileo_E5A_Observables") == 0))
         {
             std::unique_ptr<GNSSBlockInterface> block_(new HybridObservables(configuration.get(), role, in_streams,
                     out_streams));
@@ -1073,7 +1074,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
-    else if (implementation.compare("RTKLIB_PVT") == 0)
+    else if ((implementation.compare("RTKLIB_PVT") == 0) || (implementation.compare("GPS_L1_CA_PVT") == 0) || (implementation.compare("Galileo_E1_PVT") == 0) )
         {
             std::unique_ptr<GNSSBlockInterface> block_(new RtklibPvt(configuration.get(), role, in_streams,
                     out_streams));

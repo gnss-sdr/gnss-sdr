@@ -151,7 +151,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::gps_l1_ca_dll_pll_c_aid_tracking_fpga_
     d_local_code_shift_chips[1] = 0.0;
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
-    multicorrelator_fpga_8sc.init(2 * d_correlation_length_samples, d_n_correlator_taps);
+    multicorrelator_fpga_8sc.init(d_n_correlator_taps);
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO

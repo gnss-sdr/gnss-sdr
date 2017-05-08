@@ -36,6 +36,10 @@ if(ENABLE_CUDA)
      set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS})
 endif(ENABLE_CUDA)
 
+if(ENABLE_FPGA)
+     add_definitions(-DENABLE_FPGA=1)
+endif(ENABLE_FPGA)
+
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
@@ -59,6 +63,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
@@ -142,6 +147,7 @@ target_link_libraries(gnss_rx ${Boost_LIBRARIES}
                               resampler_adapters
                               acq_adapters
                               tracking_lib
+                              acquisition_lib
                               tracking_adapters
                               channel_adapters
                               telemetry_decoder_libswiftcnav

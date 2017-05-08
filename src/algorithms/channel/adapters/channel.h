@@ -94,6 +94,7 @@ private:
     std::shared_ptr<TelemetryDecoderInterface> nav_;
     std::string role_;
     std::string implementation_;
+    bool flag_enable_fpga;
     unsigned int channel_;
     Gnss_Synchro gnss_synchro_;
     Gnss_Signal gnss_signal_;

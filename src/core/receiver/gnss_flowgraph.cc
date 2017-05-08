@@ -523,7 +523,24 @@ void GNSSFlowgraph::init()
         }
 
     observables_ = block_factory_->GetObservables(configuration_);
+    // Mark old implementations as deprecated
+    std::string default_str("Default");
+    std::string obs_implementation = configuration_->property("Observables.implementation", default_str);
+    if ((obs_implementation.compare("GPS_L1_CA_Observables") == 0) || (obs_implementation.compare("GPS_L2C_Observables") == 0) ||
+         (obs_implementation.compare("Galileo_E1B_Observables") == 0) || (obs_implementation.compare("Galileo_E5A_Observables") == 0))
+        {
+              std::cout << "WARNING: Implementation '" << obs_implementation << "' of the Observables block has been replaced by 'Hybrid_Observables'." << std::endl;
+              std::cout << "Please update your configuration file." << std::endl;
+        }
+
     pvt_ = block_factory_->GetPVT(configuration_);
+    // Mark old implementations as deprecated
+    std::string pvt_implementation = configuration_->property("PVT.implementation", default_str);
+    if ((pvt_implementation.compare("GPS_L1_CA_PVT") == 0) || (pvt_implementation.compare("Galileo_E1_PVT") == 0))
+        {
+              std::cout << "WARNING: Implementation '" << pvt_implementation << "' of the PVT block has been replaced by 'RTKLIB_PVT'." << std::endl;
+              std::cout << "Please update your configuration file." << std::endl;
+        }
 
     std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = block_factory_->GetChannels(configuration_, queue_);
 

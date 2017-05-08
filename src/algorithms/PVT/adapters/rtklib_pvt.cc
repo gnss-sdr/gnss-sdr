@@ -171,12 +171,23 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count = 0)) type_of_receiver = 22;
 
     //RTKLIB PVT solver options
-
     // Settings 1
-    int positioning_mode = configuration->property(role + ".positioning_mode", PMODE_SINGLE);  /* (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
-    if( (positioning_mode < 0) || (positioning_mode > 8) )
+    int positioning_mode = -1;
+    std::string default_pos_mode("Single");
+    std::string positioning_mode_str = configuration->property(role + ".positioning_mode", default_pos_mode);  /* (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    if(positioning_mode_str.compare("Single") == 0) positioning_mode = PMODE_SINGLE;
+    if(positioning_mode_str.compare("Static") == 0) positioning_mode = PMODE_STATIC;
+    if(positioning_mode_str.compare("Kinematic") == 0) positioning_mode = PMODE_KINEMA;
+    if(positioning_mode_str.compare("PPP_Static") == 0) positioning_mode = PMODE_PPP_STATIC;
+    if(positioning_mode_str.compare("PPP_Kinematic") == 0) positioning_mode = PMODE_PPP_KINEMA;
+
+    if( positioning_mode == -1 )
         {
             //warn user and set the default
+            std::cout << "WARNING: Bad specification of positioning mode." << std::endl;
+            std::cout << "positioning_mode possible values: Single / Static / Kinematic / PPP_Static / PPP_Kinematic" << std::endl;
+            std::cout << "positioning_mode specified value: " << positioning_mode_str << std::endl;
+            std::cout << "Setting positioning_mode to Single" << std::endl;
             positioning_mode = PMODE_SINGLE;
         }
 
@@ -205,19 +216,41 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             dynamics_model = 0;
         }
 
-    int iono_model = configuration->property(role + ".iono_model", 0); /*  (IONOOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
-    if( (iono_model < 0) || (iono_model > 8) )
+    std::string default_iono_model("OFF");
+    std::string iono_model_str = configuration->property(role + ".iono_model", default_iono_model); /*  (IONOOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    int iono_model = -1;
+    if(iono_model_str.compare("OFF") == 0) iono_model = IONOOPT_OFF;
+    if(iono_model_str.compare("Broadcast") == 0) iono_model = IONOOPT_BRDC;
+    if(iono_model_str.compare("SBAS") == 0) iono_model = IONOOPT_SBAS;
+    if(iono_model_str.compare("Iono-Free-LC") == 0) iono_model = IONOOPT_IFLC;
+    if(iono_model_str.compare("Estimate_STEC") == 0) iono_model = IONOOPT_EST;
+    if(iono_model_str.compare("IONEX") == 0) iono_model = IONOOPT_TEC;
+    if( iono_model == -1 )
         {
             //warn user and set the default
-            iono_model = 0; /* 0: ionosphere option: correction off */
+            std::cout << "WARNING: Bad specification of ionospheric model." << std::endl;
+            std::cout << "iono_model possible values: OFF / Broadcast / SBAS / Iono-Free-LC / Estimate_STEC / IONEX" << std::endl;
+            std::cout << "iono_model specified value: " << iono_model_str << std::endl;
+            std::cout << "Setting iono_model to OFF" << std::endl;
+            iono_model = IONOOPT_OFF; /* 0: ionosphere option: correction off */
         }
 
-
-    int trop_model = configuration->property(role + ".trop_model", 0); /*  (TROPOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
-    if( (trop_model < 0) || (trop_model > 5) )
+    std::string default_trop_model("OFF");
+    int trop_model = -1;
+    std::string trop_model_str = configuration->property(role + ".trop_model", default_trop_model); /*  (TROPOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    if(trop_model_str.compare("OFF") == 0) trop_model = TROPOPT_OFF;
+    if(trop_model_str.compare("Saastamoinen") == 0) trop_model = TROPOPT_SAAS;
+    if(trop_model_str.compare("SBAS") == 0) trop_model = TROPOPT_SBAS;
+    if(trop_model_str.compare("Estimate_ZTD") == 0) trop_model = TROPOPT_EST;
+    if(trop_model_str.compare("Estimate_ZTD_Grad") == 0) trop_model = TROPOPT_ESTG;
+    if( trop_model == -1 )
         {
             //warn user and set the default
-            trop_model = 0;
+            std::cout << "WARNING: Bad specification of tropospheric model." << std::endl;
+            std::cout << "trop_model possible values: OFF / Saastamoinen / SBAS / Estimate_ZTD / Estimate_ZTD_Grad" << std::endl;
+            std::cout << "trop_model specified value: " << trop_model_str << std::endl;
+            std::cout << "Setting trop_model to OFF" << std::endl;
+            trop_model = TROPOPT_OFF;
         }
 
     /* RTKLIB positioning options */
@@ -242,12 +275,24 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
         }
 
     // Settings 2
-    int integer_ambiguity_resolution_gps = configuration->property(role + ".AR_GPS", 1); /* Integer Ambiguity Resolution mode for GPS (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
-    if( (integer_ambiguity_resolution_gps < 0) || (integer_ambiguity_resolution_gps > 4) )
+    std::string default_gps_ar("Continuous");
+    std::string integer_ambiguity_resolution_gps_str = configuration->property(role + ".AR_GPS", default_gps_ar); /* Integer Ambiguity Resolution mode for GPS (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
+    int integer_ambiguity_resolution_gps = -1;
+    if(integer_ambiguity_resolution_gps_str.compare("OFF") == 0) integer_ambiguity_resolution_gps = ARMODE_OFF;
+    if(integer_ambiguity_resolution_gps_str.compare("Continuous") == 0) integer_ambiguity_resolution_gps = ARMODE_CONT;
+    if(integer_ambiguity_resolution_gps_str.compare("Instantaneous") == 0) integer_ambiguity_resolution_gps = ARMODE_INST;
+    if(integer_ambiguity_resolution_gps_str.compare("Fix-and-Hold") == 0) integer_ambiguity_resolution_gps = ARMODE_FIXHOLD;
+    if(integer_ambiguity_resolution_gps_str.compare("PPP-AR") == 0) integer_ambiguity_resolution_gps = ARMODE_PPPAR;
+    if( integer_ambiguity_resolution_gps == -1 )
         {
             //warn user and set the default
-            integer_ambiguity_resolution_gps = 1;
+            std::cout << "WARNING: Bad specification of GPS ambiguity resolution method." << std::endl;
+            std::cout << "AR_GPS possible values: OFF / Continuous / Instantaneous / Fix-and-Hold / PPP-AR" << std::endl;
+            std::cout << "AR_GPS specified value: " << integer_ambiguity_resolution_gps_str << std::endl;
+            std::cout << "Setting AR_GPS to OFF" << std::endl;
+            integer_ambiguity_resolution_gps = ARMODE_OFF;
         }
+
     int integer_ambiguity_resolution_glo = configuration->property(role + ".AR_GLO", 1); /* Integer Ambiguity Resolution mode for GLONASS (0:off,1:on,2:auto cal,3:ext cal) */
     if( (integer_ambiguity_resolution_glo < 0) || (integer_ambiguity_resolution_glo > 3) )
         {

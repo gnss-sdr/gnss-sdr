@@ -164,6 +164,8 @@ private:
 
     unsigned int nsamples_total_;
 
+    unsigned int select_queue_Fpga_;
+
     float calculate_threshold(float pfa);
 };
 

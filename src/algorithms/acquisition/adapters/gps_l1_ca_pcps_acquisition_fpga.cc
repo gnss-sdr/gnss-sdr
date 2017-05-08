@@ -67,6 +67,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     // note : the FPGA is implemented according to use_CFAR_algorithm = 0. Setting use_CFAR_algorithm to 1 has no effect.
     use_CFAR_algorithm_flag_=configuration_->property(role + ".use_CFAR_algorithm", false);
 
+    // note : the FPGA does not use the max_dwells variable.
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
 
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
@@ -90,18 +91,21 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     code_ = new gr_complex[vector_length_];
 
+    select_queue_Fpga_ = configuration_->property(role + ".select_queue_Fpga", 0);
+
     if (item_type_.compare("cshort") == 0 )
         {
             item_size_ = sizeof(lv_16sc_t);
             gps_acquisition_fpga_sc_ = gps_pcps_make_acquisition_fpga_sc(sampled_ms_, max_dwells_,
                     doppler_max_, if_, fs_in_, code_length_, code_length_, vector_length_,
-                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, select_queue_Fpga_, dump_, dump_filename_);
             DLOG(INFO) << "acquisition(" << gps_acquisition_fpga_sc_->unique_id() << ")";
 
         }
     else{
     		LOG(FATAL) << item_type_ << " FPGA only accepts chsort";
     	}
+
 
     channel_ = 0;
     threshold_ = 0.0;
@@ -198,8 +202,6 @@ void GpsL1CaPcpsAcquisitionFpga::set_local_code()
     {
     	code[s] = std::complex<float>(0, 0);
     }
-
-    unsigned long long interpolated_sampling_frequency; // warning: we need a long long to do this conversion to avoid running out of bits
 
     gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_ , 0);
 

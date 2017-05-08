@@ -76,11 +76,10 @@
 	bool gps_fpga_acquisition_8sc::init(unsigned int fft_size, unsigned int nsamples_total, long freq, unsigned int doppler_max, unsigned int doppler_step, int num_doppler_bins, long fs_in, unsigned select_queue)
 	{
 		float phase_step_rad_fpga;
-		float phase_step_rad_fpga_real;
 
 		d_phase_step_rad_vector = new float[num_doppler_bins];
 
-		for (unsigned int doppler_index = 0; doppler_index < num_doppler_bins; doppler_index++)
+		for (int doppler_index = 0; doppler_index < num_doppler_bins; doppler_index++)
 		{
 			int doppler = -static_cast<int>(doppler_max) + doppler_step * doppler_index;
 			float phase_step_rad = GPS_TWO_PI * (freq + doppler) / static_cast<float>(fs_in);
@@ -116,6 +115,7 @@
 
 		d_nsamples = fft_size;
 		d_nsamples_total = nsamples_total;
+		d_select_queue = select_queue;
 
 	    gps_fpga_acquisition_8sc::configure_acquisition();
 
@@ -126,8 +126,7 @@
 
 bool gps_fpga_acquisition_8sc::set_local_code(gr_complex* fft_codes)
 {
-	int i;
-	float val;
+	unsigned int i;
 	float max = 0;
 	d_fft_codes = new lv_16sc_t[d_nsamples_total];
 

@@ -37,7 +37,6 @@
 #include <boost/make_shared.hpp>
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
-//#include <stdio.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -143,7 +142,7 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block, const char
 
 		int transfer_size;
 		int num_transferred_samples = 0;
-		while (num_transferred_samples< fileLen/FLOAT_SIZE)
+		while (num_transferred_samples < (int) (fileLen/FLOAT_SIZE))
 		{
 			if (((fileLen/FLOAT_SIZE) - num_transferred_samples) > DMA_ACQ_TRANSFER_SIZE)
 			{
@@ -274,7 +273,6 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
     config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
-    //config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.item_type", "cshort");
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.coherent_integration_time_ms", "1");
@@ -285,6 +283,7 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
     config->set_property("Acquisition.doppler_step", "500");
     config->set_property("Acquisition.repeat_satellite", "false");
     config->set_property("Acquisition.pfa", "0.0");
+    config->set_property("Acquisition.select_queue_Fpga", "0");
 }
 
 
@@ -305,9 +304,6 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
     double expected_delay_samples = 524;
     double expected_doppler_hz = 1680;
     init();
-
-
-
 
     std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 1);
 
@@ -337,15 +333,17 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block." << std::endl;
 
+    // uncomment the next line to load the file from the current directory
     std::string file = "./GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
+
+	// uncomment the next two lines to load the file from the signal samples subdirectory
+    //std::string path = std::string(TEST_PATH);
+    //std::string file = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
+
     const char * file_name = file.c_str();
 
     ASSERT_NO_THROW( {
-        //std::string path = std::string(TEST_PATH);
-        //std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-        //std::string file = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
-
-        // for the unit test use dummy blocks to make the flowgraph work and allow the acquisition message to be sent.
+       // for the unit test use dummy blocks to make the flowgraph work and allow the acquisition message to be sent.
         // in the actual system there is a flowchart running in parallel so this is not needed
 
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
@@ -375,9 +373,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
 
     t3.join();
 
-
-    unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Ran GpsL1CaPcpsAcquisitionTestFpga in " << (end - begin) << " microseconds" << std::endl;
 
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 

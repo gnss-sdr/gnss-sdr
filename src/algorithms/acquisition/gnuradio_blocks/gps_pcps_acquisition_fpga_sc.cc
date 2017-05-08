@@ -54,13 +54,14 @@ gps_pcps_acquisition_fpga_sc_sptr gps_pcps_make_acquisition_fpga_sc(
                                  unsigned int doppler_max, long freq, long fs_in,
                                  int samples_per_ms, int samples_per_code, int vector_length,
                                  bool bit_transition_flag, bool use_CFAR_algorithm_flag,
+                                 unsigned int select_queue_Fpga,
                                  bool dump,
                                  std::string dump_filename)
 {
 
     return gps_pcps_acquisition_fpga_sc_sptr(
             new gps_pcps_acquisition_fpga_sc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-                                     samples_per_code, vector_length, bit_transition_flag, use_CFAR_algorithm_flag, dump, dump_filename));
+                                     samples_per_code, vector_length, bit_transition_flag, use_CFAR_algorithm_flag, select_queue_Fpga, dump, dump_filename));
 }
 
 gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
@@ -68,6 +69,7 @@ gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code, int vector_length,
                          bool bit_transition_flag, bool use_CFAR_algorithm_flag,
+                         unsigned int select_queue_Fpga,
                          bool dump,
                          std::string dump_filename) :
 
@@ -82,15 +84,15 @@ gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
     d_sampled_ms = sampled_ms;
-    d_max_dwells = max_dwells;
+    d_max_dwells = max_dwells;								// Note : d_max_dwells is not used in the FPGA implementation
     d_well_count = 0;
     d_doppler_max = doppler_max;
     d_fft_size = d_sampled_ms * d_samples_per_ms;
     d_mag = 0;
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
-    d_bit_transition_flag = bit_transition_flag;
-    d_use_CFAR_algorithm_flag = use_CFAR_algorithm_flag;
+    d_bit_transition_flag = bit_transition_flag; 			// Note : bit transition flag is ignored and assumed 0 in the FPGA implementation
+    d_use_CFAR_algorithm_flag = use_CFAR_algorithm_flag;	// Note : user CFAR algorithm flag is ignored and assumed 0 in the FPGA implementation
     d_threshold = 0.0;
     d_doppler_step = 250;
     d_code_phase = 0;
@@ -100,21 +102,11 @@ gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
 
     d_nsamples_total = vector_length;
 
-    // COD:
-    // Experimenting with the overlap/save technique for handling bit trannsitions
-    // The problem: Circular correlation is asynchronous with the received code.
-    // In effect the first code phase used in the correlation is the current
-    // estimate of the code phase at the start of the input buffer. If this is 1/2
-    // of the code period a bit transition would move all the signal energy into
-    // adjacent frequency bands at +/- 1/T where T is the integration time.
-    //
-    // We can avoid this by doing linear correlation, effectively doubling the
-    // size of the input buffer and padding the code with zeros.
-    if( d_bit_transition_flag )
-        {
-            d_fft_size *= 2;
-            d_max_dwells = 1;
-        }
+    //if( d_bit_transition_flag )
+    //    {
+    //        d_fft_size *= 2;
+    //        d_max_dwells = 1;
+    //    }
 
     d_fft_codes = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_magnitude = static_cast<float*>(volk_gnsssdr_malloc(d_nsamples_total * sizeof(float), volk_gnsssdr_get_alignment()));
@@ -129,6 +121,9 @@ gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
 
     // Inverse FFT
     d_ifft = new gr::fft::fft_complex(d_nsamples_total, false);
+
+    // FPGA queue selection
+    d_select_queue_Fpga = select_queue_Fpga;
 
     // For dumping samples into a file
     d_dump = dump;
@@ -185,11 +180,11 @@ void gps_pcps_acquisition_fpga_sc::set_local_code(std::complex<float> * code)
 
 
     int offset = 0;
-    if( d_bit_transition_flag )
-        {
-            std::fill_n( d_fft_if->get_inbuf(), d_nsamples_total, gr_complex( 0.0, 0.0 ) );
-            offset = d_nsamples_total;
-        }
+//    if( d_bit_transition_flag )
+//        {
+//            std::fill_n( d_fft_if->get_inbuf(), d_nsamples_total, gr_complex( 0.0, 0.0 ) );
+//            offset = d_nsamples_total;
+//        }
 
 
 
@@ -204,8 +199,6 @@ void gps_pcps_acquisition_fpga_sc::set_local_code(std::complex<float> * code)
 
 void gps_pcps_acquisition_fpga_sc::update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq)
 {
-	static int debugint = 0;
-
 
     float phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(d_fs_in);
 
@@ -240,9 +233,7 @@ void gps_pcps_acquisition_fpga_sc::init()
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_freq + doppler);
         }
-    // PENDING : SELECT_QUEUE MUST GO INTO CONFIGURATION
-    unsigned select_queue = 0;
-    acquisition_fpga_8sc.init(d_fft_size, d_nsamples_total, d_freq, d_doppler_max, d_doppler_step, d_num_doppler_bins, d_fs_in, select_queue);
+    acquisition_fpga_8sc.init(d_fft_size, d_nsamples_total, d_freq, d_doppler_max, d_doppler_step, d_num_doppler_bins, d_fs_in, d_select_queue_Fpga);
 
 
 
@@ -290,8 +281,8 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
     d_active = active;
 
 
-    while (d_well_count < d_max_dwells)
-    {
+//    while (d_well_count < d_max_dwells)
+//    {
 		int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
 		d_state = 1;
@@ -300,9 +291,9 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 		int doppler;
 		uint32_t indext = 0;
 		float magt = 0.0;
-		int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
-
-		float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
+		//int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
+		int effective_fft_size = d_fft_size;
+		//float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
 		d_mag = 0.0;
 
@@ -312,7 +303,7 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 
 		DLOG(INFO) << "Channel: " << d_channel
 				   << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
-				   //<< " ,sample stamp: " << d_sample_counter << ", threshold: "
+				   << " ,sample stamp: " << d_sample_counter << ", threshold: "
 				   << ", threshold: "
 				   << d_threshold << ", doppler_max: " << d_doppler_max
 				   << ", doppler_step: " << d_doppler_step;
@@ -329,6 +320,8 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 
 	    		acquisition_fpga_8sc.read_acquisition_results(&indext, &magt, &initial_sample, &d_input_power);
 
+	    		d_sample_counter = initial_sample;
+
 		        temp_peak_to_noise_level = (float) (magt / d_input_power);
 		        if (peak_to_noise_level < temp_peak_to_noise_level) 
 					{
@@ -337,13 +330,13 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 
                         d_input_power = (d_input_power - d_mag) / (effective_fft_size - 1);
 
-						if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
-							{
+						//if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
+						//	{
 								d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
 								d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-								d_gnss_synchro->Acq_samplestamp_samples = initial_sample;
+								d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 	                            d_test_statistics = d_mag / d_input_power;
-							}
+						//	}
 					}
 
 				// Record results to file if required
@@ -379,8 +372,7 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 					// 6.1- Declare positive acquisition using a message port
 					DLOG(INFO) << "positive acquisition";
 					DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
-					//DLOG(INFO) << "sample_stamp " << d_sample_counter;
-					DLOG(INFO) << "sample_stamp " << initial_sample;
+					DLOG(INFO) << "sample_stamp " << d_sample_counter;
 					DLOG(INFO) << "test statistics value " << d_test_statistics;
 					DLOG(INFO) << "test statistics threshold " << d_threshold;
 					DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
@@ -394,7 +386,7 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 					acquisition_message = 1;
 					this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
 
-					break;
+//					break;
 
 				}
 			else //if (d_well_count == d_max_dwells)
@@ -405,7 +397,6 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 					DLOG(INFO) << "negative acquisition";
 					DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
 					DLOG(INFO) << "sample_stamp " << d_sample_counter;
-					DLOG(INFO) << "sample_stamp " << initial_sample;
 					DLOG(INFO) << "test statistics value " << d_test_statistics;
 					DLOG(INFO) << "test statistics threshold " << d_threshold;
 					DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
@@ -419,10 +410,10 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 					acquisition_message = 2;
 					this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
 
-					break;
+//					break;
 				}
 
-    }
+//    }
 
     acquisition_fpga_8sc.unblock_samples();
 
@@ -435,6 +426,6 @@ int gps_pcps_acquisition_fpga_sc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items __attribute__((unused)))
 {
-	
+	// general work not used with the acquisition
     return noutput_items;
 }

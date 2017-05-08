@@ -66,6 +66,7 @@ gps_pcps_make_acquisition_fpga_sc(unsigned int sampled_ms, unsigned int max_dwel
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code, int vector_length_,
                          bool bit_transition_flag, bool use_CFAR_algorithm_flag,
+                         unsigned int select_queue_Fpga,
                          bool dump,
                          std::string dump_filename);
 
@@ -83,6 +84,7 @@ private:
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code, int vector_length,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
+            unsigned int select_queue_Fpga,
             bool dump,
             std::string dump_filename);
 
@@ -90,6 +92,7 @@ private:
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code, int vector_length,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
+            unsigned int select_queue_Fpga,
             bool dump,
             std::string dump_filename);
 
@@ -132,6 +135,7 @@ private:
     int d_state;
     bool d_dump;
     unsigned int d_channel;
+    unsigned int d_select_queue_Fpga;
     std::string d_dump_filename;
 
     gps_fpga_acquisition_8sc acquisition_fpga_8sc;

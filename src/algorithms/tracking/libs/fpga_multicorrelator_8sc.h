@@ -50,10 +50,10 @@ class fpga_multicorrelator_8sc
 public:
     fpga_multicorrelator_8sc();
     ~fpga_multicorrelator_8sc();
-    bool init(int max_signal_length_samples, int n_correlators);
+    bool init(int n_correlators);
     bool set_local_code_and_taps(int code_length_chips, const lv_16sc_t* local_code_in, float *shifts_chips);
     bool set_output_vectors(lv_16sc_t* corr_out);
-    void update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips);
+    void update_local_code(float rem_code_phase_chips);
     bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float rem_code_phase_chips, float code_phase_step_chips, int signal_length_samples);
     bool free();
 

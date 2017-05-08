@@ -75,7 +75,7 @@ private:
 
     unsigned int d_nsamples_total; // total number of samples in the fft including padding
     unsigned int d_nsamples; // number of samples not including padding
-    unsigned int d_select_queue =0; // queue selection
+    unsigned int d_select_queue; // queue selection
 
     // FPGA private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);

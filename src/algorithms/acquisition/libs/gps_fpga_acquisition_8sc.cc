@@ -87,7 +87,7 @@ bool gps_fpga_acquisition_8sc::init(unsigned int fft_size, unsigned int nsamples
             // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
             // The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)
             // while the gnss-sdr software (volk_gnsssdr_s32f_sincos_32fc) generates cos(x) + j*sin(x)
-            phase_step_rad_fpga = phase_step_rad/(GPS_TWO_PI/2);
+            phase_step_rad_fpga = phase_step_rad / (GPS_TWO_PI / 2);
             // avoid saturation of the fixed point representation in the fpga
             // (only the positive value can saturate due to the 2's complement representation)
             if (phase_step_rad_fpga == 1.0)
@@ -95,7 +95,6 @@ bool gps_fpga_acquisition_8sc::init(unsigned int fft_size, unsigned int nsamples
                     phase_step_rad_fpga = MAX_PHASE_STEP_RAD;
                 }
             d_phase_step_rad_vector[doppler_index] = phase_step_rad_fpga;
-
         }
 
     // sanity check : check test register
@@ -171,14 +170,12 @@ gps_fpga_acquisition_8sc::gps_fpga_acquisition_8sc()
 
 gps_fpga_acquisition_8sc::~gps_fpga_acquisition_8sc()
 {
-
     if (munmap((void*)d_map_base, PAGE_SIZE) == -1)
         {
             printf("Failed to unmap memory uio\n");
         }
 
     close(d_fd);
-
 }
 
 
@@ -225,7 +222,6 @@ void gps_fpga_acquisition_8sc::fpga_configure_acquisition_local_code(lv_16sc_t f
             local_code = (tmp & 0xFF) | ((tmp2*256) & 0xFF00); // put together the real part and the imaginary part
             d_map_base[4] = 0x0C000000 | (local_code & 0xFFFF);
         }
-
 }
 
 
@@ -243,18 +239,14 @@ void gps_fpga_acquisition_8sc::run_acquisition(void)
     nb=read(d_fd, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
-            printf("Tracking_module Read failed to retrive 4 bytes!\n");
+            printf("Tracking_module Read failed to retrieve 4 bytes!\n");
             printf("Tracking_module Interrupt number %d\n", irq_count);
         }
-
 }
-
-
 
 
 void gps_fpga_acquisition_8sc::configure_acquisition()
 {
-
     d_map_base[0] = d_select_queue;
     d_map_base[1] = d_nsamples_total;
     d_map_base[2] = d_nsamples;
@@ -275,6 +267,7 @@ void gps_fpga_acquisition_8sc::set_phase_step(unsigned int doppler_index)
     d_map_base[3] = phase_step_rad_int;
 }
 
+
 void gps_fpga_acquisition_8sc::read_acquisition_results(uint32_t* max_index, float* max_magnitude, unsigned *initial_sample, float *power_sum)
 {
     unsigned readval = 0;
@@ -287,7 +280,6 @@ void gps_fpga_acquisition_8sc::read_acquisition_results(uint32_t* max_index, flo
     *power_sum = (float) readval;
     readval = d_map_base[3];
     *max_index = readval;
-
 }
 
 

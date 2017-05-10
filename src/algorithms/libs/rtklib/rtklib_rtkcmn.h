@@ -79,7 +79,7 @@
 #define GNSS_SDR_RTKLIB_RTKCMN_H_
 
 #include "rtklib.h"
-
+#include <glog/logging.h>
 
 /* coordinate rotation matrix ------------------------------------------------*/
 #define Rx(t,X) do { \

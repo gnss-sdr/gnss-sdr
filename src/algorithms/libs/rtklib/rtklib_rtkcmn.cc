@@ -3142,14 +3142,15 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //void traceopen(const char *file) {}
 //void traceclose(void) {}
 //void tracelevel(int level) {}
-void trace (int level  __attribute__((unused)), const char *format  __attribute__((unused)), ...)
+void trace (int level, const char *format, ...)
 {
-    /*va_list ap;*/
-    /* print error message to stderr */
-    /*printf("RTKLIB TRACE[%i]:",level);
-       va_start(ap,format);
-       vfprintf(stdout,format,ap);
-       va_end(ap);*/
+    va_list ap;
+    char buffer[256];
+    va_start(ap, format);
+    vsprintf(buffer, format, ap);
+    va_end(ap);
+    std::string str(buffer);
+    VLOG(level) << "RTKLIB TRACE[" << level << "]:" << str;
 }
 //void tracet  (int level, const char *format, ...) {}
 //void tracemat(int level, const double *A, int n, int m, int p, int q) {}

@@ -38,7 +38,6 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${Boost_INCLUDE_DIRS}
-     ${ARMADILLO_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
 )
@@ -47,14 +46,13 @@ file(GLOB RTKLIB_LIB_HEADERS "*.h")
 list(SORT RTKLIB_LIB_HEADERS)
 add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
-add_dependencies(rtklib_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
+add_dependencies(rtklib_lib glog-${glog_RELEASE})
 
 target_link_libraries(
     rtklib_lib
     ${Boost_LIBRARIES}
     ${GFlags_LIBS}
     ${GLOG_LIBRARIES}
-    ${ARMADILLO_LIBRARIES}
     ${BLAS}
     ${LAPACK}
     )

@@ -484,7 +484,7 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                 {
                     double current_RX_time = gnss_observables_map.begin()->second.RX_time;
 
-                    if (fabs(current_RX_time - d_rx_time) * 1000.0 >= static_cast<double>(d_output_rate_ms))
+                    if (std::fabs(current_RX_time - d_rx_time) * 1000.0 >= static_cast<double>(d_output_rate_ms))
                         {
                             flag_compute_pvt_output = true;
                             d_rx_time = current_RX_time;
@@ -498,47 +498,47 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
 
                             if (pvt_result == true)
                                 {
-                                    if (fabs(current_RX_time - last_pvt_display_T_rx_s) * 1000.0 >= static_cast<double>(d_display_rate_ms))
+                                    if (std::fabs(current_RX_time - last_pvt_display_T_rx_s) * 1000.0 >= static_cast<double>(d_display_rate_ms))
                                         {
                                             flag_display_pvt = true;
                                             last_pvt_display_T_rx_s = current_RX_time;
                                         }
-                                    if ((fabs(current_RX_time - last_RTCM_1019_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1019_rate_ms)) && (d_rtcm_MT1019_rate_ms != 0) ) // allows deactivating messages by setting rate = 0
+                                    if ((std::fabs(current_RX_time - last_RTCM_1019_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1019_rate_ms)) && (d_rtcm_MT1019_rate_ms != 0) ) // allows deactivating messages by setting rate = 0
                                         {
                                             flag_write_RTCM_1019_output = true;
                                             last_RTCM_1019_output_time = current_RX_time;
                                         }
 
-                                    if ((fabs(current_RX_time - last_RTCM_1045_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1045_rate_ms)) && (d_rtcm_MT1045_rate_ms != 0) )
+                                    if ((std::fabs(current_RX_time - last_RTCM_1045_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1045_rate_ms)) && (d_rtcm_MT1045_rate_ms != 0) )
                                         {
                                             flag_write_RTCM_1045_output = true;
                                             last_RTCM_1045_output_time = current_RX_time;
                                         }
 
-                                    if ((fabs(current_RX_time - last_RTCM_1077_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1077_rate_ms)) && (d_rtcm_MT1077_rate_ms != 0) )
+                                    if ((std::fabs(current_RX_time - last_RTCM_1077_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1077_rate_ms)) && (d_rtcm_MT1077_rate_ms != 0) )
                                         {
                                             flag_write_RTCM_1077_output = true;
                                             last_RTCM_1077_output_time = current_RX_time;
                                         }
 
-                                    if ((fabs(current_RX_time - last_RTCM_1097_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1097_rate_ms)) && (d_rtcm_MT1097_rate_ms != 0) )
+                                    if ((std::fabs(current_RX_time - last_RTCM_1097_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1097_rate_ms)) && (d_rtcm_MT1097_rate_ms != 0) )
                                         {
                                             flag_write_RTCM_1097_output = true;
                                             last_RTCM_1097_output_time = current_RX_time;
                                         }
 
-                                    if ((fabs(current_RX_time - last_RTCM_MSM_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MSM_rate_ms)) && (d_rtcm_MSM_rate_ms != 0) )
+                                    if ((std::fabs(current_RX_time - last_RTCM_MSM_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MSM_rate_ms)) && (d_rtcm_MSM_rate_ms != 0) )
                                         {
                                             flag_write_RTCM_MSM_output = true;
                                             last_RTCM_MSM_output_time = current_RX_time;
                                         }
-                                    if ((fabs(current_RX_time - last_RINEX_obs_output_time) >= 1.0) ) // TODO: Make it configurable
+                                    if ((std::fabs(current_RX_time - last_RINEX_obs_output_time) >= 1.0) ) // TODO: Make it configurable
                                         {
                                             flag_write_RINEX_obs_output = true;
                                             last_RINEX_obs_output_time = current_RX_time;
                                         }
 
-                                    if ((fabs(current_RX_time - last_RINEX_nav_output_time) >= 6.0) ) // TODO: Make it configurable
+                                    if ((std::fabs(current_RX_time - last_RINEX_nav_output_time) >= 6.0) ) // TODO: Make it configurable
                                         {
                                             flag_write_RINEX_nav_output = true;
                                             last_RINEX_nav_output_time = current_RX_time;

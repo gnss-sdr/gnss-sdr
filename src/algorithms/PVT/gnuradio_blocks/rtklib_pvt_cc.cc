@@ -450,28 +450,33 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                 {
                     if (in[i][epoch].Flag_valid_pseudorange == true)
                         {
-                            // store valid observables in a map.
-                            gnss_observables_map.insert(std::pair<int,Gnss_Synchro>(i, in[i][epoch]));
+                            std::map<int,Gps_Ephemeris>::iterator tmp_eph_iter_gps = d_ls_pvt->gps_ephemeris_map.find(in[i][epoch].PRN);
+                            std::map<int,Galileo_Ephemeris>::iterator tmp_eph_iter_gal = d_ls_pvt->galileo_ephemeris_map.find(in[i][epoch].PRN);
+                            std::map<int,Gps_CNAV_Ephemeris>::iterator tmp_eph_iter_cnav = d_ls_pvt->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
+                            if(((tmp_eph_iter_gps->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("1C") == 0))
+                            || ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("1B") == 0))
+                            || ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("2S") == 0)))
+                                {
+                                    // store valid observables in a map.
+                                    gnss_observables_map.insert(std::pair<int,Gnss_Synchro>(i, in[i][epoch]));
+                                }
                             if(d_ls_pvt->gps_ephemeris_map.size() > 0)
                                 {
-                                    std::map<int,Gps_Ephemeris>::iterator tmp_eph_iter = d_ls_pvt->gps_ephemeris_map.find(in[i][epoch].PRN);
-                                    if(tmp_eph_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                    if(tmp_eph_iter_gps != d_ls_pvt->gps_ephemeris_map.end())
                                         {
                                             d_rtcm_printer->lock_time(d_ls_pvt->gps_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]); // keep track of locking time
                                         }
                                 }
                             if(d_ls_pvt->galileo_ephemeris_map.size() > 0)
                                 {
-                                    std::map<int,Galileo_Ephemeris>::iterator tmp_eph_iter = d_ls_pvt->galileo_ephemeris_map.find(in[i][epoch].PRN);
-                                    if(tmp_eph_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                    if(tmp_eph_iter_gal != d_ls_pvt->galileo_ephemeris_map.end())
                                         {
                                             d_rtcm_printer->lock_time(d_ls_pvt->galileo_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]); // keep track of locking time
                                         }
                                 }
                             if(d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
                                 {
-                                    std::map<int,Gps_CNAV_Ephemeris>::iterator tmp_eph_iter = d_ls_pvt->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
-                                    if(tmp_eph_iter != d_ls_pvt->gps_cnav_ephemeris_map.end())
+                                    if(tmp_eph_iter_cnav != d_ls_pvt->gps_cnav_ephemeris_map.end())
                                         {
                                             d_rtcm_printer->lock_time(d_ls_pvt->gps_cnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]); // keep track of locking time
                                         }
@@ -888,6 +893,7 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                         {
                                                             std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
                                                             gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+
                                                             if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
                                                                 {
                                                                     d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);

@@ -16,8 +16,7 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(PVT_GR_BLOCKS_SOURCES 
-	hybrid_pvt_cc.cc
+set(PVT_GR_BLOCKS_SOURCES
 	rtklib_pvt_cc.cc
 )
 

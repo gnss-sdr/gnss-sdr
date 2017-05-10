@@ -16,8 +16,7 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(PVT_ADAPTER_SOURCES 
-	hybrid_pvt.cc
+set(PVT_ADAPTER_SOURCES
 	rtklib_pvt.cc
 )
 

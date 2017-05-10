@@ -147,7 +147,7 @@ target_link_libraries(gnss_rx ${Boost_LIBRARIES}
                               resampler_adapters
                               acq_adapters
                               tracking_lib
-                              acquisition_lib
+#                              acquisition_lib
                               tracking_adapters
                               channel_adapters
                               telemetry_decoder_libswiftcnav

@@ -47,7 +47,7 @@ public:
 
     //telemetry decoder dump variables
     double TOW_at_current_symbol;
-    double Prn_timestamp_ms;
+    unsigned long int Tracking_sample_counter;
     double d_TOW_at_Preamble;
 
 private:

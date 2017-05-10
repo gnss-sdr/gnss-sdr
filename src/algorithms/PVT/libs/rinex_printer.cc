@@ -187,6 +187,7 @@ Rinex_Printer::Rinex_Printer(int conf_version)
     }
 
     numberTypesObservations = 4; // Number of available types of observable in the system
+    fake_cnav_iode = 1;
 }
 
 
@@ -1897,9 +1898,17 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Gps_CNAV
             // -------- BROADCAST ORBIT - 1
             line.clear();
             line += std::string(5, ' ');
-            // If there is no IODE in CNAV, so we set it to zero
-            double my_zero = 0.0;
-            line += Rinex_Printer::doub2for(my_zero, 18, 2);
+            // If there is no IODE in CNAV, so we check if Toe in message Type 10, Toe in Message type 11 and Toc in message types 30-37.
+            // Whenever these three terms do not match, a data set cutover has occurred and new data must be collected.
+            // See IS-GPS-200H, p. 155
+            if ( !((gps_ephemeris_iter->second.d_Toe1 == gps_ephemeris_iter->second.d_Toe2) && (gps_ephemeris_iter->second.d_Toe1 == gps_ephemeris_iter->second.d_Toc)) ) // Toe1: Toe in message type 10,  Toe2: Toe in message type 11
+                {
+                    // Toe1: Toe in message type 10,  Toe2: Toe in message type 11,
+                    fake_cnav_iode = fake_cnav_iode + 1;
+                    if(fake_cnav_iode == 240) fake_cnav_iode = 1;
+                }
+
+            line += Rinex_Printer::doub2for(fake_cnav_iode, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_Crs, 18, 2);
             line += std::string(1, ' ');
@@ -1962,6 +1971,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Gps_CNAV
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_IDOT, 18, 2);
             line += std::string(1, ' ');
             // No data flag for L2 P code
+            double my_zero = 0.0;
             line += Rinex_Printer::doub2for(my_zero, 18, 2);
             line += std::string(1, ' ');
             double GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024); // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
@@ -1981,8 +1991,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Gps_CNAV
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_TGD, 18, 2);
             line += std::string(1, ' ');
-            // no IODC in CNAV, so we set it to zero
-            line += Rinex_Printer::doub2for(my_zero, 18, 2);
+            // no IODC in CNAV, so we fake it (see above)
+            line += Rinex_Printer::doub2for(fake_cnav_iode, 18, 2);
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
 
@@ -4760,87 +4770,87 @@ void Rinex_Printer::to_date_time(int gps_week, int gps_tow, int &year, int &mont
 }
 
 
-void Rinex_Printer::log_rinex_sbs(std::fstream& out, const Sbas_Raw_Msg& sbs_message)
-{
-    // line 1: PRN / EPOCH / RCVR
-    std::stringstream line1;
-
-    // SBAS PRN
-    line1 << sbs_message.get_prn();
-    line1 << " ";
-
-    // gps time of reception
-    int gps_week;
-    double gps_sec;
-    if(sbs_message.get_rx_time_obj().get_gps_time(gps_week, gps_sec))
-        {
-            int year;
-            int month;
-            int day;
-            int hour;
-            int minute;
-            int second;
-
-            double gps_sec_one_digit_precicion = round(gps_sec *10)/10; // to prevent rounding towards 60.0sec in the stream output
-            int gps_tow = trunc(gps_sec_one_digit_precicion);
-            double sub_sec = gps_sec_one_digit_precicion - double(gps_tow);
-
-            to_date_time(gps_week, gps_tow, year, month, day, hour, minute, second);
-            line1 << asFixWidthString(year, 2, '0') <<  " " << asFixWidthString(month, 2, '0') <<  " " << asFixWidthString(day, 2, '0') <<  " " << asFixWidthString(hour, 2, '0') <<  " " << asFixWidthString(minute, 2, '0') <<  " " << rightJustify(asString(double(second)+sub_sec,1),4,' ');
-        }
-    else
-        {
-            line1 << std::string(19, ' ');
-        }
-    line1 << "  ";
-
-    // band
-    line1 << "L1";
-    line1 << "   ";
-
-    // Length of data message (bytes)
-    line1 <<  asFixWidthString(sbs_message.get_msg().size(), 3, ' ');
-    line1 << "   ";
-    // File-internal receiver index
-    line1 << "  0";
-    line1 << "   ";
-    // Transmission System Identifier
-    line1 << "SBA";
-    line1 << std::string(35, ' ');
-    lengthCheck(line1.str());
-    out << line1.str() << std::endl;
-
-    // DATA RECORD - 1
-    std::stringstream line2;
-    line2 << " ";
-    // Message frame identifier
-    if (sbs_message.get_msg_type() < 10) line2 << " ";
-    line2 << sbs_message.get_msg_type();
-    line2 << std::string(4, ' ');
-    // First 18 bytes of message (hex)
-    std::vector<unsigned char> msg = sbs_message.get_msg();
-    for (size_t i = 0; i < 18 && i <  msg.size(); ++i)
-        {
-            line2 << std::hex << std::setfill('0') << std::setw(2);
-            line2 << int(msg[i]) << " ";
-        }
-    line2 << std::string(19, ' ');
-    lengthCheck(line2.str());
-    out << line2.str() << std::endl;
-
-    // DATA RECORD - 2
-    std::stringstream line3;
-    line3 << std::string(7, ' ');
-    // Remaining bytes of message (hex)
-    for (size_t i = 18; i < 36 && i <  msg.size(); ++i)
-        {
-            line3 << std::hex << std::setfill('0') << std::setw(2);
-            line3 << int(msg[i]) << " ";
-        }
-    line3 << std::string(31, ' ');
-    lengthCheck(line3.str());
-    out << line3.str() << std::endl;
-}
+//void Rinex_Printer::log_rinex_sbs(std::fstream& out, const Sbas_Raw_Msg& sbs_message)
+//{
+//    // line 1: PRN / EPOCH / RCVR
+//    std::stringstream line1;
+//
+//    // SBAS PRN
+//    line1 << sbs_message.get_prn();
+//    line1 << " ";
+//
+//    // gps time of reception
+//    int gps_week;
+//    double gps_sec;
+//    if(sbs_message.get_rx_time_obj().get_gps_time(gps_week, gps_sec))
+//        {
+//            int year;
+//            int month;
+//            int day;
+//            int hour;
+//            int minute;
+//            int second;
+//
+//            double gps_sec_one_digit_precicion = round(gps_sec *10)/10; // to prevent rounding towards 60.0sec in the stream output
+//            int gps_tow = trunc(gps_sec_one_digit_precicion);
+//            double sub_sec = gps_sec_one_digit_precicion - double(gps_tow);
+//
+//            to_date_time(gps_week, gps_tow, year, month, day, hour, minute, second);
+//            line1 << asFixWidthString(year, 2, '0') <<  " " << asFixWidthString(month, 2, '0') <<  " " << asFixWidthString(day, 2, '0') <<  " " << asFixWidthString(hour, 2, '0') <<  " " << asFixWidthString(minute, 2, '0') <<  " " << rightJustify(asString(double(second)+sub_sec,1),4,' ');
+//        }
+//    else
+//        {
+//            line1 << std::string(19, ' ');
+//        }
+//    line1 << "  ";
+//
+//    // band
+//    line1 << "L1";
+//    line1 << "   ";
+//
+//    // Length of data message (bytes)
+//    line1 <<  asFixWidthString(sbs_message.get_msg().size(), 3, ' ');
+//    line1 << "   ";
+//    // File-internal receiver index
+//    line1 << "  0";
+//    line1 << "   ";
+//    // Transmission System Identifier
+//    line1 << "SBA";
+//    line1 << std::string(35, ' ');
+//    lengthCheck(line1.str());
+//    out << line1.str() << std::endl;
+//
+//    // DATA RECORD - 1
+//    std::stringstream line2;
+//    line2 << " ";
+//    // Message frame identifier
+//    if (sbs_message.get_msg_type() < 10) line2 << " ";
+//    line2 << sbs_message.get_msg_type();
+//    line2 << std::string(4, ' ');
+//    // First 18 bytes of message (hex)
+//    std::vector<unsigned char> msg = sbs_message.get_msg();
+//    for (size_t i = 0; i < 18 && i <  msg.size(); ++i)
+//        {
+//            line2 << std::hex << std::setfill('0') << std::setw(2);
+//            line2 << int(msg[i]) << " ";
+//        }
+//    line2 << std::string(19, ' ');
+//    lengthCheck(line2.str());
+//    out << line2.str() << std::endl;
+//
+//    // DATA RECORD - 2
+//    std::stringstream line3;
+//    line3 << std::string(7, ' ');
+//    // Remaining bytes of message (hex)
+//    for (size_t i = 18; i < 36 && i <  msg.size(); ++i)
+//        {
+//            line3 << std::hex << std::setfill('0') << std::setw(2);
+//            line3 << int(msg[i]) << " ";
+//        }
+//    line3 << std::string(31, ' ');
+//    lengthCheck(line3.str());
+//    out << line3.str() << std::endl;
+//}
 
 
 int Rinex_Printer::signalStrength(const double snr)

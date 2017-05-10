@@ -284,7 +284,8 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_current_prn_length_samples);
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
+                    current_synchro_data.fs=d_fs_in;
                     *out[0] = current_synchro_data;
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
@@ -402,10 +403,9 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
             current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             // Tracking_timestamp_secs is aligned with the PRN start sample
-            //current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_next_prn_length_samples + (double)d_next_rem_code_phase_samples)/(double)d_fs_in;
-            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_rem_code_phase_samples)/(double)d_fs_in;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+            current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
-            // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
@@ -417,8 +417,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             *d_Early = gr_complex(0,0);
             *d_Prompt = gr_complex(0,0);
             *d_Late = gr_complex(0,0);
-
-            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
             //! When tracking is disabled an array of 1's is sent to maintain the TCP connection
             boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> tx_variables_array = {{1,1,1,1,1,1,1,1,1,1,1,1,0}};
             d_tcp_com.send_receive_tcp_packet_galileo_e1(tx_variables_array, &tcp_data);
@@ -429,6 +428,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
     const char * str = str_aux.c_str(); // get a C style null terminated string
     std::memcpy((void*)current_synchro_data.Signal, str, 3);
 
+    current_synchro_data.fs=d_fs_in;
     *out[0] = current_synchro_data;
 
     if(d_dump)

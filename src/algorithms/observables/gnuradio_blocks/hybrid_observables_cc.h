@@ -36,6 +36,7 @@
 #include <fstream>
 #include <string>
 #include <gnuradio/block.h>
+#include "gnss_synchro.h"
 
 
 class hybrid_observables_cc;
@@ -61,11 +62,11 @@ private:
     hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
 
     //Tracking observable history
-    std::vector<std::deque<double>> d_acc_carrier_phase_queue_rads;
-    std::vector<std::deque<double>> d_carrier_doppler_queue_hz;
-    std::vector<std::deque<double>> d_symbol_TOW_queue_s;
+    std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history_queue;
 
-    // class private vars
+    double T_rx_s;
+    double T_rx_step_s;
+    int d_max_noutputs;
     bool d_dump;
     unsigned int d_nchannels;
     unsigned int history_deep;

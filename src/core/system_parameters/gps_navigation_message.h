@@ -58,15 +58,6 @@ private:
     signed long int read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     void print_gps_word_bytes(unsigned int GPS_word);
-    /*
-     * Accounts for the beginning or end of week crossover
-     *
-     * See paragraph 20.3.3.3.3.1 (IS-GPS-200E)
-     * \param[in]  -  time in seconds
-     * \param[out] -  corrected time, in seconds
-     */
-    double check_t(double time);
-
 public:
     bool b_valid_ephemeris_set_flag; // flag indicating that this ephemeris set have passed the validation check
     //broadcast orbit 1
@@ -211,19 +202,6 @@ public:
      * \brief Decodes the GPS NAV message
      */
     int subframe_decoder(char *subframe);
-
-    /*!
-     * \brief Computes the position of the satellite
-     *
-     * Implementation of Table 20-IV (IS-GPS-200E)
-     */
-    void satellitePosition(double transmitTime);
-
-    /*!
-     * \brief Sets (\a d_satClkCorr) according to the User Algorithm for SV Clock Correction
-     * and returns the corrected clock (IS-GPS-200E,  20.3.3.3.3.1)
-     */
-    double sv_clock_correction(double transmitTime);
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and

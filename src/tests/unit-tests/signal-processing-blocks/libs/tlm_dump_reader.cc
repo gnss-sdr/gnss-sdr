@@ -35,7 +35,7 @@ bool tlm_dump_reader::read_binary_obs()
     try
     {
             d_dump_file.read((char *) &TOW_at_current_symbol, sizeof(double));
-            d_dump_file.read((char *) &Prn_timestamp_ms, sizeof(double));
+            d_dump_file.read((char *) &Tracking_sample_counter, sizeof(double));
             d_dump_file.read((char *) &d_TOW_at_Preamble, sizeof(double));
     }
     catch (const std::ifstream::failure &e)

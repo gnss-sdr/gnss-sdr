@@ -374,7 +374,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             0,   /* code smoothing window size (0:none) */
             0,   /* interpolate reference obs (for post mission) */
             0,   /* sbssat_t sbssat  SBAS correction options */
-            {},  /* sbsion_t sbsion[MAXBAND+1] SBAS satellite selection (0:all) */
+            0,  /* sbsion_t sbsion[MAXBAND+1] SBAS satellite selection (0:all) */
             0,   /* rover position for fixed mode */
             0,   /* base position for relative mode */
                  /*    0:pos in prcopt,  1:average of single pos, */

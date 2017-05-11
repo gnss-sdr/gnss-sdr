@@ -48,6 +48,10 @@ add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
 add_dependencies(rtklib_lib glog-${glog_RELEASE})
 
+if(OS_IS_MACOSX)
+    set(MAC_LIBRARIES "-framework Accelerate")
+endif(OS_IS_MACOSX)
+
 target_link_libraries(
     rtklib_lib
     ${Boost_LIBRARIES}
@@ -55,4 +59,5 @@ target_link_libraries(
     ${GLOG_LIBRARIES}
     ${BLAS}
     ${LAPACK}
-    )
+    ${MAC_LIBRARIES} 
+)

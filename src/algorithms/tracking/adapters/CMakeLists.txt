@@ -36,6 +36,7 @@ set(TRACKING_ADAPTER_SOURCES
      galileo_e1_prs_de_tracking.cc
      galileo_e1_prs_veml_tracking.cc
      galileo_e1_prs_codeless_tracking.cc
+     gps_l1_mcode_codeless_tracking.cc
      ${OPT_TRACKING_ADAPTERS}
 )
 

@@ -38,6 +38,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      galileo_e1_prs_de_tracking_cc.cc
      galileo_e1_prs_veml_tracking_cc.cc
      galileo_e1_prs_codeless_tracking_cc.cc
+     gps_l1_mcode_codeless_tracking_cc.cc
      ${OPT_TRACKING_BLOCKS}
 )
 

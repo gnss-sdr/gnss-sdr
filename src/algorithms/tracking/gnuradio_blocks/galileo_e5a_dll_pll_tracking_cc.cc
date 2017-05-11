@@ -301,8 +301,8 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
     sys = sys_.substr(0,1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+    std::cout << "Tracking Galileo E5a start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    LOG(INFO) << "Galileo E5a starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
 
     // enable tracking
@@ -564,7 +564,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                             acquire_secondary(); // changes d_secondary_lock and d_secondary_delay
                             if (d_secondary_lock == true)
                                 {
-                                    std::cout << "Secondary code locked." << std::endl;
+                                    std::cout << "Galileo E5a secondary code locked for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
                                     d_current_ti_ms = d_ti_ms;
                                     // Change loop parameters ==========================================
                                     d_code_loop_filter.set_pdi(d_current_ti_ms * GALILEO_E5a_CODE_PERIOD);
@@ -574,7 +574,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                                 }
                             else
                                 {
-                                    std::cout << "Secondary code delay couldn't be resolved." << std::endl;
+                                    //std::cout << "Secondary code delay couldn't be resolved." << std::endl;
                                     d_carrier_lock_fail_counter++;
                                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                                         {

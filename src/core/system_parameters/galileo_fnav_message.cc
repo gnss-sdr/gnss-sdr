@@ -69,7 +69,7 @@ void Galileo_Fnav_Message::reset()
     /* WORD 1 SVID, Clock correction, SISA, Ionospheric correction, BGD, GST, Signal
      * health and Data validity status*/
     FNAV_SV_ID_PRN_1 = 0;
-    FNAV_IODnav_1 = 0;
+    FNAV_IODnav_1 = -1;
     FNAV_t0c_1 = 0;
     FNAV_af0_1 = 0;
     FNAV_af1_1 = 0;
@@ -90,7 +90,7 @@ void Galileo_Fnav_Message::reset()
     FNAV_E5advs_1 = 0;
 
     // WORD 2 Ephemeris (1/3) and GST
-    FNAV_IODnav_2 = 0;
+    FNAV_IODnav_2 = -2;
     FNAV_M0_2 = 0;
     FNAV_omegadot_2 = 0;
     FNAV_e_2 = 0;
@@ -101,7 +101,7 @@ void Galileo_Fnav_Message::reset()
     FNAV_TOW_2 = 0;
 
     // WORD 3 Ephemeris (2/3) and GST
-    FNAV_IODnav_3 = 0;
+    FNAV_IODnav_3 = -3;
     FNAV_i0_3 = 0;
     FNAV_w_3 = 0;
     FNAV_deltan_3 = 0;
@@ -115,7 +115,7 @@ void Galileo_Fnav_Message::reset()
 
     /* WORD 4 Ephemeris (3/3), GST-UTC conversion, GST-GPS conversion and TOW.
     Note that the clock is repeated in this page type*/
-    FNAV_IODnav_4 = 0;
+    FNAV_IODnav_4 = -4;
     FNAV_Cic_4 = 0;
     FNAV_Cis_4 = 0;
     FNAV_A0_4 = 0;

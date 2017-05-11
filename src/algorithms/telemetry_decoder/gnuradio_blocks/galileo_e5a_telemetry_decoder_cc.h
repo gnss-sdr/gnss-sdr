@@ -2,6 +2,7 @@
  * \file galileo_e5a_telemetry_decoder_cc.cc
  * \brief Implementation of a Galileo FNAV message demodulator block
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ *  		   Javier Arribas, 2017. jarribas(at)cttc.es
  * \based on work from:
  *          <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es

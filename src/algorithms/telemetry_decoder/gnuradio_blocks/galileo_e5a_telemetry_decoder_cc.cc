@@ -2,6 +2,7 @@
  * \file galileo_e5a_telemetry_decoder_cc.cc
  * \brief Implementation of a Galileo FNAV message demodulator block
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * 		   Javier Arribas, 2017. jarribas(at)cttc.es
  * \based on work from:
  *          <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
@@ -45,7 +46,7 @@
 #include "convolutional.h"
 
 
-#define CRC_ERROR_LIMIT 6
+#define GALILEO_E5a_CRC_ERROR_LIMIT 6
 
 using google::LogMessage;
 
@@ -200,10 +201,8 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "GALILEO E5A TELEMETRY PROCESSING: satellite " << d_satellite;
-    //d_samples_per_symbol = ( Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS ) / Galileo_E1_B_SYMBOL_RATE_BPS;
 
     // set the preamble
-    //unsigned short int preambles_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS] = GALILEO_FNAV_PREAMBLE;
     for (int i = 0; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
         {
             if (GALILEO_FNAV_PREAMBLE.at(i) == '0')
@@ -216,27 +215,6 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
                 }
         }
 
-    //    memcpy((unsigned short int*)this->d_preambles_bits, (unsigned short int*)preambles_bits, GALILEO_FNAV_PREAMBLE_LENGTH_BITS*sizeof(unsigned short int));
-
-    //    // preamble bits to sampled symbols
-    //    d_preambles_symbols = (signed int*)malloc(sizeof(signed int) * GALILEO_FNAV_SAMPLES_PER_PREAMBLE);
-    //    int n = 0;
-    //    for (int i = 0; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
-    //        {
-    //            for (unsigned int j = 0; j < GALILEO_FNAV_SAMPLES_PER_SYMBOL; j++)
-    //                {
-    //                    if (d_preambles_bits[i] == 1)
-    //                        {
-    //                            d_preambles_symbols[n] = 1;
-    //                        }
-    //                    else
-    //                        {
-    //                            d_preambles_symbols[n] = -1;
-    //                        }
-    //                    n++;
-    //                }
-    //        }
-    //
     d_sample_counter = 0;
     d_state = 0;
     d_preamble_lock = false;
@@ -397,16 +375,6 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                             // **** Attempt Preamble correlation ****
                             bool corr_flag = true;
                             int corr_sign = 0; // sequence can be found inverted
-                            //    corr_sign = d_preamble_bits[0] * d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-                            //    for (int i = 1; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
-                            //       {
-                            //          if ((d_preamble_bits[i] * d_page_symbols[i + d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS]) != corr_sign)
-                            //              {
-                            //                  //exit for if one bit doesn't correlate
-                            //                corr_flag = false;
-                            //                  break;
-                            //              }
-                            //     }
                             // check if the preamble starts positive correlated or negative correlated
                             if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS] < 0)    // symbols clipping
                                 {
@@ -453,7 +421,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                                     else
                                         {
                                             d_CRC_error_counter++;
-                                            if (d_CRC_error_counter > CRC_ERROR_LIMIT)
+                                            if (d_CRC_error_counter > GALILEO_E5a_CRC_ERROR_LIMIT)
                                                 {
                                                     LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                                     d_state = 1;

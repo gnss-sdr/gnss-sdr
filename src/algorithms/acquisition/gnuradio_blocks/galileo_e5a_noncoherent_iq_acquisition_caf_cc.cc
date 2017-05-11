@@ -275,7 +275,6 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Flag_preamble = false;
 
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;

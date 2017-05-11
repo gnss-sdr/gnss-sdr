@@ -201,15 +201,6 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
 
     long int acq_trk_diff_samples;
     float acq_trk_diff_seconds;
-    // jarribas: this patch correct a situation where the tracking sample counter
-    // is equal to 0 (remains in the initial state) at the first acquisition to tracking transition
-    // of the receiver operation when is connecting to simulink server.
-    //    if (d_sample_counter<d_acq_sample_stamp)
-    //    {
-    //        acq_trk_diff_samples=0; //disable the correction
-    //    }else{
-    //        acq_trk_diff_samples = d_sample_counter - d_acq_sample_stamp;//-d_vector_length;
-    //    }
     acq_trk_diff_samples = (long int)d_sample_counter - (long int)d_acq_sample_stamp;
     std::cout << "acq_trk_diff_samples=" << acq_trk_diff_samples << std::endl;
     acq_trk_diff_seconds = (float)acq_trk_diff_samples / (float)d_fs_in;
@@ -308,6 +299,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
     tcp_packet_data tcp_data;
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
+
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0];
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
@@ -329,9 +321,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_next_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_next_prn_length_samples);
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
-
-                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
+                    current_synchro_data.fs=d_fs_in;
                     *out[0] = current_synchro_data;
                     d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset) / (double)d_fs_in);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
@@ -450,13 +441,10 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
 
             current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
             current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
-            // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!, but some glitches??)
-            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_rem_code_phase_samples)/(double)d_fs_in;
             //compute remnant code phase samples AFTER the Tracking timestamp
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
-
-            // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
-            current_synchro_data.Tracking_timestamp_secs = d_sample_counter_seconds;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+            current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
@@ -470,7 +458,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
             *d_Prompt = gr_complex(0,0);
             *d_Late = gr_complex(0,0);
             // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_rem_code_phase_samples)/(double)d_fs_in;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
             //! When tracking is disabled an array of 1's is sent to maintain the TCP connection
             boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> tx_variables_array = {{1,1,1,1,1,1,1,1,0}};
             d_tcp_com.send_receive_tcp_packet_gps_l1_ca(tx_variables_array, &tcp_data);
@@ -482,6 +470,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
     const char * str = str_aux.c_str(); // get a C style null terminated string
     std::memcpy((void*)current_synchro_data.Signal, str, 3);
 
+    current_synchro_data.fs=d_fs_in;
     *out[0] = current_synchro_data;
 
     if(d_dump)

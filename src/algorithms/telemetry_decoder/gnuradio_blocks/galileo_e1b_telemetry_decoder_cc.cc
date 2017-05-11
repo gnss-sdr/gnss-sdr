@@ -158,7 +158,6 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_stat = 0;
     d_preamble_index = 0;
 
-    d_preamble_time_seconds = 0;
     d_flag_frame_sync = false;
 
     d_flag_parity = false;
@@ -169,10 +168,7 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     flag_even_word_arrived = 0;
     d_flag_preamble = false;
     d_channel = 0;
-    Prn_timestamp_at_preamble_ms = 0.0;
     flag_TOW_set = false;
-    d_average_count = 0;
-    d_decimation_output_factor = 1;
 }
 
 
@@ -267,16 +263,16 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             //debug
             std::cout << "Galileo almanac received!" << std::endl;
-            LOG(INFO) << "GPS_to_Galileo time conversion:";
-            LOG(INFO) << "A0G=" << tmp_obj->A_0G_10;
-            LOG(INFO) << "A1G=" << tmp_obj->A_1G_10;
-            LOG(INFO) << "T0G=" << tmp_obj->t_0G_10;
-            LOG(INFO) << "WN_0G_10=" << tmp_obj->WN_0G_10;
-            LOG(INFO) << "Current parameters:";
-            LOG(INFO) << "d_TOW_at_current_symbol=" << d_TOW_at_current_symbol;
-            LOG(INFO) << "d_nav.WN_0=" << d_nav.WN_0;
+            DLOG(INFO) << "GPS_to_Galileo time conversion:";
+            DLOG(INFO) << "A0G=" << tmp_obj->A_0G_10;
+            DLOG(INFO) << "A1G=" << tmp_obj->A_1G_10;
+            DLOG(INFO) << "T0G=" << tmp_obj->t_0G_10;
+            DLOG(INFO) << "WN_0G_10=" << tmp_obj->WN_0G_10;
+            DLOG(INFO) << "Current parameters:";
+            DLOG(INFO) << "d_TOW_at_current_symbol=" << d_TOW_at_current_symbol;
+            DLOG(INFO) << "d_nav.WN_0=" << d_nav.WN_0;
             delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (d_TOW_at_current_symbol - tmp_obj->t_0G_10 + 604800 * (fmod((d_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
-            LOG(INFO) << "delta_t=" << delta_t << "[s]";
+            DLOG(INFO) << "delta_t=" << delta_t << "[s]";
         }
 }
 
@@ -371,11 +367,11 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
                             d_CRC_error_counter = 0;
                             d_flag_preamble = true; //valid preamble indicator (initialized to false every work())
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
-                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs; // - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
-                                    LOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
+                                    DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
+                                            << in[0][0].Tracking_sample_counter << " [samples]";
                                 }
                         }
                     else
@@ -407,7 +403,6 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
         // Since we detected the preamble, then, we are in the last symbol of that preamble, or just at the start of the first page symbol.
         //flag preamble is true after the all page (even and odd) is received. I/NAV page period is 2 SECONDS
         {
-            Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
             if(d_nav.flag_TOW_5 == true) //page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
                     //std::cout<< "Using TOW_5 for timestamping" << std::endl;
@@ -458,53 +453,33 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
             current_synchro_data.Flag_valid_word = false;
         }
 
-    current_synchro_data.d_TOW = d_TOW_at_Preamble;
-    current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
-    current_synchro_data.d_TOW_hybrid_at_current_symbol = current_synchro_data.d_TOW_at_current_symbol - delta_t; //delta_t = t_gal - t_gps  ---->  t_gps = t_gal -delta_t
-    current_synchro_data.Flag_preamble = d_flag_preamble;
-    current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
-    current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;
+    current_synchro_data.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol*1000.0)/1000.0;
+    current_synchro_data.TOW_at_current_symbol_s -=delta_t; //Galileo to GPS TOW
 
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
             {
-                    double tmp_double;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
-                    tmp_double = current_synchro_data.Prn_timestamp_ms;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
-                    tmp_double = d_TOW_at_Preamble;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                double tmp_double;
+                unsigned long int tmp_ulong_int;
+                tmp_double = d_TOW_at_current_symbol;
+                d_dump_file.write((char*)&tmp_double, sizeof(double));
+                tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
+                d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
+                tmp_double = d_TOW_at_Preamble;
+                d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
-            catch (const std::ifstream::failure& e)
+            catch (const std::ifstream::failure & e)
             {
                     LOG(WARNING) << "Exception writing observables dump file " << e.what();
             }
         }
-    //todo: implement averaging
-    d_average_count++;
+    //3. Make the output (copy the object contents to the GNURadio reserved memory)
+    *out[0] = current_synchro_data;
+    //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
+    return 1;
 
-    if (d_average_count == d_decimation_output_factor)
-        {
-            d_average_count = 0;
-            //3. Make the output (copy the object contents to the GNURadio reserved memory)
-            *out[0] = current_synchro_data;
-            //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
-            return 1;
-        }
-    else
-        {
-            return 0;
-        }
-
-}
-
-
-void galileo_e1b_telemetry_decoder_cc::set_decimation(int decimation)
-{
-    d_decimation_output_factor = decimation;
 }
 
 

@@ -41,18 +41,20 @@
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "gnss_synchro.h"
-
+#include "rtklib_rtkcmn.h"
 
 /*!
  * \brief This class implements a simple PVT Least Squares solution
  */
 class hybrid_ls_pvt : public Ls_Pvt
 {
+private:
+
 public:
     hybrid_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file);
     ~hybrid_ls_pvt();
 
-    bool get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, double hybrid_current_time, bool flag_averaging);
+    bool get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, double Rx_time, bool flag_averaging);
     int d_nchannels;                                        //!< Number of available channels for positioning
 
     std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris

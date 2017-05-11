@@ -72,11 +72,8 @@
 
 
 
-bool fpga_multicorrelator_8sc::init(
-        int max_signal_length_samples,
-        int n_correlators)
+bool fpga_multicorrelator_8sc::init(int n_correlators)
 {
-    size_t size = max_signal_length_samples * sizeof(lv_16sc_t);
     d_n_correlators = n_correlators;
 
     // instantiate variable length vectors
@@ -117,7 +114,7 @@ bool fpga_multicorrelator_8sc::set_output_vectors(lv_16sc_t* corr_out)
 }
 
 
-void fpga_multicorrelator_8sc::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
+void fpga_multicorrelator_8sc::update_local_code(float rem_code_phase_chips)
 {
     d_rem_code_phase_chips = rem_code_phase_chips;
 
@@ -133,7 +130,7 @@ bool fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
         float code_phase_step_chips,
         int signal_length_samples)
 {
-    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
+    update_local_code(rem_code_phase_chips);
 
     d_rem_carrier_phase_in_rad = rem_carrier_phase_in_rad;
     d_code_phase_step_chips = code_phase_step_chips;
@@ -327,7 +324,6 @@ void fpga_multicorrelator_8sc::fpga_configure_code_parameters_in_fpga(void)
 void fpga_multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
 {
     float d_rem_carrier_phase_in_rad_temp;
-    float d_phase_step_rad_int_temp;
 
     d_code_phase_step_chips_num = (unsigned) roundf(MAX_CODE_RESAMPLER_COUNTER * d_code_phase_step_chips);
 

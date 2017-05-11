@@ -59,10 +59,6 @@ public:
     ~gps_l1_ca_telemetry_decoder_cc();
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
-    /*!
-     * \brief Set decimation factor to average the GPS synchronization estimation output from the tracking module.
-     */
-    void set_decimation(int decimation);
 
     /*!
      * \brief This is where all signal processing takes place
@@ -111,7 +107,6 @@ private:
     int d_average_count;
     int d_decimation_output_factor;
 
-    //double d_preamble_duration_seconds;
     // navigation message vars
     Gps_Navigation_Message d_nav;
     GpsL1CaSubframeFsm d_GPS_FSM;
@@ -120,12 +115,11 @@ private:
     Gnss_Satellite d_satellite;
     int d_channel;
 
-    double d_preamble_time_seconds;
+    unsigned long int d_preamble_time_samples;
 
     long double d_TOW_at_Preamble;
     long double d_TOW_at_current_symbol;
 
-    double Prn_timestamp_at_preamble_ms;
     bool flag_TOW_set;
     bool flag_PLL_180_deg_phase_locked;
 

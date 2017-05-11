@@ -215,14 +215,12 @@ void TTFF_GPS_L1_CA_Test::config_1()
     config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
     // Set Observables
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.dump", "false");
     config->set_property("Observables.dump_filename", "./observables.dat");
 
     // Set PVT
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-    config->set_property("PVT.averaging_depth", std::to_string(averaging_depth));
-    config->set_property("PVT.flag_averaging", "true");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");
@@ -279,8 +277,8 @@ void receive_msg()
                     ttff_msg = msg.ttff;
                     if( (ttff_msg != 0) && (ttff_msg != -1))
                         {
-                            TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor) );
-                            LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor ) << "[s]";
+                            TTFF_v.push_back(ttff_msg);
+                            LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg << "[s]";
                             // Stop the receiver
                             while(((msqid_stop = msgget(key_stop, 0644))) == -1){}
                             double msgsend_size = sizeof(msg_stop.ttff);

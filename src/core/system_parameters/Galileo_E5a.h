@@ -35,19 +35,19 @@
 #include <vector>
 #include <utility> // std::pair
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 
-// Physical constants already defined in E1
 
 // Carrier and code frequencies
-const double Galileo_E5a_FREQ_HZ = 1.176450e9;             //!< Galileo E5a carrier frequency [Hz]
+const double Galileo_E5a_FREQ_HZ = FREQ5;                 //!< Galileo E5a carrier frequency [Hz]
 const double Galileo_E5a_CODE_CHIP_RATE_HZ = 1.023e7;     //!< Galileo E5a code rate [chips/s]
-const double Galileo_E5a_I_TIERED_CODE_PERIOD = 0.020;             //!< Galileo E5a-I tiered code period [s]
-const double Galileo_E5a_Q_TIERED_CODE_PERIOD = 0.100;             //!< Galileo E5a-Q tiered code period [s]
-const int Galileo_E5a_CODE_LENGTH_CHIPS = 10230;    //!< Galileo E5a primary code length [chips]
-const int Galileo_E5a_I_SECONDARY_CODE_LENGTH = 20;  //!< Galileo E5a-I secondary code length [chips]
-const int Galileo_E5a_Q_SECONDARY_CODE_LENGTH = 100;  //!< Galileo E5a-Q secondary code length [chips]
+const double Galileo_E5a_I_TIERED_CODE_PERIOD = 0.020;    //!< Galileo E5a-I tiered code period [s]
+const double Galileo_E5a_Q_TIERED_CODE_PERIOD = 0.100;    //!< Galileo E5a-Q tiered code period [s]
+const int Galileo_E5a_CODE_LENGTH_CHIPS = 10230;          //!< Galileo E5a primary code length [chips]
+const int Galileo_E5a_I_SECONDARY_CODE_LENGTH = 20;       //!< Galileo E5a-I secondary code length [chips]
+const int Galileo_E5a_Q_SECONDARY_CODE_LENGTH = 100;      //!< Galileo E5a-Q secondary code length [chips]
 const double GALILEO_E5a_CODE_PERIOD = 0.001;
-const int Galileo_E5a_SYMBOL_RATE_BPS = 50;       //!< Galileo E5a symbol rate [bits/second]
+const int Galileo_E5a_SYMBOL_RATE_BPS = 50;               //!< Galileo E5a symbol rate [bits/second]
 const int Galileo_E5a_NUMBER_OF_CODES = 50;
 
 
@@ -75,150 +75,150 @@ const int GALILEO_FNAV_DATA_FRAME_BYTES = 27;
 const std::vector<std::pair<int,int>> FNAV_PAGE_TYPE_bit({{1,6}});
 
 /* WORD 1 iono corrections. FNAV (Galileo E5a message)*/
-const std::vector<std::pair<int,int>> FNAV_SV_ID_PRN_1_bit({{6,6}});
-const std::vector<std::pair<int,int>> FNAV_IODnav_1_bit({{12,10}});
-const std::vector<std::pair<int,int>> FNAV_t0c_1_bit({{22,14}});
+const std::vector<std::pair<int,int>> FNAV_SV_ID_PRN_1_bit({{7,6}});
+const std::vector<std::pair<int,int>> FNAV_IODnav_1_bit({{13,10}});
+const std::vector<std::pair<int,int>> FNAV_t0c_1_bit({{23,14}});
 const double FNAV_t0c_1_LSB = 60;
-const std::vector<std::pair<int,int>> FNAV_af0_1_bit({{36,31}});
+const std::vector<std::pair<int,int>> FNAV_af0_1_bit({{37,31}});
 const double FNAV_af0_1_LSB = TWO_N34;
-const std::vector<std::pair<int,int>> FNAV_af1_1_bit({{67,21}});
+const std::vector<std::pair<int,int>> FNAV_af1_1_bit({{68,21}});
 const double FNAV_af1_1_LSB = TWO_N46;
-const std::vector<std::pair<int,int>> FNAV_af2_1_bit({{88,6}});
+const std::vector<std::pair<int,int>> FNAV_af2_1_bit({{89,6}});
 const double FNAV_af2_1_LSB = TWO_N59;
-const std::vector<std::pair<int,int>> FNAV_SISA_1_bit({{94,8}});
-const std::vector<std::pair<int,int>> FNAV_ai0_1_bit({{102,11}});
+const std::vector<std::pair<int,int>> FNAV_SISA_1_bit({{95,8}});
+const std::vector<std::pair<int,int>> FNAV_ai0_1_bit({{103,11}});
 const double FNAV_ai0_1_LSB = TWO_N2;
-const std::vector<std::pair<int,int>> FNAV_ai1_1_bit({{113,11}});
+const std::vector<std::pair<int,int>> FNAV_ai1_1_bit({{114,11}});
 const double FNAV_ai1_1_LSB = TWO_N8;
-const std::vector<std::pair<int,int>> FNAV_ai2_1_bit({{124,14}});
+const std::vector<std::pair<int,int>> FNAV_ai2_1_bit({{125,14}});
 const double FNAV_ai2_1_LSB = TWO_N15;
-const std::vector<std::pair<int,int>> FNAV_region1_1_bit({{138,1}});
-const std::vector<std::pair<int,int>> FNAV_region2_1_bit({{139,1}});
-const std::vector<std::pair<int,int>> FNAV_region3_1_bit({{140,1}});
-const std::vector<std::pair<int,int>> FNAV_region4_1_bit({{141,1}});
-const std::vector<std::pair<int,int>> FNAV_region5_1_bit({{142,1}});
-const std::vector<std::pair<int,int>> FNAV_BGD_1_bit({{143,10}});
+const std::vector<std::pair<int,int>> FNAV_region1_1_bit({{139,1}});
+const std::vector<std::pair<int,int>> FNAV_region2_1_bit({{140,1}});
+const std::vector<std::pair<int,int>> FNAV_region3_1_bit({{141,1}});
+const std::vector<std::pair<int,int>> FNAV_region4_1_bit({{142,1}});
+const std::vector<std::pair<int,int>> FNAV_region5_1_bit({{143,1}});
+const std::vector<std::pair<int,int>> FNAV_BGD_1_bit({{144,10}});
 const double FNAV_BGD_1_LSB = TWO_N32;
-const std::vector<std::pair<int,int>> FNAV_E5ahs_1_bit({{153,2}});
-const std::vector<std::pair<int,int>> FNAV_WN_1_bit({{155,12}});
-const std::vector<std::pair<int,int>> FNAV_TOW_1_bit({{167,20}});
-const std::vector<std::pair<int,int>> FNAV_E5advs_1_bit({{187,1}});
+const std::vector<std::pair<int,int>> FNAV_E5ahs_1_bit({{154,2}});
+const std::vector<std::pair<int,int>> FNAV_WN_1_bit({{156,12}});
+const std::vector<std::pair<int,int>> FNAV_TOW_1_bit({{168,20}});
+const std::vector<std::pair<int,int>> FNAV_E5advs_1_bit({{189,1}});
 
 // WORD 2 Ephemeris (1/3)
-const std::vector<std::pair<int,int>> FNAV_IODnav_2_bit({{6,10}});
-const std::vector<std::pair<int,int>> FNAV_M0_2_bit({{16,32}});
+const std::vector<std::pair<int,int>> FNAV_IODnav_2_bit({{7,10}});
+const std::vector<std::pair<int,int>> FNAV_M0_2_bit({{17,32}});
 const double FNAV_M0_2_LSB = PI_TWO_N31;
-const std::vector<std::pair<int,int>> FNAV_omegadot_2_bit({{48,24}});
+const std::vector<std::pair<int,int>> FNAV_omegadot_2_bit({{49,24}});
 const double FNAV_omegadot_2_LSB = PI_TWO_N43;
-const std::vector<std::pair<int,int>> FNAV_e_2_bit({{72,32}});
+const std::vector<std::pair<int,int>> FNAV_e_2_bit({{73,32}});
 const double FNAV_e_2_LSB = TWO_N33;
-const std::vector<std::pair<int,int>> FNAV_a12_2_bit({{104,32}});
+const std::vector<std::pair<int,int>> FNAV_a12_2_bit({{105,32}});
 const double FNAV_a12_2_LSB = TWO_N19;
-const std::vector<std::pair<int,int>> FNAV_omega0_2_bit({{136,32}});
+const std::vector<std::pair<int,int>> FNAV_omega0_2_bit({{137,32}});
 const double FNAV_omega0_2_LSB = PI_TWO_N31;
-const std::vector<std::pair<int,int>> FNAV_idot_2_bit({{168,14}});
+const std::vector<std::pair<int,int>> FNAV_idot_2_bit({{169,14}});
 const double FNAV_idot_2_LSB = PI_TWO_N43;
-const std::vector<std::pair<int,int>> FNAV_WN_2_bit({{182,12}});
-const std::vector<std::pair<int,int>> FNAV_TOW_2_bit({{194,20}});
+const std::vector<std::pair<int,int>> FNAV_WN_2_bit({{183,12}});
+const std::vector<std::pair<int,int>> FNAV_TOW_2_bit({{195,20}});
 
 // WORD 3 Ephemeris (2/3)
-const std::vector<std::pair<int,int>> FNAV_IODnav_3_bit({{6,10}});
-const std::vector<std::pair<int,int>> FNAV_i0_3_bit({{16,32}});
+const std::vector<std::pair<int,int>> FNAV_IODnav_3_bit({{7,10}});
+const std::vector<std::pair<int,int>> FNAV_i0_3_bit({{17,32}});
 const double FNAV_i0_3_LSB = PI_TWO_N31;
-const std::vector<std::pair<int,int>> FNAV_w_3_bit({{48,32}});
+const std::vector<std::pair<int,int>> FNAV_w_3_bit({{49,32}});
 const double FNAV_w_3_LSB = PI_TWO_N31;
-const std::vector<std::pair<int,int>> FNAV_deltan_3_bit({{80,16}});
+const std::vector<std::pair<int,int>> FNAV_deltan_3_bit({{81,16}});
 const double FNAV_deltan_3_LSB = PI_TWO_N43;
-const std::vector<std::pair<int,int>> FNAV_Cuc_3_bit({{96,16}});
+const std::vector<std::pair<int,int>> FNAV_Cuc_3_bit({{97,16}});
 const double FNAV_Cuc_3_LSB = TWO_N29;
-const std::vector<std::pair<int,int>> FNAV_Cus_3_bit({{112,16}});
+const std::vector<std::pair<int,int>> FNAV_Cus_3_bit({{113,16}});
 const double FNAV_Cus_3_LSB = TWO_N29;
-const std::vector<std::pair<int,int>> FNAV_Crc_3_bit({{128,16}});
+const std::vector<std::pair<int,int>> FNAV_Crc_3_bit({{129,16}});
 const double FNAV_Crc_3_LSB = TWO_N5;
-const std::vector<std::pair<int,int>> FNAV_Crs_3_bit({{144,16}});
+const std::vector<std::pair<int,int>> FNAV_Crs_3_bit({{145,16}});
 const double FNAV_Crs_3_LSB = TWO_N5;
-const std::vector<std::pair<int,int>> FNAV_t0e_3_bit({{160,14}});
+const std::vector<std::pair<int,int>> FNAV_t0e_3_bit({{161,14}});
 const double FNAV_t0e_3_LSB = 60;
-const std::vector<std::pair<int,int>> FNAV_WN_3_bit({{174,12}});
-const std::vector<std::pair<int,int>> FNAV_TOW_3_bit({{186,20}});
+const std::vector<std::pair<int,int>> FNAV_WN_3_bit({{175,12}});
+const std::vector<std::pair<int,int>> FNAV_TOW_3_bit({{187,20}});
 
 // WORD 4 Ephemeris (3/3)
-const std::vector<std::pair<int,int>> FNAV_IODnav_4_bit({{6,10}});
-const std::vector<std::pair<int,int>> FNAV_Cic_4_bit({{16,16}});
+const std::vector<std::pair<int,int>> FNAV_IODnav_4_bit({{7,10}});
+const std::vector<std::pair<int,int>> FNAV_Cic_4_bit({{18,16}});
 const double FNAV_Cic_4_LSB = TWO_N29;
-const std::vector<std::pair<int,int>> FNAV_Cis_4_bit({{32,16}});
+const std::vector<std::pair<int,int>> FNAV_Cis_4_bit({{33,16}});
 const double FNAV_Cis_4_LSB = TWO_N29;
-const std::vector<std::pair<int,int>> FNAV_A0_4_bit({{48,32}});
+const std::vector<std::pair<int,int>> FNAV_A0_4_bit({{49,32}});
 const double FNAV_A0_4_LSB = TWO_N30;
-const std::vector<std::pair<int,int>> FNAV_A1_4_bit({{80,24}});
+const std::vector<std::pair<int,int>> FNAV_A1_4_bit({{81,24}});
 const double FNAV_A1_4_LSB = TWO_N50;
-const std::vector<std::pair<int,int>> FNAV_deltatls_4_bit({{104,8}});
-const std::vector<std::pair<int,int>> FNAV_t0t_4_bit({{112,8}});
+const std::vector<std::pair<int,int>> FNAV_deltatls_4_bit({{105,8}});
+const std::vector<std::pair<int,int>> FNAV_t0t_4_bit({{113,8}});
 const double FNAV_t0t_4_LSB = 3600;
-const std::vector<std::pair<int,int>> FNAV_WNot_4_bit({{120,8}});
-const std::vector<std::pair<int,int>> FNAV_WNlsf_4_bit({{128,8}});
-const std::vector<std::pair<int,int>> FNAV_DN_4_bit({{136,3}});
-const std::vector<std::pair<int,int>> FNAV_deltatlsf_4_bit({{139,8}});
-const std::vector<std::pair<int,int>> FNAV_t0g_4_bit({{147,8}});
+const std::vector<std::pair<int,int>> FNAV_WNot_4_bit({{121,8}});
+const std::vector<std::pair<int,int>> FNAV_WNlsf_4_bit({{129,8}});
+const std::vector<std::pair<int,int>> FNAV_DN_4_bit({{137,3}});
+const std::vector<std::pair<int,int>> FNAV_deltatlsf_4_bit({{140,8}});
+const std::vector<std::pair<int,int>> FNAV_t0g_4_bit({{148,8}});
 const double FNAV_t0g_4_LSB = 3600;
-const std::vector<std::pair<int,int>> FNAV_A0g_4_bit({{155,16}});
+const std::vector<std::pair<int,int>> FNAV_A0g_4_bit({{156,16}});
 const double FNAV_A0g_4_LSB = TWO_N35;
-const std::vector<std::pair<int,int>> FNAV_A1g_4_bit({{171,12}});
+const std::vector<std::pair<int,int>> FNAV_A1g_4_bit({{172,12}});
 const double FNAV_A1g_4_LSB = TWO_N51;
-const std::vector<std::pair<int,int>> FNAV_WN0g_4_bit({{183,6}});
-const std::vector<std::pair<int,int>> FNAV_TOW_4_bit({{189,20}});
+const std::vector<std::pair<int,int>> FNAV_WN0g_4_bit({{184,6}});
+const std::vector<std::pair<int,int>> FNAV_TOW_4_bit({{190,20}});
 
 // WORD 5 Almanac SVID1 SVID2(1/2)
-const std::vector<std::pair<int,int>> FNAV_IODa_5_bit({{6,4}});
-const std::vector<std::pair<int,int>> FNAV_WNa_5_bit({{10,2}});
-const std::vector<std::pair<int,int>> FNAV_t0a_5_bit({{12,10}});
+const std::vector<std::pair<int,int>> FNAV_IODa_5_bit({{7,4}});
+const std::vector<std::pair<int,int>> FNAV_WNa_5_bit({{11,2}});
+const std::vector<std::pair<int,int>> FNAV_t0a_5_bit({{13,10}});
 const double FNAV_t0a_5_LSB = 600;
-const std::vector<std::pair<int,int>> FNAV_SVID1_5_bit({{22,6}});
-const std::vector<std::pair<int,int>> FNAV_Deltaa12_1_5_bit({{28,13}});
+const std::vector<std::pair<int,int>> FNAV_SVID1_5_bit({{23,6}});
+const std::vector<std::pair<int,int>> FNAV_Deltaa12_1_5_bit({{29,13}});
 const double FNAV_Deltaa12_5_LSB = TWO_N9;
-const std::vector<std::pair<int,int>> FNAV_e_1_5_bit({{41,11}});
+const std::vector<std::pair<int,int>> FNAV_e_1_5_bit({{42,11}});
 const double FNAV_e_5_LSB = TWO_N16;
-const std::vector<std::pair<int,int>> FNAV_w_1_5_bit({{52,16}});
+const std::vector<std::pair<int,int>> FNAV_w_1_5_bit({{53,16}});
 const double FNAV_w_5_LSB = TWO_N15;
-const std::vector<std::pair<int,int>> FNAV_deltai_1_5_bit({{68,11}});
+const std::vector<std::pair<int,int>> FNAV_deltai_1_5_bit({{69,11}});
 const double FNAV_deltai_5_LSB = TWO_N14;
-const std::vector<std::pair<int,int>> FNAV_Omega0_1_5_bit({{79,16}});
+const std::vector<std::pair<int,int>> FNAV_Omega0_1_5_bit({{80,16}});
 const double FNAV_Omega0_5_LSB = TWO_N15;
-const std::vector<std::pair<int,int>> FNAV_Omegadot_1_5_bit({{95,11}});
+const std::vector<std::pair<int,int>> FNAV_Omegadot_1_5_bit({{96,11}});
 const double FNAV_Omegadot_5_LSB = TWO_N33;
-const std::vector<std::pair<int,int>> FNAV_M0_1_5_bit({{106,16}});
+const std::vector<std::pair<int,int>> FNAV_M0_1_5_bit({{107,16}});
 const double FNAV_M0_5_LSB = TWO_N15;
-const std::vector<std::pair<int,int>> FNAV_af0_1_5_bit({{122,16}});
+const std::vector<std::pair<int,int>> FNAV_af0_1_5_bit({{123,16}});
 const double FNAV_af0_5_LSB = TWO_N19;
-const std::vector<std::pair<int,int>> FNAV_af1_1_5_bit({{138,13}});
+const std::vector<std::pair<int,int>> FNAV_af1_1_5_bit({{139,13}});
 const double FNAV_af1_5_LSB = TWO_N38;
-const std::vector<std::pair<int,int>> FNAV_E5ahs_1_5_bit({{151,2}});
-const std::vector<std::pair<int,int>> FNAV_SVID2_5_bit({{153,6}});
-const std::vector<std::pair<int,int>> FNAV_Deltaa12_2_5_bit({{159,13}});
-const std::vector<std::pair<int,int>> FNAV_e_2_5_bit({{172,11}});
-const std::vector<std::pair<int,int>> FNAV_w_2_5_bit({{183,16}});
-const std::vector<std::pair<int,int>> FNAV_deltai_2_5_bit({{199,11}});
+const std::vector<std::pair<int,int>> FNAV_E5ahs_1_5_bit({{152,2}});
+const std::vector<std::pair<int,int>> FNAV_SVID2_5_bit({{154,6}});
+const std::vector<std::pair<int,int>> FNAV_Deltaa12_2_5_bit({{160,13}});
+const std::vector<std::pair<int,int>> FNAV_e_2_5_bit({{173,11}});
+const std::vector<std::pair<int,int>> FNAV_w_2_5_bit({{184,16}});
+const std::vector<std::pair<int,int>> FNAV_deltai_2_5_bit({{200,11}});
 //const std::vector<std::pair<int,int>> FNAV_Omega012_2_5_bit({{210,4}});
 
 // WORD 6 Almanac SVID2(1/2) SVID3
-const std::vector<std::pair<int,int>> FNAV_IODa_6_bit({{6,4}});
+const std::vector<std::pair<int,int>> FNAV_IODa_6_bit({{7,4}});
 //const std::vector<std::pair<int,int>> FNAV_Omega022_2_6_bit({{10,12}});
-const std::vector<std::pair<int,int>> FNAV_Omegadot_2_6_bit({{22,11}});
-const std::vector<std::pair<int,int>> FNAV_M0_2_6_bit({{33,16}});
-const std::vector<std::pair<int,int>> FNAV_af0_2_6_bit({{49,16}});
-const std::vector<std::pair<int,int>> FNAV_af1_2_6_bit({{65,13}});
-const std::vector<std::pair<int,int>> FNAV_E5ahs_2_6_bit({{78,2}});
-const std::vector<std::pair<int,int>> FNAV_SVID3_6_bit({{80,6}});
-const std::vector<std::pair<int,int>> FNAV_Deltaa12_3_6_bit({{86,13}});
-const std::vector<std::pair<int,int>> FNAV_e_3_6_bit({{99,11}});
-const std::vector<std::pair<int,int>> FNAV_w_3_6_bit({{110,16}});
-const std::vector<std::pair<int,int>> FNAV_deltai_3_6_bit({{126,11}});
-const std::vector<std::pair<int,int>> FNAV_Omega0_3_6_bit({{137,16}});
-const std::vector<std::pair<int,int>> FNAV_Omegadot_3_6_bit({{153,11}});
-const std::vector<std::pair<int,int>> FNAV_M0_3_6_bit({{164,16}});
-const std::vector<std::pair<int,int>> FNAV_af0_3_6_bit({{180,16}});
-const std::vector<std::pair<int,int>> FNAV_af1_3_6_bit({{196,13}});
-const std::vector<std::pair<int,int>> FNAV_E5ahs_3_6_bit({{209,2}});
+const std::vector<std::pair<int,int>> FNAV_Omegadot_2_6_bit({{23,11}});
+const std::vector<std::pair<int,int>> FNAV_M0_2_6_bit({{34,16}});
+const std::vector<std::pair<int,int>> FNAV_af0_2_6_bit({{50,16}});
+const std::vector<std::pair<int,int>> FNAV_af1_2_6_bit({{66,13}});
+const std::vector<std::pair<int,int>> FNAV_E5ahs_2_6_bit({{79,2}});
+const std::vector<std::pair<int,int>> FNAV_SVID3_6_bit({{81,6}});
+const std::vector<std::pair<int,int>> FNAV_Deltaa12_3_6_bit({{87,13}});
+const std::vector<std::pair<int,int>> FNAV_e_3_6_bit({{100,11}});
+const std::vector<std::pair<int,int>> FNAV_w_3_6_bit({{111,16}});
+const std::vector<std::pair<int,int>> FNAV_deltai_3_6_bit({{127,11}});
+const std::vector<std::pair<int,int>> FNAV_Omega0_3_6_bit({{138,16}});
+const std::vector<std::pair<int,int>> FNAV_Omegadot_3_6_bit({{154,11}});
+const std::vector<std::pair<int,int>> FNAV_M0_3_6_bit({{165,16}});
+const std::vector<std::pair<int,int>> FNAV_af0_3_6_bit({{181,16}});
+const std::vector<std::pair<int,int>> FNAV_af1_3_6_bit({{197,13}});
+const std::vector<std::pair<int,int>> FNAV_E5ahs_3_6_bit({{210,2}});
 
 // Galileo E5a-I primary codes
 const std::string Galileo_E5a_I_PRIMARY_CODE[Galileo_E5a_NUMBER_OF_CODES] = {

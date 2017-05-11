@@ -77,7 +77,6 @@ void wait(int seconds)
 
 void send_tracking_gps_input_samples(FILE *ptr_myfile, int num_remaining_samples, gr::top_block_sptr top_block)
 {
-    int sample_pointer;
     int num_samples_transferred = 0;
     static int flowgraph_stopped = 0;
 

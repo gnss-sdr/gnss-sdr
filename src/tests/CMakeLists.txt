@@ -260,12 +260,15 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/observables/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs

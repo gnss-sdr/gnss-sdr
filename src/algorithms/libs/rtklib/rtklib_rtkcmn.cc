@@ -65,6 +65,8 @@ const double gpst0[] = {1980, 1,  6, 0, 0, 0}; /* gps time reference */
 const double gst0 [] = {1999, 8, 22, 0, 0, 0}; /* galileo system time reference */
 const double bdt0 [] = {2006, 1,  1, 0, 0, 0}; /* beidou time reference */
 
+static double timeoffset_ = 0.0; 
+
 double leaps[MAXLEAPS+1][7] = { /* leap seconds (y,m,d,h,m,s,utc-gpst) */
         {2017, 1, 1, 0, 0, 0, -18},
         {2015, 7, 1, 0, 0, 0, -17},
@@ -1381,12 +1383,12 @@ gtime_t timeget(void)
  * notes  : just set time offset between cpu time and current time
  *          the time offset is reflected to only timeget()
  *          not reentrant
- *-----------------------------------------------------------------------------
+ *-----------------------------------------------------------------------------*/
 void timeset(gtime_t t)
 {
-    timeoffset_+=timediff(t,timeget());
+    timeoffset_ += timediff(t, timeget());
 }
- */
+
 /* read leap seconds table by text -------------------------------------------*/
 int read_leaps_text(FILE *fp)
 {
@@ -3010,8 +3012,9 @@ void freenav(nav_t *nav, int opt)
 //    va_start(ap,format); vfprintf(fp_trace,format,ap); va_end(ap);
 //    fflush(fp_trace);
 //}
-//extern void tracet(int level, const char *format, ...)
-//{
+
+void tracet(int level  __attribute__((unused)), const char *format  __attribute__((unused)), ...)
+{
 //    va_list ap;
 //
 //    if (!fp_trace||level>level_trace) return;
@@ -3019,7 +3022,8 @@ void freenav(nav_t *nav, int opt)
 //    fprintf(fp_trace,"%d %9.3f: ",level,(tickget()-tick_trace)/1000.0);
 //    va_start(ap,format); vfprintf(fp_trace,format,ap); va_end(ap);
 //    fflush(fp_trace);
-//}
+}
+
 void tracemat(int level __attribute__((unused)), const double *A __attribute__((unused)),
 int n __attribute__((unused)), int m __attribute__((unused)), int p __attribute__((unused)),
 int q __attribute__((unused)))

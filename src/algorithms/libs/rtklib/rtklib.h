@@ -294,10 +294,26 @@ const int ARMODE_WLNL = 6;
 const int ARMODE_TCAR = 7;
 
 
-const int POSOPT_RINEX = 3;              //!< pos option: rinex header pos */
+const int POSOPT_RINEX = 3;     //!< pos option: rinex header pos
+const int MAXSTRPATH = 1024;    //!<  max length of stream path
+const int MAXSTRMSG = 1024;     //!<  max length of stream message
 
 typedef void fatalfunc_t(const char *); //!<  fatal callback function type
 
+#define STR_MODE_R  0x1                 /* stream mode: read */
+#define STR_MODE_W  0x2                 /* stream mode: write */
+#define STR_MODE_RW 0x3                 /* stream mode: read/write */
+
+#define STR_NONE     0                  /* stream type: none */
+#define STR_SERIAL   1                  /* stream type: serial */
+#define STR_FILE     2                  /* stream type: file */
+#define STR_TCPSVR   3                  /* stream type: TCP server */
+#define STR_TCPCLI   4                  /* stream type: TCP client */
+#define STR_UDP      5                  /* stream type: UDP stream */
+#define STR_NTRIPSVR 6                  /* stream type: NTRIP server */
+#define STR_NTRIPCLI 7                  /* stream type: NTRIP client */
+#define STR_FTP      8                  /* stream type: ftp */
+#define STR_HTTP     9                  /* stream type: http */
 
 #define NP_PPP(opt)     ((opt)->dynamics?9:3) /* number of pos solution */
 #define IC_PPP(s,opt)   (NP_PPP(opt)+(s))      /* state index of clocks (s=0:gps,1:glo) */
@@ -306,6 +322,14 @@ typedef void fatalfunc_t(const char *); //!<  fatal callback function type
 #define IB_PPP(s,opt)   (NR_PPP(opt)+(s)-1)    /* state index of phase bias */
 #define NX_PPP(opt)     (IB_PPP(MAXSAT,opt)+1) /* number of estimated states */
 
+#define NF_RTK(opt)     ((opt)->ionoopt==IONOOPT_IFLC?1:(opt)->nf)
+#define NP_RTK(opt)     ((opt)->dynamics==0?3:9)
+#define NI_RTK(opt)     ((opt)->ionoopt!=IONOOPT_EST?0:MAXSAT)
+#define NT_RTK(opt)     ((opt)->tropopt<TROPOPT_EST?0:((opt)->tropopt<TROPOPT_ESTG?2:6))
+#define NL_RTK(opt)     ((opt)->glomodear!=2?0:NFREQGLO)
+#define NB_RTK(opt)     ((opt)->mode<=PMODE_DGPS?0:MAXSAT*NF_RTK(opt))
+#define NR_RTK(opt)     (NP_RTK(opt)+NI_RTK(opt)+NT_RTK(opt)+NL_RTK(opt))
+#define NX_RTK(opt)     (NR_RTK(opt)+NB_RTK(opt))
 
 typedef struct {        /* time struct */
     time_t time;        /* time (s) expressed by standard time_t */
@@ -1005,5 +1029,16 @@ const double lam_carr[MAXFREQ] = { /* carrier wave length (m) */
     SPEED_OF_LIGHT / FREQ1, SPEED_OF_LIGHT / FREQ2, SPEED_OF_LIGHT / FREQ5, SPEED_OF_LIGHT / FREQ6, SPEED_OF_LIGHT / FREQ7,
     SPEED_OF_LIGHT / FREQ8, SPEED_OF_LIGHT / FREQ9
 };
+
+const int STRFMT_RTCM2 = 0;                  /* stream format: RTCM 2 */
+const int STRFMT_RTCM3 = 1;                  /* stream format: RTCM 3 */
+const int STRFMT_SP3 = 16;                 /* stream format: SP3 */
+const int STRFMT_RNXCLK = 17;              /* stream format: RINEX CLK */
+const int STRFMT_SBAS = 18;                 /* stream format: SBAS messages */
+const int STRFMT_NMEA = 19;                 /* stream format: NMEA 0183 */
+//const solopt_t solopt_default;   /* default solution output options */
+
+const int MAXSTRRTK =  8; /* max number of stream in RTK server */
+
 
 #endif

@@ -30,6 +30,9 @@ set(RTKLIB_LIB_SOURCES
      rtklib_lambda.cc
      rtklib_rtkpos.cc
      rtklib_conversions.cc
+     rtklib_stream.cc
+     rtklib_rtksvr.cc
+     rtklib_solution.cc
 )
 
 include_directories(
@@ -59,5 +62,5 @@ target_link_libraries(
     ${GLOG_LIBRARIES}
     ${BLAS}
     ${LAPACK}
-    ${MAC_LIBRARIES} 
+    ${MAC_LIBRARIES}
 )

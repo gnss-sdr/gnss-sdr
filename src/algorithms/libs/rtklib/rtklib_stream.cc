@@ -58,11 +58,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#define __USE_MISC
 #include <errno.h>
 #include <termios.h>
 #include <sys/socket.h>
-//#include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -101,7 +99,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
 
     if (!(serial = (serial_t *)malloc(sizeof(serial_t)))) return NULL;
 
-    if ((p = strchr(path, ':')))
+    if ((p = strchr((char*)path, ':')))
         {
             strncpy(port, path, p-path); port[p-path] = '\0';
             sscanf(p, ":%d:%d:%c:%d:%s", &brate, &bsize, &parity, &stopb, fctr);
@@ -953,7 +951,7 @@ int consock(tcpcli_t *tcpcli, char *msg)
     tracet(3, "consock: sock=%d\n", tcpcli->svr.sock);
 
     /* wait re-connect */
-    if (tcpcli->svr.tcon < 0 || (tcpcli->svr.tcon>0 &&
+    if (tcpcli->svr.tcon < 0 || (tcpcli->svr.tcon > 0 &&
             (int)(tickget()-tcpcli->svr.tdis) < tcpcli->svr.tcon))
         {
             return 0;

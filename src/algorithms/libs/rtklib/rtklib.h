@@ -60,10 +60,50 @@
 #include <cmath>
 #include <time.h>
 #include <ctype.h>
+#include <pthread.h>
+#include <netinet/in.h>
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include "gnss_obs_codes.h"
 
+
+/* macros --------------------------------------------------------------------*/
+
+#define dev_t               int
+#define socket_t            int
+#define closesocket         close
+#define lock_t              pthread_mutex_t
+#define thread_t            pthread_t
+#define initlock(f)         pthread_mutex_init(f,NULL)
+#define rtk_lock(f)         pthread_mutex_lock(f)
+#define rtk_unlock(f)       pthread_mutex_unlock(f)
+
+#define TINTACT             200         /* period for stream active (ms) */
+#define SERIBUFFSIZE        4096        /* serial buffer size (bytes) */
+#define TIMETAGH_LEN        64          /* time tag file header length */
+#define MAXCLI              32          /* max client connection for tcp svr */
+#define MAXSTATMSG          32          /* max length of status message */
+
+#define VER_RTKLIB  "2.4.2"
+#define NTRIP_AGENT         "RTKLIB/" VER_RTKLIB
+#define NTRIP_CLI_PORT      2101        /* default ntrip-client connection port */
+#define NTRIP_SVR_PORT      80          /* default ntrip-server connection port */
+#define NTRIP_MAXRSP        32768       /* max size of ntrip response */
+#define NTRIP_MAXSTR        256         /* max length of mountpoint string */
+#define NTRIP_RSP_OK_CLI    "ICY 200 OK\r\n" /* ntrip response: client */
+#define NTRIP_RSP_OK_SVR    "OK\r\n"    /* ntrip response: server */
+#define NTRIP_RSP_SRCTBL    "SOURCETABLE 200 OK\r\n" /* ntrip response: source table */
+#define NTRIP_RSP_TBLEND    "ENDSOURCETABLE"
+#define NTRIP_RSP_HTTP      "HTTP/"     /* ntrip response: http */
+#define NTRIP_RSP_ERROR     "ERROR"     /* ntrip response: error */
+
+#define FTP_CMD             "wget"      /* ftp/http command */
+#define FTP_TIMEOUT         30          /* ftp/http timeout (s) */
+
+#define MAXRAWLEN   4096                /* max length of receiver raw message */
+#define MAXSOLBUF   256                 /* max number of solution buffer */
+#define MAXSBSMSG   32                  /* max number of SBAS msg in RTK server */
+#define MAXOBSBUF   128                 /* max number of observation data buffer */
 
 const int FILEPATHSEP = '/';
 const double RE_WGS84 = 6378137.0;             //!< earth semimajor axis (WGS84) (m)
@@ -1008,6 +1048,179 @@ typedef struct half_cyc_tag {  /* half-cycle correction list type */
     gtime_t ts,te;      /* time start, time end */
     struct half_cyc_tag *next; /* pointer to next correction */
 } half_cyc_t;
+
+
+typedef struct {        /* stream type */
+    int type;           /* type (STR_???) */
+    int mode;           /* mode (STR_MODE_?) */
+    int state;          /* state (-1:error,0:close,1:open) */
+    unsigned int inb,inr;   /* input bytes/rate */
+    unsigned int outb,outr; /* output bytes/rate */
+    unsigned int tick,tact; /* tick/active tick */
+    unsigned int inbt,outbt; /* input/output bytes at tick */
+    lock_t lock;        /* lock flag */
+    void *port;         /* type dependent port control struct */
+    char path[MAXSTRPATH]; /* stream path */
+    char msg [MAXSTRMSG];  /* stream message */
+} stream_t;
+
+
+typedef struct {            /* serial control type */
+    dev_t dev;              /* serial device */
+    int error;              /* error state */
+} serial_t;
+
+
+typedef struct {            /* file control type */
+    FILE *fp;               /* file pointer */
+    FILE *fp_tag;           /* file pointer of tag file */
+    FILE *fp_tmp;           /* temporary file pointer for swap */
+    FILE *fp_tag_tmp;       /* temporary file pointer of tag file for swap */
+    char path[MAXSTRPATH];  /* file path */
+    char openpath[MAXSTRPATH]; /* open file path */
+    int mode;               /* file mode */
+    int timetag;            /* time tag flag (0:off,1:on) */
+    int repmode;            /* replay mode (0:master,1:slave) */
+    int offset;             /* time offset (ms) for slave */
+    gtime_t time;           /* start time */
+    gtime_t wtime;          /* write time */
+    unsigned int tick;      /* start tick */
+    unsigned int tick_f;    /* start tick in file */
+    unsigned int fpos;      /* current file position */
+    double start;           /* start offset (s) */
+    double speed;           /* replay speed (time factor) */
+    double swapintv;        /* swap interval (hr) (0: no swap) */
+    lock_t lock;            /* lock flag */
+} file_t;
+
+
+typedef struct {            /* tcp control type */
+    int state;              /* state (0:close,1:wait,2:connect) */
+    char saddr[256];        /* address string */
+    int port;               /* port */
+    struct sockaddr_in addr; /* address resolved */
+    socket_t sock;          /* socket descriptor */
+    int tcon;               /* reconnect time (ms) (-1:never,0:now) */
+    unsigned int tact;      /* data active tick */
+    unsigned int tdis;      /* disconnect tick */
+} tcp_t;
+
+
+typedef struct {            /* tcp server type */
+    tcp_t svr;              /* tcp server control */
+    tcp_t cli[MAXCLI];      /* tcp client controls */
+} tcpsvr_t;
+
+
+typedef struct {            /* tcp cilent type */
+    tcp_t svr;              /* tcp server control */
+    int toinact;            /* inactive timeout (ms) (0:no timeout) */
+    int tirecon;            /* reconnect interval (ms) (0:no reconnect) */
+} tcpcli_t;
+
+
+typedef struct {            /* ntrip control type */
+    int state;              /* state (0:close,1:wait,2:connect) */
+    int type;               /* type (0:server,1:client) */
+    int nb;                 /* response buffer size */
+    char url[256];          /* url for proxy */
+    char mntpnt[256];       /* mountpoint */
+    char user[256];         /* user */
+    char passwd[256];       /* password */
+    char str[NTRIP_MAXSTR]; /* mountpoint string for server */
+    unsigned char buff[NTRIP_MAXRSP]; /* response buffer */
+    tcpcli_t *tcp;          /* tcp client */
+} ntrip_t;
+
+
+typedef struct {            /* ftp download control type */
+    int state;              /* state (0:close,1:download,2:complete,3:error) */
+    int proto;              /* protocol (0:ftp,1:http) */
+    int error;              /* error code (0:no error,1-10:wget error, */
+    /*            11:no temp dir,12:uncompact error) */
+    char addr[1024];        /* download address */
+    char file[1024];        /* download file path */
+    char user[256];         /* user for ftp */
+    char passwd[256];       /* password for ftp */
+    char local[1024];       /* local file path */
+    int topts[4];           /* time options {poff,tint,toff,tretry} (s) */
+    gtime_t tnext;          /* next retry time (gpst) */
+    thread_t thread;        /* download thread */
+} ftp_t;
+
+
+typedef struct {        /* receiver raw data control type */
+    gtime_t time;       /* message time */
+    gtime_t tobs;       /* observation data time */
+    obs_t obs;          /* observation data */
+    obs_t obuf;         /* observation data buffer */
+    nav_t nav;          /* satellite ephemerides */
+    sta_t sta;          /* station parameters */
+    int ephsat;         /* sat number of update ephemeris (0:no satellite) */
+    sbsmsg_t sbsmsg;    /* SBAS message */
+    char msgtype[256];  /* last message type */
+    unsigned char subfrm[MAXSAT][380];  /* subframe buffer */
+    lexmsg_t lexmsg;    /* LEX message */
+    double lockt[MAXSAT][NFREQ+NEXOBS]; /* lock time (s) */
+    double icpp[MAXSAT],off[MAXSAT],icpc; /* carrier params for ss2 */
+    double prCA[MAXSAT],dpCA[MAXSAT]; /* L1/CA pseudrange/doppler for javad */
+    unsigned char halfc[MAXSAT][NFREQ+NEXOBS]; /* half-cycle add flag */
+    char freqn[MAXOBS]; /* frequency number for javad */
+    int nbyte;          /* number of bytes in message buffer */
+    int len;            /* message length (bytes) */
+    int iod;            /* issue of data */
+    int tod;            /* time of day (ms) */
+    int tbase;          /* time base (0:gpst,1:utc(usno),2:glonass,3:utc(su) */
+    int flag;           /* general purpose flag */
+    int outtype;        /* output message type */
+    unsigned char buff[MAXRAWLEN]; /* message buffer */
+    char opt[256];      /* receiver dependent options */
+    double receive_time;/* RT17: Reiceve time of week for week rollover detection */
+    unsigned int plen;  /* RT17: Total size of packet to be read */
+    unsigned int pbyte; /* RT17: How many packet bytes have been read so far */
+    unsigned int page;  /* RT17: Last page number */
+    unsigned int reply; /* RT17: Current reply number */
+    int week;           /* RT17: week number */
+    unsigned char pbuff[255+4+2]; /* RT17: Packet buffer */
+} raw_t;
+
+
+typedef struct {        /* RTK server type */
+    int state;          /* server state (0:stop,1:running) */
+    int cycle;          /* processing cycle (ms) */
+    int nmeacycle;      /* NMEA request cycle (ms) (0:no req) */
+    int nmeareq;        /* NMEA request (0:no,1:nmeapos,2:single sol) */
+    double nmeapos[3];  /* NMEA request position (ecef) (m) */
+    int buffsize;       /* input buffer size (bytes) */
+    int format[3];      /* input format {rov,base,corr} */
+    solopt_t solopt[2]; /* output solution options {sol1,sol2} */
+    int navsel;         /* ephemeris select (0:all,1:rover,2:base,3:corr) */
+    int nsbs;           /* number of sbas message */
+    int nsol;           /* number of solution buffer */
+    rtk_t rtk;          /* RTK control/result struct */
+    int nb [3];         /* bytes in input buffers {rov,base} */
+    int nsb[2];         /* bytes in soulution buffers */
+    int npb[3];         /* bytes in input peek buffers */
+    unsigned char *buff[3]; /* input buffers {rov,base,corr} */
+    unsigned char *sbuf[2]; /* output buffers {sol1,sol2} */
+    unsigned char *pbuf[3]; /* peek buffers {rov,base,corr} */
+    sol_t solbuf[MAXSOLBUF]; /* solution buffer */
+    unsigned int nmsg[3][10]; /* input message counts */
+    raw_t  raw [3];     /* receiver raw control {rov,base,corr} */
+    rtcm_t rtcm[3];     /* RTCM control {rov,base,corr} */
+    gtime_t ftime[3];   /* download time {rov,base,corr} */
+    char files[3][MAXSTRPATH]; /* download paths {rov,base,corr} */
+    obs_t obs[3][MAXOBSBUF]; /* observation data {rov,base,corr} */
+    nav_t nav;          /* navigation data */
+    sbsmsg_t sbsmsg[MAXSBSMSG]; /* SBAS message buffer */
+    stream_t stream[8]; /* streams {rov,base,corr,sol1,sol2,logr,logb,logc} */
+    stream_t *moni;     /* monitor stream */
+    unsigned int tick;  /* start tick */
+    thread_t thread;    /* server thread */
+    int cputime;        /* CPU time (ms) for a processing cycle */
+    int prcout;         /* missing observation data count */
+    lock_t lock;        /* lock flag */
+} rtksvr_t;
 
 
 const double chisqr[100] = {      /* chi-sqr(n) (alpha=0.001) */

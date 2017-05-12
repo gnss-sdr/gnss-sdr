@@ -147,6 +147,7 @@ int hybrid_observables_cc::general_work (int noutput_items,
      */
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
+            current_gnss_synchro[i].Flag_valid_pseudorange=false;
             n_consume[i] = ninput_items[i];// full throttle
             for (int j = 0; j < n_consume[i]; j++)
                 {
@@ -186,7 +187,6 @@ int hybrid_observables_cc::general_work (int noutput_items,
                                     gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(
                                             d_gnss_synchro_history_queue[i].front().Channel_ID,
                                             d_gnss_synchro_history_queue[i].front()));
-
                                 }
                             gnss_synchro_map_iter = min_element(gnss_synchro_map.begin(),
                                     gnss_synchro_map.end(),

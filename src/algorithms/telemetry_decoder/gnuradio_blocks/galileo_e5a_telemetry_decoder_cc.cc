@@ -188,10 +188,9 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
 }
 
 galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
-        Gnss_Satellite satellite,
-        bool dump) :
-                   gr::block("galileo_e5a_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+        Gnss_Satellite satellite, bool dump) : gr::block("galileo_e5a_telemetry_decoder_cc",
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // Telemetry Bit transition synchronization port out
     this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
@@ -245,10 +244,8 @@ galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
 int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,    gr_vector_void_star &output_items)
 {
-    //
-    const Gnss_Synchro **in = (const Gnss_Synchro **)  &input_items[0]; //Get the input samples pointer
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
-
+    const Gnss_Synchro *in = (const Gnss_Synchro *)  input_items[0]; // input
+    Gnss_Synchro *out = (Gnss_Synchro *) output_items[0];            // output
     /* Terminology:     Prompt: output from tracking Prompt correlator (Prompt samples)
      *             Symbol: encoded navigation bits. 1 symbol = 20 samples in E5a
      *             Bit: decoded navigation bits forming words as described in Galileo ICD
@@ -260,9 +257,9 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
     {
     case 0:
         {
-            if (in[0][0].Prompt_I != 0)
+            if (in[0].Prompt_I != 0)
                 {
-                    d_current_symbol += in[0][0].Prompt_I;
+                    d_current_symbol += in[0].Prompt_I;
                     if (d_prompt_counter == GALILEO_FNAV_CODES_PER_SYMBOL - 1)
                         {
                             if (d_current_symbol > 0)
@@ -290,7 +287,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
         }
     case 1:
         {
-            d_current_symbol += in[0][0].Prompt_I;
+            d_current_symbol += in[0].Prompt_I;
             if (d_prompt_counter == GALILEO_FNAV_CODES_PER_SYMBOL - 1)
                 {
                     if (d_current_symbol > 0)
@@ -354,7 +351,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
         }
     case 2:
         {
-            d_current_symbol += in[0][0].Prompt_I;
+            d_current_symbol += in[0].Prompt_I;
             if (d_prompt_counter == GALILEO_FNAV_CODES_PER_SYMBOL - 1)
                 {
                     if (d_current_symbol > 0)
@@ -415,7 +412,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                                                 {
                                                     d_flag_frame_sync = true;
                                                     DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
-                                                            << in[0][0].Tracking_sample_counter << " [samples]";                                                }
+                                                            << in[0].Tracking_sample_counter << " [samples]";                                                }
                                             d_symbol_counter = 0; // d_page_symbols start right after preamble and finish at the end of next preamble.
                                         }
                                     else
@@ -443,12 +440,12 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
             break;
         }
     }
-    consume_each(1);
+
 
     // UPDATE GNSS SYNCHRO DATA
     Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
     //1. Copy the current tracking output
-    current_synchro_data = in[0][0];
+    current_synchro_data = in[0];
     //2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_nav.flag_TOW_set == true)
         //update TOW at the preamble instant
@@ -524,7 +521,8 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
         }
     d_sample_counter++; //count for the processed samples
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
-    *out[0] = current_synchro_data;
+    out[0] = current_synchro_data;
+    consume_each(1);
     return 1;
 }
 

@@ -400,7 +400,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_symbol_output = true;
-            current_synchro_data.correlation_length_ms = 4;
+            current_synchro_data.correlation_length_ms = Galileo_E1_CODE_PERIOD_MS;
 
         }
     else

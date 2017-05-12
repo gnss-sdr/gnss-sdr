@@ -55,6 +55,9 @@
 
 #include "rtklib.h"
 
+#define COMMENTH    "%"                 /* comment line indicator for solution */
+#define MSG_DISCONN "$_DISCONNECT\r\n"  /* disconnect message */
+
 const char *opt2sep(const solopt_t *opt);
 int tonum(char *buff, const char *sep, double *v);
 double sqvar(double covar);

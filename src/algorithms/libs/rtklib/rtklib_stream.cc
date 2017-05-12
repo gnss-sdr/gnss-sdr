@@ -108,7 +108,7 @@
      }
      else strcpy(port,path);
 
-     for (i=0;i<11;i++) if (br[i]==brate) break;
+     for (i=0;i<11;i++) if (br[i] == brate) break;
      if (i>=12)
      {
          sprintf(msg,"bitrate error (%d)",brate);
@@ -120,7 +120,7 @@
 
      sprintf(dev,"/dev/%s",port);
 
-     if ((mode&STR_MODE_R)&&(mode&STR_MODE_W)) rw=O_RDWR;
+     if ((mode&STR_MODE_R) && (mode&STR_MODE_W)) rw=O_RDWR;
      else if (mode&STR_MODE_R) rw=O_RDONLY;
      else if (mode&STR_MODE_W) rw=O_WRONLY;
 
@@ -139,10 +139,10 @@
      ios.c_cc[VTIME]=0;
      cfsetospeed(&ios,bs[i]);
      cfsetispeed(&ios,bs[i]);
-     ios.c_cflag|=bsize==7?CS7:CS8;
-     ios.c_cflag|=parity=='O'?(PARENB|PARODD):(parity=='E'?PARENB:0);
-     ios.c_cflag|=stopb==2?CSTOPB:0;
-     ios.c_cflag|=!strcmp(fctr,"rts")?CRTSCTS:0;
+     ios.c_cflag |= bsize == 7?CS7:CS8;
+     ios.c_cflag |= parity == 'O'?(PARENB|PARODD):(parity == 'E'?PARENB:0);
+     ios.c_cflag |= stopb == 2?CSTOPB:0;
+     ios.c_cflag |= !strcmp(fctr,"rts")?CRTSCTS:0;
      tcsetattr(serial->dev,TCSANOW,&ios);
      tcflush(serial->dev,TCIOFLUSH);
      return serial;
@@ -213,7 +213,7 @@
      reppath(file->path,file->openpath,time,"","");
 
      /* create directory */
-     if ((file->mode&STR_MODE_W)&&!(file->mode&STR_MODE_R))
+     if ((file->mode&STR_MODE_W) && !(file->mode&STR_MODE_R))
      {
          createdir(file->openpath);
      }
@@ -242,8 +242,8 @@
 
          if (file->mode&STR_MODE_R)
          {
-             if (fread(&tagh,TIMETAGH_LEN,1,file->fp_tag)==1&&
-                 fread(&file->time,sizeof(file->time),1,file->fp_tag)==1)
+             if (fread(&tagh,TIMETAGH_LEN,1,file->fp_tag) == 1 &&
+                 fread(&file->time,sizeof(file->time),1,file->fp_tag) == 1)
                  {
                  memcpy(&file->tick_f,tagh+TIMETAGH_LEN-4,sizeof(file->tick_f));
              }
@@ -304,12 +304,12 @@
      if (!(mode&(STR_MODE_R|STR_MODE_W))) return NULL;
 
      /* file options */
-     for (p=(char *)path;(p=strstr(p,"::"));p+=2)
+     for (p=(char *)path;(p=strstr(p,"::"));p += 2)
      { /* file options */
-         if      (*(p+2)=='T') timetag=1;
-         else if (*(p+2)=='+') sscanf(p+2,"+%lf",&start);
-         else if (*(p+2)=='x') sscanf(p+2,"x%lf",&speed);
-         else if (*(p+2)=='S') sscanf(p+2,"S=%lf",&swapintv);
+         if      (*(p+2) == 'T') timetag=1;
+         else if (*(p+2) == '+') sscanf(p+2,"+%lf",&start);
+         else if (*(p+2) == 'x') sscanf(p+2,"x%lf",&speed);
+         else if (*(p+2) == 'S') sscanf(p+2,"S=%lf",&swapintv);
      }
      if (start<=0.0) start=0.0;
      if (swapintv<=0.0) swapintv=0.0;
@@ -361,7 +361,7 @@
      tracet(3,"swapfile: fp=%d time=%s\n",file->fp,time_str(time,0));
 
      /* return if old swap file open */
-     if (file->fp_tmp||file->fp_tag_tmp) return;
+     if (file->fp_tmp || file->fp_tag_tmp) return;
 
      /* check path of new swap file */
      reppath(file->path,openpath,time,"","");
@@ -409,7 +409,7 @@
 
      if (!file) return 0;
 
-     if (file->fp==stdin)
+     if (file->fp == stdin)
      {
          /* input from stdin */
          FD_ZERO(&rs); FD_SET(0,&rs);
@@ -429,14 +429,14 @@
          }
          for (;;)
          { /* seek file position */
-             if (fread(&tick,sizeof(tick),1,file->fp_tag)<1||
+             if (fread(&tick,sizeof(tick),1,file->fp_tag)<1 ||
                  fread(&fpos,sizeof(fpos),1,file->fp_tag)<1)
                  {
                  fseek(file->fp,0,SEEK_END);
                  sprintf(msg,"end");
                  break;
              }
-             if (file->repmode||file->speed>0.0)
+             if (file->repmode || file->speed>0.0)
              {
                  if ((int)(tick-t)<1) continue;
              }
@@ -452,7 +452,7 @@
              }
              nmax=(int)(fpos-file->fpos);
 
-             if (file->repmode||file->speed>0.0)
+             if (file->repmode || file->speed>0.0)
              {
                  fseek(file->fp_tag,-(long)(sizeof(tick)+sizeof(fpos)),SEEK_CUR);
              }
@@ -462,7 +462,7 @@
      if (nmax>0)
      {
          nr=fread(buff,1,nmax,file->fp);
-         file->fpos+=nr;
+         file->fpos += nr;
          if (nr<=0) sprintf(msg,"end");
      }
      tracet(5,"readfile: fp=%d nr=%d fpos=%d\n",file->fp,nr,file->fpos);
@@ -486,12 +486,12 @@
      wtime=utc2gpst(timeget()); /* write time in gpst */
 
      /* swap writing file */
-     if (file->swapintv>0.0&&file->wtime.time!=0)
+     if (file->swapintv>0.0 && file->wtime.time!=0)
      {
          intv=file->swapintv*3600.0;
          tow1=time2gpst(file->wtime,&week1);
          tow2=time2gpst(wtime,&week2);
-         tow2+=604800.0*(week2-week1);
+         tow2 += 604800.0*(week2-week1);
 
          /* open new swap file */
          if (floor((tow1+fswapmargin)/intv)<floor((tow2+fswapmargin)/intv))
@@ -519,7 +519,7 @@
      }
      if (file->fp_tag)
      {
-         tick-=file->tick;
+         tick -= file->tick;
          fwrite(&tick,1,sizeof(tick),file->fp_tag);
          fwrite(&fpos,1,sizeof(fpos),file->fp_tag);
          fflush(file->fp_tag);
@@ -540,7 +540,7 @@
  /* sync files by time-tag ----------------------------------------------------*/
   void syncfile(file_t *file1, file_t *file2)
  {
-     if (!file1->fp_tag||!file2->fp_tag) return;
+     if (!file1->fp_tag || !file2->fp_tag) return;
      file1->repmode=0;
      file2->repmode=1;
      file2->offset=(int)(file1->tick_f-file2->tick_f);
@@ -575,7 +575,7 @@
      }
      if ((p=strrchr(buff,'@')))
      {
-         *p++='\0';
+         *p++ = '\0';
          if ((q=strchr(buff,':')))
          {
               *q='\0'; if (passwd) strcpy(passwd,q+1);
@@ -604,21 +604,21 @@
 
      tracet(3,"setsock: sock=%d\n",sock);
 
-     if (setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,(const char *)&tv,sizeof(tv))==-1||
-         setsockopt(sock,SOL_SOCKET,SO_SNDTIMEO,(const char *)&tv,sizeof(tv))==-1)
+     if (setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,(const char *)&tv,sizeof(tv)) == -1 ||
+         setsockopt(sock,SOL_SOCKET,SO_SNDTIMEO,(const char *)&tv,sizeof(tv)) == -1)
          {
          sprintf(msg,"sockopt error: notimeo");
          tracet(1,"setsock: setsockopt error 1 sock=%d err=%d\n",sock,errsock());
          closesocket(sock);
          return 0;
      }
-     if (setsockopt(sock,SOL_SOCKET,SO_RCVBUF,(const char *)&bs,sizeof(bs))==-1||
-         setsockopt(sock,SOL_SOCKET,SO_SNDBUF,(const char *)&bs,sizeof(bs))==-1)
+     if (setsockopt(sock,SOL_SOCKET,SO_RCVBUF,(const char *)&bs,sizeof(bs)) == -1 ||
+         setsockopt(sock,SOL_SOCKET,SO_SNDBUF,(const char *)&bs,sizeof(bs)) == -1)
          {
          tracet(1,"setsock: setsockopt error 2 sock=%d err=%d bs=%d\n",sock,errsock(),bs);
          sprintf(msg,"sockopt error: bufsiz");
      }
-     if (setsockopt(sock,IPPROTO_TCP,TCP_NODELAY,(const char *)&mode,sizeof(mode))==-1)
+     if (setsockopt(sock,IPPROTO_TCP,TCP_NODELAY,(const char *)&mode,sizeof(mode)) == -1)
      {
          tracet(1,"setsock: setsockopt error 3 sock=%d err=%d\n",sock,errsock());
          sprintf(msg,"sockopt error: nodelay");
@@ -647,12 +647,12 @@
 
      flag=fcntl(sock,F_GETFL,0);
      fcntl(sock,F_SETFL,flag|O_NONBLOCK);
-     if (connect(sock,addr,len)==-1)
+     if (connect(sock,addr,len) == -1)
      {
          err=errsock();
-         if (err!=EISCONN&&err!=EINPROGRESS&&err!=EALREADY) return -1;
+         if (err!=EISCONN && err!=EINPROGRESS && err!=EALREADY) return -1;
          FD_ZERO(&rs); FD_SET(sock,&rs); ws=rs;
-         if (select(sock+1,&rs,&ws,NULL,&tv)==0) return 0;
+         if (select(sock+1,&rs,&ws,NULL,&tv) == 0) return 0;
      }
      return 1;
  }
@@ -691,7 +691,7 @@
      tracet(3,"gentcp: type=%d\n",type);
 
      /* generate socket */
-     if ((tcp->sock=socket(AF_INET,SOCK_STREAM,0))==(socket_t)-1)
+     if ((tcp->sock=socket(AF_INET,SOCK_STREAM,0)) == (socket_t)-1)
      {
          sprintf(msg,"socket error (%d)",errsock());
          tracet(1,"gentcp: socket error err=%d\n",errsock());
@@ -707,7 +707,7 @@
      tcp->addr.sin_family=AF_INET;
      tcp->addr.sin_port=htons(tcp->port);
 
-     if (type==0)
+     if (type == 0)
      { /* server socket */
 
  #ifdef SVR_REUSEADDR
@@ -715,7 +715,7 @@
          setsockopt(tcp->sock,SOL_SOCKET,SO_REUSEADDR,(const char *)&opt,
                     sizeof(opt));
  #endif
-         if (bind(tcp->sock,(struct sockaddr *)&tcp->addr,sizeof(tcp->addr))==-1)
+         if (bind(tcp->sock,(struct sockaddr *)&tcp->addr,sizeof(tcp->addr)) == -1)
          {
              sprintf(msg,"bind error (%d) : %d",errsock(),tcp->port);
              tracet(1,"gentcp: bind error port=%d err=%d\n",tcp->port,errsock());
@@ -807,7 +807,7 @@
 
      tracet(3,"updatetcpsvr: state=%d\n",tcpsvr->svr.state);
 
-     if (tcpsvr->svr.state==0) return;
+     if (tcpsvr->svr.state == 0) return;
 
      for (i=0;i<MAXCLI;i++)
      {
@@ -826,14 +826,14 @@
          strcpy(saddr,tcpsvr->cli[i].saddr);
          n++;
      }
-     if (n==0)
+     if (n == 0)
      {
          tcpsvr->svr.state=1;
          sprintf(msg,"waiting...");
          return;
      }
      tcpsvr->svr.state=2;
-     if (n==1) sprintf(msg,"%s",saddr); else sprintf(msg,"%d clients",n);
+     if (n == 1) sprintf(msg,"%s",saddr); else sprintf(msg,"%d clients",n);
  }
 
 
@@ -848,10 +848,10 @@
 
      tracet(3,"accsock: sock=%d\n",tcpsvr->svr.sock);
 
-     for (i=0;i<MAXCLI;i++) if (tcpsvr->cli[i].state==0) break;
+     for (i=0;i<MAXCLI;i++) if (tcpsvr->cli[i].state == 0) break;
      if (i>=MAXCLI) return 0; /* too many client */
 
-     if ((sock=accept_nb(tcpsvr->svr.sock,(struct sockaddr *)&addr,&len))==(socket_t)-1)
+     if ((sock=accept_nb(tcpsvr->svr.sock,(struct sockaddr *)&addr,&len)) == (socket_t)-1)
      {
          err=errsock();
          sprintf(msg,"accept error (%d)",err);
@@ -859,7 +859,7 @@
          closesocket(tcpsvr->svr.sock); tcpsvr->svr.state=0;
          return 0;
      }
-     if (sock==0) return 0;
+     if (sock == 0) return 0;
 
      tcpsvr->cli[i].sock=sock;
      if (!setsock(tcpsvr->cli[i].sock,msg)) return 0;
@@ -880,7 +880,7 @@
      if (tcpsvr->svr.state<=0) return 0;
      while (accsock(tcpsvr,msg)) ;
      updatetcpsvr(tcpsvr,msg);
-     return tcpsvr->svr.state==2;
+     return tcpsvr->svr.state == 2;
  }
 
 
@@ -891,9 +891,9 @@
 
      tracet(4,"readtcpsvr: state=%d n=%d\n",tcpsvr->svr.state,n);
 
-     if (!waittcpsvr(tcpsvr,msg)||tcpsvr->cli[0].state!=2) return 0;
+     if (!waittcpsvr(tcpsvr,msg) || tcpsvr->cli[0].state!=2) return 0;
 
-     if ((nr=recv_nb(tcpsvr->cli[0].sock,buff,n))==-1) {
+     if ((nr=recv_nb(tcpsvr->cli[0].sock,buff,n)) == -1) {
          err=errsock();
          tracet(1,"readtcpsvr: recv error sock=%d err=%d\n",tcpsvr->cli[0].sock,err);
          sprintf(msg,"recv error (%d)",err);
@@ -951,14 +951,14 @@
      tracet(3,"consock: sock=%d\n",tcpcli->svr.sock);
 
      /* wait re-connect */
-     if (tcpcli->svr.tcon<0||(tcpcli->svr.tcon>0&&
+     if (tcpcli->svr.tcon<0 || (tcpcli->svr.tcon>0 &&
          (int)(tickget()-tcpcli->svr.tdis)<tcpcli->svr.tcon))
          {
          return 0;
      }
      /* non-block connect */
      if ((stat=connect_nb(tcpcli->svr.sock,(struct sockaddr *)&tcpcli->svr.addr,
-                          sizeof(tcpcli->svr.addr)))==-1)
+                          sizeof(tcpcli->svr.addr))) == -1)
                           {
          err=errsock();
          sprintf(msg,"connect error (%d)",err);
@@ -1021,17 +1021,17 @@
 
      if (tcpcli->svr.state<0) return 0;
 
-     if (tcpcli->svr.state==0)
+     if (tcpcli->svr.state == 0)
      { /* close */
          if (!gentcp(&tcpcli->svr,1,msg)) return 0;
      }
-     if (tcpcli->svr.state==1)
+     if (tcpcli->svr.state == 1)
      { /* wait */
          if (!consock(tcpcli,msg)) return 0;
      }
-     if (tcpcli->svr.state==2)
+     if (tcpcli->svr.state == 2)
      { /* connect */
-         if (tcpcli->toinact>0&&
+         if (tcpcli->toinact>0 &&
              (int)(tickget()-tcpcli->svr.tact)>tcpcli->toinact)
              {
              sprintf(msg,"timeout");
@@ -1053,7 +1053,7 @@
 
      if (!waittcpcli(tcpcli,msg)) return 0;
 
-     if ((nr=recv_nb(tcpcli->svr.sock,buff,n))==-1)
+     if ((nr=recv_nb(tcpcli->svr.sock,buff,n)) == -1)
      {
          err=errsock();
          tracet(1,"readtcpcli: recv error sock=%d err=%d\n",tcpcli->svr.sock,err);
@@ -1076,7 +1076,7 @@
 
      if (!waittcpcli(tcpcli,msg)) return 0;
 
-     if ((ns=send_nb(tcpcli->svr.sock,buff,n))==-1)
+     if ((ns=send_nb(tcpcli->svr.sock,buff,n)) == -1)
      {
          err=errsock();
          tracet(1,"writetcp: send error sock=%d err=%d\n",tcpcli->svr.sock,err);
@@ -1110,7 +1110,7 @@
      {
          for (k=b=0;k<6;k++,i++)
          {
-             b<<=1; if (i/8<n) b|=(byte[i/8]>>(7-i%8))&0x1;
+             b<<=1; if (i/8<n) b |= (byte[i/8]>>(7-i%8))&0x1;
          }
          str[j++]=table[b];
      }
@@ -1128,10 +1128,10 @@
 
      tracet(3,"reqntrip_s: state=%d\n",ntrip->state);
 
-     p+=sprintf(p,"SOURCE %s %s\r\n",ntrip->passwd,ntrip->mntpnt);
-     p+=sprintf(p,"Source-Agent: NTRIP %s\r\n",NTRIP_AGENT);
-     p+=sprintf(p,"STR: %s\r\n",ntrip->str);
-     p+=sprintf(p,"\r\n");
+     p += sprintf(p,"SOURCE %s %s\r\n",ntrip->passwd,ntrip->mntpnt);
+     p += sprintf(p,"Source-Agent: NTRIP %s\r\n",NTRIP_AGENT);
+     p += sprintf(p,"STR: %s\r\n",ntrip->str);
+     p += sprintf(p,"\r\n");
 
      if (writetcpcli(ntrip->tcp,(unsigned char *)buff,p-buff,msg)!=p-buff) return 0;
 
@@ -1149,22 +1149,22 @@
 
      tracet(3,"reqntrip_c: state=%d\n",ntrip->state);
 
-     p+=sprintf(p,"GET %s/%s HTTP/1.0\r\n",ntrip->url,ntrip->mntpnt);
-     p+=sprintf(p,"User-Agent: NTRIP %s\r\n",NTRIP_AGENT);
+     p += sprintf(p,"GET %s/%s HTTP/1.0\r\n",ntrip->url,ntrip->mntpnt);
+     p += sprintf(p,"User-Agent: NTRIP %s\r\n",NTRIP_AGENT);
 
      if (!*ntrip->user)
      {
-         p+=sprintf(p,"Accept: */*\r\n");
-         p+=sprintf(p,"Connection: close\r\n");
+         p += sprintf(p,"Accept: */*\r\n");
+         p += sprintf(p,"Connection: close\r\n");
      }
      else
      {
          sprintf(user,"%s:%s",ntrip->user,ntrip->passwd);
-         p+=sprintf(p,"Authorization: Basic ");
-         p+=encbase64(p,(unsigned char *)user,strlen(user));
-         p+=sprintf(p,"\r\n");
+         p += sprintf(p,"Authorization: Basic ");
+         p += encbase64(p,(unsigned char *)user,strlen(user));
+         p += sprintf(p,"\r\n");
      }
-     p+=sprintf(p,"\r\n");
+     p += sprintf(p,"\r\n");
 
      if (writetcpcli(ntrip->tcp,(unsigned char *)buff,p-buff,msg)!=p-buff) return 0;
 
@@ -1188,9 +1188,9 @@
      if ((p=strstr((char *)ntrip->buff,NTRIP_RSP_OK_SVR)))
      { /* ok */
          q=(char *)ntrip->buff;
-         p+=strlen(NTRIP_RSP_OK_SVR);
-         ntrip->nb-=p-q;
-         for (i=0;i<ntrip->nb;i++) *q++=*p++;
+         p += strlen(NTRIP_RSP_OK_SVR);
+         ntrip->nb -= p-q;
+         for (i=0;i<ntrip->nb;i++) *q++ = *p++;
          ntrip->state=2;
          sprintf(msg,"%s/%s",ntrip->tcp->svr.saddr,ntrip->mntpnt);
          tracet(2,"rspntrip_s: response ok nb=%d\n",ntrip->nb);
@@ -1233,9 +1233,9 @@
      if ((p=strstr((char *)ntrip->buff,NTRIP_RSP_OK_CLI)))
      { /* ok */
          q=(char *)ntrip->buff;
-         p+=strlen(NTRIP_RSP_OK_CLI);
-         ntrip->nb-=p-q;
-         for (i=0;i<ntrip->nb;i++) *q++=*p++;
+         p += strlen(NTRIP_RSP_OK_CLI);
+         ntrip->nb -= p-q;
+         for (i=0;i<ntrip->nb;i++) *q++ = *p++;
          ntrip->state=2;
          sprintf(msg,"%s/%s",ntrip->tcp->svr.saddr,ntrip->mntpnt);
          tracet(2,"rspntrip_c: response ok nb=%d\n",ntrip->nb);
@@ -1293,25 +1293,25 @@
 
      if (ntrip->tcp->svr.state<2) ntrip->state=0; /* tcp disconnected */
 
-     if (ntrip->state==0)
+     if (ntrip->state == 0)
      { /* send request */
-         if (!(ntrip->type==0?reqntrip_s(ntrip,msg):reqntrip_c(ntrip,msg)))
+         if (!(ntrip->type == 0?reqntrip_s(ntrip,msg):reqntrip_c(ntrip,msg)))
          {
              return 0;
          }
          tracet(2,"waitntrip: state=%d nb=%d\n",ntrip->state,ntrip->nb);
      }
-     if (ntrip->state==1) { /* read response */
+     if (ntrip->state == 1) { /* read response */
          p=(char *)ntrip->buff+ntrip->nb;
-         if ((n=readtcpcli(ntrip->tcp,(unsigned char *)p,NTRIP_MAXRSP-ntrip->nb-1,msg))==0)
+         if ((n=readtcpcli(ntrip->tcp,(unsigned char *)p,NTRIP_MAXRSP-ntrip->nb-1,msg)) == 0)
          {
              tracet(5,"waitntrip: readtcp n=%d\n",n);
              return 0;
          }
-         ntrip->nb+=n; ntrip->buff[ntrip->nb]='\0';
+         ntrip->nb += n; ntrip->buff[ntrip->nb]='\0';
 
          /* wait response */
-         return ntrip->type==0?rspntrip_s(ntrip,msg):rspntrip_c(ntrip,msg);
+         return ntrip->type == 0?rspntrip_s(ntrip,msg):rspntrip_c(ntrip,msg);
      }
      return 1;
  }
@@ -1404,7 +1404,7 @@
  /* get state ntrip -----------------------------------------------------------*/
   int statentrip(ntrip_t *ntrip)
  {
-     return !ntrip?0:(ntrip->state==0?ntrip->tcp->svr.state:ntrip->state);
+     return !ntrip?0:(ntrip->state == 0?ntrip->tcp->svr.state:ntrip->state);
  }
 
 
@@ -1441,7 +1441,7 @@
 
      if ((p=strrchr(buff,'@')))
      {
-         *p++='\0';
+         *p++ = '\0';
          if ((q=strchr(buff,':')))
          {
               *q='\0'; if (passwd) strcpy(passwd,q+1);
@@ -1469,7 +1469,7 @@
      tow=time2gpst(time,&week);
 
      /* next retry time */
-     if (stat==0&&topts[3]>0)
+     if (stat == 0 && topts[3]>0)
      {
          tow=(floor((tow-topts[2])/topts[3])+1.0)*topts[3]+topts[2];
          return gpst2time(week,tow);
@@ -1512,9 +1512,9 @@
 
      /* if local file exist, skip download */
      strcpy(tmpfile,local);
-     if ((p=strrchr(tmpfile,'.'))&&
-         (!strcmp(p,".z")||!strcmp(p,".gz")||!strcmp(p,".zip")||
-          !strcmp(p,".Z")||!strcmp(p,".GZ")||!strcmp(p,".ZIP")))
+     if ((p=strrchr(tmpfile,'.')) &&
+         (!strcmp(p,".z") || !strcmp(p,".gz") || !strcmp(p,".zip") ||
+          !strcmp(p,".Z") || !strcmp(p,".GZ") || !strcmp(p,".ZIP")))
           {
          *p='\0';
      }
@@ -1534,7 +1534,7 @@
          proxyopt="--proxy=on ";
      }
      /* download command (ref [2]) */
-     if (ftp->proto==0)
+     if (ftp->proto == 0)
      { /* ftp */
          sprintf(opt,"--ftp-user=%s --ftp-password=%s --glob=off --passive-ftp %s-t 1 -T %d -O \"%s\"",
                  ftp->user,ftp->passwd,proxyopt,FTP_TIMEOUT,local);
@@ -1559,9 +1559,9 @@
      remove(errfile);
 
      /* uncompress downloaded file */
-     if ((p=strrchr(local,'.'))&&
-         (!strcmp(p,".z")||!strcmp(p,".gz")||!strcmp(p,".zip")||
-          !strcmp(p,".Z")||!strcmp(p,".GZ")||!strcmp(p,".ZIP")))
+     if ((p=strrchr(local,'.')) &&
+         (!strcmp(p,".z") || !strcmp(p,".gz") || !strcmp(p,".zip") ||
+          !strcmp(p,".Z") || !strcmp(p,".GZ") || !strcmp(p,".ZIP")))
           {
          if (rtk_uncompress(local,tmpfile))
          {
@@ -1649,7 +1649,7 @@
      }
      if (ftp->state<=1) return 0; /* ftp/http on going? */
 
-     if (ftp->state==3)
+     if (ftp->state == 3)
      { /* ftp error */
          sprintf(msg,"%s error (%d)",ftp->proto?"http":"ftp",ftp->error);
 
@@ -1661,8 +1661,8 @@
      /* return local file path if ftp completed */
      p=buff;
      q=(unsigned char *)ftp->local;
-     while (*q&&(int)(p-buff)<n) *p++=*q++;
-     p+=sprintf((char *)p,"\r\n");
+     while (*q && (int)(p-buff)<n) *p++ = *q++;
+     p += sprintf((char *)p,"\r\n");
 
      /* set next download time */
      ftp->tnext=nextdltime(ftp->topts,1);
@@ -1677,7 +1677,7 @@
  /* get state ftp -------------------------------------------------------------*/
   int stateftp(ftp_t *ftp)
  {
-     return !ftp?0:(ftp->state==0?2:(ftp->state<=2?3:-1));
+     return !ftp?0:(ftp->state == 0?2:(ftp->state<=2?3:-1));
  }
 
 
@@ -1823,10 +1823,10 @@
   void strsync(stream_t *stream1, stream_t *stream2)
  {
      file_t *file1,*file2;
-     if (stream1->type!=STR_FILE||stream2->type!=STR_FILE) return;
+     if (stream1->type!=STR_FILE || stream2->type!=STR_FILE) return;
      file1=(file_t*)stream1->port;
      file2=(file_t*)stream2->port;
-     if (file1&&file2) syncfile(file1,file2);
+     if (file1 && file2) syncfile(file1,file2);
  }
 
  /* lock/unlock stream ----------------------------------------------------------
@@ -1854,7 +1854,7 @@
 
      tracet(4,"strread: n=%d\n",n);
 
-     if (!(stream->mode&STR_MODE_R)||!stream->port) return 0;
+     if (!(stream->mode&STR_MODE_R) || !stream->port) return 0;
 
      strlock(stream);
 
@@ -1871,7 +1871,7 @@
              strunlock(stream);
              return 0;
      }
-     stream->inb+=nr;
+     stream->inb += nr;
      tick=tickget(); if (nr>0) stream->tact=tick;
 
      if ((int)(tick-stream->tick)>=tirate)
@@ -1900,7 +1900,7 @@
 
      tracet(3,"strwrite: n=%d\n",n);
 
-     if (!(stream->mode&STR_MODE_W)||!stream->port) return 0;
+     if (!(stream->mode&STR_MODE_W) || !stream->port) return 0;
 
      strlock(stream);
 
@@ -1918,7 +1918,7 @@
              strunlock(stream);
              return 0;
      }
-     stream->outb+=ns;
+     stream->outb += ns;
      tick=tickget(); if (ns>0) stream->tact=tick;
 
      if ((int)(tick-stream->tick)>tirate)
@@ -1967,7 +1967,7 @@
              strunlock(stream);
              return 0;
      }
-     if (state==2&&(int)(tickget()-stream->tact)<=TINTACT) state=3;
+     if (state == 2 && (int)(tickget()-stream->tact)<=TINTACT) state=3;
      strunlock(stream);
      return state;
  }
@@ -2013,7 +2013,7 @@
      tracet(3,"strsetopt: opt=%d %d %d %d %d %d %d %d\n",opt[0],opt[1],opt[2],
             opt[3],opt[4],opt[5],opt[6],opt[7]);
 
-     toinact    =0<opt[0]&&opt[0]<1000?1000:opt[0]; /* >=1s */
+     toinact    =0<opt[0] && opt[0]<1000?1000:opt[0]; /* >=1s */
      ticonnect  =opt[1]<1000?1000:opt[1]; /* >=1s */
      tirate     =opt[2]<100 ?100 :opt[2]; /* >=0.1s */
      buffsize   =opt[3]<4096?4096:opt[3]; /* >=4096byte */
@@ -2034,11 +2034,11 @@
 
      tracet(3,"strsettimeout: toinact=%d tirecon=%d\n",toinact,tirecon);
 
-     if (stream->type==STR_TCPCLI)
+     if (stream->type == STR_TCPCLI)
      {
          tcpcli=(tcpcli_t *)stream->port;
      }
-     else if (stream->type==STR_NTRIPCLI||stream->type==STR_NTRIPSVR)
+     else if (stream->type == STR_NTRIPCLI || stream->type == STR_NTRIPSVR)
      {
          tcpcli=((ntrip_t *)stream->port)->tcp;
      }
@@ -2081,7 +2081,7 @@
   gtime_t strgettime(stream_t *stream)
  {
      file_t *file;
-     if (stream->type==STR_FILE&&(stream->mode&STR_MODE_R)&&
+     if (stream->type == STR_FILE && (stream->mode&STR_MODE_R) &&
          (file=(file_t *)stream->port))
          {
          return timeadd(file->time,file->start); /* replay start time */
@@ -2123,13 +2123,13 @@
      trace(4,"gen_hex: msg=%s\n",msg);
 
      strncpy(mbuff,msg,1023);
-     for (p=strtok(mbuff," ");p&&narg<256;p=strtok(NULL," "))
+     for (p=strtok(mbuff," ");p && narg<256;p=strtok(NULL," "))
      {
          args[narg++]=p;
      }
      for (i=0;i<narg;i++)
      {
-         if (sscanf(args[i],"%x",&byte)) *q++=(unsigned char)byte;
+         if (sscanf(args[i],"%x",&byte)) *q++ = (unsigned char)byte;
      }
      return (int)(q-buff);
  }
@@ -2152,14 +2152,14 @@
 
      for (;;)
      {
-         for (q=p;;q++) if (*q=='\r'||*q=='\n'||*q=='\0') break;
+         for (q=p;;q++) if (*q == '\r' || *q == '\n' || *q == '\0') break;
          n=(int)(q-p); strncpy(msg,p,n); msg[n]='\0';
 
-         if (!*msg||*msg=='#')
+         if (!*msg || *msg == '#')
          { /* null or comment */
              ;
          }
-         else if (*msg=='!')
+         else if (*msg == '!')
          { /* binary escape */
              if (!strncmp(msg+1,"WAIT",4))
               { /* wait */
@@ -2194,6 +2194,6 @@
              strwrite(str,(unsigned char *)msg,n);
              strwrite(str,(unsigned char *)cmdend,2);
          }
-         if (*q=='\0') break; else p=q+1;
+         if (*q == '\0') break; else p=q+1;
      }
  }

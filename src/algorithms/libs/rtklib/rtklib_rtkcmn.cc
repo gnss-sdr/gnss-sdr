@@ -65,7 +65,7 @@ const double gpst0[] = {1980, 1,  6, 0, 0, 0}; /* gps time reference */
 const double gst0 [] = {1999, 8, 22, 0, 0, 0}; /* galileo system time reference */
 const double bdt0 [] = {2006, 1,  1, 0, 0, 0}; /* beidou time reference */
 
-static double timeoffset_ = 0.0; 
+static double timeoffset_ = 0.0;
 
 double leaps[MAXLEAPS+1][7] = { /* leap seconds (y,m,d,h,m,s,utc-gpst) */
         {2017, 1, 1, 0, 0, 0, -18},
@@ -1703,6 +1703,13 @@ void deg2dms(double deg, double *dms, int ndec)
     dms[0]*=sign;
 }
 
+void deg2dms(double deg, double *dms)
+{
+    double sign=deg<0.0?-1.0:1.0,a=fabs(deg);
+    dms[0]=floor(a); a=(a-dms[0])*60.0;
+    dms[1]=floor(a); a=(a-dms[1])*60.0;
+    dms[2]=a; dms[0]*=sign;
+}
 
 /* convert deg-min-sec to degree -----------------------------------------------
  * convert degree-minute-second to degree

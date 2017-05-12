@@ -174,6 +174,7 @@ int adjgpsweek(int week);
 unsigned int tickget(void);
 void sleepms(int ms);
 void deg2dms(double deg, double *dms, int ndec);
+void deg2dms(double deg, double *dms);
 double dms2deg(const double *dms);
 void ecef2pos(const double *r, double *pos);
 void pos2ecef(const double *pos, double *r);
@@ -182,8 +183,6 @@ void ecef2enu(const double *pos, const double *r, double *e);
 void enu2ecef(const double *pos, const double *e, double *r);
 void covenu(const double *pos, const double *P, double *Q);
 void covecef(const double *pos, const double *Q, double *P);
-
-
 void ast_args(double t, double *f);
 void nut_iau1980(double t, const double *f, double *dpsi, double *deps);
 void eci2ecef(gtime_t tutc, const double *erpv, double *U, double *gmst);

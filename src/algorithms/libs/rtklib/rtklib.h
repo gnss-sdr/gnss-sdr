@@ -66,7 +66,6 @@
 
 
 const int FILEPATHSEP = '/';
-
 const double RE_WGS84 = 6378137.0;             //!< earth semimajor axis (WGS84) (m)
 const double FE_WGS84 = (1.0 / 298.257223563); //!< earth flattening (WGS84)
 

@@ -1763,13 +1763,13 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
     switch (type)
     {
     case STR_SERIAL  : stream->port = openserial(path, mode, stream->msg); break;
-    case STR_FILE    : stream->port = openfile  (path, mode, stream->msg); break;
-    case STR_TCPSVR  : stream->port = opentcpsvr(path,     stream->msg); break;
-    case STR_TCPCLI  : stream->port = opentcpcli(path,     stream->msg); break;
-    case STR_NTRIPSVR: stream->port = openntrip (path, 0,   stream->msg); break;
-    case STR_NTRIPCLI: stream->port = openntrip (path, 1,   stream->msg); break;
-    case STR_FTP     : stream->port = openftp   (path, 0,   stream->msg); break;
-    case STR_HTTP    : stream->port = openftp   (path, 1,   stream->msg); break;
+    case STR_FILE    : stream->port = openfile(path, mode, stream->msg); break;
+    case STR_TCPSVR  : stream->port = opentcpsvr(path, stream->msg); break;
+    case STR_TCPCLI  : stream->port = opentcpcli(path, stream->msg); break;
+    case STR_NTRIPSVR: stream->port = openntrip(path, 0, stream->msg); break;
+    case STR_NTRIPCLI: stream->port = openntrip(path, 1, stream->msg); break;
+    case STR_FTP     : stream->port = openftp(path, 0, stream->msg); break;
+    case STR_HTTP    : stream->port = openftp(path, 1, stream->msg); break;
     default: stream->state = 0; return 1;
     }
     stream->state = !stream->port ? -1 : 1;

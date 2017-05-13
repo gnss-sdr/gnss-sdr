@@ -382,7 +382,7 @@ int Position_Gps_L1_System_Test::configure_receiver()
     config->set_property("PVT.positioning_mode", "PPP_Static");
     config->set_property("PVT.iono_model", "OFF");
     config->set_property("PVT.trop_model", "OFF");
-//    config->set_property("PVT.AR_GPS", "PPP-AR");
+    config->set_property("PVT.AR_GPS", "PPP-AR");
     return 0;
 }
 

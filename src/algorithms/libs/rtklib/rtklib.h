@@ -1223,6 +1223,19 @@ typedef struct {        /* RTK server type */
     lock_t lock;        /* lock flag */
 } rtksvr_t;
 
+typedef struct {                    /* multi-signal-message header type */
+    unsigned char iod;              /* issue of data station */
+    unsigned char time_s;           /* cumulative session transmitting time */
+    unsigned char clk_str;          /* clock steering indicator */
+    unsigned char clk_ext;          /* external clock indicator */
+    unsigned char smooth;           /* divergence free smoothing indicator */
+    unsigned char tint_s;           /* soothing interval */
+    unsigned char nsat,nsig;        /* number of satellites/signals */
+    unsigned char sats[64];         /* satellites */
+    unsigned char sigs[32];         /* signals */
+    unsigned char cellmask[64];     /* cell mask */
+} msm_h_t;
+
 
 const double chisqr[100] = {      /* chi-sqr(n) (alpha=0.001) */
     10.8, 13.8, 16.3, 18.5, 20.5, 22.5, 24.3, 26.1, 27.9, 29.6,

@@ -62,26 +62,6 @@ const double PRUNIT_GPS = 299792.458;  /* rtcm ver.3 unit of gps pseudorange (m)
 const double PRUNIT_GLO = 599584.916;  /* rtcm ver.3 unit of glonass pseudorange (m) */
 const double RANGE_MS = SPEED_OF_LIGHT * 0.001;      /* range in 1 ms */
 
-//#define P2_10       0.0009765625          /* 2^-10 */
-//#define P2_34       5.820766091346740E-11 /* 2^-34 */
-//#define P2_46       1.421085471520200E-14 /* 2^-46 */
-//#define P2_59       1.734723475976810E-18 /* 2^-59 */
-//#define P2_66       1.355252715606880E-20 /* 2^-66 */
-
-/* type definition -----------------------------------------------------------*/
-
-typedef struct {                    /* multi-signal-message header type */
-    unsigned char iod;              /* issue of data station */
-    unsigned char time_s;           /* cumulative session transmitting time */
-    unsigned char clk_str;          /* clock steering indicator */
-    unsigned char clk_ext;          /* external clock indicator */
-    unsigned char smooth;           /* divergence free smoothing indicator */
-    unsigned char tint_s;           /* soothing interval */
-    unsigned char nsat,nsig;        /* number of satellites/signals */
-    unsigned char sats[64];         /* satellites */
-    unsigned char sigs[32];         /* signals */
-    unsigned char cellmask[64];     /* cell mask */
-} msm_h_t;
 
 /* msm signal id table -------------------------------------------------------*/
 const char *msm_sig_gps[32] = {

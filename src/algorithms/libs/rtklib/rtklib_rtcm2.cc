@@ -206,7 +206,9 @@ int decode_type16(rtcm_t *rtcm)
 /* decode type 17: gps ephemerides -------------------------------------------*/
 int decode_type17(rtcm_t *rtcm)
 {
-    eph_t eph = {0};
+    eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0,0.0}, {0,0.0}, {0,0.0},
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     int i = 48, week, prn, sat;
 
@@ -423,56 +425,56 @@ int decode_type22(rtcm_t *rtcm)
 
 
 /* decode type 23: antenna type definition record ----------------------------*/
-int decode_type23(rtcm_t *rtcm)
+int decode_type23(rtcm_t *rtcm __attribute((unused)))
 {
     return 0;
 }
 
 
 /* decode type 24: antenna reference point (arp) -----------------------------*/
-int decode_type24(rtcm_t *rtcm)
+int decode_type24(rtcm_t *rtcm __attribute((unused)))
 {
     return 0;
 }
 
 
 /* decode type 31: differential glonass correction ---------------------------*/
-int decode_type31(rtcm_t *rtcm)
+int decode_type31(rtcm_t *rtcm __attribute((unused)))
 {
     return 0;
 }
 
 
 /* decode type 32: differential glonass reference station parameters ---------*/
-int decode_type32(rtcm_t *rtcm)
+int decode_type32(rtcm_t *rtcm __attribute((unused)))
 {
     return 0;
 }
 
 
 /* decode type 34: glonass partial differential correction set ---------------*/
-int decode_type34(rtcm_t *rtcm)
+int decode_type34(rtcm_t *rtcm __attribute((unused)))
 {
     return 0;
 }
 
 
 /* decode type 36: glonass special message -----------------------------------*/
-int decode_type36(rtcm_t *rtcm)
+int decode_type36(rtcm_t *rtcm __attribute((unused)))
 {
     return 0;
 }
 
 
 /* decode type 37: gnss system time offset -----------------------------------*/
-int decode_type37(rtcm_t *rtcm)
+int decode_type37(rtcm_t *rtcm __attribute((unused)))
 {
     return 0;
 }
 
 
 /* decode type 59: proprietary message ---------------------------------------*/
-int decode_type59(rtcm_t *rtcm)
+int decode_type59(rtcm_t *rtcm __attribute((unused)))
 {
     return 0;
 }

@@ -727,7 +727,9 @@ int decode_type1013(rtcm_t *rtcm)
 /* decode type 1019: gps ephemerides -----------------------------------------*/
 int decode_type1019(rtcm_t *rtcm)
 {
-    eph_t eph = {0};
+    eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0,0.0}, {0,0.0}, {0,0.0},
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     char *msg;
     int i = 24+12, prn, sat, week, sys = SYS_GPS;
@@ -806,7 +808,8 @@ int decode_type1019(rtcm_t *rtcm)
 /* decode type 1020: glonass ephemerides -------------------------------------*/
 int decode_type1020(rtcm_t *rtcm)
 {
-    geph_t geph = {0};
+    geph_t geph = {0, -1, 0, 0, 0, 0, {0,0.0}, {0,0.0}, {0.0}, {0.0}, {0.0},
+            0.0, 0.0, 0.0};
     double tk_h, tk_m, tk_s, toe, tow, tod, tof;
     char *msg;
     int i = 24+12, prn, sat, week, tb, bn, sys = SYS_GLO;
@@ -877,7 +880,7 @@ int decode_type1020(rtcm_t *rtcm)
 
 
 /* decode type 1021: helmert/abridged molodenski -----------------------------*/
-int decode_type1021(rtcm_t *rtcm)
+int decode_type1021(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1021: not supported message\n");
     return 0;
@@ -885,7 +888,7 @@ int decode_type1021(rtcm_t *rtcm)
 
 
 /* decode type 1022: moledenski-badekas transfromation -----------------------*/
-int decode_type1022(rtcm_t *rtcm)
+int decode_type1022(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1022: not supported message\n");
     return 0;
@@ -893,7 +896,7 @@ int decode_type1022(rtcm_t *rtcm)
 
 
 /* decode type 1023: residual, ellipoidal grid representation ----------------*/
-int decode_type1023(rtcm_t *rtcm)
+int decode_type1023(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1023: not supported message\n");
     return 0;
@@ -901,7 +904,7 @@ int decode_type1023(rtcm_t *rtcm)
 
 
 /* decode type 1024: residual, plane grid representation ---------------------*/
-int decode_type1024(rtcm_t *rtcm)
+int decode_type1024(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1024: not supported message\n");
     return 0;
@@ -909,7 +912,7 @@ int decode_type1024(rtcm_t *rtcm)
 
 
 /* decode type 1025: projection (types except LCC2SP, OM) ---------------------*/
-int decode_type1025(rtcm_t *rtcm)
+int decode_type1025(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1025: not supported message\n");
     return 0;
@@ -917,7 +920,7 @@ int decode_type1025(rtcm_t *rtcm)
 
 
 /* decode type 1026: projection (LCC2SP - lambert conic conformal (2sp)) -----*/
-int decode_type1026(rtcm_t *rtcm)
+int decode_type1026(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1026: not supported message\n");
     return 0;
@@ -925,7 +928,7 @@ int decode_type1026(rtcm_t *rtcm)
 
 
 /* decode type 1027: projection (type OM - oblique mercator) -----------------*/
-int decode_type1027(rtcm_t *rtcm)
+int decode_type1027(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1027: not supported message\n");
     return 0;
@@ -972,7 +975,7 @@ int decode_type1029(rtcm_t *rtcm)
 
 
 /* decode type 1030: network rtk residual ------------------------------------*/
-int decode_type1030(rtcm_t *rtcm)
+int decode_type1030(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1030: not supported message\n");
     return 0;
@@ -980,7 +983,7 @@ int decode_type1030(rtcm_t *rtcm)
 
 
 /* decode type 1031: glonass network rtk residual ----------------------------*/
-int decode_type1031(rtcm_t *rtcm)
+int decode_type1031(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1031: not supported message\n");
     return 0;
@@ -988,7 +991,7 @@ int decode_type1031(rtcm_t *rtcm)
 
 
 /* decode type 1032: physical reference station position information ---------*/
-int decode_type1032(rtcm_t *rtcm)
+int decode_type1032(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1032: not supported message\n");
     return 0;
@@ -1062,7 +1065,7 @@ int decode_type1033(rtcm_t *rtcm)
 
 
 /* decode type 1034: gps network fkp gradient --------------------------------*/
-int decode_type1034(rtcm_t *rtcm)
+int decode_type1034(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1034: not supported message\n");
     return 0;
@@ -1070,7 +1073,7 @@ int decode_type1034(rtcm_t *rtcm)
 
 
 /* decode type 1035: glonass network fkp gradient ----------------------------*/
-int decode_type1035(rtcm_t *rtcm)
+int decode_type1035(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1035: not supported message\n");
     return 0;
@@ -1078,7 +1081,7 @@ int decode_type1035(rtcm_t *rtcm)
 
 
 /* decode type 1037: glonass network rtk ionospheric correction difference ---*/
-int decode_type1037(rtcm_t *rtcm)
+int decode_type1037(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1037: not supported message\n");
     return 0;
@@ -1086,7 +1089,7 @@ int decode_type1037(rtcm_t *rtcm)
 
 
 /* decode type 1038: glonass network rtk geometic correction difference ------*/
-int decode_type1038(rtcm_t *rtcm)
+int decode_type1038(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1038: not supported message\n");
     return 0;
@@ -1094,7 +1097,7 @@ int decode_type1038(rtcm_t *rtcm)
 
 
 /* decode type 1039: glonass network rtk combined correction difference ------*/
-int decode_type1039(rtcm_t *rtcm)
+int decode_type1039(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1039: not supported message\n");
     return 0;
@@ -1104,7 +1107,9 @@ int decode_type1039(rtcm_t *rtcm)
 /* decode type 1044: qzss ephemerides (ref [15]) -----------------------------*/
 int decode_type1044(rtcm_t *rtcm)
 {
-    eph_t eph = {0};
+    eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0,0.0}, {0,0.0}, {0,0.0},
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     char *msg;
     int i = 24+12, prn, sat, week, sys = SYS_QZS;
@@ -1179,7 +1184,9 @@ int decode_type1044(rtcm_t *rtcm)
 /* decode type 1045: galileo satellite ephemerides (ref [15]) ----------------*/
 int decode_type1045(rtcm_t *rtcm)
 {
-    eph_t eph = {0};
+    eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0,0.0}, {0,0.0}, {0,0.0},
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     char *msg;
     int i = 24+12, prn, sat, week, e5a_hs, e5a_dvs, rsv, sys = SYS_GAL;
@@ -1254,7 +1261,9 @@ int decode_type1045(rtcm_t *rtcm)
 /* decode type 1046: galileo satellite ephemerides (extension for IGS MGEX) --*/
 int decode_type1046(rtcm_t *rtcm)
 {
-    eph_t eph = {0};
+    eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0,0.0}, {0,0.0}, {0,0.0},
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     char *msg;
     int i = 24+12, prn, sat, week, e5a_hs, e5a_dvs, rsv, sys = SYS_GAL;
@@ -1329,7 +1338,9 @@ int decode_type1046(rtcm_t *rtcm)
 /* decode type 1047: beidou ephemerides (tentative mt and format) ------------*/
 int decode_type1047(rtcm_t *rtcm)
 {
-    eph_t eph = {0};
+    eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0,0.0}, {0,0.0}, {0,0.0},
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};;
     double toc, sqrtA;
     char *msg;
     int i = 24+12, prn, sat, week, sys = SYS_BDS;
@@ -1407,7 +1418,9 @@ int decode_type1047(rtcm_t *rtcm)
 /* decode type 63: beidou ephemerides (rtcm draft) ---------------------------*/
 int decode_type63(rtcm_t *rtcm)
 {
-    eph_t eph = {0};
+    eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0,0.0}, {0,0.0}, {0,0.0},
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     char *msg;
     int i = 24+12, prn, sat, week, sys = SYS_BDS;
@@ -2180,7 +2193,7 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
 int decode_msm_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
         msm_h_t *h, int *hsize)
 {
-    msm_h_t h0 = {0};
+    msm_h_t h0 = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
     double tow, tod;
     char *msg;
     int i = 24, j, dow, mask, staid, type, ncell = 0;
@@ -2270,7 +2283,7 @@ int decode_msm_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
 /* decode unsupported msm message --------------------------------------------*/
 int decode_msm0(rtcm_t *rtcm, int sys)
 {
-    msm_h_t h = {0};
+    msm_h_t h = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
     int i, sync, iod;
     if (decode_msm_head(rtcm, sys, &sync, &iod, &h, &i) < 0) return -1;
     rtcm->obsflag = !sync;
@@ -2281,7 +2294,7 @@ int decode_msm0(rtcm_t *rtcm, int sys)
 /* decode msm 4: full pseudorange and phaserange plus cnr --------------------*/
 int decode_msm4(rtcm_t *rtcm, int sys)
 {
-    msm_h_t h = {0};
+    msm_h_t h = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
     double r[64], pr[64], cp[64], cnr[64];
     int i, j, type, sync, iod, ncell, rng, rng_m, prv, cpv, lock[64], half[64];
 
@@ -2290,7 +2303,7 @@ int decode_msm4(rtcm_t *rtcm, int sys)
     /* decode msm header */
     if ((ncell = decode_msm_head(rtcm, sys, &sync, &iod, &h, &i)) < 0) return -1;
 
-    if (i+h.nsat*18+ncell*48>rtcm->len*8)
+    if (i+h.nsat*18+ncell*48 > rtcm->len*8)
         {
             trace(2, "rtcm3 %d length error: nsat=%d ncell=%d len=%d\n", type, h.nsat,
                     ncell, rtcm->len);
@@ -2344,7 +2357,7 @@ int decode_msm4(rtcm_t *rtcm, int sys)
 /* decode msm 5: full pseudorange, phaserange, phaserangerate and cnr --------*/
 int decode_msm5(rtcm_t *rtcm, int sys)
 {
-    msm_h_t h = {0};
+    msm_h_t h = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
     double r[64], rr[64], pr[64], cp[64], rrf[64], cnr[64];
     int i, j, type, sync, iod, ncell, rng, rng_m, rate, prv, cpv, rrv, lock[64];
     int ex[64], half[64];
@@ -2425,7 +2438,7 @@ int decode_msm5(rtcm_t *rtcm, int sys)
 /* decode msm 6: full pseudorange and phaserange plus cnr (high-res) ---------*/
 int decode_msm6(rtcm_t *rtcm, int sys)
 {
-    msm_h_t h = {0};
+    msm_h_t h = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
     double r[64], pr[64], cp[64], cnr[64];
     int i, j, type, sync, iod, ncell, rng, rng_m, prv, cpv, lock[64], half[64];
 
@@ -2488,7 +2501,7 @@ int decode_msm6(rtcm_t *rtcm, int sys)
 /* decode msm 7: full pseudorange, phaserange, phaserangerate and cnr (h-res) */
 int decode_msm7(rtcm_t *rtcm, int sys)
 {
-    msm_h_t h = {0};
+    msm_h_t h = {0, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}};
     double r[64], rr[64], pr[64], cp[64], rrf[64], cnr[64];
     int i, j, type, sync, iod, ncell, rng, rng_m, rate, prv, cpv, rrv, lock[64];
     int ex[64], half[64];

@@ -93,7 +93,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
     const speed_t bs[] = {
             B300, B600, B1200, B2400, B4800, B9600, B19200, B38400, B57600, B115200, B230400
     };
-    struct termios ios = {0};
+    struct termios ios;
     int rw = 0;
     tracet(3, "openserial: path=%s mode=%d\n", path, mode);
 
@@ -292,7 +292,7 @@ void closefile_(file_t *file)
 file_t *openfile(const char *path, int mode, char *msg)
 {
     file_t *file;
-    gtime_t time, time0 = {0};
+    gtime_t time, time0 = {0, 0.0};
     double speed = 0.0, start = 0.0, swapintv = 0.0;
     char *p;
     int timetag = 0;
@@ -398,7 +398,7 @@ int statefile(file_t *file)
 /* read file -----------------------------------------------------------------*/
 int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
 {
-    struct timeval tv = {0};
+    struct timeval tv = { 0, 0 };
     fd_set rs;
     unsigned int t, tick;
     int nr = 0;
@@ -599,7 +599,7 @@ int errsock(void) {return errno;}
 int setsock(socket_t sock, char *msg)
 {
     int bs = buffsize, mode = 1;
-    struct timeval tv = {0};
+    struct timeval tv = { 0, 0 };
 
     tracet(3, "setsock: sock=%d\n", sock);
 
@@ -629,7 +629,7 @@ int setsock(socket_t sock, char *msg)
 /* non-block accept ----------------------------------------------------------*/
 socket_t accept_nb(socket_t sock, struct sockaddr *addr, socklen_t *len)
 {
-    struct timeval tv = {0};
+    struct timeval tv = { 0, 0 };
     fd_set rs;
     FD_ZERO(&rs); FD_SET(sock, &rs);
     if (!select(sock+1, &rs, NULL, NULL, &tv)) return 0;
@@ -640,7 +640,7 @@ socket_t accept_nb(socket_t sock, struct sockaddr *addr, socklen_t *len)
 /* non-block connect ---------------------------------------------------------*/
 int connect_nb(socket_t sock, struct sockaddr *addr, socklen_t len)
 {
-    struct timeval tv = {0};
+    struct timeval tv = { 0, 0 };
     fd_set rs, ws;
     int err, flag;
 
@@ -660,7 +660,7 @@ int connect_nb(socket_t sock, struct sockaddr *addr, socklen_t len)
 /* non-block receive ---------------------------------------------------------*/
 int recv_nb(socket_t sock, unsigned char *buff, int n)
 {
-    struct timeval tv = {0};
+    struct timeval tv = { 0, 0 };
     fd_set rs;
     FD_ZERO(&rs); FD_SET(sock, &rs);
     if (!select(sock+1, &rs, NULL, NULL, &tv)) return 0;
@@ -671,7 +671,7 @@ int recv_nb(socket_t sock, unsigned char *buff, int n)
 /* non-block send ------------------------------------------------------------*/
 int send_nb(socket_t sock, unsigned char *buff, int n)
 {
-    struct timeval tv = {0};
+    struct timeval tv = { 0, 0 };
     fd_set ws;
     FD_ZERO(&ws); FD_SET(sock, &ws);
     if (!select(sock+1, NULL, &ws, NULL, &tv)) return 0;
@@ -2101,7 +2101,7 @@ gtime_t strgettime(stream_t *stream)
  *-----------------------------------------------------------------------------*/
 void strsendnmea(stream_t *stream, const double *pos)
 {
-    sol_t sol = {{0}};
+    sol_t sol = {{0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, '0', '0', '0', 0, 0, 0 };
     unsigned char buff[1024];
     int i, n;
 

@@ -513,7 +513,7 @@ int decode_solgsi(char *buff, const solopt_t *opt, sol_t *sol)
 /* decode solution position --------------------------------------------------*/
 int decode_solpos(char *buff, const solopt_t *opt, sol_t *sol)
 {
-    sol_t sol0 = {{0}};
+    sol_t sol0 = {{0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, '0', '0', '0', 0, 0, 0 };
     char *p = buff;
 
     trace(4,"decode_solpos: buff=%s\n",buff);
@@ -678,7 +678,7 @@ void readsolopt(FILE *fp, solopt_t *opt)
 int inputsol(unsigned char data, gtime_t ts, gtime_t te, double tint,
         int qflag, const solopt_t *opt, solbuf_t *solbuf)
 {
-    sol_t sol = {{0}};
+    sol_t sol = {{0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, '0', '0', '0', 0, 0, 0 };
     int stat;
 
     trace(4,"inputsol: data=0x%02x\n",data);
@@ -811,7 +811,7 @@ int readsolt(char *files[], int nfile, gtime_t ts, gtime_t te,
 
 int readsol(char *files[], int nfile, solbuf_t *sol)
 {
-    gtime_t time = {0};
+    gtime_t time = {0, 0.0};
 
     trace(3,"readsol: nfile=%d\n",nfile);
 
@@ -889,7 +889,7 @@ sol_t *getsol(solbuf_t *solbuf, int index)
  *-----------------------------------------------------------------------------*/
 void initsolbuf(solbuf_t *solbuf, int cyclic, int nmax)
 {
-    gtime_t time0 = {0};
+    gtime_t time0 = {0, 0.0};
 
     trace(3,"initsolbuf: cyclic=%d nmax=%d\n",cyclic,nmax);
 
@@ -969,7 +969,7 @@ int sort_solstat(solstatbuf_t *statbuf)
 /* decode solution status ----------------------------------------------------*/
 int decode_solstat(char *buff, solstat_t *stat)
 {
-    static const solstat_t stat0 = {{0}};
+    static const solstat_t stat0 = {{0, 0.0}, '0', '0', 0, 0, 0, 0, '0', '0', 0, 0, 0, 0};
     double tow,az,el,resp,resc;
     int n,week,sat,frq,vsat,snr,fix,slip,lock,outc,slipc,rejc;
     char id[32] = "",*p;
@@ -1011,6 +1011,7 @@ int decode_solstat(char *buff, solstat_t *stat)
     return 1;
 }
 
+
 /* add solution status data --------------------------------------------------*/
 void addsolstat(solstatbuf_t *statbuf, const solstat_t *stat)
 {
@@ -1038,7 +1039,7 @@ void addsolstat(solstatbuf_t *statbuf, const solstat_t *stat)
 int readsolstatdata(FILE *fp, gtime_t ts, gtime_t te, double tint,
         solstatbuf_t *statbuf)
 {
-    solstat_t stat = {{0}};
+    solstat_t stat = {{0, 0.0}, '0', '0', 0, 0, 0, 0, '0', '0', 0, 0, 0, 0};
     char buff[MAXSOLMSG+1];
 
     trace(3,"readsolstatdata:\n");
@@ -1101,7 +1102,7 @@ int readsolstatt(char *files[], int nfile, gtime_t ts, gtime_t te,
 
 int readsolstat(char *files[], int nfile, solstatbuf_t *statbuf)
 {
-    gtime_t time = {0};
+    gtime_t time = {0, 0.0};
 
     trace(3,"readsolstat: nfile=%d\n",nfile);
 
@@ -1622,7 +1623,7 @@ int outsolheads(unsigned char *buff, const solopt_t *opt)
 int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
         const solopt_t *opt)
 {
-    gtime_t time,ts = {0};
+    gtime_t time,ts = {0, 0.0};
     double gpst;
     int week,timeu;
     const char *sep = opt2sep(opt);
@@ -1681,7 +1682,7 @@ int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
 int outsolexs(unsigned char *buff, const sol_t *sol, const ssat_t *ssat,
         const solopt_t *opt)
 {
-    gtime_t ts = {0};
+    gtime_t ts = {0, 0.0};
     unsigned char *p = buff;
 
     trace(3,"outsolexs:\n");

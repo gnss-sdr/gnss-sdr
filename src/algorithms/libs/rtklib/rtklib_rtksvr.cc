@@ -291,7 +291,7 @@ int decoderaw(rtksvr_t *svr, int index)
     obs_t *obs;
     nav_t *nav;
     sbsmsg_t *sbsmsg = NULL;
-    int i, ret, sat, fobs = 0;
+    int i, ret = 0, sat, fobs = 0;
 
     tracet(4, "decoderaw: index=%d\n", index);
 
@@ -324,18 +324,20 @@ int decoderaw(rtksvr_t *svr, int index)
                     sbsmsg = &svr->raw[index].sbsmsg;
                 }
 #if 0 /* record for receiving tick */
-            if (ret==1) {
+            if (ret == 1)
+                {
                     trace(0, "%d %10d T=%s NS=%2d\n", index, tickget(),
                             time_str(obs->data[0].time, 0), obs->n);
-            }
+                }
 #endif
             /* update rtk server */
-            if (ret>0) updatesvr(svr, ret, obs, nav, sat, sbsmsg, index, fobs);
+            if (ret > 0) updatesvr(svr, ret, obs, nav, sat, sbsmsg, index, fobs);
 
             /* observation data received */
-            if (ret == 1) {
+            if (ret == 1)
+                {
                     if (fobs<MAXOBSBUF) fobs++; else svr->prcout++;
-            }
+                }
         }
     svr->nb[index] = 0;
 
@@ -348,7 +350,25 @@ int decoderaw(rtksvr_t *svr, int index)
 /* decode download file ------------------------------------------------------*/
 void decodefile(rtksvr_t *svr, int index)
 {
-    nav_t nav = {0};
+    pcv_t pcvt0[MAXSAT] = { {0, {'0'}, {'0'}, {0, 0.0}, {0, 0.0}, {{0.0},{0.0}}, {{0.0},{0.0}} } };
+    sbsfcorr_t sbsfcorr0 = {{0, 0.0}, 0.0, 0.0, 0.0, 0, 0, 0};
+    sbslcorr_t sbslcorr0 = { {0, 0.0}, 0, {0.0}, {0.0}, 0.0, 0.0};
+    sbssat_t sbssat0 = {0, 0, 0, { {0, sbsfcorr0, sbslcorr0 } }};
+    sbsigp_t sbsigp0[MAXNIGP] = {{{0, 0.0}, 0, 0, 0, 0.0 }};
+    sbsion_t sbsion0[MAXBAND+1] = {{0, 0, {*sbsigp0} }};
+    dgps_t dgps0[MAXSAT] = { {{0, 0.0}, 0.0, 0.0, 0, 0.0 }};
+    ssr_t ssr0[MAXSAT] = {{ {{0, 0.0}}, {0.0}, {0}, 0, 0, 0, 0, {0.0}, {0.0}, {0.0}, 0.0, {0.0}, {0.0}, {0.0}, 0.0, 0.0, '0' }};
+    lexeph_t lexeph0[MAXSAT] = {{ {0,0.0}, {0,0.0}, 0, 0, 0, {0.0}, {0.0}, {0.0}, {0.0}, 0.0, 0.0, 0.0, {0.0} }};
+    stec_t stec0[MAXSTA] = {{ {0,0.0}, 0, 0.0, 0.0, {0.0}, 0}};
+    trop_t trop0[MAXSTA] = {{ {0, 0.0}, {0.0}, {0.0}}};
+    pppcorr_t pppcorr0 = {0, {{0},{0}}, {{0.0},{0.0}}, {0}, {0}, {0}, {0}, {stec0}, {trop0} };
+
+    nav_t nav = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            {0, 0, (erpd_t *){0}}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0},
+            {0.0}, {0.0}, {0.0}, {0.0}, 0, {{0.0},{0.0}}, {{0.0},{0.0}}, {{0.0},{0.0},{0.0}},
+            {0.0}, {0.0}, '0', {*pcvt0}, sbssat0, {*sbsion0}, {*dgps0},  {*ssr0}, {*lexeph0},
+            {{0,0.0}, 0.0, {0.0}, {{0.0},{0.0}} }, pppcorr0} ;
+
     char file[1024];
     int nb;
 

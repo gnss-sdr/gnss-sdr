@@ -213,9 +213,10 @@ int savenav(const char *file, const nav_t *nav);
 void freeobs(obs_t *obs);
 void freenav(nav_t *nav, int opt);
 
-//void traceopen(const char *file);
-//void traceclose(void);
-//void tracelevel(int level);
+void traceopen(const char *file);
+void traceclose(void);
+void tracelevel(int level);
+void traceswap(void);
 void trace   (int level, const char *format, ...);
 void tracet  (int level, const char *format, ...);
 void tracemat(int level, const double *A, int n, int m, int p, int q);

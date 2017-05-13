@@ -78,12 +78,6 @@
 #define rtk_lock(f)         pthread_mutex_lock(f)
 #define rtk_unlock(f)       pthread_mutex_unlock(f)
 
-#define TINTACT             200         /* period for stream active (ms) */
-#define SERIBUFFSIZE        4096        /* serial buffer size (bytes) */
-#define TIMETAGH_LEN        64          /* time tag file header length */
-#define MAXCLI              32          /* max client connection for tcp svr */
-#define MAXSTATMSG          32          /* max length of status message */
-
 #define VER_RTKLIB  "2.4.2"
 #define NTRIP_AGENT         "RTKLIB/" VER_RTKLIB
 #define NTRIP_CLI_PORT      2101        /* default ntrip-client connection port */
@@ -98,12 +92,18 @@
 #define NTRIP_RSP_ERROR     "ERROR"     /* ntrip response: error */
 
 #define FTP_CMD             "wget"      /* ftp/http command */
-#define FTP_TIMEOUT         30          /* ftp/http timeout (s) */
 
-#define MAXRAWLEN   4096                /* max length of receiver raw message */
-#define MAXSOLBUF   256                 /* max number of solution buffer */
-#define MAXSBSMSG   32                  /* max number of SBAS msg in RTK server */
-#define MAXOBSBUF   128                 /* max number of observation data buffer */
+const int  TINTACT = 200;             //!<  period for stream active (ms)
+const int  SERIBUFFSIZE = 4096;       //!<  serial buffer size (bytes)
+const int  TIMETAGH_LEN = 64;         //!<  time tag file header length
+const int  MAXCLI = 32;               //!<  max client connection for tcp svr
+const int  MAXSTATMSG = 32;           //!<  max length of status message
+
+const int FTP_TIMEOUT = 30;           //!< ftp/http timeout (s)
+const int MAXRAWLEN = 4096;           //!< max length of receiver raw message
+const int MAXSOLBUF = 256;            //!< max number of solution buffer
+const int MAXSBSMSG = 32;             //!< max number of SBAS msg in RTK server
+const int MAXOBSBUF = 128;            //!< max number of observation data buffer
 
 const int FILEPATHSEP = '/';
 const double RE_WGS84 = 6378137.0;             //!< earth semimajor axis (WGS84) (m)
@@ -113,6 +113,7 @@ const double HION = 350000.0;                  //!<  ionosphere height (m)
 const double PRN_HWBIAS = 1e-6;                //!<  process noise of h/w bias (m/MHz/sqrt(s))
 
 const double INT_SWAP_STAT = 86400.0;          //!<  swap interval of solution status file (s)
+const double INT_SWAP_TRAC = 86400.0;          //!<  swap interval of trace file (s)
 
 const unsigned int POLYCRC32 = 0xEDB88320u;    //!<  CRC32 polynomial
 const unsigned int POLYCRC24Q = 0x1864CFBu;    //!<  CRC24Q polynomial
@@ -149,11 +150,11 @@ const int TIMES_UTC = 1;              //!<  time system: utc
 const int TIMES_JST = 2;              //!<  time system: jst
 
 
-const double ERR_SAAS = 0.3;                   //!<  saastamoinen model error std (m)
-const double ERR_BRDCI = 0.5;                  //!<  broadcast iono model error factor
-const double ERR_CBIAS = 0.3;                  //!<  code bias error std (m)
-const double REL_HUMI = 0.7;                   //!<  relative humidity for saastamoinen model
-const double GAP_RESION = 120;                 //!<  default gap to reset ionos parameters (ep)
+const double ERR_SAAS = 0.3;          //!<  saastamoinen model error std (m)
+const double ERR_BRDCI = 0.5;         //!<  broadcast iono model error factor
+const double ERR_CBIAS = 0.3;         //!<  code bias error std (m)
+const double REL_HUMI = 0.7;          //!<  relative humidity for saastamoinen model
+const double GAP_RESION = 120;        //!<  default gap to reset ionos parameters (ep)
 
 const int MAXFREQ = 7;                //!<  max NFREQ
 
@@ -170,16 +171,16 @@ const int MAXPRNGPS = 32;             //!<   max satellite PRN number of GPS
 const int NSATGPS = (MAXPRNGPS - MINPRNGPS + 1); //!<   number of GPS satellites
 const int NSYSGPS = 1;
 
-const int SYS_NONE = 0x00;               //!<   navigation system: none
-const int SYS_GPS = 0x01;                //!<   navigation system: GPS
-const int SYS_SBS = 0x02;                //!<   navigation system: SBAS
-const int SYS_GLO = 0x04;                //!<   navigation system: GLONASS
-const int SYS_GAL = 0x08;                //!<   navigation system: Galileo
-const int SYS_QZS = 0x10;                //!<   navigation system: QZSS
-const int SYS_BDS = 0x20;                //!<   navigation system: BeiDou
-const int SYS_IRN = 0x40;                //!<   navigation system: IRNS
-const int SYS_LEO = 0x80;                //!<   navigation system: LEO
-const int SYS_ALL = 0xFF;                //!<   navigation system: all
+const int SYS_NONE = 0x00;            //!<   navigation system: none
+const int SYS_GPS = 0x01;             //!<   navigation system: GPS
+const int SYS_SBS = 0x02;             //!<   navigation system: SBAS
+const int SYS_GLO = 0x04;             //!<   navigation system: GLONASS
+const int SYS_GAL = 0x08;             //!<   navigation system: Galileo
+const int SYS_QZS = 0x10;             //!<   navigation system: QZSS
+const int SYS_BDS = 0x20;             //!<   navigation system: BeiDou
+const int SYS_IRN = 0x40;             //!<   navigation system: IRNS
+const int SYS_LEO = 0x80;             //!<   navigation system: LEO
+const int SYS_ALL = 0xFF;             //!<   navigation system: all
 
 
 

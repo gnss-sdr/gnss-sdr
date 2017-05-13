@@ -2951,60 +2951,69 @@ void freenav(nav_t *nav, int opt)
 /* debug trace functions -----------------------------------------------------*/
 //#ifdef TRACE
 //
-//static FILE *fp_trace=NULL;     /* file pointer of trace */
-//static char file_trace[1024];   /* trace file */
-//static int level_trace=0;       /* level of trace */
-//static unsigned int tick_trace=0; /* tick time at traceopen (ms) */
-//static gtime_t time_trace={0};  /* time at traceopen */
-//static pthread_mutex_t lock_trace;       /* lock for trace */
-//
-//static void traceswap(void)
-//{
-//    gtime_t time=utc2gpst(timeget());
-//    char path[1024];
-//
-//    lock(&lock_trace);
-//
-//    if ((int)(time2gpst(time      ,NULL)/INT_SWAP_TRAC)==
-//        (int)(time2gpst(time_trace,NULL)/INT_SWAP_TRAC)) {
-//        unlock(&lock_trace);
-//        return;
-//    }
-//    time_trace=time;
-//
-//    if (!reppath(file_trace,path,time,"","")) {
-//        unlock(&lock_trace);
-//        return;
-//    }
-//    if (fp_trace) fclose(fp_trace);
-//
-//    if (!(fp_trace=fopen(path,"w"))) {
-//        fp_trace=stderr;
-//    }
-//    unlock(&lock_trace);
-//}
-//extern void traceopen(const char *file)
-//{
-//    gtime_t time=utc2gpst(timeget());
-//    char path[1024];
-//
-//    reppath(file,path,time,"","");
-//    if (!*path||!(fp_trace=fopen(path,"w"))) fp_trace=stderr;
-//    strcpy(file_trace,file);
-//    tick_trace=tickget();
-//    time_trace=time;
-//    initlock(&lock_trace);
-//}
-//extern void traceclose(void)
-//{
-//    if (fp_trace&&fp_trace!=stderr) fclose(fp_trace);
-//    fp_trace=NULL;
-//    file_trace[0]='\0';
-//}
-//extern void tracelevel(int level)
-//{
-//    level_trace=level;
-//}
+FILE *fp_trace = NULL;     /* file pointer of trace */
+char file_trace[1024];   /* trace file */
+static int level_trace = 0;       /* level of trace */
+unsigned int tick_trace = 0; /* tick time at traceopen (ms) */
+gtime_t time_trace = {0, 0.0};  /* time at traceopen */
+pthread_mutex_t lock_trace;       /* lock for trace */
+
+void traceswap(void)
+{
+    gtime_t time = utc2gpst(timeget());
+    char path[1024];
+
+    rtk_lock(&lock_trace);
+
+    if ((int)(time2gpst(time, NULL) / INT_SWAP_TRAC) ==
+            (int)(time2gpst(time_trace, NULL) / INT_SWAP_TRAC))
+        {
+            rtk_unlock(&lock_trace);
+            return;
+        }
+    time_trace = time;
+
+    if (!reppath(file_trace, path, time, "", ""))
+        {
+            rtk_unlock(&lock_trace);
+            return;
+        }
+    if (fp_trace) fclose(fp_trace);
+
+    if (!(fp_trace = fopen(path, "w")))
+        {
+            fp_trace = stderr;
+        }
+    rtk_unlock(&lock_trace);
+}
+
+
+void traceopen(const char *file)
+{
+    gtime_t time = utc2gpst(timeget());
+    char path[1024];
+
+    reppath(file, path, time, "", "");
+    if (!*path || !(fp_trace = fopen(path, "w"))) fp_trace = stderr;
+    strcpy(file_trace, file);
+    tick_trace = tickget();
+    time_trace = time;
+    initlock(&lock_trace);
+}
+
+
+void traceclose(void)
+{
+    if (fp_trace && fp_trace != stderr) fclose(fp_trace);
+    fp_trace = NULL;
+    file_trace[0] = '\0';
+}
+
+
+void tracelevel(int level)
+{
+    level_trace = level;
+}
 //extern void trace(int level, const char *format, ...)
 //{
 //    va_list ap;
@@ -3020,15 +3029,14 @@ void freenav(nav_t *nav, int opt)
 //    fflush(fp_trace);
 //}
 
-void tracet(int level  __attribute__((unused)), const char *format  __attribute__((unused)), ...)
+void tracet(int level, const char *format, ...)
 {
-//    va_list ap;
-//
-//    if (!fp_trace||level>level_trace) return;
-//    traceswap();
-//    fprintf(fp_trace,"%d %9.3f: ",level,(tickget()-tick_trace)/1000.0);
-//    va_start(ap,format); vfprintf(fp_trace,format,ap); va_end(ap);
-//    fflush(fp_trace);
+    va_list ap;
+    if (!fp_trace || level > level_trace) return;
+    traceswap();
+    fprintf(fp_trace, "%d %9.3f: ", level, (tickget() - tick_trace)  /1000.0);
+    va_start(ap, format); vfprintf(fp_trace, format, ap); va_end(ap);
+    fflush(fp_trace);
 }
 
 void tracemat(int level __attribute__((unused)), const double *A __attribute__((unused)),

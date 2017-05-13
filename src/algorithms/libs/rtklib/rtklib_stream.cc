@@ -759,7 +759,7 @@ void discontcp(tcp_t *tcp, int tcon)
 /* open tcp server -----------------------------------------------------------*/
 tcpsvr_t *opentcpsvr(const char *path, char *msg)
 {
-    tcpsvr_t *tcpsvr, tcpsvr0 = {{0}};
+    tcpsvr_t *tcpsvr, tcpsvr0; // = {{0}};
     char port[256] = "";
 
     tracet(3, "opentcpsvr: path=%s\n", path);
@@ -983,7 +983,7 @@ int consock(tcpcli_t *tcpcli, char *msg)
 /* open tcp client -----------------------------------------------------------*/
 tcpcli_t *opentcpcli(const char *path, char *msg)
 {
-    tcpcli_t *tcpcli, tcpcli0 = {{0}};
+    tcpcli_t *tcpcli, tcpcli0; // = {{0}};
     char port[256] = "";
 
     tracet(3, "opentcpcli: path=%s\n", path);

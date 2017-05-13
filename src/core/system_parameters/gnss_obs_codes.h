@@ -91,7 +91,7 @@ const unsigned int CODE_L9A = 52;        //!<   obs code: SA SPS     (IRN)
 const unsigned int CODE_L9B = 53;        //!<   obs code: SB RS(D)   (IRN)
 const unsigned int CODE_L9C = 54;        //!<   obs code: SC RS(P)   (IRN)
 const unsigned int CODE_L9X = 55;        //!<   obs code: SB+C       (IRN)
-const unsigned int MAXCODE = 55;         //!<   max number of obs code
+const int MAXCODE = 55;                  //!<   max number of obs code
 
 
 #endif

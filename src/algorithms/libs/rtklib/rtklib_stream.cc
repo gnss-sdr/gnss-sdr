@@ -158,7 +158,7 @@ void closeserial(serial_t *serial)
 
 
 /* read serial ---------------------------------------------------------------*/
-int readserial(serial_t *serial, unsigned char *buff, int n, char *msg)
+int readserial(serial_t *serial, unsigned char *buff, int n, char *msg __attribute__((unused)))
 {
     int nr;
     tracet(4, "readserial: dev=%d n=%d\n", serial->dev, n);
@@ -170,7 +170,7 @@ int readserial(serial_t *serial, unsigned char *buff, int n, char *msg)
 
 
 /* write serial --------------------------------------------------------------*/
-int writeserial(serial_t *serial, unsigned char *buff, int n, char *msg)
+int writeserial(serial_t *serial, unsigned char *buff, int n, char *msg __attribute__((unused)))
 {
     int ns;
     tracet(3, "writeserial: dev=%d n=%d\n", serial->dev, n);

@@ -492,7 +492,7 @@ int decode_solenu(char *buff, const solopt_t *opt, sol_t *sol)
 
 
 /* decode gsi f solution -----------------------------------------------------*/
-int decode_solgsi(char *buff, const solopt_t *opt, sol_t *sol)
+int decode_solgsi(char *buff, const solopt_t *opt __attribute((unused)), sol_t *sol)
 {
     double val[MAXFIELD];
     int i = 0,j;

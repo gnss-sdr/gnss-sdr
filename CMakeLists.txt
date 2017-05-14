@@ -901,7 +901,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " Armadillo has not been found.")
      message(STATUS " Armadillo will be downloaded and built automatically")
      message(STATUS " when doing 'make'. ")
-     set(armadillo_BRANCH 7.800.x)
+     set(armadillo_BRANCH 7.900.x)
      set(armadillo_RELEASE ${armadillo_BRANCH})
 
      ExternalProject_Add(

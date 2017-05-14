@@ -110,7 +110,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_channel = 0;
     flag_PLL_180_deg_phase_locked = false;
     //set minimum output buffer to avoid deadlock when combined with other GNSS systems or signals with slower symbol rates
-    this->set_min_output_buffer(3000);
+    this->set_min_output_buffer(5000);
 }
 
 

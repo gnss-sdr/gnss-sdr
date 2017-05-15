@@ -410,57 +410,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             {}     /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
     };
 
-    sol_t sol_ = {{0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, '0', '0', '0', 0, 0, 0 };
-
-    ambc_t ambc_ = { {{0,0}, {0,0}, {0,0}, {0,0}}, {0, 0, 0, 0}, {}, {}, 0, {'0'}};
-
-    ssat_t ssat_ =  { '0', /* navigation system */
-            '0', /* valid satellite flag single */
-            {0.0}, /* azel[2] azimuth/elevation angles {az,el} (rad) */
-            {0.0}, /* residuals of pseudorange (m) */
-            {0.0}, /* residuals of carrier-phase (m) */
-            {'0'}, /* valid satellite flag */
-            {'0'}, /* signal strength (0.25 dBHz) */
-            {'0'}, /* ambiguity fix flag (1:fix,2:float,3:hold) */
-            {'0'}, /* cycle-slip flag */
-            {'0'}, /* half-cycle valid flag */
-            {},    /* lock counter of phase */
-            {},    /* obs outage counter of phase */
-            {},    /* cycle-slip counter */
-            {},    /* reject counter */
-            0.0,   /* geometry-free phase L1-L2 (m) */
-            0.0,   /* geometry-free phase L1-L5 (m) */
-            0.0,   /* MW-LC (m) */
-            0.0,   /* phase windup (cycle) */
-            {{{0,0}},{{0,0}}},  /* previous carrier-phase time */
-            {{},{}} /* previous carrier-phase observable (cycle) */
-    };
-
-    int nx = 0; /* Number of estimated states */
-    if(positioning_mode <= PMODE_FIXED) nx = 4 + 3;
-    if(positioning_mode >= PMODE_PPP_KINEMA) nx = NX_PPP(&rtklib_configuration_options);
-    int na = NP_PPP(&rtklib_configuration_options);
-
-    double x[nx];
-    double Px[nx*nx];
-    double xa[na];
-    double Pa[na*na];
-    rtk = { sol_,  /* RTK solution */
-            {},          /* base position/velocity (ecef) (m|m/s) */
-            nx,           /* number of float states */
-            na,           /* number of fixed states */
-            output_rate_ms / 1000.0,  /* time difference between current and previous (s) */
-            x,          /* float states */
-            Px,          /* float states covariance */
-            xa,          /* fixed states */
-            Pa,          /* fixed states covariance */
-            3,           /* number of continuous fixes of ambiguity */
-            {ambc_},     /* ambiguity control */
-            {ssat_},     /* satellite status */
-            256,           /* bytes in error message buffer */
-            {'0'},       /* error message buffer */
-            rtklib_configuration_options /* processing options */
-    };
+    rtkinit(&rtk, &rtklib_configuration_options);
 
     // make PVT object
     pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_,  output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, rinex_version, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtk);

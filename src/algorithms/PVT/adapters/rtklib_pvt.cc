@@ -450,6 +450,7 @@ bool RtklibPvt::save_assistance_to_XML()
 
 RtklibPvt::~RtklibPvt()
 {
+    rtkfree(&rtk);
     save_assistance_to_XML();
 }
 

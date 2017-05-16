@@ -51,11 +51,13 @@
  *
  *----------------------------------------------------------------------------*/
 
-#include "rtklib.h"
-
 
 #ifndef GNSS_SDR_RTKLIB_RTCM_H_
 #define GNSS_SDR_RTKLIB_RTCM_H_
+
+#include "rtklib.h"
+#include "rtklib_rtcm2.h"
+#include "rtklib_rtcm3.h"
 
 #define RTCM2PREAMB 0x66        /* rtcm ver.2 frame preamble */
 #define RTCM3PREAMB 0xD3        /* rtcm ver.3 frame preamble */

@@ -52,8 +52,6 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_rtcm.h"
-#include "rtklib_rtcm2.h"
-#include "rtklib_rtcm3.h"
 #include "rtklib_rtkcmn.h"
 
 //extern int encode_rtcm3(rtcm_t *rtcm, int type, int sync);

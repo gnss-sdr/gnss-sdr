@@ -54,7 +54,6 @@
 
 
 #include "rtklib_rtcm2.h"
-#include "rtklib_rtcm3.h"
 #include "rtklib_rtkcmn.h"
 
 

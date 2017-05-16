@@ -56,7 +56,53 @@
 #include "rtklib_rtkcmn.h"
 
 
+/* msm signal id table -------------------------------------------------------*/
+const char *msm_sig_gps[32] = {
+    /* GPS: ref [13] table 3.5-87, ref [14][15] table 3.5-91 */
+    ""  , "1C", "1P", "1W", "1Y", "1M", ""  , "2C", "2P", "2W", "2Y", "2M",  /*  1-12 */
+    ""  , ""  , "2S", "2L", "2X", ""  , ""  , ""  , ""  , "5I", "5Q", "5X",  /* 13-24 */
+    ""  , ""  , ""  , ""  , ""  , "1S", "1L", "1X"                      /* 25-32 */
+};
 
+
+const char *msm_sig_glo[32] = {
+    /* GLONASS: ref [13] table 3.5-93,  ref [14][15] table 3.5-97 */
+    ""  , "1C", "1P", ""  , ""  , ""  , ""  , "2C", "2P", ""  , "3I", "3Q",
+    "3X", ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  ,
+    ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""
+};
+
+
+const char *msm_sig_gal[32] = {
+    /* Galileo: ref [15] table 3.5-100 */
+    ""  , "1C", "1A", "1B", "1X", "1Z", ""  , "6C", "6A", "6B", "6X", "6Z",
+    ""  , "7I", "7Q", "7X", ""  , "8I", "8Q", "8X", ""  , "5I", "5Q", "5X",
+    ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""
+};
+
+
+const char *msm_sig_qzs[32] = {
+    /* QZSS: ref [15] table 3.5-103 */
+    ""  , "1C", ""  , ""  , ""  , ""  , ""  , ""  , "6S", "6L", "6X", ""  ,
+    ""  , ""  , "2S", "2L", "2X", ""  , ""  , ""  , ""  , "5I", "5Q", "5X",
+    ""  , ""  , ""  , ""  , ""  , "1S", "1L", "1X"
+};
+
+
+const char *msm_sig_sbs[32] = {
+    /* SBAS: ref [13] table 3.5-T+005 */
+    ""  , "1C", ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  ,
+    ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , "5I", "5Q", "5X",
+    ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""
+};
+
+
+const char *msm_sig_cmp[32] = {
+    /* BeiDou: ref [15] table 3.5-106 */
+    ""  , "1I", "1Q", "1X", ""  , ""  , ""  , "6I", "6Q", "6X", ""  , ""  ,
+    ""  , "7I", "7Q", "7X", ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  ,
+    ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""
+};
 
 /* get sign-magnitude bits ---------------------------------------------------*/
 double getbitg(const unsigned char *buff, int pos, int len)
@@ -137,7 +183,7 @@ unsigned char snratio(double snr)
 
 
 /* get observation data index ------------------------------------------------*/
-int obsindex(obs_t *obs, gtime_t time, int sat)
+int obsindex3(obs_t *obs, gtime_t time, int sat)
 {
     int i, j;
 
@@ -274,7 +320,7 @@ int decode_type1002(rtcm_t *rtcm)
                 {
                     rtcm->obs.n = rtcm->obsflag = 0;
                 }
-            if ((index = obsindex(&rtcm->obs, rtcm->time, sat)) < 0) continue;
+            if ((index = obsindex3(&rtcm->obs, rtcm->time, sat)) < 0) continue;
             pr1 = pr1*0.02+amb*PRUNIT_GPS;
             if (ppr1 != (int)0xFFF80000)
                 {
@@ -342,7 +388,7 @@ int decode_type1004(rtcm_t *rtcm)
                 {
                     rtcm->obs.n = rtcm->obsflag = 0;
                 }
-            if ((index = obsindex(&rtcm->obs, rtcm->time, sat)) < 0) continue;
+            if ((index = obsindex3(&rtcm->obs, rtcm->time, sat)) < 0) continue;
             pr1 = pr1*0.02+amb*PRUNIT_GPS;
             if (ppr1 != (int)0xFFF80000)
                 {
@@ -624,7 +670,7 @@ int decode_type1010(rtcm_t *rtcm)
                 {
                     rtcm->obs.n = rtcm->obsflag = 0;
                 }
-            if ((index = obsindex(&rtcm->obs, rtcm->time, sat)) < 0) continue;
+            if ((index = obsindex3(&rtcm->obs, rtcm->time, sat)) < 0) continue;
             pr1 = pr1*0.02+amb*PRUNIT_GLO;
             if (ppr1 != (int)0xFFF80000)
                 {
@@ -685,7 +731,7 @@ int decode_type1012(rtcm_t *rtcm)
                 {
                     rtcm->obs.n = rtcm->obsflag = 0;
                 }
-            if ((index = obsindex(&rtcm->obs, rtcm->time, sat)) < 0) continue;
+            if ((index = obsindex3(&rtcm->obs, rtcm->time, sat)) < 0) continue;
             pr1 = pr1*0.02+amb*PRUNIT_GLO;
             if (ppr1 != (int)0xFFF80000)
                 {
@@ -2140,7 +2186,7 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
                         {
                             rtcm->obs.n = rtcm->obsflag = 0;
                         }
-                    index = obsindex(&rtcm->obs, rtcm->time, sat);
+                    index = obsindex3(&rtcm->obs, rtcm->time, sat);
                 }
             else
                 {

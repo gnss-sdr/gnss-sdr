@@ -74,12 +74,6 @@ public:
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    /*!
-     * \brief Function which tells the scheduler how many input items
-     *        are required to produce noutput_items output items.
-     */
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
 private:
     friend galileo_e5a_telemetry_decoder_cc_sptr
     galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
@@ -94,6 +88,7 @@ private:
     int d_preamble_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
     // signed int d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
     double d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+
     // signed int *d_preamble_symbols;
     double d_current_symbol;
     long unsigned int d_symbol_counter;

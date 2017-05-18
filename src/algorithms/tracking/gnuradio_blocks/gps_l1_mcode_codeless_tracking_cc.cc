@@ -243,8 +243,6 @@ gps_l1_mcode_codeless_tracking_cc::gps_l1_mcode_codeless_tracking_cc(
     d_early_code= static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
     d_prompt_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
     d_late_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_very_early_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_very_late_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
 
     d_early_subcarrier_mcode= static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
     d_prompt_subcarrier_mcode = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
@@ -259,11 +257,9 @@ gps_l1_mcode_codeless_tracking_cc::gps_l1_mcode_codeless_tracking_cc(
     d_very_late_code_phases_mcode = static_cast<int*>(volk_malloc(2 * d_vector_length * sizeof(int), volk_get_alignment()));
 
     // correlator outputs (scalar)
-    d_Very_Early = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
     d_Early = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
     d_Prompt = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
     d_Late = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
-    d_Very_Late = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
 
     // correlator outputs (scalar)
     d_Very_Early_mcode = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
@@ -329,11 +325,9 @@ gps_l1_mcode_codeless_tracking_cc::gps_l1_mcode_codeless_tracking_cc(
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
     systemName["G"] = std::string("GPS");
-    *d_Very_Early = gr_complex(0,0);
     *d_Early = gr_complex(0,0);
     *d_Prompt = gr_complex(0,0);
     *d_Late = gr_complex(0,0);
-    *d_Very_Late = gr_complex(0,0);
 
     *d_Very_Early_mcode = gr_complex(0,0);
     *d_Early_mcode = gr_complex(0,0);
@@ -414,7 +408,6 @@ void gps_l1_mcode_codeless_tracking_cc::start_tracking()
     // DLL/PLL filter initialization
     d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
     d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
-    d_divergence_loop_filter.set_noise_bandwidth( d_initial_divergence_loop_filter_bandwidth );
 
     d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); // initialize the carrier filter
     float code_doppler_chips = d_acq_carrier_doppler_hz *( GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ;
@@ -453,13 +446,6 @@ void gps_l1_mcode_codeless_tracking_cc::start_tracking()
     d_code_locked = false;
     d_carrier_locked = false;
     d_cn0_estimation_counter = 0;
-
-    // Bump jumping:
-    d_bj_ve_counter = 0;
-    d_bj_vl_counter = 0;
-
-    d_subcarrier_locked = false;
-    d_mean_subcarrier_error = 0.0;
 
     d_code_locked = false;
     d_mean_code_error = 0.0;
@@ -572,17 +558,13 @@ gps_l1_mcode_codeless_tracking_cc::~gps_l1_mcode_codeless_tracking_cc()
 {
     d_dump_file.close();
 
-    volk_free(d_very_early_code);
     volk_free(d_early_code);
     volk_free(d_prompt_code);
     volk_free(d_late_code);
-    volk_free(d_very_late_code);
 
-    volk_free(d_Very_Early);
     volk_free(d_Early);
     volk_free(d_Prompt);
     volk_free(d_Late);
-    volk_free(d_Very_Late);
     volk_free(d_ca_code);
 
     volk_free(d_very_early_code_phases_mcode);
@@ -612,9 +594,6 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
 {
     double carr_error_hz = 0.0;
     double carr_error_filt_hz = 0.0;
-    double subcarrier_error_cycles = 0.0;
-    double subcarrier_error_filt_cycles = 0.0;
-    double integer_subcarrier_periods = 0.0;
     double code_error_chips = 0.0;
     double code_error_filt_chips = 0.0;
 
@@ -673,22 +652,17 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                     -std::sin( carrier_doppler_inc_rad ) );
 
 
-            // perform carrier wipe-off and compute Very Early, Early, Prompt, Late and Very Late correlation
-            d_correlator.Carrier_rotate_and_VEPL_volk(d_current_prn_length_samples,
+            // perform carrier wipe-off and compute Early, Prompt, and Late correlation
+            d_correlator.Carrier_rotate_and_EPL_volk(d_current_prn_length_samples,
                     in,
                     &phase_as_complex,
                     phase_inc_as_complex,
-                    d_very_early_code,
                     d_early_code,
                     d_prompt_code,
                     d_late_code,
-                    d_very_late_code,
-                    d_Very_Early,
                     d_Early,
                     d_Prompt,
-                    d_Late,
-                    d_Very_Late );
-
+                    d_Late );
 
 
             // Now update the code and carrier phase estimates:
@@ -1416,11 +1390,9 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
     			std::cout << tmp_str_stream.rdbuf() << std::flush;
     		}
     	}
-    	*d_Very_Early = gr_complex(0,0);
     	*d_Early = gr_complex(0,0);
     	*d_Prompt = gr_complex(0,0);
     	*d_Late = gr_complex(0,0);
-    	*d_Very_Late = gr_complex(0,0);
 
     	*d_Very_Early_mcode = gr_complex(0,0);
     	*d_Early_mcode = gr_complex(0,0);
@@ -1445,20 +1417,16 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
             double tmp_double;
             prompt_I = (*d_Prompt).real();
             prompt_Q = (*d_Prompt).imag();
-            tmp_VE = std::abs<float>(*d_Very_Early);
             tmp_E = std::abs<float>(*d_Early);
             tmp_P = std::abs<float>(*d_Prompt);
             tmp_L = std::abs<float>(*d_Late);
-            tmp_VL = std::abs<float>(*d_Very_Late);
 
             try
             {
                     // Dump correlators output
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_VE), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_E), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_P), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_L), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_VL), sizeof(float));
                     // PROMPT I and Q (to analyze navigation symbols)
                     d_dump_file.write(reinterpret_cast<char*>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char*>(&prompt_Q), sizeof(float));
@@ -1474,18 +1442,15 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                     d_dump_file.write(reinterpret_cast<char*>(&carr_error_hz), sizeof(double));
                     d_dump_file.write(reinterpret_cast<char*>(&carr_error_filt_hz), sizeof(double));
                     //DLL commands
-                    d_dump_file.write(reinterpret_cast<char*>(&subcarrier_error_cycles), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char*>(&subcarrier_error_filt_cycles), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&code_error_chips), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&code_error_filt_chips), sizeof(double));
                     // CN0 and carrier lock test
                     d_dump_file.write(reinterpret_cast<char*>(&d_CN0_SNV_dB_Hz), sizeof(double));
                     d_dump_file.write(reinterpret_cast<char*>(&d_carrier_lock_test), sizeof(double));
                     // AUX vars (for debug purposes)
                     tmp_float = d_code_phase_chips;
                     d_dump_file.write(reinterpret_cast<char*>(&d_code_phase_chips), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char*>(&d_subcarrier_phase_cycles), sizeof(double));
                     //tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
-                    d_dump_file.write(reinterpret_cast<char*>(&code_error_chips), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char*>(&code_error_filt_chips), sizeof(double));
 
                     // ****************************************************************************
                     // mcode Variables:

@@ -198,8 +198,6 @@ private:
     gr_complex* d_early_code;
     gr_complex* d_prompt_code;
     gr_complex* d_late_code;
-    gr_complex* d_very_early_code;
-    gr_complex* d_very_late_code;
 
 
     int* d_very_early_code_phases_mcode;
@@ -214,11 +212,9 @@ private:
     gr_complex* d_late_subcarrier_mcode;
     gr_complex* d_very_late_subcarrier_mcode;
 
-    gr_complex *d_Very_Early;
     gr_complex *d_Early;
     gr_complex *d_Prompt;
     gr_complex *d_Late;
-    gr_complex *d_Very_Late;
 
     gr_complex *d_Very_Early_mcode;
     gr_complex *d_Early_mcode;
@@ -291,14 +287,10 @@ private:
     double d_acc_carrier_phase_rad_mcode;
     double d_acc_code_phase_secs_mcode;
 
-    double d_subcarrier_phase_cycles;
-    double d_subcarrier_freq_cycles;
-
     int64_t d_integer_subcarrier_phase_cycles_mcode;
     double d_fractional_subcarrier_phase_cycles_mcode;
     double d_subcarrier_freq_cycles_mcode;
 
-    double d_chips_to_cycles;
     double d_chips_to_cycles_mcode;
 
     // mcode tracking variables: need to maintain state during accumulation
@@ -353,8 +345,6 @@ private:
 
     // Bump jumping variables:
     bool d_use_bj;
-    unsigned int d_bj_ve_counter;
-    unsigned int d_bj_vl_counter;
 
     unsigned int d_bj_ve_counter_mcode;
     unsigned int d_bj_vl_counter_mcode;
@@ -371,15 +361,12 @@ private:
     // Subcarrier aiding approach:
     bool d_use_sa;
 
-    Tracking_loop_filter d_divergence_loop_filter;
     Tracking_loop_filter d_divergence_loop_filter_mcode;
 
     double d_initial_divergence_loop_filter_bandwidth;
     double d_final_divergence_loop_filter_bandwidth;
 
-    bool d_subcarrier_locked;
     bool d_subcarrier_locked_mcode;
-    double d_mean_subcarrier_error;
     double d_mean_subcarrier_error_mcode;
 
     double d_mean_code_error;

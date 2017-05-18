@@ -54,6 +54,24 @@ double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double
     return atan2(cross, dot) / (t2-t1);
 }
 
+/*
+ * FLL two quadrant arctan discriminator:
+ * \f{equation}
+ * 	\frac{\phi_2-\phi_1}{t_2-t1}=\frac{ATAN(cross,dot)}{t_1-t_2},
+ * \f}
+ * where \f$cross=I_{PS1}Q_{PS2}-I_{PS2}Q_{PS1}\f$ and \f$dot=I_{PS1}I_{PS2}+Q_{PS1}Q_{PS2}\f$,
+ * \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_1\f$, and
+ * \f$I_{PS2},Q_{PS2}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_2\f$. The output is in [radians/second].
+ */
+
+double fll_two_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
+{
+    double cross, dot;
+    dot   = prompt_s1.real()*prompt_s2.real() + prompt_s1.imag()*prompt_s2.imag();
+    cross = prompt_s1.real()*prompt_s2.imag() - prompt_s2.real()*prompt_s1.imag();
+    return atan(cross/dot) / (t2-t1);
+}
+
 
 /*
  * PLL four quadrant arctan discriminator:

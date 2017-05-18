@@ -97,8 +97,13 @@ void send_tracking_gps_input_samples(FILE *ptr_myfile, int num_remaining_samples
             fprintf(stderr, "Memory error!");
         }
 
+    printf("now i will send the samples\n");
+
     while(num_remaining_samples > 0)
         {
+
+    		//printf("num_remaining_samples = %d\n", num_remaining_samples);
+
             if (num_remaining_samples < MIN_SAMPLES_REMAINING)
                 {
                     if (flowgraph_stopped == 0)
@@ -330,6 +335,9 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
     config->set_property("Tracking_1C.pll_bw_hz", "30.0");
     config->set_property("Tracking_1C.dll_bw_hz", "2.0");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
+    config->set_property("Tracking_GPS.devicename", "/dev/uio");
+    config->set_property("Tracking_GPS.device_base", "0");
+    config->set_property("Tracking_GPS.device_range", "0");
 }
 
 

@@ -95,6 +95,8 @@ public:
 
     void start_tracking();
 
+    void reset(void);
+
 private:
     gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr tracking_fpga_sc;
     size_t item_size_;

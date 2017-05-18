@@ -176,6 +176,7 @@ fpga_multicorrelator_8sc::~fpga_multicorrelator_8sc()
 bool fpga_multicorrelator_8sc::free()
 {
     // unlock the hardware
+
     fpga_multicorrelator_8sc::unlock_channel(); // unlock the channel
 
     // free the FPGA dynamically created variables
@@ -199,7 +200,7 @@ void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
 {
     d_channel = channel;
 
-    snprintf(d_device_io_name, MAX_LENGTH_DEVICEIO_NAME, "/dev/uio%d",d_channel);
+    snprintf(d_device_io_name, MAX_LENGTH_DEVICEIO_NAME, "/dev/uio%d",d_channel + 1);
     printf("Opening Device Name : %s\n", d_device_io_name);
 
     if ((d_fd = open(d_device_io_name, O_RDWR | O_SYNC )) == -1)
@@ -245,13 +246,13 @@ void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(void)
 {
     int k,s;
     unsigned temp;
-    unsigned *ena_write_signals;
-    ena_write_signals = new unsigned[d_n_correlators];
-    ena_write_signals[0] = 0x00000000;
-    ena_write_signals[1] = 0x20000000;
+    //unsigned *ena_write_signals;
+    d_ena_write_signals = new unsigned[d_n_correlators];
+    d_ena_write_signals[0] = 0x00000000;
+    d_ena_write_signals[1] = 0x20000000;
     for (s = 2; s < d_n_correlators; s++)
         {
-            ena_write_signals[s]= ena_write_signals[s-1]*2; //0x40000000;
+            d_ena_write_signals[s]= d_ena_write_signals[s-1]*2; //0x40000000;
         }
 
     for (s = 0; s < d_n_correlators; s++)
@@ -269,11 +270,11 @@ void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(void)
                         {
                             temp = 0;
                         }
-                    d_map_base[11] = 0x0C000000 | (temp & 0xFFFF) | ena_write_signals[s];
+                    d_map_base[11] = 0x0C000000 | (temp & 0xFFFF) | d_ena_write_signals[s];
                 }
         }
 
-    delete [] ena_write_signals;
+   // delete [] ena_write_signals;
 }
 
 
@@ -361,7 +362,8 @@ void fpga_multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga(void)
     d_map_base[7] = d_correlator_length_samples - 1;
     d_map_base[9] = d_rem_carr_phase_rad_int;
     d_map_base[10] = d_phase_step_rad_int;
-    d_map_base[12] = 0; // lock the channel
+	//printf("locking the channel\n");
+	//d_map_base[12] = 0; // lock the channel
     d_map_base[13] = d_initial_sample_counter;
 }
 
@@ -383,6 +385,9 @@ void fpga_multicorrelator_8sc::read_tracking_gps_results(void)
     int k;
     readval_real = new int[d_n_correlators];
     readval_imag = new int[d_n_correlators];
+    //static int numtimes = 0;
+    //printf("read results numtimes = %d\n", numtimes);
+    //numtimes = numtimes + 1;
 
     for (k =0 ; k < d_n_correlators; k++)
         {
@@ -416,6 +421,15 @@ void fpga_multicorrelator_8sc::read_tracking_gps_results(void)
 
 void fpga_multicorrelator_8sc::unlock_channel(void)
 {
+	//printf("unlock the channel\n");
     // unlock the channel to let the next samples go through
     d_map_base[12] = 1; // unlock the channel
 }
+
+void fpga_multicorrelator_8sc::lock_channel(void)
+{
+	//printf("locking the channel\n");
+	d_map_base[12] = 0; // lock the channel
+}
+
+

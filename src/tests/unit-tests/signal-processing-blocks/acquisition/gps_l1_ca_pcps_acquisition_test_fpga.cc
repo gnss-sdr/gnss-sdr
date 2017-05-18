@@ -137,7 +137,6 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block, const char
 	for (int k=0;k<NTIMES_CYCLE_THROUGH_RX_SAMPLES_FILE;k++)
 	{
 
-
 		fseek(ptr_myfile, 0, SEEK_SET);
 
 		int transfer_size;
@@ -239,7 +238,7 @@ GpsL1CaPcpsAcquisitionTestFpga_msg_rx::~GpsL1CaPcpsAcquisitionTestFpga_msg_rx()
 {}
 
 
-// ###########################################################
+
 
 class GpsL1CaPcpsAcquisitionTestFpga: public ::testing::Test
 {
@@ -283,7 +282,10 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
     config->set_property("Acquisition.doppler_step", "500");
     config->set_property("Acquisition.repeat_satellite", "false");
     config->set_property("Acquisition.pfa", "0.0");
+    // extra configuration properties for the FPGA
     config->set_property("Acquisition.select_queue_Fpga", "0");
+    config->set_property("Acquisition.devicename", "/dev/uio0");
+
 }
 
 

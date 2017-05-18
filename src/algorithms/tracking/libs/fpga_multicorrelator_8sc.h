@@ -59,6 +59,10 @@ public:
 
     void set_channel(unsigned int channel);
     void set_initial_sample(int samples_offset);
+    void lock_channel(void);
+    void unlock_channel(void);
+
+
 
 private:
     const lv_16sc_t *d_local_code_in;
@@ -88,7 +92,7 @@ private:
     int d_rem_carr_phase_rad_int;
     int d_phase_step_rad_int;
     unsigned d_initial_sample_counter;
-
+    unsigned *d_ena_write_signals;
     // FPGA private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);
     void fpga_configure_tracking_gps_local_code(void); 
@@ -98,7 +102,9 @@ private:
     void fpga_configure_signal_parameters_in_fpga(void);
     void fpga_launch_multicorrelator_fpga(void);
     void read_tracking_gps_results(void);
-    void unlock_channel(void);
+
+    //void unlock_channel(void);
+
 };
 
 

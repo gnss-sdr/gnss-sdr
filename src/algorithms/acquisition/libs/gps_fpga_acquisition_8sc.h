@@ -39,7 +39,7 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
 #include <gnuradio/block.h>
-
+#include <gnuradio/fft/fft.h>
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
@@ -47,35 +47,55 @@
 class gps_fpga_acquisition_8sc
 {
 public:
-    gps_fpga_acquisition_8sc();
+    gps_fpga_acquisition_8sc(std::string device_name, unsigned int vector_length, unsigned int nsamples, unsigned int nsamples_total, long fs_in, long freq, unsigned int sampled_ms, unsigned select_queue);
     ~gps_fpga_acquisition_8sc();
-    bool init(unsigned int fft_size, unsigned int nsamples_total, long d_freq, unsigned int doppler_max, unsigned int doppler_step, int num_doppler_bins, long fs_in, unsigned select_queue);
-    bool set_local_code(gr_complex* fft_codes); //int code_length_chips, const lv_16sc_t* local_code_in, float *shifts_chips);
+    bool init();
+    bool set_local_code(unsigned int PRN); //int code_length_chips, const lv_16sc_t* local_code_in, float *shifts_chips);
     bool free();
     void run_acquisition(void);
     void set_phase_step(unsigned int doppler_index);
     void read_acquisition_results(uint32_t* max_index, float* max_magnitude, unsigned *initial_sample, float *power_sum);
     void block_samples();
     void unblock_samples();
+    void open_device();
+    void close_device();
+
+    /*!
+     * \brief Set maximum Doppler grid search
+     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
+     */
+    void set_doppler_max(unsigned int doppler_max)
+    {
+        d_doppler_max = doppler_max;
+    }
+
+    /*!
+     * \brief Set Doppler steps for the grid search
+     * \param doppler_step - Frequency bin of the search grid [Hz].
+     */
+    void set_doppler_step(unsigned int doppler_step)
+    {
+        d_doppler_step = doppler_step;
+    }
+
+
 private:
-    const lv_16sc_t *d_local_code_in;
-    lv_16sc_t *d_corr_out;
-    float *d_shifts_chips;
-    int d_code_length_chips;
-    int d_n_correlators;
+
+    long d_freq;
+    long d_fs_in;
+    gr::fft::fft_complex* d_fft_if;						// function used to run the fft of the local codes
 
     // data related to the hardware module and the driver
-    char d_device_io_name[11] = "/dev/uio13";  // driver io name
-    int d_fd;                                         // driver descriptor
-    volatile unsigned *d_map_base;                    // driver memory map
+    int d_fd;                                         	// driver descriptor
+    volatile unsigned *d_map_base;                    	// driver memory map
+    lv_16sc_t *d_all_fft_codes;							// memory that contains all the code ffts
+    unsigned int d_vector_length;						// number of samples incluing padding and number of ms
+    unsigned int d_nsamples; 							// number of samples not including padding
+    unsigned int d_select_queue; 						// queue selection
+    std::string d_device_name;							// HW device name
+    unsigned int d_doppler_max;							// max doppler
+    unsigned int d_doppler_step;						// doppler step
 
-    // configuration data received from the interface
-    lv_16sc_t *d_fft_codes = nullptr;
-    float *d_phase_step_rad_vector = nullptr;
-
-    unsigned int d_nsamples_total; // total number of samples in the fft including padding
-    unsigned int d_nsamples; // number of samples not including padding
-    unsigned int d_select_queue; // queue selection
 
     // FPGA private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);

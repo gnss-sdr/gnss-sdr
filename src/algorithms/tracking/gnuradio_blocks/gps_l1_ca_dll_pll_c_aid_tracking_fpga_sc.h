@@ -67,7 +67,10 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_fpga_sc(long if_freq,
                                    float pll_bw_narrow_hz,
                                    float dll_bw_narrow_hz,
                                    int extend_correlation_ms,
-                                   float early_late_space_chips);
+                                   float early_late_space_chips,
+                                   std::string device_name,
+                                   unsigned int device_base,
+                                   unsigned int device_range);
 
 
 
@@ -86,6 +89,8 @@ public:
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
+    void reset(void);
+
 private:
     friend gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr
     gps_l1_ca_dll_pll_c_aid_make_tracking_fpga_sc(long if_freq,
@@ -98,7 +103,10 @@ private:
             float pll_bw_narrow_hz,
             float dll_bw_narrow_hz,
             int extend_correlation_ms,
-            float early_late_space_chips);
+            float early_late_space_chips,
+			std::string device_name,
+			unsigned int device_base,
+			unsigned int device_range);
 
     gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc(long if_freq,
             long fs_in, unsigned
@@ -110,7 +118,10 @@ private:
             float pll_bw_narrow_hz,
             float dll_bw_narrow_hz,
             int extend_correlation_ms,
-            float early_late_space_chips);
+            float early_late_space_chips,
+            std::string device_name,
+            unsigned int device_base,
+            unsigned int device_range);
 
     // tracking configuration vars
     unsigned int d_vector_length;
@@ -131,6 +142,7 @@ private:
     //gr_complex* d_correlator_outs;
     lv_16sc_t* d_correlator_outs_16sc;
     fpga_multicorrelator_8sc multicorrelator_fpga_8sc;
+    //std::shared_ptr<fpga_multicorrelator_8sc> multicorrelator_fpga_8sc;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;

@@ -1116,11 +1116,7 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                         {
                             LOG(INFO) << "Phase lock achieved in channel " << d_channel;
                             d_carrier_locked = true;
-                            d_code_loop_filter.set_noise_bandwidth( d_final_dll_bw_hz );
                             d_carrier_loop_filter.set_noise_bandwidth( d_final_pll_bw_hz );
-                            d_early_late_code_spc_chips = d_final_early_late_code_space_chips;
-
-                            d_code_loop_filter.initialize( code_error_filt_chips );
                             d_carrier_loop_filter.initialize( carr_error_filt_hz );
 
                             d_carrier_lock_fail_counter = 0;
@@ -1141,67 +1137,68 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                                           << d_channel << "! Reverting to initial tracking state";
                                 d_carrier_lock_fail_counter = 0;
                                 d_carrier_locked = false;
-                                d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
                                 d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
-                                d_code_loop_filter.initialize( code_error_filt_chips );
                                 d_carrier_loop_filter.initialize( carr_error_filt_hz );
+                                d_code_locked=false;
+                                d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
+                                d_code_loop_filter.initialize( code_error_filt_chips );
                                 d_early_late_code_spc_chips = d_initial_early_late_code_space_chips;
                                 //d_very_early_late_code_spc_chips = d_initial_very_early_late_code_space_chips;
+                                d_mean_code_error = 0.0;
+                                d_cn0_estimation_counter = 0;
                             }
-                        else
-                        {
-                            if( d_code_locked )
-                            {
-                                if( d_mean_code_error > 0.1 )
-                                {
-                                    d_code_locked = false;
-
-                                    d_divergence_loop_filter.set_noise_bandwidth(
-                                            d_initial_divergence_loop_filter_bandwidth );
-
-                                    std::stringstream ss("");
-
-                                    ss << "Loss of code lock in channel "
-                                        << d_channel << "!"
-                                        << "[PRN: " << d_acquisition_gnss_synchro->PRN
-                                        << ". @ " << static_cast< double >( d_sample_counter )/
-                                        static_cast<double>( d_fs_in )
-                                        << "]";
-
-                                    LOG(INFO) << ss.str();
-
-                                    std::cout << ss.str() << std::endl;;
-                                }
-                            }
-                            else // if d_code_locked
-                            {
-                                if( d_mean_code_error < 0.05 )
-                                {
-                                    d_code_locked = true;
-                                    d_divergence_loop_filter.set_noise_bandwidth(
-                                            d_final_divergence_loop_filter_bandwidth );
-
-                                    std::stringstream ss("");
-
-                                    ss << "Code lock achieved in channel "
-                                        << d_channel << "!"
-                                        << "[PRN: " << d_acquisition_gnss_synchro->PRN
-                                        << ". @ " << static_cast< double >( d_sample_counter )/
-                                        static_cast<double>( d_fs_in )
-                                        << "]";
-
-                                    LOG(INFO) << ss.str();
-
-                                    std::cout << ss.str() << std::endl;;
-                                }
-                            }
-
-                        }
-
-
                     }
 
-                    d_mean_subcarrier_error = 0.0;
+                    if( d_code_locked )
+                    {
+                        if( d_mean_code_error > 0.1 )
+                        {
+                            d_code_locked = false;
+                            d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
+                            d_early_late_code_spc_chips = d_initial_early_late_code_space_chips;
+                            d_code_loop_filter.initialize( code_error_filt_chips );
+                            d_mean_code_error = 0.0;
+                            d_cn0_estimation_counter = 0;
+
+                            std::stringstream ss("");
+
+                            ss << "Loss of code lock in channel "
+                                << d_channel << "!"
+                                << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                << ". @ " << static_cast< double >( d_sample_counter )/
+                                static_cast<double>( d_fs_in )
+                                << "]";
+
+                            LOG(INFO) << ss.str();
+
+                            std::cout << ss.str() << std::endl;;
+                        }
+                    }
+                    else // if d_code_locked
+                    {
+                        if( d_mean_code_error < 0.05 )
+                        {
+                            d_code_locked = true;
+                            d_code_loop_filter.set_noise_bandwidth( d_final_dll_bw_hz );
+                            d_early_late_code_spc_chips = d_final_early_late_code_space_chips;
+                            d_code_loop_filter.initialize( code_error_filt_chips );
+
+                            std::stringstream ss("");
+
+                            ss << "Code lock achieved in channel "
+                                << d_channel << "!"
+                                << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                << ". @ " << static_cast< double >( d_sample_counter )/
+                                static_cast<double>( d_fs_in )
+                                << "]";
+
+                            LOG(INFO) << ss.str();
+
+                            std::cout << ss.str() << std::endl;;
+                        }
+                    }
+
+
                     d_mean_code_error = 0.0;
                 }
 

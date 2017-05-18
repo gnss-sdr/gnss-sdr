@@ -1070,19 +1070,14 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
             //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
-                {
-                    // fill buffer with prompt correlator output values
-                    d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
-                    d_cn0_estimation_counter++;
+            // fill buffer with prompt correlator output values
+            d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
+            d_cn0_estimation_counter++;
 
-                    d_mean_code_error += std::fabs( code_error_chips );
-
-                }
-            else
+            d_mean_code_error += std::fabs( code_error_chips );
+            if (d_cn0_estimation_counter >= CN0_ESTIMATION_SAMPLES )
                 {
                     d_cn0_estimation_counter = 0;
-
 
                     d_mean_code_error /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
                     // Code lock indicator
@@ -1219,26 +1214,23 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
             if( d_mcode_tracking_enabled )
             {
 
-                if (d_cn0_estimation_counter_mcode < CN0_ESTIMATION_SAMPLES)
-                    {
-                        d_cn0_estimation_counter_mcode++;
+                if( d_mcode_accumulation_index == 0 )
+                {
+                    d_mean_subcarrier_error_mcode += std::fabs(
+                            d_subcarrier_error_cycles_mcode );
 
-                        d_mean_subcarrier_error_mcode += std::fabs(
-                                d_subcarrier_error_cycles_mcode );
+                    d_mean_code_error_mcode += std::fabs( d_code_error_chips_veml_mcode );
 
-                        d_mean_code_error_mcode += std::fabs( d_code_error_chips_veml_mcode );
-                    }
-                else
-                    {
-                        d_cn0_estimation_counter_mcode = 0;
+                    d_cn0_estimation_counter_mcode++;
 
-                        d_mean_subcarrier_error_mcode /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
-
-                        d_mean_code_error_mcode /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
-
-
-                        if( d_mcode_accumulation_index == 0 )
+                    if (d_cn0_estimation_counter_mcode >= CN0_ESTIMATION_SAMPLES )
                         {
+                            d_cn0_estimation_counter_mcode = 0;
+
+                            d_mean_subcarrier_error_mcode /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
+
+                            d_mean_code_error_mcode /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
+
 
                             if( d_subcarrier_locked_mcode )
                             {
@@ -1354,11 +1346,12 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                                 }
 
                             }
-                        } // if d_mcode_accumulation_index == 0
 
-                        d_mean_subcarrier_error_mcode = 0.0;
-                        d_mean_code_error_mcode = 0.0;
-                    }
+                            d_mean_subcarrier_error_mcode = 0.0;
+                            d_mean_code_error_mcode = 0.0;
+                        } 
+
+                    }// if d_mcode_accumulation_index == 0
 
 
             } // d_mcode_tracking_enabled

@@ -313,10 +313,10 @@ private:
     int d_cn0_estimation_counter;
     int d_cn0_estimation_counter_mcode;
     gr_complex* d_Prompt_buffer;
-    float d_carrier_lock_test;
+    double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_CN0_SNV_dB_Hz_mcode;
-    float d_carrier_lock_threshold;
+    double d_carrier_lock_threshold;
     int d_carrier_lock_fail_counter;
     int d_carrier_lock_success_counter;
     int d_fll_epochs;

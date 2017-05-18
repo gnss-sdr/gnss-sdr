@@ -238,7 +238,7 @@ gps_l1_mcode_codeless_tracking_cc::gps_l1_mcode_codeless_tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the code replica sampled 1x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
+    d_ca_code = static_cast<gr_complex*>(volk_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS + 2) * sizeof(gr_complex), volk_get_alignment()));
 
     d_early_code= static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
     d_prompt_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
@@ -424,9 +424,8 @@ void gps_l1_mcode_codeless_tracking_cc::start_tracking()
 
 
     // generate local reference ALWAYS starting at chip 1 (1 samples per chip)
-    gps_l1_ca_code_gen_complex_sampled(&d_ca_code[1],
+    gps_l1_ca_code_gen_complex(&d_ca_code[1],
             d_acquisition_gnss_synchro->PRN,
-            d_fs_in,
             0);
     d_ca_code[0] = d_ca_code[static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS)];
     d_ca_code[static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) + 1] = d_ca_code[1];
@@ -886,7 +885,7 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
             // ################## VE - VL Processing ############################################
 
             code_error_chips = dll_nc_e_minus_l_normalized(
-                    *d_Very_Early, *d_Very_Late );
+                    *d_Early, *d_Late );
 
             double corr_slope = 1.0;
             code_error_chips *= 2.0*( 1 - corr_slope*d_early_late_code_spc_chips) / corr_slope;
@@ -1121,7 +1120,7 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                             d_carrier_loop_filter.set_noise_bandwidth( d_final_pll_bw_hz );
                             d_early_late_code_spc_chips = d_final_early_late_code_space_chips;
 
-                            d_code_loop_filter.initialize( subcarrier_error_filt_cycles );
+                            d_code_loop_filter.initialize( code_error_filt_chips );
                             d_carrier_loop_filter.initialize( carr_error_filt_hz );
 
                             d_carrier_lock_fail_counter = 0;
@@ -1144,7 +1143,7 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                                 d_carrier_locked = false;
                                 d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
                                 d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
-                                d_code_loop_filter.initialize( subcarrier_error_filt_cycles );
+                                d_code_loop_filter.initialize( code_error_filt_chips );
                                 d_carrier_loop_filter.initialize( carr_error_filt_hz );
                                 d_early_late_code_spc_chips = d_initial_early_late_code_space_chips;
                                 //d_very_early_late_code_spc_chips = d_initial_very_early_late_code_space_chips;

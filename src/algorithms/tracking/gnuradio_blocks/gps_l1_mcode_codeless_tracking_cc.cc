@@ -176,6 +176,7 @@ gps_l1_mcode_codeless_tracking_cc::gps_l1_mcode_codeless_tracking_cc(
             boost::bind( &gps_l1_mcode_codeless_tracking_cc::handle_gnss_message, this, _1 ) );
 
     d_carrier_locked = false;
+    d_frequency_locked = false;
     d_code_locked = false;
     d_code_locked_mcode = false;
 
@@ -205,6 +206,7 @@ gps_l1_mcode_codeless_tracking_cc::gps_l1_mcode_codeless_tracking_cc(
 
     d_code_loop_filter = Tracking_loop_filter(GPS_L1_CA_CODE_PERIOD, dll_initial_bw_hz, dll_loop_order, false);
     d_carrier_loop_filter = Tracking_loop_filter(GPS_L1_CA_CODE_PERIOD, pll_initial_bw_hz, pll_loop_order, false);
+    d_frequency_loop_filter = Tracking_loop_filter(GPS_L1_CA_CODE_PERIOD, pll_initial_bw_hz, pll_loop_order-1, true);
     d_aid_code_with_carrier = aid_code_with_carrier;
 
     // Should we close the mcode loops?
@@ -324,6 +326,9 @@ gps_l1_mcode_codeless_tracking_cc::gps_l1_mcode_codeless_tracking_cc(
     d_carrier_lock_success_counter = 0;
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
+    d_fll_epochs = 0;
+    d_max_fll_epochs = 250;
+
     systemName["G"] = std::string("GPS");
     *d_Early = gr_complex(0,0);
     *d_Prompt = gr_complex(0,0);
@@ -408,13 +413,18 @@ void gps_l1_mcode_codeless_tracking_cc::start_tracking()
     // DLL/PLL filter initialization
     d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
     d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
+    d_frequency_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
 
-    d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); // initialize the carrier filter
+    d_frequency_loop_filter.initialize(d_acq_carrier_doppler_hz); // initialize the carrier filter
+    d_carrier_loop_filter.initialize( 0 );
     float code_doppler_chips = d_acq_carrier_doppler_hz *( GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ;
 
-    d_code_loop_filter.initialize(code_doppler_chips);    // initialize the code filter
-
-
+    if( d_aid_code_with_carrier ){
+        d_code_loop_filter.initialize(0.0);    // initialize the code filter
+    }
+    else{
+        d_code_loop_filter.initialize(code_doppler_chips);    // initialize the code filter
+    }
 
     // generate local reference ALWAYS starting at chip 1 (1 samples per chip)
     gps_l1_ca_code_gen_complex(&d_ca_code[1],
@@ -428,6 +438,8 @@ void gps_l1_mcode_codeless_tracking_cc::start_tracking()
     d_rem_code_phase_samples = 0.0;
     d_rem_carr_phase_rad = 0;
     d_acc_carrier_phase_rad = 0;
+
+    d_fll_epochs = 0;
 
     d_acc_code_phase_secs = 0;
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
@@ -445,6 +457,7 @@ void gps_l1_mcode_codeless_tracking_cc::start_tracking()
     d_enable_tracking = true;
     d_code_locked = false;
     d_carrier_locked = false;
+    d_frequency_locked = false;
     d_cn0_estimation_counter = 0;
 
     d_code_locked = false;
@@ -843,13 +856,33 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
             // consume the input samples:
             d_sample_counter += d_current_prn_length_samples;
 
-            // ################## PLL ##########################################################
-            // PLL discriminator
-            carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / static_cast<float>(GPS_TWO_PI);
-            // Carrier discriminator filter
-            carr_error_filt_hz = d_carrier_loop_filter.apply(carr_error_hz);
-            // New carrier Doppler frequency estimation
-            d_carrier_doppler_hz = carr_error_filt_hz;
+            // ################## FLL/PLL ##########################################################
+            if( !d_frequency_locked ){
+                d_fll_epochs++;
+                // Only do the FLL every second correlator dump
+                if( d_fll_epochs % 2 ==  0){
+                    // FLL discriminator
+                    int buf_ind = d_cn0_estimation_counter - 1;
+                    if( buf_ind < 0 ){
+                        buf_ind += CN0_ESTIMATION_SAMPLES;
+                    }
+                    // FLL discriminator
+                    double T = static_cast< double >( d_current_prn_length_samples )/d_fs_in;
+                    carr_error_hz = fll_two_quadrant_atan(d_Prompt_buffer[buf_ind], *d_Prompt, 0, T) / static_cast<float>(GPS_TWO_PI);
+                    // Carrier discriminator filter
+                    carr_error_filt_hz = d_frequency_loop_filter.apply(carr_error_hz);
+                    // New carrier Doppler frequency estimation
+                    d_carrier_doppler_hz = carr_error_filt_hz;
+                }
+            }
+            else {
+                // PLL discriminator
+                carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / static_cast<float>(GPS_TWO_PI);
+                // Carrier discriminator filter
+                carr_error_filt_hz = d_carrier_loop_filter.apply(carr_error_hz);
+                // New carrier Doppler frequency estimation
+                d_carrier_doppler_hz = carr_error_filt_hz;
+            }
 
             float code_doppler_chips = ((d_carrier_doppler_hz * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ);
 
@@ -1058,19 +1091,26 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
 
-                    // Loss of lock detection
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
-                        {
-                            d_carrier_lock_fail_counter++;
-                            d_carrier_lock_success_counter = 0;
+                    if( not d_frequency_locked ){
+                        if( d_fll_epochs >= 2*d_max_fll_epochs ){
+                            d_frequency_locked = true;
+                            d_carrier_loop_filter.initialize( d_carrier_doppler_hz );
                         }
-                    else
-                        {
-                            d_carrier_lock_success_counter++;
-                            if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
-                        }
-                    if( not d_carrier_locked )
-                    {
+                    }
+                    else if( not d_carrier_locked ){
+
+                        // Loss of lock detection
+                        if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
+                            {
+                                d_carrier_lock_fail_counter++;
+                                d_carrier_lock_success_counter = 0;
+                            }
+                        else
+                            {
+                                d_carrier_lock_success_counter++;
+                                if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
+                            }
+
                         if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                             {
                                 std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
@@ -1091,7 +1131,7 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                             LOG(INFO) << "Phase lock achieved in channel " << d_channel;
                             d_carrier_locked = true;
                             d_carrier_loop_filter.set_noise_bandwidth( d_final_pll_bw_hz );
-                            d_carrier_loop_filter.initialize( carr_error_filt_hz );
+                            d_carrier_loop_filter.initialize( d_carrier_doppler_hz );
 
                             d_carrier_lock_fail_counter = 0;
 
@@ -1112,7 +1152,7 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                                 d_carrier_lock_fail_counter = 0;
                                 d_carrier_locked = false;
                                 d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
-                                d_carrier_loop_filter.initialize( carr_error_filt_hz );
+                                d_carrier_loop_filter.initialize( d_carrier_doppler_hz );
                                 d_code_locked=false;
                                 d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
                                 d_code_loop_filter.initialize( code_error_filt_chips );

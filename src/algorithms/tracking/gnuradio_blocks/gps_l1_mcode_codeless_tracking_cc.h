@@ -238,6 +238,7 @@ private:
     // PLL and DLL filter library
     Tracking_loop_filter d_code_loop_filter;
     Tracking_loop_filter d_carrier_loop_filter;
+    Tracking_loop_filter d_frequency_loop_filter;
 
 
     int d_pll_loop_order;
@@ -318,12 +319,16 @@ private:
     float d_carrier_lock_threshold;
     int d_carrier_lock_fail_counter;
     int d_carrier_lock_success_counter;
+    int d_fll_epochs;
+    int d_max_fll_epochs;
 
     // control vars
     bool d_enable_tracking;
     bool d_pull_in;
 
     bool d_carrier_locked;
+    bool d_frequency_locked;
+
     bool d_code_locked;
     bool d_code_locked_mcode;
 

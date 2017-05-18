@@ -58,16 +58,6 @@ galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
 }
 
 
-void galileo_e5a_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
-{
-    //ninput_items_required[0] = GALILEO_FNAV_SAMPLES_PER_PAGE; // set the required sample history
-    if (noutput_items != 0)
-        {
-            ninput_items_required[0] = GALILEO_FNAV_CODES_PER_PREAMBLE;
-        }
-}
-
-
 void galileo_e5a_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, int *page_part_bits)
 {
     //    int CodeLength = 240;

@@ -71,6 +71,7 @@ const int GALILEO_E1_HISTORY_DEEP=100;
 #define GALILEO_INAV_PREAMBLE {0, 1, 0, 1, 1, 0, 0, 0, 0, 0}
 
 const int GALILEO_INAV_PREAMBLE_LENGTH_BITS = 10;
+const double GALILEO_INAV_PAGE_PART_WITH_PREABLE_SECONDS = 2.0 + GALILEO_INAV_PREAMBLE_LENGTH_BITS*Galileo_E1_CODE_PERIOD;
 const int GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS = 250;
 const int GALILEO_INAV_PAGE_PART_SYMBOLS = 250; //!< Each Galileo INAV pages are composed of two parts (even and odd) each of 250 symbols, including preamble. See Galileo ICD 4.3.2
 const int GALILEO_INAV_PAGE_SYMBOLS = 500;      //!< The complete Galileo INAV page length

@@ -39,7 +39,7 @@
 #include "gps_l1_ca_subframe_fsm.h"
 #include "concurrent_queue.h"
 #include "gnss_satellite.h"
-
+#include "gnss_synchro.h"
 
 
 class gps_l1_ca_telemetry_decoder_cc;
@@ -66,12 +66,6 @@ public:
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    /*!
-     * \brief Function which tells the scheduler how many input items
-     *        are required to produce noutput_items output items.
-     */
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
 private:
     friend gps_l1_ca_telemetry_decoder_cc_sptr
     gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
@@ -80,8 +74,6 @@ private:
 
     bool gps_word_parityCheck(unsigned int gpsword);
 
-    // constants
-    //unsigned short int d_preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS];
     // class private vars
 
     int *d_preambles_symbols;
@@ -89,8 +81,8 @@ private:
     bool d_flag_frame_sync;
 
     // symbols
-    std::deque<double> d_symbol_history;
-    std::deque<int> d_correlation_length_ms_history;
+    std::deque<Gnss_Synchro> d_symbol_history;
+
     double d_symbol_accumulator;
     short int d_symbol_accumulator_counter;
 

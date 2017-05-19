@@ -53,6 +53,7 @@
 #include "rtklib_rtkcmn.h"
 //#include <stdarg.h>
 //#include <ctype.h>
+#include <cstdio>
 #include <dirent.h>
 #include <iostream>
 //#include <time.h>
@@ -1126,6 +1127,23 @@ void matfprint(const double A[], int n, int m, int p, int q, FILE *fp)
         }
 }
 
+void matsprint(const double A[], int n, int m, int p, int q, std::string & buffer)
+{
+    int i, j;
+    buffer += '\n';
+    for (i = 0; i < n; i++)
+        {
+            for (j = 0; j < m; j++)
+                {
+                    char buf_[256];
+                    sprintf(buf_, " %*.*f", p, q, A[i+j*n]);
+                    std::string s(buf_);
+                    buffer = buffer + s;
+                }
+            buffer += '\n';
+        }
+}
+
 
 void matprint(const double A[], int n, int m, int p, int q)
 {
@@ -2069,10 +2087,10 @@ void eci2ecef(gtime_t tutc, const double *erpv, double *U, double *gmst)
     if (gmst) *gmst = gmst_;
 
     trace(5, "gmst=%.12f gast=%.12f\n", gmst_, gast);
-    trace(5, "P=\n"); //tracemat(5, P, 3, 3, 15, 12);
-    trace(5, "N=\n"); //tracemat(5, N, 3, 3, 15, 12);
-    trace(5, "W=\n"); //tracemat(5, W, 3, 3, 15, 12);
-    trace(5, "U=\n"); //tracemat(5, U, 3, 3, 15, 12);
+    trace(5, "P=\n"); tracemat(5, P, 3, 3, 15, 12);
+    trace(5, "N=\n"); tracemat(5, N, 3, 3, 15, 12);
+    trace(5, "W=\n"); tracemat(5, W, 3, 3, 15, 12);
+    trace(5, "U=\n"); tracemat(5, U, 3, 3, 15, 12);
 }
 
 
@@ -3039,12 +3057,11 @@ void tracet(int level, const char *format, ...)
     fflush(fp_trace);
 }
 
-void tracemat(int level __attribute__((unused)), const double *A __attribute__((unused)),
-int n __attribute__((unused)), int m __attribute__((unused)), int p __attribute__((unused)),
-int q __attribute__((unused)))
+void tracemat(int level, const double *A, int n, int m, int p, int q)
 {
-//    if (!fp_trace||level>level_trace) return;
-//    matfprint(A,n,m,p,q,fp_trace); fflush(fp_trace);
+    std::string buffer_;
+    matsprint(A, n, m, p, q, buffer_);
+    VLOG(level) << buffer_;
 }
 
 

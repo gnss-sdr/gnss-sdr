@@ -143,6 +143,7 @@ int filter(double *x, double *P, const double *H, const double *v,
 int smoother(const double *xf, const double *Qf, const double *xb,
                     const double *Qb, int n, double *xs, double *Qs);
 void matfprint(const double A[], int n, int m, int p, int q, FILE *fp);
+void matsprint(const double A[], int n, int m, int p, int q, std::string & buffer);
 void matprint(const double A[], int n, int m, int p, int q);
 double str2num(const char *s, int i, int n);
 int str2time(const char *s, int i, int n, gtime_t *t);

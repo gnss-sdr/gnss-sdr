@@ -274,7 +274,6 @@ int Static_Position_System_Test::configure_receiver()
 
             const int display_rate_ms = 1000;
             const int output_rate_ms = 1000;
-            const int averaging_depth = 1;
 
             config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
 

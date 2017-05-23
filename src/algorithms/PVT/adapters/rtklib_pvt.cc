@@ -350,6 +350,12 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     double sigma_pos = configuration->property(role + ".sigma_pos", 0.0);
 
+    double code_phase_error_ratio_l1 = configuration->property(role + ".code_phase_error_ratio_l1", 100.0);
+    double code_phase_error_ratio_l2 = configuration->property(role + ".code_phase_error_ratio_l2", 100.0);
+    double code_phase_error_ratio_l5 = configuration->property(role + ".code_phase_error_ratio_l5", 100.0);
+    double carrier_phase_error_factor_a = configuration->property(role + ".carrier_phase_error_factor_a", 0.003);
+    double carrier_phase_error_factor_b = configuration->property(role + ".carrier_phase_error_factor_b", 0.003);
+
     snrmask_t snrmask = { {}, {{},{}} };
 
     prcopt_t rtklib_configuration_options = {positioning_mode, /* positioning mode (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
@@ -379,8 +385,8 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             0,   /* base position for relative mode */
                  /*    0:pos in prcopt,  1:average of single pos, */
                  /*    2:read from file, 3:rinex header, 4:rtcm pos */
-            {100.0,100.0,100.0},         /* eratio[NFREQ] code/phase error ratio */
-            {100.0,0.003,0.003,0.0,1.0}, /* err[5]:  measurement error factor [0]:reserved, [1-3]:error factor a/b/c of phase (m) , [4]:doppler frequency (hz) */
+            {code_phase_error_ratio_l1,code_phase_error_ratio_l2,code_phase_error_ratio_l5}, /* eratio[NFREQ] code/phase error ratio */
+            {100.0,carrier_phase_error_factor_a,carrier_phase_error_factor_b,0.0,1.0}, /* err[5]:  measurement error factor [0]:reserved, [1-3]:error factor a/b/c of phase (m) , [4]:doppler frequency (hz) */
             {bias_0,iono_0,trop_0},      /* std[3]: initial-state std [0]bias,[1]iono [2]trop*/
             {sigma_bias,sigma_iono,sigma_trop,sigma_acch,sigma_accv,sigma_pos}, /* prn[6] process-noise std */
             5e-12,                       /* sclkstab: satellite clock stability (sec/sec) */

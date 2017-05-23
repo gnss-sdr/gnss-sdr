@@ -73,18 +73,16 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_fpga_sc(
         int extend_correlation_ms,
         float early_late_space_chips,
         std::string device_name,
-        unsigned int device_base,
-        unsigned int device_range)
+        unsigned int device_base)
 {
     return gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr(new gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc(if_freq,
             fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz, extend_correlation_ms, early_late_space_chips,
-            device_name, device_base, device_range));
+            device_name, device_base));
 }
 
 
 void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::msg_handler_preamble_index(pmt::pmt_t msg)
 {
-    //pmt::print(msg);
     DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN);
     if (d_enable_extended_integration == false) //avoid re-setting preamble indicator
         {
@@ -107,12 +105,14 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::gps_l1_ca_dll_pll_c_aid_tracking_fpga_
         int extend_correlation_ms,
         float early_late_space_chips,
         std::string device_name,
-        unsigned int device_base,
-        unsigned int device_range) :
+        unsigned int device_base) :
         gr::block("gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc", gr::io_signature::make(0, 0, sizeof(lv_16sc_t)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 
 {
+
+
+
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->set_msg_handler(pmt::mp("preamble_timestamp_s"),
@@ -158,9 +158,8 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::gps_l1_ca_dll_pll_c_aid_tracking_fpga_
     d_local_code_shift_chips[1] = 0.0;
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
-    //multicorrelator_fpga_8sc= std::make_shared<fpga_multicorrelator_8sc>();
-    multicorrelator_fpga_8sc.init(d_n_correlator_taps);
-    //multicorrelator_fpga_8sc->init(d_n_correlator_taps);
+    // create multicorrelator class
+    multicorrelator_fpga_8sc= std::make_shared<fpga_multicorrelator_8sc>(d_n_correlator_taps, device_name, device_base);
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
@@ -209,6 +208,8 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::gps_l1_ca_dll_pll_c_aid_tracking_fpga_
     d_preamble_timestamp_s = 0.0;
     d_carr_phase_error_secs_Ti = 0.0;
     //set_min_output_buffer((long int)300);
+
+
 }
 
 
@@ -267,8 +268,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::start_tracking()
     gps_l1_ca_code_gen_complex(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
     volk_gnsssdr_32fc_convert_16ic(d_ca_code_16sc, d_ca_code, static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    multicorrelator_fpga_8sc.set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code_16sc, d_local_code_shift_chips);
-    //multicorrelator_fpga_8sc->set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code_16sc, d_local_code_shift_chips);
+    multicorrelator_fpga_8sc->set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code_16sc, d_local_code_shift_chips);
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs_16sc[n] = lv_16sc_t(0,0);
@@ -296,8 +296,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::start_tracking()
     d_preamble_synchronized = false;
 
     // lock the channel
-    multicorrelator_fpga_8sc.lock_channel();
-
+    multicorrelator_fpga_8sc->lock_channel();
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
             << " Code Phase correction [samples]=" << delay_correction_samples
@@ -315,8 +314,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::~gps_l1_ca_dll_pll_c_aid_tracking_fpga
     volk_gnsssdr_free(d_correlator_outs_16sc);
 
     delete[] d_Prompt_buffer;
-    multicorrelator_fpga_8sc.free();
-    //multicorrelator_fpga_8sc->free();
+    multicorrelator_fpga_8sc->free();
 }
 
 
@@ -324,6 +322,10 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::~gps_l1_ca_dll_pll_c_aid_tracking_fpga
 int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
+
+    // samples offset
+    int samples_offset;
+
     // Block input data and block output stream pointers
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
@@ -341,7 +343,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
             // Receiver signal alignment
             if (d_pull_in == true)
                 {
-                    int samples_offset;
                     double acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
@@ -354,34 +355,27 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_cycles * GPS_TWO_PI;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     *out[0] = current_synchro_data;
-                    consume_each(samples_offset); // shift input to perform alignment with local replica
-                    multicorrelator_fpga_8sc.set_initial_sample(samples_offset);
-                    //multicorrelator_fpga_8sc->set_initial_sample(samples_offset);
+                    //consume_each(samples_offset); // shift input to perform alignment with local replica
+                    multicorrelator_fpga_8sc->set_initial_sample(samples_offset);
 
                     return 1;
                 }
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
-            //multicorrelator_fpga_8sc.set_input_output_vectors(d_correlator_outs_16sc, in);
-            multicorrelator_fpga_8sc.set_output_vectors(d_correlator_outs_16sc);
-            //multicorrelator_fpga_8sc->set_output_vectors(d_correlator_outs_16sc);
-            multicorrelator_fpga_8sc.Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
+            multicorrelator_fpga_8sc->set_output_vectors(d_correlator_outs_16sc);
+            multicorrelator_fpga_8sc->Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
                 d_carrier_phase_step_rad,
                 d_rem_code_phase_chips,
                 d_code_phase_step_chips,
                 d_correlation_length_samples);
-//            multicorrelator_fpga_8sc->Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
-//                d_carrier_phase_step_rad,
-//                d_rem_code_phase_chips,
-//                d_code_phase_step_chips,
-//                d_correlation_length_samples);
 
             // ####### coherent intergration extension
             // keep the last symbols
             d_E_history.push_back(d_correlator_outs_16sc[0]); // save early output
             d_P_history.push_back(d_correlator_outs_16sc[1]); // save prompt output
             d_L_history.push_back(d_correlator_outs_16sc[2]); // save late output
+
 
             if (static_cast<int>(d_P_history.size()) > d_extend_correlation_ms)
                 {
@@ -540,7 +534,10 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
                                 }
                             else
                                 {
-                                    if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
+                                    if (d_carrier_lock_fail_counter > 0)
+                                    	{
+                                    		d_carrier_lock_fail_counter--;
+                                    	}
                                 }
                             if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                                 {
@@ -549,7 +546,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
                                     this->message_port_pub(pmt::mp("events"), pmt::from_long(3));//3 -> loss of lock
                                     d_carrier_lock_fail_counter = 0;
                                     d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
-                                    multicorrelator_fpga_8sc.unlock_channel();
+                                    multicorrelator_fpga_8sc->unlock_channel();
                                 }
                         }
                     // ########### Output the tracking data to navigation and PVT ##########
@@ -650,7 +647,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
             }
         }
 
-    consume_each(d_correlation_length_samples); // this is necessary in gr::block derivates
+    //consume_each(d_correlation_length_samples); // this is necessary in gr::block derivates
     d_sample_counter += d_correlation_length_samples; //count for the processed samples
 
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
@@ -660,8 +657,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
 void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::set_channel(unsigned int channel)
 {
     d_channel = channel;
-    multicorrelator_fpga_8sc.set_channel(d_channel);
-    //multicorrelator_fpga_8sc->set_channel(d_channel);
+    multicorrelator_fpga_8sc->set_channel(d_channel);
     LOG(INFO) << "Tracking Channel set to " << d_channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -692,5 +688,5 @@ void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::set_gnss_synchro(Gnss_Synchro* p_
 
 void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::reset(void)
 {
-	multicorrelator_fpga_8sc.unlock_channel();
+	multicorrelator_fpga_8sc->unlock_channel();
 }

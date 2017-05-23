@@ -48,9 +48,8 @@
 class fpga_multicorrelator_8sc
 {
 public:
-    fpga_multicorrelator_8sc();
+    fpga_multicorrelator_8sc(int n_correlators, std::string device_name, unsigned int device_base);
     ~fpga_multicorrelator_8sc();
-    bool init(int n_correlators);
     bool set_local_code_and_taps(int code_length_chips, const lv_16sc_t* local_code_in, float *shifts_chips);
     bool set_output_vectors(lv_16sc_t* corr_out);
     void update_local_code(float rem_code_phase_chips);
@@ -93,6 +92,15 @@ private:
     int d_phase_step_rad_int;
     unsigned d_initial_sample_counter;
     unsigned *d_ena_write_signals;
+
+    // driver
+    std::string d_device_name;
+    unsigned int d_device_base;
+
+
+    // results
+    //int *d_readval_real;
+    //int *d_readval_imag;
     // FPGA private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);
     void fpga_configure_tracking_gps_local_code(void); 

@@ -65,7 +65,9 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
     float early_late_space_chips;
     std::string device_name;
     unsigned int device_base;
-    unsigned int device_range;
+
+
+
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     f_if = configuration->property(role + ".if", 0);
@@ -84,7 +86,6 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
     std::string default_device_name = "/dev/uio";
     device_name = configuration->property(role + ".devicename", default_device_name);
     device_base = configuration->property(role + ".device_base", 1);
-    device_range = configuration->property(role + ".device_range", 1);
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
@@ -105,8 +106,7 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
                     extend_correlation_ms,
                     early_late_space_chips,
                     device_name,
-                    device_base,
-                    device_range
+                    device_base
                     );
             DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
         }
@@ -117,6 +117,9 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
             //  LOG(WARNING) << item_type_ << " unknown tracking item type";
             LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
         }
+
+
+
     channel_ = 0;
 }
 

@@ -69,8 +69,7 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_fpga_sc(long if_freq,
                                    int extend_correlation_ms,
                                    float early_late_space_chips,
                                    std::string device_name,
-                                   unsigned int device_base,
-                                   unsigned int device_range);
+                                   unsigned int device_base);
 
 
 
@@ -105,8 +104,7 @@ private:
             int extend_correlation_ms,
             float early_late_space_chips,
 			std::string device_name,
-			unsigned int device_base,
-			unsigned int device_range);
+			unsigned int device_base);
 
     gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc(long if_freq,
             long fs_in, unsigned
@@ -120,8 +118,7 @@ private:
             int extend_correlation_ms,
             float early_late_space_chips,
             std::string device_name,
-            unsigned int device_base,
-            unsigned int device_range);
+            unsigned int device_base);
 
     // tracking configuration vars
     unsigned int d_vector_length;
@@ -139,10 +136,9 @@ private:
     gr_complex* d_ca_code;
     lv_16sc_t* d_ca_code_16sc;
     float* d_local_code_shift_chips;
-    //gr_complex* d_correlator_outs;
     lv_16sc_t* d_correlator_outs_16sc;
-    fpga_multicorrelator_8sc multicorrelator_fpga_8sc;
-    //std::shared_ptr<fpga_multicorrelator_8sc> multicorrelator_fpga_8sc;
+    //fpga_multicorrelator_8sc multicorrelator_fpga_8sc;
+    std::shared_ptr<fpga_multicorrelator_8sc> multicorrelator_fpga_8sc;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;

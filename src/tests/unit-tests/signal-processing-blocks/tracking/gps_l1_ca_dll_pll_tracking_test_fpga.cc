@@ -66,7 +66,7 @@
 #define MAX_NUM_TEST_CASES 20
 #define MAX_INPUT_SAMPLES_PER_TEST_CASE (8184)
 #define MAX_INPUT_SAMPLES_TOTAL MAX_INPUT_SAMPLES_PER_TEST_CASE*MAX_NUM_TEST_CASES
-#define DMA_TRANSFER_SIZE 2046
+#define DMA_TRANSFER_SIZE 8000  //2046
 #define MIN_SAMPLES_REMAINING 20000 // number of remaining samples in the DMA that causes the CPU to stop the flowgraph (it has to be a bit alrger than 2x max packet size)
 
 
@@ -97,42 +97,40 @@ void send_tracking_gps_input_samples(FILE *ptr_myfile, int num_remaining_samples
             fprintf(stderr, "Memory error!");
         }
 
-    printf("now i will send the samples\n");
-
     while(num_remaining_samples > 0)
-        {
+	{
 
-    		//printf("num_remaining_samples = %d\n", num_remaining_samples);
 
-            if (num_remaining_samples < MIN_SAMPLES_REMAINING)
-                {
-                    if (flowgraph_stopped == 0)
-                        {
-                            // stop top module
-                            top_block->stop();
-                            flowgraph_stopped = 1;
-                        }
-                }
-            if (num_remaining_samples > DMA_TRANSFER_SIZE)
-                {
+	   if (num_remaining_samples < MIN_SAMPLES_REMAINING)
+		   {
+			   if (flowgraph_stopped == 0)
+				   {
+					   // stop top module
+					   top_block->stop();
+					   flowgraph_stopped = 1;
+				   }
+		   }
+		if (num_remaining_samples > DMA_TRANSFER_SIZE)
+			{
 
-                    fread(buffer, DMA_TRANSFER_SIZE, 1, ptr_myfile);
+				fread(buffer, DMA_TRANSFER_SIZE, 1, ptr_myfile);
 
-                    assert( DMA_TRANSFER_SIZE == write(tx_fd, &buffer[0], DMA_TRANSFER_SIZE) );
-                    num_remaining_samples = num_remaining_samples - DMA_TRANSFER_SIZE;
-                    num_samples_transferred  = num_samples_transferred  + DMA_TRANSFER_SIZE;
-                }
-            else
-                {
-                    fread(buffer, num_remaining_samples, 1, ptr_myfile);
+				assert( DMA_TRANSFER_SIZE == write(tx_fd, &buffer[0], DMA_TRANSFER_SIZE) );
+				num_remaining_samples = num_remaining_samples - DMA_TRANSFER_SIZE;
+				num_samples_transferred  = num_samples_transferred  + DMA_TRANSFER_SIZE;
+			}
+		else
+			{
+				fread(buffer, num_remaining_samples, 1, ptr_myfile);
 
-                    assert( num_remaining_samples == write(tx_fd, &buffer[0], num_remaining_samples) );
-                    num_samples_transferred = num_samples_transferred + num_remaining_samples;
-                    num_remaining_samples = 0;
-                }
-        }
+				assert( num_remaining_samples == write(tx_fd, &buffer[0], num_remaining_samples) );
+				num_samples_transferred = num_samples_transferred + num_remaining_samples;
+				num_remaining_samples = 0;
+			}
+	}
 
-    free(buffer);
+
+	free(buffer);
     close(tx_fd);
 }
 
@@ -154,7 +152,7 @@ void thread(gr::top_block_sptr top_block, const char * file_name)
     fileLen = ftell(ptr_myfile);
     fseek(ptr_myfile, 0, SEEK_SET);
 
-    wait(20); // wait for some time to give time to the other thread to program the device
+    wait(5); // wait for some time to give time to the other thread to program the device
 
     //send_tracking_gps_input_samples(tx_fd, ptr_myfile, fileLen);
     send_tracking_gps_input_samples(ptr_myfile, fileLen, top_block);
@@ -335,9 +333,9 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
     config->set_property("Tracking_1C.pll_bw_hz", "30.0");
     config->set_property("Tracking_1C.dll_bw_hz", "2.0");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
-    config->set_property("Tracking_GPS.devicename", "/dev/uio");
-    config->set_property("Tracking_GPS.device_base", "0");
-    config->set_property("Tracking_GPS.device_range", "0");
+    config->set_property("Tracking_1C.devicename", "/dev/uio");
+    config->set_property("Tracking_1C.device_base", "1");
+    config->set_property("Tracking_1C.device_range", "10");
 }
 
 
@@ -462,7 +460,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     }) << "Failure opening true observables file" << std::endl;
 
     top_block = gr::make_top_block("Tracking test");
-    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTrackingFpga>(config.get(), "Tracking_1C", 1, 1);
+    std::shared_ptr<GpsL1CaDllPllCAidTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllCAidTrackingFpga>(config.get(), "Tracking_1C", 1, 1);
 
     boost::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx> msg_rx = GpsL1CADllPllTrackingTestFpga_msg_rx_make();
 
@@ -513,7 +511,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         gettimeofday(&tv, NULL);
         begin = tv.tv_sec * 1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
-        tracking.reset();
+        tracking->reset(); // unlock the channel
         gettimeofday(&tv, NULL);
         end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;

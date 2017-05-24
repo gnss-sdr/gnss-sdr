@@ -58,9 +58,6 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
     telemetry_decoder_ = gps_l1_ca_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
 
-    //decimation factor
-    int decimation_factor = configuration->property(role + ".decimation_factor", 1);
-    telemetry_decoder_->set_decimation(decimation_factor);
     DLOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
 }

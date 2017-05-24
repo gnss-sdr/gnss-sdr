@@ -21,14 +21,13 @@ add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 set(PVT_LIB_SOURCES 
      pvt_solution.cc
      ls_pvt.cc
-     gps_l1_ca_ls_pvt.cc
-     galileo_e1_ls_pvt.cc
      hybrid_ls_pvt.cc
      kml_printer.cc
      rinex_printer.cc
      nmea_printer.cc  
      rtcm_printer.cc
      geojson_printer.cc
+     rtklib_solver.cc
 )
 
 include_directories(
@@ -37,6 +36,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
      ${Boost_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
@@ -46,5 +46,17 @@ file(GLOB PVT_LIB_HEADERS "*.h")
 list(SORT PVT_LIB_HEADERS)
 add_library(pvt_lib ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
 source_group(Headers FILES ${PVT_LIB_HEADERS})
-add_dependencies(pvt_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
-target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES} ${ARMADILLO_LIBRARIES})
+add_dependencies(pvt_lib rtklib_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
+
+
+target_link_libraries(
+    pvt_lib 
+    rtklib_lib
+    ${Boost_LIBRARIES} 
+    ${GFlags_LIBS} 
+    ${GLOG_LIBRARIES} 
+    ${ARMADILLO_LIBRARIES}
+    ${BLAS}
+    ${LAPACK}
+    )
+    

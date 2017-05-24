@@ -76,6 +76,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
      ${ARMADILLO_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
@@ -147,7 +148,7 @@ target_link_libraries(gnss_rx ${Boost_LIBRARIES}
                               resampler_adapters
                               acq_adapters
                               tracking_lib
-                              acquisition_lib
+#                              acquisition_lib
                               tracking_adapters
                               channel_adapters
                               telemetry_decoder_libswiftcnav

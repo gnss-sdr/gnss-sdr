@@ -70,7 +70,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
-    vector_length = std::round(fs_in / (GPS_L2_M_CODE_RATE_HZ / GPS_L2_M_CODE_LENGTH_CHIPS));
+    vector_length = std::round((double)fs_in / ((double)GPS_L2_M_CODE_RATE_HZ / (double)GPS_L2_M_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)

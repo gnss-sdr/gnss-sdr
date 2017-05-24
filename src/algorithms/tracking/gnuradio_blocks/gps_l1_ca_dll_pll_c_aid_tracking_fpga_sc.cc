@@ -348,12 +348,13 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_correlation_length_samples - fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_correlation_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
                     d_sample_counter += samples_offset; // count for the processed samples
                     d_pull_in = false;
                     d_acc_carrier_phase_cycles -= d_carrier_phase_step_rad * samples_offset / GPS_TWO_PI;
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_cycles * GPS_TWO_PI;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+                    current_synchro_data.fs=d_fs_in;
                     *out[0] = current_synchro_data;
                     //consume_each(samples_offset); // shift input to perform alignment with local replica
                     multicorrelator_fpga_8sc->set_initial_sample(samples_offset);
@@ -552,9 +553,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
                     // ########### Output the tracking data to navigation and PVT ##########
                     current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs_16sc[1]).real());
                     current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs_16sc[1]).imag());
-                    // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!)
-                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + d_correlation_length_samples + d_rem_code_phase_samples) / static_cast<double>(d_fs_in);
-                    current_synchro_data.Rem_code_phase_secs = d_rem_code_phase_samples / static_cast<double>(d_fs_in);
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
+                    current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                     current_synchro_data.Carrier_phase_rads = GPS_TWO_PI * d_acc_carrier_phase_cycles;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
@@ -572,9 +572,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
                 {
                     current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs_16sc[1]).real());
                     current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs_16sc[1]).imag());
-                    // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!)
-                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + d_correlation_length_samples + d_rem_code_phase_samples) / static_cast<double>(d_fs_in);
-                    current_synchro_data.Rem_code_phase_secs = d_rem_code_phase_samples / static_cast<double>(d_fs_in);
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
+                    current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                     current_synchro_data.Carrier_phase_rads = GPS_TWO_PI * d_acc_carrier_phase_cycles;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;// todo: project the carrier doppler
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
@@ -588,9 +587,9 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
                 }
 
             current_synchro_data.System = {'G'};
-            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + d_correlation_length_samples + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
-            current_synchro_data.Rem_code_phase_secs = d_rem_code_phase_samples / static_cast<double>(d_fs_in);
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
         }
+    current_synchro_data.fs=d_fs_in;
     *out[0] = current_synchro_data;
     if(d_dump)
         {

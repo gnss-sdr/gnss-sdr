@@ -206,8 +206,7 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     const int extend_correlation_ms = 1;
 
     const int display_rate_ms = 500;
-    const int output_rate_ms = 1000;
-    const int averaging_depth = 1;
+    const int output_rate_ms =  100;
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
 
@@ -300,15 +299,13 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
     // Set Observables
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.dump", "false");
     config->set_property("Observables.dump_filename", "./observables.dat");
     config->set_property("Observables.averaging_depth", std::to_string(100));
 
     // Set PVT
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-    config->set_property("PVT.averaging_depth", std::to_string(averaging_depth));
-    config->set_property("PVT.flag_averaging", "true");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");
@@ -596,7 +593,7 @@ void Obs_Gps_L1_System_Test::check_results()
         }
     double stdev_pr = compute_stdev(mean_pr_diff_v);
     std::cout << "Pseudorange diff error stdev = " << stdev_pr << " [m]" << std::endl;
-    ASSERT_LT(stdev_pr, 1.0);
+    ASSERT_LT(stdev_pr, 10.0);
 
     // Compute carrier phase error
     prn_id = 0;
@@ -657,7 +654,7 @@ void Obs_Gps_L1_System_Test::check_results()
 
     double stdev_dp = compute_stdev(mean_doppler_v);
     std::cout << "Doppler error stdev = " << stdev_dp << " [Hz]" << std::endl;
-    ASSERT_LT(stdev_dp, 1.0);
+    ASSERT_LT(stdev_dp, 10.0);
 }
 
 
@@ -672,7 +669,10 @@ TEST_F(Obs_Gps_L1_System_Test, Observables_system_test)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    generate_signal();
+    if(!FLAGS_disable_generator)
+        {
+            generate_signal();
+        }
 
     std::cout << "Validating generated reference RINEX obs file: " << FLAGS_filename_rinex_obs << " ..." << std::endl;
     bool is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + FLAGS_filename_rinex_obs);

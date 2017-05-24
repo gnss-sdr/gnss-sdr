@@ -41,7 +41,6 @@
 #include <gnuradio/block.h>
 #include "gnss_satellite.h"
 #include "viterbi_decoder.h"
-#include "sbas_telemetry_data.h"
 
 class sbas_l1_telemetry_decoder_cc;
 
@@ -66,12 +65,6 @@ public:
      */
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-
-    /*!
-     * \brief Function which tells the scheduler how many input items
-     *        are required to produce noutput_items output items.
-     */
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
     friend sbas_l1_telemetry_decoder_cc_sptr
@@ -159,8 +152,6 @@ private:
         void zerropad_back_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
     } d_crc_verifier;
 
-
-    Sbas_Telemetry_Data sbas_telemetry_data;
 };
 
 #endif

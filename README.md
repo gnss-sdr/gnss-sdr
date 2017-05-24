@@ -429,7 +429,7 @@ $ sudo xcodebuild -license
 
 Software pre-requisites can be installed using either [Macports](#macports) or [Homebrew](#homebrew).
 
-####<a name"macports">Macports</a>
+#### <a name="macports">Macports</a>
 
 First, [install Macports](http://www.macports.org/install.php). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).
 

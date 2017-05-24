@@ -83,17 +83,6 @@ sbas_l1_telemetry_decoder_cc::~sbas_l1_telemetry_decoder_cc()
 }
 
 
-
-void sbas_l1_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
-{
-    unsigned ninputs = ninput_items_required.size ();
-    for (unsigned i = 0; i < ninputs; i++)
-        ninput_items_required[i] = noutput_items;
-    VLOG(LMORE) << "forecast(): " << "noutput_items=" << noutput_items << "\tninput_items_required ninput_items_required.size()=" << ninput_items_required.size();
-}
-
-
-
 int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,    gr_vector_void_star &output_items)
 {
@@ -102,18 +91,14 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
     const Gnss_Synchro *in = (const Gnss_Synchro *)  input_items[0]; // input
     Gnss_Synchro *out = (Gnss_Synchro *) output_items[0];     // output
 
-    // store the time stamp of the first sample in the processed sample block
-    double sample_stamp = in[0].Tracking_timestamp_secs;
-
+    Gnss_Synchro current_symbol; //structure to save the synchronization information and send the output object to the next block
+    //1. Copy the current tracking output
+    current_symbol = in[0];
     // copy correlation samples into samples vector
-    for (int i = 0; i < noutput_items; i++)
-        {
-            // check if channel is in tracking state
-            //if(in[i].Prompt_I != in[i].Prompt_Q) // TODO: check for real condition
-            {
-                d_sample_buf.push_back(in[i].Prompt_I);
-            }
-        }
+    d_sample_buf.push_back(current_symbol.Prompt_I); //add new symbol to the symbol queue
+
+    // store the time stamp of the first sample in the processed sample block
+    double sample_stamp = in[0].Tracking_sample_counter/in[0].fs;
 
     // decode only if enough samples in buffer
     if(d_sample_buf.size() >= d_block_size)
@@ -140,7 +125,7 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
 
             // compute message sample stamp
             // and fill messages in SBAS raw message objects
-            std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
+            //std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
             for(std::vector<msg_candiate_char_t>::const_iterator it = valid_msgs.begin();
                     it != valid_msgs.end(); ++it)
                 {
@@ -156,17 +141,17 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
                             << " relative_preamble_start=" << it->first
                             << " message_sample_offset=" << message_sample_offset
                             << ")";
-                    Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);
-                    sbas_raw_msgs.push_back(sbas_raw_msg);
+                    //Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);
+                    //sbas_raw_msgs.push_back(sbas_raw_msg);
                 }
 
             // parse messages
             // and send them to the SBAS raw message queue
-            for(std::vector<Sbas_Raw_Msg>::iterator it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); it++)
-                {
-                    std::cout << "SBAS message type " << it->get_msg_type() << " from PRN" << it->get_prn() << " received" << std::endl;
-                    sbas_telemetry_data.update(*it);
-                }
+            //for(std::vector<Sbas_Raw_Msg>::iterator it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); it++)
+            //    {
+                    //std::cout << "SBAS message type " << it->get_msg_type() << " from PRN" << it->get_prn() << " received" << std::endl;
+                    //sbas_telemetry_data.update(*it);
+            //    }
 
             // clear all processed samples in the input buffer
             d_sample_buf.clear();
@@ -174,16 +159,10 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
 
     // UPDATE GNSS SYNCHRO DATA
     // actually the SBAS telemetry decoder doesn't support ranging
-    Gnss_Synchro * current_synchro_data = out; //structure to save the synchronization information and send the output object to the next block
-    for (int i = 0; i < noutput_items; i++)
-        {
-            //1. Copy the current tracking output
-            current_synchro_data[i] = in[i];
-            //2. Add the telemetry decoder information
-            current_synchro_data[i].Flag_valid_word = false; // indicate to observable block that this synchro object isn't valid for pseudorange computation
-        }
-    consume_each(noutput_items); // tell scheduler input items consumed
-    return noutput_items; // tell scheduler output items produced
+    current_symbol.Flag_valid_word = false; // indicate to observable block that this synchro object isn't valid for pseudorange computation
+    out[0]=current_symbol;
+    consume_each(1); // tell scheduler input items consumed
+    return 1; // tell scheduler output items produced
 }
 
 

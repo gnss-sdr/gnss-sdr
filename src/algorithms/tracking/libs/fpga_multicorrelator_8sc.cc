@@ -154,6 +154,8 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators, std::strin
     d_n_correlators = n_correlators;
     d_device_name = device_name;
     d_device_base = device_base;
+    d_fd = 0;
+    d_map_base = nullptr;
 
     // instantiate variable length vectors
     d_initial_index = static_cast<unsigned*>(volk_gnsssdr_malloc(n_correlators * sizeof(unsigned), volk_gnsssdr_get_alignment()));
@@ -163,9 +165,18 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators, std::strin
     d_shifts_chips = nullptr;
     d_corr_out = nullptr;
     d_code_length_chips = 0;
+    d_rem_code_phase_chips = 0;
+    d_code_phase_step_chips = 0;
+    d_rem_carrier_phase_in_rad = 0;
+    d_phase_step_rad = 0;
+    d_rem_carr_phase_rad_int = 0;
+    d_phase_step_rad_int = 0;
+    d_initial_sample_counter = 0;
 
     d_ena_write_signals = new unsigned[d_n_correlators];
 
+    d_channel = 0;
+    d_correlator_length_samples = 0;
 }
 
 
@@ -201,6 +212,8 @@ bool fpga_multicorrelator_8sc::free()
 
 void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
 {
+	char device_io_name[MAX_LENGTH_DEVICEIO_NAME];  // driver io name
+
     d_channel = channel;
 
     // open the device corresponding to the assigned channel
@@ -210,11 +223,11 @@ void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
     int numdevice = d_device_base + d_channel;
    	devicebasetemp << numdevice;
    	mergedname = d_device_name + devicebasetemp.str();
-   	strcpy(d_device_io_name, mergedname.c_str());
-   	printf("Opening Device Name : %s\n", d_device_io_name);
-    if ((d_fd = open(d_device_io_name, O_RDWR | O_SYNC )) == -1)
+   	strcpy(device_io_name, mergedname.c_str());
+   	printf("Opening Device Name : %s\n", device_io_name);
+    if ((d_fd = open(device_io_name, O_RDWR | O_SYNC )) == -1)
     {
-    	LOG(WARNING) << "Cannot open deviceio" << d_device_io_name;
+    	LOG(WARNING) << "Cannot open deviceio" << device_io_name;
     }
 
     d_map_base = (volatile unsigned *)mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, d_fd,0);

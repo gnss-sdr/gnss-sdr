@@ -102,6 +102,7 @@ gps_fpga_acquisition_8sc::gps_fpga_acquisition_8sc(std::string device_name, unsi
     d_nsamples = nsamples; // number of samples not including padding
     d_select_queue = select_queue;
 
+    d_doppler_max = 0;
     d_doppler_step = 0;
     d_fd = 0;                                         	// driver descriptor
     d_map_base = nullptr;                    			// driver memory map

@@ -257,8 +257,10 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     int sat_PCV = 0; /*  Set whether the satellite antenna PCV (phase center variation) model is used or not. This feature requires a Satellite Antenna PCV File. */
     int rec_PCV = 0; /*  Set whether the receiver antenna PCV (phase center variation) model is used or not. This feature requires a Receiver Antenna PCV File. */
     int phwindup = 0; /* Set whether the phase windup correction for PPP modes is applied or not. Only applicable to PPP‐* modes.*/
-    int reject_GPS_IIA = 0; /* Set whether the GPS Block IIA satellites in eclipse are excluded or not.
-                               The eclipsing Block IIA satellites often degrade the PPP solutions due to unpredicted behavior of yaw‐attitude. Only applicable to PPP‐* modes.*/
+
+    /* Set whether the GPS Block IIA satellites in eclipse are excluded or not.
+    The eclipsing Block IIA satellites often degrade the PPP solutions due to unpredicted behavior of yaw‐attitude. Only applicable to PPP‐* modes.*/
+    int reject_GPS_IIA = configuration->property(role + ".reject_GPS_IIA", 0);
 
     /* Set whether RAIM (receiver autonomous integrity monitoring) FDE (fault detection and exclusion) feature is enabled or not.
     In case of RAIM FDE enabled, a satellite is excluded if SSE (sum of squared errors) of residuals is over a threshold.

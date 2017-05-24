@@ -260,9 +260,10 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     int reject_GPS_IIA = 0; /* Set whether the GPS Block IIA satellites in eclipse are excluded or not.
                                The eclipsing Block IIA satellites often degrade the PPP solutions due to unpredicted behavior of yaw‐attitude. Only applicable to PPP‐* modes.*/
 
-    int raim_fde = 0; /* Set whether RAIM (receiver autonomous integrity monitoring) FDE (fault detection and exclusion) feature is enabled or not.
-                         In case of RAIM FDE enabled, a satellite is excluded if SSE (sum of squared errors) of residuals is over a threshold.
-                         The excluded satellite is selected to indicate the minimum SSE. */
+    /* Set whether RAIM (receiver autonomous integrity monitoring) FDE (fault detection and exclusion) feature is enabled or not.
+    In case of RAIM FDE enabled, a satellite is excluded if SSE (sum of squared errors) of residuals is over a threshold.
+    The excluded satellite is selected to indicate the minimum SSE. */
+    int raim_fde = configuration->property(role + ".raim_fde", 0);
 
     int nsys = 0;
     if ((gps_1C_count > 0) || (gps_2S_count > 0)) nsys += SYS_GPS;

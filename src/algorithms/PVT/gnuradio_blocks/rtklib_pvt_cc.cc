@@ -86,6 +86,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
 {
     try
     {
+            //************* GPS telemetry *****************
             if( pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Ephemeris>) )
                 {
                     // ### GPS EPHEMERIS ###
@@ -99,7 +100,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     // update/insert new ephemeris record to the global ephemeris map
                     d_ls_pvt->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>) )
+            else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>) )
                 {
                     // ### GPS IONO ###
                     std::shared_ptr<Gps_Iono> gps_iono;
@@ -107,7 +108,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     d_ls_pvt->gps_iono = *gps_iono;
                     DLOG(INFO) << "New IONO record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>) )
+            else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>) )
                 {
                     // ### GPS UTC MODEL ###
                     std::shared_ptr<Gps_Utc_Model> gps_utc_model;
@@ -115,8 +116,34 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     d_ls_pvt->gps_utc_model = *gps_utc_model;
                     DLOG(INFO) << "New UTC record has arrived ";
                 }
+            else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Ephemeris>) )
+                {
+                    // ### GPS CNAV message ###
+                    std::shared_ptr<Gps_CNAV_Ephemeris> gps_cnav_ephemeris;
+                    gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_ls_pvt->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN] = *gps_cnav_ephemeris;
+                    LOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
+                }
+            else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Iono>) )
+                {
+                    // ### GPS CNAV IONO ###
+                    std::shared_ptr<Gps_CNAV_Iono> gps_cnav_iono;
+                    gps_cnav_iono = boost::any_cast<std::shared_ptr<Gps_CNAV_Iono>>(pmt::any_ref(msg));
+                    d_ls_pvt->gps_cnav_iono = *gps_cnav_iono;
+                    DLOG(INFO) << "New CNAV IONO record has arrived ";
+                }
+            else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Utc_Model>) )
+                {
+                    // ### GPS CNAV UTC MODEL ###
+                    std::shared_ptr<Gps_CNAV_Utc_Model> gps_cnav_utc_model;
+                    gps_cnav_utc_model = boost::any_cast<std::shared_ptr<Gps_CNAV_Utc_Model>>(pmt::any_ref(msg));
+                    d_ls_pvt->gps_cnav_utc_model = *gps_cnav_utc_model;
+                    DLOG(INFO) << "New CNAV UTC record has arrived ";
+                }
 
-            if( pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>) )
+            //**************** Galileo telemetry ********************
+            else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>) )
                 {
                     // ### Galileo EPHEMERIS ###
                     std::shared_ptr<Galileo_Ephemeris> galileo_eph;
@@ -128,7 +155,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     // update/insert new ephemeris record to the global ephemeris map
                     d_ls_pvt->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>) )
+            else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>) )
                 {
                     // ### Galileo IONO ###
                     std::shared_ptr<Galileo_Iono> galileo_iono;
@@ -136,7 +163,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     d_ls_pvt->galileo_iono = *galileo_iono;
                     DLOG(INFO) << "New IONO record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>) )
+            else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>) )
                 {
                     // ### Galileo UTC MODEL ###
                     std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
@@ -144,7 +171,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     d_ls_pvt->galileo_utc_model = *galileo_utc_model;
                     DLOG(INFO) << "New UTC record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>) )
+            else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>) )
                 {
                     // ### Galileo Almanac ###
                     std::shared_ptr<Galileo_Almanac> galileo_almanac;
@@ -154,31 +181,6 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     DLOG(INFO) << "New Galileo Almanac has arrived ";
                 }
 
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Ephemeris>) )
-                {
-                    // ### GPS CNAV message ###
-                    std::shared_ptr<Gps_CNAV_Ephemeris> gps_cnav_ephemeris;
-                    gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_ls_pvt->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN] = *gps_cnav_ephemeris;
-                    LOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Iono>) )
-                {
-                    // ### GPS CNAV IONO ###
-                    std::shared_ptr<Gps_CNAV_Iono> gps_cnav_iono;
-                    gps_cnav_iono = boost::any_cast<std::shared_ptr<Gps_CNAV_Iono>>(pmt::any_ref(msg));
-                    d_ls_pvt->gps_cnav_iono = *gps_cnav_iono;
-                    DLOG(INFO) << "New CNAV IONO record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Utc_Model>) )
-                {
-                    // ### GPS CNAV UTC MODEL ###
-                    std::shared_ptr<Gps_CNAV_Utc_Model> gps_cnav_utc_model;
-                    gps_cnav_utc_model = boost::any_cast<std::shared_ptr<Gps_CNAV_Utc_Model>>(pmt::any_ref(msg));
-                    d_ls_pvt->gps_cnav_utc_model = *gps_cnav_utc_model;
-                    DLOG(INFO) << "New CNAV UTC record has arrived ";
-                }
             else
                 {
                     LOG(WARNING) << "msg_handler_telemetry unknown object type!";
@@ -202,9 +204,11 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
         int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port,
         std::string nmea_dump_filename, std::string nmea_dump_devname, int rinex_version,
         bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port,
-        unsigned short rtcm_station_id, std::map<int,int> rtcm_msg_rate_ms, std::string rtcm_dump_devname, const unsigned int type_of_receiver, rtk_t & rtk) :
-              gr::sync_block("rtklib_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
-              gr::io_signature::make(0, 0, 0))
+        unsigned short rtcm_station_id, std::map<int,int> rtcm_msg_rate_ms, std::string
+        rtcm_dump_devname, const unsigned int type_of_receiver, rtk_t & rtk) :
+               gr::sync_block("rtklib_pvt_cc",
+               gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
+               gr::io_signature::make(0, 0, 0))
 {
     d_output_rate_ms = output_rate_ms;
     d_display_rate_ms = display_rate_ms;
@@ -454,12 +458,14 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                             std::map<int,Galileo_Ephemeris>::iterator tmp_eph_iter_gal = d_ls_pvt->galileo_ephemeris_map.find(in[i][epoch].PRN);
                             std::map<int,Gps_CNAV_Ephemeris>::iterator tmp_eph_iter_cnav = d_ls_pvt->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
                             if(((tmp_eph_iter_gps->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("1C") == 0))
-                            || ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("1B") == 0))
-                            || ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("2S") == 0)))
+                                    || ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("2S") == 0))
+                                    || ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("1B") == 0))
+                                    || ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("5X") == 0)))
                                 {
                                     // store valid observables in a map.
                                     gnss_observables_map.insert(std::pair<int,Gnss_Synchro>(i, in[i][epoch]));
                                 }
+
                             if(d_ls_pvt->gps_ephemeris_map.size() > 0)
                                 {
                                     if(tmp_eph_iter_gps != d_ls_pvt->gps_ephemeris_map.end())
@@ -558,8 +564,8 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                     if(first_fix == true)
                                         {
                                             std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                                                      << " UTC is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
-                                                      << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
+                                            << " UTC is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                                            << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
                                             ttff_msgbuf ttff;
                                             ttff.mtype = 1;
                                             gettimeofday(&tv, NULL);
@@ -1123,11 +1129,11 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                     if( (d_ls_pvt->b_valid_position == true) && (flag_display_pvt == true) )
                         {
                             std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                                      << " UTC using "<< d_ls_pvt->d_valid_observations<<" observations is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                                      << " UTC using " << d_ls_pvt->d_valid_observations << " observations is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
                                       << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
 
                             LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                                      << " UTC using "<< d_ls_pvt->d_valid_observations<<" observations is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                                      << " UTC using "<< d_ls_pvt->d_valid_observations << " observations is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
                                       << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]";
 
                             /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)

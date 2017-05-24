@@ -186,7 +186,6 @@ int hybrid_observables_cc::general_work (int noutput_items,
                                     gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(
                                             d_gnss_synchro_history_queue[i].front().Channel_ID,
                                             d_gnss_synchro_history_queue[i].front()));
-
                                 }
                             gnss_synchro_map_iter = min_element(gnss_synchro_map.begin(),
                                     gnss_synchro_map.end(),

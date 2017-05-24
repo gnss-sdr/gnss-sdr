@@ -40,15 +40,18 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "in_memory_configuration.h"
+#include "file_configuration.h"
 #include "MATH_CONSTANTS.h"
 #include "signal_generator_flags.h"
 
+
+DEFINE_string(config_file_ptest, std::string(""), "File containing the configuration parameters for the position test.");
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-class Position_Gps_L1_System_Test: public ::testing::Test
+class Static_Position_System_Test: public ::testing::Test
 {
 public:
     std::string generator_binary;
@@ -65,6 +68,7 @@ public:
 
     int configure_generator();
     int generate_signal();
+
     int configure_receiver();
     int run_receiver();
     void check_results();
@@ -77,6 +81,7 @@ public:
                         double* east, double* north, double* up);
 
     std::shared_ptr<InMemoryConfiguration> config;
+    std::shared_ptr<FileConfiguration> config_f;
     std::string generated_kml_file;
 
 private:
@@ -87,7 +92,7 @@ private:
 
 
 
-void Position_Gps_L1_System_Test::geodetic2Ecef(const double latitude, const double longitude, const double altitude,
+void Static_Position_System_Test::geodetic2Ecef(const double latitude, const double longitude, const double altitude,
         double* x, double* y, double* z)
 {
     const double a = 6378137.0; // WGS84
@@ -112,7 +117,7 @@ void Position_Gps_L1_System_Test::geodetic2Ecef(const double latitude, const dou
 }
 
 
-void Position_Gps_L1_System_Test::geodetic2Enu(const double latitude, const double longitude, const double altitude,
+void Static_Position_System_Test::geodetic2Enu(const double latitude, const double longitude, const double altitude,
         double* east, double* north, double* up)
 {
     double x, y, z;
@@ -155,7 +160,7 @@ void Position_Gps_L1_System_Test::geodetic2Enu(const double latitude, const doub
 }
 
 
-double Position_Gps_L1_System_Test::compute_stdev_precision(const std::vector<double> & vec)
+double Static_Position_System_Test::compute_stdev_precision(const std::vector<double> & vec)
 {
     double sum__ = std::accumulate(vec.begin(), vec.end(), 0.0);
     double mean__ = sum__ / vec.size();
@@ -168,7 +173,7 @@ double Position_Gps_L1_System_Test::compute_stdev_precision(const std::vector<do
 }
 
 
-double Position_Gps_L1_System_Test::compute_stdev_accuracy(const std::vector<double> & vec, const double ref)
+double Static_Position_System_Test::compute_stdev_accuracy(const std::vector<double> & vec, const double ref)
 {
     const double mean__ = ref;
     double accum__ = 0.0;
@@ -180,7 +185,7 @@ double Position_Gps_L1_System_Test::compute_stdev_accuracy(const std::vector<dou
 }
 
 
-int Position_Gps_L1_System_Test::configure_generator()
+int Static_Position_System_Test::configure_generator()
 {
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
@@ -202,7 +207,7 @@ int Position_Gps_L1_System_Test::configure_generator()
 }
 
 
-int Position_Gps_L1_System_Test::generate_signal()
+int Static_Position_System_Test::generate_signal()
 {
     pid_t wait_result;
     int child_status;
@@ -225,172 +230,187 @@ int Position_Gps_L1_System_Test::generate_signal()
 }
 
 
-int Position_Gps_L1_System_Test::configure_receiver()
+int Static_Position_System_Test::configure_receiver()
 {
-    config = std::make_shared<InMemoryConfiguration>();
+    if(FLAGS_config_file_ptest.empty())
+        {
+            config = std::make_shared<InMemoryConfiguration>();
+            const int sampling_rate_internal = baseband_sampling_freq;
 
-    const int sampling_rate_internal = baseband_sampling_freq;
+            const int number_of_taps = 11;
+            const int number_of_bands = 2;
+            const float band1_begin = 0.0;
+            const float band1_end = 0.48;
+            const float band2_begin = 0.52;
+            const float band2_end = 1.0;
+            const float ampl1_begin = 1.0;
+            const float ampl1_end = 1.0;
+            const float ampl2_begin = 0.0;
+            const float ampl2_end = 0.0;
+            const float band1_error = 1.0;
+            const float band2_error = 1.0;
+            const int grid_density = 16;
+            const int decimation_factor = 1;
 
-    const int number_of_taps = 11;
-    const int number_of_bands = 2;
-    const float band1_begin = 0.0;
-    const float band1_end = 0.48;
-    const float band2_begin = 0.52;
-    const float band2_end = 1.0;
-    const float ampl1_begin = 1.0;
-    const float ampl1_end = 1.0;
-    const float ampl2_begin = 0.0;
-    const float ampl2_end = 0.0;
-    const float band1_error = 1.0;
-    const float band2_error = 1.0;
-    const int grid_density = 16;
-    const int decimation_factor = 1;
+            const float zero = 0.0;
+            const int number_of_channels = 8;
+            const int in_acquisition = 1;
 
-    const float zero = 0.0;
-    const int number_of_channels = 8;
-    const int in_acquisition = 1;
+            const float threshold = 0.01;
+            const float doppler_max = 8000.0;
+            const float doppler_step = 500.0;
+            const int max_dwells = 1;
+            const int tong_init_val = 2;
+            const int tong_max_val = 10;
+            const int tong_max_dwells = 30;
+            const int coherent_integration_time_ms = 1;
 
-    const float threshold = 0.01;
-    const float doppler_max = 8000.0;
-    const float doppler_step = 500.0;
-    const int max_dwells = 1;
-    const int tong_init_val = 2;
-    const int tong_max_val = 10;
-    const int tong_max_dwells = 30;
-    const int coherent_integration_time_ms = 1;
+            const float pll_bw_hz = 30.0;
+            const float dll_bw_hz = 4.0;
+            const float early_late_space_chips = 0.5;
+            const float pll_bw_narrow_hz = 20.0;
+            const float dll_bw_narrow_hz = 2.0;
+            const int extend_correlation_ms = 1;
 
-    const float pll_bw_hz = 30.0;
-    const float dll_bw_hz = 4.0;
-    const float early_late_space_chips = 0.5;
-    const float pll_bw_narrow_hz = 20.0;
-    const float dll_bw_narrow_hz = 2.0;
-    const int extend_correlation_ms = 1;
+            const int display_rate_ms = 1000;
+            const int output_rate_ms = 1000;
 
-    const int display_rate_ms = 1000;
-    const int output_rate_ms = 1000;
-    const int averaging_depth = 1;
+            config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
+            // Set the assistance system parameters
+            config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+            config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
+            config->set_property("GNSS-SDR.SUPL_gps_ephemeris_server", "supl.google.com");
+            config->set_property("GNSS-SDR.SUPL_gps_ephemeris_port", std::to_string(7275));
+            config->set_property("GNSS-SDR.SUPL_gps_acquisition_server", "supl.google.com");
+            config->set_property("GNSS-SDR.SUPL_gps_acquisition_port", std::to_string(7275));
+            config->set_property("GNSS-SDR.SUPL_MCC", std::to_string(244));
+            config->set_property("GNSS-SDR.SUPL_MNS", std::to_string(5));
+            config->set_property("GNSS-SDR.SUPL_LAC", "0x59e2");
+            config->set_property("GNSS-SDR.SUPL_CI", "0x31b0");
 
-    // Set the assistance system parameters
-    config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
-    config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
-    config->set_property("GNSS-SDR.SUPL_gps_ephemeris_server", "supl.google.com");
-    config->set_property("GNSS-SDR.SUPL_gps_ephemeris_port", std::to_string(7275));
-    config->set_property("GNSS-SDR.SUPL_gps_acquisition_server", "supl.google.com");
-    config->set_property("GNSS-SDR.SUPL_gps_acquisition_port", std::to_string(7275));
-    config->set_property("GNSS-SDR.SUPL_MCC", std::to_string(244));
-    config->set_property("GNSS-SDR.SUPL_MNS", std::to_string(5));
-    config->set_property("GNSS-SDR.SUPL_LAC", "0x59e2");
-    config->set_property("GNSS-SDR.SUPL_CI", "0x31b0");
+            // Set the Signal Source
+            config->set_property("SignalSource.implementation", "File_Signal_Source");
+            config->set_property("SignalSource.filename", "./" + filename_raw_data);
+            config->set_property("SignalSource.sampling_frequency", std::to_string(sampling_rate_internal));
+            config->set_property("SignalSource.item_type", "ibyte");
+            config->set_property("SignalSource.samples", std::to_string(zero));
 
-    // Set the Signal Source
-    config->set_property("SignalSource.implementation", "File_Signal_Source");
-    config->set_property("SignalSource.filename", "./" + filename_raw_data);
-    config->set_property("SignalSource.sampling_frequency", std::to_string(sampling_rate_internal));
-    config->set_property("SignalSource.item_type", "ibyte");
-    config->set_property("SignalSource.samples", std::to_string(zero));
+            // Set the Signal Conditioner
+            config->set_property("SignalConditioner.implementation", "Signal_Conditioner");
+            config->set_property("DataTypeAdapter.implementation", "Ibyte_To_Complex");
+            config->set_property("InputFilter.implementation", "Fir_Filter");
+            config->set_property("InputFilter.dump", "false");
+            config->set_property("InputFilter.input_item_type", "gr_complex");
+            config->set_property("InputFilter.output_item_type", "gr_complex");
+            config->set_property("InputFilter.taps_item_type", "float");
+            config->set_property("InputFilter.number_of_taps", std::to_string(number_of_taps));
+            config->set_property("InputFilter.number_of_bands", std::to_string(number_of_bands));
+            config->set_property("InputFilter.band1_begin", std::to_string(band1_begin));
+            config->set_property("InputFilter.band1_end", std::to_string(band1_end));
+            config->set_property("InputFilter.band2_begin", std::to_string(band2_begin));
+            config->set_property("InputFilter.band2_end", std::to_string(band2_end));
+            config->set_property("InputFilter.ampl1_begin", std::to_string(ampl1_begin));
+            config->set_property("InputFilter.ampl1_end", std::to_string(ampl1_end));
+            config->set_property("InputFilter.ampl2_begin", std::to_string(ampl2_begin));
+            config->set_property("InputFilter.ampl2_end", std::to_string(ampl2_end));
+            config->set_property("InputFilter.band1_error", std::to_string(band1_error));
+            config->set_property("InputFilter.band2_error", std::to_string(band2_error));
+            config->set_property("InputFilter.filter_type", "bandpass");
+            config->set_property("InputFilter.grid_density", std::to_string(grid_density));
+            config->set_property("InputFilter.sampling_frequency", std::to_string(sampling_rate_internal));
+            config->set_property("InputFilter.IF", std::to_string(zero));
+            config->set_property("Resampler.implementation", "Pass_Through");
+            config->set_property("Resampler.dump", "false");
+            config->set_property("Resampler.item_type", "gr_complex");
+            config->set_property("Resampler.sample_freq_in", std::to_string(sampling_rate_internal));
+            config->set_property("Resampler.sample_freq_out", std::to_string(sampling_rate_internal));
 
-    // Set the Signal Conditioner
-    config->set_property("SignalConditioner.implementation", "Signal_Conditioner");
-    config->set_property("DataTypeAdapter.implementation", "Ibyte_To_Complex");
-    config->set_property("InputFilter.implementation", "Fir_Filter");
-    config->set_property("InputFilter.dump", "false");
-    config->set_property("InputFilter.input_item_type", "gr_complex");
-    config->set_property("InputFilter.output_item_type", "gr_complex");
-    config->set_property("InputFilter.taps_item_type", "float");
-    config->set_property("InputFilter.number_of_taps", std::to_string(number_of_taps));
-    config->set_property("InputFilter.number_of_bands", std::to_string(number_of_bands));
-    config->set_property("InputFilter.band1_begin", std::to_string(band1_begin));
-    config->set_property("InputFilter.band1_end", std::to_string(band1_end));
-    config->set_property("InputFilter.band2_begin", std::to_string(band2_begin));
-    config->set_property("InputFilter.band2_end", std::to_string(band2_end));
-    config->set_property("InputFilter.ampl1_begin", std::to_string(ampl1_begin));
-    config->set_property("InputFilter.ampl1_end", std::to_string(ampl1_end));
-    config->set_property("InputFilter.ampl2_begin", std::to_string(ampl2_begin));
-    config->set_property("InputFilter.ampl2_end", std::to_string(ampl2_end));
-    config->set_property("InputFilter.band1_error", std::to_string(band1_error));
-    config->set_property("InputFilter.band2_error", std::to_string(band2_error));
-    config->set_property("InputFilter.filter_type", "bandpass");
-    config->set_property("InputFilter.grid_density", std::to_string(grid_density));
-    config->set_property("InputFilter.sampling_frequency", std::to_string(sampling_rate_internal));
-    config->set_property("InputFilter.IF", std::to_string(zero));
-    config->set_property("Resampler.implementation", "Pass_Through");
-    config->set_property("Resampler.dump", "false");
-    config->set_property("Resampler.item_type", "gr_complex");
-    config->set_property("Resampler.sample_freq_in", std::to_string(sampling_rate_internal));
-    config->set_property("Resampler.sample_freq_out", std::to_string(sampling_rate_internal));
+            // Set the number of Channels
+            config->set_property("Channels_1C.count", std::to_string(number_of_channels));
+            config->set_property("Channels.in_acquisition", std::to_string(in_acquisition));
+            config->set_property("Channel.signal", "1C");
 
-    // Set the number of Channels
-    config->set_property("Channels_1C.count", std::to_string(number_of_channels));
-    config->set_property("Channels.in_acquisition", std::to_string(in_acquisition));
-    config->set_property("Channel.signal", "1C");
+            // Set Acquisition
+            config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
+            config->set_property("Acquisition_1C.item_type", "gr_complex");
+            config->set_property("Acquisition_1C.if", std::to_string(zero));
+            config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
+            config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
+            config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
+            config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
+            config->set_property("Acquisition_1C.bit_transition_flag", "false");
+            config->set_property("Acquisition_1C.max_dwells", std::to_string(max_dwells));
+            config->set_property("Acquisition_1C.tong_init_val", std::to_string(tong_init_val));
+            config->set_property("Acquisition_1C.tong_max_val", std::to_string(tong_max_val));
+            config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(tong_max_dwells));
 
-    // Set Acquisition
-    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
-    config->set_property("Acquisition_1C.item_type", "gr_complex");
-    config->set_property("Acquisition_1C.if", std::to_string(zero));
-    config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
-    config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
-    config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
-    config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
-    config->set_property("Acquisition_1C.bit_transition_flag", "false");
-    config->set_property("Acquisition_1C.max_dwells", std::to_string(max_dwells));
-    config->set_property("Acquisition_1C.tong_init_val", std::to_string(tong_init_val));
-    config->set_property("Acquisition_1C.tong_max_val", std::to_string(tong_max_val));
-    config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(tong_max_dwells));
+            // Set Tracking
+            config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
+            //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+            config->set_property("Tracking_1C.item_type", "gr_complex");
+            config->set_property("Tracking_1C.if", std::to_string(zero));
+            config->set_property("Tracking_1C.dump", "false");
+            config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
+            config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));
+            config->set_property("Tracking_1C.dll_bw_hz", std::to_string(dll_bw_hz));
+            config->set_property("Tracking_1C.early_late_space_chips", std::to_string(early_late_space_chips));
 
-    // Set Tracking
-    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-    //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
-    config->set_property("Tracking_1C.item_type", "gr_complex");
-    config->set_property("Tracking_1C.if", std::to_string(zero));
-    config->set_property("Tracking_1C.dump", "false");
-    config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
-    config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));
-    config->set_property("Tracking_1C.dll_bw_hz", std::to_string(dll_bw_hz));
-    config->set_property("Tracking_1C.early_late_space_chips", std::to_string(early_late_space_chips));
+            config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
+            config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
+            config->set_property("Tracking_1C.extend_correlation_ms", std::to_string(extend_correlation_ms));
 
-    config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
-    config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
-    config->set_property("Tracking_1C.extend_correlation_ms", std::to_string(extend_correlation_ms));
+            // Set Telemetry
+            config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
+            config->set_property("TelemetryDecoder_1C.dump", "false");
+            config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
-    // Set Telemetry
-    config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1C.dump", "false");
-    config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
+            // Set Observables
+            config->set_property("Observables.implementation", "Hybrid_Observables");
+            config->set_property("Observables.dump", "false");
+            config->set_property("Observables.dump_filename", "./observables.dat");
 
-    // Set Observables
-    config->set_property("Observables.implementation", "Hybrid_Observables");
-    config->set_property("Observables.dump", "false");
-    config->set_property("Observables.dump_filename", "./observables.dat");
+            // Set PVT
+            config->set_property("PVT.implementation", "RTKLIB_PVT");
+            config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
+            config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
+            config->set_property("PVT.dump_filename", "./PVT");
+            config->set_property("PVT.nmea_dump_filename", "./gnss_sdr_pvt.nmea");
+            config->set_property("PVT.flag_nmea_tty_port", "false");
+            config->set_property("PVT.nmea_dump_devname", "/dev/pts/4");
+            config->set_property("PVT.flag_rtcm_server", "false");
+            config->set_property("PVT.flag_rtcm_tty_port", "false");
+            config->set_property("PVT.rtcm_dump_devname", "/dev/pts/1");
+            config->set_property("PVT.dump", "false");
+            config->set_property("PVT.rinex_version", std::to_string(2));
+            config->set_property("PVT.positioning_mode", "PPP_Static");
+            config->set_property("PVT.iono_model", "OFF");
+            config->set_property("PVT.trop_model", "OFF");
+            config->set_property("PVT.AR_GPS", "PPP-AR");
 
-    // Set PVT
-    config->set_property("PVT.implementation", "RTKLIB_PVT");
-    //config->set_property("PVT.implementation", "Hybrid_PVT");
-    config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
-    config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
-    config->set_property("PVT.dump_filename", "./PVT");
-    config->set_property("PVT.nmea_dump_filename", "./gnss_sdr_pvt.nmea");
-    config->set_property("PVT.flag_nmea_tty_port", "false");
-    config->set_property("PVT.nmea_dump_devname", "/dev/pts/4");
-    config->set_property("PVT.flag_rtcm_server", "false");
-    config->set_property("PVT.flag_rtcm_tty_port", "false");
-    config->set_property("PVT.rtcm_dump_devname", "/dev/pts/1");
-    config->set_property("PVT.dump", "false");
-    config->set_property("PVT.rinex_version", std::to_string(2));
-    config->set_property("PVT.positioning_mode", "PPP_Static");
-    config->set_property("PVT.iono_model", "OFF");
-    config->set_property("PVT.trop_model", "OFF");
-//    config->set_property("PVT.AR_GPS", "PPP-AR");
+            config_f = 0;
+        }
+    else
+        {
+            config_f = std::make_shared<FileConfiguration>(FLAGS_config_file_ptest);
+            config = 0;
+        }
     return 0;
 }
 
 
-int Position_Gps_L1_System_Test::run_receiver()
+int Static_Position_System_Test::run_receiver()
 {
     std::shared_ptr<ControlThread> control_thread;
-    control_thread = std::make_shared<ControlThread>(config);
+    if(FLAGS_config_file_ptest.empty())
+        {
+            control_thread = std::make_shared<ControlThread>(config);
+        }
+    else
+        {
+            control_thread = std::make_shared<ControlThread>(config_f);
+        }
+
     // start receiver
     try
     {
@@ -420,17 +440,17 @@ int Position_Gps_L1_System_Test::run_receiver()
         {
             std::string aux = std::string(buffer);
             EXPECT_EQ(aux.empty(), false);
-            Position_Gps_L1_System_Test::generated_kml_file = aux.erase(aux.length() - 1, 1);
+            Static_Position_System_Test::generated_kml_file = aux.erase(aux.length() - 1, 1);
         }
     pclose(fp);
-    EXPECT_EQ(Position_Gps_L1_System_Test::generated_kml_file.empty(), false);
+    EXPECT_EQ(Static_Position_System_Test::generated_kml_file.empty(), false);
     return 0;
 }
 
 
-void Position_Gps_L1_System_Test::check_results()
+void Static_Position_System_Test::check_results()
 {
-    std::fstream myfile(Position_Gps_L1_System_Test::generated_kml_file, std::ios_base::in);
+    std::fstream myfile(Static_Position_System_Test::generated_kml_file, std::ios_base::in);
     std::string line;
 
     std::vector<double> pos_e;
@@ -494,17 +514,20 @@ void Position_Gps_L1_System_Test::check_results()
     double sum__u = std::accumulate(pos_u.begin(), pos_u.end(), 0.0);
     double mean__u = sum__u / pos_u.size();
 
-    std::cout << "---- ACCURACY ----" << std::endl;
-    std::cout << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-    std::cout << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-    std::cout << "CEP = " << 0.62 * compute_stdev_accuracy(pos_n, 0.0) + 0.56 * compute_stdev_accuracy(pos_e, 0.0) << " [m]" << std::endl;
-    std::cout << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-    std::cout << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-    std::cout << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-    std::cout << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-    std::cout << "Bias 2D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0)) << " [m]" << std::endl;
-    std::cout << "Bias 3D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0) + std::pow(mean__u, 2.0)) << " [m]" << std::endl;
-    std::cout << std::endl;
+    if(FLAGS_config_file_ptest.empty())
+        {
+            std::cout << "---- ACCURACY ----" << std::endl;
+            std::cout << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
+            std::cout << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
+            std::cout << "CEP = " << 0.62 * compute_stdev_accuracy(pos_n, 0.0) + 0.56 * compute_stdev_accuracy(pos_e, 0.0) << " [m]" << std::endl;
+            std::cout << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            std::cout << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            std::cout << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            std::cout << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            std::cout << "Bias 2D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0)) << " [m]" << std::endl;
+            std::cout << "Bias 3D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0) + std::pow(mean__u, 2.0)) << " [m]" << std::endl;
+            std::cout << std::endl;
+        }
 
     std::cout << "---- PRECISION ----" << std::endl;
     std::cout << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
@@ -521,15 +544,18 @@ void Position_Gps_L1_System_Test::check_results()
 }
 
 
-TEST_F(Position_Gps_L1_System_Test, Position_system_test)
+TEST_F(Static_Position_System_Test, Position_system_test)
 {
-    // Configure the signal generator
-    configure_generator();
-
-    // Generate signal raw signal samples and observations RINEX file
-    if(!FLAGS_disable_generator)
+    if(FLAGS_config_file_ptest.empty())
         {
-            generate_signal();
+            // Configure the signal generator
+            configure_generator();
+
+            // Generate signal raw signal samples and observations RINEX file
+            if(!FLAGS_disable_generator)
+                {
+                    generate_signal();
+                }
         }
 
     // Configure receiver

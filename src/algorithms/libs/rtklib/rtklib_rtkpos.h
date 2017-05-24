@@ -74,14 +74,7 @@ const double TTOL_MOVEB = (1.0+2*DTTOL);
 /* time sync tolerance for moving-baseline (s) */
 
 /* number of parameters (pos,ionos,tropos,hw-bias,phase-bias,real,estimated) */
-#define NF_RTK(opt)     ((opt)->ionoopt==IONOOPT_IFLC?1:(opt)->nf)
-#define NP_RTK(opt)     ((opt)->dynamics==0?3:9)
-#define NI_RTK(opt)     ((opt)->ionoopt!=IONOOPT_EST?0:MAXSAT)
-#define NT_RTK(opt)     ((opt)->tropopt<TROPOPT_EST?0:((opt)->tropopt<TROPOPT_ESTG?2:6))
-#define NL_RTK(opt)     ((opt)->glomodear!=2?0:NFREQGLO)
-#define NB_RTK(opt)     ((opt)->mode<=PMODE_DGPS?0:MAXSAT*NF_RTK(opt))
-#define NR_RTK(opt)     (NP_RTK(opt)+NI_RTK(opt)+NT_RTK(opt)+NL_RTK(opt))
-#define NX_RTK(opt)     (NR_RTK(opt)+NB_RTK(opt))
+
 
 /* state variable index */
 #define II_RTK(s,opt)   (NP_RTK(opt)+(s)-1)                 /* ionos (s:satellite no) */

@@ -52,6 +52,7 @@ const double GALILEO_F = -4.442807309e-10; //!< Constant, [s/(m)^(1/2)]
 const double Galileo_E1_FREQ_HZ = FREQ1;                 //!< Galileo E1 carrier frequency [Hz]
 const double Galileo_E1_CODE_CHIP_RATE_HZ = 1.023e6;     //!< Galileo E1 code rate [chips/s]
 const double Galileo_E1_CODE_PERIOD = 0.004;             //!< Galileo E1 code period [s]
+const int Galileo_E1_CODE_PERIOD_MS = 4;             //!< Galileo E1 code period [ms]
 const double Galileo_E1_SUB_CARRIER_A_RATE_HZ = 1.023e6; //!< Galileo E1 sub-carrier 'a' rate [Hz]
 const double Galileo_E1_SUB_CARRIER_B_RATE_HZ = 6.138e6; //!< Galileo E1 sub-carrier 'b' rate [Hz]
 const double Galileo_E1_B_CODE_LENGTH_CHIPS = 4092.0;    //!< Galileo E1-B code length [chips]
@@ -70,6 +71,7 @@ const int GALILEO_E1_HISTORY_DEEP=100;
 #define GALILEO_INAV_PREAMBLE {0, 1, 0, 1, 1, 0, 0, 0, 0, 0}
 
 const int GALILEO_INAV_PREAMBLE_LENGTH_BITS = 10;
+const double GALILEO_INAV_PAGE_PART_WITH_PREABLE_SECONDS = 2.0 + GALILEO_INAV_PREAMBLE_LENGTH_BITS*Galileo_E1_CODE_PERIOD;
 const int GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS = 250;
 const int GALILEO_INAV_PAGE_PART_SYMBOLS = 250; //!< Each Galileo INAV pages are composed of two parts (even and odd) each of 250 symbols, including preamble. See Galileo ICD 4.3.2
 const int GALILEO_INAV_PAGE_SYMBOLS = 500;      //!< The complete Galileo INAV page length

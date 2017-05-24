@@ -43,6 +43,7 @@
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
+#include "gnss_synchro.h"
 
 
 
@@ -70,12 +71,6 @@ public:
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    /*!
-     * \brief Function which tells the scheduler how many input items
-     *        are required to produce noutput_items output items.
-     */
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
 private:
     friend galileo_e1b_telemetry_decoder_cc_sptr
     galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
@@ -93,6 +88,8 @@ private:
     unsigned int d_samples_per_symbol;
     int d_symbols_per_preamble;
 
+    std::deque<Gnss_Synchro> d_symbol_history;
+
     long unsigned int d_sample_counter;
     long unsigned int d_preamble_index;
     unsigned int d_stat;
@@ -109,7 +106,6 @@ private:
     Gnss_Satellite d_satellite;
     int d_channel;
 
-    double d_TOW_at_Preamble;
     double d_TOW_at_current_symbol;
 
     bool flag_TOW_set;

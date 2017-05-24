@@ -335,7 +335,6 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
     config->set_property("Tracking_1C.devicename", "/dev/uio");
     config->set_property("Tracking_1C.device_base", "1");
-    config->set_property("Tracking_1C.device_range", "10");
 }
 
 

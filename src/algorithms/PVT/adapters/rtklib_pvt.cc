@@ -256,7 +256,9 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     /* RTKLIB positioning options */
     int sat_PCV = 0; /*  Set whether the satellite antenna PCV (phase center variation) model is used or not. This feature requires a Satellite Antenna PCV File. */
     int rec_PCV = 0; /*  Set whether the receiver antenna PCV (phase center variation) model is used or not. This feature requires a Receiver Antenna PCV File. */
-    int phwindup = 0; /* Set whether the phase windup correction for PPP modes is applied or not. Only applicable to PPP‐* modes.*/
+
+    /* Set whether the phase windup correction for PPP modes is applied or not. Only applicable to PPP‐* modes.*/
+    int phwindup = configuration->property(role + ".phwindup", 0);
 
     /* Set whether the GPS Block IIA satellites in eclipse are excluded or not.
     The eclipsing Block IIA satellites often degrade the PPP solutions due to unpredicted behavior of yaw‐attitude. Only applicable to PPP‐* modes.*/
@@ -266,6 +268,8 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     In case of RAIM FDE enabled, a satellite is excluded if SSE (sum of squared errors) of residuals is over a threshold.
     The excluded satellite is selected to indicate the minimum SSE. */
     int raim_fde = configuration->property(role + ".raim_fde", 0);
+
+    int earth_tide = configuration->property(role + ".earth_tide", 0);
 
     int nsys = 0;
     if ((gps_1C_count > 0) || (gps_2S_count > 0)) nsys += SYS_GPS;
@@ -378,12 +382,12 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             iono_model,      /* ionosphere option (IONOOPT_XXX) */
             trop_model,      /* troposphere option (TROPOPT_XXX) */
             dynamics_model,  /* dynamics model (0:none, 1:velocity, 2:accel) */
-            0,   /* earth tide correction (0:off,1:solid,2:solid+otl+pole) */
+            earth_tide,   /* earth tide correction (0:off,1:solid,2:solid+otl+pole) */
             number_filter_iter,   /* number of filter iteration */
             0,   /* code smoothing window size (0:none) */
             0,   /* interpolate reference obs (for post mission) */
             0,   /* sbssat_t sbssat  SBAS correction options */
-            0,  /* sbsion_t sbsion[MAXBAND+1] SBAS satellite selection (0:all) */
+            0,   /* sbsion_t sbsion[MAXBAND+1] SBAS satellite selection (0:all) */
             0,   /* rover position for fixed mode */
             0,   /* base position for relative mode */
                  /*    0:pos in prcopt,  1:average of single pos, */

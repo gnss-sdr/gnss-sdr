@@ -71,7 +71,6 @@ private:
     int d_n_correlators;
 
     // data related to the hardware module and the driver
-    char d_device_io_name[MAX_LENGTH_DEVICEIO_NAME];  // driver io name
     int d_fd;                                         // driver descriptor
     volatile unsigned *d_map_base;                    // driver memory map
 

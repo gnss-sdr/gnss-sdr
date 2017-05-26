@@ -186,7 +186,7 @@ signed int GpsL1CaPcpsTongAcquisition::mag()
 void GpsL1CaPcpsTongAcquisition::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 void GpsL1CaPcpsTongAcquisition::set_local_code()

@@ -206,7 +206,7 @@ signed int GalileoE5aNoncoherentIQAcquisitionCaf::mag()
 void GalileoE5aNoncoherentIQAcquisitionCaf::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 

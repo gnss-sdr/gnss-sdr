@@ -240,7 +240,7 @@ void
 GalileoE1PcpsQuickSyncAmbiguousAcquisition::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 

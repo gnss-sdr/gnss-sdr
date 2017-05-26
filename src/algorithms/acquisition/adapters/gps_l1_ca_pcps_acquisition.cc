@@ -230,7 +230,7 @@ void GpsL1CaPcpsAcquisition::init()
             acquisition_cc_->init();
         }
 
-    set_local_code();
+    //set_local_code();
 }
 
 

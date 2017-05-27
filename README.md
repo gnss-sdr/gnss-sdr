@@ -1261,6 +1261,14 @@ PVT.rtcm_tcp_port=2102
 PVT.rtcm_station_id=1111
 ~~~~~~
 
+NEW FEATURES
+============
+
+The GNSS-SDR is going to start implement Kalman Filter in the tracking blocks.
+So, keep checking for more information.
+
+
+
 **Important note:**
 
 In order to get well-formatted GeoJSON, KML and RINEX files, always terminate ```gnss-sdr``` execution by pressing key ```q``` and then key ```ENTER```. Those files will be automatically deleted if no position fix have been obtained during the execution of the software receiver.

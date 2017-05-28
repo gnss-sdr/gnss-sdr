@@ -21,6 +21,7 @@ set(INPUT_FILTER_ADAPTER_SOURCES
      freq_xlating_fir_filter.cc
      beamformer_filter.cc
      pulse_blanking_filter.cc
+     notch_filter.cc
 )
 
 include_directories(

@@ -20,6 +20,7 @@
 set(INPUT_FILTER_GR_BLOCKS_SOURCES 
      beamformer.cc
      pulse_blanking_cc.cc
+     notch_filter_cc.cc
 )
 
 include_directories(

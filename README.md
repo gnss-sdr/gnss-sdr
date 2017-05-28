@@ -429,7 +429,7 @@ $ sudo xcodebuild -license
 
 Software pre-requisites can be installed using either [Macports](#macports) or [Homebrew](#homebrew).
 
-####<a name"macports">Macports</a>
+#### <a name="macports">Macports</a>
 
 First, [install Macports](http://www.macports.org/install.php). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).
 
@@ -771,7 +771,7 @@ SignalSource.subdevice=B:0 ; UHD subdevice specification (for USRP1 use A:0 or B
 ~~~~~~
 
 
-***Example: Configuring the USRP X300 with two front-ends for receiving signals in L1 and L2 bands***
+***Example: Configuring the USRP X300/X310 with two front-ends for receiving signals in L1 and L2 bands***
 
 ~~~~~~
 ;######### SIGNAL_SOURCE CONFIG ############

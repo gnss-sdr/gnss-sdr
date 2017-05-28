@@ -111,9 +111,9 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.item_type", "gr_complex");
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("PVT.implementation", "Hybrid_PVT");
     config->set_property("PVT.item_type", "gr_complex");
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
@@ -171,9 +171,9 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.item_type", "gr_complex");
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("PVT.implementation", "Hybrid_PVT");
     config->set_property("PVT.item_type", "gr_complex");
 
     std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
@@ -235,9 +235,9 @@ TEST_F(Control_Thread_Test, StopReceiverProgrammatically)
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.item_type", "gr_complex");
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("PVT.implementation", "Hybrid_PVT");
     config->set_property("PVT.item_type", "gr_complex");
 
     std::unique_ptr<ControlThread> control_thread(new ControlThread(config));

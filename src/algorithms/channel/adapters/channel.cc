@@ -56,6 +56,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     channel_ = channel;
     queue_ = queue;
 
+    flag_enable_fpga=configuration->property("Channel.enable_FPGA", false);
     acq_->set_channel(channel_);
     trk_->set_channel(channel_);
     nav_->set_channel(channel_);
@@ -108,16 +109,22 @@ void Channel::connect(gr::top_block_sptr top_block)
             LOG(WARNING) << "channel already connected internally";
             return;
         }
-    pass_through_->connect(top_block);
+    if (flag_enable_fpga==false)
+    {
+    	pass_through_->connect(top_block);
+    }
     acq_->connect(top_block);
     trk_->connect(top_block);
     nav_->connect(top_block);
 
     //Synchronous ports
-    top_block->connect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
-    DLOG(INFO) << "pass_through_ -> acquisition";
-    top_block->connect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
-    DLOG(INFO) << "pass_through_ -> tracking";
+    if (flag_enable_fpga==false)
+    {
+		top_block->connect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
+		DLOG(INFO) << "pass_through_ -> acquisition";
+		top_block->connect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
+		DLOG(INFO) << "pass_through_ -> tracking";
+    }
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
@@ -140,10 +147,18 @@ void Channel::disconnect(gr::top_block_sptr top_block)
             LOG(WARNING) << "Channel already disconnected internally";
             return;
         }
-    top_block->disconnect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
-    top_block->disconnect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
+
+    if (flag_enable_fpga==false)
+    {
+		top_block->disconnect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
+		top_block->disconnect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
+    }
     top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
-    pass_through_->disconnect(top_block);
+
+    if (flag_enable_fpga==false)
+    {
+    	pass_through_->disconnect(top_block);
+    }
     acq_->disconnect(top_block);
     trk_->disconnect(top_block);
     nav_->disconnect(top_block);

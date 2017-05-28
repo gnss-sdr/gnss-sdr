@@ -16,6 +16,9 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+file(GLOB SIGNAL_SOURCE_ADAPTER_HEADERS "*.h")
+list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
+
 # Optional drivers
 
 if(ENABLE_GN3S)
@@ -72,26 +75,29 @@ if(ENABLE_OSMOSDR)
     ################################################################################
     # OsmoSDR - http://sdr.osmocom.org/trac/
     ################################################################################
-    find_package(GrOsmoSDR REQUIRED)
     if(NOT GROSMOSDR_FOUND)
-        message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional OSMOSDR driver")
+        if(ENABLE_PACKAGING)
+            list(REMOVE_ITEM SIGNAL_SOURCE_ADAPTER_HEADERS ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters/osmosdr_signal_source.h)
+        endif(ENABLE_PACKAGING)
+    else(NOT GROSMOSDR_FOUND)
+        # set OSMO include dirs
+        set(OSMO_DRIVER_INCLUDE_DIRS
+            ${OPT_DRIVER_INCLUDE_DIRS}
+            ${GROSMOSDR_INCLUDE_DIR}/osmosdr
+           )
+        set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
+        set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
+        set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS})
     endif(NOT GROSMOSDR_FOUND)
-
-    # set OSMO include dirs
-    set(OSMO_DRIVER_INCLUDE_DIRS
-        ${OPT_DRIVER_INCLUDE_DIRS}
-        ${GROSMOSDR_INCLUDE_DIR}/osmosdr
-    )
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS})
 endif(ENABLE_OSMOSDR)
 
-if(ENABLE_UHD)
+if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS})
-endif(ENABLE_UHD)
+else(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
+    list(REMOVE_ITEM SIGNAL_SOURCE_ADAPTER_HEADERS ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters/uhd_signal_source.h)
+endif(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
 
 
 set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc
@@ -129,8 +135,6 @@ endif(ARCH_64BITS)
 
 add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
-file(GLOB SIGNAL_SOURCE_ADAPTER_HEADERS "*.h")
-list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 target_link_libraries(signal_source_adapters signal_source_gr_blocks
@@ -140,4 +144,3 @@ target_link_libraries(signal_source_adapters signal_source_gr_blocks
                                              ${OPT_LIBRARIES}
                                              gnss_sp_libs
 )
-

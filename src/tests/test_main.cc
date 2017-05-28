@@ -58,12 +58,6 @@
 #include "galileo_utc_model.h"
 
 #include "sbas_ephemeris.h"
-#include "sbas_telemetry_data.h"
-#include "sbas_ionospheric_correction.h"
-#include "sbas_satellite_correction.h"
-#include "sbas_time.h"
-
-
 
 using google::LogMessage;
 
@@ -121,6 +115,7 @@ DECLARE_string(log_dir);
 
 #if FPGA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test_fpga.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test_fpga.cc"
 #endif
 
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
@@ -133,6 +128,7 @@ DECLARE_string(log_dir);
 #if MODERN_ARMADILLO
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_l1_ca_telemetry_decoder_test.cc"
+#include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test.cc"
 #endif
 #endif
 

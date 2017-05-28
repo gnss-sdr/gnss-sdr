@@ -312,8 +312,17 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec true_time_s,
 
     std::cout << std::setprecision(10) << "TLM TOW RMSE="
               << rmse << ", mean=" << error_mean
-              << ", stdev=" << sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Chips]" << std::endl;
+              << ", stdev=" << sqrt(error_var)
+              << " (max,min)=" << max_error
+              << "," << min_error
+              << " [Seconds]" << std::endl;
 
+    ASSERT_LT(rmse, 0.2E-6);
+    ASSERT_LT(error_mean, 0.2E-6);
+    ASSERT_GT(error_mean, -0.2E-6);
+    ASSERT_LT(error_var, 0.2E-6);
+    ASSERT_LT(max_error, 0.5E-6);
+    ASSERT_GT(min_error, -0.5E-6);
 }
 
 TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
@@ -322,7 +331,10 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    generate_signal();
+    if (FLAGS_disable_generator==false)
+    {
+        generate_signal();
+    }
 
     struct timeval tv;
     long long int begin = 0;
@@ -447,7 +459,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     epoch_counter = 0;
     while(tlm_dump.read_binary_obs())
     {
-        tlm_timestamp_s(epoch_counter) = tlm_dump.Prn_timestamp_ms / 1000.0;
+        tlm_timestamp_s(epoch_counter) = (double)tlm_dump.Tracking_sample_counter/(double)baseband_sampling_freq;
         tlm_TOW_at_Preamble(epoch_counter) = tlm_dump.d_TOW_at_Preamble;
         tlm_tow_s(epoch_counter) = tlm_dump.TOW_at_current_symbol;
         epoch_counter++;

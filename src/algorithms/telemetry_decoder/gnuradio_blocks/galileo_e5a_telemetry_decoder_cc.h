@@ -2,6 +2,7 @@
  * \file galileo_e5a_telemetry_decoder_cc.cc
  * \brief Implementation of a Galileo FNAV message demodulator block
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ *  		   Javier Arribas, 2017. jarribas(at)cttc.es
  * \based on work from:
  *          <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
@@ -73,12 +74,6 @@ public:
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    /*!
-     * \brief Function which tells the scheduler how many input items
-     *        are required to produce noutput_items output items.
-     */
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
 private:
     friend galileo_e5a_telemetry_decoder_cc_sptr
     galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
@@ -93,6 +88,7 @@ private:
     int d_preamble_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
     // signed int d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
     double d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+
     // signed int *d_preamble_symbols;
     double d_current_symbol;
     long unsigned int d_symbol_counter;
@@ -116,11 +112,9 @@ private:
     Gnss_Satellite d_satellite;
     int d_channel;
 
-    double d_preamble_time_seconds;
-
     double d_TOW_at_Preamble;
     double d_TOW_at_current_symbol;
-    double Prn_timestamp_at_preamble_ms;
+
     bool flag_TOW_set;
 
     std::string d_dump_filename;

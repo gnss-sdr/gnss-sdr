@@ -95,6 +95,8 @@ private:
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
 
+    void send_negative_acquisition();
+    void send_positive_acquisition();
     long d_fs_in;
     long d_freq;
     int d_samples_per_ms;
@@ -143,6 +145,7 @@ public:
       */
      void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_gnss_synchro = p_gnss_synchro;
      }
 
@@ -172,6 +175,7 @@ public:
       */
      void set_active(bool active)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_active = active;
      }
 
@@ -188,6 +192,7 @@ public:
       */
      void set_channel(unsigned int channel)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_channel = channel;
      }
 
@@ -198,6 +203,7 @@ public:
       */
      void set_threshold(float threshold)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_threshold = threshold;
      }
 
@@ -207,6 +213,7 @@ public:
       */
      void set_doppler_max(unsigned int doppler_max)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_doppler_max = doppler_max;
      }
 
@@ -216,6 +223,7 @@ public:
       */
      void set_doppler_step(unsigned int doppler_step)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_doppler_step = doppler_step;
      }
 

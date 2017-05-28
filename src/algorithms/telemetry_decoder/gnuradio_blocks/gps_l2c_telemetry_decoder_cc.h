@@ -69,7 +69,6 @@ public:
     ~gps_l2c_telemetry_decoder_cc();
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
-    void set_decimation(int decimation);
 
     /*!
      * \brief This is where all signal processing takes place
@@ -82,8 +81,6 @@ private:
     friend gps_l2c_telemetry_decoder_cc_sptr
     gps_l2c_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
     gps_l2c_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-
-
 
     bool d_dump;
     Gnss_Satellite d_satellite;
@@ -100,9 +97,6 @@ private:
     double d_TOW_at_current_symbol;
     double d_TOW_at_Preamble;
     bool d_flag_valid_word;
-
-    int d_decimation_output_factor;
-    int d_average_count;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
 };

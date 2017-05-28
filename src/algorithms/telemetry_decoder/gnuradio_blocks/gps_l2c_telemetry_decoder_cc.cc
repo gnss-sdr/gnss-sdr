@@ -47,7 +47,6 @@ gps_l2c_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
 }
 
 
-
 gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
         Gnss_Satellite satellite, bool dump) : gr::block("gps_l2c_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
@@ -61,9 +60,7 @@ gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "GPS L2C M TELEMETRY PROCESSING: satellite " << d_satellite;
-    d_decimation_output_factor = 0;
     //set_output_multiple (1);
-    d_average_count = 0;
     d_channel = 0;
     d_flag_valid_word = false;
     d_TOW_at_current_symbol = 0;
@@ -76,16 +73,9 @@ gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
 }
 
 
-
 gps_l2c_telemetry_decoder_cc::~gps_l2c_telemetry_decoder_cc()
 {
     d_dump_file.close();
-}
-
-
-void gps_l2c_telemetry_decoder_cc::set_decimation(int decimation)
-{
-    d_decimation_output_factor = decimation;
 }
 
 
@@ -148,32 +138,25 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
             }
 
         //update TOW at the preamble instant
-        double Prn_timestamp_at_preamble_ms = (in[0].Tracking_timestamp_secs * 1000.0);
         d_TOW_at_Preamble=(int)msg.tow;
-        current_synchro_data.d_TOW = d_TOW_at_Preamble;
-        std::cout<<"["<<(int)msg.prn<<"] deco delay: "<<delay<<"[symbols]"<<std::endl;
-        d_TOW_at_current_symbol=(double)msg.tow * 6.0 + (double)delay * GPS_L2_M_PERIOD + GPS_L2_M_PERIOD;
-        current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
-        current_synchro_data.d_TOW_hybrid_at_current_symbol = current_synchro_data.d_TOW_at_current_symbol;
-        current_synchro_data.Flag_preamble = false;
-        current_synchro_data.Prn_timestamp_ms = in[0].Tracking_timestamp_secs * 1000.0;
-        current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;
+        //std::cout<<"["<<(int)msg.prn<<"] deco delay: "<<delay<<"[symbols]"<<std::endl;
+        //* The time of the last input symbol can be computed from the message ToW and
+        //* delay by the formulae:
+        //* \code
+        //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20
+        d_TOW_at_current_symbol=((double)msg.tow) * 6.0 + ((double)delay) * GPS_L2_M_PERIOD +12*GPS_L2_M_PERIOD;
+        d_TOW_at_current_symbol=floor(d_TOW_at_current_symbol*1000.0)/1000.0;
         d_flag_valid_word=true;
     }
     else
     {
         d_TOW_at_current_symbol +=GPS_L2_M_PERIOD;
-        current_synchro_data.d_TOW = d_TOW_at_Preamble;
-        current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
-        current_synchro_data.d_TOW_hybrid_at_current_symbol = d_TOW_at_current_symbol;
-        current_synchro_data.Flag_preamble = false;
-        current_synchro_data.Prn_timestamp_ms = in[0].Tracking_timestamp_secs * 1000.0;
         if (current_synchro_data.Flag_valid_symbol_output==false)
         {
             d_flag_valid_word=false;
         }
     }
-
+    current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
     current_synchro_data.Flag_valid_word=d_flag_valid_word;
 
 //    if (flag_PLL_180_deg_phase_locked == true)
@@ -187,13 +170,14 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
             {
-                    double tmp_double;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
-                    tmp_double = current_synchro_data.Prn_timestamp_ms;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
-                    tmp_double = d_TOW_at_Preamble;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                double tmp_double;
+                unsigned long int tmp_ulong_int;
+                tmp_double = d_TOW_at_current_symbol;
+                d_dump_file.write((char*)&tmp_double, sizeof(double));
+                tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
+                d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
+                tmp_double = d_TOW_at_Preamble;
+                d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
             catch (const std::ifstream::failure & e)
             {
@@ -202,18 +186,9 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
         }
 
 
-    d_average_count++;
-    if (d_average_count == d_decimation_output_factor)
-    {
-        d_average_count = 0;
-        //3. Make the output (copy the object contents to the GNURadio reserved memory)
-        out[0] = current_synchro_data;
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
+    //3. Make the output (copy the object contents to the GNURadio reserved memory)
+    out[0] = current_synchro_data;
+    return 1;
 }
 
 

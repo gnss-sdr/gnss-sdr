@@ -238,7 +238,6 @@ GpsL1CaSubframeFsm::GpsL1CaSubframeFsm()
     d_nav.reset();
     i_channel_ID = 0;
     i_satellite_PRN = 0;
-    d_preamble_time_ms = 0;
     d_subframe_ID=0;
     d_flag_new_subframe=false;
     initiate(); //start the FSM
@@ -266,7 +265,6 @@ void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
               << Gnss_Satellite(std::string("GPS"), i_satellite_PRN) << std::endl;
     d_nav.i_satellite_PRN = i_satellite_PRN;
     d_nav.i_channel_ID = i_channel_ID;
-    d_nav.d_subframe_timestamp_ms = this->d_preamble_time_ms;
 
     d_flag_new_subframe=true;
 }

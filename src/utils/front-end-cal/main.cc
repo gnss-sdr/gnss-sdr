@@ -51,6 +51,7 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
 #include "concurrent_map.h"
+#include "concurrent_queue.h"
 #include "file_configuration.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "gnss_signal.h"
@@ -67,11 +68,7 @@
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include "sbas_telemetry_data.h"
-#include "sbas_ionospheric_correction.h"
-#include "sbas_satellite_correction.h"
 #include "sbas_ephemeris.h"
-#include "sbas_time.h"
 #include "gnss_sdr_supl_client.h"
 
 

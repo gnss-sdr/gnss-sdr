@@ -16,11 +16,13 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+add_subdirectory(rtklib)
 
 set(GNSS_SPLIBS_SOURCES
 	gps_l2c_signal.cc
     galileo_e1_signal_processing.cc
     gnss_sdr_valve.cc
+    gnss_sdr_sample_counter.cc
     gnss_signal_processing.cc
     gps_sdr_signal_processing.cc
     pass_through.cc

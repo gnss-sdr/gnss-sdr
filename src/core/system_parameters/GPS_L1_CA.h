@@ -35,19 +35,20 @@
 #include <vector>
 #include <utility> // std::pair
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 
 // Physical constants
-const double GPS_C_m_s       = 299792458.0;      //!< The speed of light, [m/s]
+const double GPS_C_m_s       = SPEED_OF_LIGHT;   //!< The speed of light, [m/s]
 const double GPS_C_m_ms      = 299792.4580;      //!< The speed of light, [m/ms]
 const double GPS_PI          = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
 const double GPS_TWO_PI      = 6.283185307179586;//!< 2Pi as defined in IS-GPS-200E
-const double OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
+const double OMEGA_EARTH_DOT = DEFAULT_OMEGA_EARTH_DOT;  //!< Earth rotation rate, [rad/s]
 const double GM              = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
 const double F               = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
 
 
 // carrier and code frequencies
-const double GPS_L1_FREQ_HZ              = 1.57542e9; //!< L1 [Hz]
+const double GPS_L1_FREQ_HZ              = FREQ1;     //!< L1 [Hz]
 const double GPS_L1_CA_CODE_RATE_HZ      = 1.023e6;   //!< GPS L1 C/A code rate [chips/s]
 const double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;    //!< GPS L1 C/A code length [chips]
 const double GPS_L1_CA_CODE_PERIOD       = 0.001;     //!< GPS L1 C/A code period [seconds]
@@ -75,6 +76,7 @@ const int GPS_L1_CA_HISTORY_DEEP = 100;
 #define GPS_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
 const int GPS_CA_PREAMBLE_LENGTH_BITS = 8;
 const int GPS_CA_PREAMBLE_LENGTH_SYMBOLS = 160;
+const double GPS_CA_PREAMBLE_DURATION_S = 0.160;
 const int GPS_CA_TELEMETRY_RATE_BITS_SECOND = 50;   //!< NAV message bit rate [bits/s]
 const int GPS_CA_TELEMETRY_SYMBOLS_PER_BIT = 20;
 const int GPS_CA_TELEMETRY_RATE_SYMBOLS_SECOND = GPS_CA_TELEMETRY_RATE_BITS_SECOND*GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;   //!< NAV message bit rate [symbols/s]
@@ -82,7 +84,7 @@ const int GPS_WORD_LENGTH = 4;                      //!< CRC + GPS WORD (-2 -1 0
 const int GPS_SUBFRAME_LENGTH = 40;                 //!< GPS_WORD_LENGTH x 10 = 40 bytes
 const int GPS_SUBFRAME_BITS = 300;                  //!< Number of bits per subframe in the NAV message [bits]
 const int GPS_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [seconds]
-const int GPS_SUBFRAME_MS = 6000;                 //!< Subframe duration [seconds]
+const int GPS_SUBFRAME_MS = 6000;                   //!< Subframe duration [seconds]
 const int GPS_WORD_BITS = 30;                       //!< Number of bits per word in the NAV message [bits]
 
 // GPS NAVIGATION MESSAGE STRUCTURE

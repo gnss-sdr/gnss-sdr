@@ -62,7 +62,12 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
         {
             dev_addr["addr"] = device_address_;
         }
-
+    //filter the device by serial number if required (useful for USB devices)
+    std::string device_serial = configuration->property(role + ".device_serial", empty);
+    if (empty.compare(device_serial) != 0) // if not empty
+        {
+            dev_addr["serial"] = device_serial;
+        }
     subdevice_ = configuration->property(role + ".subdevice", empty);
     clock_source_ = configuration->property(role + ".clock_source", std::string("internal"));
     RF_channels_ = configuration->property(role + ".RF_channels", 1);

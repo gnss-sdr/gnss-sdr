@@ -299,14 +299,12 @@ void gps_fpga_acquisition_8sc::open_device()
     if ((d_fd = open(d_device_name.c_str(), O_RDWR | O_SYNC )) == -1)
         {
             LOG(WARNING) << "Cannot open deviceio" << d_device_name;
-            printf("kk\n");
         }
     d_map_base = (volatile unsigned *)mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, d_fd,0);
 
     if (d_map_base == (void *) -1)
         {
             LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
-            printf("kk^2\n");
         }
 
     // sanity check : check test register
@@ -331,7 +329,6 @@ void gps_fpga_acquisition_8sc::open_device()
 }
 void gps_fpga_acquisition_8sc::close_device()
 {
-	printf("CLOSE DEVICE\n");
     if (munmap((void*)d_map_base, PAGE_SIZE) == -1)
         {
             printf("Failed to unmap memory uio\n");

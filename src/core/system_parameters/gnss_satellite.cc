@@ -61,9 +61,9 @@ Gnss_Satellite::~Gnss_Satellite()
 
 void Gnss_Satellite::reset()
 {
-    system_set = {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"};
+    system_set = {"GPS", "Glonass", "SBAS", "Galileo", "Beidou"};
     satelliteSystem["GPS"] = "G";
-    satelliteSystem["GLONASS"] = "R";
+    satelliteSystem["Glonass"] = "R";
     satelliteSystem["SBAS"] = "S";
     satelliteSystem["Galileo"] = "E";
     satelliteSystem["Beidou"] = "C";
@@ -120,7 +120,7 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite &rhs) {
 
 void Gnss_Satellite::set_system(const std::string& system_)
 {
-    // Set the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
+    // Set the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Compass"}
     std::set<std::string>::iterator it = system_set.find(system_);
 
     if(it != system_set.end())
@@ -129,7 +129,7 @@ void Gnss_Satellite::set_system(const std::string& system_)
         }
     else
         {
-            DLOG(INFO) << "System " << system_ << " is not defined {GPS, GLONASS, SBAS, Galileo, Beidou}. Initialization?";
+            DLOG(INFO) << "System " << system_ << " is not defined {GPS, Glonass, SBAS, Galileo, Beidou}. Initialization?";
             system =  std::string("");
         }
 }
@@ -220,7 +220,7 @@ unsigned int Gnss_Satellite::get_PRN() const
 
 std::string Gnss_Satellite::get_system() const
 {
-    // Get the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}
+    // Get the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou"}
     std::string system_;
     system_ = system;
     return system_;

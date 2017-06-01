@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_
-#define GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_GLONASS_SDR_SIGNAL_PROCESSING_H_
+#define GNSS_SDR_GLONASS_SDR_SIGNAL_PROCESSING_H_
 
 #include <complex>
 
@@ -44,4 +44,4 @@ void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest,/* unsign
 //! Generates complex GLONASS L1 C/A code for the desired SV ID and code shift
 void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest,/* unsigned int _prn,*/ signed int _fs, unsigned int _chip_shift);
 
-#endif /* GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_ */
+#endif /* GNSS_SDR_GLONASS_SDR_SIGNAL_PROCESSING_H_ */

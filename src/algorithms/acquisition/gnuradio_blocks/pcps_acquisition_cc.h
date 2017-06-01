@@ -56,6 +56,7 @@
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
 #include "gnss_synchro.h"
+#include "Glonass_L1_CA.h" //GLONASS_TWO_PI
 
 class pcps_acquisition_cc;
 

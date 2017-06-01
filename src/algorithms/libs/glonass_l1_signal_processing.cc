@@ -76,6 +76,8 @@ void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest,/* signed int _pr
                     _dest[lcv] = std::complex<float>(-1, 0);
                 }
         }
+
+    /* TODO: Implement the chip shifting*/
 }
 
 

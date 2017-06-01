@@ -145,6 +145,12 @@ public:
      void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
      {
          d_gnss_synchro = p_gnss_synchro;
+         // Dealing with FDMA system
+         if(d_gnss_synchro->System == 'R')
+          {
+            d_freq += 0.5625e6 * GLONASS_PRN[d_gnss_synchro->PRN+1];
+            std::cout << "d_freq " << d_freq << std::endl;
+          }
      }
 
      /*!

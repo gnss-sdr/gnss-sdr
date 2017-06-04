@@ -256,13 +256,20 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     /* RTKLIB positioning options */
     int sat_PCV = 0; /*  Set whether the satellite antenna PCV (phase center variation) model is used or not. This feature requires a Satellite Antenna PCV File. */
     int rec_PCV = 0; /*  Set whether the receiver antenna PCV (phase center variation) model is used or not. This feature requires a Receiver Antenna PCV File. */
-    int phwindup = 0; /* Set whether the phase windup correction for PPP modes is applied or not. Only applicable to PPP‐* modes.*/
-    int reject_GPS_IIA = 0; /* Set whether the GPS Block IIA satellites in eclipse are excluded or not.
-                               The eclipsing Block IIA satellites often degrade the PPP solutions due to unpredicted behavior of yaw‐attitude. Only applicable to PPP‐* modes.*/
 
-    int raim_fde = 0; /* Set whether RAIM (receiver autonomous integrity monitoring) FDE (fault detection and exclusion) feature is enabled or not.
-                         In case of RAIM FDE enabled, a satellite is excluded if SSE (sum of squared errors) of residuals is over a threshold.
-                         The excluded satellite is selected to indicate the minimum SSE. */
+    /* Set whether the phase windup correction for PPP modes is applied or not. Only applicable to PPP‐* modes.*/
+    int phwindup = configuration->property(role + ".phwindup", 0);
+
+    /* Set whether the GPS Block IIA satellites in eclipse are excluded or not.
+    The eclipsing Block IIA satellites often degrade the PPP solutions due to unpredicted behavior of yaw‐attitude. Only applicable to PPP‐* modes.*/
+    int reject_GPS_IIA = configuration->property(role + ".reject_GPS_IIA", 0);
+
+    /* Set whether RAIM (receiver autonomous integrity monitoring) FDE (fault detection and exclusion) feature is enabled or not.
+    In case of RAIM FDE enabled, a satellite is excluded if SSE (sum of squared errors) of residuals is over a threshold.
+    The excluded satellite is selected to indicate the minimum SSE. */
+    int raim_fde = configuration->property(role + ".raim_fde", 0);
+
+    int earth_tide = configuration->property(role + ".earth_tide", 0);
 
     int nsys = 0;
     if ((gps_1C_count > 0) || (gps_2S_count > 0)) nsys += SYS_GPS;
@@ -350,6 +357,12 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     double sigma_pos = configuration->property(role + ".sigma_pos", 0.0);
 
+    double code_phase_error_ratio_l1 = configuration->property(role + ".code_phase_error_ratio_l1", 100.0);
+    double code_phase_error_ratio_l2 = configuration->property(role + ".code_phase_error_ratio_l2", 100.0);
+    double code_phase_error_ratio_l5 = configuration->property(role + ".code_phase_error_ratio_l5", 100.0);
+    double carrier_phase_error_factor_a = configuration->property(role + ".carrier_phase_error_factor_a", 0.003);
+    double carrier_phase_error_factor_b = configuration->property(role + ".carrier_phase_error_factor_b", 0.003);
+
     snrmask_t snrmask = { {}, {{},{}} };
 
     prcopt_t rtklib_configuration_options = {positioning_mode, /* positioning mode (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
@@ -369,18 +382,18 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             iono_model,      /* ionosphere option (IONOOPT_XXX) */
             trop_model,      /* troposphere option (TROPOPT_XXX) */
             dynamics_model,  /* dynamics model (0:none, 1:velocity, 2:accel) */
-            0,   /* earth tide correction (0:off,1:solid,2:solid+otl+pole) */
+            earth_tide,   /* earth tide correction (0:off,1:solid,2:solid+otl+pole) */
             number_filter_iter,   /* number of filter iteration */
             0,   /* code smoothing window size (0:none) */
             0,   /* interpolate reference obs (for post mission) */
             0,   /* sbssat_t sbssat  SBAS correction options */
-            0,  /* sbsion_t sbsion[MAXBAND+1] SBAS satellite selection (0:all) */
+            0,   /* sbsion_t sbsion[MAXBAND+1] SBAS satellite selection (0:all) */
             0,   /* rover position for fixed mode */
             0,   /* base position for relative mode */
                  /*    0:pos in prcopt,  1:average of single pos, */
                  /*    2:read from file, 3:rinex header, 4:rtcm pos */
-            {100.0,100.0,100.0},         /* eratio[NFREQ] code/phase error ratio */
-            {100.0,0.003,0.003,0.0,1.0}, /* err[5]:  measurement error factor [0]:reserved, [1-3]:error factor a/b/c of phase (m) , [4]:doppler frequency (hz) */
+            {code_phase_error_ratio_l1,code_phase_error_ratio_l2,code_phase_error_ratio_l5}, /* eratio[NFREQ] code/phase error ratio */
+            {100.0,carrier_phase_error_factor_a,carrier_phase_error_factor_b,0.0,1.0}, /* err[5]:  measurement error factor [0]:reserved, [1-3]:error factor a/b/c of phase (m) , [4]:doppler frequency (hz) */
             {bias_0,iono_0,trop_0},      /* std[3]: initial-state std [0]bias,[1]iono [2]trop*/
             {sigma_bias,sigma_iono,sigma_trop,sigma_acch,sigma_accv,sigma_pos}, /* prn[6] process-noise std */
             5e-12,                       /* sclkstab: satellite clock stability (sec/sec) */

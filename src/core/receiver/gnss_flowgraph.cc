@@ -605,12 +605,6 @@ void GNSSFlowgraph::set_signals_list()
     std::set<unsigned int> available_glonass_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
                     11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
 
-    /*
-     * Only 24 operational
-     */
-    std::set<unsigned int> available_glonass_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
-
     std::string sv_list = configuration_->property("Galileo.prns", std::string("") );
 
     if( sv_list.length() > 0 )

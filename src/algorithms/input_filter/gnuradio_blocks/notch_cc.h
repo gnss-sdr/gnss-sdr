@@ -1,13 +1,11 @@
 /*!
- * \file notch_filter.h
- * \brief 
- * \author Antonio Ramos, 2017. antonio.ramosdet(at)gmail.com
- *
- * Detailed description of the file here if needed.
+ * \file notch_cc.h
+ * \brief Implements a notch filter algorithm
+ * \author Antonio Ramos (antonio.ramosdet(at)gmail.com)
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,8 +28,9 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_NOTCH_FILTER_H_
-#define GNSS_SDR_NOTCH_FILTER_H_
+#ifndef GNSS_SDR_NOTCH_H_
+#define GNSS_SDR_NOTCH_H_
+
 
 
 #endif

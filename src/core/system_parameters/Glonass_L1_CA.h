@@ -6,6 +6,7 @@
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 
+
 // Physical constants
 const double GLONASS_C_m_s       = 299792458.0;      //!< The speed of light, [m/s]
 const double GLONASS_C_m_ms      = 299792.4580;      //!< The speed of light, [m/ms]

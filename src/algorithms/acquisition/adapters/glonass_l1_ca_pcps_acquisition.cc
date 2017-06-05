@@ -36,13 +36,7 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     //--- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_ / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
 
-    LOG(ERROR) << "fs_in_ " << fs_in_;
-    LOG(ERROR) << "code_length_ " << code_length_;
-
     vector_length_ = code_length_ * sampled_ms_;
-
-    LOG(ERROR) << "vector_length_ " << vector_length_;
-    
 
     if( bit_transition_flag_ )
         {

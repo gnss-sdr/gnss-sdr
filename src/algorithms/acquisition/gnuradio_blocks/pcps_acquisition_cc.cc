@@ -34,6 +34,7 @@
 
 #include "pcps_acquisition_cc.h"
 #include <sstream>
+#include <cstring>
 #include <boost/filesystem.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
@@ -159,6 +160,11 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 
 void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
 {
+    // This will check if it's fdma, if yes will update the intermediate frequency and the doppler grid
+    if( is_fdma() )
+        {
+            update_grid_doppler_wipeoffs();
+        }
     // COD
     // Here we want to create a buffer that looks like this:
     // [ 0 0 0 ... 0 c_0 c_1 ... c_L]
@@ -177,6 +183,21 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
     
     d_fft_if->execute(); // We need the FFT of local code
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
+}
+
+bool pcps_acquisition_cc::is_fdma()
+{
+    // Dealing with FDMA system
+    if( strcmp(d_gnss_synchro->Signal,"1G") == 0 )
+        {
+            d_freq += DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
+            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN) << " in Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
+            return true;
+        }
+    else
+        {
+            return false;
+        }
 }
 
 
@@ -203,7 +224,10 @@ void pcps_acquisition_cc::init()
     d_input_power = 0.0;
 
     d_num_doppler_bins = ceil( static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step));
+}
 
+void pcps_acquisition_cc::update_grid_doppler_wipeoffs()
+{
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
 
@@ -214,6 +238,7 @@ void pcps_acquisition_cc::init()
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_freq + doppler);
         }
 }
+
 
 
 void pcps_acquisition_cc::set_state(int state)

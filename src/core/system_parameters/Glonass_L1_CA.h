@@ -2,8 +2,10 @@
 #define GNSS_SDR_GLONASS_L1_CA_H_
 
 #include <vector>
-#include <utility> // std::pair
+#include <map> // std::map
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
+
 
 // Physical constants
 const double GLONASS_C_m_s       = 299792458.0;      //!< The speed of light, [m/s]
@@ -28,36 +30,37 @@ const double NORMAL_POTENCIAL   = 62636861.4;    //!< The Normal potential at su
 
 
 // carrier and code frequencies
-const double GLONASS_L1_FREQ_HZ              = 1.602e9; //!< L1 [Hz]
+const double GLONASS_L1_FREQ_HZ              = FREQ1_GLO; //!< L1 [Hz]
 const double GLONASS_L1_CA_CODE_RATE_HZ      = 0.511e6;   //!< GLONASS L1 C/A code rate [chips/s]
 const double GLONASS_L1_CA_CODE_LENGTH_CHIPS = 511.0;    //!< GLONASS L1 C/A code length [chips]
 const double GLONASS_L1_CA_CODE_PERIOD       = 0.001;     //!< GLONASS L1 C/A code period [seconds]
 const double GLONASS_L1_CA_CHIP_PERIOD       = 1.9569e-06;     //!< GLONASS L1 C/A chip period [seconds]
 
-// GLONASS SV's orbital slots
-const short int GLONASS_PRN[24] = { 1,   //Plane 1
-                                    -4,  //Plane 1
-                                    5,   //Plane 1
-                                    6,   //Plane 1
-                                    1,   //Plane 1
-                                    -4,  //Plane 1
-                                    5,   //Plane 1
-                                    6,   //Plane 1
-                                    -2,  //Plane 2
-                                    -7,  //Plane 2
-                                    0,   //Plane 2
-                                    -1,  //Plane 2
-                                    -2,  //Plane 2
-                                    -7,  //Plane 2
-                                    0,   //Plane 2
-                                    -1,  //Plane 2
-                                    4,   //Plane 3
-                                    -3,  //Plane 3
-                                    3,   //Plane 3
-                                    2,   //Plane 3
-                                    4,   //Plane 3
-                                    -3,  //Plane 3
-                                    3,   //Plane 3
-                                    2};  //Plane 3
+// GLONASS SV's orbital slots PRN = (orbital_slot - 1)
+const std::map<unsigned int, int> GLONASS_PRN = 
+                                               {{ 1, 1,},  //Plane 1
+                                                { 2,-4,},  //Plane 1
+                                                { 3, 5,},  //Plane 1
+                                                { 4, 6,},  //Plane 1
+                                                { 5, 1,},  //Plane 1
+                                                { 6,-4,},  //Plane 1
+                                                { 7, 5,},  //Plane 1
+                                                { 8, 6,},  //Plane 1
+                                                { 9,-2,},  //Plane 2
+                                                {10,-7,},  //Plane 2
+                                                {11, 0,},  //Plane 2
+                                                {12,-1,},  //Plane 2
+                                                {13,-2,},  //Plane 2
+                                                {14,-7,},  //Plane 2
+                                                {15, 0,},  //Plane 2
+                                                {16,-1,},  //Plane 2
+                                                {17, 4,},  //Plane 3
+                                                {18,-3,},  //Plane 3
+                                                {19, 3,},  //Plane 3
+                                                {20, 2,},  //Plane 3
+                                                {21, 4,},  //Plane 3
+                                                {22,-3,},  //Plane 3
+                                                {23, 3,},  //Plane 3
+                                                {24, 2}};  //Plane 3
 
 #endif /* GNSS_SDR_GLONASS_L1_CA_H_ */

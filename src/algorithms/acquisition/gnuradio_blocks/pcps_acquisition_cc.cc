@@ -188,6 +188,21 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 
+bool pcps_acquisition_cc::is_fdma()
+{
+    // Dealing with FDMA system
+    if( strcmp(d_gnss_synchro->Signal,"1G") == 0 )
+        {
+            d_freq += DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
+            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN) << " in Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
+            return true;
+        }
+    else
+        {
+            return false;
+        }
+}
+
 
 bool pcps_acquisition_cc::is_fdma()
 {
@@ -228,7 +243,10 @@ void pcps_acquisition_cc::init()
     d_input_power = 0.0;
 
     d_num_doppler_bins = ceil( static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step));
+}
 
+void pcps_acquisition_cc::update_grid_doppler_wipeoffs()
+{
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
 
@@ -252,6 +270,7 @@ void pcps_acquisition_cc::update_grid_doppler_wipeoffs()
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_freq + doppler);
         }
 }
+
 
 
 

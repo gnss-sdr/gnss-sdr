@@ -95,6 +95,8 @@ private:
             std::string dump_filename);
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
+    void update_grid_doppler_wipeoffs();
+    bool is_fdma();
 
     void send_negative_acquisition();
     void send_positive_acquisition();
@@ -148,12 +150,6 @@ public:
      {
          gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_gnss_synchro = p_gnss_synchro;
-         // Dealing with FDMA system
-         if(d_gnss_synchro->System == 'R')
-          {
-            d_freq += 0.5625e6 * GLONASS_PRN[d_gnss_synchro->PRN+1];
-            std::cout << "d_freq " << d_freq << std::endl;
-          }
      }
 
      /*!

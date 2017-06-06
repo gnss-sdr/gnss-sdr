@@ -144,4 +144,3 @@ gr::basic_block_sptr PulseBlankingFilter::get_right_block()
             LOG(ERROR) << " Unknown input filter input/output item type conversion";
         }
 }
-

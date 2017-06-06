@@ -76,8 +76,6 @@ private:
     std::string input_item_type_;
     size_t input_size_;
     std::string output_item_type_;
-    double intermediate_freq_;
-    double sampling_freq_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

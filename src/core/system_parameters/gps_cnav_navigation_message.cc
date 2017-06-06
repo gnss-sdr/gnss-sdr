@@ -68,6 +68,7 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
             satelliteBlock[prn_] = gnss_satellite_.what_block("GPS", prn_);
         }
     b_flag_iono_valid = false;
+    b_flag_utc_valid = false;
 }
 
 

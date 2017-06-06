@@ -461,7 +461,11 @@ int fix_amb_ILS(rtk_t *rtk, int *sat1, int *sat2, int *NW, int n)
             sat2[m] = sat2[i];
             NW[m++] = NW[i];
         }
-    if (m<3) return 0;
+    if (m<3)
+        {
+            free(B1); free(N1); free(D); free(E); free(Q); free(NC);
+            return 0;
+        }
 
     /* covariance of narrow-lane ambiguities */
     matmul("TN", m, rtk->nx, rtk->nx, 1.0, D, rtk->P, 0.0, E);
@@ -471,9 +475,14 @@ int fix_amb_ILS(rtk_t *rtk, int *sat1, int *sat2, int *NW, int n)
     if ((info = lambda(m, 2, B1, Q, N1, s)))
         {
             trace(2, "lambda error: info=%d\n", info);
+            free(B1); free(N1); free(D); free(E); free(Q); free(NC);
             return 0;
         }
-    if (s[0] <= 0.0) return 0;
+    if (s[0] <= 0.0)
+        {
+            free(B1); free(N1); free(D); free(E); free(Q); free(NC);
+            return 0;
+        }
 
     rtk->sol.ratio = (float)(MIN_PPP(s[1]/s[0], 999.9));
 

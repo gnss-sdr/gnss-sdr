@@ -3234,12 +3234,12 @@ void createdir(const char *path)
     char buff[1024], *p;
     //tracet(3, "createdir: path=%s\n", path);
 
-    strcpy(buff, path);
+    if(strlen(path) < 1025) strcpy(buff, path);
+    else trace(1, "path is too long");
     if (!(p = strrchr(buff, FILEPATHSEP))) return;
     *p = '\0';
 
-    if(mkdir(buff, 0777) == 0) {}
-    else trace(1, "Error creating folder");
+    if(mkdir(buff, 0777) != 0) trace(1, "Error creating folder");
 }
 
 
@@ -3257,7 +3257,9 @@ int repstr(char *str, const char *pat, const char *rep)
             r += sprintf(r, "%s", rep);
         }
     if (p <= str) return 0;
-    strcpy(r, p);
+
+    if(strlen(p) < 1025 ) strcpy(r, p);
+    else trace(1, "pat array is too long");
     strcpy(str, buff);
     return 1;
 }
@@ -3945,7 +3947,8 @@ int rtk_uncompress(const char *file, char *uncfile)
 
     trace(3, "rtk_uncompress: file=%s\n", file);
 
-    strcpy(tmpfile, file);
+    if(strlen(file) < 1025) strcpy(tmpfile, file);
+    else trace(1, "file array is too long");
     if (!(p = strrchr(tmpfile, '.'))) return 0;
 
     /* uncompress by gzip */

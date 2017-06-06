@@ -271,7 +271,7 @@ int decode_nmeagga(char **val, int n, sol_t *sol)
 /* decode nmea ---------------------------------------------------------------*/
 int decode_nmea(char *buff, sol_t *sol)
 {
-    char *p,*q,*val[MAXFIELD];
+    char *p, *q, *val[MAXFIELD] = {0};
     int n = 0;
 
     trace(4,"decode_nmea: buff=%s\n",buff);

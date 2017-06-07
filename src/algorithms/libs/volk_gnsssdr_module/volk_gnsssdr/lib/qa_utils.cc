@@ -59,7 +59,7 @@ void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
 {
     std::random_device r;
     std::default_random_engine e1(r());
-    std::uniform_int_distribution<float> uniform_dist(-1, 1);
+    std::uniform_real_distribution<float> uniform_dist(-1, 1);
     if(type.is_complex) n *= 2;
     if(type.is_float)
         {

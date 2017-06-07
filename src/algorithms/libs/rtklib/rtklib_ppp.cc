@@ -490,6 +490,7 @@ int fix_amb_ILS(rtk_t *rtk, int *sat1, int *sat2, int *NW, int n)
     if (rtk->opt.thresar[0]>0.0 && rtk->sol.ratio<rtk->opt.thresar[0])
         {
             trace(2, "varidation error: n=%2d ratio=%8.3f\n", m, rtk->sol.ratio);
+            free(B1); free(N1); free(D); free(E); free(Q); free(NC);
             return 0;
         }
     trace(2, "varidation ok: %s n=%2d ratio=%8.3f\n", time_str(rtk->sol.time, 0), m,
@@ -898,7 +899,7 @@ void testeclipse(const obsd_t *obs, int n, const nav_t *nav, double *rs)
 
     /* unit vector of sun direction (ecef) */
     sunmoonpos(gpst2utc(obs[0].time), erpv, rsun, NULL, NULL);
-    normv3(rsun, esun);
+    if(normv3(rsun, esun) == 0) trace(1, "Error computing the norm");
 
     for (i = 0;i<n;i++)
         {

@@ -2194,7 +2194,7 @@ int readantex(const char *file, pcvs_t *pcvs)
 {
     FILE *fp;
     static const pcv_t pcv0 = {0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} };
-    pcv_t pcv;
+    pcv_t pcv = {0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} };
     double neu[3];
     int i, f, freq = 0, state = 0, freqs[] = {1, 2, 5, 6, 7, 8, 0};
     char buff[256];
@@ -2324,7 +2324,7 @@ pcv_t *searchpcv(int sat, const char *type, gtime_t time,
         const pcvs_t *pcvs)
 {
     pcv_t *pcv;
-    char buff[MAXANT], *types[2], *p;
+    char buff[MAXANT] = "", *types[2], *p;
     int i, j, n = 0;
 
     trace(3, "searchpcv: sat=%2d type=%s\n", sat, type);
@@ -2343,7 +2343,10 @@ pcv_t *searchpcv(int sat, const char *type, gtime_t time,
     else
         {
             if(strlen(type) < MAXANT +1 ) strcpy(buff, type);
-            else trace(1, "type array is too long");
+            else
+                {
+                    trace(1, "type array is too long");
+                }
             for (p = strtok(buff, " "); p && n<2; p = strtok(NULL, " ")) types[n++] = p;
             if (n <= 0) return NULL;
 
@@ -3961,10 +3964,10 @@ int rtk_uncompress(const char *file, char *uncfile)
 
             if (execcmd(cmd))
                 {
-                    remove(uncfile);
+                    if(remove(uncfile) != 0) trace(1, "Error removing file");
                     return -1;
                 }
-            strcpy(tmpfile, uncfile);
+            if(strlen(uncfile) < 1025) strcpy(tmpfile, uncfile);
             stat = 1;
         }
     /* extract tar file */
@@ -3996,7 +3999,7 @@ int rtk_uncompress(const char *file, char *uncfile)
 
             if (execcmd(cmd))
                 {
-                    remove(uncfile);
+                    if(remove(uncfile) != 0) trace(1, "Error removing file");
                     if (stat) if(remove(tmpfile) != 0) trace(1, "Error removing file");
                     return -1;
                 }
@@ -4019,7 +4022,7 @@ int rtk_uncompress(const char *file, char *uncfile)
 int expath(const char *path, char *paths[], int nmax)
 {
     int i, j, n = 0;
-    char tmp[1024];
+    char tmp[1024] = "";
     struct dirent *d;
     DIR *dp;
     const char *file = path;
@@ -4055,6 +4058,10 @@ int expath(const char *path, char *paths[], int nmax)
                     if (strcmp(paths[i], paths[j])>0)
                         {
                             if(strlen(paths[i]) < 1025) strcpy(tmp, paths[i]);
+                            else
+                                {
+                                    trace(1, "Path is too long");
+                                }
                             strcpy(paths[i], paths[j]);
                             strcpy(paths[j], tmp);
                         }

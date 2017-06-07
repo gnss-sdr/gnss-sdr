@@ -530,7 +530,11 @@ int readfcbf(const char *file, nav_t *nav)
             if (!(sat = satid2no(str))) continue;
             ts = epoch2time(ep1);
             te = epoch2time(ep2);
-            if (!addfcb(nav, ts, te, sat, bias, std)) return 0;
+            if (!addfcb(nav, ts, te, sat, bias, std))
+                {
+                    fclose(fp);
+                    return 0;
+                }
         }
     fclose(fp);
     return 1;

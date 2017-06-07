@@ -392,7 +392,6 @@ void readtec(const char *file, nav_t *nav, int opt)
             if (!(fp = fopen(efiles[i], "r")))
                 {
                     trace(2, "ionex file open error %s\n", efiles[i]);
-                    fclose(fp);
                     continue;
                 }
             else

@@ -861,7 +861,7 @@ int accsock(tcpsvr_t *tcpsvr, char *msg)
     tcpsvr->cli[i].sock = sock;
     if (!setsock(tcpsvr->cli[i].sock, msg)) return 0;
     memcpy(&tcpsvr->cli[i].addr, &addr, sizeof(addr));
-    strcpy(tcpsvr->cli[i].saddr, inet_ntoa(addr.sin_addr));
+    if(strlen(inet_ntoa(addr.sin_addr)) < 256) strcpy(tcpsvr->cli[i].saddr, inet_ntoa(addr.sin_addr));
     sprintf(msg, "%s", tcpsvr->cli[i].saddr);
     tracet(2, "accsock: connected sock=%d addr=%s\n", tcpsvr->cli[i].sock, tcpsvr->cli[i].saddr);
     tcpsvr->cli[i].state = 2;

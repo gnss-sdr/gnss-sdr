@@ -32,6 +32,7 @@
 #define FRONT_END_CAL_VERSION "0.0.1"
 #endif
 
+#include <stdlib.h>
 #include <ctime>
 #include <exception>
 #include <memory>
@@ -372,13 +373,14 @@ int main(int argc, char** argv)
 
     gr::block_sptr source;
     source = gr::blocks::file_source::make(sizeof(gr_complex), "tmp_capture.dat");
+    boost::shared_ptr<FrontEndCal_msg_rx> msg_rx;
     try
     {
-            boost::shared_ptr<FrontEndCal_msg_rx> msg_rx = FrontEndCal_msg_rx_make();
+            msg_rx = FrontEndCal_msg_rx_make();
     }
     catch(const std::exception & e)
     {
-            std::cout << "Failure connecting the message port system: " << e.what() << std::endl;
+            std::cout << "Failure connecting the message port system: " << e.what() << std::endl; exit(0);
     }
 
     //gr_basic_block_sptr head = gr_make_head(sizeof(gr_complex), nsamples);

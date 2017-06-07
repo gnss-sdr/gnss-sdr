@@ -15,7 +15,7 @@
 * GNSS-SDR is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+* (at your option) any later version.
 *
 * GNSS-SDR is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -33,7 +33,6 @@
 #include <iostream>
 #include <fstream>
 #include <gnuradio/io_signature.h>
-//#include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gps_sdr_signal_processing.h"
 #include "galileo_e1_signal_processing.h"
@@ -131,6 +130,8 @@ void signal_generator_c::init()
                 }
         }
     random_ = new gr::random();
+    std::default_random_engine e1(r());
+    std::uniform_int_distribution<int> uniform_dist(0, RAND_MAX);
 }
 
 
@@ -295,7 +296,7 @@ int signal_generator_c::general_work (int noutput_items __attribute__((unused)),
                             if (ms_counter_[sat] == 0 && data_flag_)
                                 {
                                     // New random data bit
-                                    current_data_bits_[sat] = gr_complex((rand() % 2) == 0 ? 1 : -1, 0);
+                                    current_data_bits_[sat] = gr_complex((uniform_dist(e1) % 2) == 0 ? 1 : -1, 0);
                                 }
 
                             for (k = delay_samples; k < samples_per_code_[sat]; k++)
@@ -330,7 +331,7 @@ int signal_generator_c::general_work (int noutput_items __attribute__((unused)),
                             if (ms_counter_[sat]%data_bit_duration_ms_[sat] == 0 && data_flag_)
                                 {
                                     // New random data bit
-                                    current_data_bit_int_[sat] = (rand()%2) == 0 ? 1 : -1;
+                                    current_data_bit_int_[sat] = (uniform_dist(e1)%2) == 0 ? 1 : -1;
                                 }
                             data_modulation_[sat] = current_data_bit_int_[sat] * (Galileo_E5a_I_SECONDARY_CODE.at((ms_counter_[sat]+delay_sec_[sat]) % 20) == '0' ? 1 : -1);
                             pilot_modulation_[sat] = (Galileo_E5a_Q_SECONDARY_CODE[PRN_[sat] - 1].at((ms_counter_[sat] + delay_sec_[sat]) % 100) == '0' ? 1 : -1);
@@ -362,7 +363,7 @@ int signal_generator_c::general_work (int noutput_items __attribute__((unused)),
                                     if (ms_counter_[sat] == 0 && data_flag_)
                                         {
                                             // New random data bit
-                                            current_data_bits_[sat] = gr_complex((rand() % 2) == 0 ? 1 : -1, 0);
+                                            current_data_bits_[sat] = gr_complex((uniform_dist(e1) % 2) == 0 ? 1 : -1, 0);
                                         }
 
                                     for (k = delay_samples; k < samples_per_code_[sat]; k++)

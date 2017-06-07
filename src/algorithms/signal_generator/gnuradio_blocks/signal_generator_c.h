@@ -33,6 +33,8 @@
 
 #include <string>
 #include <vector>
+#include <cstdlib>
+#include <random>
 #include <boost/scoped_array.hpp>
 #include <gnuradio/random.h>
 #include <gnuradio/block.h>
@@ -122,6 +124,9 @@ private:
     gr_complex* complex_phase_;
 
     unsigned int work_counter_;
+    std::random_device r;
+    std::default_random_engine e1;
+    std::uniform_int_distribution<int> uniform_dist;
 
 public:
     ~signal_generator_c();    // public destructor
@@ -135,4 +140,3 @@ public:
 };
 
 #endif /* GNSS_SDR_SIGNAL_GENERATOR_C_H */
-

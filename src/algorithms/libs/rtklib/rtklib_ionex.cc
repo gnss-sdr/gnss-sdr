@@ -392,6 +392,7 @@ void readtec(const char *file, nav_t *nav, int opt)
             if (!(fp = fopen(efiles[i], "r")))
                 {
                     trace(2, "ionex file open error %s\n", efiles[i]);
+                    fclose(fp);
                     continue;
                 }
             else
@@ -400,6 +401,7 @@ void readtec(const char *file, nav_t *nav, int opt)
                     if (readionexh(fp, lats, lons, hgts, &rb, &nexp, dcb, rms) <= 0.0)
                         {
                             trace(2, "ionex file format error %s\n", efiles[i]);
+                            fclose(fp);
                             continue;
                         }
                     /* read ionex body */

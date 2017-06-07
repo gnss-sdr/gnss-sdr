@@ -369,7 +369,7 @@ int readsap(const char *file, gtime_t time, nav_t *nav)
             pcv = searchpcv(i + 1, "", time, &pcvs);
             nav->pcvs[i] = pcv ? *pcv : pcv0;
         }
-    free(pcvs.pcv);
+    free(pcv);
     return 1;
 }
 

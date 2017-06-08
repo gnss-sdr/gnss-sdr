@@ -43,15 +43,13 @@
 #include "complex_byte_to_float_x2.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
-
-
 class ConfigurationInterface;
 
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GPS L1 C/A signals
  */
-class GpsL1CaPcpsAcquisitionFpga: public AcquisitionInterface
+class GpsL1CaPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAcquisitionFpga(ConfigurationInterface* configuration,

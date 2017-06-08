@@ -43,7 +43,6 @@
 #include "tracking_interface.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc.h"
 
-
 class ConfigurationInterface;
 
 /*!
@@ -53,8 +52,7 @@ class GpsL1CaDllPllCAidTrackingFpga : public TrackingInterface
 {
 public:
     GpsL1CaDllPllCAidTrackingFpga(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
+            std::string role, unsigned int in_streams,
             unsigned int out_streams);
 
     virtual ~GpsL1CaDllPllCAidTrackingFpga();
@@ -80,7 +78,6 @@ public:
     gr::basic_block_sptr get_left_block();
     gr::basic_block_sptr get_right_block();
 
-
     /*!
      * \brief Set tracking channel unique ID
      */
@@ -91,7 +88,6 @@ public:
      * to efficiently exchange synchronization data between acquisition and tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
-
 
     void start_tracking();
 

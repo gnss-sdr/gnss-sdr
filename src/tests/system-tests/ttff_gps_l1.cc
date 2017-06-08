@@ -37,6 +37,7 @@
 #include <ctime>
 #include <limits>
 #include <numeric>
+#include <random>
 #include <string>
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -515,9 +516,10 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
             std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
             if(n < FLAGS_num_measurements - 1)
                 {
-                    std::srand(std::time(0)); // use current time as seed for random generator
-                    int random_variable = std::rand();
-                    float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
+                    std::random_device r;
+                    std::default_random_engine e1(r());
+                    std::uniform_real_distribution<float> uniform_dist(0, 1);
+                    float random_variable_0_1 = uniform_dist(e1);
                     int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
                     std::cout << "Waiting a random amount of time (from 5 to 30 s) to start a new measurement... " << std::endl;
                     std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
@@ -599,9 +601,10 @@ TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
             std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
             if(n < FLAGS_num_measurements - 1)
                 {
-                    std::srand(std::time(0)); // use current time as seed for random generator
-                    int random_variable = std::rand();
-                    float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
+                    std::random_device r;
+                    std::default_random_engine e1(r());
+                    std::uniform_real_distribution<float> uniform_dist(0, 1);
+                    float random_variable_0_1 = uniform_dist(e1);
                     int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
                     std::cout << "Waiting a random amount of time (from 5 to 30 s) to start new measurement... " << std::endl;
                     std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;

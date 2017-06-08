@@ -355,8 +355,7 @@ void readsp3(const char *file, nav_t *nav, int opt)
  *-----------------------------------------------------------------------------*/
 int readsap(const char *file, gtime_t time, nav_t *nav)
 {
-    pcv_t aux = { 0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} };
-    pcvs_t pcvs = {0, 0, &aux };
+    pcvs_t pcvs = {0, 0, (pcv_t*){ 0 } };
     pcv_t pcv0 = { 0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} }, *pcv;
     int i;
 
@@ -369,7 +368,7 @@ int readsap(const char *file, gtime_t time, nav_t *nav)
             pcv = searchpcv(i + 1, "", time, &pcvs);
             nav->pcvs[i] = pcv ? *pcv : pcv0;
         }
-    free(pcvs.pcv);
+    free(pcv);
     return 1;
 }
 
@@ -530,7 +529,11 @@ int readfcbf(const char *file, nav_t *nav)
             if (!(sat = satid2no(str))) continue;
             ts = epoch2time(ep1);
             te = epoch2time(ep2);
-            if (!addfcb(nav, ts, te, sat, bias, std)) return 0;
+            if (!addfcb(nav, ts, te, sat, bias, std))
+                {
+                    fclose(fp);
+                    return 0;
+                }
         }
     fclose(fp);
     return 1;

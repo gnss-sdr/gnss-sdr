@@ -156,7 +156,8 @@ int rtkopenstat(const char *file, int level)
             trace(1, "rtkopenstat: file open error path=%s\n", path);
             return 0;
         }
-    strcpy(file_stat, file);
+    if(strlen(file) < 1025) strcpy(file_stat, file);
+    else trace(1, "File name is too long");
     time_stat = time;
     statlevel = level;
     return 1;

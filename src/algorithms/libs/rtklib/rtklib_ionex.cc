@@ -394,15 +394,18 @@ void readtec(const char *file, nav_t *nav, int opt)
                     trace(2, "ionex file open error %s\n", efiles[i]);
                     continue;
                 }
-            /* read ionex header */
-            if (readionexh(fp, lats, lons, hgts, &rb, &nexp, dcb, rms) <= 0.0)
+            else
                 {
-                    trace(2, "ionex file format error %s\n", efiles[i]);
-                    continue;
+                    /* read ionex header */
+                    if (readionexh(fp, lats, lons, hgts, &rb, &nexp, dcb, rms) <= 0.0)
+                        {
+                            trace(2, "ionex file format error %s\n", efiles[i]);
+                            fclose(fp);
+                            continue;
+                        }
+                    /* read ionex body */
+                    readionexb(fp, lats, lons, hgts, rb, nexp, nav);
                 }
-            /* read ionex body */
-            readionexb(fp, lats, lons, hgts, rb, nexp, nav);
-
             fclose(fp);
         }
     for (i = 0; i < MAXEXFILE; i++) free(efiles[i]);

@@ -98,7 +98,7 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
     d_sample_buf.push_back(current_symbol.Prompt_I); //add new symbol to the symbol queue
 
     // store the time stamp of the first sample in the processed sample block
-    double sample_stamp = in[0].Tracking_sample_counter/in[0].fs;
+    double sample_stamp = static_cast<double>(in[0].Tracking_sample_counter) / static_cast<double>(in[0].fs);
 
     // decode only if enough samples in buffer
     if(d_sample_buf.size() >= d_block_size)
@@ -498,4 +498,3 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_b
                 << std::setfill('0') << std::hex << (unsigned int)byte
                 << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }
-

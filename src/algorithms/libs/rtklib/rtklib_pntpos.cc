@@ -364,7 +364,8 @@ int valsol(const double *azel, const int *vsat, int n,
         const prcopt_t *opt, const double *v, int nv, int nx,
         char *msg)
 {
-    double azels[MAXOBS*2], dop[4], vv;
+    double azels[MAXOBS*2] = {0};
+    double dop[4], vv;
     int i, ns;
 
     trace(3, "valsol  : n=%d nv=%d\n", n, nv);

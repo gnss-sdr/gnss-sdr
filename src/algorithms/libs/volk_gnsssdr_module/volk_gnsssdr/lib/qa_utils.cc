@@ -32,14 +32,20 @@
 #include <ctime>
 #include <cmath>
 #include <limits>
+#include <random>
 
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 
-float uniform() {
-    return 2.0f * ((float) rand() / RAND_MAX - 0.5f);     // uniformly (-1, 1)
+float uniform()
+{
+    // Seed with a real random value, if available
+    std::random_device r;
+    std::default_random_engine e1(r());
+    std::uniform_real_distribution<> uniform_dist(-1, 1);
+    return static_cast<float>(uniform_dist(e1));
 }
 
 template <class t>
@@ -51,6 +57,9 @@ void random_floats (t *buf, unsigned n)
 
 void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
 {
+    std::random_device r;
+    std::default_random_engine e1(r());
+    std::uniform_real_distribution<float> uniform_dist(-1, 1);
     if(type.is_complex) n *= 2;
     if(type.is_float)
         {
@@ -63,7 +72,7 @@ void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
             if(type.is_signed) int_max /= 2.0;
             for(unsigned int i = 0; i < n; i++)
                 {
-                    float scaled_rand = (((float) (rand() - (RAND_MAX/2))) / static_cast<float>((RAND_MAX/2))) * int_max;
+                    float scaled_rand = static_cast<float>(uniform_dist(e1)) * int_max;
                     //man i really don't know how to do this in a more clever way, you have to cast down at some point
                     switch(type.size)
                     {

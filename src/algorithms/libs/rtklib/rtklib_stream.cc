@@ -104,10 +104,10 @@ serial_t *openserial(const char *path, int mode, char *msg)
             strncpy(port, path, p-path); port[p-path] = '\0';
             sscanf(p, ":%d:%d:%c:%d:%s", &brate, &bsize, &parity, &stopb, fctr);
         }
-    else strcpy(port, path);
+    else if(strlen(path) < 128) strcpy(port, path);
 
-    for (i = 0;i < 11;i++) if (br[i] == brate) break;
-    if (i >= 12)
+    for (i = 0;i < 10; i++) if (br[i] == brate) break;
+    if (i >= 11)
         {
             sprintf(msg, "bitrate error (%d)", brate);
             tracet(1, "openserial: %s path=%s\n", msg, path);
@@ -150,8 +150,8 @@ serial_t *openserial(const char *path, int mode, char *msg)
 /* close serial --------------------------------------------------------------*/
 void closeserial(serial_t *serial)
 {
-    tracet(3, "closeserial: dev=%d\n", serial->dev);
     if (!serial) return;
+    tracet(3, "closeserial: dev=%d\n", serial->dev);
     close(serial->dev);
     free(serial);
 }
@@ -161,8 +161,8 @@ void closeserial(serial_t *serial)
 int readserial(serial_t *serial, unsigned char *buff, int n, char *msg __attribute__((unused)))
 {
     int nr;
-    tracet(4, "readserial: dev=%d n=%d\n", serial->dev, n);
     if (!serial) return 0;
+    tracet(4, "readserial: dev=%d n=%d\n", serial->dev, n);
     if ((nr = read(serial->dev, buff, n)) < 0) return 0;
     tracet(5, "readserial: exit dev=%d nr=%d\n", serial->dev, nr);
     return nr;
@@ -173,8 +173,8 @@ int readserial(serial_t *serial, unsigned char *buff, int n, char *msg __attribu
 int writeserial(serial_t *serial, unsigned char *buff, int n, char *msg __attribute__((unused)))
 {
     int ns;
-    tracet(3, "writeserial: dev=%d n=%d\n", serial->dev, n);
     if (!serial) return 0;
+    tracet(3, "writeserial: dev=%d n=%d\n", serial->dev, n);
     if ((ns = write(serial->dev, buff, n)) < 0) return 0;
     tracet(5, "writeserial: exit dev=%d ns=%d\n", serial->dev, ns);
     return ns;
@@ -269,7 +269,7 @@ int openfile_(file_t *file, gtime_t time, char *msg)
             if ((fp = fopen(tagpath, "rb")))
                 {
                     fclose(fp);
-                    remove(tagpath);
+                    if (remove(tagpath) != 0) trace(1, "Error removing file");
                 }
         }
     return 1;
@@ -315,7 +315,7 @@ file_t *openfile(const char *path, int mode, char *msg)
     if (!(file = (file_t *)malloc(sizeof(file_t)))) return NULL;
 
     file->fp = file->fp_tag = file->fp_tmp = file->fp_tag_tmp = NULL;
-    strcpy(file->path, path);
+    if(strlen(path) <  MAXSTRPATH) strcpy(file->path, path);
     if ((p = strstr(file->path, "::"))) *p = '\0';
     file->openpath[0] = '\0';
     file->mode = mode;
@@ -344,8 +344,8 @@ file_t *openfile(const char *path, int mode, char *msg)
 /* close file ----------------------------------------------------------------*/
 void closefile(file_t *file)
 {
-    tracet(3, "closefile: fp=%d\n", file->fp);
     if (!file) return;
+    tracet(3, "closefile: fp=%d\n", file->fp);
     closefile_(file);
     free(file);
 }
@@ -404,9 +404,8 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
     int nr = 0;
     size_t fpos;
 
-    tracet(4, "readfile: fp=%d nmax=%d\n", file->fp, nmax);
-
     if (!file) return 0;
+    tracet(4, "readfile: fp=%d nmax=%d\n", file->fp, nmax);
 
     if (file->fp == stdin)
         {
@@ -431,7 +430,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
                     if (fread(&tick, sizeof(tick), 1, file->fp_tag) < 1 ||
                             fread(&fpos, sizeof(fpos), 1, file->fp_tag) < 1)
                         {
-                            fseek(file->fp, 0, SEEK_END);
+                            if(fseek(file->fp, 0, SEEK_END) != 0) trace(1, "fseek error");
                             sprintf(msg, "end");
                             break;
                         }
@@ -445,7 +444,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
 
                     if ((int)(fpos-file->fpos) >= nmax)
                         {
-                            fseek(file->fp, fpos, SEEK_SET);
+                            if(fseek(file->fp, fpos, SEEK_SET) != 0) trace(1, "Error fseek");
                             file->fpos = fpos;
                             return 0;
                         }
@@ -453,7 +452,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
 
                     if (file->repmode || file->speed>0.0)
                         {
-                            fseek(file->fp_tag, -(long)(sizeof(tick)+sizeof(fpos)), SEEK_CUR);
+                            if(fseek(file->fp_tag, -(long)(sizeof(tick)+sizeof(fpos)), SEEK_CUR) !=0) trace(1, "Error fseek");
                         }
                     break;
                 }
@@ -478,9 +477,8 @@ int writefile(file_t *file, unsigned char *buff, int n, char *msg)
     double tow1, tow2, intv;
     size_t fpos, fpos_tmp;
 
-    tracet(3, "writefile: fp=%d n=%d\n", file->fp, n);
-
     if (!file) return 0;
+    tracet(3, "writefile: fp=%d n=%d\n", file->fp, n);
 
     wtime = utc2gpst(timeget()); /* write time in gpst */
 
@@ -560,7 +558,7 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
     if (mntpnt) *mntpnt = '\0';
     if (str) *str = '\0';
 
-    strcpy(buff, path);
+    if(strlen(path) < MAXSTRPATH) strcpy(buff, path);
 
     if (!(p = strrchr(buff, '@'))) p = buff;
 
@@ -645,7 +643,7 @@ int connect_nb(socket_t sock, struct sockaddr *addr, socklen_t len)
     int err, flag;
 
     flag = fcntl(sock, F_GETFL, 0);
-    fcntl(sock, F_SETFL, flag|O_NONBLOCK);
+    if(fcntl(sock, F_SETFL, flag|O_NONBLOCK) == -1) trace(1, "fcntl error");
     if (connect(sock, addr, len) == -1)
         {
             err = errsock();
@@ -761,7 +759,7 @@ tcpsvr_t *opentcpsvr(const char *path, char *msg)
 {
     tcpsvr_t *tcpsvr, tcpsvr0; // = {{0}};
     char port[256] = "";
-
+    tcpsvr0 = { {0, {0}, 0, {0,0,0,{0}},0,0,0,0}, { 0, {0}, 0,{0,0,0,{0}},0,0,0,0} };
     tracet(3, "opentcpsvr: path=%s\n", path);
 
     if (!(tcpsvr = (tcpsvr_t *)malloc(sizeof(tcpsvr_t)))) return NULL;
@@ -863,7 +861,7 @@ int accsock(tcpsvr_t *tcpsvr, char *msg)
     tcpsvr->cli[i].sock = sock;
     if (!setsock(tcpsvr->cli[i].sock, msg)) return 0;
     memcpy(&tcpsvr->cli[i].addr, &addr, sizeof(addr));
-    strcpy(tcpsvr->cli[i].saddr, inet_ntoa(addr.sin_addr));
+    if(strlen(inet_ntoa(addr.sin_addr)) < 256) strcpy(tcpsvr->cli[i].saddr, inet_ntoa(addr.sin_addr));
     sprintf(msg, "%s", tcpsvr->cli[i].saddr);
     tracet(2, "accsock: connected sock=%d addr=%s\n", tcpsvr->cli[i].sock, tcpsvr->cli[i].saddr);
     tcpsvr->cli[i].state = 2;
@@ -985,6 +983,7 @@ tcpcli_t *opentcpcli(const char *path, char *msg)
 {
     tcpcli_t *tcpcli, tcpcli0; // = {{0}};
     char port[256] = "";
+    tcpcli0 = {{0, {0}, 0, {0,0,0,{0}},0,0,0,0}, 0, 0};
 
     tracet(3, "opentcpcli: path=%s\n", path);
 
@@ -1425,7 +1424,7 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
             topts[2] = 0;    /* download time offset (s) */
             topts[3] = 0;    /* retry interval (s) (0: no retry) */
         }
-    strcpy(buff, path);
+    if(strlen(path) < MAXSTRPATH) strcpy(buff, path);
 
     if ((p = strchr(buff, '/')))
         {
@@ -1550,13 +1549,13 @@ void *ftpthread(void *arg)
     /* execute download command */
     if ((ret = execcmd(cmd)))
         {
-            remove(local);
+            if(remove(local) != 0) trace(1, "Error removing file");
             tracet(1, "execcmd error: cmd=%s ret=%d\n", cmd, ret);
             ftp->error = ret;
             ftp->state = 3;
             return 0;
         }
-    remove(errfile);
+    if(remove(errfile) != 0) trace(1, "Error removing file");
 
     /* uncompress downloaded file */
     if ((p = strrchr(local, '.')) &&
@@ -1565,8 +1564,8 @@ void *ftpthread(void *arg)
         {
             if (rtk_uncompress(local, tmpfile))
                 {
-                    remove(local);
-                    strcpy(local, tmpfile);
+                    if(remove(local) != 0) trace(1, "Error removing file");
+                    if(strlen(tmpfile) < 1024) strcpy(local, tmpfile);
                 }
             else
                 {
@@ -1576,7 +1575,7 @@ void *ftpthread(void *arg)
                     return 0;
                 }
         }
-    strcpy(ftp->local, local);
+    if(strlen(local) < 1024 ) strcpy(ftp->local, local);
     ftp->state = 2; /* ftp completed */
 
     tracet(3, "ftpthread: complete cmd=%s\n", cmd);
@@ -1754,7 +1753,7 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
 
     stream->type = type;
     stream->mode = mode;
-    strcpy(stream->path, path);
+    if(strlen(path) < MAXSTRPATH ) strcpy(stream->path, path);
     stream->inb = stream->inr = stream->outb = stream->outr = 0;
     stream->tick = tickget();
     stream->inbt = stream->outbt = 0;
@@ -2060,7 +2059,7 @@ void strsettimeout(stream_t *stream, int toinact, int tirecon)
 void strsetdir(const char *dir)
 {
     tracet(3, "strsetdir: dir=%s\n", dir);
-    strcpy(localdir, dir);
+    if (strlen(dir) < 1024) strcpy(localdir, dir);
 }
 
 
@@ -2072,7 +2071,7 @@ void strsetdir(const char *dir)
 void strsetproxy(const char *addr)
 {
     tracet(3, "strsetproxy: addr=%s\n", addr);
-    strcpy(proxyaddr, addr);
+    if(strlen(addr) < 256) strcpy(proxyaddr, addr);
 }
 
 

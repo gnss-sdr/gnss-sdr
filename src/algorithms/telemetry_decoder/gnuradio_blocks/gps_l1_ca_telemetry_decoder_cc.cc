@@ -103,7 +103,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_decimation_output_factor = 1;
     d_channel = 0;
     flag_PLL_180_deg_phase_locked = false;
-
+    d_preamble_time_samples = 0;
 }
 
 

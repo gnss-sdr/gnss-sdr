@@ -185,9 +185,9 @@ int decode_sbstype6(const sbsmsg_t *msg, sbssat_t *sbssat)
         {
             iodf[i] = getbitu(msg->msg, 14+i*2, 2);
         }
-    for (i = 0;i<sbssat->nsat && i<MAXSAT;i++)
+    for (i = 0; i < sbssat->nsat && i < MAXSAT; i++)
         {
-            if (sbssat->sat[i].fcorr.iodf != iodf[i/13]) continue;
+            if (sbssat->sat[i].fcorr.iodf != iodf[i/22]) continue;
             udre = getbitu(msg->msg, 22+i*4, 4);
             sbssat->sat[i].fcorr.udre = udre+1;
         }
@@ -536,7 +536,7 @@ void readmsgs(const char *file, int sel, gtime_t ts, gtime_t te,
                     if (!(sbs_msgs = (sbsmsg_t *)realloc(sbs->msgs, sbs->nmax * sizeof(sbsmsg_t))))
                         {
                             trace(1, "readsbsmsg malloc error: nmax=%d\n", sbs->nmax);
-                            free(sbs->msgs); sbs->msgs = NULL; sbs->n = sbs->nmax = 0;
+                            free(sbs->msgs); sbs->msgs = NULL; sbs->n = sbs->nmax = 0; fclose(fp);
                             return;
                         }
                     sbs->msgs = sbs_msgs;

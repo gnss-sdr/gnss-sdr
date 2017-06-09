@@ -65,6 +65,7 @@
 #include "freq_xlating_fir_filter.h"
 #include "beamformer_filter.h"
 #include "pulse_blanking_filter.h"
+#include "notch_filter.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_multithread_acquisition.h"

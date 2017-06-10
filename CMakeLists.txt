@@ -504,9 +504,9 @@ if(NOT VOLK_GNSSSDR_FOUND)
 
     set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     set(C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-    if(CMAKE_CROSSCOMPILING)  
-        set(VOLK_GNSSSDR_COMPILER "") 
-    else(CMAKE_CROSSCOMPILING)   
+    if(CMAKE_CROSSCOMPILING)
+        set(VOLK_GNSSSDR_COMPILER "")
+    else(CMAKE_CROSSCOMPILING)
         set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
     endif(CMAKE_CROSSCOMPILING)
     set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
@@ -519,7 +519,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 ${STRIP_VOLK_GNSSSDR_PROFILE}
                                 ${USE_THIS_PYTHON} )
     if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
-        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} 
+        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
                                     -DENABLE_ORC=OFF
                                     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
                                     -DCROSSCOMPILE_MULTILIB=TRUE )
@@ -668,7 +668,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
                            GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
      set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)
-     
+
      # Ensure that aclocal and libtool are present
      if(OS_IS_LINUX)
          if(EXISTS "/usr/bin/libtoolize")

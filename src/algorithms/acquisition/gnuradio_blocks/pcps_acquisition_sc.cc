@@ -330,7 +330,7 @@ int pcps_acquisition_sc::general_work(int noutput_items,
 
                     // compute the inverse FFT
                     d_ifft->execute();
-
+                    
                     // Search maximum
                     size_t offset = ( d_bit_transition_flag ? effective_fft_size : 0 );
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);

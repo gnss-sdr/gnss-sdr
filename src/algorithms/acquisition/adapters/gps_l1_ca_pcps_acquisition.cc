@@ -130,7 +130,6 @@ void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
         {
             acquisition_cc_->set_channel(channel_);
         }
-
 }
 
 
@@ -188,7 +187,6 @@ void GpsL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
-
 }
 
 void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)

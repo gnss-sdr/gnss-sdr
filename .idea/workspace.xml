@@ -1,0 +1,1281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BookmarkManager">
+    <bookmark url="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc" line="206" mnemonic="7" />
+  </component>
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
+    <generated>
+      <config projectName="gnss-sdr" targetName="acq_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="datatype_adapters" />
+      <config projectName="gnss-sdr" targetName="pvt_adapters" />
+      <config projectName="gnss-sdr" targetName="gnss_system_parameters" />
+      <config projectName="gnss-sdr" targetName="signal_generator_blocks" />
+      <config projectName="gnss-sdr" targetName="acq_adapters" />
+      <config projectName="gnss-sdr" targetName="obs_adapters" />
+      <config projectName="gnss-sdr" targetName="tracking_adapters" />
+      <config projectName="gnss-sdr" targetName="resampler_adapters" />
+      <config projectName="gnss-sdr" targetName="data_type_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="pdfmanual" />
+      <config projectName="gnss-sdr" targetName="telemetry_decoder_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="gnss_block_test" />
+      <config projectName="gnss-sdr" targetName="pvt_lib" />
+      <config projectName="gnss-sdr" targetName="obs_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="supl_library" />
+      <config projectName="gnss-sdr" targetName="gnuradio_block_test" />
+      <config projectName="gnss-sdr" targetName="channel_fsm" />
+      <config projectName="gnss-sdr" targetName="rx_core_lib" />
+      <config projectName="gnss-sdr" targetName="resampler_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="tracking_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="gtest" />
+      <config projectName="gnss-sdr" targetName="uninstall" />
+      <config projectName="gnss-sdr" targetName="control_thread_test" />
+      <config projectName="gnss-sdr" targetName="telemetry_decoder_lib" />
+      <config projectName="gnss-sdr" targetName="doc-clean" />
+      <config projectName="gnss-sdr" targetName="gnss_rx" />
+      <config projectName="gnss-sdr" targetName="check" />
+      <config projectName="gnss-sdr" targetName="signal_source_lib" />
+      <config projectName="gnss-sdr" targetName="telemetry_decoder_adapters" />
+      <config projectName="gnss-sdr" targetName="signal_generator_adapters" />
+      <config projectName="gnss-sdr" targetName="input_filter_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="flowgraph_test" />
+      <config projectName="gnss-sdr" targetName="run_tests" />
+      <config projectName="gnss-sdr" targetName="gnss-sdr" />
+      <config projectName="gnss-sdr" targetName="trk_test" />
+      <config projectName="gnss-sdr" targetName="pvt_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="doc" />
+      <config projectName="gnss-sdr" targetName="signal_processing_testing_lib" />
+      <config projectName="gnss-sdr" targetName="signal_source_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="front-end-cal" />
+      <config projectName="gnss-sdr" targetName="input_filter_adapters" />
+      <config projectName="gnss-sdr" targetName="channel_adapters" />
+      <config projectName="gnss-sdr" targetName="gnss_sp_libs" />
+      <config projectName="gnss-sdr" targetName="conditioner_adapters" />
+      <config projectName="gnss-sdr" targetName="tracking_lib" />
+      <config projectName="gnss-sdr" targetName="front_end_cal_lib" />
+      <config projectName="gnss-sdr" targetName="signal_source_adapters" />
+    </generated>
+  </component>
+  <component name="CMakeSettings" AUTO_RELOAD="true">
+    <configurations>
+      <configuration CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ea422778-c834-4ed6-841b-63a5e02d1cb5" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/data/signal_source_beidou_.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/data/tracking_beidou/tracking_ch_0.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/gnss-sdr.iml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_beidou_cc.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_test_2ms.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_test_2ms.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/adapters/signal_generator_test_beidou.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/adapters/signal_generator_test_beidou.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_test_beidou_c.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_test_beidou_c.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/beidou_b1i_telemetry_decoder.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/beidou_b1i_telemetry_decoder.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/beidou_b1i_telemetry_decoder_cc.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/beidou_b1i_telemetry_decoder_cc.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/core/system_parameters/beidou_navigation_message.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/core/system_parameters/beidou_navigation_message.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_2ms_acquisition_test.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_test.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gensource_gsoc2016_test.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/acq_1_sat.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/acquisition.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/interleave.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/plot_acq_grid_beidou.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/read_complex_binary.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/sampledCode.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/write_apend_complex_binary.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/beidou_b1i_dll_pll_plot_sample.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/generator/beidou_B1I_generator.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/generator/generateB1Icode.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/generator/interleave.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/generator/write_apend_complex_binary.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/tracking/beidou_b1i_dll_pll_plot_sample.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/libs/read_complex_binary.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/galileo_e1_dll_pll_veml_plot_sample_32bits.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/galileo_e1_dll_pll_veml_plot_sample_32bits.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/galileo_e1_dll_pll_veml_plot_sample_64bits.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/galileo_e1_dll_pll_veml_plot_sample_64bits.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/galileo_e1b_observables_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/galileo_e1b_observables_plot_sample.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/galileo_e5a_dll_pll_plot_sample_64bits.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/galileo_e5a_dll_pll_plot_sample_64bits.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_dll_fll_pll_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_dll_fll_pll_plot_sample.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_dll_pll_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_dll_pll_plot_sample.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_dll_pll_plot_sample_64bits.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_dll_pll_plot_sample_64bits.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_observables_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_observables_plot_sample.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_pvt_plot_sample_agilent_cap2.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_pvt_plot_sample_agilent_cap2.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_pvt_raw_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_pvt_raw_plot_sample.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_telemetry_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_telemetry_plot_sample.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/plotTrackingE5a.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/plotTrackingE5a.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/plot_acq_grid_gsoc.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/plot_acq_grid_gsoc.m" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/plot_acq_grid_gsoc_e5.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/plot_acq_grid_gsoc_e5.m" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CMakeLists.txt" afterPath="$PROJECT_DIR$/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_sc.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_sc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_multithread_acquisition_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_multithread_acquisition_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/libs/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/galileo_e1_signal_processing.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/galileo_e1_signal_processing.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/signal_generator/adapters/signal_generator.cc" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/adapters/signal_generator.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_c.cc" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_c.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/gnss_block_factory.cc" afterPath="$PROJECT_DIR$/src/core/receiver/gnss_block_factory.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gnss_satellite.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gnss_satellite.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gnss_signal.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gnss_signal.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/tests/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/test_main.cc" afterPath="$PROJECT_DIR$/src/tests/test_main.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/gnss_block_factory_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/gnss_block_factory_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc" />
+    </list>
+    <ignored path="gnss-sdr.iws" />
+    <ignored path=".idea/workspace.xml" />
+    <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="FavoritesManager">
+    <favorites_list name="gnss-sdr" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/adapters/CMakeLists.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="314">
+              <caret line="40" column="19" lean-forward="true" selection-start-line="40" selection-start-column="19" selection-end-line="40" selection-end-column="19" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="PUSH_TAGS">
+      <GitPushTagMode>
+        <option name="argument" value="--follow-tags" />
+        <option name="title" value="Current Branch" />
+      </GitPushTagMode>
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h" />
+        <option value="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.cc" />
+        <option value="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.cc" />
+        <option value="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_test.cc" />
+        <option value="$PROJECT_DIR$/src/algorithms/libs/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gsoc2016_gensource_test.cc" />
+        <option value="$PROJECT_DIR$/src/tests/test_main.cc" />
+        <option value="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc" />
+        <option value="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gensource_gsoc2016_test.cc" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="y" value="27" />
+    <option name="width" value="1920" />
+    <option name="height" value="1053" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="algorithms" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="algorithms" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="acquisition" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gnss-sdr" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="algorithms" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="acquisition" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="adapters" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
+    <property name="settings.editor.splitter.proportion" value="0.2" />
+    <property name="FullScreen" value="true" />
+    <property name="Git.Branch.Popup.ShowAllRemotes" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/tests/gnss_block" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Application.Build All">
+    <configuration default="true" type="#com.sylvanaar.idea.Lua.run.LuaConfigurationType" factoryName="Lua Script">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="INTERPRETER_PATH" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="ALTERNATE_INTERPRETER" value="false" />
+      <envs />
+      <module name="" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <method />
+    </configuration>
+    <configuration default="true" type="CLion_Remote" factoryName="GDB Remote Debug" remoteCommand="" symbolFile="" sysroot="">
+      <method />
+    </configuration>
+    <configuration default="true" type="CMakeCatchTestRunConfigurationType" factoryName="Catch Test" PASS_PARENT_ENVS_2="true" TEST_MODE="SUITE_TEST">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="doc" CONFIG_NAME="Debug" TEST_MODE="SUITE_TEST">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="doc" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="ChromiumRemoteDebugType" factoryName="Chromium Remote">
+      <method />
+    </configuration>
+    <configuration default="true" type="CompoundRunConfigurationType" factoryName="Compound Run Configuration">
+      <method />
+    </configuration>
+    <configuration default="true" type="FirefoxRemoteDebugType" factoryName="Firefox Remote">
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerJest" factoryName="Jest">
+      <node-interpreter value="project" />
+      <working-dir value="" />
+      <envs />
+      <scope-kind value="ALL" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerProtractor" factoryName="Protractor">
+      <config-file value="" />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
+      <method />
+    </configuration>
+    <configuration default="true" type="NodeWebKit" factoryName="NW.js">
+      <method />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="gnss-sdr" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="ReactNative" factoryName="React Native">
+      <node-interpreter value="project" />
+      <platform value="ANDROID" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="gnss-sdr" />
+      <method />
+    </configuration>
+    <configuration default="true" type="XSLT" factoryName="XSLT">
+      <option name="myOutputFile" />
+      <option name="myOpenOutputFile" value="false" />
+      <option name="myOpenInBrowser" value="false" />
+      <option name="mySmartErrorHandling" value="true" />
+      <option name="myRunnerPort" value="34873" />
+      <option name="myVmArguments" />
+      <option name="myWorkingDirectory" />
+      <option name="myModule" />
+      <option name="myJdk" />
+      <parameters />
+      <OutputType value="CONSOLE" save-to-file="false" />
+      <FileType name="XML" />
+      <JdkChoice value="FROM_MODULE" />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.grunt" factoryName="Grunt.js">
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.npm" factoryName="npm">
+      <command value="run" />
+      <scripts />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="gnss-sdr" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Nosetests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="gnss-sdr" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;.&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Unittests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="gnss-sdr" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;.&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="py.test">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="gnss-sdr" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;.&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method />
+    </configuration>
+    <configuration default="false" name="Build All" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" EXPLICIT_BUILD_TARGET_NAME="all">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="doc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="doc" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="doc-clean" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="doc-clean" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="pdfmanual" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="pdfmanual" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="uninstall" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="uninstall" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="acq_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="acq_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="acq_gr_blocks" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="acq_gr_blocks" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="channel_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="channel_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="channel_fsm" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="channel_fsm" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="conditioner_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="conditioner_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="datatype_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="datatype_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="data_type_gr_blocks" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="data_type_gr_blocks" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="input_filter_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="input_filter_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="input_filter_gr_blocks" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="input_filter_gr_blocks" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="gnss_sp_libs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="gnss_sp_libs" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="obs_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="obs_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="obs_gr_blocks" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="obs_gr_blocks" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="pvt_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="pvt_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="pvt_gr_blocks" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="pvt_gr_blocks" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="pvt_lib" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="pvt_lib" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="resampler_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="resampler_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="resampler_gr_blocks" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="resampler_gr_blocks" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="signal_generator_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="signal_generator_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="signal_generator_blocks" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="signal_generator_blocks" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="signal_source_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="signal_source_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="signal_source_gr_blocks" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="signal_source_gr_blocks" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="signal_source_lib" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="signal_source_lib" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="telemetry_decoder_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="telemetry_decoder_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="telemetry_decoder_gr_blocks" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="telemetry_decoder_gr_blocks" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="telemetry_decoder_lib" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="telemetry_decoder_lib" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="tracking_adapters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="tracking_adapters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="tracking_gr_blocks" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="tracking_gr_blocks" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="tracking_lib" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="tracking_lib" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="rx_core_lib" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="rx_core_lib" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="supl_library" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="supl_library" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="gnss_rx" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="gnss_rx" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="gnss_system_parameters" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="gnss_system_parameters" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="gnss-sdr" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="gnss-sdr" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="gnss-sdr" RUN_TARGET_NAME="gnss-sdr">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="check" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="check" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="control_thread_test" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="control_thread_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="gnss-sdr" RUN_TARGET_NAME="control_thread_test" TEST_MODE="SUITE_TEST">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="flowgraph_test" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="flowgraph_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="gnss-sdr" RUN_TARGET_NAME="flowgraph_test" TEST_MODE="SUITE_TEST">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="gnss_block_test" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="gnss_block_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="gnss-sdr" RUN_TARGET_NAME="gnss_block_test" TEST_MODE="SUITE_TEST">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="gnuradio_block_test" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="gnuradio_block_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="gnss-sdr" RUN_TARGET_NAME="gnuradio_block_test" TEST_MODE="SUITE_TEST">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="gtest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="gtest" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="run_tests" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="run_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="gnss-sdr" RUN_TARGET_NAME="run_tests" TEST_MODE="SUITE_TEST">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="trk_test" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="trk_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="gnss-sdr" RUN_TARGET_NAME="trk_test" TEST_MODE="SUITE_TEST">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="signal_processing_testing_lib" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="signal_processing_testing_lib" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="front-end-cal" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="front-end-cal" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="gnss-sdr" RUN_TARGET_NAME="front-end-cal">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="front_end_cal_lib" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="gnss-sdr" TARGET_NAME="front_end_cal_lib" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <list size="49">
+      <item index="0" class="java.lang.String" itemvalue="Application.Build All" />
+      <item index="1" class="java.lang.String" itemvalue="Application.doc" />
+      <item index="2" class="java.lang.String" itemvalue="Application.doc-clean" />
+      <item index="3" class="java.lang.String" itemvalue="Application.pdfmanual" />
+      <item index="4" class="java.lang.String" itemvalue="Application.uninstall" />
+      <item index="5" class="java.lang.String" itemvalue="Application.acq_adapters" />
+      <item index="6" class="java.lang.String" itemvalue="Application.acq_gr_blocks" />
+      <item index="7" class="java.lang.String" itemvalue="Application.channel_adapters" />
+      <item index="8" class="java.lang.String" itemvalue="Application.channel_fsm" />
+      <item index="9" class="java.lang.String" itemvalue="Application.conditioner_adapters" />
+      <item index="10" class="java.lang.String" itemvalue="Application.datatype_adapters" />
+      <item index="11" class="java.lang.String" itemvalue="Application.data_type_gr_blocks" />
+      <item index="12" class="java.lang.String" itemvalue="Application.input_filter_adapters" />
+      <item index="13" class="java.lang.String" itemvalue="Application.input_filter_gr_blocks" />
+      <item index="14" class="java.lang.String" itemvalue="Application.gnss_sp_libs" />
+      <item index="15" class="java.lang.String" itemvalue="Application.obs_adapters" />
+      <item index="16" class="java.lang.String" itemvalue="Application.obs_gr_blocks" />
+      <item index="17" class="java.lang.String" itemvalue="Application.pvt_adapters" />
+      <item index="18" class="java.lang.String" itemvalue="Application.pvt_gr_blocks" />
+      <item index="19" class="java.lang.String" itemvalue="Application.pvt_lib" />
+      <item index="20" class="java.lang.String" itemvalue="Application.resampler_adapters" />
+      <item index="21" class="java.lang.String" itemvalue="Application.resampler_gr_blocks" />
+      <item index="22" class="java.lang.String" itemvalue="Application.signal_generator_adapters" />
+      <item index="23" class="java.lang.String" itemvalue="Application.signal_generator_blocks" />
+      <item index="24" class="java.lang.String" itemvalue="Application.signal_source_adapters" />
+      <item index="25" class="java.lang.String" itemvalue="Application.signal_source_gr_blocks" />
+      <item index="26" class="java.lang.String" itemvalue="Application.signal_source_lib" />
+      <item index="27" class="java.lang.String" itemvalue="Application.telemetry_decoder_adapters" />
+      <item index="28" class="java.lang.String" itemvalue="Application.telemetry_decoder_gr_blocks" />
+      <item index="29" class="java.lang.String" itemvalue="Application.telemetry_decoder_lib" />
+      <item index="30" class="java.lang.String" itemvalue="Application.tracking_adapters" />
+      <item index="31" class="java.lang.String" itemvalue="Application.tracking_gr_blocks" />
+      <item index="32" class="java.lang.String" itemvalue="Application.tracking_lib" />
+      <item index="33" class="java.lang.String" itemvalue="Application.rx_core_lib" />
+      <item index="34" class="java.lang.String" itemvalue="Application.supl_library" />
+      <item index="35" class="java.lang.String" itemvalue="Application.gnss_rx" />
+      <item index="36" class="java.lang.String" itemvalue="Application.gnss_system_parameters" />
+      <item index="37" class="java.lang.String" itemvalue="Application.gnss-sdr" />
+      <item index="38" class="java.lang.String" itemvalue="Application.check" />
+      <item index="39" class="java.lang.String" itemvalue="Google Test.control_thread_test" />
+      <item index="40" class="java.lang.String" itemvalue="Google Test.flowgraph_test" />
+      <item index="41" class="java.lang.String" itemvalue="Google Test.gnss_block_test" />
+      <item index="42" class="java.lang.String" itemvalue="Google Test.gnuradio_block_test" />
+      <item index="43" class="java.lang.String" itemvalue="Application.gtest" />
+      <item index="44" class="java.lang.String" itemvalue="Google Test.run_tests" />
+      <item index="45" class="java.lang.String" itemvalue="Google Test.trk_test" />
+      <item index="46" class="java.lang.String" itemvalue="Application.signal_processing_testing_lib" />
+      <item index="47" class="java.lang.String" itemvalue="Application.front-end-cal" />
+      <item index="48" class="java.lang.String" itemvalue="Application.front_end_cal_lib" />
+    </list>
+    <configuration default="true" type="tests" factoryName="Attests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="gnss-sdr" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ea422778-c834-4ed6-841b-63a5e02d1cb5" name="Default" comment="" />
+      <created>1469025032453</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1469025032453</updated>
+      <workItem from="1469025034774" duration="1559000" />
+      <workItem from="1470240810921" duration="9171000" />
+      <workItem from="1470673004216" duration="17808000" />
+      <workItem from="1470851154008" duration="227000" />
+      <workItem from="1470851405721" duration="603000" />
+      <workItem from="1470852388143" duration="5002000" />
+      <workItem from="1471010687318" duration="7229000" />
+      <workItem from="1497072028330" duration="294000" />
+      <workItem from="1497072339923" duration="5929000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="47822000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="27" width="1920" height="1053" extended-state="6" />
+    <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24947916" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32910156" sideWeight="0.49791667" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32910156" sideWeight="0.50208336" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+    </layout>
+    <layout-to-restore>
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32910156" sideWeight="0.49791667" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32910156" sideWeight="0.50208336" order="8" side_tool="true" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24947916" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+    </layout-to-restore>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="processedProjectFiles" value="true" />
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+    <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+      <collection />
+    </option>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc</url>
+          <line>446</line>
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="1" />
+    </breakpoint-manager>
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="826">
+          <caret line="59" column="41" lean-forward="false" selection-start-line="59" selection-start-column="39" selection-end-line="59" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/test_main.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1708">
+          <caret line="122" column="2" lean-forward="false" selection-start-line="122" selection-start-column="2" selection-end-line="122" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3304">
+          <caret line="236" column="84" lean-forward="false" selection-start-line="236" selection-start-column="84" selection-end-line="236" selection-end-column="84" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3444">
+          <caret line="246" column="40" lean-forward="false" selection-start-line="246" selection-start-column="29" selection-end-line="246" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8232">
+          <caret line="588" column="50" lean-forward="false" selection-start-line="588" selection-start-column="44" selection-end-line="588" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="826">
+          <caret line="59" column="41" lean-forward="false" selection-start-line="59" selection-start-column="39" selection-end-line="59" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/test_main.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1582">
+          <caret line="113" column="2" lean-forward="false" selection-start-line="113" selection-start-column="2" selection-end-line="113" selection-end-column="2" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1960">
+          <caret line="140" column="98" lean-forward="false" selection-start-line="140" selection-start-column="98" selection-end-line="140" selection-end-column="98" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/GPS_L1_CA.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1498">
+          <caret line="107" column="42" lean-forward="false" selection-start-line="107" selection-start-column="38" selection-end-line="107" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/MATH_CONSTANTS.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1008">
+          <caret line="72" column="13" lean-forward="false" selection-start-line="72" selection-start-column="13" selection-end-line="72" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/test_main.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/utils/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/MATH_CONSTANTS.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1008">
+          <caret line="72" column="13" lean-forward="false" selection-start-line="72" selection-start-column="13" selection-end-line="72" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/GPS_L1_CA.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="318">
+          <caret line="49" column="52" lean-forward="false" selection-start-line="49" selection-start-column="45" selection-end-line="49" selection-end-column="52" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///opt/local/include/gnuradio/block.h" />
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="578">
+          <caret line="122" column="41" lean-forward="false" selection-start-line="122" selection-start-column="41" selection-end-line="122" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="606">
+          <caret line="49" column="13" lean-forward="false" selection-start-line="49" selection-start-column="9" selection-end-line="49" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="318">
+          <caret line="132" column="16" lean-forward="false" selection-start-line="132" selection-start-column="4" selection-end-line="132" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="578">
+          <caret line="138" column="35" lean-forward="false" selection-start-line="138" selection-start-column="11" selection-end-line="138" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="201" column="41" lean-forward="false" selection-start-line="201" selection-start-column="30" selection-end-line="201" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2572">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_prova.cc" />
+    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_test_2ms.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="662">
+          <caret line="269" column="33" lean-forward="false" selection-start-line="269" selection-start-column="33" selection-end-line="269" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_old.cc" />
+    <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="476">
+          <caret line="34" column="20" lean-forward="false" selection-start-line="34" selection-start-column="20" selection-end-line="34" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="294">
+          <caret line="24" column="8" lean-forward="false" selection-start-line="24" selection-start-column="8" selection-end-line="24" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="826">
+          <caret line="59" column="41" lean-forward="false" selection-start-line="59" selection-start-column="39" selection-end-line="59" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="928">
+          <caret line="246" column="40" lean-forward="false" selection-start-line="246" selection-start-column="29" selection-end-line="246" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/test_main.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="522">
+          <caret line="122" column="73" lean-forward="false" selection-start-line="122" selection-start-column="73" selection-end-line="122" selection-end-column="73" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/conf/gnss-sdr.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-224">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7644">
+          <caret line="588" column="50" lean-forward="false" selection-start-line="588" selection-start-column="44" selection-end-line="588" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/galileo_e5a_tracking_test.cc" />
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/gps_l2_m_dll_pll_tracking_test.cc" />
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l2_m_dll_pll_tracking.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-350">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-280">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="574">
+          <caret line="75" column="17" lean-forward="false" selection-start-line="75" selection-start-column="4" selection-end-line="75" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="364">
+          <caret line="74" column="40" lean-forward="false" selection-start-line="74" selection-start-column="40" selection-end-line="74" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_test.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1040">
+          <caret line="193" column="35" lean-forward="false" selection-start-line="193" selection-start-column="35" selection-end-line="193" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc" />
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e5a_dll_pll_tracking.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3220">
+          <caret line="161" column="23" lean-forward="false" selection-start-line="161" selection-start-column="23" selection-end-line="161" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gensource_gsoc2016_test.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="608">
+          <caret line="256" column="31" lean-forward="true" selection-start-line="256" selection-start-column="31" selection-end-line="256" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="927">
+          <caret line="258" column="4" lean-forward="false" selection-start-line="258" selection-start-column="4" selection-end-line="258" selection-end-column="50" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="714">
+          <caret line="555" column="29" lean-forward="true" selection-start-line="555" selection-start-column="29" selection-end-line="555" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/adapters/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="314">
+          <caret line="40" column="19" lean-forward="true" selection-start-line="40" selection-start-column="19" selection-end-line="40" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

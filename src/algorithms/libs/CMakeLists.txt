@@ -22,7 +22,9 @@ set(GNSS_SPLIBS_SOURCES
     galileo_e1_signal_processing.cc
     gnss_sdr_valve.cc
     gnss_signal_processing.cc
+        beidou_b1i_signal_processing.cc
     gps_sdr_signal_processing.cc
+#    beidou_sdr_signal_processing_test_2ms.cc
     pass_through.cc
     galileo_e5_signal_processing.cc
     complex_byte_to_float_x2.cc

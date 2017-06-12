@@ -257,7 +257,7 @@ void gps_l2_m_dll_pll_tracking_cc::start_tracking()
     sys = sys_.substr(0,1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking GPS L2CM start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of GPS L2CM signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting GPS L2CM tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
@@ -319,7 +319,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items __attribute__(
             d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * samples_offset;
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
-            current_synchro_data.fs=d_fs_in;
+            current_synchro_data.fs = d_fs_in;
             current_synchro_data.correlation_length_ms = 20;
             *out[0] = current_synchro_data;
             consume_each(samples_offset); // shift input to perform alignment with local replica
@@ -429,11 +429,11 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items __attribute__(
         {
             d_correlator_outs[n] = gr_complex(0,0);
         }
-        current_synchro_data.Tracking_sample_counter =d_sample_counter + d_current_prn_length_samples;
+        current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
         current_synchro_data.correlation_length_ms = 20;
     }
     //assign the GNURadio block output data
-    current_synchro_data.fs=d_fs_in;
+    current_synchro_data.fs = d_fs_in;
     *out[0] = current_synchro_data;
 
     if(d_dump)

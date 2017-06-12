@@ -301,7 +301,7 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
     sys = sys_.substr(0,1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking Galileo E5a start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of Galileo E5a signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Galileo E5a starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
 
@@ -420,7 +420,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
             current_synchro_data.Carrier_phase_rads = 0.0;
             current_synchro_data.CN0_dB_hz = 0.0;
-            current_synchro_data.fs=d_fs_in;
+            current_synchro_data.fs = d_fs_in;
             consume_each(samples_offset); //shift input to perform alignment with local replica
             return 1;
             break;
@@ -645,8 +645,8 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
         }
     }
 
-    current_synchro_data.fs=d_fs_in;
-    current_synchro_data.correlation_length_ms=GALILEO_E5a_CODE_PERIOD_MS;
+    current_synchro_data.fs = d_fs_in;
+    current_synchro_data.correlation_length_ms = GALILEO_E5a_CODE_PERIOD_MS;
     *out[0] = current_synchro_data;
 
     if(d_dump)
@@ -744,4 +744,3 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_sync
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }
-

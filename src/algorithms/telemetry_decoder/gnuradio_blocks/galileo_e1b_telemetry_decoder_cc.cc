@@ -208,13 +208,13 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
             d_nav.split_page(page_String, flag_even_word_arrived);
             if(d_nav.flag_CRC_test == true)
                 {
-                    LOG(INFO) << "Galileo CRC correct on channel " << d_channel << " from satellite " << d_satellite;
-                    std::cout << "Galileo CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
+                    LOG(INFO) << "Galileo E1 CRC correct on channel " << d_channel << " from satellite " << d_satellite;
+                    //std::cout << "Galileo E1 CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
                 }
             else
                 {
-                    std::cout << "Galileo CRC error on channel " << d_channel <<  " from satellite " << d_satellite << std::endl;
-                    LOG(INFO) << "Galileo CRC error on channel " << d_channel <<  " from satellite " << d_satellite;
+                    std::cout << "Galileo E1 CRC error on channel " << d_channel <<  " from satellite " << d_satellite << std::endl;
+                    LOG(INFO) << "Galileo E1 CRC error on channel " << d_channel <<  " from satellite " << d_satellite;
                 }
             flag_even_word_arrived = 0;
         }
@@ -230,7 +230,7 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
         {
             // get object for this SV (mandatory)
             std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_nav.get_ephemeris());
-
+            std::cout << "New Galileo E1 I/NAV message received: ephemeris from satellite " << d_satellite << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
 
         }
@@ -238,12 +238,14 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
         {
             // get object for this SV (mandatory)
             std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_nav.get_iono());
+            std::cout << "New Galileo E1 I/NAV message received: iono/GST model parameters from satellite " << d_satellite << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_utc_model() == true)
         {
             // get object for this SV (mandatory)
             std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_nav.get_utc_model());
+            std::cout << "New Galileo E1 I/NAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_almanac() == true)
@@ -251,7 +253,7 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
             std::shared_ptr<Galileo_Almanac> tmp_obj= std::make_shared<Galileo_Almanac>(d_nav.get_almanac());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             //debug
-            std::cout << "Galileo almanac received!" << std::endl;
+            std::cout << "Galileo E1 I/NAV almanac received!" << std::endl;
             DLOG(INFO) << "GPS_to_Galileo time conversion:";
             DLOG(INFO) << "A0G=" << tmp_obj->A_0G_10;
             DLOG(INFO) << "A1G=" << tmp_obj->A_1G_10;
@@ -310,7 +312,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {
                     d_preamble_index = d_sample_counter;//record the preamble sample stamp
-                    LOG(INFO) << "Preamble detection for Galileo SAT " << this->d_satellite;
+                    LOG(INFO) << "Preamble detection for Galileo satellite " << this->d_satellite;
                     d_stat = 1; // enter into frame pre-detection status
                 }
         }
@@ -323,7 +325,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
                     if (abs(preamble_diff - GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
                             //try to decode frame
-                            LOG(INFO) << "Starting page decoder for Galileo SAT " << this->d_satellite;
+                            LOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
                             d_preamble_index = d_sample_counter; //record the preamble sample stamp
                             d_stat = 2;
                         }

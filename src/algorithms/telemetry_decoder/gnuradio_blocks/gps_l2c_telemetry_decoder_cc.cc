@@ -65,8 +65,8 @@ gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
     d_flag_valid_word = false;
     d_TOW_at_current_symbol = 0;
     d_TOW_at_Preamble = 0;
-    d_state=0; //initial state
-    d_crc_error_count=0;
+    d_state = 0; //initial state
+    d_crc_error_count = 0;
 
     //initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
@@ -91,7 +91,7 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
     u32 delay = 0;
 
     //add the symbol to the decoder
-    u8 symbol_clip=(u8)(in[0].Prompt_I>0) * 255;
+    u8 symbol_clip = (u8)(in[0].Prompt_I > 0) * 255;
     flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
 
     consume_each(1); //one by one
@@ -105,79 +105,80 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
     //2. Add the telemetry decoder information
     //check if new CNAV frame is available
     if (flag_new_cnav_frame == true)
-    {
-        std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> raw_bits;
-        //Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
-        for (u32 i = 0; i < GPS_L2_CNAV_DATA_PAGE_BITS ; i++) {
-            raw_bits[GPS_L2_CNAV_DATA_PAGE_BITS-1-i]=((msg.raw_msg[i/8] >> (7 - i%8)) & 1u);
-        }
-
-        d_CNAV_Message.decode_page(raw_bits);
-
-        //Push the new navigation data to the queues
-        if (d_CNAV_Message.have_new_ephemeris() == true)
-            {
-                // get ephemeris object for this SV
-                  std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj= std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                std::cout << "New GPS CNAV Ephemeris received for SV " << tmp_obj->i_satellite_PRN << std::endl;
-                this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-
-            }
-        if (d_CNAV_Message.have_new_iono() == true)
-            {
-                std::shared_ptr<Gps_CNAV_Iono> tmp_obj= std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                std::cout << "New GPS CNAV IONO model received for SV " << d_satellite.get_PRN() << std::endl;
-                this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            }
-
-        if (d_CNAV_Message.have_new_utc_model() == true)
-            {
-                std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj= std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                std::cout << "New GPS CNAV UTC model received for SV " << d_satellite.get_PRN() << std::endl;
-                this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            }
-
-        //update TOW at the preamble instant
-        d_TOW_at_Preamble=(int)msg.tow;
-        //std::cout<<"["<<(int)msg.prn<<"] deco delay: "<<delay<<"[symbols]"<<std::endl;
-        //* The time of the last input symbol can be computed from the message ToW and
-        //* delay by the formulae:
-        //* \code
-        //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20
-        d_TOW_at_current_symbol=((double)msg.tow) * 6.0 + ((double)delay) * GPS_L2_M_PERIOD +12*GPS_L2_M_PERIOD;
-        d_TOW_at_current_symbol=floor(d_TOW_at_current_symbol*1000.0)/1000.0;
-        d_flag_valid_word=true;
-    }
-    else
-    {
-        d_TOW_at_current_symbol +=GPS_L2_M_PERIOD;
-        if (current_synchro_data.Flag_valid_symbol_output==false)
         {
-            d_flag_valid_word=false;
-        }
-    }
-    current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
-    current_synchro_data.Flag_valid_word=d_flag_valid_word;
+            std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> raw_bits;
+            //Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
+            for (u32 i = 0; i < GPS_L2_CNAV_DATA_PAGE_BITS ; i++)
+                {
+                    raw_bits[GPS_L2_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i/8] >> (7 - i%8)) & 1u);
+                }
 
-//    if (flag_PLL_180_deg_phase_locked == true)
-//        {
-//            //correct the accumulated phase for the Costas loop phase shift, if required
-//            current_synchro_data.Carrier_phase_rads += GPS_PI;
-//        }
+            d_CNAV_Message.decode_page(raw_bits);
+
+            //Push the new navigation data to the queues
+            if (d_CNAV_Message.have_new_ephemeris() == true)
+                {
+                    // get ephemeris object for this SV
+                    std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
+                    std::cout << "New GPS CNAV message received: ephemeris from satellite " << d_satellite << std::endl;
+                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+
+                }
+            if (d_CNAV_Message.have_new_iono() == true)
+                {
+                    std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
+                    std::cout << "New GPS CNAV message received: iono model parameters from satellite " << d_satellite << std::endl;
+                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                }
+
+            if (d_CNAV_Message.have_new_utc_model() == true)
+                {
+                    std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
+                    std::cout << "New GPS CNAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
+                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                }
+
+            //update TOW at the preamble instant
+            d_TOW_at_Preamble = (int)msg.tow;
+            //std::cout<<"["<<(int)msg.prn<<"] deco delay: "<<delay<<"[symbols]"<<std::endl;
+            //* The time of the last input symbol can be computed from the message ToW and
+            //* delay by the formulae:
+            //* \code
+            //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20
+            d_TOW_at_current_symbol = ((double)msg.tow) * 6.0 + ((double)delay) * GPS_L2_M_PERIOD + 12 * GPS_L2_M_PERIOD;
+            d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
+            d_flag_valid_word = true;
+        }
+    else
+        {
+            d_TOW_at_current_symbol += GPS_L2_M_PERIOD;
+            if (current_synchro_data.Flag_valid_symbol_output == false)
+                {
+                    d_flag_valid_word = false;
+                }
+        }
+    current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
+    current_synchro_data.Flag_valid_word = d_flag_valid_word;
+
+    //    if (flag_PLL_180_deg_phase_locked == true)
+    //        {
+    //            //correct the accumulated phase for the Costas loop phase shift, if required
+    //            current_synchro_data.Carrier_phase_rads += GPS_PI;
+    //        }
 
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
             {
-                double tmp_double;
-                unsigned long int tmp_ulong_int;
-                tmp_double = d_TOW_at_current_symbol;
-                d_dump_file.write((char*)&tmp_double, sizeof(double));
-                tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
-                d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
-                tmp_double = d_TOW_at_Preamble;
-                d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    double tmp_double;
+                    unsigned long int tmp_ulong_int;
+                    tmp_double = d_TOW_at_current_symbol;
+                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
+                    d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
+                    tmp_double = d_TOW_at_Preamble;
+                    d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
             catch (const std::ifstream::failure & e)
             {
@@ -185,12 +186,10 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
             }
         }
 
-
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     out[0] = current_synchro_data;
     return 1;
 }
-
 
 
 void gps_l2c_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
@@ -198,7 +197,6 @@ void gps_l2c_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "GPS L2C CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
 }
-
 
 
 void gps_l2c_telemetry_decoder_cc::set_channel(int channel)

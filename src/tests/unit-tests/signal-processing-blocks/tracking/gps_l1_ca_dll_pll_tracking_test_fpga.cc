@@ -33,6 +33,7 @@
 
 
 #include <ctime>
+#include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
 #include <armadillo>

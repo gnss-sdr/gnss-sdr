@@ -121,7 +121,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                     select_queue_Fpga, device_name, dump, dump_filename);
             DLOG(INFO) << "acquisition("
                     << gps_acquisition_fpga_sc_->unique_id() << ")";
-
         }
     else
         {
@@ -134,18 +133,18 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     gnss_synchro_ = 0;
 }
 
+
 GpsL1CaPcpsAcquisitionFpga::~GpsL1CaPcpsAcquisitionFpga()
 {
-
 }
+
 
 void GpsL1CaPcpsAcquisitionFpga::set_channel(unsigned int channel)
 {
     channel_ = channel;
-
     gps_acquisition_fpga_sc_->set_channel(channel_);
-
 }
+
 
 void GpsL1CaPcpsAcquisitionFpga::set_threshold(float threshold)
 {
@@ -161,67 +160,61 @@ void GpsL1CaPcpsAcquisitionFpga::set_threshold(float threshold)
         }
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
-
     gps_acquisition_fpga_sc_->set_threshold(threshold_);
-
 }
+
 
 void GpsL1CaPcpsAcquisitionFpga::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
-
     gps_acquisition_fpga_sc_->set_doppler_max(doppler_max_);
-
 }
+
 
 void GpsL1CaPcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-
     gps_acquisition_fpga_sc_->set_doppler_step(doppler_step_);
-
 }
+
 
 void GpsL1CaPcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-
     gps_acquisition_fpga_sc_->set_gnss_synchro(gnss_synchro_);
 }
 
+
 signed int GpsL1CaPcpsAcquisitionFpga::mag()
 {
-
     return gps_acquisition_fpga_sc_->mag();
 }
 
+
 void GpsL1CaPcpsAcquisitionFpga::init()
 {
-
     gps_acquisition_fpga_sc_->init();
-
     set_local_code();
 }
 
+
 void GpsL1CaPcpsAcquisitionFpga::set_local_code()
 {
-
     gps_acquisition_fpga_sc_->set_local_code();
-
 }
+
 
 void GpsL1CaPcpsAcquisitionFpga::reset()
 {
-
     gps_acquisition_fpga_sc_->set_active(true);
-
 }
+
 
 void GpsL1CaPcpsAcquisitionFpga::set_state(int state)
 {
-
     gps_acquisition_fpga_sc_->set_state(state);
 }
+
 
 float GpsL1CaPcpsAcquisitionFpga::calculate_threshold(float pfa)
 {
@@ -245,27 +238,23 @@ float GpsL1CaPcpsAcquisitionFpga::calculate_threshold(float pfa)
 
 void GpsL1CaPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
-
     //nothing to connect
 }
 
+
 void GpsL1CaPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 {
-
     //nothing to disconnect
 }
 
+
 gr::basic_block_sptr GpsL1CaPcpsAcquisitionFpga::get_left_block()
 {
-
     return gps_acquisition_fpga_sc_;
-
 }
+
 
 gr::basic_block_sptr GpsL1CaPcpsAcquisitionFpga::get_right_block()
 {
-
     return gps_acquisition_fpga_sc_;
-
 }
-

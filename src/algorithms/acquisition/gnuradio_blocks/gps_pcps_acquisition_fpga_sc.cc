@@ -48,6 +48,7 @@ void wait3(int seconds)
         { seconds });
 }
 
+
 gps_pcps_acquisition_fpga_sc_sptr gps_pcps_make_acquisition_fpga_sc(
         unsigned int sampled_ms, unsigned int max_dwells,
         unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
@@ -56,7 +57,6 @@ gps_pcps_acquisition_fpga_sc_sptr gps_pcps_make_acquisition_fpga_sc(
         unsigned int select_queue_Fpga, std::string device_name, bool dump,
         std::string dump_filename)
 {
-
     return gps_pcps_acquisition_fpga_sc_sptr(
             new gps_pcps_acquisition_fpga_sc(sampled_ms, max_dwells,
                     doppler_max, freq, fs_in, samples_per_ms, samples_per_code,
@@ -64,6 +64,7 @@ gps_pcps_acquisition_fpga_sc_sptr gps_pcps_make_acquisition_fpga_sc(
                     use_CFAR_algorithm_flag, select_queue_Fpga, device_name,
                     dump, dump_filename));
 }
+
 
 gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
         unsigned int sampled_ms, unsigned int max_dwells,
@@ -101,15 +102,13 @@ gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
     d_gnss_synchro = 0;
 
     // instantiate HW accelerator class
-    acquisition_fpga_8sc =
-            std::make_shared < gps_fpga_acquisition_8sc
-                    > (device_name, vector_length, d_fft_size, nsamples_total, fs_in, freq, sampled_ms, select_queue_Fpga);
-
+    acquisition_fpga_8sc = std::make_shared < gps_fpga_acquisition_8sc>
+          (device_name, vector_length, d_fft_size, nsamples_total, fs_in, freq, sampled_ms, select_queue_Fpga);
 }
+
 
 gps_pcps_acquisition_fpga_sc::~gps_pcps_acquisition_fpga_sc()
 {
-
     if (d_dump)
         {
             d_dump_file.close();
@@ -118,12 +117,12 @@ gps_pcps_acquisition_fpga_sc::~gps_pcps_acquisition_fpga_sc()
     acquisition_fpga_8sc->free();
 }
 
+
 void gps_pcps_acquisition_fpga_sc::set_local_code()
 {
-
     acquisition_fpga_8sc->set_local_code(d_gnss_synchro->PRN);
-
 }
+
 
 void gps_pcps_acquisition_fpga_sc::init()
 {
@@ -144,8 +143,8 @@ void gps_pcps_acquisition_fpga_sc::init()
     acquisition_fpga_8sc->open_device();
 
     acquisition_fpga_8sc->init();
-
 }
+
 
 void gps_pcps_acquisition_fpga_sc::set_state(int state)
 {
@@ -165,12 +164,11 @@ void gps_pcps_acquisition_fpga_sc::set_state(int state)
         {
             LOG(ERROR) << "State can only be set to 0 or 1";
         }
-
 }
+
 
 void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 {
-
     float temp_peak_to_noise_level = 0.0;
     float peak_to_noise_level = 0.0;
     float input_power;
@@ -283,7 +281,6 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
             acquisition_message = 1;
             this->message_port_pub(pmt::mp("events"),
                     pmt::from_long(acquisition_message));
-
         }
     else
         {
@@ -307,7 +304,6 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
             acquisition_message = 2;
             this->message_port_pub(pmt::mp("events"),
                     pmt::from_long(acquisition_message));
-
         }
 
     acquisition_fpga_8sc->unblock_samples();
@@ -315,8 +311,8 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
     acquisition_fpga_8sc->close_device();
 
     DLOG(INFO) << "Done. Consumed 1 item.";
-
 }
+
 
 int gps_pcps_acquisition_fpga_sc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,

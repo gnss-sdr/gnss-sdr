@@ -71,6 +71,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr gps_l1_ca_dll_pll_c_aid_make_track
                     early_late_space_chips, device_name, device_base));
 }
 
+
 void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::msg_handler_preamble_index(
         pmt::pmt_t msg)
 {
@@ -85,6 +86,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::msg_handler_preamble_index(
         }
 }
 
+
 gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc(
         long if_freq, long fs_in, unsigned int vector_length, bool dump,
         std::string dump_filename, float pll_bw_hz, float dll_bw_hz,
@@ -96,7 +98,6 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::gps_l1_ca_dll_pll_c_aid_tracking_fpga_
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 
 {
-
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->set_msg_handler(pmt::mp("preamble_timestamp_s"),
@@ -202,8 +203,8 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::gps_l1_ca_dll_pll_c_aid_tracking_fpga_
     d_preamble_timestamp_s = 0.0;
     d_carr_phase_error_secs_Ti = 0.0;
     //set_min_output_buffer((long int)300);
-
 }
+
 
 void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::start_tracking()
 {
@@ -316,6 +317,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::start_tracking()
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
 
+
 gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::~gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc()
 {
     d_dump_file.close();
@@ -329,13 +331,13 @@ gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::~gps_l1_ca_dll_pll_c_aid_tracking_fpga
     multicorrelator_fpga_8sc->free();
 }
 
+
 int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work(
         int noutput_items __attribute__((unused)),
         gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-
     // samples offset
     int samples_offset;
 
@@ -829,6 +831,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work(
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 
+
 void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::set_channel(unsigned int channel)
 {
     d_channel = channel;
@@ -864,11 +867,13 @@ void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::set_channel(unsigned int channel)
         }
 }
 
+
 void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::set_gnss_synchro(
         Gnss_Synchro* p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }
+
 
 void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::reset(void)
 {

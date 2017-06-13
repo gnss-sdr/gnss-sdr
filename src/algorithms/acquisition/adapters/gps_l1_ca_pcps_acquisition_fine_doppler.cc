@@ -136,7 +136,7 @@ signed int GpsL1CaPcpsAcquisitionFineDoppler::mag()
 void GpsL1CaPcpsAcquisitionFineDoppler::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 

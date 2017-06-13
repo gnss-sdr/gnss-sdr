@@ -43,15 +43,13 @@
 #include "complex_byte_to_float_x2.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
-
-
 class ConfigurationInterface;
 
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GPS L1 C/A signals
  */
-class GpsL1CaPcpsAcquisitionFpga: public AcquisitionInterface
+class GpsL1CaPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAcquisitionFpga(ConfigurationInterface* configuration,
@@ -137,34 +135,18 @@ public:
 private:
     ConfigurationInterface* configuration_;
     gps_pcps_acquisition_fpga_sc_sptr gps_acquisition_fpga_sc_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
-    gr::blocks::float_to_complex::sptr float_to_complex_;
-    complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
-    unsigned int code_length_;
-    bool bit_transition_flag_;
-    bool use_CFAR_algorithm_flag_;
     unsigned int channel_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
-    unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
-    long if_;
-    bool dump_;
-    std::string dump_filename_;
-    std::complex<float> * code_;
     Gnss_Synchro * gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
-    unsigned int nsamples_total_;
-
-    unsigned int select_queue_Fpga_;
 
     float calculate_threshold(float pfa);
 };

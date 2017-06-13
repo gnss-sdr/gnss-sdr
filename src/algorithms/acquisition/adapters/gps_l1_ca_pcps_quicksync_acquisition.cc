@@ -227,7 +227,7 @@ signed int GpsL1CaPcpsQuickSyncAcquisition::mag()
 void GpsL1CaPcpsQuickSyncAcquisition::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 
 }
 

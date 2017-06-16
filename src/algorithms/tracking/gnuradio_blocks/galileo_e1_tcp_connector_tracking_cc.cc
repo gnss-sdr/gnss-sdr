@@ -485,6 +485,10 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
                     tmp_double = (double)(d_sample_counter+d_current_prn_length_samples);
                     d_dump_file.write((char*)&tmp_double, sizeof(double));
+
+                    // PRN
+                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char*>(&prn_), sizeof(unsigned int));
             }
             catch (const std::ifstream::failure &e)
             {

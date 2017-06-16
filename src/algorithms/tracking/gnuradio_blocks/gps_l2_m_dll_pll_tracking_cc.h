@@ -1,6 +1,6 @@
 /*!
  * \file gps_l2_m_dll_pll_tracking_cc.h
- * \brief Interface of a code DLL + carrier PLL tracking block
+ * \brief Interface of a code DLL + carrier PLL tracking block for GPS L2C
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:

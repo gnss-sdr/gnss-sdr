@@ -49,7 +49,7 @@ for channelNr = channelList
     clf(channelNr +200);
     set(channelNr +200, 'Name', ['Channel ', num2str(channelNr), ...
                                  ' (PRN ', ...
-                                 num2str(trackResults(channelNr).PRN), ...
+                                 num2str(trackResults(channelNr).PRN(end-1)), ...
                                  ') results']);
 
 %% Draw axes ==============================================================
@@ -122,7 +122,7 @@ for channelNr = channelList
 
         %----- PLL discriminator filtered----------------------------------
         plot  (handles(3, 1), timeAxisInSeconds, ...
-                              trackResults(channelNr).pllDiscrFilt, 'b');      
+                              trackResults(channelNr).pllDiscrFilt(1:settings.msToProcess), 'b');      
 
         grid  (handles(3, 1));
         axis  (handles(3, 1), 'tight');

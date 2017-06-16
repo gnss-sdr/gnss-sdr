@@ -199,6 +199,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_acc_code_phase_secs = 0.0;
 }
 
+
 void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
 {
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
@@ -247,6 +248,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
 
+
 galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
 {
     d_dump_file.close();
@@ -258,7 +260,6 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
     delete[] d_Prompt_buffer;
     multicorrelator_cpu.free();
 }
-
 
 
 int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
@@ -477,10 +478,13 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
                     tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                    // PRN
+                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char*>(&prn_), sizeof(unsigned int));
             }
             catch (const std::ifstream::failure &e)
             {
-                    LOG(WARNING) << "Exception writing trk dump file " << e.what() << std::endl;
+                    LOG(WARNING) << "Exception writing trk dump file " << e.what();
             }
         }
     consume_each(d_current_prn_length_samples); // this is required for gr_block derivates
@@ -510,7 +514,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::set_channel(unsigned int channel)
                     }
                     catch (const std::ifstream::failure &e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                     }
                 }
         }

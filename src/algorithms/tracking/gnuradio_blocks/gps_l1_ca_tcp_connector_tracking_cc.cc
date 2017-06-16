@@ -520,6 +520,10 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
                     tmp_float = 0;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
                     d_dump_file.write((char*)&d_sample_counter_seconds, sizeof(double));
+
+                    // PRN
+                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char*>(&prn_), sizeof(unsigned int));
             }
             catch (const std::ifstream::failure &e)
             {

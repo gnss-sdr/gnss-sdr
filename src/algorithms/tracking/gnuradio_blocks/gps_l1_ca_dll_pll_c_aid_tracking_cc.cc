@@ -625,6 +625,10 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                     tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+
+                    // PRN
+                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char*>(&prn_), sizeof(unsigned int));
             }
             catch (const std::ifstream::failure* e)
             {
@@ -654,7 +658,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_cc::set_channel(unsigned int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (const std::ifstream::failure* e)
                     {

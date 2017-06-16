@@ -619,6 +619,10 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work (int noutput_items __
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                     tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+
+                    // PRN
+                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char*>(&prn_), sizeof(unsigned int));
             }
             catch (const std::ifstream::failure* e)
             {

@@ -18,5 +18,7 @@
 
 add_subdirectory(adapters)
 add_subdirectory(gnuradio_blocks)
-#add_subdirectory(libs)
+if(ENABLE_FPGA)
+	add_subdirectory(libs)
+endif(ENABLE_FPGA)
 

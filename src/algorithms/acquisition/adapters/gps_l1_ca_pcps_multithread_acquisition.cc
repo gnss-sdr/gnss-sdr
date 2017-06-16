@@ -197,7 +197,7 @@ signed int GpsL1CaPcpsMultithreadAcquisition::mag()
 void GpsL1CaPcpsMultithreadAcquisition::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 

@@ -34,18 +34,28 @@
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
-
 
 using google::LogMessage;
 
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams)
+        role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
+    unsigned int code_length;
+    bool bit_transition_flag;
+    bool use_CFAR_algorithm_flag;
+    unsigned int sampled_ms;
+    long fs_in;
+    long ifreq;
+    bool dump;
+    std::string dump_filename;
+    unsigned int nsamples_total;
+    unsigned int select_queue_Fpga;
+    std::string device_name;
+
     configuration_ = configuration;
 
     std::string default_item_type = "cshort";
@@ -53,59 +63,69 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     DLOG(INFO) << "role " << role;
 
-    item_type_ = configuration_->property(role + ".item_type", default_item_type);
+    item_type_ = configuration_->property(role + ".item_type",
+            default_item_type);
 
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    if_ = configuration_->property(role + ".if", 0);
-    dump_ = configuration_->property(role + ".dump", false);
+    fs_in = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    ifreq = configuration_->property(role + ".if", 0);
+    dump = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
+    sampled_ms = configuration_->property(
+            role + ".coherent_integration_time_ms", 1);
 
     // note : the FPGA is implemented according to bit transition flag = 0. Setting bit transition flag to 1 has no effect.
-    bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
+    bit_transition_flag = configuration_->property(
+            role + ".bit_transition_flag", false);
 
     // note : the FPGA is implemented according to use_CFAR_algorithm = 0. Setting use_CFAR_algorithm to 1 has no effect.
-    use_CFAR_algorithm_flag_=configuration_->property(role + ".use_CFAR_algorithm", false);
+    use_CFAR_algorithm_flag = configuration_->property(
+            role + ".use_CFAR_algorithm", false);
 
     // note : the FPGA does not use the max_dwells variable.
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
 
-    dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
+    dump_filename = configuration_->property(role + ".dump_filename",
+            default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    code_length = round(
+            fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     // code length has the same value as d_fft_size
-	float nbits;
-	nbits = ceilf(log2f(code_length_));
-	nsamples_total_ = pow(2,nbits);
+    float nbits;
+    nbits = ceilf(log2f(code_length));
+    nsamples_total = pow(2, nbits);
 
     //vector_length_ = code_length_ * sampled_ms_;
-    vector_length_ = nsamples_total_ * sampled_ms_;
+    vector_length_ = nsamples_total * sampled_ms;
 
+    //    if( bit_transition_flag_ )
+    //        {
+    //            vector_length_ *= 2;
+    //        }
 
-    if( bit_transition_flag_ )
-        {
-            vector_length_ *= 2;
-        }
+    select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga",
+            0);
 
-    code_ = new gr_complex[vector_length_];
+    std::string default_device_name = "/dev/uio0";
+    device_name = configuration_->property(role + ".devicename",
+            default_device_name);
 
-    select_queue_Fpga_ = configuration_->property(role + ".select_queue_Fpga", 0);
-
-    if (item_type_.compare("cshort") == 0 )
+    if (item_type_.compare("cshort") == 0)
         {
             item_size_ = sizeof(lv_16sc_t);
-            gps_acquisition_fpga_sc_ = gps_pcps_make_acquisition_fpga_sc(sampled_ms_, max_dwells_,
-                    doppler_max_, if_, fs_in_, code_length_, code_length_, vector_length_,
-                    bit_transition_flag_, use_CFAR_algorithm_flag_, select_queue_Fpga_, dump_, dump_filename_);
-            DLOG(INFO) << "acquisition(" << gps_acquisition_fpga_sc_->unique_id() << ")";
-
+            gps_acquisition_fpga_sc_ = gps_pcps_make_acquisition_fpga_sc(
+                    sampled_ms, max_dwells_, doppler_max_, ifreq, fs_in,
+                    code_length, code_length, vector_length_, nsamples_total,
+                    bit_transition_flag, use_CFAR_algorithm_flag,
+                    select_queue_Fpga, device_name, dump, dump_filename);
+            DLOG(INFO) << "acquisition("
+                    << gps_acquisition_fpga_sc_->unique_id() << ")";
         }
-    else{
-    		LOG(FATAL) << item_type_ << " FPGA only accepts chsort";
-    	}
-
+    else
+        {
+            LOG(FATAL) << item_type_ << " FPGA only accepts chsort";
+        }
 
     channel_ = 0;
     threshold_ = 0.0;
@@ -116,16 +136,13 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
 GpsL1CaPcpsAcquisitionFpga::~GpsL1CaPcpsAcquisitionFpga()
 {
-    delete[] code_;
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_channel(unsigned int channel)
 {
     channel_ = channel;
-
     gps_acquisition_fpga_sc_->set_channel(channel_);
-
 }
 
 
@@ -133,7 +150,7 @@ void GpsL1CaPcpsAcquisitionFpga::set_threshold(float threshold)
 {
     float pfa = configuration_->property(role_ + ".pfa", 0.0);
 
-    if(pfa == 0.0)
+    if (pfa == 0.0)
         {
             threshold_ = threshold;
         }
@@ -143,101 +160,68 @@ void GpsL1CaPcpsAcquisitionFpga::set_threshold(float threshold)
         }
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
-
-
     gps_acquisition_fpga_sc_->set_threshold(threshold_);
-
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
-
     gps_acquisition_fpga_sc_->set_doppler_max(doppler_max_);
-
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-
     gps_acquisition_fpga_sc_->set_doppler_step(doppler_step_);
-
 }
+
 
 void GpsL1CaPcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-
     gps_acquisition_fpga_sc_->set_gnss_synchro(gnss_synchro_);
 }
 
 
 signed int GpsL1CaPcpsAcquisitionFpga::mag()
 {
-
-	return gps_acquisition_fpga_sc_->mag();
+    return gps_acquisition_fpga_sc_->mag();
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::init()
 {
-
-	gps_acquisition_fpga_sc_->init();
-
+    gps_acquisition_fpga_sc_->init();
     set_local_code();
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_local_code()
 {
-
-    std::complex<float>* code = new std::complex<float>[vector_length_];
-
-
-    //init to zeros for the zero padding of the fft
-    for (uint s=0;s<vector_length_;s++)
-    {
-    	code[s] = std::complex<float>(0, 0);
-    }
-
-    gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_ , 0);
-
-    for (unsigned int i = 0; i < sampled_ms_; i++)
-	{
-		memcpy(&(code_[i*vector_length_]), code, sizeof(gr_complex)*vector_length_);
-
-	}
-
-    gps_acquisition_fpga_sc_->set_local_code(code_);
-
-    delete[] code;
+    gps_acquisition_fpga_sc_->set_local_code();
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::reset()
 {
-
-	gps_acquisition_fpga_sc_->set_active(true);
-
+    gps_acquisition_fpga_sc_->set_active(true);
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_state(int state)
 {
-
-	gps_acquisition_fpga_sc_->set_state(state);
+    gps_acquisition_fpga_sc_->set_state(state);
 }
-
 
 
 float GpsL1CaPcpsAcquisitionFpga::calculate_threshold(float pfa)
 {
     //Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    for (int doppler = (int) (-doppler_max_); doppler <= (int) doppler_max_;
+            doppler += doppler_step_)
         {
             frequency_bins++;
         }
@@ -246,39 +230,31 @@ float GpsL1CaPcpsAcquisitionFpga::calculate_threshold(float pfa)
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
-    boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    boost::math::exponential_distribution<double> mydist(lambda);
+    float threshold = (float) quantile(mydist, val);
 
     return threshold;
 }
 
-
 void GpsL1CaPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
-
-	//nothing to connect
+    //nothing to connect
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 {
-
-	//nothing to disconnect
+    //nothing to disconnect
 }
 
 
 gr::basic_block_sptr GpsL1CaPcpsAcquisitionFpga::get_left_block()
 {
-
-	return gps_acquisition_fpga_sc_;
-
+    return gps_acquisition_fpga_sc_;
 }
 
 
 gr::basic_block_sptr GpsL1CaPcpsAcquisitionFpga::get_right_block()
 {
-
-	return gps_acquisition_fpga_sc_;
-
+    return gps_acquisition_fpga_sc_;
 }
-

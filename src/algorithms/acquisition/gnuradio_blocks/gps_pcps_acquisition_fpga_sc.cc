@@ -40,172 +40,87 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "control_message_factory.h"
 #include "GPS_L1_CA.h" //GPS_TWO_PI
-
 using google::LogMessage;
 
 void wait3(int seconds)
 {
-    boost::this_thread::sleep_for(boost::chrono::seconds{seconds});
+    boost::this_thread::sleep_for(boost::chrono::seconds
+        { seconds });
 }
 
 
 gps_pcps_acquisition_fpga_sc_sptr gps_pcps_make_acquisition_fpga_sc(
-                                 unsigned int sampled_ms, unsigned int max_dwells,
-                                 unsigned int doppler_max, long freq, long fs_in,
-                                 int samples_per_ms, int samples_per_code, int vector_length,
-                                 bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-                                 unsigned int select_queue_Fpga,
-                                 bool dump,
-                                 std::string dump_filename)
+        unsigned int sampled_ms, unsigned int max_dwells,
+        unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
+        int samples_per_code, int vector_length, unsigned int nsamples_total,
+        bool bit_transition_flag, bool use_CFAR_algorithm_flag,
+        unsigned int select_queue_Fpga, std::string device_name, bool dump,
+        std::string dump_filename)
 {
-
     return gps_pcps_acquisition_fpga_sc_sptr(
-            new gps_pcps_acquisition_fpga_sc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-                                     samples_per_code, vector_length, bit_transition_flag, use_CFAR_algorithm_flag, select_queue_Fpga, dump, dump_filename));
+            new gps_pcps_acquisition_fpga_sc(sampled_ms, max_dwells,
+                    doppler_max, freq, fs_in, samples_per_ms, samples_per_code,
+                    vector_length, nsamples_total, bit_transition_flag,
+                    use_CFAR_algorithm_flag, select_queue_Fpga, device_name,
+                    dump, dump_filename));
 }
 
-gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
-                         unsigned int sampled_ms, unsigned int max_dwells,
-                         unsigned int doppler_max, long freq, long fs_in,
-                         int samples_per_ms, int samples_per_code, int vector_length,
-                         bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-                         unsigned int select_queue_Fpga,
-                         bool dump,
-                         std::string dump_filename) :
 
-    gr::block("pcps_acquisition_fpga_sc",gr::io_signature::make(0, 0, sizeof(lv_16sc_t)),gr::io_signature::make(0, 0, 0))
+gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
+        unsigned int sampled_ms, unsigned int max_dwells,
+        unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
+        int samples_per_code, int vector_length, unsigned int nsamples_total,
+        bool bit_transition_flag, bool use_CFAR_algorithm_flag,
+        unsigned int select_queue_Fpga, std::string device_name, bool dump,
+        std::string dump_filename) :
+
+        gr::block("pcps_acquisition_fpga_sc",
+                gr::io_signature::make(0, 0, sizeof(lv_16sc_t)),
+                gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;    // SAMPLE COUNTER
+    d_sample_counter = 0; // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
-    d_freq = freq;
-    d_fs_in = fs_in;
-    d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
-    d_sampled_ms = sampled_ms;
-    d_max_dwells = max_dwells;								// Note : d_max_dwells is not used in the FPGA implementation
+    d_max_dwells = max_dwells; // Note : d_max_dwells is not used in the FPGA implementation
     d_well_count = 0;
     d_doppler_max = doppler_max;
-    d_fft_size = d_sampled_ms * d_samples_per_ms;
+    d_fft_size = sampled_ms * samples_per_ms;
     d_mag = 0;
-    d_input_power = 0.0;
     d_num_doppler_bins = 0;
-    d_bit_transition_flag = bit_transition_flag; 			// Note : bit transition flag is ignored and assumed 0 in the FPGA implementation
-    d_use_CFAR_algorithm_flag = use_CFAR_algorithm_flag;	// Note : user CFAR algorithm flag is ignored and assumed 0 in the FPGA implementation
+    d_bit_transition_flag = bit_transition_flag; // Note : bit transition flag is ignored and assumed 0 in the FPGA implementation
+    d_use_CFAR_algorithm_flag = use_CFAR_algorithm_flag; // Note : user CFAR algorithm flag is ignored and assumed 0 in the FPGA implementation
     d_threshold = 0.0;
     d_doppler_step = 250;
-    d_code_phase = 0;
-    d_test_statistics = 0.0;
     d_channel = 0;
-    d_doppler_freq = 0.0;
-
-    d_nsamples_total = vector_length;
-
-    //if( d_bit_transition_flag )
-    //    {
-    //        d_fft_size *= 2;
-    //        d_max_dwells = 1;
-    //    }
-
-    d_fft_codes = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_magnitude = static_cast<float*>(volk_gnsssdr_malloc(d_nsamples_total * sizeof(float), volk_gnsssdr_get_alignment()));
-    //temporary storage for the input conversion from 16sc to float 32fc
-    d_in_32fc = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-
-	d_fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-
-
-    // Direct FFT
-    d_fft_if = new gr::fft::fft_complex(d_nsamples_total, true);
-
-    // Inverse FFT
-    d_ifft = new gr::fft::fft_complex(d_nsamples_total, false);
-
-    // FPGA queue selection
-    d_select_queue_Fpga = select_queue_Fpga;
 
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;
 
     d_gnss_synchro = 0;
-    d_grid_doppler_wipeoffs = 0;
 
-
-
-
-
-
+    // instantiate HW accelerator class
+    acquisition_fpga_8sc = std::make_shared < gps_fpga_acquisition_8sc>
+          (device_name, vector_length, d_fft_size, nsamples_total, fs_in, freq, sampled_ms, select_queue_Fpga);
 }
 
 
 gps_pcps_acquisition_fpga_sc::~gps_pcps_acquisition_fpga_sc()
 {
-    if (d_num_doppler_bins > 0)
-        {
-            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
-                {
-                    volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
-                }
-            delete[] d_grid_doppler_wipeoffs;
-        }
-
-    volk_gnsssdr_free(d_fft_codes);
-    volk_gnsssdr_free(d_magnitude);
-    volk_gnsssdr_free(d_in_32fc);
-
-    delete d_ifft;
-    delete d_fft_if;
-
     if (d_dump)
         {
             d_dump_file.close();
         }
 
-
-
-    acquisition_fpga_8sc.free();
+    acquisition_fpga_8sc->free();
 }
 
 
-void gps_pcps_acquisition_fpga_sc::set_local_code(std::complex<float> * code)
+void gps_pcps_acquisition_fpga_sc::set_local_code()
 {
-    // COD
-    // Here we want to create a buffer that looks like this:
-    // [ 0 0 0 ... 0 c_0 c_1 ... c_L]
-    // where c_i is the local code and there are L zeros and L chips
-
-
-
-
-    int offset = 0;
-//    if( d_bit_transition_flag )
-//        {
-//            std::fill_n( d_fft_if->get_inbuf(), d_nsamples_total, gr_complex( 0.0, 0.0 ) );
-//            offset = d_nsamples_total;
-//        }
-
-
-
-    memcpy(d_fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * d_nsamples_total);
-    d_fft_if->execute(); // We need the FFT of local code
-    volk_32fc_conjugate_32fc(d_fft_codes_padded, d_fft_if->get_outbuf(), d_nsamples_total);
-
-    acquisition_fpga_8sc.set_local_code(d_fft_codes_padded);
-
-}
-
-
-void gps_pcps_acquisition_fpga_sc::update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq)
-{
-
-    float phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(d_fs_in);
-
-    float _phase[1];
-    _phase[0] = 0;
-    volk_gnsssdr_s32f_sincos_32fc(carrier_vector, - phase_step_rad, _phase, correlator_length_samples);
-
+    acquisition_fpga_8sc->set_local_code(d_gnss_synchro->PRN);
 }
 
 
@@ -215,32 +130,20 @@ void gps_pcps_acquisition_fpga_sc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Flag_preamble = false;
-
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_mag = 0.0;
-    d_input_power = 0.0;
 
-    d_num_doppler_bins = ceil( static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step));
+    d_num_doppler_bins = ceil(
+            static_cast<double>(static_cast<int>(d_doppler_max)
+                    - static_cast<int>(-d_doppler_max))
+                    / static_cast<double>(d_doppler_step));
 
-    // Create the carrier Doppler wipeoff signals
-    d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_freq + doppler);
-        }
-    acquisition_fpga_8sc.init(d_fft_size, d_nsamples_total, d_freq, d_doppler_max, d_doppler_step, d_num_doppler_bins, d_fs_in, d_select_queue_Fpga);
+    acquisition_fpga_8sc->open_device();
 
-
-
-
-
+    acquisition_fpga_8sc->init();
 }
-
 
 
 void gps_pcps_acquisition_fpga_sc::set_state(int state)
@@ -253,172 +156,161 @@ void gps_pcps_acquisition_fpga_sc::set_state(int state)
             d_gnss_synchro->Acq_samplestamp_samples = 0;
             d_well_count = 0;
             d_mag = 0.0;
-            d_input_power = 0.0;
-            d_test_statistics = 0.0;
         }
     else if (d_state == 0)
-        {}
+        {
+        }
     else
         {
             LOG(ERROR) << "State can only be set to 0 or 1";
         }
-
-
-
-
-
-
 }
+
 
 void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 {
-	
-	float temp_peak_to_noise_level = 0.0;
-	float peak_to_noise_level = 0.0;
-	acquisition_fpga_8sc.block_samples(); // block the samples to run the acquisition this is only necessary for the tests
-
+    float temp_peak_to_noise_level = 0.0;
+    float peak_to_noise_level = 0.0;
+    float input_power;
+    float test_statistics = 0.0;
+    acquisition_fpga_8sc->block_samples(); // block the samples to run the acquisition this is only necessary for the tests
 
     d_active = active;
 
+    int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
-//    while (d_well_count < d_max_dwells)
-//    {
-		int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    d_state = 1;
 
-		d_state = 1;
+    // initialize acquisition algorithm
+    int doppler;
+    uint32_t indext = 0;
+    float magt = 0.0;
+    //int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
+    int effective_fft_size = d_fft_size;
+    //float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
-		// initialize acquisition algorithm
-		int doppler;
-		uint32_t indext = 0;
-		float magt = 0.0;
-		//int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
-		int effective_fft_size = d_fft_size;
-		//float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
+    d_mag = 0.0;
 
-		d_mag = 0.0;
+    unsigned int initial_sample;
 
-		unsigned int initial_sample;
+    d_well_count++;
 
-		d_well_count++;
+    DLOG(INFO) << "Channel: " << d_channel
+            << " , doing acquisition of satellite: " << d_gnss_synchro->System
+            << " " << d_gnss_synchro->PRN << " ,sample stamp: "
+            << d_sample_counter << ", threshold: " << ", threshold: "
+            << d_threshold << ", doppler_max: " << d_doppler_max
+            << ", doppler_step: " << d_doppler_step;
 
-		DLOG(INFO) << "Channel: " << d_channel
-				   << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
-				   << " ,sample stamp: " << d_sample_counter << ", threshold: "
-				   << ", threshold: "
-				   << d_threshold << ", doppler_max: " << d_doppler_max
-				   << ", doppler_step: " << d_doppler_step;
+    // Doppler frequency search loop
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins;
+            doppler_index++)
+        {
 
-		// Doppler frequency search loop
-		for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-			{
+            doppler = -static_cast<int>(d_doppler_max)
+                    + d_doppler_step * doppler_index;
 
+            acquisition_fpga_8sc->set_phase_step(doppler_index);
+            acquisition_fpga_8sc->run_acquisition(); // runs acquisition and waits until it is finished
 
-				doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+            acquisition_fpga_8sc->read_acquisition_results(&indext, &magt,
+                    &initial_sample, &input_power);
 
-				acquisition_fpga_8sc.set_phase_step(doppler_index);
-				acquisition_fpga_8sc.run_acquisition(); // runs acquisition and waits until it is finished
+            d_sample_counter = initial_sample;
 
-	    		acquisition_fpga_8sc.read_acquisition_results(&indext, &magt, &initial_sample, &d_input_power);
+            temp_peak_to_noise_level = (float) (magt / input_power);
+            if (peak_to_noise_level < temp_peak_to_noise_level)
+                {
+                    peak_to_noise_level = temp_peak_to_noise_level;
+                    d_mag = magt;
 
-	    		d_sample_counter = initial_sample;
+                    input_power = (input_power - d_mag)
+                            / (effective_fft_size - 1);
 
-		        temp_peak_to_noise_level = (float) (magt / d_input_power);
-		        if (peak_to_noise_level < temp_peak_to_noise_level) 
-					{
-		        	peak_to_noise_level = temp_peak_to_noise_level;
-						d_mag = magt;
+                    d_gnss_synchro->Acq_delay_samples =
+                            static_cast<double>(indext % d_samples_per_code);
+                    d_gnss_synchro->Acq_doppler_hz =
+                            static_cast<double>(doppler);
+                    d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
+                    test_statistics = d_mag / input_power;
+                }
 
-                        d_input_power = (d_input_power - d_mag) / (effective_fft_size - 1);
+            // Record results to file if required
+            if (d_dump)
+                {
+                    std::stringstream filename;
+                    //std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
+                    filename.str("");
 
-						//if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
-						//	{
-								d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
-								d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-								d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
-	                            d_test_statistics = d_mag / d_input_power;
-						//	}
-					}
+                    boost::filesystem::path p = d_dump_filename;
+                    filename << p.parent_path().string()
+                            << boost::filesystem::path::preferred_separator
+                            << p.stem().string() << "_"
+                            << d_gnss_synchro->System << "_"
+                            << d_gnss_synchro->Signal << "_sat_"
+                            << d_gnss_synchro->PRN << "_doppler_" << doppler
+                            << p.extension().string();
 
-				// Record results to file if required
-				if (d_dump)
-					{
-						std::stringstream filename;
-						std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
-						filename.str("");
+                    DLOG(INFO) << "Writing ACQ out to " << filename.str();
 
-						boost::filesystem::path p = d_dump_filename;
-						filename << p.parent_path().string()
-										 << boost::filesystem::path::preferred_separator
-										 << p.stem().string()
-										 << "_" << d_gnss_synchro->System
-										 <<"_" << d_gnss_synchro->Signal << "_sat_"
-										 << d_gnss_synchro->PRN << "_doppler_"
-										 <<  doppler
-										 << p.extension().string();
+                    d_dump_file.open(filename.str().c_str(),
+                            std::ios::out | std::ios::binary);
+                    d_dump_file.close();
+                }
+        }
 
-						DLOG(INFO) << "Writing ACQ out to " << filename.str();
+    if (test_statistics > d_threshold)
+        {
+            d_state = 2; // Positive acquisition
 
-						d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-						d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
-						d_dump_file.close();
-					}
-			}
+            // 6.1- Declare positive acquisition using a message port
+            DLOG(INFO) << "positive acquisition";
+            DLOG(INFO) << "satellite " << d_gnss_synchro->System << " "
+                    << d_gnss_synchro->PRN;
+            DLOG(INFO) << "sample_stamp " << d_sample_counter;
+            DLOG(INFO) << "test statistics value " << test_statistics;
+            DLOG(INFO) << "test statistics threshold " << d_threshold;
+            DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
+            DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
+            DLOG(INFO) << "magnitude " << d_mag;
+            DLOG(INFO) << "input signal power " << input_power;
 
+            d_active = false;
+            d_state = 0;
 
-			if (d_test_statistics > d_threshold)
-				{
-					d_state = 2; // Positive acquisition
+            acquisition_message = 1;
+            this->message_port_pub(pmt::mp("events"),
+                    pmt::from_long(acquisition_message));
+        }
+    else
+        {
+            d_state = 3; // Negative acquisition
 
-					// 6.1- Declare positive acquisition using a message port
-					DLOG(INFO) << "positive acquisition";
-					DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
-					DLOG(INFO) << "sample_stamp " << d_sample_counter;
-					DLOG(INFO) << "test statistics value " << d_test_statistics;
-					DLOG(INFO) << "test statistics threshold " << d_threshold;
-					DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
-					DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
-					DLOG(INFO) << "magnitude " << d_mag;
-					DLOG(INFO) << "input signal power " << d_input_power;
+            // 6.2- Declare negative acquisition using a message port
+            DLOG(INFO) << "negative acquisition";
+            DLOG(INFO) << "satellite " << d_gnss_synchro->System << " "
+                    << d_gnss_synchro->PRN;
+            DLOG(INFO) << "sample_stamp " << d_sample_counter;
+            DLOG(INFO) << "test statistics value " << test_statistics;
+            DLOG(INFO) << "test statistics threshold " << d_threshold;
+            DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
+            DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
+            DLOG(INFO) << "magnitude " << d_mag;
+            DLOG(INFO) << "input signal power " << input_power;
 
-					d_active = false;
-					d_state = 0;
+            d_active = false;
+            d_state = 0;
 
-					acquisition_message = 1;
-					this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+            acquisition_message = 2;
+            this->message_port_pub(pmt::mp("events"),
+                    pmt::from_long(acquisition_message));
+        }
 
-//					break;
+    acquisition_fpga_8sc->unblock_samples();
 
-				}
-			else //if (d_well_count == d_max_dwells)
-				{
-					d_state = 3; // Negative acquisition
-
-					// 6.2- Declare negative acquisition using a message port
-					DLOG(INFO) << "negative acquisition";
-					DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
-					DLOG(INFO) << "sample_stamp " << d_sample_counter;
-					DLOG(INFO) << "test statistics value " << d_test_statistics;
-					DLOG(INFO) << "test statistics threshold " << d_threshold;
-					DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
-					DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
-					DLOG(INFO) << "magnitude " << d_mag;
-					DLOG(INFO) << "input signal power " << d_input_power;
-
-					d_active = false;
-					d_state = 0;
-
-					acquisition_message = 2;
-					this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
-
-//					break;
-				}
-
-//    }
-
-    acquisition_fpga_8sc.unblock_samples();
+    acquisition_fpga_8sc->close_device();
 
     DLOG(INFO) << "Done. Consumed 1 item.";
-
 }
 
 
@@ -426,6 +318,6 @@ int gps_pcps_acquisition_fpga_sc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items __attribute__((unused)))
 {
-	// general work not used with the acquisition
+    // general work not used with the acquisition
     return noutput_items;
 }

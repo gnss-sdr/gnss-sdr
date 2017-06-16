@@ -204,7 +204,7 @@ signed int GalileoE1PcpsTongAmbiguousAcquisition::mag()
 void GalileoE1PcpsTongAmbiguousAcquisition::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 

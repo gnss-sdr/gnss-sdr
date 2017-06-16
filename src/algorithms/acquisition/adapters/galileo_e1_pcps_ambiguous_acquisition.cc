@@ -234,7 +234,7 @@ void GalileoE1PcpsAmbiguousAcquisition::init()
             acquisition_cc_->init();
         }
 
-    set_local_code();
+    //set_local_code();
 }
 
 

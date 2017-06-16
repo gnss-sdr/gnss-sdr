@@ -174,6 +174,8 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
 
     DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";
 
+    size_t output_item_size = ( is_complex_ ? sizeof( gr_complex ) : sizeof( float ) );
+
     if (samples_ == 0) // read all file
         {
             /*!
@@ -211,19 +213,19 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 
-    valve_ = gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue_);
+    valve_ = gnss_sdr_make_valve(output_item_size, samples_, queue_);
     DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
 
     if (dump_)
         {
             //sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
-            sink_ = gr::blocks::file_sink::make(sizeof(gr_complex), dump_filename_.c_str());
+            sink_ = gr::blocks::file_sink::make(output_item_size, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
         }
 
     if (enable_throttle_control_)
         {
-            throttle_ = gr::blocks::throttle::make(sizeof(gr_complex), sampling_frequency_);
+            throttle_ = gr::blocks::throttle::make(output_item_size, sampling_frequency_);
         }
     DLOG(INFO) << "File source filename " << filename_;
     DLOG(INFO) << "Samples " << samples_;

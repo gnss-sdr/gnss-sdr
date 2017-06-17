@@ -29,15 +29,20 @@
 %  */ 
 close all;
 clear all;
+
+if ~exist('gps_l1_ca_dll_pll_read_tracking_dump.m','file')
+    addpath('./libs')
+end
+
+
 samplingFreq = 5000000;     %[Hz]
 channels = 7;
 first_channel = 0;
 
-%path='/home/javier/workspace/gnss-sdr/trunk/install/';
-path = '/Users/carlesfernandez/git/cttc/build/';
+path = '/Users/carlesfernandez/git/cttc/build/';  %% CHANGE THIS PATH
 
 for N=1:1:channels
-    tracking_log_path = [path 'epl_tracking_ch_' num2str(N+first_channel-1) '.dat'];
+    tracking_log_path = [path 'epl_tracking_ch_' num2str(N+first_channel-1) '.dat']; %% CHANGE epl_tracking_ch_ BY YOUR dump_filename
     GNSS_tracking(N)= gps_l1_ca_dll_pll_read_tracking_dump(tracking_log_path);   
 end
 

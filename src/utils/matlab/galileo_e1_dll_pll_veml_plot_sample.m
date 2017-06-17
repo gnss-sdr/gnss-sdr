@@ -29,15 +29,19 @@
 %  */ 
 close all;
 clear all;
+
+if ~exist('galileo_e1_dll_pll_veml_read_tracking_dump.m','file')
+    addpath('./libs')
+end
+
 samplingFreq = 5000000;     %[Hz]
-channels = 7;
-first_channel = 0;
-%path='/home/javier/workspace/gnss-sdr/trunk/install/';
-%path='/home/luis/dev/gnss-sdr/trunk/data/';
-path = '/Users/carlesfernandez/git/cttc/build/';
+channels = 7;   % Number of channels
+first_channel = 0;  % Number of the first channel
+
+path = '/Users/carlesfernandez/git/cttc/build/';  %% CHANGE THIS PATH
 
 for N=1:1:channels
-    tracking_log_path = [path 'track_ch' num2str(N+first_channel-1) '.dat'];
+    tracking_log_path = [path 'track_ch' num2str(N+first_channel-1) '.dat']; %% CHANGE track_ch BY YOUR dump_filename
     GNSS_tracking(N)= galileo_e1_dll_pll_veml_read_tracking_dump(tracking_log_path);   
 end
 

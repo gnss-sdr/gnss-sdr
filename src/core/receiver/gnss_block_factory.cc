@@ -883,6 +883,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("Notch_Filter") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new NotchFilter(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
 
 
     // RESAMPLER -------------------------------------------------------------------

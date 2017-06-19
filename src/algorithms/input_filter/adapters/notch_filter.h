@@ -70,7 +70,6 @@ public:
     
 private:
     
-    ConfigurationInterface* config_;
     bool dump_;
     std::string dump_filename_;
     std::string role_;

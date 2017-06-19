@@ -47,17 +47,25 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
                 out_streams_(out_streams)
 {
     size_t item_size_;
+    double pfa;
+    double default_pfa = 0.001;
+    double p_c_factor;
+    double default_p_c_factor = 0.9;
+    unsigned int length_;
+    unsigned int default_length_ = 5;
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/input_filter.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-
+    pfa = configuration->property(role + ".pfa", default_pfa);
+    p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
+    length_ = configuration->property(role + ".length", default_length_);
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            notch_filter_ = make_notch_filter();
+            notch_filter_ = make_notch_filter(pfa, p_c_factor, length_);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "input filter(" << notch_filter_->unique_id() << ")";
 

@@ -31,6 +31,44 @@
 #ifndef GNSS_SDR_NOTCH_H_
 #define GNSS_SDR_NOTCH_H_
 
+#include <boost/shared_ptr.hpp>
+#include <gnuradio/block.h>
 
+class Notch;
+
+typedef boost::shared_ptr<Notch> notch_sptr;
+
+notch_sptr make_notch_filter(double pfa, double p_c_factor, 
+                             unsigned int length_);
+
+/*!
+ * \brief This class implements a real-time software-defined multi state notch filter
+ */
+
+class Notch: public gr::block
+{
+private:
+    
+    friend notch_sptr make_notch_filter(double pfa, double p_c_factor,
+                                        unsigned int length_);
+    double pfa;
+    double noise_pow_est;
+    double p_c_factor;
+    double thres_;
+    unsigned int length_;
+    unsigned int n_deg_fred;
+    unsigned int filter_state_;
+    gr_complex z_0;
+    
+    
+public:
+    
+    Notch(double pfa, double p_c_factor, unsigned int length_);
+    
+    ~Notch();
+    
+    int work (int noutput_items, gr_vector_const_void_star &input_items,
+              gr_vector_void_star &output_items);
+};
 
 #endif //GNSS_SDR_NOTCH_H_

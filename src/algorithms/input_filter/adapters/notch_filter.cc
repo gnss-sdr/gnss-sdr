@@ -37,7 +37,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
-#include "notch_cc.cc"
+#include "notch_cc.h"
 
 using google::LogMessage;
 
@@ -47,12 +47,12 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
                 out_streams_(out_streams)
 {
     size_t item_size_;
-    double pfa;
-    double default_pfa = 0.001;
-    double p_c_factor;
-    double default_p_c_factor = 0.9;
-    unsigned int length_;
-    unsigned int default_length_ = 5;
+    float pfa;
+    float default_pfa = 0.001;
+    float p_c_factor;
+    float default_p_c_factor = 0.9;
+    int length_;
+    int default_length_ = 5;
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/input_filter.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);

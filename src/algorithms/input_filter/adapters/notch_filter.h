@@ -37,6 +37,7 @@
 #include <vector>
 #include <gnuradio/blocks/file_sink.h>
 #include "gnss_block_interface.h"
+#include "notch_cc.h"
 
 
 class ConfigurationInterface;
@@ -77,7 +78,7 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
     gr::blocks::file_sink::sptr file_sink_;
-    gr::block_sptr notch_filter_;
+    notch_sptr notch_filter_;
 };
 
 #endif //GNSS_SDR_NOTCH_FILTER_H_

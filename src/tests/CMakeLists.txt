@@ -60,7 +60,7 @@ if(NOT ${GTEST_DIR_LOCAL})
          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
                           ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
          INSTALL_COMMAND ""
-         
+
      )
      # Set up variables
      # Set recently downloaded and build Googletest root folder
@@ -193,6 +193,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}
              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${gpstk_RELEASE}
              CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
+             BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
              UPDATE_COMMAND ""
              PATCH_COMMAND ""
           )
@@ -207,7 +208,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
       else(NOT ENABLE_FPGA)
           message(STATUS "GPSTk has not been found, try to install it on target.")
           message(STATUS "Some extra tests requiring GPSTk will not be built.")
-      endif(NOT ENABLE_FPGA)    
+      endif(NOT ENABLE_FPGA)
    else(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
        set(gpstk_libs ${GPSTK_LIBRARIES})
        set(GPSTK_INCLUDE_DIRS ${GPSTK_INCLUDE_DIR})
@@ -223,7 +224,7 @@ if(ENABLE_UNIT_TESTING_EXTRA)
       message(STATUS "Downloading some data files for testing...")
       file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/gps_l2c_m_prn7_5msps.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat
            SHOW_PROGRESS
-           EXPECTED_HASH MD5=a6fcbefe155137945d3c33c5ef7bd0f9 )    
+           EXPECTED_HASH MD5=a6fcbefe155137945d3c33c5ef7bd0f9 )
    endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
    if(ENABLE_INSTALL_TESTS)
       install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
@@ -324,7 +325,7 @@ if(ENABLE_UNIT_TESTING)
     if(NOT ${GTEST_DIR_LOCAL})
         add_dependencies(run_tests gtest-${gtest_RELEASE})
     endif(NOT ${GTEST_DIR_LOCAL})
-    
+
     if(ENABLE_INSTALL_TESTS)
         if(EXISTS ${CMAKE_SOURCE_DIR}/install/run_tests)
             file(REMOVE ${CMAKE_SOURCE_DIR}/install/run_tests)
@@ -441,7 +442,7 @@ if(ENABLE_SYSTEM_TESTING)
                                 COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:position_test>
                                 ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:position_test> )
         endif(ENABLE_INSTALL_TESTS)
-         
+
         if(GPSTK_FOUND OR OWN_GPSTK)
             add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc)
             if(NOT ${GTEST_DIR_LOCAL})
@@ -462,14 +463,14 @@ if(ENABLE_SYSTEM_TESTING)
                     file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
                 endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
                 install(TARGETS obs_gps_l1_system_test RUNTIME DESTINATION bin COMPONENT "obs_gps_l1_system_test")
-            else(ENABLE_INSTALL_TESTS)                                            
+            else(ENABLE_INSTALL_TESTS)
                 add_custom_command(TARGET obs_gps_l1_system_test POST_BUILD
                                    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_gps_l1_system_test>
                                    ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_gps_l1_system_test> )
             endif(ENABLE_INSTALL_TESTS)
-        endif(GPSTK_FOUND OR OWN_GPSTK)          
+        endif(GPSTK_FOUND OR OWN_GPSTK)
     endif(ENABLE_SYSTEM_TESTING_EXTRA)
-    
+
 endif(ENABLE_SYSTEM_TESTING)
 
 
@@ -501,9 +502,9 @@ if(NOT ${ENABLE_PACKAGING})
      endif(NOT ${GTEST_DIR_LOCAL})
      set_property(TEST control_thread_test PROPERTY TIMEOUT 30)
      set_property(TARGET control_thread_test PROPERTY EXCLUDE_FROM_ALL TRUE)
-     
+
      #########################################################
-     
+
      add_executable(flowgraph_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
                                    ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_flowgraph_test.cc )
      set_property(TARGET flowgraph_test PROPERTY EXCLUDE_FROM_ALL TRUE)
@@ -523,9 +524,9 @@ if(NOT ${ENABLE_PACKAGING})
      endif(NOT ${GTEST_DIR_LOCAL})
      set_property(TEST flowgraph_test PROPERTY TIMEOUT 30)
      set_property(TARGET flowgraph_test PROPERTY EXCLUDE_FROM_ALL TRUE)
-     
+
      #########################################################
-     
+
      add_executable(gnss_block_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
                                     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/file_signal_source_test.cc
                                     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/filter/fir_filter_test.cc

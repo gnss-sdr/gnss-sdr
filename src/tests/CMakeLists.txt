@@ -57,7 +57,10 @@ if(NOT ${GTEST_DIR_LOCAL})
          CMAKE_ARGS ${GTEST_COMPILER} -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF ${TOOLCHAIN_ARG}
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
+         BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                          ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
          INSTALL_COMMAND ""
+         
      )
      # Set up variables
      # Set recently downloaded and build Googletest root folder
@@ -73,11 +76,11 @@ if(NOT ${GTEST_DIR_LOCAL})
              set(binary_dir "${binary_dir}/Debug")
          endif(CMAKE_GENERATOR STREQUAL Xcode)
      endif(OS_IS_MACOSX)
-     set(GTEST_LIBRARY_PATH "${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a;${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a")
+     set(GTEST_LIBRARY_PATH "${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX};${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}")
      set(GTEST_LIBRARY gtest-${gtest_RELEASE})
      set(GTEST_LIBRARIES
-          ${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a
-          ${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a
+          ${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+          ${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
      )
      set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest")
 else(NOT ${GTEST_DIR_LOCAL})

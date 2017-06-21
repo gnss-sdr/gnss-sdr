@@ -59,6 +59,11 @@
 
 #include "sbas_ephemeris.h"
 
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_almanac.h"
+#include "glonass_gnav_iono.h"
+#include "glonass_gnav_utc_model.h"
+
 using google::LogMessage;
 
 DECLARE_string(log_dir);
@@ -139,7 +144,8 @@ DECLARE_string(log_dir);
 #endif
 #endif
 
-
+#include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"
+#include "unit-tests/system-parameters/glonass_gnav_almanac_test.cc"
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

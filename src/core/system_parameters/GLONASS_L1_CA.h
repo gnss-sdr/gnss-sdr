@@ -43,7 +43,7 @@ const double GLONASS_C_m_ms                 = 299792.4580;          //!< The spe
 const double GLONASS_PI                     = 3.1415926535898;      //!< Pi as defined in IS-GPS-200E
 const double GLONASS_TWO_PI                 = 6.283185307179586;    //!< 2Pi as defined in IS-GPS-200E
 const double GLONASS_OMEGA_EARTH_DOT        = 7.292115e-5;          //!< Earth rotation rate, [rad/s]
-const double GLONASS_GM                     = 398600.4418e9;        //!< Universal gravitational constant times the mass of the Earth, [km^3/s^2]
+const double GLONASS_GM                     = 398600.4418e9;        //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
 const double GLONASS_fM_a                   = 0.35e9;               //!< Gravitational constant of atmosphere [m^3/s^2]
 const double GLONASS_SEMI_MAJOR_AXIS        = 6378136;              //!< Semi-major axis of Earth [m]
 const double GLONASS_FLATTENING             = 1/29825784;           //!< Flattening parameter
@@ -56,26 +56,26 @@ const double GLONASS_J8                     = 1.40e-11;             //!< Eighth 
 const double GLONASS_U0                     = 62636861.4;           //!< Normal potential at surface of common terrestrial ellipsoid [m^2/s^2]
 const double GLONASS_C20                    = -1082.63e-6;          //!< Second zonal coefficient of spherical harmonic expansion
 const double GLONASS_EARTH_RADIUS           = 6378.136;             //!< Equatorial radius of Earth [km]
-const double GLONASS_EARTH_INCLINATION      = 23°26'33''            //!< Mean inclination of ecliptic to equator (23°26'33'').
+const double GLONASS_EARTH_INCLINATION      = 0.000409148809899e3;  //!< Mean inclination of ecliptic to equator (23 deg 26 min 33 sec) [rad]
 
-const double GLONASS_TAU_0                  = -334°19′46′′,40;
-const double GLONASS_TAU_1                  = 4069°02′02′′,52;
+const double GLONASS_TAU_0                  = -0.005835151531174e3; //!< (-334 deg 19 min 46.40 sec) [rad];
+const double GLONASS_TAU_1                  = 0.071018041257371e3;  //!< (4069 deg 02 min 02.52 sec) [rad];
 
-const double GLONASS_MOON_Q0                = -63°53′43′′,41;
-const double GLONASS_MOON_Q1                = 477198°50′56′′,79;
-const double GLONASS_MOON_OMEGA_0           = 259°10′59′′,79;
-const double GLONASS_MOON_OMEGA_1           = -1934°08′31′′,23;
+const double GLONASS_MOON_Q0                = -0.001115184961435e3; //!< (-63 deg 53 min 43.41 sec) [rad]
+const double GLONASS_MOON_Q1                = 8.328691103668023e3;  //!< (477198 deg 50 min 56.79 sec) [rad]
+const double GLONASS_MOON_OMEGA_0           = 0.004523601514852e3;  //!< (259 deg 10 min 59.79 sec) [rad]
+const double GLONASS_MOON_OMEGA_1           = -0.033757146246552e3; //!< (-1934 deg 08 min 31.23 sec) [rad]
 const double GLONASS_MOON_GM                = 4902.835;             //!< Lunar gravitational constant [km^3/s^2]
 const double GLONASS_MOON_SEMI_MAJOR_AXIS   = 3.84385243e5;         //!< Semi-major axis of lunar orbit [km];
 const double GLONASS_MOON_ECCENTRICITY      = 0.054900489;          //!< Eccentricity of lunar orbit
-const double GLONASS_MOON_INCLINATION       = 5°08'43.4''           //!< Inclination of lunar orbit to ecliptic plane (5°08'43.4'')
+const double GLONASS_MOON_INCLINATION       = 0.000089803977407e3;  //!< Inclination of lunar orbit to ecliptic plane (5 deg 08 min 43.4 sec) [rad]
 
-const double GLONASS_SUN_OMEGA              = 281°13′15′′,0 + 6189′′, 03Т;
-const double GLONASS_SUN_Q0                 = 358°28′33′′,04;
-const double GLONASS_SUN_Q1                 = 129596579′′,10;
-const double GLONASS_SUN_GM                 = 0.1325263e12;       //!< Solar gravitational constant [km^3/s^2]
-const double GLONASS_SUN_SEMI_MAJOR_AXIS    = 1.49598e8;          //!< Semi-major axis of solar orbit [km];
-const double GLONASS_SUN_ECCENTRICITY       = 0.016719;           //!< Eccentricity of solar orbit
+const double GLONASS_SUN_OMEGA              = 0.004908229466869e3;  //!< TODO What is this operation in the seconds with T?(281 deg 13 min 15.0 + 6189.03*Т sec) [rad]
+const double GLONASS_SUN_Q0                 = 0.006256583774423e3;  //!< (358 deg 28 min 33.04 sec) [rad]
+const double GLONASS_SUN_Q1                 = 0e3;                  //!< TODO Why is the value greater than 60?(129596579.10 sec) [rad]
+const double GLONASS_SUN_GM                 = 0.1325263e12;         //!< Solar gravitational constant [km^3/s^2]
+const double GLONASS_SUN_SEMI_MAJOR_AXIS    = 1.49598e8;            //!< Semi-major axis of solar orbit [km];
+const double GLONASS_SUN_ECCENTRICITY       = 0.016719;             //!< Eccentricity of solar orbit
 
 // carrier and code frequencies
 const double GLONASS_L1_FREQ_HZ              = FREQ1_GLO;     //!< L1 [Hz]
@@ -133,7 +133,7 @@ const std::vector<std::pair<int,int>> Y_N({{51,27}});
 const std::vector<std::pair<int,int>> P3({{6,1}});
 const std::vector<std::pair<int,int>> GAMMA_N({{7,11}});
 const std::vector<std::pair<int,int>> P({{19,2}});
-const std::vector<std::pair<int,int>> L_N({{21,1}});
+const std::vector<std::pair<int,int>> EPH_L_N({{21,1}});
 const std::vector<std::pair<int,int>> Z_N_DOT ({{22,24}});
 const std::vector<std::pair<int,int>> Z_N_DOT_DOT ({{46,5}});
 const std::vector<std::pair<int,int>> Z_N({{51,27}});
@@ -153,7 +153,7 @@ const std::vector<std::pair<int,int>> N_A({{6,11}});
 const std::vector<std::pair<int,int>> TAU_C({{17,32}});
 const std::vector<std::pair<int,int>> N_4({{50,5}});
 const std::vector<std::pair<int,int>> TAU_GPS({{55,22}});
-const std::vector<std::pair<int,int>> L_N({{77,1}});
+const std::vector<std::pair<int,int>> ALM_L_N({{77,1}});
 
 // STRING 6, 8, 10, 12, 14
 const std::vector<std::pair<int,int>> C_N({{6,1}});
@@ -170,7 +170,7 @@ const std::vector<std::pair<int,int>> T_LAMBDA_N_A({{22,21}});
 const std::vector<std::pair<int,int>> DELTA_T_N_A({{43,22}});
 const std::vector<std::pair<int,int>> DELTA_T_DOT_N_A({{65,7}});
 const std::vector<std::pair<int,int>> H_N_A({{72,5}});
-const std::vector<std::pair<int,int>> L_N({{77,1}});
+//const std::vector<std::pair<int,int>> L_N({{77,1}});
 
 
 #endif /* GNSS_SDR_GLONASS_L1_CA_H_ */

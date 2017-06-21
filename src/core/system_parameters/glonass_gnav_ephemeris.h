@@ -41,11 +41,11 @@
 
 
 /*!
- * \brief This class is a storage and orbital model functions for the GLONASS SV ephemeris data as described in GLONASS ICD Edition 5.1
+ * \brief This class is a storage and orbital model functions for the GLONASS SV ephemeris data as described in GLONASS ICD (Edition 5.1)
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * See http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf
  */
-class Glonass_GNAV_Ephemeris
+class Glonass_Gnav_Ephemeris
 {
 private:
     /*
@@ -57,10 +57,15 @@ private:
      */
     double check_t(double time);
 
-    double gravitational_perturbations(const double mu);
+    void gravitational_perturbations();
 
     double d_Jx_moon;           //!< Moon gravitational perturbation
+    double d_Jy_moon;           //!< Moon gravitational perturbation
+    double d_Jz_moon;           //!< Moon gravitational perturbation
+
     double d_Jx_sun;            //!< Sun gravitational perturbation
+    double d_Jy_sun;            //!< Sun gravitational perturbation
+    double d_Jz_sun;            //!< Sun gravitational perturbation
 
 public:
     unsigned int i_satellite_freq_channel; // SV Frequency Channel Number
@@ -70,18 +75,20 @@ public:
     double d_M;               //!< Type of satellite transmitting navigation signal [dimensionless]
     double d_gamma_n;         //!< Relative deviation of predicted carrier frequency value of n- satellite from nominal value at the instant tb [dimensionless]
     double d_tau_n;           //!< Correction to the nth satellite time (tn) relative to GLONASS time (te),
+
     // satellite positions
-    double d_satpos_X;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
-    double d_satpos_Y;        //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
-    double d_satpos_Z;        //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
+    double d_Xn;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
+    double d_Yn;        //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
+    double d_Zn;        //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
     // Satellite velocity
-    double d_satvel_X;        //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_satvel_Y;        //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_satvel_Z;        //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
+    double d_VXn;        //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
+    double d_VYn;        //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
+    double d_VZn;        //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
     // Satellite acceleration
-    double d_satacc_X;        //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
-    double d_satacc_Y;        //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
-    double d_satacc_Z;        //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
+    double d_AXn;        //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
+    double d_AYn;        //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
+    double d_AZn;        //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
+
     double d_B_n;             //!< Health flag [dimensionless]
     double d_P;               //!< Technological parameter of control segment, indication the satellite operation mode in respect of time parameters [dimensionless]
     double d_N_T;             //!< Current date, calendar number of day within four-year interval starting from the 1-st of January in a leap year [days]
@@ -98,6 +105,19 @@ public:
     // clock terms derived from ephemeris data
     double d_satClkDrift;    //!< GPS clock error
     double d_dtr;            //!< relativistic clock correction term
+
+    // satellite positions
+    double d_satpos_X;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
+    double d_satpos_Y;        //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
+    double d_satpos_Z;        //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
+    // Satellite velocity
+    double d_satvel_X;        //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
+    double d_satvel_Y;        //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
+    double d_satvel_Z;        //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
+    // Satellite acceleration
+    double d_satacc_X;        //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
+    double d_satacc_Y;        //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
+    double d_satacc_Z;        //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
 
     template<class Archive>
 
@@ -137,7 +157,7 @@ public:
      * \param transmitTime Time of ephemeris transmission
      * \return clock bias of satellite
      */
-    double simplifiedSatellitePosition(double transmitTime);
+    double simplified_satellite_position(double transmitTime);
 
     /*!
      * \brief Compute the ECEF SV coordinates and ECEF velocity
@@ -146,7 +166,7 @@ public:
      * \param transmitTime Time of ephemeris transmission
      * \return clock bias of satellite
      */
-    double satellitePosition(double transmitTime);
+    double satellite_position(double transmitTime);
 
     /*!
      * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
@@ -164,7 +184,7 @@ public:
     /*!
      * Default constructor
      */
-    Glonass_GNAV_Ephemeris();
+    Glonass_Gnav_Ephemeris();
 };
 
 #endif

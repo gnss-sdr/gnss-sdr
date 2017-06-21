@@ -1,7 +1,8 @@
-/*
- * \file glonass_gnav_utc_model.h
- * \brief  Interface of a GLONASS GNAV UTC MODEL storage
- * \author Damian Miralles, 2017. dmiralles2009(at).gmail.com
+/*!
+ * \file code_generation_test.cc
+ * \brief  This file implements tests for the generation of complex exponentials.
+ * \author Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
+ *
  *
  * -------------------------------------------------------------------------
  *
@@ -28,26 +29,26 @@
  * -------------------------------------------------------------------------
  */
 
-#include "glonass_gnav_utc_model.h"
-#include <cmath>
 
-Glonass_Gnav_Utc_Model::Glonass_Gnav_Utc_Model()
+#include <complex>
+#include <ctime>
+#include "gnss_signal_processing.h"
+#include "glonass_gnav_ephemeris.h"
+
+
+TEST(GlonassGnavEphemerisTest, SatellitePosition)
 {
-    valid = false;
-    d_tau_c = 0.0;
-    d_tau_gps = 0.0;
-    d_N_4 = 0.0;
-    d_N_A = 0.0;
-    d_B1 = 0.0;
-    d_B2 = 0.0;
-}
+    Glonass_Gnav_Ephemeris gnav_eph;
 
-double Glonass_Gnav_Utc_Model::utc_time(double glonass_time_corrected)
-{
-    double t_utc;
+    gnav_eph.d_Xn = 12317.934082000;
+    gnav_eph.d_Yn = -2245.13232422;
+    gnav_eph.d_Zn = 22212.8173828;
+    gnav_eph.d_VXn = -1.25356674194;
+    gnav_eph.d_VYn = 2.774200439450;
+    gnav_eph.d_VZn = 0.9808206558230000;
+    gnav_eph.d_AXn = -0.931322574616e-9;
+    gnav_eph.d_AYn = 0.0000000000000000;
+    gnav_eph.d_AZn =  -0.186264514923e-8;
 
-    // GLONASS Time is relative to UTC Moscow, so we simply add its time difference
-    t_utc = glonass_time_corrected + 3*3600 + d_tau_c;
-
-    return t_utc;
+    gnav_eph.simplified_satellite_position(60);
 }

@@ -48,7 +48,21 @@ endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
 if(NOT ${GTEST_DIR_LOCAL})
      # if GTEST_DIR is not defined, we download and build it
      set(gtest_RELEASE 1.8.0)
-     ExternalProject_Add(
+     
+     if(CMAKE_VERSION VERSION_LESS 3.2)
+      ExternalProject_Add(
+         gtest-${gtest_RELEASE}
+         GIT_REPOSITORY https://github.com/google/googletest
+         GIT_TAG release-${gtest_RELEASE}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
+         CMAKE_ARGS ${GTEST_COMPILER} -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF ${TOOLCHAIN_ARG}
+         UPDATE_COMMAND ""
+         PATCH_COMMAND ""
+         INSTALL_COMMAND ""
+      )
+     else(CMAKE_VERSION VERSION_LESS 3.2)
+      ExternalProject_Add(
          gtest-${gtest_RELEASE}
          GIT_REPOSITORY https://github.com/google/googletest
          GIT_TAG release-${gtest_RELEASE}
@@ -60,8 +74,9 @@ if(NOT ${GTEST_DIR_LOCAL})
          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
                           ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
          INSTALL_COMMAND ""
-
-     )
+      )     
+     endif(CMAKE_VERSION VERSION_LESS 3.2)
+     
      # Set up variables
      # Set recently downloaded and build Googletest root folder
      set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}/googletest")
@@ -186,7 +201,20 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
       if(NOT ENABLE_FPGA)
           set(gpstk_RELEASE "2.9")
-          ExternalProject_Add(
+          
+          if(CMAKE_VERSION VERSION_LESS 3.2)
+           ExternalProject_Add(
+             gpstk-${gpstk_RELEASE}
+             GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
+             GIT_TAG v${gpstk_RELEASE}
+             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}
+             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${gpstk_RELEASE}
+             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
+             UPDATE_COMMAND ""
+             PATCH_COMMAND ""
+           )
+          else(CMAKE_VERSION VERSION_LESS 3.2)
+           ExternalProject_Add(
              gpstk-${gpstk_RELEASE}
              GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
              GIT_TAG v${gpstk_RELEASE}
@@ -196,7 +224,9 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
              BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
              UPDATE_COMMAND ""
              PATCH_COMMAND ""
-          )
+           )
+          endif(CMAKE_VERSION VERSION_LESS 3.2)
+          
           set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/include CACHE PATH "Local GPSTK headers")
           add_library(gpstk UNKNOWN IMPORTED)
           set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})

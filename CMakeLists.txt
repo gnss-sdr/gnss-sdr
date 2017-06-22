@@ -545,7 +545,20 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
                                     -DCROSSCOMPILE_MULTILIB=TRUE )
     endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
-    ExternalProject_Add(volk_gnsssdr_module
+    if(CMAKE_VERSION VERSION_LESS 3.2)
+       ExternalProject_Add(volk_gnsssdr_module
+         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
+         CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+         DOWNLOAD_COMMAND ""
+         UPDATE_COMMAND ""
+         PATCH_COMMAND ""
+         BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install     
+         )
+    else(CMAKE_VERSION VERSION_LESS 3.2)
+       ExternalProject_Add(volk_gnsssdr_module
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
@@ -558,6 +571,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
                           ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
          INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install     
          )
+    endif(CMAKE_VERSION VERSION_LESS 3.2)
     find_package(ORC)
     if(NOT ORC_FOUND)
          set(ORC_LIBRARIES "")
@@ -591,7 +605,22 @@ if (NOT GFlags_FOUND)
      message (STATUS " gflags library has not been found.")
      message (STATUS " gflags will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
-
+     
+     if(CMAKE_VERSION VERSION_LESS 3.2)
+          ExternalProject_Add(
+          gflags-${gflags_RELEASE}
+          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          GIT_REPOSITORY git://github.com/gflags/gflags.git
+          GIT_TAG v${gflags_RELEASE}
+          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}
+          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          CMAKE_ARGS -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=ON -DBUILD_gflags_nothreads_LIB=OFF -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
+          UPDATE_COMMAND ""
+          PATCH_COMMAND ""
+          INSTALL_COMMAND ""
+     )
+     else(CMAKE_VERSION VERSION_LESS 3.2)
      ExternalProject_Add(
           gflags-${gflags_RELEASE}
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
@@ -606,7 +635,8 @@ if (NOT GFlags_FOUND)
           PATCH_COMMAND ""
           INSTALL_COMMAND ""
      )
-
+     endif(CMAKE_VERSION VERSION_LESS 3.2)
+     
      set(GFlags_INCLUDE_DIRS
           ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/include CACHE PATH "Local Gflags headers"
      )
@@ -725,7 +755,23 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
          endif(EXISTS "/usr/bin/libtoolize")
      endif(OS_IS_LINUX)
 
-     ExternalProject_Add(
+     if(CMAKE_VERSION VERSION_LESS 3.2)
+      ExternalProject_Add(
+         glog-${glog_RELEASE}
+         DEPENDS ${TARGET_GFLAGS}
+         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+         GIT_REPOSITORY https://github.com/google/glog/
+         GIT_TAG v${glog_RELEASE}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+         CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
+         BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
+         UPDATE_COMMAND ""
+         PATCH_COMMAND ""
+         INSTALL_COMMAND ""
+      )
+     else(CMAKE_VERSION VERSION_LESS 3.2)
+      ExternalProject_Add(
          glog-${glog_RELEASE}
          DEPENDS ${TARGET_GFLAGS}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
@@ -739,7 +785,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
          INSTALL_COMMAND ""
-     )
+      )
+     endif(CMAKE_VERSION VERSION_LESS 3.2)
 
      # Set up variables
      set(GLOG_INCLUDE_DIRS
@@ -906,10 +953,24 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " Armadillo has not been found.")
      message(STATUS " Armadillo will be downloaded and built automatically")
      message(STATUS " when doing 'make'. ")
-     set(armadillo_BRANCH 7.950.x)
+     set(armadillo_BRANCH unstable)
      set(armadillo_RELEASE ${armadillo_BRANCH})
 
-     ExternalProject_Add(
+     if(CMAKE_VERSION VERSION_LESS 3.2)
+      ExternalProject_Add(
+         armadillo-${armadillo_RELEASE}
+         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
+         GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
+         GIT_TAG ${armadillo_BRANCH}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
+         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=-std=c++11
+         BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
+         UPDATE_COMMAND ""
+         INSTALL_COMMAND ""
+      )    
+     else(CMAKE_VERSION VERSION_LESS 3.2)
+      ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
          GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
@@ -921,7 +982,8 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}
          UPDATE_COMMAND ""
          INSTALL_COMMAND ""
-     )
+      )
+     endif(CMAKE_VERSION VERSION_LESS 3.2)
 
      # Set up variables
      ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)

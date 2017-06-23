@@ -47,77 +47,97 @@ Notch::Notch(float pfa, float p_c_factor, int length_) : gr::block("Notch",
 {
     const int alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
     set_alignment(std::max(1, alignment_multiple));
+    set_history(2);
     this->pfa = pfa;
     noise_pow_est = 0.0;
     this->p_c_factor = p_c_factor;
-    this->length_ = length_;
-    filter_state_ = false;
-    n_deg_fred = 2 * length_;
-    n_segments_est = 5;
-    n_segments = 0;
+    this->length_ = length_; //Set the number of samples per segment
+    set_output_multiple(length_);
+    filter_state_ = false; //Initial state of the filter
+    n_deg_fred = 2 * length_; //Number of dregrees of freedom
+    n_segments = 0; 
+    n_segments_est = 8; // Set the number of segments for noise power estimation
+    n_segments_reset = 1000000; // Set the period (in segments) when the noise power is estimated
     z_0 = gr_complex(0 , 0);
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa));
-    
+    in = NULL;
+    out = NULL;
+    paux = NULL;
+    c_samples = static_cast<gr_complex *>(volk_malloc(length_ * sizeof(gr_complex), volk_get_alignment()));
+    angle_ = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
+    last_out = gr_complex(0,0);
 }
 
+Notch::~Notch()
+{
+    volk_free(c_samples);
+    volk_free(angle_);
+}
 
 int Notch::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    gr_complex * in = (gr_complex *) input_items[0];
-    gr_complex *out = (gr_complex *) output_items[0];
-    gr_complex * paux;
-    int samples_proc = 0;
+    int index_in = 1;
+    int index_out = 0;
+    in = (gr_complex *) input_items[index_in];
+    out = (gr_complex *) output_items[index_out];
     int aux = 0;
     gr_complex magnitude;
     float sig2 = 0.0;
-    float* angle_;
-    gr_complex * c_samples;
-    c_samples = static_cast<gr_complex *>(volk_malloc(length_ * sizeof(gr_complex), volk_get_alignment()));
-    angle_ = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
-    while(((samples_proc + length_) < noutput_items) && (n_segments < n_segments_est))
+    while(((index_out + length_) < noutput_items) && (n_segments < n_segments_est) && (filter_state_ == false))
     {
         volk_32fc_x2_conjugate_dot_prod_32fc(&magnitude, in, in, length_);
         sig2 = magnitude.real() / ((float) n_deg_fred);
         noise_pow_est = (((float) n_segments) * noise_pow_est + sig2) / ((float)(n_segments + 1));
-        samples_proc = samples_proc + length_;
+        index_out = index_out + length_;
+        index_in = index_in +length_;
         n_segments++;
-        memcpy(out, in, sizeof(gr_complex)*length_);
-        in = (gr_complex *) input_items[samples_proc];
-        out = (gr_complex *) output_items[samples_proc];
+        memcpy(out, in, sizeof(gr_complex) * length_);
+        in = (gr_complex *) input_items[index_in];
+        out = (gr_complex *) output_items[index_out];
     }
-    while((samples_proc + length_) < noutput_items)
+    while((index_out + length_) < noutput_items)
     {
+        n_segments++;
         volk_32fc_x2_conjugate_dot_prod_32fc(&magnitude, in, in, length_);
         if( (magnitude.real() / noise_pow_est) > thres_)
         {
-            filter_state_ = true;
-            paux = (gr_complex *) input_items[samples_proc-1];
+            if(filter_state_ == false)
+            {
+                filter_state_ = true;
+                last_out = gr_complex(0,0);
+            }
+            paux = (gr_complex *) input_items[index_in-1];
             volk_32fc_x2_multiply_conjugate_32fc(c_samples, in, paux, length_);
             volk_32fc_s32f_atan2_32f(angle_, c_samples, (float)1.0, length_);
             for(aux = 0; aux < length_; aux++)
             {
-                z_0 = std::exp(gr_complex(0,1) *angle_[aux]);
-                out[samples_proc] = in[samples_proc] - z_0 * in[samples_proc - 1]
-                                    + gr_complex(p_c_factor,0) * z_0 * out[samples_proc -1];
-                samples_proc++;
-                in = (gr_complex *) input_items[samples_proc];
-                out = (gr_complex *) output_items[samples_proc];
+                z_0 = std::exp(gr_complex(0,1) * angle_[aux]);
+                out[index_out] = in[index_in] - z_0 * in[index_in - 1]
+                                 + gr_complex(p_c_factor,0) * z_0 * last_out;
+                last_out = out[index_out];
+                index_out++;
+                index_in++;
+                in = (gr_complex *) input_items[index_in];
+                out = (gr_complex *) output_items[index_out];
             }
             
         }
         else
         {
+            if (n_segments > n_segments_reset)
+            {
+                n_segments = 0;
+            }
             filter_state_ = false;
-            samples_proc = samples_proc + length_;
-            memcpy(out, in, sizeof(gr_complex)*length_);
-            in = (gr_complex *) input_items[samples_proc];
-            out = (gr_complex *) output_items[samples_proc];
+            index_out = index_out + length_;
+            index_in = index_in +length_;
+            memcpy(out, in, sizeof(gr_complex) * length_);
+            in = (gr_complex *) input_items[index_in];
+            out = (gr_complex *) output_items[index_out];
         }
     }
-    volk_free(c_samples);
-    volk_free(angle_);
-    consume_each(samples_proc);
-    return samples_proc;
+    consume_each(index_out);
+    return index_out;
 }

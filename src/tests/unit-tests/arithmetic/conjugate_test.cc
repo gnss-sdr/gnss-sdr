@@ -40,7 +40,7 @@ DEFINE_int32(size_conjugate_test, 100000, "Size of the arrays used for conjugate
 
 
 
-TEST(Conjugate_Test, StandardCComplexImplementation)
+TEST(ConjugateTest, StandardCComplexImplementation)
 {
     std::complex<float>* input = new std::complex<float>[FLAGS_size_conjugate_test];
     std::complex<float>* output = new std::complex<float>[FLAGS_size_conjugate_test];
@@ -68,7 +68,7 @@ TEST(Conjugate_Test, StandardCComplexImplementation)
 }
 
 
-TEST(Conjugate_Test, C11ComplexImplementation)
+TEST(ConjugateTest, C11ComplexImplementation)
 {
     const std::vector<std::complex<float>> input(FLAGS_size_conjugate_test);
     std::vector<std::complex<float>> output(FLAGS_size_conjugate_test);
@@ -97,7 +97,7 @@ TEST(Conjugate_Test, C11ComplexImplementation)
 }
 
 
-TEST(Conjugate_Test, ArmadilloComplexImplementation)
+TEST(ConjugateTest, ArmadilloComplexImplementation)
 {
     arma::cx_fvec input(FLAGS_size_conjugate_test, arma::fill::zeros);
     arma::cx_fvec output(FLAGS_size_conjugate_test);
@@ -117,7 +117,7 @@ TEST(Conjugate_Test, ArmadilloComplexImplementation)
 }
 
 
-TEST(Conjugate_Test, VolkComplexImplementation)
+TEST(ConjugateTest, VolkComplexImplementation)
 {
     std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     std::complex<float>* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));

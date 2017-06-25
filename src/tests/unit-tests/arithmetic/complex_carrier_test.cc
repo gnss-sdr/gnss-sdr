@@ -38,7 +38,7 @@
 DEFINE_int32(size_carrier_test, 100000, "Size of the arrays used for complex carrier testing");
 
 
-TEST(ComplexCarrier_Test, StandardComplexImplementation)
+TEST(ComplexCarrierTest, StandardComplexImplementation)
 {
     // Dynamic allocation creates new usable space on the program STACK
     // (an area of RAM specifically allocated to the program)
@@ -80,7 +80,7 @@ TEST(ComplexCarrier_Test, StandardComplexImplementation)
 }
 
 
-TEST(ComplexCarrier_Test, C11ComplexImplementation)
+TEST(ComplexCarrierTest, C11ComplexImplementation)
 {
     // declaration: load data onto the program data segment
     std::vector<std::complex<float>> output(FLAGS_size_carrier_test);
@@ -115,7 +115,7 @@ TEST(ComplexCarrier_Test, C11ComplexImplementation)
 
 
 
-TEST(ComplexCarrier_Test, OwnComplexImplementation)
+TEST(ComplexCarrierTest, OwnComplexImplementation)
 {
     std::complex<float>* output = new std::complex<float>[FLAGS_size_carrier_test];
     double _f = 2000;

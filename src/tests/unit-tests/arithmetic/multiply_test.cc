@@ -41,7 +41,7 @@
 DEFINE_int32(size_multiply_test, 100000, "Size of the arrays used for multiply testing");
 
 
-TEST(Multiply_Test, StandardCDoubleImplementation)
+TEST(MultiplyTest, StandardCDoubleImplementation)
 {
     double* input = new double[FLAGS_size_multiply_test];
     double* output = new double[FLAGS_size_multiply_test];
@@ -74,7 +74,7 @@ TEST(Multiply_Test, StandardCDoubleImplementation)
 }
 
 
-TEST(Multiply_Test, ArmadilloImplementation)
+TEST(MultiplyTest, ArmadilloImplementation)
 {
     arma::vec input(FLAGS_size_multiply_test, arma::fill::zeros);
     arma::vec output(FLAGS_size_multiply_test);
@@ -96,7 +96,7 @@ TEST(Multiply_Test, ArmadilloImplementation)
 
 
 
-TEST(Multiply_Test, StandardCComplexImplementation)
+TEST(MultiplyTest, StandardCComplexImplementation)
 {
     std::complex<float>* input = new std::complex<float>[FLAGS_size_multiply_test];
     std::complex<float>* output = new std::complex<float>[FLAGS_size_multiply_test];
@@ -130,7 +130,7 @@ TEST(Multiply_Test, StandardCComplexImplementation)
 
 
 
-TEST(Multiply_Test, C11ComplexImplementation)
+TEST(MultiplyTest, C11ComplexImplementation)
 {
     const std::vector<std::complex<float>> input(FLAGS_size_multiply_test);
     std::vector<std::complex<float>> output(FLAGS_size_multiply_test);
@@ -158,7 +158,7 @@ TEST(Multiply_Test, C11ComplexImplementation)
 }
 
 
-TEST(Multiply_Test, ArmadilloComplexImplementation)
+TEST(MultiplyTest, ArmadilloComplexImplementation)
 {
     arma::cx_fvec input(FLAGS_size_multiply_test, arma::fill::zeros);
     arma::cx_fvec output(FLAGS_size_multiply_test);
@@ -181,7 +181,7 @@ TEST(Multiply_Test, ArmadilloComplexImplementation)
 
 
 
-TEST(Multiply_Test, VolkComplexImplementation)
+TEST(MultiplyTest, VolkComplexImplementation)
 {
     std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     std::complex<float>* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));

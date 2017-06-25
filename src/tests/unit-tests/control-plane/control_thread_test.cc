@@ -53,7 +53,7 @@
 #include "control_message_factory.h"
 
 
-class Control_Thread_Test: public ::testing::Test
+class ControlThreadTest: public ::testing::Test
 {
 public:
     static int stop_receiver();
@@ -64,7 +64,7 @@ public:
 };
 
 
-int Control_Thread_Test::stop_receiver()
+int ControlThreadTest::stop_receiver()
 {
     message_buffer msg_stop;
     msg_stop.mtype = 1;
@@ -86,7 +86,7 @@ int Control_Thread_Test::stop_receiver()
 }
 
 
-TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
+TEST_F(ControlThreadTest, InstantiateRunControlMessages)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
@@ -147,7 +147,7 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
 }
 
 
-TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
+TEST_F(ControlThreadTest, InstantiateRunControlMessages2)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
@@ -211,7 +211,7 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
 
 
 
-TEST_F(Control_Thread_Test, StopReceiverProgrammatically)
+TEST_F(ControlThreadTest, StopReceiverProgrammatically)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");

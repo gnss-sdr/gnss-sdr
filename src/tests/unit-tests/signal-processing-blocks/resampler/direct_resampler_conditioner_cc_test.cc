@@ -43,7 +43,7 @@
 #include "direct_resampler_conditioner_cc.h"
 
 
-TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest)
+TEST(DirectResamplerConditionerCcTest, InstantiationAndRunTest)
 {
     double fs_in = 8000000.0; // Input sampling frequency in Hz
     double fs_out = 4000000.0; // sampling freuqncy of the resampled signal in Hz

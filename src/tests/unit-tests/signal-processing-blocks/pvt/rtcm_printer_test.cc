@@ -37,7 +37,7 @@
 //#include "gps_ephemeris.h"
 
 
-TEST(Rtcm_Printer_Test, Instantiate)
+TEST(RtcmPrinterTest, Instantiate)
 {
     std::string filename = "hello.rtcm";
     bool flag_rtcm_tty_port = false;
@@ -49,7 +49,7 @@ TEST(Rtcm_Printer_Test, Instantiate)
 }
 
 
-TEST(Rtcm_Printer_Test, Run)
+TEST(RtcmPrinterTest, Run)
 {
     //    std::string file_name = "./gps_ephemeris_rx.xml";
     //    std::map<int,Gps_Ephemeris> gps_ephemeris_map;

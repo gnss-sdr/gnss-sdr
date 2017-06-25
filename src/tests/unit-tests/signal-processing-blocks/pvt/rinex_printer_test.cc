@@ -33,7 +33,7 @@
 #include "rinex_printer.h"
 
 
-TEST(Rinex_Printer_Test, GalileoObsHeader)
+TEST(RinexPrinterTest, GalileoObsHeader)
 {
     std::string line_aux;
     std::string line_str;
@@ -89,7 +89,7 @@ TEST(Rinex_Printer_Test, GalileoObsHeader)
 
 
 
-TEST(Rinex_Printer_Test, MixedObsHeader)
+TEST(RinexPrinterTest, MixedObsHeader)
 {
     std::string line_aux;
     std::string line_aux2;
@@ -133,7 +133,7 @@ TEST(Rinex_Printer_Test, MixedObsHeader)
 }
 
 
-TEST(Rinex_Printer_Test, GalileoObsLog)
+TEST(RinexPrinterTest, GalileoObsLog)
 {
     std::string line_aux;
     std::string line_str;
@@ -201,7 +201,7 @@ TEST(Rinex_Printer_Test, GalileoObsLog)
 }
 
 
-TEST(Rinex_Printer_Test, GpsObsLogDualBand)
+TEST(RinexPrinterTest, GpsObsLogDualBand)
 {
     std::string line_aux;
     std::string line_str;
@@ -283,7 +283,7 @@ TEST(Rinex_Printer_Test, GpsObsLogDualBand)
 }
 
 
-TEST(Rinex_Printer_Test, GalileoObsLogDualBand)
+TEST(RinexPrinterTest, GalileoObsLogDualBand)
 {
     std::string line_aux;
     std::string line_str;
@@ -365,7 +365,7 @@ TEST(Rinex_Printer_Test, GalileoObsLogDualBand)
 
 
 
-TEST(Rinex_Printer_Test, MixedObsLog)
+TEST(RinexPrinterTest, MixedObsLog)
 {
     std::string line_aux;
     std::string line_str;

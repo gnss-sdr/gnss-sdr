@@ -40,7 +40,7 @@
 DEFINE_int32(size_magnitude_test, 100000, "Size of the arrays used for magnitude testing");
 
 
-TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
+TEST(MagnitudeSquaredTest, StandardCComplexImplementation)
 {
     std::complex<float>* input = new std::complex<float>[FLAGS_size_magnitude_test];
     float* output = new float[FLAGS_size_magnitude_test];
@@ -64,7 +64,7 @@ TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
     ASSERT_LE(0, end - begin);
 }
 
-TEST(MagnitudeSquared_Test, C11ComplexImplementation)
+TEST(MagnitudeSquaredTest, C11ComplexImplementation)
 {
     const std::vector<std::complex<float>> input(FLAGS_size_magnitude_test);
     std::vector<float> output(FLAGS_size_magnitude_test);
@@ -95,7 +95,7 @@ TEST(MagnitudeSquared_Test, C11ComplexImplementation)
 }
 
 
-TEST(MagnitudeSquared_Test, ArmadilloComplexImplementation)
+TEST(MagnitudeSquaredTest, ArmadilloComplexImplementation)
 {
     arma::cx_fvec input(FLAGS_size_magnitude_test, arma::fill::zeros);
     arma::fvec output(FLAGS_size_magnitude_test);
@@ -115,7 +115,7 @@ TEST(MagnitudeSquared_Test, ArmadilloComplexImplementation)
 
 
 
-TEST(MagnitudeSquared_Test, VolkComplexImplementation)
+TEST(MagnitudeSquaredTest, VolkComplexImplementation)
 {
     std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_magnitude_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_magnitude_test);

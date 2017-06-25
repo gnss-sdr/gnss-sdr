@@ -37,7 +37,7 @@
 
 
 
-TEST(CodeGenGPSL1_Test, CodeGeneration)
+TEST(CodeGenGPSL1Test, CodeGeneration)
 {
     std::complex<float>* _dest = new std::complex<float>[1023];
     signed int _prn = 1;
@@ -83,7 +83,7 @@ TEST(CodeGenGPSL1_Test, CodeGeneration)
 
 
 
-TEST(CodeGenGPSL1Sampled_Test, CodeGeneration)
+TEST(CodeGenGPSL1SampledTest, CodeGeneration)
 {
     signed int _prn = 1;
     unsigned int _chip_shift = 4;
@@ -132,7 +132,7 @@ TEST(CodeGenGPSL1Sampled_Test, CodeGeneration)
 }
 
 
-TEST(ComplexCarrier_Test, CodeGeneration)
+TEST(ComplexCarrierTest, CodeGeneration)
 {
     double _fs = 8000000;
     double _f = 4000;

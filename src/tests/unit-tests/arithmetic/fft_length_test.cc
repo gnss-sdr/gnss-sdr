@@ -35,7 +35,7 @@
 
 DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");
 
-TEST(FFT_Length_Test, MeasureExecutionTime)
+TEST(FFTLengthTest, MeasureExecutionTime)
 {
     unsigned int d_fft_size;
     struct timeval tv;

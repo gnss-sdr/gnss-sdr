@@ -34,7 +34,7 @@
 #include "rtcm.h"
 #include "Galileo_E1.h"
 
-TEST(Rtcm_Test, Hex_to_bin)
+TEST(RtcmTest, HexToBin)
 {
     auto rtcm = std::make_shared<Rtcm>();
 
@@ -64,7 +64,7 @@ TEST(Rtcm_Test, Hex_to_bin)
 }
 
 
-TEST(Rtcm_Test, Bin_to_hex)
+TEST(RtcmTest, BinToHex)
 {
     auto rtcm = std::make_shared<Rtcm>();
 
@@ -99,7 +99,7 @@ TEST(Rtcm_Test, Bin_to_hex)
 
 
 
-TEST(Rtcm_Test, Hex_to_int)
+TEST(RtcmTest, HexToInt)
 {
     auto rtcm = std::make_shared<Rtcm>();
 
@@ -110,7 +110,7 @@ TEST(Rtcm_Test, Hex_to_int)
 }
 
 
-TEST(Rtcm_Test, Hex_to_uint)
+TEST(RtcmTest, HexToUint)
 {
     auto rtcm = std::make_shared<Rtcm>();
     long unsigned int expected1 = 42;
@@ -118,7 +118,7 @@ TEST(Rtcm_Test, Hex_to_uint)
 }
 
 
-TEST(Rtcm_Test, Bin_to_double)
+TEST(RtcmTest, BinToDouble)
 {
     auto rtcm = std::make_shared<Rtcm>();
 
@@ -135,7 +135,7 @@ TEST(Rtcm_Test, Bin_to_double)
 }
 
 
-TEST(Rtcm_Test, Bin_to_uint)
+TEST(RtcmTest, BinToUint)
 {
     auto rtcm = std::make_shared<Rtcm>();
     long unsigned int expected1 = 42;
@@ -145,7 +145,7 @@ TEST(Rtcm_Test, Bin_to_uint)
 }
 
 
-TEST(Rtcm_Test, Bin_to_int)
+TEST(RtcmTest, BinToInt)
 {
     auto rtcm = std::make_shared<Rtcm>();
     long unsigned int expected1 = 42;
@@ -155,7 +155,7 @@ TEST(Rtcm_Test, Bin_to_int)
 }
 
 
-TEST(Rtcm_Test, Bin_to_binary_data)
+TEST(RtcmTest, BinToBinaryData)
 {
     auto rtcm = std::make_shared<Rtcm>();
     std::string bin_str("1101101011010110");
@@ -171,7 +171,7 @@ TEST(Rtcm_Test, Bin_to_binary_data)
 }
 
 
-TEST(Rtcm_Test, Check_CRC)
+TEST(RtcmTest, CheckCRC)
 {
     auto rtcm = std::make_shared<Rtcm>();
     bool expected_true = true;
@@ -186,7 +186,7 @@ TEST(Rtcm_Test, Check_CRC)
 }
 
 
-TEST(Rtcm_Test, MT1001)
+TEST(RtcmTest, MT1001)
 {
     auto rtcm = std::make_shared<Rtcm>();
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
@@ -209,7 +209,7 @@ TEST(Rtcm_Test, MT1001)
 }
 
 
-TEST(Rtcm_Test, MT1005)
+TEST(RtcmTest, MT1005)
 {
     auto rtcm = std::make_shared<Rtcm>();
     std::string reference_msg = rtcm->print_MT1005_test();
@@ -254,7 +254,7 @@ TEST(Rtcm_Test, MT1005)
 
 
 
-TEST(Rtcm_Test, MT1019)
+TEST(RtcmTest, MT1019)
 {
     auto rtcm = std::make_shared<Rtcm>();
     bool expected_true = true;
@@ -277,7 +277,7 @@ TEST(Rtcm_Test, MT1019)
 }
 
 
-TEST(Rtcm_Test, MT1029)
+TEST(RtcmTest, MT1029)
 {
     auto rtcm = std::make_shared<Rtcm>();
     std::string s_test("UTF-8 проверка wörter");
@@ -295,7 +295,7 @@ TEST(Rtcm_Test, MT1029)
 }
 
 
-TEST(Rtcm_Test, MT1045)
+TEST(RtcmTest, MT1045)
 {
     auto rtcm = std::make_shared<Rtcm>();
     bool expected_true = true;
@@ -317,7 +317,7 @@ TEST(Rtcm_Test, MT1045)
 }
 
 
-TEST(Rtcm_Test, MSMCell)
+TEST(RtcmTest, MSMCell)
 {
     auto rtcm = std::make_shared<Rtcm>();
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
@@ -446,7 +446,7 @@ TEST(Rtcm_Test, MSMCell)
 }
 
 
-TEST(Rtcm_Test, MSM1)
+TEST(RtcmTest, MSM1)
 {
     auto rtcm = std::make_shared<Rtcm>();
     bool expected_true = true;
@@ -561,7 +561,7 @@ TEST(Rtcm_Test, MSM1)
 }
 
 
-TEST(Rtcm_Test, InstantiateServer)
+TEST(RtcmTest, InstantiateServer)
 {
     auto rtcm = std::make_shared<Rtcm>();
     rtcm->run_server();
@@ -585,7 +585,7 @@ TEST(Rtcm_Test, InstantiateServer)
 }
 
 
-TEST(Rtcm_Test, InstantiateServerWithoutClosing)
+TEST(RtcmTest, InstantiateServerWithoutClosing)
 {
     auto rtcm = std::make_shared<Rtcm>();
     rtcm->run_server();

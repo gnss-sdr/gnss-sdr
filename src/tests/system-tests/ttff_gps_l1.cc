@@ -75,7 +75,7 @@ typedef struct  {
 } ttff_msgbuf;
 
 
-class TTFF_GPS_L1_CA_Test: public ::testing::Test
+class TfttGpsL1CATest: public ::testing::Test
 {
 public:
     void config_1();
@@ -124,7 +124,7 @@ public:
 };
 
 
-void TTFF_GPS_L1_CA_Test::config_1()
+void TfttGpsL1CATest::config_1()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
@@ -235,7 +235,7 @@ void TTFF_GPS_L1_CA_Test::config_1()
 }
 
 
-void TTFF_GPS_L1_CA_Test::config_2()
+void TfttGpsL1CATest::config_2()
 {
     if(FLAGS_config_file_ttff.empty())
         {
@@ -296,7 +296,7 @@ void receive_msg()
 }
 
 
-void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_)
+void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_)
 {
     std::ofstream ttff_report_file;
     std::string filename = "ttff_report";
@@ -455,7 +455,7 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
 }
 
 
-TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
+TEST_F(TfttGpsL1CATest, ColdStart)
 {
     unsigned int num_measurements = 0;
 
@@ -540,7 +540,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
 }
 
 
-TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
+TEST_F(TfttGpsL1CATest, HotStart)
 {
     unsigned int num_measurements = 0;
     TTFF_v.clear();

@@ -51,7 +51,7 @@ DEFINE_string(config_file_ptest, std::string(""), "File containing the configura
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-class Static_Position_System_Test: public ::testing::Test
+class StaticPositionSystemTest: public ::testing::Test
 {
 public:
     std::string generator_binary;
@@ -92,7 +92,7 @@ private:
 
 
 
-void Static_Position_System_Test::geodetic2Ecef(const double latitude, const double longitude, const double altitude,
+void StaticPositionSystemTest::geodetic2Ecef(const double latitude, const double longitude, const double altitude,
         double* x, double* y, double* z)
 {
     const double a = 6378137.0; // WGS84
@@ -117,7 +117,7 @@ void Static_Position_System_Test::geodetic2Ecef(const double latitude, const dou
 }
 
 
-void Static_Position_System_Test::geodetic2Enu(const double latitude, const double longitude, const double altitude,
+void StaticPositionSystemTest::geodetic2Enu(const double latitude, const double longitude, const double altitude,
         double* east, double* north, double* up)
 {
     double x, y, z;
@@ -160,7 +160,7 @@ void Static_Position_System_Test::geodetic2Enu(const double latitude, const doub
 }
 
 
-double Static_Position_System_Test::compute_stdev_precision(const std::vector<double> & vec)
+double StaticPositionSystemTest::compute_stdev_precision(const std::vector<double> & vec)
 {
     double sum__ = std::accumulate(vec.begin(), vec.end(), 0.0);
     double mean__ = sum__ / vec.size();
@@ -173,7 +173,7 @@ double Static_Position_System_Test::compute_stdev_precision(const std::vector<do
 }
 
 
-double Static_Position_System_Test::compute_stdev_accuracy(const std::vector<double> & vec, const double ref)
+double StaticPositionSystemTest::compute_stdev_accuracy(const std::vector<double> & vec, const double ref)
 {
     const double mean__ = ref;
     double accum__ = 0.0;
@@ -185,7 +185,7 @@ double Static_Position_System_Test::compute_stdev_accuracy(const std::vector<dou
 }
 
 
-int Static_Position_System_Test::configure_generator()
+int StaticPositionSystemTest::configure_generator()
 {
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
@@ -207,7 +207,7 @@ int Static_Position_System_Test::configure_generator()
 }
 
 
-int Static_Position_System_Test::generate_signal()
+int StaticPositionSystemTest::generate_signal()
 {
     pid_t wait_result;
     int child_status;
@@ -230,7 +230,7 @@ int Static_Position_System_Test::generate_signal()
 }
 
 
-int Static_Position_System_Test::configure_receiver()
+int StaticPositionSystemTest::configure_receiver()
 {
     if(FLAGS_config_file_ptest.empty())
         {
@@ -399,7 +399,7 @@ int Static_Position_System_Test::configure_receiver()
 }
 
 
-int Static_Position_System_Test::run_receiver()
+int StaticPositionSystemTest::run_receiver()
 {
     std::shared_ptr<ControlThread> control_thread;
     if(FLAGS_config_file_ptest.empty())
@@ -440,17 +440,17 @@ int Static_Position_System_Test::run_receiver()
         {
             std::string aux = std::string(buffer);
             EXPECT_EQ(aux.empty(), false);
-            Static_Position_System_Test::generated_kml_file = aux.erase(aux.length() - 1, 1);
+            StaticPositionSystemTest::generated_kml_file = aux.erase(aux.length() - 1, 1);
         }
     pclose(fp);
-    EXPECT_EQ(Static_Position_System_Test::generated_kml_file.empty(), false);
+    EXPECT_EQ(StaticPositionSystemTest::generated_kml_file.empty(), false);
     return 0;
 }
 
 
-void Static_Position_System_Test::check_results()
+void StaticPositionSystemTest::check_results()
 {
-    std::fstream myfile(Static_Position_System_Test::generated_kml_file, std::ios_base::in);
+    std::fstream myfile(StaticPositionSystemTest::generated_kml_file, std::ios_base::in);
     std::string line;
 
     std::vector<double> pos_e;
@@ -544,7 +544,7 @@ void Static_Position_System_Test::check_results()
 }
 
 
-TEST_F(Static_Position_System_Test, Position_system_test)
+TEST_F(StaticPositionSystemTest, Position_system_test)
 {
     if(FLAGS_config_file_ptest.empty())
         {

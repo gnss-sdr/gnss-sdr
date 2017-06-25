@@ -59,7 +59,7 @@ void run_correlator_cpu(cpu_multicorrelator* correlator,
     }
 }
 
-TEST(CPUMulticorrelatorTest, MeasureExecutionTime)
+TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
 {
     struct timeval tv;
     int max_threads=FLAGS_cpu_multicorrelator_max_threads_test;

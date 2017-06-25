@@ -62,7 +62,7 @@ void run_correlator_gpu(cuda_multicorrelator* correlator,
     }
 }
 
-TEST(GPU_multicorrelator_test, MeasureExecutionTime)
+TEST(GpuMulticorrelatorTest, MeasureExecutionTime)
 {
     struct timeval tv;
     int max_threads=FLAGS_gpu_multicorrelator_max_threads_test;

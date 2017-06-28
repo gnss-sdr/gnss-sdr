@@ -1042,9 +1042,9 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
             {
                 d_carrier_doppler_hz_mcode += d_carr_error_filt_hz_mcode;
                 d_subcarrier_freq_cycles_mcode += d_subcarrier_error_filt_cycles_mcode;
+                d_code_freq_chips_mcode = d_subcarrier_freq_cycles_mcode /d_chips_to_cycles_mcode;
                 if( d_use_sa && d_subcarrier_locked_mcode )
                 {
-                    d_code_freq_chips_mcode = d_subcarrier_freq_cycles_mcode /d_chips_to_cycles_mcode;
                     d_code_freq_chips_mcode += d_code_error_filt_chips_veml_mcode;
                 }
             }

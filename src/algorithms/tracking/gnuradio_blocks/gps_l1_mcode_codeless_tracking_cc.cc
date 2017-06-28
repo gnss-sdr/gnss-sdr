@@ -1131,7 +1131,7 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                             d_carrier_lock_fail_counter = 0;
 
                             // Try to enable mcode tracking:
-                            start_tracking_mcode();
+                            //start_tracking_mcode();
                         }
 
 
@@ -1204,6 +1204,8 @@ int gps_l1_mcode_codeless_tracking_cc::general_work (int noutput_items,gr_vector
                             LOG(INFO) << ss.str();
 
                             std::cout << ss.str() << std::endl;;
+                            // Try to enable mcode tracking:
+                            start_tracking_mcode();
                         }
                     }
 

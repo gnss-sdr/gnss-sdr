@@ -278,6 +278,15 @@ if(UNIX)
                      -D_LARGE_FILES
                    )
 endif(UNIX)
+if(CMAKE_MAKE_PROGRAM MATCHES "make")
+   set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "make")
+endif(CMAKE_MAKE_PROGRAM MATCHES "make")
+if(CMAKE_MAKE_PROGRAM MATCHES "ninja")
+   set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "ninja")
+endif(CMAKE_MAKE_PROGRAM MATCHES "ninja")
+if(NOT CMAKE_MAKE_PROGRAM_PRETTY_NAME)
+   set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "${CMAKE_MAKE_PROGRAM}")
+endif(NOT CMAKE_MAKE_PROGRAM_PRETTY_NAME)
 
 
 
@@ -364,7 +373,7 @@ if(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
         else(LIBGTEST_DEV_DIR)
             message (STATUS " Googletest has not been found.")
             message (STATUS " Googletest will be downloaded and built automatically ")
-            message (STATUS " when doing 'make'. ")
+            message (STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'. ")
         endif(LIBGTEST_DEV_DIR)
     endif(GTEST_DIR)
 endif(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
@@ -466,7 +475,7 @@ endif()
 find_package(VolkGnssSdr)
 
 if(NOT VOLK_GNSSSDR_FOUND)
-    message(STATUS " volk_gnsssdr will be built along with gnss-sdr when doing 'make'")
+    message(STATUS " volk_gnsssdr will be built along with gnss-sdr when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'")
     ###############################
     # Find Python required modules
     ###############################
@@ -958,7 +967,7 @@ find_package(Armadillo)
 if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " Armadillo has not been found.")
      message(STATUS " Armadillo will be downloaded and built automatically")
-     message(STATUS " when doing 'make'. ")
+     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'. ")
      set(armadillo_BRANCH unstable)
      set(armadillo_RELEASE ${armadillo_BRANCH})
 
@@ -1100,7 +1109,7 @@ endif(NOT UHD_FOUND)
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
      message(STATUS "Doxygen found.")
-     message(STATUS "You can build the documentation with 'make doc'." )
+     message(STATUS "You can build the documentation with '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'." )
      message(STATUS "When done, point your browser to ${CMAKE_BINARY_DIR}/html/index.html")
      set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
      file(TO_NATIVE_PATH ${CMAKE_SOURCE_DIR} top_srcdir)
@@ -1123,7 +1132,7 @@ if(DOXYGEN_FOUND)
           COMMENT "Generating API documentation with Doxygen." VERBATIM
      )
      if(LATEX_COMPILER)
-          message(STATUS "'make pdfmanual' will generate a manual at ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf")
+          message(STATUS "'${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual' will generate a manual at ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf")
           add_custom_target(pdfmanual
                COMMAND ${CMAKE_MAKE_PROGRAM}
                COMMAND ${CMAKE_COMMAND} -E copy refman.pdf ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf
@@ -1133,7 +1142,7 @@ if(DOXYGEN_FOUND)
                COMMENT "Generating PDF manual with Doxygen." VERBATIM
           )
      endif(LATEX_COMPILER)
-     message(STATUS "'make doc-clean' will clean the documentation.")
+     message(STATUS "'${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc-clean' will clean the documentation.")
      add_custom_target(doc-clean
           COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/docs/html
           COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/docs/latex

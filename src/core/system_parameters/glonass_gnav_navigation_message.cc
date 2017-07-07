@@ -145,6 +145,81 @@ Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
     reset();
 }
 
+bool Glonass_Gnav_Navigation_Message::_CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> data_bits, std::bitset<GLONASS_GNAV_STRING_BITS> hamming_code_bits )
+{
+    int sum;
+
+    //!< Compute C1 term
+    sum = 0;
+    for(int i = 0; i < GLONASS_GNAV_CRC_I_INDEX.size; i++)
+        {
+            sum += data_bits[GLONASS_GNAV_CRC_I_INDEX[i]]
+        }
+    C1 = hamming_code_bits[0]^fmod(sum,2);
+
+    //!< Compute C2 term
+    sum = 0;
+    for(int j = 0; j < GLONASS_GNAV_CRC_J_INDEX.size; j++)
+        {
+            sum += data_bits[GLONASS_GNAV_CRC_J_INDEX[j]]
+        }
+    C2 = hamming_code_bits[1]^fmod(sum,2);
+
+    //!< Compute C3 term
+    sum = 0;
+    for(int k = 0; k < GLONASS_GNAV_CRC_K_INDEX.size; k++)
+        {
+            sum += data_bits[GLONASS_GNAV_CRC_K_INDEX[k]]
+        }
+    C3 = hamming_code_bits[2]^fmod(sum,2);
+
+    //!< Compute C4 term
+    sum = 0;
+    for(int l = 0; l < GLONASS_GNAV_CRC_L_INDEX.size; l++)
+        {
+            sum += data_bits[GLONASS_GNAV_CRC_L_INDEX[l]]
+        }
+    C4 = hamming_code_bits[3]^fmod(sum,2);
+
+    //!< Compute C5 term
+    sum = 0;
+    for(int m = 0; m < GLONASS_GNAV_CRC_M_INDEX.size; m++)
+        {
+            sum += data_bits[GLONASS_GNAV_CRC_M_INDEX[m]]
+        }
+    C5 = hamming_code_bits[4]^fmod(sum,2);
+
+    //!< Compute C6 term
+    sum = 0;
+    for(int n = 0; n < GLONASS_GNAV_CRC_N_INDEX.size; n++)
+        {
+            sum += data_bits[GLONASS_GNAV_CRC_N_INDEX[n]]
+        }
+    C6 = hamming_code_bits[5]^fmod(sum,2);
+
+    //!< Compute C7 term
+    sum = 0;
+    for(int p = 0; p < GLONASS_GNAV_CRC_P_INDEX.size; p++)
+        {
+            sum += data_bits[GLONASS_GNAV_CRC_P_INDEX[p]]
+        }
+    C7 = hamming_code_bits[6]^fmod(sum,2);
+
+    //!< Compute C8 term
+    sum = 0;
+    for(int q = 0; q < GLONASS_GNAV_CRC_Q_INDEX.size; q++)
+        {
+            sum += data_bits[GLONASS_GNAV_CRC_Q_INDEX[q]]
+        }
+    C8 = hamming_code_bits[7]^fmod(sum,2);
+
+    if isempty(find(C,1)) || (length(find(C(1,1:7))) == 1 && C(1,8) == 1)
+         status = 1;
+     else
+         status = 0;
+     end
+}
+
 
 bool Glonass_Gnav_Navigation_Message::read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
@@ -240,12 +315,46 @@ signed long int Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bit
     return value;
 }
 
-int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string, int frame_ID)
+unsigned int Glonass_Gnav_Navigation_Message::get_frame_number(unsigned int satellite_slot_number)
+{
+    unsigned int frame_ID = 0;
+
+    if(satellite_slot_number >= 1 and satellite_slot_number <= 5 )
+        {
+            frame_ID = 1;
+        }
+    else if(satellite_slot_number >= 6 and satellite_slot_number <= 10 )
+        {
+            frame_ID = 2;
+        }
+    else if(satellite_slot_number >= 11 and satellite_slot_number <= 15 )
+        {
+            frame_ID = 3;
+        }
+    else if(satellite_slot_number >= 16 and satellite_slot_number <= 20 )
+        {
+            frame_ID = 4;
+        }
+    else if(satellite_slot_number >= 21 and satellite_slot_number <= 24 )
+        {
+            frame_ID = 5;
+        }
+    else
+        {
+            //TODO Find print statement and make it an error
+            frame_ID = 0;
+        }
+}
+
+int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
 {
     int string_ID = 0;
+    int frame_ID = 0;
 
     // UNPACK BYTES TO BITS AND REMOVE THE CRC REDUNDANCE
     std::bitset<GLONASS_GNAV_STRING_BITS> string_bits(std::string(frame_string));
+    std::bitset<GLONASS_GNAV_STRING_BITS> data_bits(std::string(frame_string), 0, 77);
+    std::bitset<GLONASS_GNAV_STRING_BITS> hamming_code_bits(std::string(frame_string), 77, 8);
 
     string_ID = static_cast<int>(read_navigation_unsigned(string_bits, STRING_ID));
 

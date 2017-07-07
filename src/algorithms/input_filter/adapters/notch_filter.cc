@@ -52,7 +52,7 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
     float p_c_factor;
     float default_p_c_factor = 0.9;
     int length_;
-    int default_length_ = 5;
+    int default_length_ = 32;
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/input_filter.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);

@@ -49,34 +49,34 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking loop
  */
-class GalileoE5aDllPllTracking : public TrackingInterface
-{
+class GalileoE5aDllPllTracking : public TrackingInterface {
 public:
-    GalileoE5aDllPllTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+    GalileoE5aDllPllTracking(ConfigurationInterface *configuration,
+                             std::string role,
+                             unsigned int in_streams,
+                             unsigned int out_streams);
 
     virtual ~GalileoE5aDllPllTracking();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     //! Returns "Galileo_E5a_DLL_PLL_Tracking"
-    std::string implementation()
-    {
+    std::string implementation() {
         return "Galileo_E5a_DLL_PLL_Tracking";
     }
-    size_t item_size()
-    {
+
+    size_t item_size() {
         return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
     /*!
@@ -88,7 +88,7 @@ public:
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
 
     void start_tracking();

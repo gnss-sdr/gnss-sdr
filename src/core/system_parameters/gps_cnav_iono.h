@@ -42,8 +42,7 @@
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Appendix III
  */
-class Gps_CNAV_Iono
-{
+class Gps_CNAV_Iono {
 public:
     bool valid;           //!< Valid flag
     // Ionospheric parameters
@@ -63,18 +62,17 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
-    {
+    void serialize(Archive &archive, const unsigned int version) {
         using boost::serialization::make_nvp;
-        if(version){};
-        archive & make_nvp("d_alpha0",d_alpha0);
-        archive & make_nvp("d_alpha1",d_alpha1);
-        archive & make_nvp("d_alpha2",d_alpha2);
-        archive & make_nvp("d_alpha3",d_alpha3);
-        archive & make_nvp("d_beta0",d_beta0);
-        archive & make_nvp("d_beta1",d_beta1);
-        archive & make_nvp("d_beta2",d_beta2);
-        archive & make_nvp("d_beta3",d_beta3);
+        if (version) {};
+        archive & make_nvp("d_alpha0", d_alpha0);
+        archive & make_nvp("d_alpha1", d_alpha1);
+        archive & make_nvp("d_alpha2", d_alpha2);
+        archive & make_nvp("d_alpha3", d_alpha3);
+        archive & make_nvp("d_beta0", d_beta0);
+        archive & make_nvp("d_beta1", d_beta1);
+        archive & make_nvp("d_beta2", d_beta2);
+        archive & make_nvp("d_beta3", d_beta3);
     }
 };
 

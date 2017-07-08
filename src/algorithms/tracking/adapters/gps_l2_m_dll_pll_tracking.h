@@ -48,35 +48,34 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking loop
  */
-class GpsL2MDllPllTracking : public TrackingInterface
-{
+class GpsL2MDllPllTracking : public TrackingInterface {
 public:
-    GpsL2MDllPllTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+    GpsL2MDllPllTracking(ConfigurationInterface *configuration,
+                         std::string role,
+                         unsigned int in_streams,
+                         unsigned int out_streams);
 
     virtual ~GpsL2MDllPllTracking();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     //! Returns "GPS_L2_M_DLL_PLL_Tracking"
-    std::string implementation()
-    {
+    std::string implementation() {
         return "GPS_L2_M_DLL_PLL_Tracking";
     }
 
-    size_t item_size()
-    {
+    size_t item_size() {
         return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
 
@@ -89,7 +88,7 @@ public:
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
     void start_tracking();
 

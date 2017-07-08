@@ -32,8 +32,7 @@
 
 #include "gps_acq_assist.h"
 
-Gps_Acq_Assist::Gps_Acq_Assist()
-{
+Gps_Acq_Assist::Gps_Acq_Assist() {
     i_satellite_PRN = 0;
     d_TOW = 0.0;
     d_Doppler0 = 0.0;

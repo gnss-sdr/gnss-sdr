@@ -1,58 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc" line="206" mnemonic="7" />
+    <bookmark url="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc" line="212" mnemonic="7" />
   </component>
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
     <generated>
-      <config projectName="gnss-sdr" targetName="acq_gr_blocks" />
-      <config projectName="gnss-sdr" targetName="datatype_adapters" />
-      <config projectName="gnss-sdr" targetName="pvt_adapters" />
-      <config projectName="gnss-sdr" targetName="gnss_system_parameters" />
-      <config projectName="gnss-sdr" targetName="signal_generator_blocks" />
-      <config projectName="gnss-sdr" targetName="acq_adapters" />
-      <config projectName="gnss-sdr" targetName="obs_adapters" />
-      <config projectName="gnss-sdr" targetName="tracking_adapters" />
-      <config projectName="gnss-sdr" targetName="resampler_adapters" />
-      <config projectName="gnss-sdr" targetName="data_type_gr_blocks" />
-      <config projectName="gnss-sdr" targetName="pdfmanual" />
       <config projectName="gnss-sdr" targetName="telemetry_decoder_gr_blocks" />
-      <config projectName="gnss-sdr" targetName="gnss_block_test" />
-      <config projectName="gnss-sdr" targetName="pvt_lib" />
-      <config projectName="gnss-sdr" targetName="obs_gr_blocks" />
-      <config projectName="gnss-sdr" targetName="supl_library" />
-      <config projectName="gnss-sdr" targetName="gnuradio_block_test" />
+      <config projectName="gnss-sdr" targetName="acq_adapters" />
+      <config projectName="gnss-sdr" targetName="gnss_system_parameters" />
       <config projectName="gnss-sdr" targetName="channel_fsm" />
-      <config projectName="gnss-sdr" targetName="rx_core_lib" />
-      <config projectName="gnss-sdr" targetName="resampler_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="flowgraph_test" />
+      <config projectName="gnss-sdr" targetName="gnuradio_block_test" />
+      <config projectName="gnss-sdr" targetName="datatype_adapters" />
+      <config projectName="gnss-sdr" targetName="pdfmanual" />
+      <config projectName="gnss-sdr" targetName="data_type_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="telemetry_decoder_adapters" />
+      <config projectName="gnss-sdr" targetName="telemetry_decoder_lib" />
+      <config projectName="gnss-sdr" targetName="control_thread_test" />
+      <config projectName="gnss-sdr" targetName="signal_generator_adapters" />
+      <config projectName="gnss-sdr" targetName="doc-clean" />
+      <config projectName="gnss-sdr" targetName="signal_processing_testing_lib" />
+      <config projectName="gnss-sdr" targetName="obs_adapters" />
+      <config projectName="gnss-sdr" targetName="pvt_lib" />
+      <config projectName="gnss-sdr" targetName="signal_source_lib" />
       <config projectName="gnss-sdr" targetName="tracking_gr_blocks" />
       <config projectName="gnss-sdr" targetName="gtest" />
-      <config projectName="gnss-sdr" targetName="uninstall" />
-      <config projectName="gnss-sdr" targetName="control_thread_test" />
-      <config projectName="gnss-sdr" targetName="telemetry_decoder_lib" />
-      <config projectName="gnss-sdr" targetName="doc-clean" />
-      <config projectName="gnss-sdr" targetName="gnss_rx" />
-      <config projectName="gnss-sdr" targetName="check" />
-      <config projectName="gnss-sdr" targetName="signal_source_lib" />
-      <config projectName="gnss-sdr" targetName="telemetry_decoder_adapters" />
-      <config projectName="gnss-sdr" targetName="signal_generator_adapters" />
-      <config projectName="gnss-sdr" targetName="input_filter_gr_blocks" />
-      <config projectName="gnss-sdr" targetName="flowgraph_test" />
       <config projectName="gnss-sdr" targetName="run_tests" />
-      <config projectName="gnss-sdr" targetName="gnss-sdr" />
-      <config projectName="gnss-sdr" targetName="trk_test" />
-      <config projectName="gnss-sdr" targetName="pvt_gr_blocks" />
       <config projectName="gnss-sdr" targetName="doc" />
-      <config projectName="gnss-sdr" targetName="signal_processing_testing_lib" />
-      <config projectName="gnss-sdr" targetName="signal_source_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="rx_core_lib" />
+      <config projectName="gnss-sdr" targetName="resampler_adapters" />
+      <config projectName="gnss-sdr" targetName="input_filter_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="gnss_block_test" />
+      <config projectName="gnss-sdr" targetName="check" />
+      <config projectName="gnss-sdr" targetName="acq_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="supl_library" />
+      <config projectName="gnss-sdr" targetName="resampler_gr_blocks" />
       <config projectName="gnss-sdr" targetName="front-end-cal" />
-      <config projectName="gnss-sdr" targetName="input_filter_adapters" />
-      <config projectName="gnss-sdr" targetName="channel_adapters" />
-      <config projectName="gnss-sdr" targetName="gnss_sp_libs" />
-      <config projectName="gnss-sdr" targetName="conditioner_adapters" />
-      <config projectName="gnss-sdr" targetName="tracking_lib" />
-      <config projectName="gnss-sdr" targetName="front_end_cal_lib" />
       <config projectName="gnss-sdr" targetName="signal_source_adapters" />
+      <config projectName="gnss-sdr" targetName="signal_generator_blocks" />
+      <config projectName="gnss-sdr" targetName="signal_source_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="gnss_sp_libs" />
+      <config projectName="gnss-sdr" targetName="front_end_cal_lib" />
+      <config projectName="gnss-sdr" targetName="conditioner_adapters" />
+      <config projectName="gnss-sdr" targetName="tracking_adapters" />
+      <config projectName="gnss-sdr" targetName="input_filter_adapters" />
+      <config projectName="gnss-sdr" targetName="uninstall" />
+      <config projectName="gnss-sdr" targetName="gnss_rx" />
+      <config projectName="gnss-sdr" targetName="trk_test" />
+      <config projectName="gnss-sdr" targetName="pvt_adapters" />
+      <config projectName="gnss-sdr" targetName="obs_gr_blocks" />
+      <config projectName="gnss-sdr" targetName="gnss-sdr" />
+      <config projectName="gnss-sdr" targetName="channel_adapters" />
+      <config projectName="gnss-sdr" targetName="tracking_lib" />
+      <config projectName="gnss-sdr" targetName="pvt_gr_blocks" />
     </generated>
   </component>
   <component name="CMakeSettings" AUTO_RELOAD="true">
@@ -62,94 +62,348 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ea422778-c834-4ed6-841b-63a5e02d1cb5" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/data/signal_source_beidou_.dat" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/data/tracking_beidou/tracking_ch_0.dat" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/gnss-sdr.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_beidou_cc.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_test_2ms.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_test_2ms.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/adapters/signal_generator_test_beidou.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/adapters/signal_generator_test_beidou.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_test_beidou_c.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_test_beidou_c.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/beidou_b1i_telemetry_decoder.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/beidou_b1i_telemetry_decoder.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/beidou_b1i_telemetry_decoder_cc.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/beidou_b1i_telemetry_decoder_cc.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/core/system_parameters/beidou_navigation_message.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/core/system_parameters/beidou_navigation_message.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_2ms_acquisition_test.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_test.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gensource_gsoc2016_test.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/acq_1_sat.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/acquisition.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/interleave.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/plot_acq_grid_beidou.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/read_complex_binary.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/sampledCode.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/acquisition/write_apend_complex_binary.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/beidou_b1i_dll_pll_plot_sample.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/generator/beidou_B1I_generator.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/generator/generateB1Icode.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/generator/interleave.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/generator/write_apend_complex_binary.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/BEIDOU/tracking/beidou_b1i_dll_pll_plot_sample.m" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/utils/matlab/libs/read_complex_binary.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/galileo_e1_dll_pll_veml_plot_sample_32bits.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/galileo_e1_dll_pll_veml_plot_sample_32bits.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/galileo_e1_dll_pll_veml_plot_sample_64bits.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/galileo_e1_dll_pll_veml_plot_sample_64bits.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/galileo_e1b_observables_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/galileo_e1b_observables_plot_sample.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/galileo_e5a_dll_pll_plot_sample_64bits.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/galileo_e5a_dll_pll_plot_sample_64bits.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_dll_fll_pll_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_dll_fll_pll_plot_sample.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_dll_pll_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_dll_pll_plot_sample.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_dll_pll_plot_sample_64bits.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_dll_pll_plot_sample_64bits.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_observables_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_observables_plot_sample.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_pvt_plot_sample_agilent_cap2.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_pvt_plot_sample_agilent_cap2.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_pvt_raw_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_pvt_raw_plot_sample.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/gps_l1_ca_telemetry_plot_sample.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GPS/gps_l1_ca_telemetry_plot_sample.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/plotTrackingE5a.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/plotTrackingE5a.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/plot_acq_grid_gsoc.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/plot_acq_grid_gsoc.m" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/utils/matlab/plot_acq_grid_gsoc_e5.m" afterPath="$PROJECT_DIR$/src/utils/matlab/GALILEO/plot_acq_grid_gsoc_e5.m" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CMakeLists.txt" afterPath="$PROJECT_DIR$/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/CMakeParseArgumentsCopy.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/CMakeParseArgumentsCopy.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindGFlags.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindGFlags.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindGLOG.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindGLOG.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindGPSTK.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindGPSTK.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindGnuradio.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindGnuradio.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindGperftools.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindGperftools.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindGrDbfcttc.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindGrDbfcttc.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindGrGN3S.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindGrGN3S.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindGrOsmoSDR.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindGrOsmoSDR.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindLibOsmoSDR.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindLibOsmoSDR.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindORC.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindORC.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindOpenBLAS.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindOpenBLAS.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindOpenCL.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindOpenCL.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindTeleorbit.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindTeleorbit.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindUHD.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindUHD.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindVolk.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindVolk.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/FindVolkGnssSdr.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/FindVolkGnssSdr.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/SetupPython.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/SetupPython.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/TestForARM.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/TestForARM.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Modules/TestForSSE.cmake" afterPath="$PROJECT_DIR$/cmake/Modules/TestForSSE.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Toolchains/oe-sdk_cross.cmake" afterPath="$PROJECT_DIR$/cmake/Toolchains/oe-sdk_cross.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cmake/Toolchains/zynq-7000.cmake" afterPath="$PROJECT_DIR$/cmake/Toolchains/zynq-7000.cmake" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/adapters/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/PVT/adapters/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/adapters/galileo_e1_pvt.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/adapters/galileo_e1_pvt.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/adapters/galileo_e1_pvt.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/adapters/galileo_e1_pvt.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/adapters/gps_l1_ca_pvt.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/adapters/gps_l1_ca_pvt.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/adapters/gps_l1_ca_pvt.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/adapters/gps_l1_ca_pvt.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/adapters/hybrid_pvt.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/adapters/hybrid_pvt.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/adapters/hybrid_pvt.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/adapters/hybrid_pvt.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/galileo_e1_pvt_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/galileo_e1_pvt_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/galileo_e1_pvt_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/galileo_e1_pvt_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/gps_l1_ca_pvt_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/gps_l1_ca_pvt_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/gps_l1_ca_pvt_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/gps_l1_ca_pvt_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/hybrid_pvt_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/hybrid_pvt_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/hybrid_pvt_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/gnuradio_blocks/hybrid_pvt_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/galileo_e1_ls_pvt.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/galileo_e1_ls_pvt.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/galileo_e1_ls_pvt.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/galileo_e1_ls_pvt.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/geojson_printer.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/geojson_printer.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/geojson_printer.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/geojson_printer.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/gps_l1_ca_ls_pvt.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/gps_l1_ca_ls_pvt.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/gps_l1_ca_ls_pvt.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/gps_l1_ca_ls_pvt.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/hybrid_ls_pvt.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/hybrid_ls_pvt.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/hybrid_ls_pvt.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/hybrid_ls_pvt.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/kml_printer.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/kml_printer.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/kml_printer.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/kml_printer.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/ls_pvt.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/ls_pvt.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/ls_pvt.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/ls_pvt.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/nmea_printer.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/nmea_printer.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/nmea_printer.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/nmea_printer.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/pvt_solution.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/pvt_solution.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/pvt_solution.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/pvt_solution.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/rinex_printer.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/rinex_printer.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/rinex_printer.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/rinex_printer.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/rtcm_printer.cc" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/rtcm_printer.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/PVT/libs/rtcm_printer.h" afterPath="$PROJECT_DIR$/src/algorithms/PVT/libs/rtcm_printer.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_8ms_ambiguous_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_8ms_ambiguous_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_8ms_ambiguous_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_8ms_ambiguous_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_cccwsr_ambiguous_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_cccwsr_ambiguous_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_tong_ambiguous_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_tong_ambiguous_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_tong_ambiguous_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e1_pcps_tong_ambiguous_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e5a_noncoherent_iq_acquisition_caf.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e5a_noncoherent_iq_acquisition_caf.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e5a_noncoherent_iq_acquisition_caf.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/galileo_e5a_noncoherent_iq_acquisition_caf.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.cc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.cc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_sc.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_sc.cc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_multithread_acquisition_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_multithread_acquisition_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition_fine_doppler.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition_fine_doppler.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition_fine_doppler.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition_fine_doppler.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_assisted_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_assisted_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_assisted_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_assisted_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_multithread_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_multithread_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_multithread_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_multithread_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_opencl_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_opencl_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_opencl_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_opencl_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_quicksync_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_quicksync_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_quicksync_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_quicksync_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_tong_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_tong_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_tong_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l1_ca_pcps_tong_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l2_m_pcps_acquisition.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l2_m_pcps_acquisition.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l2_m_pcps_acquisition.h" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/adapters/gps_l2_m_pcps_acquisition.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_beidou_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_beidou_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/channel/adapters/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/channel/adapters/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/channel/adapters/channel.cc" afterPath="$PROJECT_DIR$/src/algorithms/channel/adapters/channel.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/channel/adapters/channel.h" afterPath="$PROJECT_DIR$/src/algorithms/channel/adapters/channel.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/channel/libs/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/channel/libs/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/channel/libs/channel_fsm.cc" afterPath="$PROJECT_DIR$/src/algorithms/channel/libs/channel_fsm.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/channel/libs/channel_fsm.h" afterPath="$PROJECT_DIR$/src/algorithms/channel/libs/channel_fsm.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/channel/libs/channel_msg_receiver_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/channel/libs/channel_msg_receiver_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/channel/libs/channel_msg_receiver_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/channel/libs/channel_msg_receiver_cc.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/libs/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_test_2ms.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_test_2ms.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_test_2ms.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_test_2ms.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/byte_x2_to_complex_byte.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/byte_x2_to_complex_byte.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/byte_x2_to_complex_byte.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/byte_x2_to_complex_byte.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/cl.hpp" afterPath="$PROJECT_DIR$/src/algorithms/libs/cl.hpp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/clFFT.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/clFFT.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/complex_byte_to_float_x2.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/complex_byte_to_float_x2.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/complex_byte_to_float_x2.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/complex_byte_to_float_x2.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/complex_float_to_complex_byte.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/complex_float_to_complex_byte.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/complex_float_to_complex_byte.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/complex_float_to_complex_byte.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/cshort_to_float_x2.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/cshort_to_float_x2.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/cshort_to_float_x2.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/cshort_to_float_x2.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/fft_base_kernels.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/fft_base_kernels.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/fft_execute.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/fft_execute.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/fft_internal.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/fft_internal.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/fft_kernelstring.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/fft_kernelstring.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/fft_setup.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/fft_setup.cc" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/galileo_e1_signal_processing.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/galileo_e1_signal_processing.cc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/signal_generator/adapters/signal_generator.cc" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/adapters/signal_generator.cc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_c.cc" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_c.cc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/CMakeLists.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/galileo_e1_signal_processing.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/galileo_e1_signal_processing.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/galileo_e5_signal_processing.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/galileo_e5_signal_processing.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/galileo_e5_signal_processing.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/galileo_e5_signal_processing.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/gnss_sdr_valve.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/gnss_sdr_valve.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/gnss_sdr_valve.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/gnss_sdr_valve.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/gnss_signal_processing.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/gnss_signal_processing.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/gnss_signal_processing.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/gnss_signal_processing.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/gps_l2c_signal.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/gps_l2c_signal.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/gps_l2c_signal.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/gps_l2c_signal.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/gps_sdr_signal_processing.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/gps_sdr_signal_processing.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/gps_sdr_signal_processing.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/gps_sdr_signal_processing.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/pass_through.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/pass_through.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/pass_through.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/pass_through.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/short_x2_to_cshort.cc" afterPath="$PROJECT_DIR$/src/algorithms/libs/short_x2_to_cshort.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/libs/short_x2_to_cshort.h" afterPath="$PROJECT_DIR$/src/algorithms/libs/short_x2_to_cshort.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/resampler/adapters/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/resampler/adapters/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/resampler/adapters/direct_resampler_conditioner.cc" afterPath="$PROJECT_DIR$/src/algorithms/resampler/adapters/direct_resampler_conditioner.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/resampler/adapters/direct_resampler_conditioner.h" afterPath="$PROJECT_DIR$/src/algorithms/resampler/adapters/direct_resampler_conditioner.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cb.cc" afterPath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cb.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cb.h" afterPath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cb.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cs.cc" afterPath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cs.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cs.h" afterPath="$PROJECT_DIR$/src/algorithms/resampler/gnuradio_blocks/direct_resampler_conditioner_cs.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_test_beidou_c.cc" afterPath="$PROJECT_DIR$/src/algorithms/signal_generator/gnuradio_blocks/signal_generator_test_beidou_c.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/beidou_b1i_telemetry_decoder.h" afterPath="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/beidou_b1i_telemetry_decoder.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e1_tcp_connector_tracking.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e1_tcp_connector_tracking.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e1_tcp_connector_tracking.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e1_tcp_connector_tracking.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e5a_dll_pll_tracking.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e5a_dll_pll_tracking.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e5a_dll_pll_tracking.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/galileo_e5a_dll_pll_tracking.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_c_aid_tracking.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_c_aid_tracking.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_c_aid_tracking.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_c_aid_tracking.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking_gpu.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking_gpu.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking_gpu.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking_gpu.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_tcp_connector_tracking.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_tcp_connector_tracking.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_tcp_connector_tracking.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l1_ca_tcp_connector_tracking.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l2_m_dll_pll_tracking.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l2_m_dll_pll_tracking.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l2_m_dll_pll_tracking.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/adapters/gps_l2_m_dll_pll_tracking.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_dll_pll_veml_tracking_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_dll_pll_veml_tracking_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_dll_pll_veml_tracking_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_dll_pll_veml_tracking_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_tcp_connector_tracking_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_tcp_connector_tracking_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_tcp_connector_tracking_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e1_tcp_connector_tracking_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e5a_dll_pll_tracking_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e5a_dll_pll_tracking_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e5a_dll_pll_tracking_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/galileo_e5a_dll_pll_tracking_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_sc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_sc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_sc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_c_aid_tracking_sc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_gpu_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_gpu_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_gpu_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_gpu_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_tcp_connector_tracking_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_tcp_connector_tracking_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_tcp_connector_tracking_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_tcp_connector_tracking_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l2_m_dll_pll_tracking_cc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l2_m_dll_pll_tracking_cc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l2_m_dll_pll_tracking_cc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/gps_l2_m_dll_pll_tracking_cc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator_16sc.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator_16sc.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator_16sc.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/cpu_multicorrelator_16sc.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/cuda_multicorrelator.cu" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/cuda_multicorrelator.cu" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/cuda_multicorrelator.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/cuda_multicorrelator.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/lock_detectors.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/lock_detectors.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/lock_detectors.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/lock_detectors.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tcp_communication.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tcp_communication.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tcp_communication.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tcp_communication.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tcp_packet_data.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tcp_packet_data.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tcp_packet_data.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tcp_packet_data.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_2nd_DLL_filter.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_2nd_DLL_filter.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_2nd_DLL_filter.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_2nd_DLL_filter.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_2nd_PLL_filter.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_2nd_PLL_filter.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_2nd_PLL_filter.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_2nd_PLL_filter.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_FLL_PLL_filter.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_FLL_PLL_filter.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_FLL_PLL_filter.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_FLL_PLL_filter.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_discriminators.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_discriminators.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_discriminators.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_discriminators.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_loop_filter.cc" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_loop_filter.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_loop_filter.h" afterPath="$PROJECT_DIR$/src/algorithms/tracking/libs/tracking_loop_filter.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/interfaces/acquisition_interface.h" afterPath="$PROJECT_DIR$/src/core/interfaces/acquisition_interface.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/interfaces/channel_interface.h" afterPath="$PROJECT_DIR$/src/core/interfaces/channel_interface.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/interfaces/configuration_interface.h" afterPath="$PROJECT_DIR$/src/core/interfaces/configuration_interface.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/interfaces/gnss_block_interface.h" afterPath="$PROJECT_DIR$/src/core/interfaces/gnss_block_interface.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/interfaces/observables_interface.h" afterPath="$PROJECT_DIR$/src/core/interfaces/observables_interface.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/interfaces/pvt_interface.h" afterPath="$PROJECT_DIR$/src/core/interfaces/pvt_interface.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/interfaces/telemetry_decoder_interface.h" afterPath="$PROJECT_DIR$/src/core/interfaces/telemetry_decoder_interface.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/interfaces/tracking_interface.h" afterPath="$PROJECT_DIR$/src/core/interfaces/tracking_interface.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/core/libs/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/INIReader.cc" afterPath="$PROJECT_DIR$/src/core/libs/INIReader.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/INIReader.h" afterPath="$PROJECT_DIR$/src/core/libs/INIReader.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/gnss_sdr_supl_client.cc" afterPath="$PROJECT_DIR$/src/core/libs/gnss_sdr_supl_client.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/gnss_sdr_supl_client.h" afterPath="$PROJECT_DIR$/src/core/libs/gnss_sdr_supl_client.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/ini.cc" afterPath="$PROJECT_DIR$/src/core/libs/ini.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/ini.h" afterPath="$PROJECT_DIR$/src/core/libs/ini.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/string_converter.cc" afterPath="$PROJECT_DIR$/src/core/libs/string_converter.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/string_converter.h" afterPath="$PROJECT_DIR$/src/core/libs/string_converter.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/supl/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/core/libs/supl/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/supl/supl.c" afterPath="$PROJECT_DIR$/src/core/libs/supl/supl.c" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/libs/supl/supl.h" afterPath="$PROJECT_DIR$/src/core/libs/supl/supl.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/core/receiver/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/concurrent_map.h" afterPath="$PROJECT_DIR$/src/core/receiver/concurrent_map.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/concurrent_queue.h" afterPath="$PROJECT_DIR$/src/core/receiver/concurrent_queue.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/control_message.h" afterPath="$PROJECT_DIR$/src/core/receiver/control_message.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/control_message_factory.cc" afterPath="$PROJECT_DIR$/src/core/receiver/control_message_factory.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/control_message_factory.h" afterPath="$PROJECT_DIR$/src/core/receiver/control_message_factory.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/control_thread.cc" afterPath="$PROJECT_DIR$/src/core/receiver/control_thread.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/control_thread.h" afterPath="$PROJECT_DIR$/src/core/receiver/control_thread.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/file_configuration.cc" afterPath="$PROJECT_DIR$/src/core/receiver/file_configuration.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/file_configuration.h" afterPath="$PROJECT_DIR$/src/core/receiver/file_configuration.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/gnss_block_factory.cc" afterPath="$PROJECT_DIR$/src/core/receiver/gnss_block_factory.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/gnss_block_factory.h" afterPath="$PROJECT_DIR$/src/core/receiver/gnss_block_factory.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/gnss_flowgraph.cc" afterPath="$PROJECT_DIR$/src/core/receiver/gnss_flowgraph.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/gnss_flowgraph.h" afterPath="$PROJECT_DIR$/src/core/receiver/gnss_flowgraph.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/in_memory_configuration.cc" afterPath="$PROJECT_DIR$/src/core/receiver/in_memory_configuration.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/receiver/in_memory_configuration.h" afterPath="$PROJECT_DIR$/src/core/receiver/in_memory_configuration.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/core/system_parameters/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/GPS_L1_CA.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/GPS_L1_CA.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/GPS_L2C.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/GPS_L2C.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/Galileo_E1.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/Galileo_E1.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/Galileo_E5a.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/Galileo_E5a.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/beidou_navigation_message.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/beidou_navigation_message.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/beidou_navigation_message.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/beidou_navigation_message.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_almanac.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_almanac.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_almanac.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_almanac.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_ephemeris.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_ephemeris.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_ephemeris.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_ephemeris.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_fnav_message.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_fnav_message.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_fnav_message.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_fnav_message.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_iono.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_iono.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_iono.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_iono.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_navigation_message.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_navigation_message.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_navigation_message.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_navigation_message.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_utc_model.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_utc_model.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/galileo_utc_model.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/galileo_utc_model.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gnss_satellite.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gnss_satellite.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gnss_satellite.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gnss_satellite.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gnss_signal.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gnss_signal.cc" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gnss_signal.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gnss_signal.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gnss_synchro.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gnss_synchro.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_acq_assist.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_acq_assist.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_acq_assist.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_acq_assist.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_almanac.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_almanac.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_almanac.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_almanac.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_ephemeris.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_ephemeris.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_ephemeris.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_ephemeris.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_iono.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_iono.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_iono.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_iono.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_navigation_message.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_navigation_message.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_navigation_message.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_navigation_message.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_utc_model.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_utc_model.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_utc_model.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_cnav_utc_model.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_ephemeris.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_ephemeris.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_ephemeris.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_ephemeris.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_iono.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_iono.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_iono.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_iono.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_navigation_message.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_navigation_message.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_navigation_message.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_navigation_message.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_ref_location.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_ref_location.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_ref_location.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_ref_location.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_ref_time.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_ref_time.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_ref_time.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_ref_time.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_utc_model.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_utc_model.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/gps_utc_model.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/gps_utc_model.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/rtcm.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/rtcm.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/rtcm.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/rtcm.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/sbas_ephemeris.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/sbas_ephemeris.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/sbas_ephemeris.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/sbas_ephemeris.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/sbas_ionospheric_correction.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/sbas_ionospheric_correction.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/sbas_ionospheric_correction.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/sbas_ionospheric_correction.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/sbas_satellite_correction.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/sbas_satellite_correction.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/sbas_satellite_correction.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/sbas_satellite_correction.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/sbas_telemetry_data.cc" afterPath="$PROJECT_DIR$/src/core/system_parameters/sbas_telemetry_data.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/sbas_telemetry_data.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/sbas_telemetry_data.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/core/system_parameters/sbas_time.h" afterPath="$PROJECT_DIR$/src/core/system_parameters/sbas_time.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/main/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/main.cc" afterPath="$PROJECT_DIR$/src/main/main.cc" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/tests/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/common-files/signal_generator_flags.h" afterPath="$PROJECT_DIR$/src/tests/common-files/signal_generator_flags.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_2ms_acquisition_test.cc" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_2ms_acquisition_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_test.cc" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gensource_gsoc2016_test.cc" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gensource_gsoc2016_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc" afterPath="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/single_test_main.cc" afterPath="$PROJECT_DIR$/src/tests/single_test_main.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/system-tests/obs_gps_l1_system_test.cc" afterPath="$PROJECT_DIR$/src/tests/system-tests/obs_gps_l1_system_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/system-tests/ttff_gps_l1.cc" afterPath="$PROJECT_DIR$/src/tests/system-tests/ttff_gps_l1.cc" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/test_main.cc" afterPath="$PROJECT_DIR$/src/tests/test_main.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/code_generation_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/code_generation_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/complex_carrier_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/complex_carrier_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/conjugate_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/conjugate_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/fft_length_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/fft_length_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/magnitude_squared_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/magnitude_squared_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/multiply_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/arithmetic/multiply_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/control_message_factory_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/control_message_factory_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/control_thread_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/control_thread_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/file_configuration_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/file_configuration_test.cc" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/gnss_block_factory_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/gnss_block_factory_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/gnss_flowgraph_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/gnss_flowgraph_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/in_memory_configuration_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/in_memory_configuration_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/string_converter_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/control-plane/string_converter_test.cc" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc" afterPath="$PROJECT_DIR$/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/utils/front-end-cal/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/utils/front-end-cal/CMakeLists.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/utils/front-end-cal/front_end_cal.cc" afterPath="$PROJECT_DIR$/src/utils/front-end-cal/front_end_cal.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/utils/front-end-cal/front_end_cal.h" afterPath="$PROJECT_DIR$/src/utils/front-end-cal/front_end_cal.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/utils/front-end-cal/main.cc" afterPath="$PROJECT_DIR$/src/utils/front-end-cal/main.cc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/utils/gpstk/gnsspvt/CMakeLists.txt" afterPath="$PROJECT_DIR$/src/utils/gpstk/gnsspvt/CMakeLists.txt" />
     </list>
     <ignored path="gnss-sdr.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -169,18 +423,45 @@
     <favorites_list name="gnss-sdr" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/adapters/CMakeLists.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="314">
-              <caret line="40" column="19" lean-forward="true" selection-start-line="40" selection-start-column="19" selection-end-line="40" selection-end-column="19" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>#include &lt;volk_gnsssdr/volk_gnsssdr.h&gt;</find>
+      <find>&lt;volk/volk.h&gt;</find>
+      <find>volk_malloc</find>
+      <find>volk_get_alignment</find>
+      <find>volk_free</find>
+      <find>volk_fre</find>
+      <find>volk_fr</find>
+      <find>volk_f</find>
+      <find>volk_s</find>
+      <find>volk_（）</find>
+      <find>volk_（</find>
+      <find>volk_()</find>
+      <find>volk_(?!)</find>
+      <find>volk_(?!g)</find>
+      <find>volk_(?!gn)</find>
+      <find>volk_(?!gns)</find>
+      <find>volk_(?!gnss)</find>
+      <find>volk_(?!gnsss)</find>
+      <find>volk_(?!gnsssd)</find>
+      <find>volk_(?!gnsssdr)</find>
+      <find>volk_</find>
+      <find>volk</find>
+    </findStrings>
+    <replaceStrings>
+      <replace />
+      <replace>#include &lt;volk_gnsssdr/volk_gnsssdr.h&gt;</replace>
+      <replace>&lt;volk_gnsssdr/volk_gnsssdr.h&gt;</replace>
+      <replace>volk_gnsssdr_malloc</replace>
+      <replace>volk_gnsssdr_get_alignment</replace>
+      <replace>volk_gnsssdr_free</replace>
+      <replace>volk_gnsssdr_</replace>
+    </replaceStrings>
+    <dirStrings>
+      <dir>$PROJECT_DIR$/src/algorithms/tracking</dir>
+    </dirStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -204,6 +485,11 @@
         <option value="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc" />
         <option value="$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gensource_gsoc2016_test.cc" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/beidou_b1i_telemetry_decoder.h" />
+        <option value="$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.h" />
+        <option value="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_beidou_cc.cc" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/galileo_e5a_noncoherent_iq_acquisition_caf_cc.cc" />
       </list>
     </option>
   </component>
@@ -213,6 +499,7 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
+  <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds">
     <option name="y" value="27" />
     <option name="width" value="1920" />
@@ -259,102 +546,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="algorithms" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="algorithms" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="acquisition" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gnss-sdr" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="algorithms" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="acquisition" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="adapters" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
     </panes>
@@ -363,8 +554,10 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
-    <property name="FullScreen" value="true" />
     <property name="Git.Branch.Popup.ShowAllRemotes" value="true" />
+    <property name="last_opened_file_path" value="$USER_HOME$/git/gnss-sdr/src/algorithms/tracking/gnuradio_blocks/bds_b1i_dll_pll_tracking_cc.cc" />
+    <property name="two.files.diff.last.used.file" value="$USER_HOME$/git/gnss-sdr/src/algorithms/tracking/gnuradio_blocks/bds_b1i_dll_pll_tracking_cc.cc" />
+    <property name="ChangesBrowser.SHOW_FLATTEN" value="false" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -866,25 +1059,43 @@
       <workItem from="1470852388143" duration="5002000" />
       <workItem from="1471010687318" duration="7229000" />
       <workItem from="1497072028330" duration="294000" />
-      <workItem from="1497072339923" duration="5929000" />
+      <workItem from="1497072339923" duration="12468000" />
+      <workItem from="1499480086079" duration="426000" />
+      <workItem from="1499480787732" duration="6535000" />
     </task>
+    <task id="LOCAL-00001" summary="Merge branch 'beidou-gsoc2016' of https://github.com/luis-esteve/gnss-sdr into luis-esteve-beidou-gsoc2016&#10;&#10;# Conflicts:&#10;#&#9;CMakeLists.txt&#10;#&#9;README.md&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/CMakeLists.txt&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_fine_doppler_cc.cc&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/pcps_assisted_acquisition_cc.cc&#10;#&#9;src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/apps/CMakeLists.txt&#10;#&#9;src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Packaging/volk_gnsssdr-config-info-manpage&#10;#&#9;src/tests/CMakeLists.txt&#10;#&#9;src/tests/test_main.cc">
+      <created>1497080790712</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1497080790712</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Merge branch 'beidou-gsoc2016' of https://github.com/luis-esteve/gnss-sdr into luis-esteve-beidou-gsoc2016&#10;&#10;# Conflicts:&#10;#&#9;CMakeLists.txt&#10;#&#9;README.md&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/CMakeLists.txt&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_fine_doppler_cc.cc&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/pcps_assisted_acquisition_cc.cc&#10;#&#9;src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/apps/CMakeLists.txt&#10;#&#9;src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Packaging/volk_gnsssdr-config-info-manpage&#10;#&#9;src/tests/CMakeLists.txt&#10;#&#9;src/tests/test_main.cc">
+      <created>1499487383675</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1499487383675</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="47822000" />
+    <option name="totallyTimeSpent" value="61322000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="27" width="1920" height="1053" extended-state="6" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24947916" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32910156" sideWeight="0.49791667" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32910156" sideWeight="0.50208336" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24947916" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -893,7 +1104,6 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
@@ -932,12 +1142,18 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="Merge branch 'beidou-gsoc2016' of https://github.com/luis-esteve/gnss-sdr into luis-esteve-beidou-gsoc2016&#10;&#10;# Conflicts:&#10;#&#9;CMakeLists.txt&#10;#&#9;README.md&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/CMakeLists.txt&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_fine_doppler_cc.cc&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/pcps_assisted_acquisition_cc.cc&#10;#&#9;src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/apps/CMakeLists.txt&#10;#&#9;src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Packaging/volk_gnsssdr-config-info-manpage&#10;#&#9;src/tests/CMakeLists.txt&#10;#&#9;src/tests/test_main.cc" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge branch 'beidou-gsoc2016' of https://github.com/luis-esteve/gnss-sdr into luis-esteve-beidou-gsoc2016&#10;&#10;# Conflicts:&#10;#&#9;CMakeLists.txt&#10;#&#9;README.md&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/CMakeLists.txt&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_fine_doppler_cc.cc&#10;#&#9;src/algorithms/acquisition/gnuradio_blocks/pcps_assisted_acquisition_cc.cc&#10;#&#9;src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/apps/CMakeLists.txt&#10;#&#9;src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Packaging/volk_gnsssdr-config-info-manpage&#10;#&#9;src/tests/CMakeLists.txt&#10;#&#9;src/tests/test_main.cc" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc</url>
-          <line>446</line>
+          <line>513</line>
         </line-breakpoint>
       </breakpoints>
       <option name="time" value="1" />
@@ -945,102 +1161,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="826">
-          <caret line="59" column="41" lean-forward="false" selection-start-line="59" selection-start-column="39" selection-end-line="59" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/tests/test_main.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1708">
-          <caret line="122" column="2" lean-forward="false" selection-start-line="122" selection-start-column="2" selection-end-line="122" selection-end-column="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3304">
-          <caret line="236" column="84" lean-forward="false" selection-start-line="236" selection-start-column="84" selection-end-line="236" selection-end-column="84" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3444">
-          <caret line="246" column="40" lean-forward="false" selection-start-line="246" selection-start-column="29" selection-end-line="246" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/gnuradio_blocks/beidou_b1i_dll_pll_tracking_cc.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8232">
-          <caret line="588" column="50" lean-forward="false" selection-start-line="588" selection-start-column="44" selection-end-line="588" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="826">
-          <caret line="59" column="41" lean-forward="false" selection-start-line="59" selection-start-column="39" selection-end-line="59" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/tests/test_main.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1582">
-          <caret line="113" column="2" lean-forward="false" selection-start-line="113" selection-start-column="2" selection-end-line="113" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1960">
-          <caret line="140" column="98" lean-forward="false" selection-start-line="140" selection-start-column="98" selection-end-line="140" selection-end-column="98" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/BEIDOU_B1I.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/GPS_L1_CA.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1498">
-          <caret line="107" column="42" lean-forward="false" selection-start-line="107" selection-start-column="38" selection-end-line="107" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/core/system_parameters/MATH_CONSTANTS.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1008">
@@ -1143,13 +1263,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_sdr_signal_processing_old.cc" />
-    <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="34" column="20" lean-forward="false" selection-start-line="34" selection-start-column="20" selection-end-line="34" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/algorithms/libs/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="294">
@@ -1161,13 +1274,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="826">
           <caret line="59" column="41" lean-forward="false" selection-start-line="59" selection-start-column="39" selection-end-line="59" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="928">
-          <caret line="246" column="40" lean-forward="false" selection-start-line="246" selection-start-column="29" selection-end-line="246" selection-end-column="40" />
         </state>
       </provider>
     </entry>
@@ -1215,13 +1321,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="364">
-          <caret line="74" column="40" lean-forward="false" selection-start-line="74" selection-start-column="40" selection-end-line="74" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/tests/gnss_block/beidou_B1I_pcps_acquisition_test.cc">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1040">
@@ -1249,7 +1348,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="608">
           <caret line="256" column="31" lean-forward="true" selection-start-line="256" selection-start-column="31" selection-end-line="256" selection-end-column="31" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1263,16 +1361,150 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="714">
-          <caret line="555" column="29" lean-forward="true" selection-start-line="555" selection-start-column="29" selection-end-line="555" selection-end-column="29" />
-          <folding />
+        <state relative-caret-position="1054">
+          <caret line="539" column="30" lean-forward="true" selection-start-line="539" selection-start-column="30" selection-end-line="539" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/telemetry_decoder/gnuradio_blocks/beidou_b1i_telemetry_decoder_cc.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="280">
+          <caret line="14" column="2" lean-forward="true" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/telemetry_decoder/adapters/beidou_b1i_telemetry_decoder.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="454">
+          <caret line="46" column="1" lean-forward="true" selection-start-line="46" selection-start-column="1" selection-end-line="46" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1420">
+          <caret line="31" column="51" lean-forward="true" selection-start-line="31" selection-start-column="51" selection-end-line="31" selection-end-column="51" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/adapters/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="314">
-          <caret line="40" column="19" lean-forward="true" selection-start-line="40" selection-start-column="19" selection-end-line="40" selection-end-column="19" />
+        <state relative-caret-position="254">
+          <caret line="21" column="38" lean-forward="true" selection-start-line="21" selection-start-column="38" selection-end-line="21" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/beidou_navigation_message.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="21" column="62" lean-forward="true" selection-start-line="21" selection-start-column="62" selection-end-line="21" selection-end-column="62" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/system_parameters/beidou_navigation_message.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="42" column="21" lean-forward="true" selection-start-line="42" selection-start-column="21" selection-end-line="42" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_2ms_acquisition.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="640">
+          <caret line="32" column="44" lean-forward="false" selection-start-line="32" selection-start-column="44" selection-end-line="32" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1598">
+          <caret line="80" column="7" lean-forward="false" selection-start-line="80" selection-start-column="7" selection-end-line="80" selection-end-column="7" />
+          <folding>
+            <element signature="e#1548#1565#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="380">
+          <caret line="20" column="24" lean-forward="true" selection-start-line="20" selection-start-column="24" selection-end-line="20" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/tracking/adapters/beidou_b1i_dll_pll_tracking.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1118">
+          <caret line="104" column="1" lean-forward="true" selection-start-line="104" selection-start-column="1" selection-end-line="104" selection-end-column="1" />
+          <folding>
+            <element signature="e#1452#1492#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="496">
+          <caret line="35" column="23" lean-forward="true" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/galileo_e5a_noncoherent_iq_acquisition_caf_cc.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1056">
+          <caret line="99" column="47" lean-forward="true" selection-start-line="99" selection-start-column="47" selection-end-line="99" selection-end-column="47" />
+          <folding>
+            <element signature="e#1484#1542#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="188">
+            <caret line="573" column="189" lean-forward="false" selection-start-line="573" selection-start-column="189" selection-end-line="573" selection-end-column="189" />
+            <folding />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/adapters/beidou_b1i_pcps_acquisition.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="118">
+          <caret line="36" column="44" lean-forward="false" selection-start-line="36" selection-start-column="10" selection-end-line="36" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/libs/beidou_b1i_signal_processing.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3083">
+          <caret line="35" column="16" lean-forward="true" selection-start-line="35" selection-start-column="16" selection-end-line="35" selection-end-column="16" />
+          <folding>
+            <element signature="e#1221#1262#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_beidou_cc.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="636">
+          <caret line="140" column="1" lean-forward="true" selection-start-line="140" selection-start-column="1" selection-end-line="140" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Merge_branch__beidou_gsoc2016__of_https___github_com_luis_esteve_gnss_sdr_into_luis_esteve.patch">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>

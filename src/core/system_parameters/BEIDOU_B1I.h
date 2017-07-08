@@ -41,48 +41,49 @@
 #define BEIDOU_DEBUG 0
 
 // Physical constants
-const double BEIDOU_C_m_s       = 299792458.0;      //!< The speed of light, [m/s]
-const double BEIDOU_C_m_ms      = 299792.4580;      //!< The speed of light, [m/ms]
-const double BEIDOU_PI          = 3.1415926535898;  //!< Pi as defined in ICD-BEIDOU
-const double BEIDOU_TWO_PI      = 6.283185307179586;//!< 2Pi
+const double BEIDOU_C_m_s = 299792458.0;      //!< The speed of light, [m/s]
+const double BEIDOU_C_m_ms = 299792.4580;      //!< The speed of light, [m/ms]
+const double BEIDOU_PI = 3.1415926535898;  //!< Pi as defined in ICD-BEIDOU
+const double BEIDOU_TWO_PI = 6.283185307179586;//!< 2Pi
 
 // carrier and code frequencies
-const double BEIDOU_B1I_FREQ_HZ              = 1.561098e9;  //!< B1I [Hz]
-const double BEIDOU_B1I_CODE_RATE_HZ         = 2.046e6;     //!< BeiDou B1 C/A code rate [chips/s]
-const double BEIDOU_B1I_CODE_LENGTH_CHIPS    = 2046.0;      //!< BeiDou B1 C/A code length [chips]
-const double BEIDOU_B1I_CODE_PERIOD          = 0.001;       //!< BeiDou B1 C/A code period [seconds]
+const double BEIDOU_B1I_FREQ_HZ = 1.561098e9;  //!< B1I [Hz]
+const double BEIDOU_B1I_CODE_RATE_HZ = 2.046e6;     //!< BeiDou B1 C/A code rate [chips/s]
+const double BEIDOU_B1I_CODE_LENGTH_CHIPS = 2046.0;      //!< BeiDou B1 C/A code length [chips]
+const double BEIDOU_B1I_CODE_PERIOD = 0.001;       //!< BeiDou B1 C/A code period [seconds]
 //const double BEIDOU_B1I_SECONDARY_CODE_LENGTH =;
 
 
 // NH code
-const double NH_BITS_RATE  			 = 1000;                                     // NH code bit rate [bits/s]
-const double NH_BIT_DURATION 		 = 0.001;                                    // NH code bit duration [s] --> 1 ms
-const int NH_length       			 = 20;
-const signed int NH_CODE[NH_length]  = {1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, -1, 1, -1, 1, 1, -1, -1, -1,  1};
+const double NH_BITS_RATE = 1000;                                     // NH code bit rate [bits/s]
+const double NH_BIT_DURATION = 0.001;                                    // NH code bit duration [s] --> 1 ms
+const int NH_length = 20;
+const signed int NH_CODE[NH_length] = {1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1};
 
 // D1 NAV Message
 
 #define BEIDOU_PREAMBLE {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0}  //!< Preamble as defined in ICD-BEIDOU (modified Barker code of 11 bits)
 
-const int  BEIDOU_D1_NAV_BITS_RATE  = 50;               // D1 NAV message bit rate        [bits/s]
-const int  BEIDOU_B1I_PREAMBLE_LENGTH_BITS           = 11;                                           //!< [bits]
-const int  BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND     = 50;                                           //!< NAV message bit rate [bits/s]
-const int  BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT      = 20;
-const int  BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS        = BEIDOU_B1I_PREAMBLE_LENGTH_BITS * BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;
-const int  BEIDOU_B1I_TELEMETRY_RATE_SYMBOLS_SECOND  = BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND * BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;     //!< NAV message bit rate [symbols/s]
+const int BEIDOU_D1_NAV_BITS_RATE = 50;               // D1 NAV message bit rate        [bits/s]
+const int BEIDOU_B1I_PREAMBLE_LENGTH_BITS = 11;                                           //!< [bits]
+const int BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND = 50;                                           //!< NAV message bit rate [bits/s]
+const int BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT = 20;
+const int BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS = BEIDOU_B1I_PREAMBLE_LENGTH_BITS * BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;
+const int BEIDOU_B1I_TELEMETRY_RATE_SYMBOLS_SECOND = BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND *
+                                                     BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;     //!< NAV message bit rate [symbols/s]
 
-const int  BEIDOU_SUPERFRAME_BITS   = 36000;            // SUPERFRAME  (24 frames)        [bits]
-const int  BEIDOU_SUPERFRAME_SECS   = 720;              // SUPERFRAME duration            [seconds]
+const int BEIDOU_SUPERFRAME_BITS = 36000;            // SUPERFRAME  (24 frames)        [bits]
+const int BEIDOU_SUPERFRAME_SECS = 720;              // SUPERFRAME duration            [seconds]
 
-const int  BEIDOU_FRAME_BITS        = 1500;             // FRAME       (5 subframes)      [bits]
-const int  BEIDOU_FRAME_SECONDS     = 30;               // FRAME duration                 [seconds]
+const int BEIDOU_FRAME_BITS = 1500;             // FRAME       (5 subframes)      [bits]
+const int BEIDOU_FRAME_SECONDS = 30;               // FRAME duration                 [seconds]
 
-const int  BEIDOU_SUBFRAME_BITS     = 300;              // SUBFRAME    (10 words)         [bits]
-const int  BEIDOU_SUBFRAME_SECONDS  = 6;                // SUBFRAME duration              [seconds]
-const int  BEIDOU_SUBFRAME_MS       = BEIDOU_SUBFRAME_SECONDS * 1000;                // SUBFRAME duration [ms]
+const int BEIDOU_SUBFRAME_BITS = 300;              // SUBFRAME    (10 words)         [bits]
+const int BEIDOU_SUBFRAME_SECONDS = 6;                // SUBFRAME duration              [seconds]
+const int BEIDOU_SUBFRAME_MS = BEIDOU_SUBFRAME_SECONDS * 1000;                // SUBFRAME duration [ms]
 
-const int     BEIDOU_WORD_BITS      = 30;               // WORD                           [bits]
-const double  BEIDOU_WORD_SECONDS   = 0.6;              // WORD duration                  [seconds]
+const int BEIDOU_WORD_BITS = 30;               // WORD                           [bits]
+const double BEIDOU_WORD_SECONDS = 0.6;              // WORD duration                  [seconds]
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,42 +94,46 @@ const double  BEIDOU_WORD_SECONDS   = 0.6;              // WORD duration        
 // Fields for SUBFRAME N (Common for all of them)
 // WORD 1    ( 1 - 30 bits) [26 info + 4 parity]
 // WORD 2-10 (31 - 60 bits) [22 info + 8 parity]
-const std::vector<std::pair<int,int>> P             ({{27 ,4},
-                                                      {53 ,8},
-                                                      {83 ,8},
-                                                      {113,8},
-                                                      {143,8},
-                                                      {173,8},
-                                                      {203,8},
-                                                      {233,8},
-                                                      {263,8},
-                                                      {293,8}});
-const std::vector<std::pair<int,int>> PRE           ({{1,11 }});     // PREAMBLE from modified Barker code of 11 bits
-const std::vector<std::pair<int,int>> REV           ({{12,4 },
-                                                      {292,1}});     // This pair is only for SUBFRAME 3
-const std::vector<std::pair<int,int>> SUBFRAMEID    ({{16,3 }});     // 3 bits for subframe identification
-const std::vector<std::pair<int,int>> SOW           ({{19,8 },       // first 8 bits for seconds of week (the number of seconds occurred since the last Sunday, 00:00:00 of BDT)
-                                                      {31,12}});     // last 12 bits for seconds of week
+const std::vector<std::pair<int, int>> P({{27,  4},
+                                          {53,  8},
+                                          {83,  8},
+                                          {113, 8},
+                                          {143, 8},
+                                          {173, 8},
+                                          {203, 8},
+                                          {233, 8},
+                                          {263, 8},
+                                          {293, 8}});
+const std::vector<std::pair<int, int>> PRE({{1, 11}});     // PREAMBLE from modified Barker code of 11 bits
+const std::vector<std::pair<int, int>> REV({{12,  4},
+                                            {292, 1}});     // This pair is only for SUBFRAME 3
+const std::vector<std::pair<int, int>> SUBFRAMEID({{16, 3}});     // 3 bits for subframe identification
+const std::vector<std::pair<int, int>> SOW(
+        {{19, 8},       // first 8 bits for seconds of week (the number of seconds occurred since the last Sunday, 00:00:00 of BDT)
+         {31, 12}});     // last 12 bits for seconds of week
 
 /** SUBFRAME 1-5 **/
 /** SUBFRAME 1 (In format D1) **/
 
 // WORD 2 (31 - 60)
-const std::vector<std::pair<int,int>> SATH1         ({{43,1}});     // satellite health flag ("0" means sat is good, "1" means not)
-const std::vector<std::pair<int,int>> AODC          ({{44,5}});     // Age of Data, Clock
-const std::vector<std::pair<int,int>> URAI          ({{49,4}});     // User Range Accuracy Index
+const std::vector<std::pair<int, int>> SATH1(
+        {{43, 1}});     // satellite health flag ("0" means sat is good, "1" means not)
+const std::vector<std::pair<int, int>> AODC({{44, 5}});     // Age of Data, Clock
+const std::vector<std::pair<int, int>> URAI({{49, 4}});     // User Range Accuracy Index
 
 // WORD 3 (61  - 90)
 // WORD 4 (91  - 120)
 // WORD 5 (121 - 130)
-const std::vector<std::pair<int,int>> WN            ({{61,13}});     // Week Number (the integral week count of BDT with the range of 0 through 8191)
-const std::vector<std::pair<int,int>> TOC           ({{74,9 },       // Reference time of clock parameters (in seconds with the effective range of 0-604792)
-                                                      {91,8 }});
-const std::vector<std::pair<int,int>> T_GD1         ({{99 ,10}});
-const std::vector<std::pair<int,int>> T_GD2         ({{109,4 },
-                                                      {121,6 }});
-const std::vector<std::pair<int,int>> AL0           ({{127,8}});
-const std::vector<std::pair<int,int>> AL1           ({{135,8}});
+const std::vector<std::pair<int, int>> WN(
+        {{61, 13}});     // Week Number (the integral week count of BDT with the range of 0 through 8191)
+const std::vector<std::pair<int, int>> TOC(
+        {{74, 9},       // Reference time of clock parameters (in seconds with the effective range of 0-604792)
+         {91, 8}});
+const std::vector<std::pair<int, int>> T_GD1({{99, 10}});
+const std::vector<std::pair<int, int>> T_GD2({{109, 4},
+                                              {121, 6}});
+const std::vector<std::pair<int, int>> AL0({{127, 8}});
+const std::vector<std::pair<int, int>> AL1({{135, 8}});
 
 
 // WORD 6  (151 - 180)
@@ -136,61 +141,60 @@ const std::vector<std::pair<int,int>> AL1           ({{135,8}});
 // WORD 8  (211 - 240)
 // WORD 9  (241 - 270)
 // WORD 10 (271 - 300)
-const std::vector<std::pair<int,int>> AL2           ({{151,8}});
-const std::vector<std::pair<int,int>> AL3           ({{159,8}});
+const std::vector<std::pair<int, int>> AL2({{151, 8}});
+const std::vector<std::pair<int, int>> AL3({{159, 8}});
 
-const std::vector<std::pair<int,int>> BT0            ({{167,6},
-                                                       {181,2}
-                                                      });
-const std::vector<std::pair<int,int>> BT1            ({{183,8}});
-const std::vector<std::pair<int,int>> BT2            ({{191,8}});
-const std::vector<std::pair<int,int>> BT3            ({{199,4},
-                                                       {211,4}});
+const std::vector<std::pair<int, int>> BT0({{167, 6},
+                                            {181, 2}
+                                           });
+const std::vector<std::pair<int, int>> BT1({{183, 8}});
+const std::vector<std::pair<int, int>> BT2({{191, 8}});
+const std::vector<std::pair<int, int>> BT3({{199, 4},
+                                            {211, 4}});
 
-const std::vector<std::pair<int,int>> A2             ({{215,11}});
-const std::vector<std::pair<int,int>> A0             ({{226,7 },
-                                                       {241,17}});
-const std::vector<std::pair<int,int>> A1             ({{258,5 },
-                                                       {271,17}});
-const std::vector<std::pair<int,int>> AODE           ({{288,5 }});
-
+const std::vector<std::pair<int, int>> A2({{215, 11}});
+const std::vector<std::pair<int, int>> A0({{226, 7},
+                                           {241, 17}});
+const std::vector<std::pair<int, int>> A1({{258, 5},
+                                           {271, 17}});
+const std::vector<std::pair<int, int>> AODE({{288, 5}});
 
 
 /** SUBFRAME 2 (In format D1) **/
-const std::vector<std::pair<int,int>> A_N            ({{43,10},
-                                                       {61, 6}});
-const std::vector<std::pair<int,int>> CUC            ({{67,16},
-                                                       {91, 2}});
-const std::vector<std::pair<int,int>> M0             ({{93,20},
-                                                       {121,12}});
-const std::vector<std::pair<int,int>> ECC            ({{133,10},
-                                                       {151,22}});
-const std::vector<std::pair<int,int>> CUS            ({{181,18}});
-const std::vector<std::pair<int,int>> CRC            ({{199,4 },
-                                                       {211,14}});
-const std::vector<std::pair<int,int>> CRS            ({{225,8 },
-                                                       {241,10}});
-const std::vector<std::pair<int,int>> SQRTA          ({{251,12},
-                                                       {271,20}});
-const std::vector<std::pair<int,int>> TOE            ({{291,2},
-                                                       {43,10},     // These two last pairs are related with the SUBFRAME 3
-                                                       {61, 5}});   //
+const std::vector<std::pair<int, int>> A_N({{43, 10},
+                                            {61, 6}});
+const std::vector<std::pair<int, int>> CUC({{67, 16},
+                                            {91, 2}});
+const std::vector<std::pair<int, int>> M0({{93,  20},
+                                           {121, 12}});
+const std::vector<std::pair<int, int>> ECC({{133, 10},
+                                            {151, 22}});
+const std::vector<std::pair<int, int>> CUS({{181, 18}});
+const std::vector<std::pair<int, int>> CRC({{199, 4},
+                                            {211, 14}});
+const std::vector<std::pair<int, int>> CRS({{225, 8},
+                                            {241, 10}});
+const std::vector<std::pair<int, int>> SQRTA({{251, 12},
+                                              {271, 20}});
+const std::vector<std::pair<int, int>> TOE({{291, 2},
+                                            {43,  10},     // These two last pairs are related with the SUBFRAME 3
+                                            {61,  5}});   //
 
 /** SUBFRAME 3 (In format D1) **/
-const std::vector<std::pair<int,int>> I_O            ({{66,17},
-                                                       {91,15}});
-const std::vector<std::pair<int,int>> C_INC           ({{106,7},
-                                                       {121,11}});
-const std::vector<std::pair<int,int>> OMG            ({{132,11},
-                                                       {151,13}});
-const std::vector<std::pair<int,int>> C_INS           ({{164,9},
-                                                       {181,9}});
-const std::vector<std::pair<int,int>> IDOT           ({{190,13},
-                                                       {211,1}});
-const std::vector<std::pair<int,int>> OMG_0          ({{212,21},
-                                                       {241,11}});
-const std::vector<std::pair<int,int>> PRGREE         ({{252,11},
-                                                       {271,21}});
+const std::vector<std::pair<int, int>> I_O({{66, 17},
+                                            {91, 15}});
+const std::vector<std::pair<int, int>> C_INC({{106, 7},
+                                              {121, 11}});
+const std::vector<std::pair<int, int>> OMG({{132, 11},
+                                            {151, 13}});
+const std::vector<std::pair<int, int>> C_INS({{164, 9},
+                                              {181, 9}});
+const std::vector<std::pair<int, int>> IDOT({{190, 13},
+                                             {211, 1}});
+const std::vector<std::pair<int, int>> OMG_0({{212, 21},
+                                              {241, 11}});
+const std::vector<std::pair<int, int>> PRGREE({{252, 11},
+                                               {271, 21}});
 
 
 

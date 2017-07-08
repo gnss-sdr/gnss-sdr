@@ -46,36 +46,35 @@
 
 class ConfigurationInterface;
 
-class GalileoE5aNoncoherentIQAcquisitionCaf: public AcquisitionInterface
-{
+class GalileoE5aNoncoherentIQAcquisitionCaf : public AcquisitionInterface {
 public:
-    GalileoE5aNoncoherentIQAcquisitionCaf(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+    GalileoE5aNoncoherentIQAcquisitionCaf(ConfigurationInterface *configuration,
+                                          std::string role, unsigned int in_streams,
+                                          unsigned int out_streams);
 
     virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     /*!
      * \brief Returns "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF"
      */
-    std::string implementation()
-    {
+    std::string implementation() {
         return "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF";
     }
 
-    size_t item_size()
-    {
+    size_t item_size() {
         return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
     /*!
@@ -83,7 +82,7 @@ public:
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
     /*!
      * \brief Set acquisition channel unique ID
@@ -133,7 +132,7 @@ public:
     void set_state(int state);
 
 private:
-    ConfigurationInterface* configuration_;
+    ConfigurationInterface *configuration_;
     galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr acquisition_cc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     size_t item_size_;
@@ -153,13 +152,15 @@ private:
     std::string dump_filename_;
     int Zero_padding;
     int CAF_window_hz_;
-    std::complex<float> * codeI_;
-    std::complex<float> * codeQ_;
+    std::complex<float> *codeI_;
+    std::complex<float> *codeQ_;
     bool both_signal_components;
-    Gnss_Synchro * gnss_synchro_;
+    Gnss_Synchro *gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+
     float calculate_threshold(float pfa);
 };
+
 #endif /* GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_ */

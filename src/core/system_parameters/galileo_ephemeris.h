@@ -42,8 +42,7 @@
  *  (See https://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf )
  *
  */
-class Galileo_Ephemeris
-{
+class Galileo_Ephemeris {
 public:
     /* Galileo ephemeris are 16 parameters and here are reported following the ICD order, paragraph 5.1.1.
        The number in the name after underscore (_1, _2, _3 and so on) refers to the page were we can find that parameter */
@@ -89,7 +88,7 @@ public:
     bool E5a_DVS;              //!< E5a Data Validity Status
     double E5b_DVS_5;          //!< E5b Data Validity Status
     double E1B_DVS_5;          //!< E1B Data Validity Status
-    
+
     double BGD_E1E5a_5;        //!< E1-E5a Broadcast Group Delay [s]
     double BGD_E1E5b_5;        //!< E1-E5b Broadcast Group Delay [s]
 
@@ -116,11 +115,10 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
-    {
+    void serialize(Archive &archive, const unsigned int version) {
         using boost::serialization::make_nvp;
 
-        archive & make_nvp("i_satellite_PRN",i_satellite_PRN);
+        archive & make_nvp("i_satellite_PRN", i_satellite_PRN);
         archive & make_nvp("M0_1", M0_1);
         archive & make_nvp("e_1", e_1);
         archive & make_nvp("A_1", A_1);

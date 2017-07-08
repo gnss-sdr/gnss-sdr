@@ -43,10 +43,9 @@
 using google::LogMessage;
 
 GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
-        ConfigurationInterface* configuration, std::string role,
+        ConfigurationInterface *configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams)
-{
+        role_(role), in_streams_(in_streams), out_streams_(out_streams) {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
@@ -72,77 +71,66 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
 
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
-            default_dump_filename); //unused!
+                                            default_dump_filename); //unused!
     vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
-        {
-            item_size_ = sizeof(gr_complex);
-            tracking_ = galileo_e1_dll_pll_veml_make_tracking_cc(
-                    f_if,
-                    fs_in,
-                    vector_length,
-                    dump,
-                    dump_filename,
-                    pll_bw_hz,
-                    dll_bw_hz,
-                    early_late_space_chips,
-                    very_early_late_space_chips);
-        }
-    else
-        {
-            item_size_ = sizeof(gr_complex);
-            LOG(WARNING) << item_type << " unknown tracking item type.";
-        }
+    if (item_type.compare("gr_complex") == 0) {
+        item_size_ = sizeof(gr_complex);
+        tracking_ = galileo_e1_dll_pll_veml_make_tracking_cc(
+                f_if,
+                fs_in,
+                vector_length,
+                dump,
+                dump_filename,
+                pll_bw_hz,
+                dll_bw_hz,
+                early_late_space_chips,
+                very_early_late_space_chips);
+    } else {
+        item_size_ = sizeof(gr_complex);
+        LOG(WARNING) << item_type << " unknown tracking item type.";
+    }
 
     channel_ = 0;
 
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
-GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking()
-{}
+GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking() {}
 
-void GalileoE1DllPllVemlTracking::start_tracking()
-{
+void GalileoE1DllPllVemlTracking::start_tracking() {
     tracking_->start_tracking();
 }
 
 /*
  * Set tracking channel unique ID
  */
-void GalileoE1DllPllVemlTracking::set_channel(unsigned int channel)
-{
+void GalileoE1DllPllVemlTracking::set_channel(unsigned int channel) {
     channel_ = channel;
     tracking_->set_channel(channel);
 }
 
 
-void GalileoE1DllPllVemlTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-{
+void GalileoE1DllPllVemlTracking::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro) {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
-void GalileoE1DllPllVemlTracking::connect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void GalileoE1DllPllVemlTracking::connect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
-void GalileoE1DllPllVemlTracking::disconnect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void GalileoE1DllPllVemlTracking::disconnect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
-gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_left_block()
-{
+gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_left_block() {
     return tracking_;
 }
 
-gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_right_block()
-{
+gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_right_block() {
     return tracking_;
 }
 

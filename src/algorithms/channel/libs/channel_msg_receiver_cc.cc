@@ -37,18 +37,14 @@
 using google::LogMessage;
 
 
-channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(ChannelFsm* channel_fsm,  bool repeat)
-{
+channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(ChannelFsm *channel_fsm, bool repeat) {
     return channel_msg_receiver_cc_sptr(new channel_msg_receiver_cc(channel_fsm, repeat));
 }
 
-void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
-{
-    try
-    {
-            long int message = pmt::to_long(msg);
-            switch (message)
-            {
+void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg) {
+    try {
+        long int message = pmt::to_long(msg);
+        switch (message) {
             case 1: //positive acquisition
                 //DLOG(INFO) << "Channel " << channel_ << " ACQ SUCCESS satellite " <<
                 //    gnss_synchro_.System << " " << gnss_synchro_.PRN;
@@ -57,14 +53,11 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
             case 2: //negative acquisition
                 //DLOG(INFO) << "Channel " << channel_
                 //    << " ACQ FAILED satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
-                if (d_repeat == true)
-                    {
-                        d_channel_fsm->Event_failed_acquisition_repeat();
-                    }
-                else
-                    {
-                        d_channel_fsm->Event_failed_acquisition_no_repeat();
-                    }
+                if (d_repeat == true) {
+                    d_channel_fsm->Event_failed_acquisition_repeat();
+                } else {
+                    d_channel_fsm->Event_failed_acquisition_no_repeat();
+                }
                 break;
             case 3: // tracking loss of lock event
                 d_channel_fsm->Event_failed_tracking_standby();
@@ -72,18 +65,16 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
             default:
                 LOG(WARNING) << "Default case, invalid message.";
                 break;
-            }
+        }
     }
-    catch(boost::bad_any_cast& e)
-    {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
+    catch (boost::bad_any_cast &e) {
+        LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
     }
 }
 
 
-channel_msg_receiver_cc::channel_msg_receiver_cc(ChannelFsm* channel_fsm, bool repeat) :
-    gr::block("channel_msg_receiver_cc", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
-{
+channel_msg_receiver_cc::channel_msg_receiver_cc(ChannelFsm *channel_fsm, bool repeat) :
+        gr::block("channel_msg_receiver_cc", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)) {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&channel_msg_receiver_cc::msg_handler_events, this, _1));
 
@@ -92,6 +83,5 @@ channel_msg_receiver_cc::channel_msg_receiver_cc(ChannelFsm* channel_fsm, bool r
 }
 
 
-channel_msg_receiver_cc::~channel_msg_receiver_cc()
-{}
+channel_msg_receiver_cc::~channel_msg_receiver_cc() {}
 

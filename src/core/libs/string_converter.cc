@@ -34,140 +34,105 @@
 #include <sstream>
 #include <iostream>
 
-StringConverter::StringConverter()
-{}
+StringConverter::StringConverter() {}
 
-StringConverter::~StringConverter()
-{}
+StringConverter::~StringConverter() {}
 
-bool StringConverter::convert(const std::string& value, bool default_value)
-{
-    if(value.compare("true") == 0)
-        {
-            return true;
-        }
-    else if(value.compare("false") == 0)
-        {
-            return false;
-        }
-    else
-        {
-            return default_value;
-        }
+bool StringConverter::convert(const std::string &value, bool default_value) {
+    if (value.compare("true") == 0) {
+        return true;
+    } else if (value.compare("false") == 0) {
+        return false;
+    } else {
+        return default_value;
+    }
 }
 
 
-long StringConverter::convert(const std::string& value, long default_value)
-{
+long StringConverter::convert(const std::string &value, long default_value) {
     std::stringstream stream(value);
 
     long result;
     stream >> result;
 
-    if(stream.fail())
-        {
-            return default_value;
-        }
-    else
-        {
-            return result;
-        }
+    if (stream.fail()) {
+        return default_value;
+    } else {
+        return result;
+    }
 }
 
 
-int StringConverter::convert(const std::string& value, int default_value)
-{
+int StringConverter::convert(const std::string &value, int default_value) {
 
     std::stringstream stream(value);
 
     int result;
     stream >> result;
 
-    if(stream.fail())
-        {
-            return default_value;
-        }
-    else
-        {
-            return result;
-        }
+    if (stream.fail()) {
+        return default_value;
+    } else {
+        return result;
+    }
 }
 
 
-
-unsigned int StringConverter::convert(const std::string& value, unsigned int default_value)
-{
+unsigned int StringConverter::convert(const std::string &value, unsigned int default_value) {
     std::stringstream stream(value);
 
     unsigned int result;
     stream >> result;
 
-    if(stream.fail())
-        {
-            return default_value;
-        }
-    else
-        {
-            return result;
-        }
+    if (stream.fail()) {
+        return default_value;
+    } else {
+        return result;
+    }
 }
 
 
-unsigned short StringConverter::convert(const std::string& value, unsigned short default_value)
-{
+unsigned short StringConverter::convert(const std::string &value, unsigned short default_value) {
     std::stringstream stream(value);
 
     unsigned short result;
     stream >> result;
 
-    if(stream.fail())
-        {
-            return default_value;
-        }
-    else
-        {
-            return result;
-        }
+    if (stream.fail()) {
+        return default_value;
+    } else {
+        return result;
+    }
 }
 
 
-float StringConverter::convert(const std::string& value, float default_value)
-{
+float StringConverter::convert(const std::string &value, float default_value) {
 
     std::stringstream stream(value);
 
     float result;
     stream >> result;
 
-    if(stream.fail())
-        {
-            return default_value;
-        }
-    else
-        {
-            return result;
-        }
+    if (stream.fail()) {
+        return default_value;
+    } else {
+        return result;
+    }
 }
 
 
-
-
-double StringConverter::convert(const std::string& value, double default_value)
-{
+double StringConverter::convert(const std::string &value, double default_value) {
 
     std::stringstream stream(value);
 
     double result;
     stream >> result;
 
-    if(stream.fail())
-        {
-            return default_value;
-        }
-    else
-        {
-            return result;
-        }
+    if (stream.fail()) {
+        return default_value;
+    } else {
+        return result;
+    }
 }
 
 

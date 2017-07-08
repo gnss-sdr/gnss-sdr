@@ -33,8 +33,7 @@
 #include "Galileo_E1.h"
 
 
-Galileo_Ephemeris::Galileo_Ephemeris()
-{
+Galileo_Ephemeris::Galileo_Ephemeris() {
     flag_all_ephemeris = false;
     IOD_ephemeris = 0;
     IOD_nav_1 = 0;
@@ -90,8 +89,7 @@ Galileo_Ephemeris::Galileo_Ephemeris()
 }
 
 
-double Galileo_Ephemeris::Galileo_System_Time(double WN, double TOW)
-{
+double Galileo_Ephemeris::Galileo_System_Time(double WN, double TOW) {
     /* GALIELO SYSTEM TIME, ICD 5.1.2
      * input parameter:
      * WN: The Week Number is an integer counter that gives the sequential week number
@@ -126,19 +124,19 @@ double Galileo_Ephemeris::Galileo_System_Time(double WN, double TOW)
 }
 
 
-
-double Galileo_Ephemeris::sv_clock_drift(double transmitTime)
-{
+double Galileo_Ephemeris::sv_clock_drift(double transmitTime) {
     // Satellite Time Correction Algorithm, ICD 5.1.4
     double dt;
     dt = transmitTime - t0c_4;
-    Galileo_satClkDrift = af0_4 + af1_4 * dt + af2_4 * (dt * dt) + sv_clock_relativistic_term(transmitTime); //+Galileo_dtr;
+    Galileo_satClkDrift =
+            af0_4 + af1_4 * dt + af2_4 * (dt * dt) + sv_clock_relativistic_term(transmitTime); //+Galileo_dtr;
     return Galileo_satClkDrift;
 }
 
 
 // compute the relativistic correction term
-double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) // Satellite Time Correction Algorithm, ICD 5.1.4
+double
+Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) // Satellite Time Correction Algorithm, ICD 5.1.4
 {
     double tk;
     double a;
@@ -150,9 +148,9 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) // Sat
     double M;
 
     // Restore semi-major axis
-    a = A_1*A_1;
+    a = A_1 * A_1;
 
-    n0 = sqrt(GALILEO_GM / (a*a*a));
+    n0 = sqrt(GALILEO_GM / (a * a * a));
 
     // Time from ephemeris reference epoch
     //t = WN_5*86400*7 + TOW_5; //WN_5*86400*7 are the second from the origin of the Galileo time
@@ -165,33 +163,29 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) // Sat
     M = M0_1 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2*GALILEO_PI), (2*GALILEO_PI));
+    M = fmod((M + 2 * GALILEO_PI), (2 * GALILEO_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1; ii < 20; ii++)
-        {
-            E_old   = E;
-            E       = M + e_1 * sin(E);
-            dE      = fmod(E - E_old, 2*GALILEO_PI);
-            if (fabs(dE) < 1e-12)
-                {
-                    //Necessary precision is reached, exit from the loop
-                    break;
-                }
+    for (int ii = 1; ii < 20; ii++) {
+        E_old = E;
+        E = M + e_1 * sin(E);
+        dE = fmod(E - E_old, 2 * GALILEO_PI);
+        if (fabs(dE) < 1e-12) {
+            //Necessary precision is reached, exit from the loop
+            break;
         }
+    }
 
     // Compute relativistic correction term
-    Galileo_dtr = GALILEO_F * e_1* A_1 * sin(E);
+    Galileo_dtr = GALILEO_F * e_1 * A_1 * sin(E);
     return Galileo_dtr;
 }
 
 
-
-void Galileo_Ephemeris::satellitePosition(double transmitTime)
-{
+void Galileo_Ephemeris::satellitePosition(double transmitTime) {
     // when this function in used, the input must be the transmitted time (t) in second computed by Galileo_System_Time (above function)
     double tk;   // Time from ephemeris reference epoch
     double a;    // Semi-major axis
@@ -211,10 +205,10 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
     // Find Galileo satellite's position ----------------------------------------------
 
     // Restore semi-major axis
-    a = A_1*A_1;
+    a = A_1 * A_1;
 
     // Computed mean motion
-    n0 = sqrt(GALILEO_GM / (a*a*a));
+    n0 = sqrt(GALILEO_GM / (a * a * a));
 
     // Time from ephemeris reference epoch
     tk = transmitTime - t0e_1;
@@ -226,23 +220,21 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
     M = M0_1 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2* GALILEO_PI), (2* GALILEO_PI));
+    M = fmod((M + 2 * GALILEO_PI), (2 * GALILEO_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1; ii<20; ii++)
-        {
-            E_old   = E;
-            E       = M + e_1 * sin(E);
-            dE      = fmod(E - E_old, 2*GALILEO_PI);
-            if (fabs(dE) < 1e-12)
-                {
-                    //Necessary precision is reached, exit from the loop
-                    break;
-                }
+    for (int ii = 1; ii < 20; ii++) {
+        E_old = E;
+        E = M + e_1 * sin(E);
+        dE = fmod(E - E_old, 2 * GALILEO_PI);
+        if (fabs(dE) < 1e-12) {
+            //Necessary precision is reached, exit from the loop
+            break;
         }
+    }
 
     // Compute the true anomaly
 
@@ -254,32 +246,35 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
     phi = nu + omega_2;
 
     // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi), (2*GALILEO_PI));
+    phi = fmod((phi), (2 * GALILEO_PI));
 
     // Correct argument of latitude
-    u = phi + C_uc_3 * cos(2*phi) +  C_us_3 * sin(2*phi);
+    u = phi + C_uc_3 * cos(2 * phi) + C_us_3 * sin(2 * phi);
 
     // Correct radius
-    r = a * (1 - e_1*cos(E)) +  C_rc_3 * cos(2*phi) +  C_rs_3 * sin(2*phi);
+    r = a * (1 - e_1 * cos(E)) + C_rc_3 * cos(2 * phi) + C_rs_3 * sin(2 * phi);
 
     // Correct inclination
-    i = i_0_2 + iDot_2 * tk + C_ic_4 * cos(2*phi) + C_is_4 * sin(2*phi);
+    i = i_0_2 + iDot_2 * tk + C_ic_4 * cos(2 * phi) + C_is_4 * sin(2 * phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    Omega = OMEGA_0_2 + (OMEGA_dot_3 - GALILEO_OMEGA_EARTH_DOT)*tk - GALILEO_OMEGA_EARTH_DOT * t0e_1;
+    Omega = OMEGA_0_2 + (OMEGA_dot_3 - GALILEO_OMEGA_EARTH_DOT) * tk - GALILEO_OMEGA_EARTH_DOT * t0e_1;
 
     // Reduce to between 0 and 2*pi rad
-    Omega = fmod((Omega + 2*GALILEO_PI), (2*GALILEO_PI));
+    Omega = fmod((Omega + 2 * GALILEO_PI), (2 * GALILEO_PI));
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
-    d_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega); // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
+    d_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) *
+                                           cos(Omega); // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
     d_satpos_Z = sin(u) * r * sin(i);
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
     double Omega_dot = OMEGA_dot_3 - GALILEO_OMEGA_EARTH_DOT;
-    d_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
-    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
+    d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) -
+                 d_satpos_Y * cos(i) * sin(Omega);
+    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) +
+                 d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
 }
 

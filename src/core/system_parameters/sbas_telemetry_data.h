@@ -44,9 +44,12 @@
 
 
 class Sbas_Ionosphere_Correction;
+
 class Sbas_Satellite_Correction;
+
 struct Fast_Correction;
 struct Long_Term_Correction;
+
 class Sbas_Ephemeris;
 
 
@@ -54,34 +57,43 @@ class Sbas_Ephemeris;
  * \brief Represents a raw SBAS message of 250cbits + 6 bits padding
  *  (8b preamble + 6b message type + 212b data + 24b CRC + 6b zero padding)
  */
-class Sbas_Raw_Msg
-{
+class Sbas_Raw_Msg {
 public:
-    Sbas_Raw_Msg(){ rx_time = Sbas_Time(0); i_prn = -1; };
-    Sbas_Raw_Msg(double sample_stamp, int prn, const std::vector<unsigned char> msg) : rx_time(sample_stamp), i_prn(prn), d_msg(msg) {}
-    double get_sample_stamp() { return rx_time.get_time_stamp(); } //!< Time of reception sample stamp (first sample of preample)
-    void relate(Sbas_Time_Relation time_relation)
-    {
+    Sbas_Raw_Msg() {
+        rx_time = Sbas_Time(0);
+        i_prn = -1;
+    };
+
+    Sbas_Raw_Msg(double sample_stamp, int prn, const std::vector<unsigned char> msg) : rx_time(sample_stamp),
+                                                                                       i_prn(prn), d_msg(msg) {}
+
+    double
+    get_sample_stamp() { return rx_time.get_time_stamp(); } //!< Time of reception sample stamp (first sample of preample)
+    void relate(Sbas_Time_Relation time_relation) {
         rx_time.relate(time_relation);
     }
+
     Sbas_Time get_rx_time_obj() const { return rx_time; }
+
     int get_prn() const { return i_prn; }
+
     std::vector<unsigned char> get_msg() const { return d_msg; }
-    int get_preamble()
-    {
+
+    int get_preamble() {
         return d_msg[0];
     }
-    int get_msg_type() const
-    {
+
+    int get_msg_type() const {
         return d_msg[1] >> 2;
     }
-    int get_crc()
-    {
+
+    int get_crc() {
         unsigned char crc_last_byte = (d_msg[30] << 2) && (d_msg[31] >> 6);
         unsigned char crc_middle_byte = (d_msg[29] << 2) && (d_msg[30] >> 6);
         unsigned char crc_first_byte = (d_msg[28] << 2) && (d_msg[29] >> 6);
-        return ((unsigned int)(crc_first_byte) << 16) && ((unsigned int)(crc_middle_byte) << 8) && crc_last_byte;
+        return ((unsigned int) (crc_first_byte) << 16) && ((unsigned int) (crc_middle_byte) << 8) && crc_last_byte;
     }
+
 private:
     Sbas_Time rx_time;
     int i_prn;                        /* SBAS satellite PRN number */
@@ -89,13 +101,10 @@ private:
 };
 
 
-
-
 /*
  * \brief Holds an updated set of the telemetry data received from SBAS
  */
-class Sbas_Telemetry_Data
-{
+class Sbas_Telemetry_Data {
 public:
     int update(Sbas_Raw_Msg sbas_raw_msg);
 
@@ -103,6 +112,7 @@ public:
      * Default constructor
      */
     Sbas_Telemetry_Data();
+
     /*!
      * Default deconstructor
      */
@@ -117,7 +127,9 @@ private:
     int decode_mt12(Sbas_Raw_Msg sbas_raw_msg);
 
     void updated_sbas_ephemeris(Sbas_Raw_Msg msg);
+
     void received_iono_correction();
+
     void updated_satellite_corrections();
 
     /////// rtklib.h
@@ -249,7 +261,7 @@ private:
     } sbsmsg_t;
 
     typedef struct {        /* SBAS messages type */
-        int n,nmax;         /* number of SBAS messages/allocated */
+        int n, nmax;         /* number of SBAS messages/allocated */
         sbsmsg_t *msgs;     /* SBAS messages */
     } sbs_t;
 
@@ -274,7 +286,7 @@ private:
         int iode;           /* IODE (issue of date ephemeris) */
         double dpos[3];     /* delta position (m) (ecef) */
         double dvel[3];     /* delta velocity (m/s) (ecef) */
-        double daf0,daf1;   /* delta clock-offset/drift (s,s/s) */
+        double daf0, daf1;   /* delta clock-offset/drift (s,s/s) */
     } sbslcorr_t;
 
     typedef struct {        /* SBAS satellite correction type */
@@ -294,7 +306,7 @@ private:
         //gtime_t t0;         /* correction time */
         double t0;
         bool valid;
-        short lat,lon;      /* latitude/longitude (deg) */
+        short lat, lon;      /* latitude/longitude (deg) */
         short give;         /* GIVI+1 */
         float delay;        /* vertical delay estimate (m) */
     } sbsigp_t;
@@ -342,7 +354,7 @@ private:
         //int nn,nnmax;       /* number of stec grid data */
         //eph_t *eph;         /* GPS/QZS/GAL ephemeris */
         //geph_t *geph;       /* GLONASS ephemeris */
-        seph_t seph[2*NSATSBS];       /* SBAS ephemeris */
+        seph_t seph[2 * NSATSBS];       /* SBAS ephemeris */
         //    peph_t *peph;       /* precise ephemeris */
         //    pclk_t *pclk;       /* precise clock */
         //    alm_t *alm;         /* almanac data */
@@ -368,7 +380,7 @@ private:
         //char glo_fcn[MAXPRNGLO+1]; /* glonass frequency channel number + 8 */
         //    pcv_t pcvs[MAXSAT]; /* satellite antenna pcv */
         sbssat_t sbssat;    /* SBAS satellite corrections */
-        sbsion_t sbsion[MAXBAND+1]; /* SBAS ionosphere corrections */
+        sbsion_t sbsion[MAXBAND + 1]; /* SBAS ionosphere corrections */
         //    dgps_t dgps[MAXSAT]; /* DGPS corrections */
         //    ssr_t ssr[MAXSAT];  /* SSR corrections */
         //    lexeph_t lexeph[MAXSAT]; /* LEX ephemeris */
@@ -434,42 +446,54 @@ private:
 
     /* sbas igp definition -------------------------------------------------------*/
     static const short
-    x1[],
-    x2[],
-    x3[],
-    x4[],
-    x5[],
-    x6[],
-    x7[],
-    x8[];
+            x1[],
+            x2[],
+            x3[],
+            x4[],
+            x5[],
+            x6[],
+            x7[],
+            x8[];
 
     static const sbsigpband_t igpband1[9][8]; /* band 0-8 */
     static const sbsigpband_t igpband2[2][5]; /* band 9-10 */
 
     /* decode type 1: prn masks --------------------------------------------------*/
     int decode_sbstype1(const sbsmsg_t *msg, sbssat_t *sbssat);
+
     /* decode type 2-5,0: fast corrections ---------------------------------------*/
     int decode_sbstype2(const sbsmsg_t *msg, sbssat_t *sbssat);
+
     /* decode type 6: integrity info ---------------------------------------------*/
     int decode_sbstype6(const sbsmsg_t *msg, sbssat_t *sbssat);
+
     /* decode type 7: fast correction degradation factor -------------------------*/
     int decode_sbstype7(const sbsmsg_t *msg, sbssat_t *sbssat);
+
     /* decode type 9: geo navigation message -------------------------------------*/
     int decode_sbstype9(const sbsmsg_t *msg, nav_t *nav);
+
     /* decode type 18: ionospheric grid point masks ------------------------------*/
     int decode_sbstype18(const sbsmsg_t *msg, sbsion_t *sbsion);
+
     /* decode half long term correction (vel code=0) -----------------------------*/
     int decode_longcorr0(const sbsmsg_t *msg, int p, sbssat_t *sbssat);
+
     /* decode half long term correction (vel code=1) -----------------------------*/
     int decode_longcorr1(const sbsmsg_t *msg, int p, sbssat_t *sbssat);
+
     /* decode half long term correction ------------------------------------------*/
     int decode_longcorrh(const sbsmsg_t *msg, int p, sbssat_t *sbssat);
+
     /* decode type 24: mixed fast/long term correction ---------------------------*/
     int decode_sbstype24(const sbsmsg_t *msg, sbssat_t *sbssat);
+
     /* decode type 25: long term satellite error correction ----------------------*/
     int decode_sbstype25(const sbsmsg_t *msg, sbssat_t *sbssat);
+
     /* decode type 26: ionospheric deley corrections -----------------------------*/
     int decode_sbstype26(const sbsmsg_t *msg, sbsion_t *sbsion);
+
     /* update sbas corrections -----------------------------------------------------
      * update sbas correction parameters in navigation data with a sbas message
      * args   : sbsmg_t  *msg    I   sbas message
@@ -482,7 +506,9 @@ private:
     int sbsupdatecorr(const sbsmsg_t *msg, nav_t *nav);
 
     void prn_mask_changed();
+
     bool is_rtklib_sat_correction_valid(int sat);
+
     void igp_mask_changed(int band);
 
     // RTKLIB SBAS telemetry data representation

@@ -86,7 +86,7 @@ std::string s2_("/share/gnss-sdr/conf/front-end-cal.conf");
 std::string s3_ = s1_ + s2_;
 
 DEFINE_string(config_file, s3_,
-        "Path to the file containing the configuration parameters");
+              "Path to the file containing the configuration parameters");
 
 concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 concurrent_map<Gps_Iono> global_gps_iono_map;
@@ -109,63 +109,56 @@ typedef boost::shared_ptr<FrontEndCal_msg_rx> FrontEndCal_msg_rx_sptr;
 FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
 
 
-class FrontEndCal_msg_rx : public gr::block
-{
+class FrontEndCal_msg_rx : public gr::block {
 private:
     friend FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
+
     void msg_handler_events(pmt::pmt_t msg);
+
     FrontEndCal_msg_rx();
 
 public:
     int rx_message;
+
     ~FrontEndCal_msg_rx(); //!< Default destructor
 };
 
 
-FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make()
-{
+FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make() {
     return FrontEndCal_msg_rx_sptr(new FrontEndCal_msg_rx());
 }
 
 
-void FrontEndCal_msg_rx::msg_handler_events(pmt::pmt_t msg)
-{
-    try
-    {
-            long int message = pmt::to_long(msg);
-            rx_message = message;
-            channel_internal_queue.push(rx_message);
+void FrontEndCal_msg_rx::msg_handler_events(pmt::pmt_t msg) {
+    try {
+        long int message = pmt::to_long(msg);
+        rx_message = message;
+        channel_internal_queue.push(rx_message);
     }
-    catch(boost::bad_any_cast& e)
-    {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
-            rx_message = 0;
+    catch (boost::bad_any_cast &e) {
+        LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+        rx_message = 0;
     }
 }
 
 
 FrontEndCal_msg_rx::FrontEndCal_msg_rx() :
-    gr::block("FrontEndCal_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
-{
+        gr::block("FrontEndCal_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)) {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&FrontEndCal_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
 
-FrontEndCal_msg_rx::~FrontEndCal_msg_rx()
-{}
+FrontEndCal_msg_rx::~FrontEndCal_msg_rx() {}
 
 // ###########################################################
 
-void wait_message()
-{
-    while (!stop)
-        {
-            int message;
-            channel_internal_queue.wait_and_pop(message);
-            //std::cout<<"Acq mesage rx="<<message<<std::endl;
-            switch (message)
-            {
+void wait_message() {
+    while (!stop) {
+        int message;
+        channel_internal_queue.wait_and_pop(message);
+        //std::cout<<"Acq mesage rx="<<message<<std::endl;
+        switch (message) {
             case 1: // Positive acq
                 gnss_sync_vector.push_back(*gnss_synchro);
                 //acquisition->reset();
@@ -178,40 +171,35 @@ void wait_message()
                 break;
             default:
                 break;
-            }
         }
+    }
 }
 
 
-bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
-{
+bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration) {
     gr::top_block_sptr top_block;
     GNSSBlockFactory block_factory;
     boost::shared_ptr<gr::msg_queue> queue;
 
-    queue =  gr::msg_queue::make(0);
+    queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
     std::shared_ptr<GNSSBlockInterface> source;
-    try
-    {
-            source = block_factory.GetSignalSource(configuration, queue);
+    try {
+        source = block_factory.GetSignalSource(configuration, queue);
     }
-    catch(const boost::exception_ptr & e)
-    {
-            std::cout << "Exception caught in creating source " << e << std::endl;
-            return 0;
+    catch (const boost::exception_ptr &e) {
+        std::cout << "Exception caught in creating source " << e << std::endl;
+        return 0;
     }
 
     std::shared_ptr<GNSSBlockInterface> conditioner;
-    try
-    {
-            conditioner = block_factory.GetSignalConditioner(configuration);
+    try {
+        conditioner = block_factory.GetSignalConditioner(configuration);
     }
-    catch(const boost::exception_ptr & e)
-    {
-            std::cout << "Exception caught in creating signal conditioner " << e << std::endl;
-            return 0;
+    catch (const boost::exception_ptr &e) {
+        std::cout << "Exception caught in creating signal conditioner " << e << std::endl;
+        return 0;
     }
     gr::block_sptr sink;
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
@@ -219,7 +207,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     //--- Find number of samples per spreading code ---
     long fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int samples_per_code = round(fs_in_
-            / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+                                 / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     int nsamples = samples_per_code * 50;
 
     int skip_samples = fs_in_ * 5; // skip 5 seconds
@@ -228,20 +216,18 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
 
     gr::block_sptr skiphead = gr::blocks::skiphead::make(sizeof(gr_complex), skip_samples);
 
-    try
-    {
-            source->connect(top_block);
-            conditioner->connect(top_block);
-            top_block->connect(source->get_right_block(), 0, conditioner->get_left_block(), 0);
-            top_block->connect(conditioner->get_right_block(), 0, skiphead, 0);
-            top_block->connect(skiphead, 0, head, 0);
-            top_block->connect(head, 0, sink, 0);
-            top_block->run();
+    try {
+        source->connect(top_block);
+        conditioner->connect(top_block);
+        top_block->connect(source->get_right_block(), 0, conditioner->get_left_block(), 0);
+        top_block->connect(conditioner->get_right_block(), 0, skiphead, 0);
+        top_block->connect(skiphead, 0, head, 0);
+        top_block->connect(head, 0, sink, 0);
+        top_block->run();
     }
-    catch(const std::exception & e)
-    {
-            std::cout << "Failure connecting the GNU Radio blocks " << e.what() << std::endl;
-            return false;
+    catch (const std::exception &e) {
+        std::cout << "Failure connecting the GNU Radio blocks " << e.what() << std::endl;
+        return false;
     }
 
     //delete conditioner;
@@ -266,16 +252,16 @@ static time_t utc_time(int week, long tow) {
 }
 
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
     const std::string intro_help(
-            std::string("\n RTL-SDR E4000 RF front-end center frequency and sampling rate calibration tool that uses GPS signals\n")
-    +
-    "Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)\n"
-    +
-    "This program comes with ABSOLUTELY NO WARRANTY;\n"
-    +
-    "See COPYING file to see a copy of the General Public License\n \n");
+            std::string(
+                    "\n RTL-SDR E4000 RF front-end center frequency and sampling rate calibration tool that uses GPS signals\n")
+            +
+            "Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)\n"
+            +
+            "This program comes with ABSOLUTELY NO WARRANTY;\n"
+            +
+            "See COPYING file to see a copy of the General Public License\n \n");
 
     google::SetUsageMessage(intro_help);
     google::SetVersionString(FRONT_END_CAL_VERSION);
@@ -284,29 +270,25 @@ int main(int argc, char** argv)
     std::cout << "Initializing... Please wait." << std::endl;
 
     google::InitGoogleLogging(argv[0]);
-    if (FLAGS_log_dir.empty())
-        {
-            std::cout << "Logging will be done at "
+    if (FLAGS_log_dir.empty()) {
+        std::cout << "Logging will be done at "
 
-                     << "/tmp"
-                     << std::endl
-                     << "Use front-end-cal --log_dir=/path/to/log to change that."
-                     << std::endl;
+                  << "/tmp"
+                  << std::endl
+                  << "Use front-end-cal --log_dir=/path/to/log to change that."
+                  << std::endl;
+    } else {
+        const boost::filesystem::path p(FLAGS_log_dir);
+        if (!boost::filesystem::exists(p)) {
+            std::cout << "The path "
+                      << FLAGS_log_dir
+                      << " does not exist, attempting to create it"
+                      << std::endl;
+            boost::filesystem::create_directory(p);
         }
-    else
-        {
-            const boost::filesystem::path p (FLAGS_log_dir);
-            if (!boost::filesystem::exists(p))
-                {
-                    std::cout << "The path "
-                              << FLAGS_log_dir
-                              << " does not exist, attempting to create it"
-                              << std::endl;
-                    boost::filesystem::create_directory(p);
-                }
-            std::cout << "Logging with be done at "
-                      << FLAGS_log_dir << std::endl;
-        }
+        std::cout << "Logging with be done at "
+                  << FLAGS_log_dir << std::endl;
+    }
 
 
     // 0. Instantiate the FrontEnd Calibration class
@@ -320,34 +302,25 @@ int main(int argc, char** argv)
 
 
     // 2. Get SUPL information from server: Ephemeris record, assistance info and TOW
-    if (front_end_cal.get_ephemeris() == true)
-        {
-            std::cout << "SUPL data received OK!" << std::endl;
-        }
-    else
-        {
-            std::cout << "Failure connecting to SUPL server" <<std::endl;
-        }
+    if (front_end_cal.get_ephemeris() == true) {
+        std::cout << "SUPL data received OK!" << std::endl;
+    } else {
+        std::cout << "Failure connecting to SUPL server" << std::endl;
+    }
 
     // 3. Capture some front-end samples to hard disk
-    try
-    {
-            if (front_end_capture(configuration))
-                {
-                    std::cout << "Front-end RAW samples captured" << std::endl;
-                }
-            else
-                {
-                    std::cout << "Failure capturing front-end samples" << std::endl;
-                }
+    try {
+        if (front_end_capture(configuration)) {
+            std::cout << "Front-end RAW samples captured" << std::endl;
+        } else {
+            std::cout << "Failure capturing front-end samples" << std::endl;
+        }
     }
-    catch(const boost::bad_lexical_cast & e)
-    {
-            std::cout << "Exception caught while capturing samples (bad lexical cast)" << std::endl;
+    catch (const boost::bad_lexical_cast &e) {
+        std::cout << "Exception caught while capturing samples (bad lexical cast)" << std::endl;
     }
-    catch(const boost::io::too_few_args & e)
-    {
-            std::cout << "Exception caught while capturing samples (too few args)" << std::endl;
+    catch (const boost::io::too_few_args &e) {
+        std::cout << "Exception caught while capturing samples (too few args)" << std::endl;
     }
 
     // 4. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
@@ -383,15 +356,13 @@ int main(int argc, char** argv)
     //head_sptr->set_length(nsamples);
     //head_sptr->reset();
 
-    try
-    {
-            acquisition->connect(top_block);
-            top_block->connect(source, 0, acquisition->get_left_block(), 0);
-            top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx,pmt::mp("events"));
+    try {
+        acquisition->connect(top_block);
+        top_block->connect(source, 0, acquisition->get_left_block(), 0);
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }
-    catch(const std::exception & e)
-    {
-            std::cout << "Failure connecting the GNU Radio blocks: " << e.what() << std::endl;
+    catch (const std::exception &e) {
+        std::cout << "Failure connecting the GNU Radio blocks: " << e.what() << std::endl;
     }
 
     // 5. Run the flowgraph
@@ -399,8 +370,8 @@ int main(int argc, char** argv)
     // Compute Doppler estimations
 
     //todo: Fix the front-end cal to support new channel internal message system (no more external queues)
-    std::map<int,double> doppler_measurements_map;
-    std::map<int,double> cn0_measurements_map;
+    std::map<int, double> doppler_measurements_map;
+    std::map<int, double> cn0_measurements_map;
 
     boost::thread ch_thread;
 
@@ -411,91 +382,79 @@ int main(int argc, char** argv)
 
     bool start_msg = true;
 
-    for (unsigned int PRN=1; PRN<33; PRN++)
-        {
-            gnss_synchro->PRN = PRN;
-            acquisition->set_gnss_synchro(gnss_synchro);
-            acquisition->init();
-            acquisition->reset();
-            stop = false;
-            try
-            {
-                    ch_thread = boost::thread(wait_message);
-            }
-            catch(const boost::thread_resource_error & e)
-            {
-                    LOG(INFO) << "Exception caught (thread resource error)";
-            }
-            top_block->run();
-            if (start_msg == true)
-                {
-                    std::cout << "Searching for GPS Satellites in L1 band..." << std::endl;
-                    std::cout << "[";
-                    start_msg = false;
-                }
-            if (gnss_sync_vector.size()>0)
-                {
-                    std::cout << " " << PRN << " ";
-                    double doppler_measurement_hz = 0;
-                    for (std::vector<Gnss_Synchro>::iterator it = gnss_sync_vector.begin() ; it != gnss_sync_vector.end(); ++it)
-                        {
-                            doppler_measurement_hz += (*it).Acq_doppler_hz;
-                        }
-                    doppler_measurement_hz = doppler_measurement_hz/gnss_sync_vector.size();
-                    doppler_measurements_map.insert(std::pair<int,double>(PRN, doppler_measurement_hz));
-                }
-            else
-                {
-                    std::cout << " . ";
-                }
-            channel_internal_queue.push(3);
-            try
-            {
-                    ch_thread.join();
-            }
-            catch(const boost::thread_resource_error & e)
-            {
-                    LOG(INFO) << "Exception caught while joining threads.";
-            }
-            gnss_sync_vector.clear();
-            boost::dynamic_pointer_cast<gr::blocks::file_source>(source)->seek(0, 0);
-            std::cout.flush();
+    for (unsigned int PRN = 1; PRN < 33; PRN++) {
+        gnss_synchro->PRN = PRN;
+        acquisition->set_gnss_synchro(gnss_synchro);
+        acquisition->init();
+        acquisition->reset();
+        stop = false;
+        try {
+            ch_thread = boost::thread(wait_message);
         }
+        catch (const boost::thread_resource_error &e) {
+            LOG(INFO) << "Exception caught (thread resource error)";
+        }
+        top_block->run();
+        if (start_msg == true) {
+            std::cout << "Searching for GPS Satellites in L1 band..." << std::endl;
+            std::cout << "[";
+            start_msg = false;
+        }
+        if (gnss_sync_vector.size() > 0) {
+            std::cout << " " << PRN << " ";
+            double doppler_measurement_hz = 0;
+            for (std::vector<Gnss_Synchro>::iterator it = gnss_sync_vector.begin();
+                 it != gnss_sync_vector.end(); ++it) {
+                doppler_measurement_hz += (*it).Acq_doppler_hz;
+            }
+            doppler_measurement_hz = doppler_measurement_hz / gnss_sync_vector.size();
+            doppler_measurements_map.insert(std::pair<int, double>(PRN, doppler_measurement_hz));
+        } else {
+            std::cout << " . ";
+        }
+        channel_internal_queue.push(3);
+        try {
+            ch_thread.join();
+        }
+        catch (const boost::thread_resource_error &e) {
+            LOG(INFO) << "Exception caught while joining threads.";
+        }
+        gnss_sync_vector.clear();
+        boost::dynamic_pointer_cast<gr::blocks::file_source>(source)->seek(0, 0);
+        std::cout.flush();
+    }
     std::cout << "]" << std::endl;
 
     // report the elapsed time
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     std::cout << "Total signal acquisition run time "
-              << ((double)(end - begin))/1000000.0
+              << ((double) (end - begin)) / 1000000.0
               << " [seconds]" << std::endl;
 
     //6. find TOW from SUPL assistance
 
     double current_TOW = 0;
-    if (global_gps_ephemeris_map.size() > 0)
-        {
-            std::map<int,Gps_Ephemeris> Eph_map;
-            Eph_map = global_gps_ephemeris_map.get_map_copy();
-            current_TOW = Eph_map.begin()->second.d_TOW;
+    if (global_gps_ephemeris_map.size() > 0) {
+        std::map<int, Gps_Ephemeris> Eph_map;
+        Eph_map = global_gps_ephemeris_map.get_map_copy();
+        current_TOW = Eph_map.begin()->second.d_TOW;
 
-            time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (long int)current_TOW);
+        time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (long int) current_TOW);
 
-            fprintf(stdout, "Reference Time:\n");
-            fprintf(stdout, "  GPS Week: %d\n", Eph_map.begin()->second.i_GPS_week);
-            fprintf(stdout, "  GPS TOW:  %ld %lf\n", (long int)current_TOW, (long int)current_TOW*0.08);
-            fprintf(stdout, "  ~ UTC:    %s", ctime(&t));
-            std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << std::endl;
-        }
-    else
-        {
-            std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!" << std::endl;
-            delete acquisition;
-            delete gnss_synchro;
-            google::ShutDownCommandLineFlags();
-            std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
-            return 0;
-        }
+        fprintf(stdout, "Reference Time:\n");
+        fprintf(stdout, "  GPS Week: %d\n", Eph_map.begin()->second.i_GPS_week);
+        fprintf(stdout, "  GPS TOW:  %ld %lf\n", (long int) current_TOW, (long int) current_TOW * 0.08);
+        fprintf(stdout, "  ~ UTC:    %s", ctime(&t));
+        std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << std::endl;
+    } else {
+        std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!" << std::endl;
+        delete acquisition;
+        delete gnss_synchro;
+        google::ShutDownCommandLineFlags();
+        std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
+        return 0;
+    }
 
     //Get user position from config file (or from SUPL using GSM Cell ID)
     double lat_deg = configuration->property("GNSS-SDR.init_latitude_deg", 41.0);
@@ -508,54 +467,52 @@ int main(int argc, char** argv)
     std::cout << "Longitude=" << lon_deg << " [�]" << std::endl;
     std::cout << "Altitude=" << altitude_m << " [m]" << std::endl;
 
-    if (doppler_measurements_map.size() == 0)
-        {
-            std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup..." << std::endl;
-            delete acquisition;
-            delete gnss_synchro;
-            google::ShutDownCommandLineFlags();
-            std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
-            return 0;
-        }
+    if (doppler_measurements_map.size() == 0) {
+        std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup..."
+                  << std::endl;
+        delete acquisition;
+        delete gnss_synchro;
+        google::ShutDownCommandLineFlags();
+        std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
+        return 0;
+    }
 
-    std::map<int,double> f_if_estimation_Hz_map;
-    std::map<int,double> f_fs_estimation_Hz_map;
-    std::map<int,double> f_ppm_estimation_Hz_map;
+    std::map<int, double> f_if_estimation_Hz_map;
+    std::map<int, double> f_fs_estimation_Hz_map;
+    std::map<int, double> f_ppm_estimation_Hz_map;
 
     std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(2) <<
-            "Doppler analysis results:" << std::endl;
+              "Doppler analysis results:" << std::endl;
 
     std::cout << "SV ID  Measured [Hz]   Predicted [Hz]" << std::endl;
 
-    for (std::map<int,double>::iterator it = doppler_measurements_map.begin() ; it != doppler_measurements_map.end(); ++it)
-        {
-            try
-            {
-                    double doppler_estimated_hz;
-                    doppler_estimated_hz = front_end_cal.estimate_doppler_from_eph(it->first, current_TOW, lat_deg, lon_deg, altitude_m);
-                    std::cout << "  " << it->first << "   " << it->second << "   " << doppler_estimated_hz << std::endl;
-                    // 7. Compute front-end IF and sampling frequency estimation
-                    // Compare with the measurements and compute clock drift using FE model
-                    double estimated_fs_Hz, estimated_f_if_Hz, f_osc_err_ppm;
-                    front_end_cal.GPS_L1_front_end_model_E4000(doppler_estimated_hz, it->second,fs_in_, &estimated_fs_Hz, &estimated_f_if_Hz, &f_osc_err_ppm );
+    for (std::map<int, double>::iterator it = doppler_measurements_map.begin();
+         it != doppler_measurements_map.end(); ++it) {
+        try {
+            double doppler_estimated_hz;
+            doppler_estimated_hz = front_end_cal.estimate_doppler_from_eph(it->first, current_TOW, lat_deg, lon_deg,
+                                                                           altitude_m);
+            std::cout << "  " << it->first << "   " << it->second << "   " << doppler_estimated_hz << std::endl;
+            // 7. Compute front-end IF and sampling frequency estimation
+            // Compare with the measurements and compute clock drift using FE model
+            double estimated_fs_Hz, estimated_f_if_Hz, f_osc_err_ppm;
+            front_end_cal.GPS_L1_front_end_model_E4000(doppler_estimated_hz, it->second, fs_in_, &estimated_fs_Hz,
+                                                       &estimated_f_if_Hz, &f_osc_err_ppm);
 
-                    f_if_estimation_Hz_map.insert(std::pair<int,double>(it->first,estimated_f_if_Hz));
-                    f_fs_estimation_Hz_map.insert(std::pair<int,double>(it->first,estimated_fs_Hz));
-                    f_ppm_estimation_Hz_map.insert(std::pair<int,double>(it->first,f_osc_err_ppm));
-            }
-            catch(const std::logic_error & e)
-            {
-                    std::cout << "Logic error caught: " << e.what() << std::endl;
-            }
-            catch(const boost::lock_error & e)
-            {
-                    std::cout << "Exception caught while reading ephemeris" << std::endl;
-            }
-            catch(int ex)
-            {
-                    std::cout << "  " << it->first << "   " << it->second << "  (Eph not found)" << std::endl;
-            }
+            f_if_estimation_Hz_map.insert(std::pair<int, double>(it->first, estimated_f_if_Hz));
+            f_fs_estimation_Hz_map.insert(std::pair<int, double>(it->first, estimated_fs_Hz));
+            f_ppm_estimation_Hz_map.insert(std::pair<int, double>(it->first, f_osc_err_ppm));
         }
+        catch (const std::logic_error &e) {
+            std::cout << "Logic error caught: " << e.what() << std::endl;
+        }
+        catch (const boost::lock_error &e) {
+            std::cout << "Exception caught while reading ephemeris" << std::endl;
+        }
+        catch (int ex) {
+            std::cout << "  " << it->first << "   " << it->second << "  (Eph not found)" << std::endl;
+        }
+    }
 
     // FINAL FE estimations
     double mean_f_if_Hz = 0;
@@ -563,18 +520,19 @@ int main(int argc, char** argv)
     double mean_osc_err_ppm = 0;
     int n_elements = f_if_estimation_Hz_map.size();
 
-    for (std::map<int,double>::iterator it = f_if_estimation_Hz_map.begin() ; it != f_if_estimation_Hz_map.end(); ++it)
-        {
-            mean_f_if_Hz += (*it).second;
-            mean_fs_Hz += f_fs_estimation_Hz_map.find((*it).first)->second;
-            mean_osc_err_ppm += f_ppm_estimation_Hz_map.find((*it).first)->second;
-        }
+    for (std::map<int, double>::iterator it = f_if_estimation_Hz_map.begin();
+         it != f_if_estimation_Hz_map.end(); ++it) {
+        mean_f_if_Hz += (*it).second;
+        mean_fs_Hz += f_fs_estimation_Hz_map.find((*it).first)->second;
+        mean_osc_err_ppm += f_ppm_estimation_Hz_map.find((*it).first)->second;
+    }
 
     mean_f_if_Hz /= n_elements;
     mean_fs_Hz /= n_elements;
     mean_osc_err_ppm /= n_elements;
 
-    std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(2) << "Parameters estimation for Elonics E4000 Front-End:" << std::endl;
+    std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(2)
+              << "Parameters estimation for Elonics E4000 Front-End:" << std::endl;
 
     std::cout << "Sampling frequency =" << mean_fs_Hz << " [Hz]" << std::endl;
     std::cout << "IF bias present in baseband=" << mean_f_if_Hz << " [Hz]" << std::endl;
@@ -584,27 +542,25 @@ int main(int argc, char** argv)
               << "Corrected Doppler vs. Predicted" << std::endl;
     std::cout << "SV ID  Corrected [Hz]   Predicted [Hz]" << std::endl;
 
-    for (std::map<int,double>::iterator it = doppler_measurements_map.begin() ; it != doppler_measurements_map.end(); ++it)
-        {
-            try
-            {
-                    double doppler_estimated_hz;
-                    doppler_estimated_hz = front_end_cal.estimate_doppler_from_eph(it->first, current_TOW, lat_deg, lon_deg, altitude_m);
-                    std::cout  <<  "  " << it->first << "   " << it->second - mean_f_if_Hz  <<  "   " << doppler_estimated_hz << std::endl;
-            }
-            catch(const std::logic_error & e)
-            {
-                    std::cout << "Logic error caught: " << e.what() << std::endl;
-            }
-            catch(const boost::lock_error & e)
-            {
-                    std::cout << "Exception caught while reading ephemeris" << std::endl;
-            }
-            catch(int ex)
-            {
-                    std::cout << "  " << it->first << "   " << it->second - mean_f_if_Hz << "  (Eph not found)" << std::endl;
-            }
+    for (std::map<int, double>::iterator it = doppler_measurements_map.begin();
+         it != doppler_measurements_map.end(); ++it) {
+        try {
+            double doppler_estimated_hz;
+            doppler_estimated_hz = front_end_cal.estimate_doppler_from_eph(it->first, current_TOW, lat_deg, lon_deg,
+                                                                           altitude_m);
+            std::cout << "  " << it->first << "   " << it->second - mean_f_if_Hz << "   " << doppler_estimated_hz
+                      << std::endl;
         }
+        catch (const std::logic_error &e) {
+            std::cout << "Logic error caught: " << e.what() << std::endl;
+        }
+        catch (const boost::lock_error &e) {
+            std::cout << "Exception caught while reading ephemeris" << std::endl;
+        }
+        catch (int ex) {
+            std::cout << "  " << it->first << "   " << it->second - mean_f_if_Hz << "  (Eph not found)" << std::endl;
+        }
+    }
 
     // 8. Generate GNSS-SDR config file.
 

@@ -17,18 +17,18 @@
 #
 
 
-set(RESAMPLER_GR_BLOCKS_SOURCES 
-     direct_resampler_conditioner_cc.cc
-     direct_resampler_conditioner_cs.cc
-     direct_resampler_conditioner_cb.cc
-)
+set(RESAMPLER_GR_BLOCKS_SOURCES
+        direct_resampler_conditioner_cc.cc
+        direct_resampler_conditioner_cs.cc
+        direct_resampler_conditioner_cb.cc
+        )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_INCLUDE_DIRS}
+        $(CMAKE_CURRENT_SOURCE_DIR)
+        ${GLOG_INCLUDE_DIRS}
+        ${GFlags_INCLUDE_DIRS}
+        ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+        ${VOLK_INCLUDE_DIRS}
 )
 
 file(GLOB RESAMPLER_GR_BLOCKS_HEADERS "*.h")

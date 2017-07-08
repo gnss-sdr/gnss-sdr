@@ -36,10 +36,10 @@
  * \brief This class stores SBAS SV ephemeris data
  *
  */
-class Sbas_Ephemeris
-{
+class Sbas_Ephemeris {
 public:
     void print(std::ostream &out);
+
     int i_prn;            //!<  PRN number
     //gtime_t t0;         //  reference epoch time (GPST)
     int i_t0;

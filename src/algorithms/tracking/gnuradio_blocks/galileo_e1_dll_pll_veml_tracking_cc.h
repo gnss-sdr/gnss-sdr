@@ -47,26 +47,27 @@ typedef boost::shared_ptr<galileo_e1_dll_pll_veml_tracking_cc> galileo_e1_dll_pl
 
 galileo_e1_dll_pll_veml_tracking_cc_sptr
 galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float early_late_space_chips,
-                                   float very_early_late_space_chips);
+                                         long fs_in, unsigned
+                                         int vector_length,
+                                         bool dump,
+                                         std::string dump_filename,
+                                         float pll_bw_hz,
+                                         float dll_bw_hz,
+                                         float early_late_space_chips,
+                                         float very_early_late_space_chips);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL VEML (Very Early
  *  Minus Late) tracking block for Galileo E1 signals
  */
-class galileo_e1_dll_pll_veml_tracking_cc: public gr::block
-{
+class galileo_e1_dll_pll_veml_tracking_cc : public gr::block {
 public:
     ~galileo_e1_dll_pll_veml_tracking_cc();
 
     void set_channel(unsigned int channel);
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
+
     void start_tracking();
 
     /*!
@@ -75,31 +76,32 @@ public:
      * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
      * Birkhauser, 2007
      */
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+                     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
 private:
     friend galileo_e1_dll_pll_veml_tracking_cc_sptr
     galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips,
-            float very_early_late_space_chips);
+                                             long fs_in, unsigned
+                                             int vector_length,
+                                             bool dump,
+                                             std::string dump_filename,
+                                             float pll_bw_hz,
+                                             float dll_bw_hz,
+                                             float early_late_space_chips,
+                                             float very_early_late_space_chips);
 
     galileo_e1_dll_pll_veml_tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips,
-            float very_early_late_space_chips);
+                                        long fs_in, unsigned
+                                        int vector_length,
+                                        bool dump,
+                                        std::string dump_filename,
+                                        float pll_bw_hz,
+                                        float dll_bw_hz,
+                                        float early_late_space_chips,
+                                        float very_early_late_space_chips);
 
     void update_local_code();
 
@@ -109,7 +111,7 @@ private:
     unsigned int d_vector_length;
     bool d_dump;
 
-    Gnss_Synchro* d_acquisition_gnss_synchro;
+    Gnss_Synchro *d_acquisition_gnss_synchro;
     unsigned int d_channel;
     long d_if_freq;
     long d_fs_in;
@@ -120,9 +122,9 @@ private:
     double d_early_late_spc_chips;
     double d_very_early_late_spc_chips;
 
-    gr_complex* d_ca_code;
-    float* d_local_code_shift_chips;
-    gr_complex* d_correlator_outs;
+    gr_complex *d_ca_code;
+    float *d_local_code_shift_chips;
+    gr_complex *d_correlator_outs;
     cpu_multicorrelator multicorrelator_cpu;
 
     gr_complex *d_Very_Early;
@@ -158,7 +160,7 @@ private:
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
-    gr_complex* d_Prompt_buffer;
+    gr_complex *d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;

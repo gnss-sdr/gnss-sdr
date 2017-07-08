@@ -43,39 +43,42 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a block that connects input and output (does nothing)
  */
-class Pass_Through : public GNSSBlockInterface
-{
+class Pass_Through : public GNSSBlockInterface {
 public:
-    Pass_Through(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_stream,
-            unsigned int out_stream);
+    Pass_Through(ConfigurationInterface *configuration,
+                 std::string role,
+                 unsigned int in_stream,
+                 unsigned int out_stream);
 
     virtual ~Pass_Through();
-    std::string role()
-    {
+
+    std::string role() {
         return role_;
     }
+
     //! returns "Pass_Through"
-    std::string implementation()
-    {
+    std::string implementation() {
         return "Pass_Through";
     }
-    std::string item_type()
-    {
+
+    std::string item_type() {
         return item_type_;
     }
-    size_t vector_size()
-    {
+
+    size_t vector_size() {
         return vector_size_;
     }
-    size_t item_size()
-    {
+
+    size_t item_size() {
         return item_size_;
     }
+
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
 private:

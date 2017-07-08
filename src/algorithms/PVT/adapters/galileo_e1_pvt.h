@@ -44,40 +44,38 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a PvtInterface for Galileo E1
  */
-class GalileoE1Pvt : public PvtInterface
-{
+class GalileoE1Pvt : public PvtInterface {
 public:
-    GalileoE1Pvt(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+    GalileoE1Pvt(ConfigurationInterface *configuration,
+                 std::string role,
+                 unsigned int in_streams,
+                 unsigned int out_streams);
 
     virtual ~GalileoE1Pvt();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     //!  Returns "GALILEO_E1_PVT"
-    std::string implementation()
-    {
+    std::string implementation() {
         return "GALILEO_E1_PVT";
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
-    void reset()
-    {
+    void reset() {
         return;
     }
 
     //! All blocks must have an item_size() function implementation. Returns sizeof(gr_complex)
-    size_t item_size()
-    {
+    size_t item_size() {
         return sizeof(gr_complex);
     }
 

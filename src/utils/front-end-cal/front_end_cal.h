@@ -37,8 +37,7 @@
 #include "concurrent_map.h"
 
 
-class FrontEndCal
-{
+class FrontEndCal {
 private:
     std::shared_ptr<ConfigurationInterface> configuration_;
 
@@ -49,7 +48,8 @@ private:
      * coordinates, P.  LLA is in [degrees degrees meters].  P is in meters.
      * The default ellipsoid planet is WGS84. Original copyright (c) by Kai Borre.
      */
-    arma::vec lla2ecef(const arma::vec & lla);
+    arma::vec lla2ecef(const arma::vec &lla);
+
     /*!
      * GEODETIC2ECEF Convert geodetic to geocentric (ECEF) coordinates
      * [X, Y, Z] = GEODETIC2ECEF(PHI, LAMBDA, H, ELLIPSOID) converts geodetic
@@ -80,12 +80,14 @@ private:
      * Paul R. Wolf and Bon A. Dewitt, "Elements of Photogrammetry with
      * Applications in GIS," 3rd Ed., McGraw-Hill, 2000 (Appendix F-3).
      */
-    arma::vec geodetic2ecef(double phi, double lambda, double h, const arma::vec & ellipsoid);
+    arma::vec geodetic2ecef(double phi, double lambda, double h, const arma::vec &ellipsoid);
+
     /*!
      * \brief Reads the ephemeris data from an external XML file
      *
      */
     bool read_assistance_from_XML();
+
     /*!
      * \brief Connects to Secure User Location Protocol (SUPL) server to obtain
      * the current GPS ephemeris and GPS assistance data.
@@ -132,9 +134,11 @@ public:
      *  Front-end TUNER Elonics E4000 + RTL2832 sampler For GPS L1 1575.42 MHz
      *
      */
-    void GPS_L1_front_end_model_E4000(double f_bb_true_Hz,double f_bb_meas_Hz,double fs_nominal_hz, double *estimated_fs_Hz, double *estimated_f_if_Hz, double *f_osc_err_ppm );
+    void GPS_L1_front_end_model_E4000(double f_bb_true_Hz, double f_bb_meas_Hz, double fs_nominal_hz,
+                                      double *estimated_fs_Hz, double *estimated_f_if_Hz, double *f_osc_err_ppm);
 
     FrontEndCal();
+
     ~FrontEndCal();
 };
 

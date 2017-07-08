@@ -48,11 +48,12 @@
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.
  */
-class TelemetryDecoderInterface : public GNSSBlockInterface
-{
+class TelemetryDecoderInterface : public GNSSBlockInterface {
 public:
     virtual void reset() = 0;
+
     virtual void set_satellite(Gnss_Satellite sat) = 0;
+
     virtual void set_channel(int channel) = 0;
 };
 

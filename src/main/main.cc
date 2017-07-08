@@ -51,8 +51,8 @@
 #include "concurrent_map.h"
 
 #if CUDA_GPU_ACCEL
-    // For the CUDA runtime routines (prefixed with "cuda_")
-    #include <cuda_runtime.h>
+// For the CUDA runtime routines (prefixed with "cuda_")
+#include <cuda_runtime.h>
 #endif
 
 
@@ -69,16 +69,15 @@ DECLARE_string(log_dir);
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
     const std::string intro_help(
             std::string("\nGNSS-SDR is an Open Source GNSS Software Defined Receiver\n")
-    +
-    "Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)\n"
-    +
-    "This program comes with ABSOLUTELY NO WARRANTY;\n"
-    +
-    "See COPYING file to see a copy of the General Public License\n \n");
+            +
+            "Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)\n"
+            +
+            "This program comes with ABSOLUTELY NO WARRANTY;\n"
+            +
+            "See COPYING file to see a copy of the General Public License\n \n");
 
     const std::string gnss_sdr_version(GNSS_SDR_VERSION);
     google::SetUsageMessage(intro_help);
@@ -86,49 +85,44 @@ int main(int argc, char** argv)
     google::ParseCommandLineFlags(&argc, &argv, true);
     std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait." << std::endl;
 
-    #if CUDA_GPU_ACCEL
-        // Reset the device
-        // cudaDeviceReset causes the driver to clean up all state. While
-        // not mandatory in normal operation, it is good practice.  It is also
-        // needed to ensure correct operation when the application is being
-        // profiled. Calling cudaDeviceReset causes all profile data to be
-        // flushed before the application exits
-        cudaDeviceReset();
-        std::cout << "Reset CUDA device done " << std::endl;
-    #endif
+#if CUDA_GPU_ACCEL
+    // Reset the device
+    // cudaDeviceReset causes the driver to clean up all state. While
+    // not mandatory in normal operation, it is good practice.  It is also
+    // needed to ensure correct operation when the application is being
+    // profiled. Calling cudaDeviceReset causes all profile data to be
+    // flushed before the application exits
+    cudaDeviceReset();
+    std::cout << "Reset CUDA device done " << std::endl;
+#endif
 
-    if(GOOGLE_STRIP_LOG == 0)
-        {
-            google::InitGoogleLogging(argv[0]);
-            if (FLAGS_log_dir.empty())
-                {
-                    std::cout << "Logging will be done at "
-                              << boost::filesystem::temp_directory_path()
-                              << std::endl
-                              << "Use gnss-sdr --log_dir=/path/to/log to change that."
+    if (GOOGLE_STRIP_LOG == 0) {
+        google::InitGoogleLogging(argv[0]);
+        if (FLAGS_log_dir.empty()) {
+            std::cout << "Logging will be done at "
+                      << boost::filesystem::temp_directory_path()
+                      << std::endl
+                      << "Use gnss-sdr --log_dir=/path/to/log to change that."
+                      << std::endl;
+        } else {
+            const boost::filesystem::path p(FLAGS_log_dir);
+            if (!boost::filesystem::exists(p)) {
+                std::cout << "The path "
+                          << FLAGS_log_dir
+                          << " does not exist, attempting to create it."
+                          << std::endl;
+                boost::system::error_code ec;
+                boost::filesystem::create_directory(p, ec);
+                if (ec != 0) {
+                    std::cout << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended."
                               << std::endl;
+                    google::ShutDownCommandLineFlags();
+                    std::exit(0);
                 }
-            else
-                {
-                    const boost::filesystem::path p (FLAGS_log_dir);
-                    if (!boost::filesystem::exists(p))
-                        {
-                            std::cout << "The path "
-                                      << FLAGS_log_dir
-                                      << " does not exist, attempting to create it."
-                                      << std::endl;
-                            boost::system::error_code ec;
-                            boost::filesystem::create_directory(p, ec);
-                            if(ec != 0)
-                                {
-                                    std::cout << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended." << std::endl;
-                                    google::ShutDownCommandLineFlags();
-                                    std::exit(0);
-                                }
-                        }
-                    std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
-                }
+            }
+            std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
         }
+    }
 
     std::unique_ptr<ControlThread> control_thread(new ControlThread());
 
@@ -137,21 +131,17 @@ int main(int argc, char** argv)
     gettimeofday(&tv, NULL);
     long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-    try
-    {
-            control_thread->run();
+    try {
+        control_thread->run();
     }
-    catch( boost::exception & e )
-    {
-            LOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+    catch (boost::exception &e) {
+        LOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
-    {
-            LOG(FATAL) << "STD exception: " << ex.what();
+    catch (std::exception const &ex) {
+        LOG(FATAL) << "STD exception: " << ex.what();
     }
-    catch(...)
-    {
-            LOG(INFO) << "Unexpected catch";
+    catch (...) {
+        LOG(INFO) << "Unexpected catch";
     }
     // report the elapsed time
     gettimeofday(&tv, NULL);

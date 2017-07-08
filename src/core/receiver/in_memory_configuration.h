@@ -49,21 +49,32 @@ class StringConverter;
  * This implementation accepts configuration parameters upon instantiation and
  * it is intended to be used in unit testing.
  */
-class InMemoryConfiguration : public ConfigurationInterface
-{
+class InMemoryConfiguration : public ConfigurationInterface {
 public:
     InMemoryConfiguration();
+
     virtual ~InMemoryConfiguration();
+
     std::string property(std::string property_name, std::string default_value);
+
     bool property(std::string property_name, bool default_value);
+
     long property(std::string property_name, long default_value);
+
     int property(std::string property_name, int default_value);
+
     unsigned int property(std::string property_name, unsigned int default_value);
+
     unsigned short property(std::string property_name, unsigned short default_value);
+
     float property(std::string property_name, float default_value);
+
     double property(std::string property_name, double default_value);
+
     void set_property(std::string property_name, std::string value);
+
     bool is_present(std::string property_name);
+
 private:
     std::map<std::string, std::string> properties_;
     std::unique_ptr<StringConverter> converter_;

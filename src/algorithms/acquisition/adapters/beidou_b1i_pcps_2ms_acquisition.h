@@ -43,42 +43,41 @@
 #include "complex_byte_to_float_x2.h"
 
 
-
 class ConfigurationInterface;
 
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for BeiDou B1I signals
  */
-class BeidouB1iPcps2msAcquisition: public AcquisitionInterface
-{
+class BeidouB1iPcps2msAcquisition : public AcquisitionInterface {
 public:
-	BeidouB1iPcps2msAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+    BeidouB1iPcps2msAcquisition(ConfigurationInterface *configuration,
+                                std::string role, unsigned int in_streams,
+                                unsigned int out_streams, boost::shared_ptr <gr::msg_queue> queue);
 
     virtual ~BeidouB1iPcps2msAcquisition();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     /*!
      * \brief Returns "BEIDOU_B1I_PCPS_2ms_Acquisition"
      */
-    std::string implementation()
-    {
+    std::string implementation() {
         return "BEIDOU_B1I_PCPS_2ms_Acquisition";
     }
-    size_t item_size()
-    {
+
+    size_t item_size() {
         return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
     /*!
@@ -86,7 +85,7 @@ public:
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
     /*!
      * \brief Set acquisition channel unique ID
@@ -139,7 +138,7 @@ public:
     void set_state(int state);
 
 private:
-    ConfigurationInterface* configuration_;
+    ConfigurationInterface *configuration_;
     pcps_acquisition_cc_sptr acquisition_cc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
@@ -161,12 +160,12 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float> *code_;
+    Gnss_Synchro *gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    boost::shared_ptr <gr::msg_queue> queue_;
     concurrent_queue<int> *channel_internal_queue_;
 
     float calculate_threshold(float pfa);

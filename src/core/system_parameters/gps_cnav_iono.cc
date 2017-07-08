@@ -32,8 +32,7 @@
 
 #include "gps_cnav_iono.h"
 
-Gps_CNAV_Iono::Gps_CNAV_Iono()
-{
+Gps_CNAV_Iono::Gps_CNAV_Iono() {
     valid = false;
     d_alpha0 = 0.0;
     d_alpha1 = 0.0;

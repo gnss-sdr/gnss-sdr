@@ -41,7 +41,7 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements a NAV data decoder for GPS L1 C/A
+ * \brief This class implements a NAV data decoder for beidou b1i
  */
 class BeiDouB1iTelemetryDecoder : public TelemetryDecoderInterface
 {

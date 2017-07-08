@@ -42,41 +42,53 @@
 /*!
  * \brief This class provides a implementation of a subset of the RTCM Standard 10403.2 messages
  */
-class Rtcm_Printer
-{
+class Rtcm_Printer {
 public:
     /*!
      * \brief Default constructor.
      */
-    Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port, unsigned short rtcm_station_id, std::string rtcm_dump_filename, bool time_tag_name = true);
+    Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port,
+                 unsigned short rtcm_station_id, std::string rtcm_dump_filename, bool time_tag_name = true);
 
     /*!
      * \brief Default destructor.
      */
     ~Rtcm_Printer();
 
-    bool Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables);
-    bool Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables);
-    bool Print_Rtcm_MT1003(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables);
-    bool Print_Rtcm_MT1004(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables);
-    bool Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph); //<! GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
-    bool Print_Rtcm_MT1045(const Galileo_Ephemeris & gal_eph); //<! Galileo Ephemeris, should be broadcast every 2 minutes
+    bool
+    Print_Rtcm_MT1001(const Gps_Ephemeris &gps_eph, double obs_time, const std::map<int, Gnss_Synchro> &observables);
 
-    bool Print_Rtcm_MSM(unsigned int msm_number, const Gps_Ephemeris & gps_eph,
-            const Gps_CNAV_Ephemeris & gps_cnav_eph,
-            const Galileo_Ephemeris & gal_eph,
-            double obs_time,
-            const std::map<int, Gnss_Synchro> & observables,
-            unsigned int clock_steering_indicator,
-            unsigned int external_clock_indicator,
-            int smooth_int,
-            bool divergence_free,
-            bool more_messages);
+    bool
+    Print_Rtcm_MT1002(const Gps_Ephemeris &gps_eph, double obs_time, const std::map<int, Gnss_Synchro> &observables);
+
+    bool Print_Rtcm_MT1003(const Gps_Ephemeris &gps_eph, const Gps_CNAV_Ephemeris &cnav_eph, double obs_time,
+                           const std::map<int, Gnss_Synchro> &observables);
+
+    bool Print_Rtcm_MT1004(const Gps_Ephemeris &gps_eph, const Gps_CNAV_Ephemeris &cnav_eph, double obs_time,
+                           const std::map<int, Gnss_Synchro> &observables);
+
+    bool Print_Rtcm_MT1019(
+            const Gps_Ephemeris &gps_eph); //<! GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
+    bool
+    Print_Rtcm_MT1045(const Galileo_Ephemeris &gal_eph); //<! Galileo Ephemeris, should be broadcast every 2 minutes
+
+    bool Print_Rtcm_MSM(unsigned int msm_number, const Gps_Ephemeris &gps_eph,
+                        const Gps_CNAV_Ephemeris &gps_cnav_eph,
+                        const Galileo_Ephemeris &gal_eph,
+                        double obs_time,
+                        const std::map<int, Gnss_Synchro> &observables,
+                        unsigned int clock_steering_indicator,
+                        unsigned int external_clock_indicator,
+                        int smooth_int,
+                        bool divergence_free,
+                        bool more_messages);
 
     std::string print_MT1005_test(); //<!  For testing purposes
-    unsigned int lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro);
-    unsigned int lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro);
-    unsigned int lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro);
+    unsigned int lock_time(const Gps_Ephemeris &eph, double obs_time, const Gnss_Synchro &gnss_synchro);
+
+    unsigned int lock_time(const Gps_CNAV_Ephemeris &eph, double obs_time, const Gnss_Synchro &gnss_synchro);
+
+    unsigned int lock_time(const Galileo_Ephemeris &eph, double obs_time, const Gnss_Synchro &gnss_synchro);
 
 private:
     std::string rtcm_filename; // String with the RTCM log filename
@@ -85,10 +97,12 @@ private:
     unsigned short port;
     unsigned short station_id;
     int rtcm_dev_descriptor; // RTCM serial device descriptor (i.e. COM port)
-    int init_serial (std::string serial_device); //serial port control
-    void close_serial ();
+    int init_serial(std::string serial_device); //serial port control
+    void close_serial();
+
     std::shared_ptr<Rtcm> rtcm;
-    bool Print_Message(const std::string & message);
+
+    bool Print_Message(const std::string &message);
 };
 
 #endif

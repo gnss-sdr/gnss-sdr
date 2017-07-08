@@ -44,40 +44,38 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a PvtInterface for Galileo E1
  */
-class HybridPvt : public PvtInterface
-{
+class HybridPvt : public PvtInterface {
 public:
-    HybridPvt(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+    HybridPvt(ConfigurationInterface *configuration,
+              std::string role,
+              unsigned int in_streams,
+              unsigned int out_streams);
 
     virtual ~HybridPvt();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     //!  Returns "Hybrid_Pvt"
-    std::string implementation()
-    {
+    std::string implementation() {
         return "Hybrid_PVT";
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
-    void reset()
-    {
+    void reset() {
         return;
     }
 
     //! All blocks must have an item_size() function implementation. Returns sizeof(gr_complex)
-    size_t item_size()
-    {
+    size_t item_size() {
         return sizeof(gr_complex);
     }
 
@@ -88,8 +86,9 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    
+
     std::string eph_xml_filename_;
+
     bool save_assistance_to_XML();
 };
 

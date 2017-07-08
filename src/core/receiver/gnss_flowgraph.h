@@ -47,8 +47,11 @@
 #include "gnss_signal.h"
 
 class GNSSBlockInterface;
+
 class ChannelInterface;
+
 class ConfigurationInterface;
+
 class GNSSBlockFactory;
 
 /*! \brief This class represents a GNSS flowgraph.
@@ -56,8 +59,7 @@ class GNSSBlockFactory;
  * It contains a signal source,
  * a signal conditioner, a set of channels, a PVT and an output filter.
  */
-class GNSSFlowgraph
-{
+class GNSSFlowgraph {
 public:
     /*!
      * \brief Constructor that initializes the receiver flowgraph
@@ -95,29 +97,31 @@ public:
 
     void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
-    unsigned int applied_actions()
-    {
+    unsigned int applied_actions() {
         return applied_actions_;
     }
-    bool connected()
-    {
+
+    bool connected() {
         return connected_;
     }
-    bool running()
-    {
+
+    bool running() {
         return running_;
     }
+
     /*!
      * \brief Sends a GNURadio asyncronous message from telemetry to PVT
      *
      * It is used to assist the receiver with external ephemeris data
      */
     bool send_telemetry_msg(pmt::pmt_t msg);
+
 private:
     void init(); // Populates the SV PRN list available for acquisition and tracking
     void set_signals_list();
+
     void set_channels_state(); // Initializes the channels state (start acquisition or keep standby)
-                               // using the configuration parameters (number of channels and max channels in acquisition)
+    // using the configuration parameters (number of channels and max channels in acquisition)
     bool connected_;
     bool running_;
     int sources_count_;

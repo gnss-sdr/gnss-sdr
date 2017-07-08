@@ -46,18 +46,18 @@
 /*!
  * \brief This class implements a simple PVT Least Squares solution
  */
-class galileo_e1_ls_pvt : public Ls_Pvt
-{
+class galileo_e1_ls_pvt : public Ls_Pvt {
 public:
-    galileo_e1_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file);
+    galileo_e1_ls_pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file);
+
     ~galileo_e1_ls_pvt();
 
-    bool get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double galileo_current_time, bool flag_averaging);
+    bool get_PVT(std::map<int, Gnss_Synchro> gnss_pseudoranges_map, double galileo_current_time, bool flag_averaging);
 
     int d_nchannels;  //!< Number of available channels for positioning
 
-    Galileo_Navigation_Message* d_ephemeris;
-    std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
+    Galileo_Navigation_Message *d_ephemeris;
+    std::map<int, Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
     Galileo_Almanac galileo_almanac;

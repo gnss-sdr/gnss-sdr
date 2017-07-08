@@ -54,32 +54,39 @@
 #include "gps_acq_assist.h"
 
 
-DEFINE_int32(fs_in, 4000000, "Sampling rate, in Samples/s");
-DEFINE_int32(max_measurement_duration, 90, "Maximum time waiting for a position fix, in seconds");
-DEFINE_int32(num_measurements, 2, "Number of measurements");
-DEFINE_string(device_address, "192.168.40.2", "USRP device IP address");
-DEFINE_string(subdevice, "A:0", "USRP subdevice");
-DEFINE_string(config_file_ttff, std::string(""), "File containing the configuration parameters for the TTFF test.");
+DEFINE_int32(fs_in,
+4000000, "Sampling rate, in Samples/s");
+DEFINE_int32(max_measurement_duration,
+90, "Maximum time waiting for a position fix, in seconds");
+DEFINE_int32(num_measurements,
+2, "Number of measurements");
+DEFINE_string(device_address,
+"192.168.40.2", "USRP device IP address");
+DEFINE_string(subdevice,
+"A:0", "USRP subdevice");
+DEFINE_string(config_file_ttff, std::string(""),
+"File containing the configuration parameters for the TTFF test.");
 
 // For GPS NAVIGATION (L1)
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+concurrent_queue <Gps_Acq_Assist> global_gps_acq_assist_queue;
+concurrent_map <Gps_Acq_Assist> global_gps_acq_assist_map;
 
 std::vector<double> TTFF_v;
 const int decimation_factor = 1;
 
-typedef struct  {
+typedef struct {
     long mtype; // required by SysV message
     double ttff;
 } ttff_msgbuf;
 
 
-class TTFF_GPS_L1_CA_Test: public ::testing::Test
-{
+class TTFF_GPS_L1_CA_Test : public ::testing::Test {
 public:
     void config_1();
+
     void config_2();
-    void print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_);
+
+    void print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_);
 
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config2;
@@ -123,8 +130,7 @@ public:
 };
 
 
-void TTFF_GPS_L1_CA_Test::config_1()
-{
+void TTFF_GPS_L1_CA_Test::config_1() {
     config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
@@ -236,18 +242,14 @@ void TTFF_GPS_L1_CA_Test::config_1()
 }
 
 
-void TTFF_GPS_L1_CA_Test::config_2()
-{
-    if(FLAGS_config_file_ttff.empty())
-        {
-            std::string path = std::string(TEST_PATH);
-            std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
-            config2 = std::make_shared<FileConfiguration>(filename);
-        }
-    else
-        {
-            config2 = std::make_shared<FileConfiguration>(FLAGS_config_file_ttff);
-        }
+void TTFF_GPS_L1_CA_Test::config_2() {
+    if (FLAGS_config_file_ttff.empty()) {
+        std::string path = std::string(TEST_PATH);
+        std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
+        config2 = std::make_shared<FileConfiguration>(filename);
+    } else {
+        config2 = std::make_shared<FileConfiguration>(FLAGS_config_file_ttff);
+    }
 
     int d_sampling_rate;
     d_sampling_rate = config2->property("GNSS-SDR.internal_fs_hz", FLAGS_fs_in);
@@ -255,8 +257,7 @@ void TTFF_GPS_L1_CA_Test::config_2()
 }
 
 
-void receive_msg()
-{
+void receive_msg() {
     ttff_msgbuf msg;
     ttff_msgbuf msg_stop;
     msg_stop.mtype = 1;
@@ -269,81 +270,72 @@ void receive_msg()
     key_t key_stop = 1102;
     bool leave = false;
 
-    while(!leave)
-        {
-            // wait for the queue to be created
-            while((msqid = msgget(key, 0644)) == -1){}
+    while (!leave) {
+        // wait for the queue to be created
+        while ((msqid = msgget(key, 0644)) == -1) {}
 
-            if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
-                {
-                    ttff_msg = msg.ttff;
-                    if( (ttff_msg != 0) && (ttff_msg != -1))
-                        {
-                            TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor) );
-                            LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor ) << "[s]";
-                            // Stop the receiver
-                            while(((msqid_stop = msgget(key_stop, 0644))) == -1){}
-                            double msgsend_size = sizeof(msg_stop.ttff);
-                            msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
-                        }
+        if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1) {
+            ttff_msg = msg.ttff;
+            if ((ttff_msg != 0) && (ttff_msg != -1)) {
+                TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor));
+                LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor) << "[s]";
+                // Stop the receiver
+                while (((msqid_stop = msgget(key_stop, 0644))) == -1) {}
+                double msgsend_size = sizeof(msg_stop.ttff);
+                msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
+            }
 
-                    if( std::abs(ttff_msg - (-1.0) ) < 10 * std::numeric_limits<double>::epsilon() )
-                        {
-                            leave = true;
-                        }
-                }
+            if (std::abs(ttff_msg - (-1.0)) < 10 * std::numeric_limits<double>::epsilon()) {
+                leave = true;
+            }
         }
+    }
     return;
 }
 
 
-void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_)
-{
+void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> &ttff_v,
+                                            std::shared_ptr<ConfigurationInterface> config_) {
     std::ofstream ttff_report_file;
     std::string filename = "ttff_report";
     std::string filename_;
 
     time_t rawtime;
-    struct tm * timeinfo;
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
+    struct tm *timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
 
     std::stringstream strm0;
     const int year = timeinfo->tm_year - 100;
     strm0 << year;
     const int month = timeinfo->tm_mon + 1;
-    if(month < 10)
-        {
-            strm0 << "0";
-        }
+    if (month < 10) {
+        strm0 << "0";
+    }
     strm0 << month;
     const int day = timeinfo->tm_mday;
-    if(day < 10)
-        {
-            strm0 << "0";
-        }
+    if (day < 10) {
+        strm0 << "0";
+    }
     strm0 << day << "_";
     const int hour = timeinfo->tm_hour;
-    if(hour < 10)
-                {
-            strm0 << "0";
-        }
+    if (hour < 10) {
+        strm0 << "0";
+    }
     strm0 << hour;
     const int min = timeinfo->tm_min;
 
-    if(min < 10)
-        {
-            strm0 << "0";
-        }
+    if (min < 10) {
+        strm0 << "0";
+    }
     strm0 << min;
     const int sec = timeinfo->tm_sec;
-    if(sec < 10)
-        {
-            strm0 << "0";
-        }
+    if (sec < 10) {
+        strm0 << "0";
+    }
     strm0 << sec;
 
-    filename_ = filename + "_" +  strm0.str() + ".txt";
+    filename_ = filename + "_" + strm0.str() + ".txt";
 
     ttff_report_file.open(filename_.c_str());
 
@@ -363,276 +355,344 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
     std::string default_str = "default";
     source = config_->property("SignalSource.implementation", default_str);
 
-    if (ttff_report_file.is_open())
-        {
-            ttff_report_file << "---------------------------" << std::endl;
-            ttff_report_file << " Time-To-First-Fix Report" << std::endl;
-            ttff_report_file <<  "---------------------------" << std::endl;
-            ttff_report_file << "Initial receiver status: ";
-            if (read_ephemeris)
-                {
-                    ttff_report_file << "Hot start." << std::endl;
-                }
-            else
-                {
-                    ttff_report_file << "Cold start." << std::endl;
-                }
-            ttff_report_file << "A-GNSS: ";
-            if (agnss && read_ephemeris)
-                {
-                    ttff_report_file << "Enabled." << std::endl;
-                }
-            else
-                {
-                    ttff_report_file << "Disabled." << std::endl;
-                }
-            ttff_report_file << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
-            for(double ttff_ : ttff) ttff_report_file << ttff_ << " ";
-            ttff_report_file << std::endl;
-            ttff_report_file << "TTFF mean: " << mean << " [s]" << std::endl;
-            if (ttff.size() > 0)
-                {
-                    ttff_report_file << "TTFF max: " << *max_ttff << " [s]" << std::endl;
-                    ttff_report_file << "TTFF min: " << *min_ttff << " [s]" << std::endl;
-                }
-            ttff_report_file << "TTFF stdev: " << stdev << " [s]" << std::endl;
-            ttff_report_file << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
-            ttff_report_file << "Navigation mode: " << "3D" << std::endl;
-
-            if(source.compare("UHD_Signal_Source"))
-                {
-                    ttff_report_file << "Source: File" << std::endl;
-                }
-            else
-                {
-                    ttff_report_file << "Source: Live" << std::endl;
-                }
-            ttff_report_file << "---------------------------" << std::endl;
+    if (ttff_report_file.is_open()) {
+        ttff_report_file << "---------------------------" << std::endl;
+        ttff_report_file << " Time-To-First-Fix Report" << std::endl;
+        ttff_report_file << "---------------------------" << std::endl;
+        ttff_report_file << "Initial receiver status: ";
+        if (read_ephemeris) {
+            ttff_report_file << "Hot start." << std::endl;
+        } else {
+            ttff_report_file << "Cold start." << std::endl;
         }
+        ttff_report_file << "A-GNSS: ";
+        if (agnss && read_ephemeris) {
+            ttff_report_file << "Enabled." << std::endl;
+        } else {
+            ttff_report_file << "Disabled." << std::endl;
+        }
+        ttff_report_file << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
+        for (double ttff_ : ttff) ttff_report_file << ttff_ << " ";
+        ttff_report_file << std::endl;
+        ttff_report_file << "TTFF mean: " << mean << " [s]" << std::endl;
+        if (ttff.size() > 0) {
+            ttff_report_file << "TTFF max: " << *max_ttff << " [s]" << std::endl;
+            ttff_report_file << "TTFF min: " << *min_ttff << " [s]" << std::endl;
+        }
+        ttff_report_file << "TTFF stdev: " << stdev << " [s]" << std::endl;
+        ttff_report_file << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
+        ttff_report_file << "Navigation mode: " << "3D" << std::endl;
+
+        if (source.compare("UHD_Signal_Source")) {
+            ttff_report_file << "Source: File" << std::endl;
+        } else {
+            ttff_report_file << "Source: Live" << std::endl;
+        }
+        ttff_report_file << "---------------------------" << std::endl;
+    }
     ttff_report_file.close();
     std::cout << "---------------------------" << std::endl;
     std::cout << " Time-To-First-Fix Report" << std::endl;
     std::cout << "---------------------------" << std::endl;
     std::cout << "Initial receiver status: ";
-    if (read_ephemeris)
-        {
-            std::cout << "Hot start." << std::endl;
-        }
-    else
-        {
-            std::cout << "Cold start." << std::endl;
-        }
+    if (read_ephemeris) {
+        std::cout << "Hot start." << std::endl;
+    } else {
+        std::cout << "Cold start." << std::endl;
+    }
     std::cout << "A-GNSS: ";
-    if (agnss && read_ephemeris)
-        {
-            std::cout << "Enabled." << std::endl;
-        }
-    else
-        {
-            std::cout << "Disabled." << std::endl;
-        }
+    if (agnss && read_ephemeris) {
+        std::cout << "Enabled." << std::endl;
+    } else {
+        std::cout << "Disabled." << std::endl;
+    }
     std::cout << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
-    for(double ttff_ : ttff) std::cout << ttff_ << " ";
+    for (double ttff_ : ttff) std::cout << ttff_ << " ";
     std::cout << std::endl;
     std::cout << "TTFF mean: " << mean << " [s]" << std::endl;
-    if (ttff.size() > 0)
-        {
-            std::cout << "TTFF max: " << *max_ttff << " [s]" << std::endl;
-            std::cout << "TTFF min: " << *min_ttff << " [s]" << std::endl;
-        }
+    if (ttff.size() > 0) {
+        std::cout << "TTFF max: " << *max_ttff << " [s]" << std::endl;
+        std::cout << "TTFF min: " << *min_ttff << " [s]" << std::endl;
+    }
     std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
     std::cout << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
     std::cout << "Navigation mode: " << "3D" << std::endl;
 
-    if(source.compare("UHD_Signal_Source"))
-        {
-            std::cout << "Source: File" << std::endl;
-        }
-    else
-        {
-            std::cout << "Source: Live" << std::endl;
-        }
+    if (source.compare("UHD_Signal_Source")) {
+        std::cout << "Source: File" << std::endl;
+    } else {
+        std::cout << "Source: Live" << std::endl;
+    }
     std::cout << "---------------------------" << std::endl;
 }
 
 
-TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
+TEST_F(TTFF_GPS_L1_CA_Test, ColdStart
+)
 {
-    unsigned int num_measurements = 0;
+unsigned int num_measurements = 0;
 
-    config_1();
-    // Ensure Cold Start
-    config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
-    config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+config_1();
 
-    config_2();
-    // Ensure Cold Start
-    config2->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
-    config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
-    config2->set_property("PVT.flag_rtcm_server", "false");
+// Ensure Cold Start
+config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
+config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
 
-    for(int n = 0; n < FLAGS_num_measurements; n++)
-        {
-            // Create a new ControlThread object with a smart pointer
-            std::shared_ptr<ControlThread> control_thread;
-            if(FLAGS_config_file_ttff.empty())
-                {
-                    control_thread = std::make_shared<ControlThread>(config);
-                }
-            else
-                {
-                    control_thread = std::make_shared<ControlThread>(config2);
-                }
+config_2();
 
-            // record startup time
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-            long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+// Ensure Cold Start
+config2->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
+config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
+config2->set_property("PVT.flag_rtcm_server", "false");
 
-            std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << std::endl;
+for(
+int n = 0;
+n<FLAGS_num_measurements;
+n++)
+{
+// Create a new ControlThread object with a smart pointer
+std::shared_ptr<ControlThread> control_thread;
+if(FLAGS_config_file_ttff.
 
-            // start receiver
-            try
-            {
-                    control_thread->run();
-            }
-            catch( boost::exception & e )
-            {
-                    std::cout << "Boost exception: " << boost::diagnostic_information(e);
-            }
-            catch(std::exception const&  ex)
-            {
-                    std::cout  << "STD exception: " << ex.what();
-            }
+empty()
 
-            // stop clock
-            gettimeofday(&tv, NULL);
-            long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-            double ttff = static_cast<double>(end - begin) / 1000000.0;
+)
+{
+control_thread = std::make_shared<ControlThread>(config);
+}
+else
+{
+control_thread = std::make_shared<ControlThread>(config2);
+}
 
-            std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
-            EXPECT_FALSE(flowgraph->running());
+// record startup time
+struct timeval tv;
+gettimeofday(&tv, NULL
+);
+long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-            num_measurements = num_measurements + 1;
-            std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
-            if(n < FLAGS_num_measurements - 1)
-                {
-                    std::srand(std::time(0)); // use current time as seed for random generator
-                    int random_variable = std::rand();
-                    float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
-                    int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
-                    std::cout << "Waiting a random amount of time (from 5 to 30 s) to start a new measurement... " << std::endl;
-                    std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
-                    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5) + std::chrono::seconds(random_delay_s));
-                }
-        }
+std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements <<
+std::endl;
 
-    // Print TTFF report
-    if(FLAGS_config_file_ttff.empty())
-        {
-            print_TTFF_report(TTFF_v, config);
-        }
-    else
-        {
-            print_TTFF_report(TTFF_v, config2);
-        }
-    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5)); //let the USRP some time to rest before the next test
+// start receiver
+try
+{
+control_thread->
+
+run();
+
+}
+catch(
+boost::exception &e
+)
+{
+std::cout << "Boost exception: " <<
+boost::diagnostic_information(e);
+}
+catch(
+std::exception const &ex
+)
+{
+std::cout  << "STD exception: " << ex.
+
+what();
+
+}
+
+// stop clock
+gettimeofday(&tv, NULL
+);
+long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+double ttff = static_cast<double>(end - begin) / 1000000.0;
+
+std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
+EXPECT_FALSE(flowgraph
+->
+
+running()
+
+);
+
+num_measurements = num_measurements + 1;
+std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." <<
+std::endl;
+if(n<FLAGS_num_measurements - 1)
+{
+std::srand(std::time(0)); // use current time as seed for random generator
+int random_variable = std::rand();
+float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
+int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
+std::cout << "Waiting a random amount of time (from 5 to 30 s) to start a new measurement... " <<
+std::endl;
+std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl <<
+std::endl;
+
+std::this_thread::sleep_until (std::chrono::system_clock::now()
+
++ std::chrono::seconds(5) +
+std::chrono::seconds(random_delay_s)
+);
+}
+}
+
+// Print TTFF report
+if(FLAGS_config_file_ttff.
+
+empty()
+
+)
+{
+print_TTFF_report(TTFF_v, config
+);
+}
+else
+{
+print_TTFF_report(TTFF_v, config2
+);
+}
+
+std::this_thread::sleep_until (std::chrono::system_clock::now()
+
++ std::chrono::seconds(5)); //let the USRP some time to rest before the next test
 }
 
 
-TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
+TEST_F(TTFF_GPS_L1_CA_Test, HotStart
+)
 {
-    unsigned int num_measurements = 0;
-    TTFF_v.clear();
+unsigned int num_measurements = 0;
+TTFF_v.
 
-    config_1();
-    // Ensure Hot Start
-    config->set_property("GNSS-SDR.SUPL_gps_enabled", "true");
-    config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
+clear();
 
-    config_2();
-    // Ensure Hot Start
-    config2->set_property("GNSS-SDR.SUPL_gps_enabled", "true");
-    config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
-    config2->set_property("PVT.flag_rtcm_server", "false");
+config_1();
 
-    for(int n = 0; n < FLAGS_num_measurements; n++)
-        {
-            // Create a new ControlThread object with a smart pointer
-            std::shared_ptr<ControlThread> control_thread;
-            if(FLAGS_config_file_ttff.empty())
-                {
-                    control_thread = std::make_shared<ControlThread>(config);
-                }
-            else
-                {
-                    control_thread = std::make_shared<ControlThread>(config2);
-                }
-            // record startup time
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-            long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+// Ensure Hot Start
+config->set_property("GNSS-SDR.SUPL_gps_enabled", "true");
+config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
 
-            std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << std::endl;
+config_2();
 
-            // start receiver
-            try
-            {
-                    control_thread->run();
-            }
-            catch( boost::exception & e )
-            {
-                    std::cout << "Boost exception: " << boost::diagnostic_information(e);
-            }
-            catch(std::exception const&  ex)
-            {
-                    std::cout  << "STD exception: " << ex.what();
-            }
+// Ensure Hot Start
+config2->set_property("GNSS-SDR.SUPL_gps_enabled", "true");
+config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
+config2->set_property("PVT.flag_rtcm_server", "false");
 
-            // stop clock
-            gettimeofday(&tv, NULL);
-            long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-            double ttff = static_cast<double>(end - begin) / 1000000.0;
+for(
+int n = 0;
+n<FLAGS_num_measurements;
+n++)
+{
+// Create a new ControlThread object with a smart pointer
+std::shared_ptr<ControlThread> control_thread;
+if(FLAGS_config_file_ttff.
 
-            std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
-            EXPECT_FALSE(flowgraph->running());
+empty()
 
-            num_measurements = num_measurements + 1;
-            std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
-            if(n < FLAGS_num_measurements - 1)
-                {
-                    std::srand(std::time(0)); // use current time as seed for random generator
-                    int random_variable = std::rand();
-                    float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
-                    int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
-                    std::cout << "Waiting a random amount of time (from 5 to 30 s) to start new measurement... " << std::endl;
-                    std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
-                    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5) + std::chrono::seconds(random_delay_s));
-                }
-        }
+)
+{
+control_thread = std::make_shared<ControlThread>(config);
+}
+else
+{
+control_thread = std::make_shared<ControlThread>(config2);
+}
+// record startup time
+struct timeval tv;
+gettimeofday(&tv, NULL
+);
+long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-    // Print TTFF report
-    if(FLAGS_config_file_ttff.empty())
-        {
-            print_TTFF_report(TTFF_v, config);
-        }
-    else
-        {
-            print_TTFF_report(TTFF_v, config2);
-        }
+std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements <<
+std::endl;
+
+// start receiver
+try
+{
+control_thread->
+
+run();
+
+}
+catch(
+boost::exception &e
+)
+{
+std::cout << "Boost exception: " <<
+boost::diagnostic_information(e);
+}
+catch(
+std::exception const &ex
+)
+{
+std::cout  << "STD exception: " << ex.
+
+what();
+
+}
+
+// stop clock
+gettimeofday(&tv, NULL
+);
+long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+double ttff = static_cast<double>(end - begin) / 1000000.0;
+
+std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
+EXPECT_FALSE(flowgraph
+->
+
+running()
+
+);
+
+num_measurements = num_measurements + 1;
+std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." <<
+std::endl;
+if(n<FLAGS_num_measurements - 1)
+{
+std::srand(std::time(0)); // use current time as seed for random generator
+int random_variable = std::rand();
+float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
+int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
+std::cout << "Waiting a random amount of time (from 5 to 30 s) to start new measurement... " <<
+std::endl;
+std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl <<
+std::endl;
+
+std::this_thread::sleep_until (std::chrono::system_clock::now()
+
++ std::chrono::seconds(5) +
+std::chrono::seconds(random_delay_s)
+);
+}
+}
+
+// Print TTFF report
+if(FLAGS_config_file_ttff.
+
+empty()
+
+)
+{
+print_TTFF_report(TTFF_v, config
+);
+}
+else
+{
+print_TTFF_report(TTFF_v, config2
+);
+}
 }
 
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     std::cout << "Running Time-To-First-Fix test..." << std::endl;
     int res = 0;
     TTFF_v.clear();
-    try
-    {
-            testing::InitGoogleTest(&argc, argv);
+    try {
+        testing::InitGoogleTest(&argc, argv);
     }
-    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+    catch (...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
@@ -641,13 +701,11 @@ int main(int argc, char **argv)
     std::thread receive_msg_thread(receive_msg);
 
     // Run the Tests
-    try
-    {
-            res = RUN_ALL_TESTS();
+    try {
+        res = RUN_ALL_TESTS();
     }
-    catch(...)
-    {
-            LOG(WARNING) << "Unexpected catch";
+    catch (...) {
+        LOG(WARNING) << "Unexpected catch";
     }
 
     // Terminate the queue thread
@@ -655,8 +713,7 @@ int main(int argc, char **argv)
     int sysv_msqid;
     sysv_msg_key = 1101;
     int msgflg = IPC_CREAT | 0666;
-    if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
-    {
+    if ((sysv_msqid = msgget(sysv_msg_key, msgflg)) == -1) {
         std::cout << "GNSS-SDR can not create message queues!" << std::endl;
         exit(1);
     }

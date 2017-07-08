@@ -54,11 +54,10 @@
 
 
 // For GPS NAVIGATION (L1)
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+concurrent_queue <Gps_Acq_Assist> global_gps_acq_assist_queue;
+concurrent_map <Gps_Acq_Assist> global_gps_acq_assist_map;
 
-class Obs_Gps_L1_System_Test: public ::testing::Test
-{
+class Obs_Gps_L1_System_Test : public ::testing::Test {
 public:
     std::string generator_binary;
     std::string p1;
@@ -73,33 +72,36 @@ public:
     std::string filename_raw_data = FLAGS_filename_raw_data;
 
     int configure_generator();
+
     int generate_signal();
+
     int configure_receiver();
+
     int run_receiver();
+
     void check_results();
+
     bool check_valid_rinex_nav(std::string filename);  // return true if the file is a valid Rinex navigation file.
     bool check_valid_rinex_obs(std::string filename);  // return true if the file is a valid Rinex observation file.
-    double compute_stdev(const std::vector<double> & vec);
+    double compute_stdev(const std::vector<double> &vec);
 
-    std::shared_ptr<InMemoryConfiguration> config;
+    std::shared_ptr <InMemoryConfiguration> config;
     std::string generated_rinex_obs;
 };
 
 
-bool Obs_Gps_L1_System_Test::check_valid_rinex_nav(std::string filename)
-{
+bool Obs_Gps_L1_System_Test::check_valid_rinex_nav(std::string filename) {
     bool res = false;
     res = gpstk::isRinexNavFile(filename);
     return res;
 }
 
 
-double Obs_Gps_L1_System_Test::compute_stdev(const std::vector<double> & vec)
-{
+double Obs_Gps_L1_System_Test::compute_stdev(const std::vector<double> &vec) {
     double sum__ = std::accumulate(vec.begin(), vec.end(), 0.0);
     double mean__ = sum__ / vec.size();
     double accum__ = 0.0;
-    std::for_each (std::begin(vec), std::end(vec), [&](const double d) {
+    std::for_each(std::begin(vec), std::end(vec), [&](const double d) {
         accum__ += (d - mean__) * (d - mean__);
     });
     double stdev__ = std::sqrt(accum__ / (vec.size() - 1));
@@ -107,63 +109,58 @@ double Obs_Gps_L1_System_Test::compute_stdev(const std::vector<double> & vec)
 }
 
 
-bool Obs_Gps_L1_System_Test::check_valid_rinex_obs(std::string filename)
-{
+bool Obs_Gps_L1_System_Test::check_valid_rinex_obs(std::string filename) {
     bool res = false;
     res = gpstk::isRinexObsFile(filename);
     return res;
 }
 
 
-int Obs_Gps_L1_System_Test::configure_generator()
-{
+int Obs_Gps_L1_System_Test::configure_generator() {
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
 
     p1 = std::string("-rinex_nav_file=") + FLAGS_rinex_nav_file;
-    if(FLAGS_dynamic_position.empty())
-        {
-            p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(std::min(FLAGS_duration * 10, 3000));
-            if(FLAGS_duration > 300) std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
-        }
-    else
-        {
-            p2 = std::string("-obs_pos_file=") + std::string(FLAGS_dynamic_position);
-        }
+    if (FLAGS_dynamic_position.empty()) {
+        p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") +
+             std::to_string(std::min(FLAGS_duration * 10, 3000));
+        if (FLAGS_duration > 300)
+            std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
+    } else {
+        p2 = std::string("-obs_pos_file=") + std::string(FLAGS_dynamic_position);
+    }
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs; // RINEX 2.10 observation file output
-    p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data; // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p4 = std::string("-sig_out_file=") +
+         FLAGS_filename_raw_data; // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq); //Baseband sampling frequency [MSps]
     return 0;
 }
 
 
-int Obs_Gps_L1_System_Test::generate_signal()
-{
+int Obs_Gps_L1_System_Test::generate_signal() {
     pid_t wait_result;
     int child_status;
 
-    char *const parmList[] = { &generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL };
+    char *const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL};
 
     int pid;
     if ((pid = fork()) == -1)
         perror("fork error");
-    else if (pid == 0)
-        {
-            execv(&generator_binary[0], parmList);
-            std::cout << "Return not expected. Must be an execv error." << std::endl;
-            std::terminate();
-        }
+    else if (pid == 0) {
+        execv(&generator_binary[0], parmList);
+        std::cout << "Return not expected. Must be an execv error." << std::endl;
+        std::terminate();
+    }
 
     wait_result = waitpid(pid, &child_status, 0);
     if (wait_result == -1) perror("waitpid error");
     EXPECT_EQ(true, check_valid_rinex_obs(filename_rinex_obs));
-    std::cout << "Signal and Observables RINEX files created."  << std::endl;
+    std::cout << "Signal and Observables RINEX files created." << std::endl;
     return 0;
 }
 
 
-int Obs_Gps_L1_System_Test::configure_receiver()
-{
+int Obs_Gps_L1_System_Test::configure_receiver() {
     config = std::make_shared<InMemoryConfiguration>();
 
     const int sampling_rate_internal = baseband_sampling_freq;
@@ -323,39 +320,33 @@ int Obs_Gps_L1_System_Test::configure_receiver()
 }
 
 
-int Obs_Gps_L1_System_Test::run_receiver()
-{
-    std::shared_ptr<ControlThread> control_thread;
+int Obs_Gps_L1_System_Test::run_receiver() {
+    std::shared_ptr <ControlThread> control_thread;
     control_thread = std::make_shared<ControlThread>(config);
     // start receiver
-    try
-    {
-            control_thread->run();
+    try {
+        control_thread->run();
     }
-    catch( boost::exception & e )
-    {
-            std::cout << "Boost exception: " << boost::diagnostic_information(e);
+    catch (boost::exception &e) {
+        std::cout << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
+    catch (std::exception const &ex) {
+        std::cout << "STD exception: " << ex.what();
     }
     // Get the name of the RINEX obs file generated by the receiver
     FILE *fp;
     std::string argum2 = std::string("/bin/ls *O | grep GSDR | tail -1");
     char buffer[1035];
     fp = popen(&argum2[0], "r");
-    if (fp == NULL)
-        {
-            std::cout << "Failed to run command: " << argum2 << std::endl;
-            return -1;
-        }
-    char * without_trailing = (char*)"0";
-    while (fgets(buffer, sizeof(buffer), fp) != NULL)
-        {
-            std::string aux = std::string(buffer);
-            without_trailing = strtok(&aux[0], "\n");
-        }
+    if (fp == NULL) {
+        std::cout << "Failed to run command: " << argum2 << std::endl;
+        return -1;
+    }
+    char *without_trailing = (char *) "0";
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        std::string aux = std::string(buffer);
+        without_trailing = strtok(&aux[0], "\n");
+    }
     generated_rinex_obs = std::string(without_trailing);
     pclose(fp);
 
@@ -363,237 +354,208 @@ int Obs_Gps_L1_System_Test::run_receiver()
 }
 
 
-void Obs_Gps_L1_System_Test::check_results()
-{
-    std::vector<std::vector<std::pair<double, double>> > pseudorange_ref(33);
-    std::vector<std::vector<std::pair<double, double>> > carrierphase_ref(33);
-    std::vector<std::vector<std::pair<double, double>> > doppler_ref(33);
+void Obs_Gps_L1_System_Test::check_results() {
+    std::vector < std::vector < std::pair < double, double >> > pseudorange_ref(33);
+    std::vector < std::vector < std::pair < double, double >> > carrierphase_ref(33);
+    std::vector < std::vector < std::pair < double, double >> > doppler_ref(33);
 
-    std::vector<std::vector<std::pair<double, double>> > pseudorange_meas(33);
-    std::vector<std::vector<std::pair<double, double>> > carrierphase_meas(33);
-    std::vector<std::vector<std::pair<double, double>> > doppler_meas(33);
+    std::vector < std::vector < std::pair < double, double >> > pseudorange_meas(33);
+    std::vector < std::vector < std::pair < double, double >> > carrierphase_meas(33);
+    std::vector < std::vector < std::pair < double, double >> > doppler_meas(33);
 
     // Open and read reference RINEX observables file
-    try
-    {
-            gpstk::Rinex3ObsStream r_ref(FLAGS_filename_rinex_obs);
-            r_ref.exceptions(std::ios::failbit);
-            gpstk::Rinex3ObsData r_ref_data;
-            gpstk::Rinex3ObsHeader r_ref_header;
+    try {
+        gpstk::Rinex3ObsStream r_ref(FLAGS_filename_rinex_obs);
+        r_ref.exceptions(std::ios::failbit);
+        gpstk::Rinex3ObsData r_ref_data;
+        gpstk::Rinex3ObsHeader r_ref_header;
 
-            gpstk::RinexDatum dataobj;
+        gpstk::RinexDatum dataobj;
 
-            r_ref >> r_ref_header;
+        r_ref >> r_ref_header;
 
-            while (r_ref >> r_ref_data)
-                {
-                    for (int myprn = 1; myprn < 33; myprn++)
-                        {
-                            gpstk::SatID prn( myprn, gpstk::SatID::systemGPS );
-                            gpstk::CommonTime time = r_ref_data.time;
-                            double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
+        while (r_ref >> r_ref_data) {
+            for (int myprn = 1; myprn < 33; myprn++) {
+                gpstk::SatID prn(myprn, gpstk::SatID::systemGPS);
+                gpstk::CommonTime time = r_ref_data.time;
+                double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
 
-                            gpstk::Rinex3ObsData::DataMap::iterator pointer = r_ref_data.obs.find(prn);
-                            if( pointer ==  r_ref_data.obs.end() )
-                                {
-                                    // PRN not present; do nothing
-                                }
-                            else
-                                {
-                                    dataobj = r_ref_data.getObs(prn, "C1C",  r_ref_header);
-                                    double P1 = dataobj.data;
-                                    std::pair<double, double> pseudo(sow,P1);
-                                    pseudorange_ref.at(myprn).push_back(pseudo);
+                gpstk::Rinex3ObsData::DataMap::iterator pointer = r_ref_data.obs.find(prn);
+                if (pointer == r_ref_data.obs.end()) {
+                    // PRN not present; do nothing
+                } else {
+                    dataobj = r_ref_data.getObs(prn, "C1C", r_ref_header);
+                    double P1 = dataobj.data;
+                    std::pair<double, double> pseudo(sow, P1);
+                    pseudorange_ref.at(myprn).push_back(pseudo);
 
-                                    dataobj = r_ref_data.getObs(prn, "L1C",  r_ref_header);
-                                    double L1 = dataobj.data;
-                                    std::pair<double, double> carrier(sow, L1);
-                                    carrierphase_ref.at(myprn).push_back(carrier);
+                    dataobj = r_ref_data.getObs(prn, "L1C", r_ref_header);
+                    double L1 = dataobj.data;
+                    std::pair<double, double> carrier(sow, L1);
+                    carrierphase_ref.at(myprn).push_back(carrier);
 
-                                    dataobj = r_ref_data.getObs(prn, "D1C",  r_ref_header);
-                                    double D1 = dataobj.data;
-                                    std::pair<double, double> doppler(sow, D1);
-                                    doppler_ref.at(myprn).push_back(doppler);
-                                }  // End of 'if( pointer == roe.obs.end() )'
-                        } // end for
-                } // end while
+                    dataobj = r_ref_data.getObs(prn, "D1C", r_ref_header);
+                    double D1 = dataobj.data;
+                    std::pair<double, double> doppler(sow, D1);
+                    doppler_ref.at(myprn).push_back(doppler);
+                }  // End of 'if( pointer == roe.obs.end() )'
+            } // end for
+        } // end while
     } // End of 'try' block
-    catch(gpstk::FFStreamError& e)
-    {
-            std::cout << e;
-            exit(1);
+    catch (gpstk::FFStreamError &e) {
+        std::cout << e;
+        exit(1);
     }
-    catch(gpstk::Exception& e)
-    {
-            std::cout << e;
-            exit(1);
+    catch (gpstk::Exception &e) {
+        std::cout << e;
+        exit(1);
     }
-    catch (...)
-    {
-            std::cout << "unknown error.  I don't feel so well..." << std::endl;
-            exit(1);
+    catch (...) {
+        std::cout << "unknown error.  I don't feel so well..." << std::endl;
+        exit(1);
     }
 
-    try
-    {
-            std::string arg2_gen = std::string("./") + generated_rinex_obs;
-            gpstk::Rinex3ObsStream r_meas(arg2_gen);
-            r_meas.exceptions(std::ios::failbit);
-            gpstk::Rinex3ObsData r_meas_data;
-            gpstk::Rinex3ObsHeader r_meas_header;
-            gpstk::RinexDatum dataobj;
+    try {
+        std::string arg2_gen = std::string("./") + generated_rinex_obs;
+        gpstk::Rinex3ObsStream r_meas(arg2_gen);
+        r_meas.exceptions(std::ios::failbit);
+        gpstk::Rinex3ObsData r_meas_data;
+        gpstk::Rinex3ObsHeader r_meas_header;
+        gpstk::RinexDatum dataobj;
 
-            r_meas >> r_meas_header;
+        r_meas >> r_meas_header;
 
-            while (r_meas >> r_meas_data)
-                {
-                    for (int myprn = 1; myprn < 33; myprn++)
-                        {
-                            gpstk::SatID prn( myprn, gpstk::SatID::systemGPS );
-                            gpstk::CommonTime time = r_meas_data.time;
-                            double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
+        while (r_meas >> r_meas_data) {
+            for (int myprn = 1; myprn < 33; myprn++) {
+                gpstk::SatID prn(myprn, gpstk::SatID::systemGPS);
+                gpstk::CommonTime time = r_meas_data.time;
+                double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
 
-                            gpstk::Rinex3ObsData::DataMap::iterator pointer = r_meas_data.obs.find(prn);
-                            if( pointer ==  r_meas_data.obs.end() )
-                                {
-                                    // PRN not present; do nothing
-                                }
-                            else
-                                {
-                                    dataobj = r_meas_data.getObs(prn, "C1C",  r_meas_header);
-                                    double P1 = dataobj.data;
-                                    std::pair<double, double> pseudo(sow, P1);
-                                    pseudorange_meas.at(myprn).push_back(pseudo);
+                gpstk::Rinex3ObsData::DataMap::iterator pointer = r_meas_data.obs.find(prn);
+                if (pointer == r_meas_data.obs.end()) {
+                    // PRN not present; do nothing
+                } else {
+                    dataobj = r_meas_data.getObs(prn, "C1C", r_meas_header);
+                    double P1 = dataobj.data;
+                    std::pair<double, double> pseudo(sow, P1);
+                    pseudorange_meas.at(myprn).push_back(pseudo);
 
-                                    dataobj = r_meas_data.getObs(prn, "L1C",  r_meas_header);
-                                    double L1 = dataobj.data;
-                                    std::pair<double, double> carrier(sow, L1);
-                                    carrierphase_meas.at(myprn).push_back(carrier);
+                    dataobj = r_meas_data.getObs(prn, "L1C", r_meas_header);
+                    double L1 = dataobj.data;
+                    std::pair<double, double> carrier(sow, L1);
+                    carrierphase_meas.at(myprn).push_back(carrier);
 
-                                    dataobj = r_meas_data.getObs(prn, "D1C",  r_meas_header);
-                                    double D1 = dataobj.data;
-                                    std::pair<double, double> doppler(sow, D1);
-                                    doppler_meas.at(myprn).push_back(doppler);
-                                }  // End of 'if( pointer == roe.obs.end() )'
-                        } // end for
-                } // end while
+                    dataobj = r_meas_data.getObs(prn, "D1C", r_meas_header);
+                    double D1 = dataobj.data;
+                    std::pair<double, double> doppler(sow, D1);
+                    doppler_meas.at(myprn).push_back(doppler);
+                }  // End of 'if( pointer == roe.obs.end() )'
+            } // end for
+        } // end while
     } // End of 'try' block
-    catch(gpstk::FFStreamError& e)
-    {
-            std::cout << e;
-            exit(1);
+    catch (gpstk::FFStreamError &e) {
+        std::cout << e;
+        exit(1);
     }
-    catch(gpstk::Exception& e)
-    {
-            std::cout << e;
-            exit(1);
+    catch (gpstk::Exception &e) {
+        std::cout << e;
+        exit(1);
     }
-    catch (...)
-    {
-            std::cout << "unknown error.  I don't feel so well..." << std::endl;
-            exit(1);
+    catch (...) {
+        std::cout << "unknown error.  I don't feel so well..." << std::endl;
+        exit(1);
     }
 
     // Time alignment
-    std::vector<std::vector<std::pair<double, double>> > pseudorange_ref_aligned(33);
-    std::vector<std::vector<std::pair<double, double>> > carrierphase_ref_aligned(33);
-    std::vector<std::vector<std::pair<double, double>> > doppler_ref_aligned(33);
+    std::vector < std::vector < std::pair < double, double >> > pseudorange_ref_aligned(33);
+    std::vector < std::vector < std::pair < double, double >> > carrierphase_ref_aligned(33);
+    std::vector < std::vector < std::pair < double, double >> > doppler_ref_aligned(33);
 
-    std::vector<std::vector<std::pair<double, double>> >::iterator iter;
-    std::vector<std::pair<double, double>>::iterator it;
-    std::vector<std::pair<double, double>>::iterator it2;
+    std::vector < std::vector < std::pair < double, double >> > ::iterator
+    iter;
+    std::vector < std::pair < double, double >> ::iterator
+    it;
+    std::vector < std::pair < double, double >> ::iterator
+    it2;
 
-    std::vector<std::vector<double>> pr_diff(33);
-    std::vector<std::vector<double>> cp_diff(33);
-    std::vector<std::vector<double>> doppler_diff(33);
+    std::vector <std::vector<double>> pr_diff(33);
+    std::vector <std::vector<double>> cp_diff(33);
+    std::vector <std::vector<double>> doppler_diff(33);
 
-    std::vector<std::vector<double>>::iterator iter_diff;
+    std::vector < std::vector < double >> ::iterator
+    iter_diff;
     std::vector<double>::iterator iter_v;
 
     int prn_id = 0;
-    for(iter = pseudorange_ref.begin(); iter != pseudorange_ref.end(); iter++)
-        {
-            for(it = iter->begin(); it != iter->end(); it++)
+    for (iter = pseudorange_ref.begin(); iter != pseudorange_ref.end(); iter++) {
+        for (it = iter->begin(); it != iter->end(); it++) {
+            // If a measure exists for this sow, store it
+            for (it2 = pseudorange_meas.at(prn_id).begin(); it2 != pseudorange_meas.at(prn_id).end(); it2++) {
+                if (std::abs(it->first - it2->first) < 0.01) // store measures closer than 10 ms.
                 {
-                    // If a measure exists for this sow, store it
-                    for(it2 = pseudorange_meas.at(prn_id).begin(); it2 != pseudorange_meas.at(prn_id).end(); it2++)
-                        {
-                            if(std::abs(it->first - it2->first) < 0.01) // store measures closer than 10 ms.
-                                {
-                                    pseudorange_ref_aligned.at(prn_id).push_back(*it);
-                                    pr_diff.at(prn_id).push_back(it->second - it2->second );
-                                    //std::cout << "Sat " << prn_id << ": " << "PR_ref=" << it->second << "   PR_meas=" << it2->second << "    Diff:" << it->second - it2->second <<  std::endl;
-                                }
-                        }
+                    pseudorange_ref_aligned.at(prn_id).push_back(*it);
+                    pr_diff.at(prn_id).push_back(it->second - it2->second);
+                    //std::cout << "Sat " << prn_id << ": " << "PR_ref=" << it->second << "   PR_meas=" << it2->second << "    Diff:" << it->second - it2->second <<  std::endl;
                 }
-            prn_id++;
+            }
         }
+        prn_id++;
+    }
 
     prn_id = 0;
-    for(iter = carrierphase_ref.begin(); iter != carrierphase_ref.end(); iter++)
-        {
-            for(it = iter->begin(); it != iter->end(); it++)
+    for (iter = carrierphase_ref.begin(); iter != carrierphase_ref.end(); iter++) {
+        for (it = iter->begin(); it != iter->end(); it++) {
+            // If a measure exists for this sow, store it
+            for (it2 = carrierphase_meas.at(prn_id).begin(); it2 != carrierphase_meas.at(prn_id).end(); it2++) {
+                if (std::abs(it->first - it2->first) < 0.01) // store measures closer than 10 ms.
                 {
-                    // If a measure exists for this sow, store it
-                    for(it2 = carrierphase_meas.at(prn_id).begin(); it2 != carrierphase_meas.at(prn_id).end(); it2++)
-                        {
-                            if(std::abs(it->first - it2->first) < 0.01) // store measures closer than 10 ms.
-                                {
-                                    carrierphase_ref_aligned.at(prn_id).push_back(*it);
-                                    cp_diff.at(prn_id).push_back(it->second - it2->second );
-                                    // std::cout << "Sat " << prn_id << ": " << "Carrier_ref=" << it->second << "   Carrier_meas=" << it2->second << "    Diff:" << it->second - it2->second <<  std::endl;
-                                }
-                        }
+                    carrierphase_ref_aligned.at(prn_id).push_back(*it);
+                    cp_diff.at(prn_id).push_back(it->second - it2->second);
+                    // std::cout << "Sat " << prn_id << ": " << "Carrier_ref=" << it->second << "   Carrier_meas=" << it2->second << "    Diff:" << it->second - it2->second <<  std::endl;
                 }
-            prn_id++;
+            }
         }
+        prn_id++;
+    }
     prn_id = 0;
-    for(iter = doppler_ref.begin(); iter != doppler_ref.end(); iter++)
-        {
-            for(it = iter->begin(); it != iter->end(); it++)
+    for (iter = doppler_ref.begin(); iter != doppler_ref.end(); iter++) {
+        for (it = iter->begin(); it != iter->end(); it++) {
+            // If a measure exists for this sow, store it
+            for (it2 = doppler_meas.at(prn_id).begin(); it2 != doppler_meas.at(prn_id).end(); it2++) {
+                if (std::abs(it->first - it2->first) < 0.01) // store measures closer than 10 ms.
                 {
-                    // If a measure exists for this sow, store it
-                    for(it2 = doppler_meas.at(prn_id).begin(); it2 != doppler_meas.at(prn_id).end(); it2++)
-                        {
-                            if(std::abs(it->first - it2->first) < 0.01) // store measures closer than 10 ms.
-                                {
-                                    doppler_ref_aligned.at(prn_id).push_back(*it);
-                                    doppler_diff.at(prn_id).push_back(it->second - it2->second );
-                                }
-                        }
+                    doppler_ref_aligned.at(prn_id).push_back(*it);
+                    doppler_diff.at(prn_id).push_back(it->second - it2->second);
                 }
-            prn_id++;
+            }
         }
+        prn_id++;
+    }
 
     // Compute pseudorange error
     prn_id = 0;
     std::vector<double> mean_pr_diff_v;
-    for(iter_diff = pr_diff.begin(); iter_diff != pr_diff.end(); iter_diff++)
-        {
-            // For each satellite with reference and measurements aligned in time
-            int number_obs = 0;
-            double mean_diff = 0.0;
-            for(iter_v = iter_diff->begin(); iter_v != iter_diff->end(); iter_v++)
-                {
-                    mean_diff = mean_diff + *iter_v;
-                    number_obs = number_obs + 1;
-                }
-            if(number_obs > 0)
-                {
-                    mean_diff = mean_diff / number_obs;
-                    mean_pr_diff_v.push_back(mean_diff);
-                    std::cout << "-- Mean pseudorange difference for sat " << prn_id << ": " << mean_diff;
-                    double stdev_ = compute_stdev(*iter_diff);
-                    std::cout << " +/- " << stdev_ ;
-                    std::cout << " [m]" << std::endl;
-                }
-            else
-                {
-                    mean_diff = 0.0;
-                }
-
-            prn_id++;
+    for (iter_diff = pr_diff.begin(); iter_diff != pr_diff.end(); iter_diff++) {
+        // For each satellite with reference and measurements aligned in time
+        int number_obs = 0;
+        double mean_diff = 0.0;
+        for (iter_v = iter_diff->begin(); iter_v != iter_diff->end(); iter_v++) {
+            mean_diff = mean_diff + *iter_v;
+            number_obs = number_obs + 1;
         }
+        if (number_obs > 0) {
+            mean_diff = mean_diff / number_obs;
+            mean_pr_diff_v.push_back(mean_diff);
+            std::cout << "-- Mean pseudorange difference for sat " << prn_id << ": " << mean_diff;
+            double stdev_ = compute_stdev(*iter_diff);
+            std::cout << " +/- " << stdev_;
+            std::cout << " [m]" << std::endl;
+        } else {
+            mean_diff = 0.0;
+        }
+
+        prn_id++;
+    }
     double stdev_pr = compute_stdev(mean_pr_diff_v);
     std::cout << "Pseudorange diff error stdev = " << stdev_pr << " [m]" << std::endl;
     ASSERT_LT(stdev_pr, 1.0);
@@ -601,59 +563,49 @@ void Obs_Gps_L1_System_Test::check_results()
     // Compute carrier phase error
     prn_id = 0;
     std::vector<double> mean_cp_diff_v;
-    for(iter_diff = cp_diff.begin(); iter_diff != cp_diff.end(); iter_diff++)
-        {
-            // For each satellite with reference and measurements aligned in time
-            int number_obs = 0;
-            double mean_diff = 0.0;
-            for(iter_v = iter_diff->begin(); iter_v != iter_diff->end(); iter_v++)
-                {
-                    mean_diff = mean_diff + *iter_v;
-                    number_obs = number_obs + 1;
-                }
-            if(number_obs > 0)
-                {
-                    mean_diff = mean_diff / number_obs;
-                    mean_cp_diff_v.push_back(mean_diff);
-                    std::cout << "-- Mean carrier phase difference for sat " << prn_id << ": " << mean_diff;
-                    double stdev_pr_ = compute_stdev(*iter_diff);
-                    std::cout << " +/- " << stdev_pr_ << " whole cycles (19 cm)" << std::endl;
-                }
-            else
-                {
-                    mean_diff = 0.0;
-                }
-
-            prn_id++;
+    for (iter_diff = cp_diff.begin(); iter_diff != cp_diff.end(); iter_diff++) {
+        // For each satellite with reference and measurements aligned in time
+        int number_obs = 0;
+        double mean_diff = 0.0;
+        for (iter_v = iter_diff->begin(); iter_v != iter_diff->end(); iter_v++) {
+            mean_diff = mean_diff + *iter_v;
+            number_obs = number_obs + 1;
         }
+        if (number_obs > 0) {
+            mean_diff = mean_diff / number_obs;
+            mean_cp_diff_v.push_back(mean_diff);
+            std::cout << "-- Mean carrier phase difference for sat " << prn_id << ": " << mean_diff;
+            double stdev_pr_ = compute_stdev(*iter_diff);
+            std::cout << " +/- " << stdev_pr_ << " whole cycles (19 cm)" << std::endl;
+        } else {
+            mean_diff = 0.0;
+        }
+
+        prn_id++;
+    }
 
     // Compute Doppler error
     prn_id = 0;
     std::vector<double> mean_doppler_v;
-    for(iter_diff = doppler_diff.begin(); iter_diff != doppler_diff.end(); iter_diff++)
-        {
-            // For each satellite with reference and measurements aligned in time
-            int number_obs = 0;
-            double mean_diff = 0.0;
-            for(iter_v = iter_diff->begin(); iter_v != iter_diff->end(); iter_v++)
-                {
-                    //std::cout << *iter_v << std::endl;
-                    mean_diff = mean_diff + *iter_v;
-                    number_obs = number_obs + 1;
-                }
-            if(number_obs > 0)
-                {
-                    mean_diff = mean_diff / number_obs;
-                    mean_doppler_v.push_back(mean_diff);
-                    std::cout << "-- Mean Doppler difference for sat " << prn_id << ": " << mean_diff << " [Hz]" << std::endl;
-                }
-            else
-                {
-                    mean_diff = 0.0;
-                }
-
-            prn_id++;
+    for (iter_diff = doppler_diff.begin(); iter_diff != doppler_diff.end(); iter_diff++) {
+        // For each satellite with reference and measurements aligned in time
+        int number_obs = 0;
+        double mean_diff = 0.0;
+        for (iter_v = iter_diff->begin(); iter_v != iter_diff->end(); iter_v++) {
+            //std::cout << *iter_v << std::endl;
+            mean_diff = mean_diff + *iter_v;
+            number_obs = number_obs + 1;
         }
+        if (number_obs > 0) {
+            mean_diff = mean_diff / number_obs;
+            mean_doppler_v.push_back(mean_diff);
+            std::cout << "-- Mean Doppler difference for sat " << prn_id << ": " << mean_diff << " [Hz]" << std::endl;
+        } else {
+            mean_diff = 0.0;
+        }
+
+        prn_id++;
+    }
 
     double stdev_dp = compute_stdev(mean_doppler_v);
     std::cout << "Doppler error stdev = " << stdev_dp << " [Hz]" << std::endl;
@@ -661,61 +613,67 @@ void Obs_Gps_L1_System_Test::check_results()
 }
 
 
-TEST_F(Obs_Gps_L1_System_Test, Observables_system_test)
+TEST_F(Obs_Gps_L1_System_Test, Observables_system_test
+)
 {
-    std::cout << "Validating input RINEX nav file: " << FLAGS_rinex_nav_file << " ..." << std::endl;
-    bool is_rinex_nav_valid = check_valid_rinex_nav(FLAGS_rinex_nav_file);
-    EXPECT_EQ(true, is_rinex_nav_valid) << "The RINEX navigation file " << FLAGS_rinex_nav_file << " is not well formed.";
-    std::cout << "The file is valid." << std::endl;
+std::cout << "Validating input RINEX nav file: " << FLAGS_rinex_nav_file << " ..." <<
+std::endl;
+bool is_rinex_nav_valid = check_valid_rinex_nav(FLAGS_rinex_nav_file);
+EXPECT_EQ(true, is_rinex_nav_valid) << "The RINEX navigation file " << FLAGS_rinex_nav_file << " is not well formed.";
+std::cout << "The file is valid." <<
+std::endl;
 
-    // Configure the signal generator
-    configure_generator();
+// Configure the signal generator
+configure_generator();
 
-    // Generate signal raw signal samples and observations RINEX file
-    generate_signal();
+// Generate signal raw signal samples and observations RINEX file
+generate_signal();
 
-    std::cout << "Validating generated reference RINEX obs file: " << FLAGS_filename_rinex_obs << " ..." << std::endl;
-    bool is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + FLAGS_filename_rinex_obs);
-    EXPECT_EQ(true, is_gen_rinex_obs_valid) << "The RINEX observation file " << FLAGS_filename_rinex_obs << ", generated by gnss-sim, is not well formed.";
-    std::cout << "The file is valid." << std::endl;
+std::cout << "Validating generated reference RINEX obs file: " << FLAGS_filename_rinex_obs << " ..." <<
+std::endl;
+bool is_gen_rinex_obs_valid = check_valid_rinex_obs("./" + FLAGS_filename_rinex_obs);
+EXPECT_EQ(true, is_gen_rinex_obs_valid) << "The RINEX observation file " << FLAGS_filename_rinex_obs << ", generated by gnss-sim, is not well formed.";
+std::cout << "The file is valid." <<
+std::endl;
 
-    // Configure receiver
-    configure_receiver();
+// Configure receiver
+configure_receiver();
 
-    // Run the receiver
-    EXPECT_EQ( run_receiver(), 0) << "Problem executing the software-defined signal generator";
+// Run the receiver
+EXPECT_EQ( run_receiver(),
 
-    std::cout << "Validating RINEX obs file obtained by GNSS-SDR: " << generated_rinex_obs << " ..." << std::endl;
-    is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + generated_rinex_obs);
-    EXPECT_EQ(true, is_gen_rinex_obs_valid) << "The RINEX observation file " << generated_rinex_obs << ", generated by GNSS-SDR, is not well formed.";
-    std::cout << "The file is valid." << std::endl;
+0) << "Problem executing the software-defined signal generator";
 
-    // Check results
-    check_results();
+std::cout << "Validating RINEX obs file obtained by GNSS-SDR: " << generated_rinex_obs << " ..." <<
+std::endl;
+is_gen_rinex_obs_valid = check_valid_rinex_obs("./" + generated_rinex_obs);
+EXPECT_EQ(true, is_gen_rinex_obs_valid) << "The RINEX observation file " << generated_rinex_obs << ", generated by GNSS-SDR, is not well formed.";
+std::cout << "The file is valid." <<
+std::endl;
+
+// Check results
+check_results();
+
 }
 
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     std::cout << "Running Observables validation test..." << std::endl;
     int res = 0;
-    try
-    {
-            testing::InitGoogleTest(&argc, argv);
+    try {
+        testing::InitGoogleTest(&argc, argv);
     }
-    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+    catch (...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
 
     // Run the Tests
-    try
-    {
-            res = RUN_ALL_TESTS();
+    try {
+        res = RUN_ALL_TESTS();
     }
-    catch(...)
-    {
-            LOG(WARNING) << "Unexpected catch";
+    catch (...) {
+        LOG(WARNING) << "Unexpected catch";
     }
     google::ShutDownCommandLineFlags();
     return res;

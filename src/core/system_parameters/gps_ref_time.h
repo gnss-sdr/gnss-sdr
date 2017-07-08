@@ -40,14 +40,14 @@
  * \brief  Interface of a GPS REFERENCE TIME storage
  *
  */
-class Gps_Ref_Time
-{
+class Gps_Ref_Time {
 public:
     bool valid;
     double d_TOW;
     double d_Week;
     double d_tv_sec;
     double d_tv_usec;
+
     /*!
      * Default constructor
      */
@@ -58,10 +58,9 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ref time data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
-    {
+    void serialize(Archive &archive, const unsigned int version) {
         using boost::serialization::make_nvp;
-        if(version){};
+        if (version) {};
         archive & make_nvp("valid", valid);
         archive & make_nvp("d_TOW", d_TOW);
         archive & make_nvp("d_Week", d_Week);

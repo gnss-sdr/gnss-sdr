@@ -37,7 +37,7 @@
 #include <sstream>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gnss_signal_processing.h"
 #include "control_message_factory.h"
 
@@ -92,8 +92,8 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_channel = 0;
     d_doppler_freq = 0.0;
 
-    d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-    d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+    d_fft_codes = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_magnitude = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -116,13 +116,13 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
         {
             for (unsigned int i = 0; i < d_num_doppler_bins; i++)
                 {
-                    volk_free(d_grid_doppler_wipeoffs[i]);
+                    volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
 
-    volk_free(d_fft_codes);
-    volk_free(d_magnitude);
+    volk_gnsssdr_free(d_fft_codes);
+    volk_gnsssdr_free(d_magnitude);
 
     delete d_ifft;
     delete d_fft_if;
@@ -155,7 +155,7 @@ void pcps_acquisition_cc::init()
 
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             complex_exp_gen(d_grid_doppler_wipeoffs[doppler_index], d_freq - doppler, d_fs_in, d_fft_size);
         }

@@ -42,9 +42,11 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/serialization/map.hpp>
 #include <glog/logging.h>
+
 extern "C" {
 #include "supl.h"
 }
+
 #include "GPS_L1_CA.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
@@ -57,8 +59,7 @@ extern "C" {
 /*!
  * \brief class that implements a C++ interface to external Secure User Location Protocol (SUPL) client library..
  */
-class gnss_sdr_supl_client
-{
+class gnss_sdr_supl_client {
 private:
     // GSM CELL INFO
     int mcc;
@@ -75,9 +76,9 @@ public:
     int server_port;
     int request;
     // ephemeris map
-    std::map<int,Gps_Ephemeris> gps_ephemeris_map;
+    std::map<int, Gps_Ephemeris> gps_ephemeris_map;
     // almanac map
-    std::map<int,Gps_Almanac> gps_almanac_map;
+    std::map<int, Gps_Almanac> gps_almanac_map;
 
     // ionospheric model
     Gps_Iono gps_iono;
@@ -88,7 +89,7 @@ public:
     // reference location
     Gps_Ref_Location gps_ref_loc;
     // Acquisition Assistance map
-    std::map<int,Gps_Acq_Assist> gps_acq_map;
+    std::map<int, Gps_Acq_Assist> gps_acq_map;
 
     /*
      * \brief Initiates the TCP SSL SUPL connection to the SUPL server and request assistance data using the provided GSM Base station parameters
@@ -99,6 +100,7 @@ public:
      * \return Error code -> 0 no errors.
      */
     int get_assistance(int i_mcc, int i_mns, int i_lac, int i_ci);
+
     /*
      * \brief Read the received SUPL data and stores it into the corresponding class members (gps_ephemeris_map, gps_almanac_map, gps_iono, gps_time, gps_utc, gps_acq_map, and gps_ref_loc)
      *
@@ -114,7 +116,7 @@ public:
      * \brief Save ephemeris map to XML file.
      */
     bool save_ephemeris_map_xml(const std::string file_name,
-                                std::map<int,Gps_Ephemeris> eph_map);
+                                std::map<int, Gps_Ephemeris> eph_map);
 
     /*!
      * \brief Read utc model from XML file
@@ -165,7 +167,9 @@ public:
      * Prints SUPL data to std::cout. Use it for debug purposes only.
      */
     void print_assistance();
+
     gnss_sdr_supl_client();
+
     ~gnss_sdr_supl_client();
 };
 

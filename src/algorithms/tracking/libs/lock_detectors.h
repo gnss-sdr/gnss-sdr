@@ -72,8 +72,7 @@
  * IEEE 10th International Symposium on Spread Spectrum Techniques and
  * Applications, pp.28-30, August 2008.
  */
-float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, double code_length);
-
+float cn0_svn_estimator(gr_complex *Prompt_buffer, int length, long fs_in, double code_length);
 
 
 /*! \brief A carrier lock detector
@@ -90,6 +89,6 @@ float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, doubl
  * Volume I, Chapter 8: GPS Receivers, AJ Systems, Los Altos, CA 94024.
  * Inc.: 329-407.
  */
-float carrier_lock_detector(gr_complex* Prompt_buffer, int length);
+float carrier_lock_detector(gr_complex *Prompt_buffer, int length);
 
 #endif

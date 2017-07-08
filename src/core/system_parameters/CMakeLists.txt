@@ -17,40 +17,40 @@
 #
 
 set(SYSTEM_PARAMETERS_SOURCES
-     gnss_satellite.cc
-     gnss_signal.cc
-     gps_navigation_message.cc
-	 gps_ephemeris.cc
-	 gps_iono.cc
-	 gps_almanac.cc
-	 gps_utc_model.cc
-	 gps_acq_assist.cc
-	 gps_ref_time.cc
-	 gps_ref_location.cc
-	 galileo_utc_model.cc
-	 galileo_ephemeris.cc
-	 galileo_almanac.cc
-	 galileo_iono.cc
-	 galileo_navigation_message.cc
-	 sbas_ephemeris.cc
-	 sbas_ionospheric_correction.cc
-	 sbas_satellite_correction.cc
-	 sbas_telemetry_data.cc
-	 galileo_fnav_message.cc
-	 gps_cnav_ephemeris.cc
-	 gps_cnav_navigation_message.cc
-	 gps_cnav_iono.cc
-	 gps_cnav_utc_model.cc
-	 rtcm.cc
-)
+        gnss_satellite.cc
+        gnss_signal.cc
+        gps_navigation_message.cc
+        gps_ephemeris.cc
+        gps_iono.cc
+        gps_almanac.cc
+        gps_utc_model.cc
+        gps_acq_assist.cc
+        gps_ref_time.cc
+        gps_ref_location.cc
+        galileo_utc_model.cc
+        galileo_ephemeris.cc
+        galileo_almanac.cc
+        galileo_iono.cc
+        galileo_navigation_message.cc
+        sbas_ephemeris.cc
+        sbas_ionospheric_correction.cc
+        sbas_satellite_correction.cc
+        sbas_telemetry_data.cc
+        galileo_fnav_message.cc
+        gps_cnav_ephemeris.cc
+        gps_cnav_navigation_message.cc
+        gps_cnav_iono.cc
+        gps_cnav_utc_model.cc
+        rtcm.cc
+        )
 
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${GLOG_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
+        $(CMAKE_CURRENT_SOURCE_DIR)
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${GLOG_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
+        ${GFlags_INCLUDE_DIRS}
 )
 
 link_directories(${Boost_LIBRARY_DIR})

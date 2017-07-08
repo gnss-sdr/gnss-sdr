@@ -43,14 +43,13 @@
 
 using google::LogMessage;
 
-BeiDouB1iDllPllTracking::BeiDouB1iDllPllTracking(ConfigurationInterface* configuration,
+BeiDouB1iDllPllTracking::BeiDouB1iDllPllTracking(ConfigurationInterface *configuration,
                                                  std::string role,
                                                  unsigned int in_streams,
                                                  unsigned int out_streams) :
-                                                role_(role),
-                                                in_streams_(in_streams),
-                                                out_streams_(out_streams)
-{
+        role_(role),
+        in_streams_(in_streams),
+        out_streams_(out_streams) {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
@@ -75,34 +74,29 @@ BeiDouB1iDllPllTracking::BeiDouB1iDllPllTracking(ConfigurationInterface* configu
     vector_length = std::round(fs_in / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
-        {
-            item_size_ = sizeof(gr_complex);
-            tracking_ = beidou_b1i_dll_pll_make_tracking_cc(f_if,
-                                                            fs_in,
-                                                            vector_length,
-                                                            dump,
-                                                            dump_filename,
-                                                            pll_bw_hz,
-                                                            dll_bw_hz,
-                                                            early_late_space_chips);
-        }
-    else
-        {
-            item_size_ = sizeof(gr_complex);
-            LOG(WARNING) << item_type << " unknown tracking item type.";
-        }
+    if (item_type.compare("gr_complex") == 0) {
+        item_size_ = sizeof(gr_complex);
+        tracking_ = beidou_b1i_dll_pll_make_tracking_cc(f_if,
+                                                        fs_in,
+                                                        vector_length,
+                                                        dump,
+                                                        dump_filename,
+                                                        pll_bw_hz,
+                                                        dll_bw_hz,
+                                                        early_late_space_chips);
+    } else {
+        item_size_ = sizeof(gr_complex);
+        LOG(WARNING) << item_type << " unknown tracking item type.";
+    }
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
 
-BeiDouB1iDllPllTracking::~BeiDouB1iDllPllTracking()
-{}
+BeiDouB1iDllPllTracking::~BeiDouB1iDllPllTracking() {}
 
 
-void BeiDouB1iDllPllTracking::start_tracking()
-{
+void BeiDouB1iDllPllTracking::start_tracking() {
     tracking_->start_tracking();
 }
 
@@ -110,41 +104,35 @@ void BeiDouB1iDllPllTracking::start_tracking()
 /*
  * Set tracking channel unique ID
  */
-void BeiDouB1iDllPllTracking::set_channel(unsigned int channel)
-{
+void BeiDouB1iDllPllTracking::set_channel(unsigned int channel) {
     channel_ = channel;
     tracking_->set_channel(channel);
 }
 
 
-void BeiDouB1iDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-{
+void BeiDouB1iDllPllTracking::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro) {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
 
-void BeiDouB1iDllPllTracking::connect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void BeiDouB1iDllPllTracking::connect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
-void BeiDouB1iDllPllTracking::disconnect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void BeiDouB1iDllPllTracking::disconnect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 
-gr::basic_block_sptr BeiDouB1iDllPllTracking::get_left_block()
-{
+gr::basic_block_sptr BeiDouB1iDllPllTracking::get_left_block() {
     return tracking_;
 }
 
 
-gr::basic_block_sptr BeiDouB1iDllPllTracking::get_right_block()
-{
+gr::basic_block_sptr BeiDouB1iDllPllTracking::get_right_block() {
     return tracking_;
 }
 

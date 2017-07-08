@@ -30,8 +30,7 @@
 
 #include "galileo_almanac.h"
 
-Galileo_Almanac::Galileo_Almanac()
-{
+Galileo_Almanac::Galileo_Almanac() {
     /*Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number*/
     IOD_a_7 = 0;
     WN_a_7 = 0.0;

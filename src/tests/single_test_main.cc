@@ -58,8 +58,7 @@ concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     google::ParseCommandLineFlags(&argc, &argv, true);
     testing::InitGoogleTest(&argc, argv);
     google::InitGoogleLogging(argv[0]);

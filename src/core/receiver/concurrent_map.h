@@ -42,61 +42,51 @@ template<typename Data>
  * \brief This class implements a thread-safe std::map
  *
  */
-class concurrent_map
-{
-    typedef typename std::map<int,Data>::iterator Data_iterator; // iterator is scope dependent
+class concurrent_map {
+    typedef typename std::map<int, Data>::iterator Data_iterator; // iterator is scope dependent
 private:
-    std::map<int,Data> the_map;
+    std::map<int, Data> the_map;
     boost::mutex the_mutex;
 public:
-    void write(int key, Data const& data)
-    {
+    void write(int key, Data const &data) {
         boost::mutex::scoped_lock lock(the_mutex);
         Data_iterator data_iter;
         data_iter = the_map.find(key);
-        if (data_iter != the_map.end())
-            {
-                data_iter->second = data; // update
-            }
-        else
-            {
-                the_map.insert(std::pair<int, Data>(key, data)); // insert SILENTLY fails if the item already exists in the map!
-            }
+        if (data_iter != the_map.end()) {
+            data_iter->second = data; // update
+        } else {
+            the_map.insert(
+                    std::pair<int, Data>(key, data)); // insert SILENTLY fails if the item already exists in the map!
+        }
         lock.unlock();
     }
 
-    std::map<int,Data> get_map_copy()
-    {
+    std::map<int, Data> get_map_copy() {
         boost::mutex::scoped_lock lock(the_mutex);
-        std::map<int,Data> map_aux = the_map;
+        std::map<int, Data> map_aux = the_map;
         lock.unlock();
         return map_aux;
     }
 
-    size_t size()
-    {
+    size_t size() {
         boost::mutex::scoped_lock lock(the_mutex);
         size_t size_ = the_map.size();
         lock.unlock();
         return size_;
     }
 
-    bool read(int key, Data& p_data)
-    {
+    bool read(int key, Data &p_data) {
         boost::mutex::scoped_lock lock(the_mutex);
         Data_iterator data_iter;
         data_iter = the_map.find(key);
-        if (data_iter != the_map.end())
-            {
-                p_data = data_iter->second;
-                lock.unlock();
-                return true;
-            }
-        else
-            {
-                lock.unlock();
-                return false;
-            }
+        if (data_iter != the_map.end()) {
+            p_data = data_iter->second;
+            lock.unlock();
+            return true;
+        } else {
+            lock.unlock();
+            return false;
+        }
     }
 };
 

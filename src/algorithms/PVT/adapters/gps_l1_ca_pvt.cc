@@ -41,14 +41,13 @@
 
 using google::LogMessage;
 
-GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
-        std::string role,
-        unsigned int in_streams,
-        unsigned int out_streams) :
-                role_(role),
-                in_streams_(in_streams),
-                out_streams_(out_streams)
-{
+GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface *configuration,
+                       std::string role,
+                       unsigned int in_streams,
+                       unsigned int out_streams) :
+        role_(role),
+        in_streams_(in_streams),
+        out_streams_(out_streams) {
     // dump parameters
     std::string default_dump_filename = "./pvt.dat";
     std::string default_nmea_dump_filename = "./nmea_pvt.nmea";
@@ -79,19 +78,20 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
     unsigned short rtcm_tcp_port = configuration->property(role + ".rtcm_tcp_port", 2101);
     unsigned short rtcm_station_id = configuration->property(role + ".rtcm_station_id", 1234);
     // RTCM message rates: least common multiple with output_rate_ms
-    int rtcm_MT1019_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), output_rate_ms);
+    int rtcm_MT1019_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000),
+                                               output_rate_ms);
     int rtcm_MSM_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
-    std::map<int,int> rtcm_msg_rate_ms;
+    std::map<int, int> rtcm_msg_rate_ms;
     rtcm_msg_rate_ms[1019] = rtcm_MT1019_rate_ms;
     for (int k = 1071; k < 1078; k++) // All GPS MSM
-        {
-            rtcm_msg_rate_ms[k] = rtcm_MSM_rate_ms;
-        }
+    {
+        rtcm_msg_rate_ms[k] = rtcm_MSM_rate_ms;
+    }
 
     // getting names from the config file, if available
     // default filename for assistance data
     const std::string eph_default_xml_filename = "./gps_ephemeris.xml";
-    eph_xml_filename_= configuration->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
+    eph_xml_filename_ = configuration->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
 
     //const std::string utc_default_xml_filename = "./gps_utc_model.xml";
     //const std::string iono_default_xml_filename = "./gps_iono.xml";
@@ -109,57 +109,51 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
 
     // make PVT object
     pvt_ = gps_l1_ca_make_pvt_cc(in_streams_,
-            dump_,
-            dump_filename_,
-            averaging_depth,
-            flag_averaging,
-            output_rate_ms,
-            display_rate_ms,
-            flag_nmea_tty_port,
-            nmea_dump_filename,
-            nmea_dump_devname,
-            flag_rtcm_server,
-            flag_rtcm_tty_port,
-            rtcm_tcp_port,
-            rtcm_station_id,
-            rtcm_msg_rate_ms,
-            rtcm_dump_devname,
-            conf_rinex_version );
+                                 dump_,
+                                 dump_filename_,
+                                 averaging_depth,
+                                 flag_averaging,
+                                 output_rate_ms,
+                                 display_rate_ms,
+                                 flag_nmea_tty_port,
+                                 nmea_dump_filename,
+                                 nmea_dump_devname,
+                                 flag_rtcm_server,
+                                 flag_rtcm_tty_port,
+                                 rtcm_tcp_port,
+                                 rtcm_station_id,
+                                 rtcm_msg_rate_ms,
+                                 rtcm_dump_devname,
+                                 conf_rinex_version);
 
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 
 
-bool GpsL1CaPvt::save_assistance_to_XML()
-{
+bool GpsL1CaPvt::save_assistance_to_XML() {
     // return variable (true == succeeded)
     bool ret = false;
 
     LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename_;
-    std::map<int,Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
+    std::map<int, Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
 
-    if (eph_map.size() > 0)
-        {
-            try
-                {
-                    std::ofstream ofs(eph_xml_filename_.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_map);
-                    ofs.close();
-                    LOG(INFO) << "Saved GPS L1 Ephemeris map data";
-                }
-            catch (std::exception& e)
-                {
-                    LOG(WARNING) << e.what();
-                    return false;
-                }
-            return true;
+    if (eph_map.size() > 0) {
+        try {
+            std::ofstream ofs(eph_xml_filename_.c_str(), std::ofstream::trunc | std::ofstream::out);
+            boost::archive::xml_oarchive xml(ofs);
+            xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_map);
+            ofs.close();
+            LOG(INFO) << "Saved GPS L1 Ephemeris map data";
         }
-    else
-        {
-            LOG(WARNING) << "Failed to save Ephemeris, map is empty";
+        catch (std::exception &e) {
+            LOG(WARNING) << e.what();
             return false;
         }
+        return true;
+    } else {
+        LOG(WARNING) << "Failed to save Ephemeris, map is empty";
+        return false;
+    }
     // Only try to save {utc, iono, ref time, ref location} if SUPL is enabled
     //    bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
     //    if (enable_gps_supl_assistance == true)
@@ -217,34 +211,29 @@ bool GpsL1CaPvt::save_assistance_to_XML()
 }
 
 
-GpsL1CaPvt::~GpsL1CaPvt()
-{
+GpsL1CaPvt::~GpsL1CaPvt() {
     save_assistance_to_XML();
 }
 
 
-void GpsL1CaPvt::connect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void GpsL1CaPvt::connect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
-void GpsL1CaPvt::disconnect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void GpsL1CaPvt::disconnect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     // Nothing to disconnect
 }
 
 
-gr::basic_block_sptr GpsL1CaPvt::get_left_block()
-{
+gr::basic_block_sptr GpsL1CaPvt::get_left_block() {
     return pvt_;
 }
 
 
-gr::basic_block_sptr GpsL1CaPvt::get_right_block()
-{
+gr::basic_block_sptr GpsL1CaPvt::get_right_block() {
     return pvt_;
 }

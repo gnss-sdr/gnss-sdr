@@ -86,16 +86,15 @@ void GalileoE1DllPllVemlTrackingInternalTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 11;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
-    config->set_property("Tracking.item_type", "gr_complex");
-    config->set_property("Tracking.dump", "true");
-//    config->set_property("Tracking_Galileo.dump_filename", "../data/veml_tracking_ch_");
-    config->set_property("Tracking.dump_filename", "../src/tests/data/tracking_beidou/veml_tracking_ch_");
-    config->set_property("Tracking.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
-    config->set_property("Tracking.early_late_space_chips", "0.15");
-    config->set_property("Tracking.very_early_late_space_chips", "0.6");
-    config->set_property("Tracking.pll_bw_hz", "30.0");
-    config->set_property("Tracking.dll_bw_hz", "2.0");
+    config->set_property("GNSS-SDR.internal_fs_hz", "8000000");
+    config->set_property("Tracking_Galileo.item_type", "gr_complex");
+    config->set_property("Tracking_Galileo.dump", "false");
+    config->set_property("Tracking_Galileo.dump_filename", "../data/veml_tracking_ch_");
+    config->set_property("Tracking_Galileo.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
+    config->set_property("Tracking_Galileo.early_late_space_chips", "0.15");
+    config->set_property("Tracking_Galileo.very_early_late_space_chips", "0.6");
+    config->set_property("Tracking_Galileo.pll_bw_hz", "30.0");
+    config->set_property("Tracking_Galileo.dll_bw_hz", "2.0");
 }
 
 
@@ -163,10 +162,10 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-     int num_samples = 40000000; // 4 Msps
-     unsigned int skiphead_sps = 24000000; // 4 Msps
-//    int num_samples = 80000000; // 8 Msps
-//    unsigned int skiphead_sps = 8000000; // 8 Msps
+    // int num_samples = 40000000; // 4 Msps
+    // unsigned int skiphead_sps = 24000000; // 4 Msps
+    int num_samples = 80000000; // 8 Msps
+    unsigned int skiphead_sps = 8000000; // 8 Msps
     init();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Tracking test");
@@ -175,10 +174,10 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
     std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", "Galileo_E1_DLL_PLL_VEML_Tracking", 1, 1);
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
-     gnss_synchro.Acq_delay_samples = 13873; // 4 Msps
-     gnss_synchro.Acq_doppler_hz = -9500; // 4 Msps
-//    gnss_synchro.Acq_delay_samples = 17256; // 8 Msps
-//    gnss_synchro.Acq_doppler_hz = -8750; // 8 Msps
+    // gnss_synchro.Acq_delay_samples = 1753; // 4 Msps
+    // gnss_synchro.Acq_doppler_hz = -9500; // 4 Msps
+    gnss_synchro.Acq_delay_samples = 17256; // 8 Msps
+    gnss_synchro.Acq_doppler_hz = -8750; // 8 Msps
     gnss_synchro.Acq_samplestamp_samples = 0;
 
     ASSERT_NO_THROW( {

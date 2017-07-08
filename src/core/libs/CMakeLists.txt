@@ -18,26 +18,26 @@
 
 add_subdirectory(supl)
 
-if(OPENSSL_FOUND)
-    add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
-endif(OPENSSL_FOUND)
+if (OPENSSL_FOUND)
+    add_definitions(-DUSE_OPENSSL_FALLBACK=1)
+endif (OPENSSL_FOUND)
 
-set(CORE_LIBS_SOURCES 
-    ini.cc 
-    INIReader.cc 
-    string_converter.cc
-    gnss_sdr_supl_client.cc
-)
-	
+set(CORE_LIBS_SOURCES
+        ini.cc
+        INIReader.cc
+        string_converter.cc
+        gnss_sdr_supl_client.cc
+        )
+
 include_directories(
-    $(CMAKE_CURRENT_SOURCE_DIR)
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
+        $(CMAKE_CURRENT_SOURCE_DIR)
+        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+        ${CMAKE_SOURCE_DIR}/src/core/libs/supl
+        ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
+        ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+        ${GLOG_INCLUDE_DIRS}
+        ${GFlags_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
 )
 
 file(GLOB CORE_LIBS_HEADERS "*.h")

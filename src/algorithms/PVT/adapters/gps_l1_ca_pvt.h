@@ -46,40 +46,38 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a PvtInterface for GPS L1 C/A
  */
-class GpsL1CaPvt : public PvtInterface
-{
+class GpsL1CaPvt : public PvtInterface {
 public:
-    GpsL1CaPvt(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+    GpsL1CaPvt(ConfigurationInterface *configuration,
+               std::string role,
+               unsigned int in_streams,
+               unsigned int out_streams);
 
     virtual ~GpsL1CaPvt();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     //!  Returns "GPS_L1_CA_PVT"
-    std::string implementation()
-    {
+    std::string implementation() {
         return "GPS_L1_CA_PVT";
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
-    void reset()
-    {
+    void reset() {
         return;
     }
 
     //! All blocks must have an item_size() function implementation. Returns sizeof(gr_complex)
-    size_t item_size()
-    {
+    size_t item_size() {
         return sizeof(gr_complex);
     }
 
@@ -90,8 +88,9 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    
+
     std::string eph_xml_filename_;
+
     bool save_assistance_to_XML();
 };
 

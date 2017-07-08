@@ -52,12 +52,17 @@
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Appendix III
  */
-class Gps_CNAV_Navigation_Message
-{
+class Gps_CNAV_Navigation_Message {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    bool read_navigation_bool(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    unsigned long int read_navigation_unsigned(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits,
+                                               const std::vector<std::pair<int, int>> parameter);
+
+    signed long int read_navigation_signed(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits,
+                                           const std::vector<std::pair<int, int>> parameter);
+
+    bool read_navigation_bool(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits,
+                              const std::vector<std::pair<int, int>> parameter);
+
     void print_gps_word_bytes(unsigned int GPS_word);
 
     Gps_CNAV_Ephemeris ephemeris_record;
@@ -70,7 +75,7 @@ public:
     bool b_flag_ephemeris_2;
     bool b_flag_iono_valid; //!< If set, it indicates that the ionospheric parameters are filled (page 18 has arrived and decoded)
 
-    std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
+    std::map<int, std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 
     // satellite positions
     double d_satpos_X;       //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
@@ -90,14 +95,17 @@ public:
     void reset();
 
     void decode_page(std::vector<int> data);
+
     /*!
      * \brief Obtain a GPS SV Ephemeris class filled with current SV data
      */
     Gps_CNAV_Ephemeris get_ephemeris();
+
     /*!
      * \brief Check if we have a new iono record stored in the galileo navigation class
      */
     bool have_new_iono();
+
     /*!
      * \brief Obtain a GPS ionospheric correction parameters class filled with current SV data
      */

@@ -43,8 +43,7 @@
  * \brief Base class for a PVT solution
  *
  */
-class Pvt_Solution
-{
+class Pvt_Solution {
 public:
     Pvt_Solution();
 
@@ -84,13 +83,14 @@ public:
     double d_HDOP;
     double d_VDOP;
     double d_TDOP;
+
     int compute_DOP(); //!< Compute Dilution Of Precision parameters
 
     bool d_flag_averaging;
 
     int set_averaging_depth(int depth);
 
-    arma::vec rotateSatellite(double traveltime, const arma::vec & X_sat);
+    arma::vec rotateSatellite(double traveltime, const arma::vec &X_sat);
 
     /*!
       * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical
@@ -107,67 +107,68 @@ public:
       * 4 - World Geodetic System 1984.
       *
       */
-     int cart2geo(double X, double Y, double Z, int elipsoid_selection);
+    int cart2geo(double X, double Y, double Z, int elipsoid_selection);
 
-     /*!
-      * \brief Transformation of vector dx into topocentric coordinate system with origin at x
-      *
-      * \param[in] x    Vector origin coordinates (in ECEF system [X; Y; Z;])
-      * \param[in] dx   Vector ([dX; dY; dZ;]).
-      *
-      * \param[out] D   Vector length. Units like the input
-      * \param[out] Az  Azimuth from north positive clockwise, degrees
-      * \param[out] El  Elevation angle, degrees
-      *
-      * Based on a Matlab function by Kai Borre
-      */
-     int topocent(double *Az, double *El, double *D, const arma::vec & x, const arma::vec & dx);
+    /*!
+     * \brief Transformation of vector dx into topocentric coordinate system with origin at x
+     *
+     * \param[in] x    Vector origin coordinates (in ECEF system [X; Y; Z;])
+     * \param[in] dx   Vector ([dX; dY; dZ;]).
+     *
+     * \param[out] D   Vector length. Units like the input
+     * \param[out] Az  Azimuth from north positive clockwise, degrees
+     * \param[out] El  Elevation angle, degrees
+     *
+     * Based on a Matlab function by Kai Borre
+     */
+    int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::vec &dx);
 
-     /*!
-      * \brief Subroutine to calculate geodetic coordinates latitude, longitude,
-      * height given Cartesian coordinates X,Y,Z, and reference ellipsoid
-      * values semi-major axis (a) and the inverse of flattening (finv).
-      *
-      *  The output units of angular quantities will be in decimal degrees
-      *  (15.5 degrees not 15 deg 30 min). The output units of h will be the
-      *  same as the units of X,Y,Z,a.
-      *
-      *  \param[in] a           - semi-major axis of the reference ellipsoid
-      *  \param[in] finv        - inverse of flattening of the reference ellipsoid
-      *  \param[in] X,Y,Z       - Cartesian coordinates
-      *
-      *  \param[out] dphi        - latitude
-      *  \param[out] dlambda     - longitude
-      *  \param[out] h           - height above reference ellipsoid
-      *
-      * Based in a Matlab function by Kai Borre
-      */
-     int togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
+    /*!
+     * \brief Subroutine to calculate geodetic coordinates latitude, longitude,
+     * height given Cartesian coordinates X,Y,Z, and reference ellipsoid
+     * values semi-major axis (a) and the inverse of flattening (finv).
+     *
+     *  The output units of angular quantities will be in decimal degrees
+     *  (15.5 degrees not 15 deg 30 min). The output units of h will be the
+     *  same as the units of X,Y,Z,a.
+     *
+     *  \param[in] a           - semi-major axis of the reference ellipsoid
+     *  \param[in] finv        - inverse of flattening of the reference ellipsoid
+     *  \param[in] X,Y,Z       - Cartesian coordinates
+     *
+     *  \param[out] dphi        - latitude
+     *  \param[out] dlambda     - longitude
+     *  \param[out] h           - height above reference ellipsoid
+     *
+     * Based in a Matlab function by Kai Borre
+     */
+    int togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
 
-     /*!
-      * \brief Tropospheric correction
-      *
-      *  \param[in] sinel     - sin of elevation angle of satellite
-      *  \param[in] hsta_km   - height of station in km
-      *  \param[in] p_mb      - atmospheric pressure in mb at height hp_km
-      *  \param[in] t_kel     - surface temperature in degrees Kelvin at height htkel_km
-      *  \param[in] hum       - humidity in % at height hhum_km
-      *  \param[in] hp_km     - height of pressure measurement in km
-      *  \param[in] htkel_km  - height of temperature measurement in km
-      *  \param[in] hhum_km   - height of humidity measurement in km
-      *
-      *  \param[out] ddr_m     - range correction (meters)
-      *
-      *
-      * Reference:
-      * Goad, C.C. & Goodman, L. (1974) A Modified Hopfield Tropospheric
-      *   Refraction Correction Model. Paper presented at the
-      *   American Geophysical Union Annual Fall Meeting, San
-      *   Francisco, December 12-17
-      *
-      * Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
-      */
-     int tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
+    /*!
+     * \brief Tropospheric correction
+     *
+     *  \param[in] sinel     - sin of elevation angle of satellite
+     *  \param[in] hsta_km   - height of station in km
+     *  \param[in] p_mb      - atmospheric pressure in mb at height hp_km
+     *  \param[in] t_kel     - surface temperature in degrees Kelvin at height htkel_km
+     *  \param[in] hum       - humidity in % at height hhum_km
+     *  \param[in] hp_km     - height of pressure measurement in km
+     *  \param[in] htkel_km  - height of temperature measurement in km
+     *  \param[in] hhum_km   - height of humidity measurement in km
+     *
+     *  \param[out] ddr_m     - range correction (meters)
+     *
+     *
+     * Reference:
+     * Goad, C.C. & Goodman, L. (1974) A Modified Hopfield Tropospheric
+     *   Refraction Correction Model. Paper presented at the
+     *   American Geophysical Union Annual Fall Meeting, San
+     *   Francisco, December 12-17
+     *
+     * Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
+     */
+    int tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km,
+              double htkel_km, double hhum_km);
 };
 
 #endif

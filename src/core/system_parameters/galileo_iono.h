@@ -38,8 +38,7 @@
  *
  * See https://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf
  */
-class Galileo_Iono
-{
+class Galileo_Iono {
 public:
     /*Ionospheric correction*/
     double ai0_5; //!< Effective Ionisation Level 1st order parameter [sfu]

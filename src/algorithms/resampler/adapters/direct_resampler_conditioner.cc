@@ -43,103 +43,84 @@
 using google::LogMessage;
 
 DirectResamplerConditioner::DirectResamplerConditioner(
-        ConfigurationInterface* configuration, std::string role,
+        ConfigurationInterface *configuration, std::string role,
         unsigned int in_stream, unsigned int out_stream) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream)
-{
+        role_(role), in_stream_(in_stream), out_stream_(out_stream) {
     std::string default_item_type = "short";
     std::string default_dump_file = "./data/signal_conditioner.dat";
     double fs_in;
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000.0);
-    sample_freq_in_ = configuration->property(role_ + ".sample_freq_in", (double)4000000.0);
+    sample_freq_in_ = configuration->property(role_ + ".sample_freq_in", (double) 4000000.0);
     sample_freq_out_ = configuration->property(role_ + ".sample_freq_out", fs_in);
-    if(std::fabs(fs_in - sample_freq_out_) > std::numeric_limits<double>::epsilon())
-        {
-            std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_hz and "
-                    + role_ + ".sample_freq_out are not set to the same value!" ;
-            LOG(WARNING) << aux_warn;
-            std::cout << aux_warn << std::endl;
-        }
+    if (std::fabs(fs_in - sample_freq_out_) > std::numeric_limits<double>::epsilon()) {
+        std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_hz and "
+                               + role_ + ".sample_freq_out are not set to the same value!";
+        LOG(WARNING) << aux_warn;
+        std::cout << aux_warn << std::endl;
+    }
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            item_size_ = sizeof(gr_complex);
-            resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_, sample_freq_out_);
-            DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
-            DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
-            DLOG(INFO) << "Item size " << item_size_;
-            DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
-        }
-    else if (item_type_.compare("cshort") == 0)
-        {
-            item_size_ = sizeof(lv_16sc_t);
-            resampler_ = direct_resampler_make_conditioner_cs(sample_freq_in_, sample_freq_out_);
-            DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
-            DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
-            DLOG(INFO) << "Item size " << item_size_;
-            DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
-        }
-    else if (item_type_.compare("cbyte") == 0)
-        {
-            item_size_ = sizeof(lv_8sc_t);
-            resampler_ = direct_resampler_make_conditioner_cb(sample_freq_in_, sample_freq_out_);
-            DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
-            DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
-            DLOG(INFO) << "Item size " << item_size_;
-            DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
-        }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
-            item_size_ = sizeof(short);
-        }
-    if (dump_)
-        {
-            DLOG(INFO) << "Dumping output into file " << dump_filename_;
-            file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
-            DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
-        }
+    if (item_type_.compare("gr_complex") == 0) {
+        item_size_ = sizeof(gr_complex);
+        resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_, sample_freq_out_);
+        DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
+        DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
+        DLOG(INFO) << "Item size " << item_size_;
+        DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
+    } else if (item_type_.compare("cshort") == 0) {
+        item_size_ = sizeof(lv_16sc_t);
+        resampler_ = direct_resampler_make_conditioner_cs(sample_freq_in_, sample_freq_out_);
+        DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
+        DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
+        DLOG(INFO) << "Item size " << item_size_;
+        DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
+    } else if (item_type_.compare("cbyte") == 0) {
+        item_size_ = sizeof(lv_8sc_t);
+        resampler_ = direct_resampler_make_conditioner_cb(sample_freq_in_, sample_freq_out_);
+        DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
+        DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
+        DLOG(INFO) << "Item size " << item_size_;
+        DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
+    } else {
+        LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
+        item_size_ = sizeof(short);
+    }
+    if (dump_) {
+        DLOG(INFO) << "Dumping output into file " << dump_filename_;
+        file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
+        DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
+    }
 }
 
 
 DirectResamplerConditioner::~DirectResamplerConditioner() {}
 
 
-
-void DirectResamplerConditioner::connect(gr::top_block_sptr top_block)
-{
-    if (dump_)
-        {
-            top_block->connect(resampler_, 0, file_sink_, 0);
-            DLOG(INFO) << "connected resampler to file sink";
-        }
-    else
-        {
-            DLOG(INFO) << "nothing to connect internally";
-        }
+void DirectResamplerConditioner::connect(gr::top_block_sptr top_block) {
+    if (dump_) {
+        top_block->connect(resampler_, 0, file_sink_, 0);
+        DLOG(INFO) << "connected resampler to file sink";
+    } else {
+        DLOG(INFO) << "nothing to connect internally";
+    }
 }
 
 
-void DirectResamplerConditioner::disconnect(gr::top_block_sptr top_block)
-{
-    if (dump_)
-        {
-            top_block->disconnect(resampler_, 0, file_sink_, 0);
-        }
+void DirectResamplerConditioner::disconnect(gr::top_block_sptr top_block) {
+    if (dump_) {
+        top_block->disconnect(resampler_, 0, file_sink_, 0);
+    }
 }
 
 
-gr::basic_block_sptr DirectResamplerConditioner::get_left_block()
-{
+gr::basic_block_sptr DirectResamplerConditioner::get_left_block() {
     return resampler_;
 }
 
 
-gr::basic_block_sptr DirectResamplerConditioner::get_right_block()
-{
+gr::basic_block_sptr DirectResamplerConditioner::get_right_block() {
     return resampler_;
 }

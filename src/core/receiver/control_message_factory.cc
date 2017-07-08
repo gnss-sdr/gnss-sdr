@@ -35,17 +35,14 @@
 using google::LogMessage;
 
 // Constructor
-ControlMessageFactory::ControlMessageFactory()
-{}
+ControlMessageFactory::ControlMessageFactory() {}
 
 
 // Destructor
-ControlMessageFactory::~ControlMessageFactory()
-{}
+ControlMessageFactory::~ControlMessageFactory() {}
 
 
-boost::shared_ptr<gr::message> ControlMessageFactory::GetQueueMessage(unsigned int who, unsigned int what)
-{
+boost::shared_ptr<gr::message> ControlMessageFactory::GetQueueMessage(unsigned int who, unsigned int what) {
     std::shared_ptr<ControlMessage> control_message = std::make_shared<ControlMessage>();
     control_message->who = who;
     control_message->what = what;
@@ -55,22 +52,21 @@ boost::shared_ptr<gr::message> ControlMessageFactory::GetQueueMessage(unsigned i
 }
 
 
-std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>>  ControlMessageFactory::GetControlMessages(boost::shared_ptr<gr::message> queue_message)
-{
-    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>>  control_messages = std::make_shared<std::vector<std::shared_ptr<ControlMessage>>>();
+std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>>
+ControlMessageFactory::GetControlMessages(boost::shared_ptr<gr::message> queue_message) {
+    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages = std::make_shared<std::vector<std::shared_ptr<ControlMessage>>>();
     unsigned int control_messages_count = queue_message->length() / sizeof(ControlMessage);
-    if(queue_message->length() % sizeof(ControlMessage) != 0)
-        {
-            LOG(WARNING) << "Queue message has size " << queue_message->length() << ", which is not"
-                         << " multiple of control message size " << sizeof(ControlMessage);
-            LOG(WARNING) << "Ignoring this queue message to prevent unexpected results.";
-            return control_messages;
-        }
-    for(unsigned int i = 0; i < control_messages_count; i++)
-        {
-            control_messages->push_back(std::make_shared<ControlMessage>());
-            memcpy(control_messages->at(i).get(), queue_message->msg() + (i*sizeof(ControlMessage)), sizeof(ControlMessage));
-        }
+    if (queue_message->length() % sizeof(ControlMessage) != 0) {
+        LOG(WARNING) << "Queue message has size " << queue_message->length() << ", which is not"
+                     << " multiple of control message size " << sizeof(ControlMessage);
+        LOG(WARNING) << "Ignoring this queue message to prevent unexpected results.";
+        return control_messages;
+    }
+    for (unsigned int i = 0; i < control_messages_count; i++) {
+        control_messages->push_back(std::make_shared<ControlMessage>());
+        memcpy(control_messages->at(i).get(), queue_message->msg() + (i * sizeof(ControlMessage)),
+               sizeof(ControlMessage));
+    }
     return control_messages;
 }
 

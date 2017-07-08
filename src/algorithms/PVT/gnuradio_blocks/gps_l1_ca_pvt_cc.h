@@ -62,7 +62,7 @@ gps_l1_ca_pvt_cc_sptr gps_l1_ca_make_pvt_cc(unsigned int n_channels,
                                             bool flag_rtcm_tty_port,
                                             unsigned short rtcm_tcp_port,
                                             unsigned short rtcm_station_id,
-                                            std::map<int,int> rtcm_msg_rate_ms,
+                                            std::map<int, int> rtcm_msg_rate_ms,
                                             std::string rtcm_dump_devname,
                                             int rinex_version
 );
@@ -70,8 +70,7 @@ gps_l1_ca_pvt_cc_sptr gps_l1_ca_make_pvt_cc(unsigned int n_channels,
 /*!
  * \brief This class implements a block that computes the PVT solution
  */
-class gps_l1_ca_pvt_cc : public gr::block
-{
+class gps_l1_ca_pvt_cc : public gr::block {
 private:
     friend gps_l1_ca_pvt_cc_sptr gps_l1_ca_make_pvt_cc(unsigned int nchannels,
                                                        bool dump,
@@ -87,9 +86,10 @@ private:
                                                        bool flag_rtcm_tty_port,
                                                        unsigned short rtcm_tcp_port,
                                                        unsigned short rtcm_station_id,
-                                                       std::map<int,int> rtcm_msg_rate_ms,
+                                                       std::map<int, int> rtcm_msg_rate_ms,
                                                        std::string rtcm_dump_devname,
                                                        int rinex_version);
+
     gps_l1_ca_pvt_cc(unsigned int nchannels,
                      bool dump,
                      std::string dump_filename,
@@ -104,7 +104,7 @@ private:
                      bool flag_rtcm_tty_port,
                      unsigned short rtcm_tcp_port,
                      unsigned short rtcm_station_id,
-                     std::map<int,int> rtcm_msg_rate_ms,
+                     std::map<int, int> rtcm_msg_rate_ms,
                      std::string rtcm_dump_devname,
                      int rinex_version);
 
@@ -120,7 +120,8 @@ private:
     int d_rtcm_MT1019_rate_ms;
     int d_rtcm_MSM_rate_ms;
 
-    void print_receiver_status(Gnss_Synchro** channels_synchronization_data);
+    void print_receiver_status(Gnss_Synchro **channels_synchronization_data);
+
     int d_last_status_print_seg; //for status printer
 
     unsigned int d_nchannels;
@@ -141,15 +142,16 @@ private:
     double d_rx_time;
     std::shared_ptr<gps_l1_ca_ls_pvt> d_ls_pvt;
 
-    std::map<int,Gnss_Synchro> gnss_observables_map;
+    std::map<int, Gnss_Synchro> gnss_observables_map;
 
     bool first_fix;
     key_t sysv_msg_key;
     int sysv_msqid;
-    typedef struct  {
+    typedef struct {
         long mtype;//required by sys v message
         double ttff;
     } ttff_msgbuf;
+
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
 
 public:
@@ -159,12 +161,13 @@ public:
      *
      * It is used to save the assistance data at the receiver shutdown
      */
-    std::map<int,Gps_Ephemeris> get_GPS_L1_ephemeris_map();
+    std::map<int, Gps_Ephemeris> get_GPS_L1_ephemeris_map();
 
-    ~gps_l1_ca_pvt_cc (); //!< Default destructor
+    ~gps_l1_ca_pvt_cc(); //!< Default destructor
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items); //!< PVT Signal Processing
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+                     gr_vector_const_void_star &input_items,
+                     gr_vector_void_star &output_items); //!< PVT Signal Processing
 };
 
 #endif

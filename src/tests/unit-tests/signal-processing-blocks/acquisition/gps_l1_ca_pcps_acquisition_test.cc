@@ -52,7 +52,7 @@
 #include "gps_l1_ca_pcps_acquisition.h"
 
 
-// ######## GNURADIO BLOCK MESSAGE RECEIVER #########
+// ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTest_msg_rx;
 
 typedef boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> GpsL1CaPcpsAcquisitionTest_msg_rx_sptr;
@@ -142,7 +142,7 @@ void GpsL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.coherent_integration_time_ms", "1");
-    config->set_property("Acquisition.dump", "true");
+    config->set_property("Acquisition.dump", "false");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.001");
     config->set_property("Acquisition.doppler_max", "5000");
@@ -201,8 +201,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     long long int end = 0;
     top_block = gr::make_top_block("Acquisition test");
 
-    double expected_delay_samples = 3767;
-    double expected_doppler_hz    = 3952;
+    double expected_delay_samples = 524;
+    double expected_doppler_hz = 1680;
     init();
     std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 
@@ -234,7 +234,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/GPS_L1_CA_4000000_sps_CN0_48.dat";
+        //std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+        std::string file = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);

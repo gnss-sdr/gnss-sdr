@@ -33,7 +33,6 @@
 #define GNSS_SDR_GPS_ACQ_ASSIST_H_
 
 
-
 /*!
  * \brief This class is a storage for the GPS GSM RRLL acquisition assistance data as described in
  * Digital cellular telecommunications system (Phase 2+);
@@ -42,8 +41,7 @@
  * Radio Resource LCS Protocol (RRLP)
  * (3GPP TS 44.031 version 5.12.0 Release 5)
  */
-class Gps_Acq_Assist
-{
+class Gps_Acq_Assist {
 public:
     unsigned int i_satellite_PRN; //!< SV PRN NUMBER
     double d_TOW;                 //!< Time Of Week assigned to the acquisition data

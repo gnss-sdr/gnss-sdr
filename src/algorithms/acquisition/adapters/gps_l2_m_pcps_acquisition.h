@@ -45,42 +45,41 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
 
-
 class ConfigurationInterface;
 
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GPS L2 M signals
  */
-class GpsL2MPcpsAcquisition: public AcquisitionInterface
-{
+class GpsL2MPcpsAcquisition : public AcquisitionInterface {
 public:
-    GpsL2MPcpsAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+    GpsL2MPcpsAcquisition(ConfigurationInterface *configuration,
+                          std::string role, unsigned int in_streams,
+                          unsigned int out_streams);
 
     virtual ~GpsL2MPcpsAcquisition();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     /*!
      * \brief Returns "GPS_L2_M_PCPS_Acquisition"
      */
-    std::string implementation()
-    {
+    std::string implementation() {
         return "GPS_L2_M_PCPS_Acquisition";
     }
-    size_t item_size()
-    {
+
+    size_t item_size() {
         return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
     /*!
@@ -88,7 +87,7 @@ public:
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
     /*!
      * \brief Set acquisition channel unique ID
@@ -136,7 +135,7 @@ public:
     void set_state(int state);
 
 private:
-    ConfigurationInterface* configuration_;
+    ConfigurationInterface *configuration_;
     pcps_acquisition_cc_sptr acquisition_cc_;
     pcps_acquisition_sc_sptr acquisition_sc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
@@ -157,8 +156,8 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float> *code_;
+    Gnss_Synchro *gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

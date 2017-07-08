@@ -39,95 +39,85 @@
 #include "control_message_factory.h"
 
 
-struct Ev_channel_start_acquisition: sc::event<Ev_channel_start_acquisition>
-{};
+struct Ev_channel_start_acquisition : sc::event<Ev_channel_start_acquisition> {
+};
 
-struct Ev_channel_valid_acquisition: sc::event<Ev_channel_valid_acquisition>
-{};
+struct Ev_channel_valid_acquisition : sc::event<Ev_channel_valid_acquisition> {
+};
 
-struct Ev_channel_failed_acquisition_repeat: sc::event<Ev_channel_failed_acquisition_repeat>
-{};
+struct Ev_channel_failed_acquisition_repeat : sc::event<Ev_channel_failed_acquisition_repeat> {
+};
 
-struct Ev_channel_failed_acquisition_no_repeat: sc::event<Ev_channel_failed_acquisition_no_repeat>
-{};
+struct Ev_channel_failed_acquisition_no_repeat : sc::event<Ev_channel_failed_acquisition_no_repeat> {
+};
 
-struct Ev_channel_failed_tracking_standby: sc::event<Ev_channel_failed_tracking_standby>
-{};
+struct Ev_channel_failed_tracking_standby : sc::event<Ev_channel_failed_tracking_standby> {
+};
 
 //struct Ev_channel_failed_tracking_reacq: sc::event<Ev_channel_failed_tracking_reacq>
 //{};
 
-struct channel_idle_fsm_S0: public sc::state<channel_idle_fsm_S0, ChannelFsm>
-{
+struct channel_idle_fsm_S0 : public sc::state<channel_idle_fsm_S0, ChannelFsm> {
 public:
     // sc::transition(event, next state)
-    typedef sc::transition<Ev_channel_start_acquisition, channel_acquiring_fsm_S1> reactions;
-    channel_idle_fsm_S0(my_context ctx) : my_base(ctx)
-    {
+    typedef sc::transition <Ev_channel_start_acquisition, channel_acquiring_fsm_S1> reactions;
+
+    channel_idle_fsm_S0(my_context ctx) : my_base(ctx) {
         //std::cout << "Enter Channel_Idle_S0 " << std::endl;
     }
 };
 
 
-struct channel_acquiring_fsm_S1: public sc::state<channel_acquiring_fsm_S1, ChannelFsm>
-{
+struct channel_acquiring_fsm_S1 : public sc::state<channel_acquiring_fsm_S1, ChannelFsm> {
 public:
-    typedef mpl::list<sc::transition<Ev_channel_failed_acquisition_no_repeat, channel_waiting_fsm_S3>,
-                      sc::transition<Ev_channel_failed_acquisition_repeat, channel_acquiring_fsm_S1>,
-                      sc::transition<Ev_channel_valid_acquisition, channel_tracking_fsm_S2> > reactions;
+    typedef mpl::list <sc::transition<Ev_channel_failed_acquisition_no_repeat, channel_waiting_fsm_S3>,
+    sc::transition<Ev_channel_failed_acquisition_repeat, channel_acquiring_fsm_S1>,
+    sc::transition<Ev_channel_valid_acquisition, channel_tracking_fsm_S2>> reactions;
 
-    channel_acquiring_fsm_S1(my_context ctx) : my_base(ctx)
-    {
+    channel_acquiring_fsm_S1(my_context ctx) : my_base(ctx) {
         //std::cout << "Enter Channel_Acq_S1 " << std::endl;
-        context<ChannelFsm> ().start_acquisition();
+        context<ChannelFsm>().start_acquisition();
     }
-    ~channel_acquiring_fsm_S1()
-    {
+
+    ~channel_acquiring_fsm_S1() {
         //std::cout << "Exit Channel_Acq_S1 " << std::endl;
     }
 };
 
 
-struct channel_tracking_fsm_S2: public sc::state<channel_tracking_fsm_S2, ChannelFsm>
-{
+struct channel_tracking_fsm_S2 : public sc::state<channel_tracking_fsm_S2, ChannelFsm> {
 public:
-    typedef mpl::list<sc::transition<Ev_channel_failed_tracking_standby, channel_idle_fsm_S0>,
-                      sc::transition<Ev_channel_start_acquisition, channel_acquiring_fsm_S1>> reactions;
+    typedef mpl::list <sc::transition<Ev_channel_failed_tracking_standby, channel_idle_fsm_S0>,
+    sc::transition<Ev_channel_start_acquisition, channel_acquiring_fsm_S1>> reactions;
 
-    channel_tracking_fsm_S2(my_context ctx) : my_base(ctx)
-    {
-       //std::cout << "Enter Channel_tracking_S2 " << std::endl;
-        context<ChannelFsm> ().start_tracking();
+    channel_tracking_fsm_S2(my_context ctx) : my_base(ctx) {
+        //std::cout << "Enter Channel_tracking_S2 " << std::endl;
+        context<ChannelFsm>().start_tracking();
     }
 
-    ~channel_tracking_fsm_S2()
-    {
+    ~channel_tracking_fsm_S2() {
         //std::cout << "Exit Channel_tracking_S2 " << std::endl;
-        context<ChannelFsm> ().notify_stop_tracking();
+        context<ChannelFsm>().notify_stop_tracking();
     }
 
 };
 
 
-struct channel_waiting_fsm_S3: public sc::state<channel_waiting_fsm_S3, ChannelFsm>
-{
+struct channel_waiting_fsm_S3 : public sc::state<channel_waiting_fsm_S3, ChannelFsm> {
 public:
-    typedef sc::transition<Ev_channel_start_acquisition,
-            channel_acquiring_fsm_S1> reactions;
+    typedef sc::transition <Ev_channel_start_acquisition,
+    channel_acquiring_fsm_S1> reactions;
 
     channel_waiting_fsm_S3(my_context ctx) :
-        my_base(ctx)
-    {
+            my_base(ctx) {
         //std::cout << "Enter Channel_waiting_S3 " << std::endl;
-        context<ChannelFsm> ().request_satellite();
+        context<ChannelFsm>().request_satellite();
     }
-   // ~channel_waiting_fsm_S3(){}
+    // ~channel_waiting_fsm_S3(){}
 };
 
 
-
-ChannelFsm::ChannelFsm()
-{
+ChannelFsm::ChannelFsm() {
     acq_ = nullptr;
     trk_ = nullptr;
     channel_ = 0;
@@ -135,44 +125,36 @@ ChannelFsm::ChannelFsm()
 }
 
 
-
 ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) :
-            acq_(acquisition)
-{
+        acq_(acquisition) {
     trk_ = nullptr;
     channel_ = 0;
     initiate(); //start the FSM
 }
 
 
-
-void ChannelFsm::Event_start_acquisition()
-{
+void ChannelFsm::Event_start_acquisition() {
     this->process_event(Ev_channel_start_acquisition());
     //std::cout<<"Ev_channel_start_acquisition launched"<<std::endl;
 }
 
 
-void ChannelFsm::Event_valid_acquisition()
-{
+void ChannelFsm::Event_valid_acquisition() {
     this->process_event(Ev_channel_valid_acquisition());
 }
 
 
-void ChannelFsm::Event_failed_acquisition_repeat()
-{
+void ChannelFsm::Event_failed_acquisition_repeat() {
     this->process_event(Ev_channel_failed_acquisition_repeat());
 }
 
-void ChannelFsm::Event_failed_acquisition_no_repeat()
-{
+void ChannelFsm::Event_failed_acquisition_no_repeat() {
     this->process_event(Ev_channel_failed_acquisition_no_repeat());
 }
 
 
 // Something is wrong here, we are using a memory after it ts freed
-void ChannelFsm::Event_failed_tracking_standby()
-{
+void ChannelFsm::Event_failed_tracking_standby() {
     this->process_event(Ev_channel_failed_tracking_standby());
 }
 
@@ -180,55 +162,44 @@ void ChannelFsm::Event_failed_tracking_standby()
 //    this->process_event(Ev_channel_failed_tracking_reacq());
 //}
 
-void ChannelFsm::set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition)
-{
+void ChannelFsm::set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition) {
     acq_ = acquisition;
 }
 
-void ChannelFsm::set_tracking(std::shared_ptr<TrackingInterface> tracking)
-{
+void ChannelFsm::set_tracking(std::shared_ptr<TrackingInterface> tracking) {
     trk_ = tracking;
 }
 
-void ChannelFsm::set_queue(boost::shared_ptr<gr::msg_queue> queue)
-{
+void ChannelFsm::set_queue(boost::shared_ptr<gr::msg_queue> queue) {
     queue_ = queue;
 }
 
-void ChannelFsm::set_channel(unsigned int channel)
-{
+void ChannelFsm::set_channel(unsigned int channel) {
     channel_ = channel;
 }
 
-void ChannelFsm::start_acquisition()
-{
+void ChannelFsm::start_acquisition() {
     acq_->reset();
 }
 
-void ChannelFsm::start_tracking()
-{
+void ChannelFsm::start_tracking() {
     trk_->start_tracking();
     std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 1));
-        }
+    if (queue_ != gr::msg_queue::make()) {
+        queue_->handle(cmf->GetQueueMessage(channel_, 1));
+    }
 }
 
-void ChannelFsm::request_satellite()
-{
+void ChannelFsm::request_satellite() {
     std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 0));
-        }
+    if (queue_ != gr::msg_queue::make()) {
+        queue_->handle(cmf->GetQueueMessage(channel_, 0));
+    }
 }
 
-void ChannelFsm::notify_stop_tracking()
-{
+void ChannelFsm::notify_stop_tracking() {
     std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-    if (queue_ != gr::msg_queue::make())
-        {
-            queue_->handle(cmf->GetQueueMessage(channel_, 2));
-        }
+    if (queue_ != gr::msg_queue::make()) {
+        queue_->handle(cmf->GetQueueMessage(channel_, 2));
+    }
 }

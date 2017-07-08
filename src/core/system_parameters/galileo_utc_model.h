@@ -39,8 +39,7 @@
  * https://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf
  * paragraph 5.1.7
  */
-class Galileo_Utc_Model
-{
+class Galileo_Utc_Model {
 public:
     /*Word type 6: GST-UTC conversion parameters*/
     double A0_6;
@@ -52,6 +51,7 @@ public:
     double DN_6;
     double Delta_tLSF_6;
     bool flag_utc_model;
+
     //double TOW_6;
     double GST_to_UTC_time(double t_e, int WN); //!< GST-UTC Conversion Algorithm and Parameters
     /*!

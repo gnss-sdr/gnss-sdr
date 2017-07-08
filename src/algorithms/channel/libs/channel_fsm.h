@@ -51,26 +51,37 @@ struct channel_waiting_fsm_S3;
 /*!
  * \brief This class implements a State Machine for channel using boost::statechart
  */
-class ChannelFsm: public sc::state_machine<ChannelFsm, channel_idle_fsm_S0>
-{
+class ChannelFsm : public sc::state_machine<ChannelFsm, channel_idle_fsm_S0> {
 public:
     ChannelFsm();
+
     ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition);
 
     void set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition);
+
     void set_tracking(std::shared_ptr<TrackingInterface> tracking);
+
     void set_queue(boost::shared_ptr<gr::msg_queue> queue);
+
     void set_channel(unsigned int channel);
+
     void start_acquisition();
+
     void start_tracking();
+
     void request_satellite();
+
     void notify_stop_tracking();
 
     //FSM EVENTS
     void Event_start_acquisition();
+
     void Event_valid_acquisition();
+
     void Event_failed_acquisition_repeat();
+
     void Event_failed_acquisition_no_repeat();
+
     //void Event_gps_failed_tracking_reacq();
     void Event_failed_tracking_standby();
 

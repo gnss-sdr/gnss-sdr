@@ -51,115 +51,109 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class BeiDouB1iDllPllTrackingTest_msg_rx;
 
-typedef boost::shared_ptr<BeiDouB1iDllPllTrackingTest_msg_rx> BeiDouB1iDllPllTrackingTest_msg_rx_sptr;
+typedef boost::shared_ptr <BeiDouB1iDllPllTrackingTest_msg_rx> BeiDouB1iDllPllTrackingTest_msg_rx_sptr;
 
 BeiDouB1iDllPllTrackingTest_msg_rx_sptr BeiDouB1iDllPllTrackingTest_msg_rx_make();
 
-class BeiDouB1iDllPllTrackingTest_msg_rx : public gr::block
-{
+class BeiDouB1iDllPllTrackingTest_msg_rx : public gr::block {
 private:
     friend BeiDouB1iDllPllTrackingTest_msg_rx_sptr BeiDouB1iDllPllTrackingTest_msg_rx_make();
+
     void msg_handler_events(pmt::pmt_t msg);
+
     BeiDouB1iDllPllTrackingTest_msg_rx();
 
 public:
     int rx_message;
+
     ~BeiDouB1iDllPllTrackingTest_msg_rx(); //!< Default destructor
 
 };
 
-BeiDouB1iDllPllTrackingTest_msg_rx_sptr BeiDouB1iDllPllTrackingTest_msg_rx_make()
-{
+BeiDouB1iDllPllTrackingTest_msg_rx_sptr BeiDouB1iDllPllTrackingTest_msg_rx_make() {
     return BeiDouB1iDllPllTrackingTest_msg_rx_sptr(new BeiDouB1iDllPllTrackingTest_msg_rx());
 }
 
-void BeiDouB1iDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
-{
-    try
-    {
+void BeiDouB1iDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg) {
+    try {
         long int message = pmt::to_long(msg);
         rx_message = message;
     }
-    catch(boost::bad_any_cast& e)
-    {
+    catch (boost::bad_any_cast &e) {
         LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
         rx_message = 0;
     }
 }
 
 BeiDouB1iDllPllTrackingTest_msg_rx::BeiDouB1iDllPllTrackingTest_msg_rx() :
-        gr::block("BeiDouB1iDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
-{
+        gr::block("BeiDouB1iDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0),
+                  gr::io_signature::make(0, 0, 0)) {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&BeiDouB1iDllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"),
+                          boost::bind(&BeiDouB1iDllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
 
-BeiDouB1iDllPllTrackingTest_msg_rx::~BeiDouB1iDllPllTrackingTest_msg_rx()
-{}
+BeiDouB1iDllPllTrackingTest_msg_rx::~BeiDouB1iDllPllTrackingTest_msg_rx() {}
 
 
 // ###########################################################
 
 
-class BeiDouB1iDllPllTrackingTest: public ::testing::Test
-{
+class BeiDouB1iDllPllTrackingTest : public ::testing::Test {
 protected:
-    BeiDouB1iDllPllTrackingTest()
-    {
+    BeiDouB1iDllPllTrackingTest() {
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~BeiDouB1iDllPllTrackingTest()
-    {}
+    ~BeiDouB1iDllPllTrackingTest() {}
 
     void config_test();
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GNSSBlockFactory> factory;
-    std::shared_ptr<InMemoryConfiguration> config;
+    std::shared_ptr <GNSSBlockFactory> factory;
+    std::shared_ptr <InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
 
-    double f_if             = 0;
-    double space_chips      = 0;
-    double pll_bw_hz        = 0;
-    double dll_bw_hz        = 0;
-    double delay_samples    = 0;
-    double doppler_hz       = 0;
+    double f_if = 0;
+    double space_chips = 0;
+    double pll_bw_hz = 0;
+    double dll_bw_hz = 0;
+    double delay_samples = 0;
+    double doppler_hz = 0;
 
-    int fs_in               = 0;
-    int nsamples            = 0;
+    int fs_in = 0;
+    int nsamples = 0;
 
-    long long int begin     = 0;
-    long long int end       = 0;
+    long long int begin = 0;
+    long long int end = 0;
 
     std::string signal_path = "";
 };
 
 
-void BeiDouB1iDllPllTrackingTest::config_test()
-{
+void BeiDouB1iDllPllTrackingTest::config_test() {
     gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System     = 'C';
-    std::string signal      = "1C";
+    gnss_synchro.System = 'C';
+    std::string signal = "1C";
     signal.copy(gnss_synchro.Signal, 2, 0);
 
 /******** CONFIGURATION PARAMETERS ********/
     gnss_synchro.PRN = 20;                  // PRN satellite number
-    fs_in            = 16000000;            // Sampling Frequency 
-    nsamples         = fs_in * 10;
-    f_if             = 0.0;                 // Intermediate Frequency 
-    space_chips      = 0.5;                 // Space b/w chips
-    pll_bw_hz        = 20;                  // PLL Bandwidth
-    dll_bw_hz        = 4;                   // DLL Bandwidth
-    delay_samples    = 3767.0;              // Code delay in samples 
-    doppler_hz       = 1650;                
-    signal_path      = "signal_samples/test_beidou_15s.dat";
+    fs_in = 16000000;            // Sampling Frequency
+    nsamples = fs_in * 10;
+    f_if = 0.0;                 // Intermediate Frequency
+    space_chips = 0.5;                 // Space b/w chips
+    pll_bw_hz = 20;                  // PLL Bandwidth
+    dll_bw_hz = 4;                   // DLL Bandwidth
+    delay_samples = 3767.0;              // Code delay in samples
+    doppler_hz = 1650;
+    signal_path = "signal_samples/test_beidou_15s.dat";
 
 /******************************************/
 
@@ -175,61 +169,102 @@ void BeiDouB1iDllPllTrackingTest::config_test()
     config->set_property("Tracking.dll_bw_hz", std::to_string(dll_bw_hz));
 }
 
-TEST_F(BeiDouB1iDllPllTrackingTest, ValidationOfResults)
+TEST_F(BeiDouB1iDllPllTrackingTest, ValidationOfResults
+)
 {
-    struct timeval tv;
+struct timeval tv;
 
-    config_test();
+config_test();
 
-    queue = gr::msg_queue::make(0);
-    top_block = gr::make_top_block("Tracking test");
+queue = gr::msg_queue::make(0);
+top_block = gr::make_top_block("Tracking test");
 
-    std::shared_ptr<TrackingInterface> tracking = std::make_shared<BeiDouB1iDllPllTracking>(config.get(), "Tracking", 1, 1);
-    boost::shared_ptr<BeiDouB1iDllPllTrackingTest_msg_rx> msg_rx = BeiDouB1iDllPllTrackingTest_msg_rx_make();
+std::shared_ptr <TrackingInterface> tracking = std::make_shared<BeiDouB1iDllPllTracking>(config.get(), "Tracking", 1,
+                                                                                         1);
+boost::shared_ptr <BeiDouB1iDllPllTrackingTest_msg_rx> msg_rx = BeiDouB1iDllPllTrackingTest_msg_rx_make();
 
-    gnss_synchro.Acq_delay_samples  = delay_samples;
-    gnss_synchro.Acq_doppler_hz     = doppler_hz;
-    gnss_synchro.Acq_samplestamp_samples = 0;
+gnss_synchro.
+Acq_delay_samples = delay_samples;
+gnss_synchro.
+Acq_doppler_hz = doppler_hz;
+gnss_synchro.
+Acq_samplestamp_samples = 0;
 
-    ASSERT_NO_THROW( {
-    tracking->set_channel(gnss_synchro.Channel_ID);
-    }) << "Failure setting channel." << std::endl;
+ASSERT_NO_THROW( {
+tracking->
+set_channel(gnss_synchro
+.Channel_ID);
+}) << "Failure setting channel." <<
+std::endl;
 
-    ASSERT_NO_THROW( {
-    tracking->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro." << std::endl;
+ASSERT_NO_THROW( {
+tracking->
+set_gnss_synchro(&gnss_synchro);
+}) << "Failure setting gnss_synchro." <<
+std::endl;
 
-    ASSERT_NO_THROW( {
-    tracking->connect(top_block);
-    }) << "Failure connecting tracking to the top_block." << std::endl;
+ASSERT_NO_THROW( {
+tracking->
+connect(top_block);
+}) << "Failure connecting tracking to the top_block." <<
+std::endl;
 
-    ASSERT_NO_THROW( {
-    std::string path = std::string(TEST_PATH);
-    std::string file = path + signal_path;
-    const char * file_name = file.c_str();
+ASSERT_NO_THROW( {
+std::string path = std::string(TEST_PATH);
+std::string file = path + signal_path;
+const char *file_name = file.c_str();
 
-    gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
-    boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-    gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
+boost::shared_ptr <gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
 
-    top_block->connect(file_source, 0, valve, 0);
-    top_block->connect(valve, 0, tracking->get_left_block(), 0);
-    top_block->connect(tracking->get_right_block(), 0, sink, 0);
-    top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of tracking test." << std::endl;
+top_block->
+connect(file_source,
+0, valve, 0);
+top_block->
+connect(valve,
+0, tracking->
 
-    tracking->start_tracking();
+get_left_block(),
 
-    EXPECT_NO_THROW( {
-    gettimeofday(&tv, NULL);
-    begin = tv.tv_sec *1000000 + tv.tv_usec;
-    top_block->run(); // Start threads and wait
-    gettimeofday(&tv, NULL);
-    end = tv.tv_sec *1000000 + tv.tv_usec;
-    }) << "Failure running the top_block." << std::endl;
+0);
+top_block->
+connect(tracking
+->
 
-    // TODO: Verify tracking results
-    std::cout <<  "Tracked " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+get_right_block(),
+
+0, sink, 0);
+top_block->
+msg_connect(tracking
+->
+
+get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events")
+
+);
+}) << "Failure connecting the blocks of tracking test." <<
+std::endl;
+
+tracking->
+
+start_tracking();
+
+EXPECT_NO_THROW( {
+gettimeofday(&tv, NULL
+);
+begin = tv.tv_sec * 1000000 + tv.tv_usec;
+top_block->
+
+run(); // Start threads and wait
+gettimeofday(&tv, NULL
+);
+end = tv.tv_sec * 1000000 + tv.tv_usec;
+}) << "Failure running the top_block." <<
+std::endl;
+
+// TODO: Verify tracking results
+std::cout <<  "Tracked " << nsamples << " samples in " << (end - begin) << " microseconds" <<
+std::endl;
 }
 
 

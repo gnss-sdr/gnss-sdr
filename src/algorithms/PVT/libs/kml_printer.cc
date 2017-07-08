@@ -36,100 +36,86 @@
 
 using google::LogMessage;
 
-bool Kml_Printer::set_headers(std::string filename,  bool time_tag_name)
-{
+bool Kml_Printer::set_headers(std::string filename, bool time_tag_name) {
 
     time_t rawtime;
-    struct tm * timeinfo;
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
-    if (time_tag_name)
-        {
+    struct tm *timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    if (time_tag_name) {
 
 
-            std::stringstream strm0;
-            const int year = timeinfo->tm_year - 100;
-            strm0 << year;
-            const int month = timeinfo->tm_mon + 1;
-            if(month < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << month;
-            const int day = timeinfo->tm_mday;
-            if(day < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << day << "_";
-            const int hour = timeinfo->tm_hour;
-            if(hour < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << hour;
-            const int min = timeinfo->tm_min;
-            if(min < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << min;
-            const int sec = timeinfo->tm_sec;
-            if(sec < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << sec;
-
-            kml_filename = filename + "_" +  strm0.str() + ".kml";
+        std::stringstream strm0;
+        const int year = timeinfo->tm_year - 100;
+        strm0 << year;
+        const int month = timeinfo->tm_mon + 1;
+        if (month < 10) {
+            strm0 << "0";
         }
-    else
-        {
-            kml_filename = filename + ".kml";
+        strm0 << month;
+        const int day = timeinfo->tm_mday;
+        if (day < 10) {
+            strm0 << "0";
         }
+        strm0 << day << "_";
+        const int hour = timeinfo->tm_hour;
+        if (hour < 10) {
+            strm0 << "0";
+        }
+        strm0 << hour;
+        const int min = timeinfo->tm_min;
+        if (min < 10) {
+            strm0 << "0";
+        }
+        strm0 << min;
+        const int sec = timeinfo->tm_sec;
+        if (sec < 10) {
+            strm0 << "0";
+        }
+        strm0 << sec;
+
+        kml_filename = filename + "_" + strm0.str() + ".kml";
+    } else {
+        kml_filename = filename + ".kml";
+    }
     kml_file.open(kml_filename.c_str());
-    if (kml_file.is_open())
-        {
-            DLOG(INFO) << "KML printer writing on " << filename.c_str();
-            // Set iostream numeric format and precision
-            kml_file.setf(kml_file.fixed, kml_file.floatfield);
-            kml_file << std::setprecision(14);
-            kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
-                    << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
-                    << "    <Document>" << std::endl
-                    << "    <name>GNSS Track</name>" << std::endl
-                    << "    <description>GNSS-SDR Receiver position log file created at " << asctime (timeinfo)
-                    << "    </description>" << std::endl
-                    << "<Style id=\"yellowLineGreenPoly\">" << std::endl
-                    << " <LineStyle>" << std::endl
-                    << "     <color>7f00ffff</color>" << std::endl
-                    << "        <width>1</width>" << std::endl
-                    << "    </LineStyle>" << std::endl
-                    << "<PolyStyle>" << std::endl
-                    << "    <color>7f00ff00</color>" << std::endl
-                    << "</PolyStyle>" << std::endl
-                    << "</Style>" << std::endl
-                    << "<Placemark>" << std::endl
-                    << "<name>GNSS-SDR PVT</name>" << std::endl
-                    << "<description>GNSS-SDR position log</description>" << std::endl
-                    << "<styleUrl>#yellowLineGreenPoly</styleUrl>" << std::endl
-                    << "<LineString>" << std::endl
-                    << "<extrude>0</extrude>" << std::endl
-                    << "<tessellate>1</tessellate>" << std::endl
-                    << "<altitudeMode>absolute</altitudeMode>" << std::endl
-                    << "<coordinates>" << std::endl;
-            return true;
-        }
-    else
-        {
-            return false;
-        }
+    if (kml_file.is_open()) {
+        DLOG(INFO) << "KML printer writing on " << filename.c_str();
+        // Set iostream numeric format and precision
+        kml_file.setf(kml_file.fixed, kml_file.floatfield);
+        kml_file << std::setprecision(14);
+        kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
+                 << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
+                 << "    <Document>" << std::endl
+                 << "    <name>GNSS Track</name>" << std::endl
+                 << "    <description>GNSS-SDR Receiver position log file created at " << asctime(timeinfo)
+                 << "    </description>" << std::endl
+                 << "<Style id=\"yellowLineGreenPoly\">" << std::endl
+                 << " <LineStyle>" << std::endl
+                 << "     <color>7f00ffff</color>" << std::endl
+                 << "        <width>1</width>" << std::endl
+                 << "    </LineStyle>" << std::endl
+                 << "<PolyStyle>" << std::endl
+                 << "    <color>7f00ff00</color>" << std::endl
+                 << "</PolyStyle>" << std::endl
+                 << "</Style>" << std::endl
+                 << "<Placemark>" << std::endl
+                 << "<name>GNSS-SDR PVT</name>" << std::endl
+                 << "<description>GNSS-SDR position log</description>" << std::endl
+                 << "<styleUrl>#yellowLineGreenPoly</styleUrl>" << std::endl
+                 << "<LineString>" << std::endl
+                 << "<extrude>0</extrude>" << std::endl
+                 << "<tessellate>1</tessellate>" << std::endl
+                 << "<altitudeMode>absolute</altitudeMode>" << std::endl
+                 << "<coordinates>" << std::endl;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
-
-bool Kml_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values)
-{
+bool Kml_Printer::print_position(const std::shared_ptr<Pvt_Solution> &position, bool print_average_values) {
     double latitude;
     double longitude;
     double height;
@@ -138,65 +124,50 @@ bool Kml_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, 
 
     std::shared_ptr<Pvt_Solution> position_ = position;
 
-    if (print_average_values == false)
-        {
-            latitude = position_->d_latitude_d;
-            longitude = position_->d_longitude_d;
-            height = position_->d_height_m;
-        }
-    else
-        {
-            latitude = position_->d_avg_latitude_d;
-            longitude = position_->d_avg_longitude_d;
-            height = position_->d_avg_height_m;
-        }
+    if (print_average_values == false) {
+        latitude = position_->d_latitude_d;
+        longitude = position_->d_longitude_d;
+        height = position_->d_height_m;
+    } else {
+        latitude = position_->d_avg_latitude_d;
+        longitude = position_->d_avg_longitude_d;
+        height = position_->d_avg_height_m;
+    }
 
-    if (kml_file.is_open())
-        {
-            kml_file << longitude << "," << latitude << "," << height << std::endl;
-            return true;
-        }
-    else
-        {
-            return false;
-        }
+    if (kml_file.is_open()) {
+        kml_file << longitude << "," << latitude << "," << height << std::endl;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
-bool Kml_Printer::close_file()
-{
-    if (kml_file.is_open())
-        {
+bool Kml_Printer::close_file() {
+    if (kml_file.is_open()) {
 
-            kml_file << "</coordinates>" << std::endl
-                     << "</LineString>" << std::endl
-                     << "</Placemark>" << std::endl
-                     << "</Document>" << std::endl
-                     << "</kml>";
-            kml_file.close();
-            return true;
-        }
-    else
-        {
-            return false;
-        }
+        kml_file << "</coordinates>" << std::endl
+                 << "</LineString>" << std::endl
+                 << "</Placemark>" << std::endl
+                 << "</Document>" << std::endl
+                 << "</kml>";
+        kml_file.close();
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
-
-Kml_Printer::Kml_Printer ()
-{
+Kml_Printer::Kml_Printer() {
     positions_printed = false;
 }
 
 
-
-Kml_Printer::~Kml_Printer ()
-{
+Kml_Printer::~Kml_Printer() {
     close_file();
-    if(!positions_printed)
-        {
-            if(remove(kml_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary KML file";
-        }
+    if (!positions_printed) {
+        if (remove(kml_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary KML file";
+    }
 }
 

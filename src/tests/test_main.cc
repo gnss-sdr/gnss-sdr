@@ -64,7 +64,6 @@
 #include "sbas_time.h"
 
 
-
 using google::LogMessage;
 
 DECLARE_string(log_dir);
@@ -131,6 +130,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_l1_ca_telemetry_decoder_test.cc"
 #endif
 #endif
+
 #include "gnss_block/beidou_B1I_pcps_acquisition_test.cc"
 #include "gnss_block/beidou_B1I_pcps_acquisition_gensource_gsoc2016_test.cc"
 #include "gnss_block/beidou_b1i_dll_pll_tracking_gsoc2016_test.cc"
@@ -141,24 +141,20 @@ DECLARE_string(log_dir);
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     std::cout << "Running GNSS-SDR Tests..." << std::endl;
     int res = 0;
-    try
-    {
-            testing::InitGoogleTest(&argc, argv);
+    try {
+        testing::InitGoogleTest(&argc, argv);
     }
-    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+    catch (...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
-    try
-    {
-            res = RUN_ALL_TESTS();
+    try {
+        res = RUN_ALL_TESTS();
     }
-    catch(...)
-    {
-            LOG(WARNING) << "Unexpected catch";
+    catch (...) {
+        LOG(WARNING) << "Unexpected catch";
     }
     google::ShutDownCommandLineFlags();
     return res;

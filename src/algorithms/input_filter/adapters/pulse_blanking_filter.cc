@@ -46,21 +46,22 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
     std::string default_input_item_type = "gr_complex";
     std::string default_output_item_type = "gr_complex";
     std::string default_dump_filename = "../data/input_filter.dat";
-
+    
     DLOG(INFO) << "role " << role_;
 
     input_item_type_ = config_->property(role_ + ".input_item_type", default_input_item_type);
     output_item_type_ = config_->property(role_ + ".output_item_type", default_output_item_type);
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
-
-    double Pfa = config_->property(role_ + ".Pfa", 0.001);
-
+    float default_pfa_ = 0.001;
+    float pfa = config_->property(role_ + ".pfa", default_pfa_);
+    int default_length_ = 32;
+    int length_ = config_->property(role_ + ".length", default_length_);
     if (input_item_type_.compare("gr_complex") == 0)
         {
             item_size = sizeof(gr_complex); //output
             input_size_ = sizeof(gr_complex); //input
-            pulse_blanking_cc_ = make_pulse_blanking_cc(Pfa);
+            pulse_blanking_cc_ = make_pulse_blanking_cc(pfa, length_);
         }
     else
         {

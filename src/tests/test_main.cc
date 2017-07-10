@@ -82,6 +82,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/sources/gnss_sdr_valve_test.cc"
 
 #include "unit-tests/signal-processing-blocks/adapter/pass_through_test.cc"
+#include "unit-tests/signal-processing-blocks/adapter/adapter_test.cc"
 
 #include "unit-tests/signal-processing-blocks/filter/fir_filter_test.cc"
 

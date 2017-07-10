@@ -224,6 +224,16 @@ void pcps_acquisition_cc::init()
     d_input_power = 0.0;
 
     d_num_doppler_bins = ceil( static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step));
+
+    // Create the carrier Doppler wipeoff signals
+    d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
+
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+        {
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_freq + doppler);
+        }
 }
 
 void pcps_acquisition_cc::update_grid_doppler_wipeoffs()

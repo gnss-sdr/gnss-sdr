@@ -51,18 +51,19 @@ private:
     
     float pfa;
     float noise_pow_est;
-    gr_complex p_c_factor;
     float thres_;
     int length_;
+    int n_deg_fred;
     unsigned int n_segments;
     unsigned int n_segments_est;
     unsigned int n_segments_reset;
-    int n_deg_fred;
     bool filter_state_;
     gr_complex last_out;
     gr_complex z_0;
+    gr_complex p_c_factor;
     gr_complex* c_samples;
-    float* angle_;    
+    float* angle_;
+    float* power_spect;
     
 public:
         

@@ -38,6 +38,7 @@
 #include <volk/volk.h>
 #include <iostream>
 #include <glog/logging.h>
+#include <armadillo>
 
 using google::LogMessage;
 
@@ -63,12 +64,13 @@ Notch::Notch(float pfa, float p_c_factor, int length_) : gr::block("Notch",
     n_deg_fred = 2 * length_; //Number of dregrees of freedom
     n_segments = 0; 
     n_segments_est = 8; // Set the number of segments for noise power estimation
-    n_segments_reset = 1000000; // Set the period (in segments) when the noise power is estimated
+    n_segments_reset = 10000; // Set the period (in segments) when the noise power is estimated
     z_0 = gr_complex(0 , 0);
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa));
     c_samples = static_cast<gr_complex *>(volk_malloc(length_ * sizeof(gr_complex), volk_get_alignment()));
     angle_ = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
+    power_spect = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
     last_out = gr_complex(0,0);
 }
 
@@ -76,6 +78,7 @@ Notch::~Notch()
 {
     volk_free(c_samples);
     volk_free(angle_);
+    volk_free(power_spect);
 }
 
 int Notch::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
@@ -85,29 +88,35 @@ int Notch::general_work(int noutput_items __attribute__((unused)), gr_vector_int
     int index_in = 1;
     int index_out = 0;
     int aux = 0;
-    lv_32fc_t magnitude;
-    float sig2 = 0.0;
+    float sig2dB = 0.0;
+    float sig2lin = 0.0;
+    lv_32fc_t dot_prod_;
     gr_complex* in = (gr_complex *) input_items[0];
     gr_complex* out = (gr_complex *) output_items[0];
     gr_complex* paux;
     in++;
+    arma::cx_fvec signal_segment;
+    arma::cx_fvec signal_segment_fft;
     while(((index_out + length_) < noutput_items) && (n_segments < n_segments_est) && (filter_state_ == false))
     {
-        volk_32fc_x2_conjugate_dot_prod_32fc(&magnitude, in, in, length_);
-        sig2 = lv_creal(magnitude) / ((float) n_deg_fred);
-        noise_pow_est = (((float) n_segments) * noise_pow_est + sig2) / ((float)(n_segments + 1));
+        signal_segment = arma::cx_fvec(in, length_, false, false);
+        signal_segment_fft = arma::fft(signal_segment);
+        volk_32fc_s32f_power_spectrum_32f(power_spect, signal_segment_fft.memptr(), 1.0, length_);
+        volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect, 15.0, length_);
+        sig2lin = std::pow(10.0, (sig2dB / 10.0)) / ((float) n_deg_fred);
+        noise_pow_est = (((float) n_segments) * noise_pow_est + sig2lin) / ((float)(n_segments + 1));
+        memcpy(out, in, sizeof(gr_complex) * length_);
         index_out += length_;
         index_in += length_;
         n_segments++;
-        memcpy(out, in, sizeof(gr_complex) * length_);
         in += length_;
         out += length_;
     }
     while((index_out + length_) < noutput_items)
     {
         n_segments++;
-        volk_32fc_x2_conjugate_dot_prod_32fc(&magnitude, in, in, length_);
-        if( (lv_creal(magnitude) / noise_pow_est) > thres_)
+        volk_32fc_x2_conjugate_dot_prod_32fc(&dot_prod_, in, in, length_);
+        if( (lv_creal(dot_prod_) / noise_pow_est) > thres_)
         {
             if(filter_state_ == false)
             {
@@ -120,7 +129,7 @@ int Notch::general_work(int noutput_items __attribute__((unused)), gr_vector_int
             for(aux = 0; aux < length_; aux++)
             {
                 z_0 = std::exp(gr_complex(0,1) * (*(angle_ + aux)));
-                *out = *in - z_0 * (*(in - 1))
+                *out = (*in) - z_0 * (*(in - 1))
                                  + p_c_factor * z_0 * last_out;
                 last_out = *out;
                 index_out++;
@@ -137,9 +146,9 @@ int Notch::general_work(int noutput_items __attribute__((unused)), gr_vector_int
                 n_segments = 0;
             }
             filter_state_ = false;
+            memcpy(out, in, sizeof(gr_complex) * length_);
             index_out += length_;
             index_in += length_;
-            memcpy(out, in, sizeof(gr_complex) * length_);
             in += length_;
             out += length_;
         }

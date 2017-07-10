@@ -241,6 +241,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
+    acquisition->set_local_code();
     acquisition->init();
     acquisition->reset();
     acquisition->set_state(1);

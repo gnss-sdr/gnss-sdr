@@ -333,7 +333,7 @@ TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaPvt)
     std::shared_ptr<GNSSBlockInterface> pvt_ = factory->GetPVT(configuration);
     std::shared_ptr<PvtInterface> pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);
     EXPECT_STREQ("PVT", pvt->role().c_str());
-    EXPECT_STREQ("Hybrid_PVT", pvt->implementation().c_str());
+    EXPECT_STREQ("RTKLIB_PVT", pvt->implementation().c_str());
 }
 
 
@@ -346,4 +346,3 @@ TEST(GNSSBlockFactoryTest, InstantiateWrongPvt)
     std::shared_ptr<PvtInterface> pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);
     EXPECT_EQ(nullptr, pvt);
 }
-

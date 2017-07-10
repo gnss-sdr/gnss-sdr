@@ -37,7 +37,7 @@
 
 
 
-TEST(CodeGenGPSL1Test, CodeGeneration)
+TEST(CodeGenerationTest, CodeGenGPSL1Test)
 {
     std::complex<float>* _dest = new std::complex<float>[1023];
     signed int _prn = 1;
@@ -58,7 +58,7 @@ TEST(CodeGenGPSL1Test, CodeGeneration)
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     ASSERT_LE(0, end - begin);
     std::cout << "Generation completed in " << (end - begin) << " microseconds" << std::endl;
-    
+
 
 
     /* std::complex<float>* _dest2 = new std::complex<float>[1023];gettimeofday(&tv, NULL);
@@ -83,7 +83,7 @@ TEST(CodeGenGPSL1Test, CodeGeneration)
 
 
 
-TEST(CodeGenGPSL1SampledTest, CodeGeneration)
+TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
 {
     signed int _prn = 1;
     unsigned int _chip_shift = 4;
@@ -132,7 +132,7 @@ TEST(CodeGenGPSL1SampledTest, CodeGeneration)
 }
 
 
-TEST(ComplexCarrierTest, CodeGeneration)
+TEST(CodeGenerationTest, ComplexConjugateTest)
 {
     double _fs = 8000000;
     double _f = 4000;
@@ -154,29 +154,7 @@ TEST(ComplexCarrierTest, CodeGeneration)
 
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    delete[] _dest; 
+    delete[] _dest;
     ASSERT_LE(0, end - begin);
     std::cout << "Carrier generation completed in " << (end - begin) << " microseconds" << std::endl;
-    
-    /* std::complex<float>* _dest2 = new std::complex<float>[_samplesPerCode];
-    gettimeofday(&tv, NULL);
-    long long int begin2 = tv.tv_sec * 1000000 + tv.tv_usec;
-
-    for(int i = 0; i < iterations; i++)
-        {
-            complex_exp_gen_conj2( _dest2, _f,  _fs,  _samplesPerCode);
-        }
-
-    gettimeofday(&tv, NULL);
-    long long int end2 = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout << "Carrier generation completed in " << (end2 - begin2) << " microseconds  (New)" << std::endl;
-
-    for (int j=0; j<_samplesPerCode;j++)
-        {
-            if(std::abs(_dest[j] - _dest2[j]) > 0.1) std::cout << "Error!" << std::endl;
-        }
-
-    std::cout << _dest[10] << "and " << _dest2[10] << std::endl;
-    delete[] _dest2;*/
-
 }

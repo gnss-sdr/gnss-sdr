@@ -37,98 +37,55 @@ m * \file glonass_gnav_navigation_message.cc
 
 void Glonass_Gnav_Navigation_Message::reset()
 {
-    b_valid_ephemeris_set_flag = false;
-    double d_TOW; //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-    d_TOW_SF1 = 0;            //!< Time of GPS Week from HOW word of Subframe 1 [s]
-    d_TOW_SF2 = 0;            //!< Time of GPS Week from HOW word of Subframe 2 [s]
-    d_TOW_SF3 = 0;            //!< Time of GPS Week from HOW word of Subframe 3 [s]
-    d_TOW_SF4 = 0;            //!< Time of GPS Week from HOW word of Subframe 4 [s]
-    d_TOW_SF5 = 0;            //!< Time of GPS Week from HOW word of Subframe 5 [s]
+    //!< Satellite Identification
+    i_channel_ID = 0;               //!< Channel ID assigned by the receiver
+    i_satellite_freq_channel = 0;   //!< SV Frequency Slot Number
+    i_satellite_slot_number = 0;    //!< SV Orbit Slot Number
 
-    d_m = 0.0;               //!< String number within frame [dimensionless]
-    d_t_k = 0.0;             //!< Time referenced to the beginning of the frame within the current day [hours, minutes, seconds]
-    d_t_b = 0.0;             //!< Index of a time interval within current day according to UTC(SU) + 03 hours 00 min. [minutes]
-    d_M = 0.0;               //!< Type of satellite transmitting navigation signal [dimensionless]
-    d_gamma_n = 0.0;         //!< Relative deviation of predicted carrier frequency value of n- satellite from nominal value at the instant tb [dimensionless]
-    d_tau_n = 0.0;           //!< Correction to the nth satellite time (tn) relative to GLONASS time (te),
-    d_B_n = 0.0;             //!< Health flag [dimensionless]
-    d_P = 0.0;               //!< Technological parameter of control segment, indication the satellite operation mode in respect of time parameters [dimensionless]
-    d_N_T = 0.0;             //!< Current date, calendar number of day within four-year interval starting from the 1-st of January in a leap year [days]
-    d_F_T = 0.0;             //!< Parameter that provides the predicted satellite user range accuracy at time tb [dimensionless]
-    d_n = 0.0;               //!< Index of the satellite transmitting given navigation signal. It corresponds to a slot number within GLONASS constellation
-    d_Delta_tau_n = 0.0;     //!< Time difference between navigation RF signal transmitted in L2 sub- band and aviation RF signal transmitted in L1 sub-band by nth satellite. [dimensionless]
-    d_E_n = 0.0;             //!< Characterises "age" of a current information [days]
-    d_P_1 = 0.0;             //!< Flag of the immediate data updating.
-    d_P_2 = 0.0;             //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
-    d_P_3 = 0.0;             //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
-    d_P_4 = 0.0;             //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
-    d_l_n = 0.0;             //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+    //!< Ephmeris Flags
+    flag_all_ephemeris = false;
+    flag_ephemeris_str_1 = false;
+    flag_ephemeris_str_2 = false;
+    flag_ephemeris_str_3 = false;
+    flag_ephemeris_str_4 = false;
 
-    // Almanac and Not Inmediate Information
-    d_tau_c = 0.0;             //!< GLONASS time scale correction to UTC(SU) time. [s]
-    d_tau_gps = 0.0;           //!< Correction to GPS time to GLONASS time [day]
-    d_N_4 = 0.0;               //!< Four year interval number starting from 1996 [4 year interval]
-    d_N_A = 0.0;               //!< Calendar day number within the four-year period beginning since the leap year [days]
-    d_n_A = 0.0;               //!< Conventional number of satellite within GLONASS space segment [dimensionless]
-    d_H_n_A = 0.0;             //!< Carrier frequency number of navigation RF signal transmitted by d_nA satellite [dimensionless]
-    d_lambda_n_A = 0.0;        //!< Longitude of the first (within the d_NA day) ascending node of d_nA  [semi-circles]
-    d_t_lambda_n_A = 0.0;      //!< Time of first ascending node passage [s]
-    d_Delta_i_n_A = 0.0;        //!< Correction of the mean value of inclination of d_n_A satellite at instant t_lambda_n_A [semi-circles]
-    d_Delta_T_n_A = 0.0;       //!< Correction to the mean value of Draconian period of d_n_A satellite at instant t_lambda_n_A[s / orbital period]
-    d_Delta_T_n_A_dot = 0.0;   //!< Rate of change of Draconian period of d_n_A satellite at instant t_lambda_n_A [s / orbital period^2]
-    d_epsilon_n_A = 0.0;       //!< Eccentricity of d_n_A satellite at instant t_lambda_n_A [dimensionless]
-    d_omega_n_A = 0.0;         //!< Argument of preigree of d_n_A satellite at instant t_lambdan_A [semi-circles]
-    d_M_n_A = 0.0;             //!< Type of satellite n_A [dimensionless]
-    d_B1 = 0.0;                //!< Coefficient  to  determine DeltaUT1 [s]
-    d_B2 = 0.0;                //!< Coefficient  to  determine DeltaUT1 [s/msd]
-    d_KP = 0.0;                //!< Notification on forthcoming leap second correction of UTC [dimensionless]
-    d_tau_n_A = 0.0;           //!< Coarse value of d_n_A satellite time correction to GLONASS time at instant  t_lambdan_A[s]
-    d_C_n_A = 0.0;             //!< Generalized “unhealthy flag” of n_A satellite at instant of almanac upload [dimensionless]
+    //!< Almanac Flags
+    flag_all_almanac = false;
+    flag_almanac_str_6  = false;
+    flag_almanac_str_7  = false;
+    flag_almanac_str_8  = false;
+    flag_almanac_str_9  = false;
+    flag_almanac_str_10 = false;
+    flag_almanac_str_11 = false;
+    flag_almanac_str_12 = false;
+    flag_almanac_str_13 = false;
+    flag_almanac_str_14 = false;
+    flag_almanac_str_15 = false;
 
-    std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
+    //!< UTC and System Clocks Flags
+    flag_utc_model_valid;      //!< If set, it indicates that the UTC model parameters are filled
+    flag_utc_model_str_5;      //!< Clock info send in string 5 of navigation data
+    flag_utc_model_str_15;     //!< Clock info send in string 15 of frame 5 of navigation data
+    flag_TOW_5;
+    flag_TOW_6;
+    flag_TOW_set;              //!< it is true when page 5 or page 6 arrives
 
-
-    /*! \brief If true, enhanced level of integrity assurance.
-     *
-     *  If false, indicates that the conveying signal is provided with the legacy level of integrity assurance.
-     *  That is, the probability that the instantaneous URE of the conveying signal exceeds 4.42 times the upper bound
-     *  value of the current broadcast URA index, for more than 5.2 seconds, without an accompanying alert, is less
-     *  than 1E-5 per hour. If true, indicates that the conveying signal is provided with an enhanced level of
-     *  integrity assurance. That is, the probability that the instantaneous URE of the conveying signal exceeds 5.73
-     *  times the upper bound value of the current broadcast URA index, for more than 5.2 seconds, without an
-     *  accompanying alert, is less than 1E-8 per hour.
-     */
-    b_integrity_status_flag = false;
-    b_alert_flag = false;      //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
-    b_antispoofing_flag = false;  //!<  If true, the AntiSpoofing mode is ON in that SV
+    //broadcast orbit 1
+    //TODO Need to send the information regarding the frame number
+    double d_TOW;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
+    double d_TOW_F1;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
+    double d_TOW_F2;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
+    double d_TOW_F3;        //!< Time of GPS Week from HOW word of Subframe 3 [s]
+    double d_TOW_F4;        //!< Time of GPS Week from HOW word of Subframe 4 [s]
+    double d_TOW_F5;        //!< Time of GPS Week from HOW word of Subframe 5 [s]
 
     // Clock terms
-    d_satClkCorr = 0.0;     // Satellite clock error
-    d_dtr = 0.0;            // Relativistic clock correction term
-    d_satClkDrift = 0.0;    // Satellite clock drift
+    d_satClkCorr = 0.0;
+    d_dtr = 0.0;
+    d_satClkDrift = 0.0;
 
-    // satellite identification info
-    int i_channel_ID = 0;
-    int i_satellite_freq_channel = 0; //!< SV PRN NUMBER
 
-    // time synchro
-    d_subframe_timestamp_ms = 0; //[ms]
-
-    // UTC parameters
-    bool flag_utc_model_valid = false; //!< If set, it indicates that the UTC model parameters are filled
-
-    // satellite positions
-    d_satpos_X = 0.0;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
-    d_satpos_Y = 0.0;        //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
-    d_satpos_Z = 0.0;        //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
-    // Satellite velocity
-    d_satvel_X = 0.0;        //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
-    d_satvel_Y = 0.0;        //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
-    d_satvel_Z = 0.0;        //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
-    // Satellite acceleration
-    d_satacc_X = 0.0;        //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
-    d_satacc_Y = 0.0;        //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
-    d_satacc_Z = 0.0;        //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
+    std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 
     auto gnss_sat = Gnss_Satellite();
     std::string _system ("GLONASS");
@@ -145,79 +102,97 @@ Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
     reset();
 }
 
+
 bool Glonass_Gnav_Navigation_Message::_CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> data_bits, std::bitset<GLONASS_GNAV_STRING_BITS> hamming_code_bits )
 {
-    int sum;
+    int sum_bits;
+    int sum_hamming;
 
     //!< Compute C1 term
-    sum = 0;
+    sum_bits = 0;
     for(int i = 0; i < GLONASS_GNAV_CRC_I_INDEX.size; i++)
         {
-            sum += data_bits[GLONASS_GNAV_CRC_I_INDEX[i]]
+            sum_bits += data_bits[GLONASS_GNAV_CRC_I_INDEX[i]];
         }
-    C1 = hamming_code_bits[0]^fmod(sum,2);
+    C1 = hamming_code_bits[0]^fmod(sum_bits,2);
 
     //!< Compute C2 term
-    sum = 0;
+    sum_bits = 0;
     for(int j = 0; j < GLONASS_GNAV_CRC_J_INDEX.size; j++)
         {
-            sum += data_bits[GLONASS_GNAV_CRC_J_INDEX[j]]
+            sum_bits += data_bits[GLONASS_GNAV_CRC_J_INDEX[j]];
         }
-    C2 = hamming_code_bits[1]^fmod(sum,2);
+    C2 = hamming_code_bits[1]^fmod(sum_bits,2);
 
     //!< Compute C3 term
-    sum = 0;
+    sum_bits = 0;
     for(int k = 0; k < GLONASS_GNAV_CRC_K_INDEX.size; k++)
         {
-            sum += data_bits[GLONASS_GNAV_CRC_K_INDEX[k]]
+            sum_bits += data_bits[GLONASS_GNAV_CRC_K_INDEX[k]];
         }
-    C3 = hamming_code_bits[2]^fmod(sum,2);
+    C3 = hamming_code_bits[2]^fmod(sum_bits,2);
 
     //!< Compute C4 term
-    sum = 0;
+    sum_bits = 0;
     for(int l = 0; l < GLONASS_GNAV_CRC_L_INDEX.size; l++)
         {
-            sum += data_bits[GLONASS_GNAV_CRC_L_INDEX[l]]
+            sum_bits += data_bits[GLONASS_GNAV_CRC_L_INDEX[l]];
         }
-    C4 = hamming_code_bits[3]^fmod(sum,2);
+    C4 = hamming_code_bits[3]^fmod(sum_bits,2);
 
     //!< Compute C5 term
-    sum = 0;
+    sum_bits = 0;
     for(int m = 0; m < GLONASS_GNAV_CRC_M_INDEX.size; m++)
         {
-            sum += data_bits[GLONASS_GNAV_CRC_M_INDEX[m]]
+            sum_bits += data_bits[GLONASS_GNAV_CRC_M_INDEX[m]];
         }
-    C5 = hamming_code_bits[4]^fmod(sum,2);
+    C5 = hamming_code_bits[4]^fmod(sum_bits,2);
 
     //!< Compute C6 term
-    sum = 0;
+    sum_bits = 0;
     for(int n = 0; n < GLONASS_GNAV_CRC_N_INDEX.size; n++)
         {
-            sum += data_bits[GLONASS_GNAV_CRC_N_INDEX[n]]
+            sum_bits += data_bits[GLONASS_GNAV_CRC_N_INDEX[n]];
         }
-    C6 = hamming_code_bits[5]^fmod(sum,2);
+    C6 = hamming_code_bits[5]^fmod(sum_bits,2);
 
     //!< Compute C7 term
-    sum = 0;
+    sum_bits = 0;
     for(int p = 0; p < GLONASS_GNAV_CRC_P_INDEX.size; p++)
         {
-            sum += data_bits[GLONASS_GNAV_CRC_P_INDEX[p]]
+            sum_bits += data_bits[GLONASS_GNAV_CRC_P_INDEX[p]];
         }
-    C7 = hamming_code_bits[6]^fmod(sum,2);
+    C7 = hamming_code_bits[6]^fmod(sum_bits,2);
 
-    //!< Compute C8 term
-    sum = 0;
+    //!< Compute C_Sigma term
+    sum_bits = 0;
+    sum_hamming = 0;
     for(int q = 0; q < GLONASS_GNAV_CRC_Q_INDEX.size; q++)
         {
-            sum += data_bits[GLONASS_GNAV_CRC_Q_INDEX[q]]
+            sum_bits += data_bits[GLONASS_GNAV_CRC_Q_INDEX[q]];
         }
-    C8 = hamming_code_bits[7]^fmod(sum,2);
+    for(int q = 0; q < 8; q++)
+        {
+            sum_hamming += hamming_code_bits[q];
+        }
+    C_Sigma = fmod(sum_bits, 2)^fmod(sum_bits,2);
 
-    if isempty(find(C,1)) || (length(find(C(1,1:7))) == 1 && C(1,8) == 1)
-         status = 1;
-     else
-         status = 0;
-     end
+
+    //!< Verification of the data
+    // All of the checksums are equal to zero
+    if((C1 & C2 & C3 & C4 & C5 & C6 & C7 & C_Sigma) == 0 )
+        {
+            return true;
+        }
+    // only one of the checksums (C1,...,C7) is equal to zero but C_Sigma = 1
+    else if(C_Sigma == 1 && C1+C2+C3+C4+C5+C6+C7 == 6)
+        {
+            return true;
+        }
+    else
+        {
+            return false;
+        }
 }
 
 
@@ -315,6 +290,7 @@ signed long int Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bit
     return value;
 }
 
+
 unsigned int Glonass_Gnav_Navigation_Message::get_frame_number(unsigned int satellite_slot_number)
 {
     unsigned int frame_ID = 0;
@@ -345,6 +321,7 @@ unsigned int Glonass_Gnav_Navigation_Message::get_frame_number(unsigned int sate
             frame_ID = 0;
         }
 }
+
 
 int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
 {
@@ -591,8 +568,6 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
 }
 
 
-
-
 double Glonass_Gnav_Navigation_Message::utc_time(const double glonass_time_corrected) const
 {
     double t_utc;
@@ -602,71 +577,25 @@ double Glonass_Gnav_Navigation_Message::utc_time(const double glonass_time_corre
 }
 
 
-
 Glonass_Gnav_Ephemeris Glonass_Gnav_Navigation_Message::get_ephemeris()
 {
-    Glonass_Gnav_Ephemeris ephemeris;
-
-    ephemeris.i_satellite_freq_channel = i_satellite_freq_channel;
-    ephemeris.d_m = d_m;
-    ephemeris.d_t_k = d_t_k;
-    ephemeris.d_t_b = d_t_b;
-    ephemeris.d_M = d_M;
-    ephemeris.d_gamma_n = d_gamma_n;
-    ephemeris.d_tau_n = d_tau_n;
-    // satellite positions
-    ephemeris.d_satpos_X = d_satpos_X;
-    ephemeris.d_satpos_Y = d_satpos_Y;
-    ephemeris.d_satpos_Z = d_satpos_Z;
-    // Satellite velocity
-    ephemeris.d_satvel_X = d_satvel_X;
-    ephemeris.d_satvel_Y = d_satvel_Y;
-    ephemeris.d_satvel_Z = d_satvel_Z;
-    // Satellite acceleration
-    ephemeris.d_satacc_X = d_satacc_X;
-    ephemeris.d_satacc_Y = d_satacc_Y;
-    ephemeris.d_satacc_Z = d_satacc_Z;
-    ephemeris.d_B_n = d_B_n;
-    ephemeris.d_P = d_P;
-    ephemeris.d_N_T = d_N_T;
-    ephemeris.d_F_T = d_F_T;
-    ephemeris.d_n = d_n;
-    ephemeris.d_Delta_tau_n = d_Delta_tau_n;
-    ephemeris.d_E_n = d_E_n;
-    ephemeris.d_P_1 = d_P_1;
-    ephemeris.d_P_2 = d_P_2;
-    ephemeris.d_P_3 = d_P_3;
-    ephemeris.d_P_4 = d_P_4;
-    ephemeris.d_l_n = d_l_n;
-
-    // clock terms derived from ephemeris data
-    ephemeris.d_satClkDrift = d_satClkDrift;
-    ephemeris.d_dtr = d_dtr;
-
-    return ephemeris;
+    return gnav_ephemeris;
 }
 
 
 Glonass_Gnav_Utc_Model Glonass_Gnav_Navigation_Message::get_utc_model()
 {
-    Gps_Utc_Model utc_model;
-    utc_model.valid = flag_utc_model_valid;
-    // UTC parameters
-    utc_model.d_A1 = d_A1;
-    utc_model.d_A0 = d_A0;
-    utc_model.d_t_OT = d_t_OT;
-    utc_model.i_WN_T = i_WN_T;
-    utc_model.d_DeltaT_LS = d_DeltaT_LS;
-    utc_model.i_WN_LSF = i_WN_LSF;
-    utc_model.i_DN = i_DN;
-    utc_model.d_DeltaT_LSF = d_DeltaT_LSF;
-    // warning: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
-    flag_utc_model_valid = false;
-    return utc_model;
+    return gnav_utc_model;
 }
 
 
-bool Glonass_Gnav_Navigation_Message::satellite_validation()
+Glonass_Gnav_Almanac get_almanac()
+{
+    return gnav_almanac;
+}
+
+
+bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a new ephemeris stored in the galileo navigation class
 {
     bool flag_data_valid = false;
     b_valid_ephemeris_set_flag = false;
@@ -674,7 +603,7 @@ bool Glonass_Gnav_Navigation_Message::satellite_validation()
     // First Step:
     // check Issue Of Ephemeris Data (IODE IODC..) to find a possible interrupted reception
     // and check if the data have been filled (!=0)
-    if (d_TOW_SF1 != 0 and d_TOW_SF2 != 0 and d_TOW_SF3 != 0)
+    if (d_TOW_F1 != 0 and d_TOW_F2 != 0 and d_TOW_F3 != 0)
         {
             if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!= -1)
                 {
@@ -682,5 +611,67 @@ bool Glonass_Gnav_Navigation_Message::satellite_validation()
                     b_valid_ephemeris_set_flag = true;
                 }
         }
-    return flag_data_valid;
+
+
+    if ((flag_ephemeris_str_1 == true) and (flag_ephemeris_str_2 == true) and (flag_ephemeris_str_3 == true) and (flag_ephemeris_str_4 == true) and (flag_iono_and_GST == true))
+        {
+            //if all ephemeris pages have the same IOD, then they belong to the same block
+            if ((gnav_ephemeris.d_t_b== IOD_nav_2) and (IOD_nav_3 == IOD_nav_4) and (IOD_nav_1 == IOD_nav_3))
+                {
+                    std::cout << "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
+                    flag_ephemeris_1 = false;// clear the flag
+                    flag_ephemeris_2 = false;// clear the flag
+                    flag_ephemeris_3 = false;// clear the flag
+                    flag_ephemeris_4 = false;// clear the flag
+                    flag_all_ephemeris = true;
+                    IOD_ephemeris = IOD_nav_1;
+                    std::cout << "Batch number: "<< IOD_ephemeris << std::endl;
+                    return true;
+                }
+            else
+                {
+                    return false;
+                }
+        }
+    else
+        return false;
+}
+
+
+bool Glonass_Gnav_Navigation_Message::have_new_utc_model() // Check if we have a new utc data set stored in the galileo navigation class
+{
+    if (flag_utc_model == true)
+        {
+            flag_utc_model = false; // clear the flag
+            return true;
+        }
+    else
+        return false;
+}
+
+
+bool Glonass_Gnav_Navigation_Message::have_new_almanac() //Check if we have a new almanac data set stored in the galileo navigation class
+{
+    if ((flag_almanac_str_6 == true) and (flag_almanac_str_7 == true) and
+        (flag_almanac_str_8 == true) and (flag_almanac_str_9 == true) and
+        (flag_almanac_str_10 == true) and (flag_almanac_str_11 == true) and
+        (flag_almanac_str_12 == true) and (flag_almanac_str_13 == true) and
+        (flag_almanac_str_14 == true) and (flag_almanac_str_15 == true))
+        {
+            //All almanac have been received
+            flag_almanac_str_6 = false;
+            flag_almanac_str_7 = false;
+            flag_almanac_str_8 = false;
+            flag_almanac_str_9 = false;
+            flag_almanac_str_10 = false;
+            flag_almanac_str_11 = false;
+            flag_almanac_str_12 = false;
+            flag_almanac_str_13 = false;
+            flag_almanac_str_14 = false;
+            flag_almanac_str_15 = false;
+            flag_all_almanac = true;
+            return true;
+        }
+    else
+        return false;
 }

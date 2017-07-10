@@ -84,6 +84,7 @@ const double GLONASS_L1_CA_CODE_RATE_HZ      = 0.511e6;       //!< GLONASS L1 C/
 const double GLONASS_L1_CA_CODE_LENGTH_CHIPS = 511.0;         //!< GLONASS L1 C/A code length [chips]
 const double GLONASS_L1_CA_CODE_PERIOD       = 0.001;         //!< GLONASS L1 C/A code period [seconds]
 const double GLONASS_L1_CA_CHIP_PERIOD       = 1.9569e-06;    //!< GLONASS L1 C/A chip period [seconds]
+const double GLONASS_L1_CA_SYMBOL_RATE_BPS   = 1000;
 
 const double GLONASS_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)
 
@@ -91,7 +92,6 @@ const double GLONASS_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (
 const int GLONASS_L1_CA_HISTORY_DEEP = 100;
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
-
 #define GLONASS_CA_PREAMBLE {1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0}
 const int GLONASS_CA_PREAMBLE_LENGTH_BITS = 30;
 const int GLONASS_CA_PREAMBLE_LENGTH_SYMBOLS = 300;
@@ -99,9 +99,7 @@ const double GLONASS_CA_PREAMBLE_DURATION_S = 0.3;
 const int GLONASS_CA_TELEMETRY_RATE_BITS_SECOND = 50;   //!< NAV message bit rate [bits/s]
 const int GLONASS_CA_TELEMETRY_SYMBOLS_PER_BIT = 10;
 const int GLONASS_CA_TELEMETRY_RATE_SYMBOLS_SECOND = GLONASS_CA_TELEMETRY_RATE_BITS_SECOND*GLONASS_CA_TELEMETRY_SYMBOLS_PER_BIT;   //!< NAV message bit rate [symbols/s]
-
-const int GLONASS_GNAV_WORD_LENGTH = 4;         //!< \TODO cHECK this, size is not integer bte size
-const int GLONASS_GNAV_FRAME_LENGTH = 40;       //!< \TODO GPS_WORD_LENGTH x 10 = 40 bytes
+const int GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS = 1700;
 const int GLONASS_GNAV_FRAME_BITS = 1725;       //!< Number of chips per frame in the GNAV message  15 strings*(85 data bits + 30 time mark bits)[bits]
 const int GLONASS_GNAV_FRAME_SECONDS = 30;      //!< Subframe duration [seconds]
 const int GLONASS_GNAV_FRAME_MS = 30000;        //!< Subframe duration [seconds]

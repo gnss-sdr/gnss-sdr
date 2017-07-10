@@ -64,77 +64,60 @@ private:
     unsigned int get_frame_number(unsigned int satellite_slot_number);
 
 public:
-    bool b_valid_ephemeris_set_flag; // flag indicating that this ephemeris set have passed the validation check
-    int Page_type_time_stamp;
-    int flag_even_word;
-    std::string page_Even;
     bool flag_CRC_test;
+    unsigned int u_frame_number;
 
     Glonass_Gnav_Ephemeris gnav_ephemeris;      //!< Ephemeris information decoded
-    Glonass_Gnav_Iono gnav_iono;                //!< Iono corrections information
+    //Glonass_Gnav_Iono gnav_iono;                //!< Iono corrections information
     Glonass_Gnav_Utc_Model gnav_utc_model;      //!< UTC model information
     Glonass_Gnav_Almanac gnav_almanac[24];      //!< Almanac information for all 24 satellites
 
+    //!< Satellite Identification
+    int i_channel_ID;               //!< Channel ID assigned by the receiver
+    int i_satellite_freq_channel;   //!< SV Frequency Slot Number
+    int i_satellite_slot_number;    //!< SV Orbit Slot Number
+
     //!< Ephmeris Flags
     bool flag_all_ephemeris;  //!< Flag indicating that all strings containing ephemeris have been received
-    bool flag_ephemeris_str_1;    //!< Flag indicating that ephemeris 1/4 (word 1) have been received
-    bool flag_ephemeris_str_2;    //!< Flag indicating that ephemeris 2/4 (word 2) have been received
-    bool flag_ephemeris_str_3;    //!< Flag indicating that ephemeris 3/4 (word 3) have been received
-    bool flag_ephemeris_str_4;    //!< Flag indicating that ephemeris 4/4 (word 4) have been received
+    bool flag_ephemeris_str_1;    //!< Flag indicating that ephemeris 1/4 (string 1) have been received
+    bool flag_ephemeris_str_2;    //!< Flag indicating that ephemeris 2/4 (string 2) have been received
+    bool flag_ephemeris_str_3;    //!< Flag indicating that ephemeris 3/4 (string 3) have been received
+    bool flag_ephemeris_str_4;    //!< Flag indicating that ephemeris 4/4 (string 4) have been received
 
-    bool flag_iono_and_GST;   //!< Flag indicating that ionospheric and GST parameters (word 5) have been received
+    //!< Almanac Flags
+    bool flag_all_almanac;        //!< Flag indicating that all almanac have been received
+    bool flag_almanac_str_6;      //!< Flag indicating that almanac of string 6 have been received
+    bool flag_almanac_str_7;      //!< Flag indicating that almanac of string 7 have been received
+    bool flag_almanac_str_8;      //!< Flag indicating that almanac of string 8 have been received
+    bool flag_almanac_str_9;      //!< Flag indicating that almanac of string 9 have been received
+    bool flag_almanac_str_10;     //!< Flag indicating that almanac of string 10 have been received
+    bool flag_almanac_str_11;     //!< Flag indicating that almanac of string 11 have been received
+    bool flag_almanac_str_12;     //!< Flag indicating that almanac of string 12 have been received
+    bool flag_almanac_str_13;     //!< Flag indicating that almanac of string 13 have been received
+    bool flag_almanac_str_14;     //!< Flag indicating that almanac of string 14 have been received
+    bool flag_almanac_str_15;     //!< Flag indicating that almanac of string 15 have been received
+
+    //!< UTC and System Clocks Flags
+    bool flag_utc_model_valid;      //!< If set, it indicates that the UTC model parameters are filled
+    bool flag_utc_model_str_5;      //!< Clock info send in string 5 of navigation data
+    bool flag_utc_model_str_15;     //!< Clock info send in string 15 of frame 5 of navigation data
     bool flag_TOW_5;
     bool flag_TOW_6;
-    bool flag_TOW_set;        //!< it is true when page 5 or page 6 arrives
-    bool flag_utc_model;      //!< Flag indicating that utc model parameters (word 6) have been received
-
-    bool flag_all_almanac;        //!< Flag indicating that all almanac have been received
-    bool flag_almanac_str_6;      //!< Flag indicating that almanac 1/4 (word 7) have been received
-    bool flag_almanac_str_7;      //!< Flag indicating that almanac 2/4 (word 8) have been received
-    bool flag_almanac_str_8;      //!< Flag indicating that almanac 3/4 (word 9) have been received
-    bool flag_almanac_str_9;      //!< Flag indicating that almanac 4/4 (word 10) have been received
-    bool flag_almanac_str_10;     //!< Flag indicating that almanac 4/4 (word 10) have been received
-    bool flag_almanac_str_11;     //!< Flag indicating that almanac 4/4 (word 10) have been received
-    bool flag_almanac_str_12;     //!< Flag indicating that almanac 4/4 (word 10) have been received
-    bool flag_almanac_str_13;     //!< Flag indicating that almanac 4/4 (word 10) have been received
-    bool flag_almanac_str_14;     //!< Flag indicating that almanac 4/4 (word 10) have been received
-    bool flag_almanac_str_15;     //!< Flag indicating that almanac 4/4 (word 10) have been received
+    bool flag_TOW_set;              //!< it is true when page 5 or page 6 arrives
 
     //broadcast orbit 1
     //TODO Need to send the information regarding the frame number
-    double d_TOW; //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-    double d_TOW_F1;            //!< Time of GPS Week from HOW word of Subframe 1 [s]
-    double d_TOW_F2;            //!< Time of GPS Week from HOW word of Subframe 2 [s]
-    double d_TOW_F3;            //!< Time of GPS Week from HOW word of Subframe 3 [s]
-    double d_TOW_F4;            //!< Time of GPS Week from HOW word of Subframe 4 [s]
-    double d_TOW_F5;            //!< Time of GPS Week from HOW word of Subframe 5 [s]
+    double d_TOW;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
+    double d_TOW_F1;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
+    double d_TOW_F2;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
+    double d_TOW_F3;        //!< Time of GPS Week from HOW word of Subframe 3 [s]
+    double d_TOW_F4;        //!< Time of GPS Week from HOW word of Subframe 4 [s]
+    double d_TOW_F5;        //!< Time of GPS Week from HOW word of Subframe 5 [s]
 
     // Clock terms
     double d_satClkCorr;     // Satellite clock error
     double d_dtr;            // Relativistic clock correction term
     double d_satClkDrift;    // Satellite clock drift
-
-    // satellite identification info
-    int i_channel_ID;
-    unsigned int i_satellite_PRN;   //!< SV PRN Number
-    int i_satellite_freq_channel;   //!< SV Frequency Slot Number
-    int i_satellite_slot_number;    //!< SV Orbit Slot Number
-
-    // UTC parameters
-    bool flag_utc_model_valid; //!< If set, it indicates that the UTC model parameters are filled
-
-    // satellite positions
-    double d_satpos_X;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
-    double d_satpos_Y;        //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
-    double d_satpos_Z;        //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
-    // Satellite velocity
-    double d_satvel_X;        //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_satvel_Y;        //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_satvel_Z;        //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
-    // Satellite acceleration
-    double d_satacc_X;        //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
-    double d_satacc_Y;        //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
-    double d_satacc_Z;        //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
 
     /*!
      * \brief Reset GLONASS GNAV Navigation Information
@@ -182,12 +165,10 @@ public:
      */
     bool have_new_almanac();
 
-
-
     /*!
-     * \brief Decodes the GLONASS GNAV frame
+     * \brief Decodes the GLONASS GNAV string
      */
-    int string_decoder(char *string, int frame_ID);
+    int string_decoder(char *string);
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and returns it in [s]

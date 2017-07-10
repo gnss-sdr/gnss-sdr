@@ -745,15 +745,7 @@ void GNSSFlowgraph::set_signals_list()
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Glonass"),
-<<<<<<< 3c93101c23e7e730777f47eeff6e7d538c9528e4
-<<<<<<< aadcdb80509f7a96b0558b8d33ecaed526bceae9
                             *available_gnss_prn_iter), std::string("1G")));
-=======
-                            *available_gnss_prn_iter), std::string("5X")));
->>>>>>> Add glonass svn in signals list
-=======
-                            *available_gnss_prn_iter), std::string("1G")));
->>>>>>> fix glonass signal string
                 }
         }
     /*

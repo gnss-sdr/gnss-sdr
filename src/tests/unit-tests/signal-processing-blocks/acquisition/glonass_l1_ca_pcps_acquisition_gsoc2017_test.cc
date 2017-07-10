@@ -615,4 +615,3 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
 
     delete acquisition;
 }
-

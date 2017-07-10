@@ -188,21 +188,6 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 
-bool pcps_acquisition_cc::is_fdma()
-{
-    // Dealing with FDMA system
-    if( strcmp(d_gnss_synchro->Signal,"1G") == 0 )
-        {
-            d_freq += DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
-            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN) << " in Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
-            return true;
-        }
-    else
-        {
-            return false;
-        }
-}
-
 
 bool pcps_acquisition_cc::is_fdma()
 {

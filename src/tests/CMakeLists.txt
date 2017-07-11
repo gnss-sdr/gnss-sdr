@@ -48,7 +48,7 @@ endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
 if(NOT ${GTEST_DIR_LOCAL})
      # if GTEST_DIR is not defined, we download and build it
      set(gtest_RELEASE 1.8.0)
-     
+
      if(CMAKE_VERSION VERSION_LESS 3.2)
       ExternalProject_Add(
          gtest-${gtest_RELEASE}
@@ -74,9 +74,9 @@ if(NOT ${GTEST_DIR_LOCAL})
          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
                           ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
          INSTALL_COMMAND ""
-      )     
+      )
      endif(CMAKE_VERSION VERSION_LESS 3.2)
-     
+
      # Set up variables
      # Set recently downloaded and build Googletest root folder
      set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}/googletest")
@@ -201,7 +201,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
       if(NOT ENABLE_FPGA)
           set(gpstk_RELEASE "2.9")
-          
+
           if(CMAKE_VERSION VERSION_LESS 3.2)
            ExternalProject_Add(
              gpstk-${gpstk_RELEASE}
@@ -226,7 +226,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
              PATCH_COMMAND ""
            )
           endif(CMAKE_VERSION VERSION_LESS 3.2)
-          
+
           set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/include CACHE PATH "Local GPSTK headers")
           add_library(gpstk UNKNOWN IMPORTED)
           set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -561,6 +561,7 @@ if(NOT ${ENABLE_PACKAGING})
                                     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/file_signal_source_test.cc
                                     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/filter/fir_filter_test.cc
                                     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/adapter/pass_through_test.cc
+                                    ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/adapter/adapter_test.cc
                                     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_block_factory_test.cc
                    )
      set_property(TARGET gnss_block_test PROPERTY EXCLUDE_FROM_ALL TRUE)

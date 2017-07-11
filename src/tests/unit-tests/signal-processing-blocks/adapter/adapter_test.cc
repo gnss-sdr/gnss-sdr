@@ -33,6 +33,7 @@
 #include <cstdint>
 #include <fstream>
 #include <iterator>
+#include <system_error>
 #include <vector>
 #include <gnuradio/blocks/file_source.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>

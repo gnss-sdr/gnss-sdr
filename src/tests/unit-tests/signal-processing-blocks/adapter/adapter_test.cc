@@ -36,6 +36,7 @@
 #include <system_error>
 #include <vector>
 #include <gnuradio/blocks/file_source.h>
+#include <gtest/gtest.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "byte_to_short.h"
 #include "ibyte_to_cbyte.h"

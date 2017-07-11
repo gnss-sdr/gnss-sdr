@@ -79,7 +79,7 @@ std::vector< uint8_t > packData( std::vector< int8_t > const & raw_data,
 
 }
 
-TEST(Unpack_2bit_Samples_Test, CheckBigEndianByte)
+TEST(Unpack2bitSamplesTest, CheckBigEndianByte)
 {
     bool big_endian_bytes = true;
     size_t item_size = 1;
@@ -90,13 +90,13 @@ TEST(Unpack_2bit_Samples_Test, CheckBigEndianByte)
     std::vector< uint8_t > packed_data = packData( raw_data, big_endian_bytes );
     std::vector< uint8_t > unpacked_data;
 
-    gr::top_block_sptr top_block = gr::make_top_block("unpack_2bit_samples_test");
+    gr::top_block_sptr top_block = gr::make_top_block("Unpack2bitSamplesTest");
 
-    gr::blocks::vector_source_b::sptr source = 
+    gr::blocks::vector_source_b::sptr source =
         gr::blocks::vector_source_b::make( packed_data );
 
-    
-    boost::shared_ptr<gr::block> unpacker = 
+
+    boost::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
                                  item_size,
                                  big_endian_items );
@@ -104,7 +104,7 @@ TEST(Unpack_2bit_Samples_Test, CheckBigEndianByte)
     gr::blocks::stream_to_vector::sptr stov =
         gr::blocks::stream_to_vector::make( item_size, raw_data.size() );
 
-    gr::blocks::vector_sink_b::sptr sink = 
+    gr::blocks::vector_sink_b::sptr sink =
         gr::blocks::vector_sink_b::make( raw_data.size() );
 
 
@@ -126,7 +126,7 @@ TEST(Unpack_2bit_Samples_Test, CheckBigEndianByte)
 
 }
 
-TEST(Unpack_2bit_Samples_Test, CheckLittleEndianByte)
+TEST(Unpack2bitSamplesTest, CheckLittleEndianByte)
 {
     bool big_endian_bytes = false;
     size_t item_size = 1;
@@ -137,13 +137,13 @@ TEST(Unpack_2bit_Samples_Test, CheckLittleEndianByte)
     std::vector< uint8_t > packed_data = packData( raw_data, big_endian_bytes );
     std::vector< uint8_t > unpacked_data;
 
-    gr::top_block_sptr top_block = gr::make_top_block("unpack_2bit_samples_test");
+    gr::top_block_sptr top_block = gr::make_top_block("Unpack2bitSamplesTest");
 
-    gr::blocks::vector_source_b::sptr source = 
+    gr::blocks::vector_source_b::sptr source =
         gr::blocks::vector_source_b::make( packed_data );
 
-    
-    boost::shared_ptr<gr::block> unpacker = 
+
+    boost::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
                                  item_size,
                                  big_endian_items );
@@ -151,7 +151,7 @@ TEST(Unpack_2bit_Samples_Test, CheckLittleEndianByte)
     gr::blocks::stream_to_vector::sptr stov =
         gr::blocks::stream_to_vector::make( item_size, raw_data.size() );
 
-    gr::blocks::vector_sink_b::sptr sink = 
+    gr::blocks::vector_sink_b::sptr sink =
         gr::blocks::vector_sink_b::make( raw_data.size() );
 
 
@@ -173,7 +173,7 @@ TEST(Unpack_2bit_Samples_Test, CheckLittleEndianByte)
 
 }
 
-TEST(Unpack_2bit_Samples_Test, CheckBigEndianShortBigEndianByte)
+TEST(Unpack2bitSamplesTest, CheckBigEndianShortBigEndianByte)
 {
     bool big_endian_bytes = true;
     size_t item_size = 2;
@@ -199,19 +199,19 @@ TEST(Unpack_2bit_Samples_Test, CheckBigEndianShortBigEndianByte)
 
     // Now create a new big endian buffer:
     std::vector< int16_t > packed_data_short(
-            reinterpret_cast< int16_t *>( &packed_data[0] ), 
-            reinterpret_cast< int16_t * >( &packed_data[0] ) 
+            reinterpret_cast< int16_t *>( &packed_data[0] ),
+            reinterpret_cast< int16_t * >( &packed_data[0] )
             + packed_data.size()/item_size);
-    
+
     std::vector< uint8_t > unpacked_data;
 
-    gr::top_block_sptr top_block = gr::make_top_block("unpack_2bit_samples_test");
+    gr::top_block_sptr top_block = gr::make_top_block("Unpack2bitSamplesTest");
 
-    gr::blocks::vector_source_s::sptr source = 
+    gr::blocks::vector_source_s::sptr source =
         gr::blocks::vector_source_s::make( packed_data_short );
 
-    
-    boost::shared_ptr<gr::block> unpacker = 
+
+    boost::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
                                  item_size,
                                  big_endian_items );
@@ -219,7 +219,7 @@ TEST(Unpack_2bit_Samples_Test, CheckBigEndianShortBigEndianByte)
     gr::blocks::stream_to_vector::sptr stov =
         gr::blocks::stream_to_vector::make( 1, raw_data.size() );
 
-    gr::blocks::vector_sink_b::sptr sink = 
+    gr::blocks::vector_sink_b::sptr sink =
         gr::blocks::vector_sink_b::make( raw_data.size() );
 
 
@@ -241,7 +241,7 @@ TEST(Unpack_2bit_Samples_Test, CheckBigEndianShortBigEndianByte)
 
 }
 
-TEST(Unpack_2bit_Samples_Test, CheckBigEndianShortLittleEndianByte)
+TEST(Unpack2bitSamplesTest, CheckBigEndianShortLittleEndianByte)
 {
     bool big_endian_bytes = false;
     size_t item_size = 2;
@@ -267,19 +267,19 @@ TEST(Unpack_2bit_Samples_Test, CheckBigEndianShortLittleEndianByte)
 
     // Now create a new big endian buffer:
     std::vector< int16_t > packed_data_short(
-            reinterpret_cast< int16_t *>( &packed_data[0] ), 
-            reinterpret_cast< int16_t * >( &packed_data[0] ) 
+            reinterpret_cast< int16_t *>( &packed_data[0] ),
+            reinterpret_cast< int16_t * >( &packed_data[0] )
             + packed_data.size()/item_size);
-    
+
     std::vector< uint8_t > unpacked_data;
 
-    gr::top_block_sptr top_block = gr::make_top_block("unpack_2bit_samples_test");
+    gr::top_block_sptr top_block = gr::make_top_block("Unpack2bitSamplesTest");
 
-    gr::blocks::vector_source_s::sptr source = 
+    gr::blocks::vector_source_s::sptr source =
         gr::blocks::vector_source_s::make( packed_data_short );
 
-    
-    boost::shared_ptr<gr::block> unpacker = 
+
+    boost::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
                                  item_size,
                                  big_endian_items );
@@ -287,7 +287,7 @@ TEST(Unpack_2bit_Samples_Test, CheckBigEndianShortLittleEndianByte)
     gr::blocks::stream_to_vector::sptr stov =
         gr::blocks::stream_to_vector::make( 1, raw_data.size() );
 
-    gr::blocks::vector_sink_b::sptr sink = 
+    gr::blocks::vector_sink_b::sptr sink =
         gr::blocks::vector_sink_b::make( raw_data.size() );
 
 

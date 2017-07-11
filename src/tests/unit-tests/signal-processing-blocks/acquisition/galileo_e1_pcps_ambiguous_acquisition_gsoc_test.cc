@@ -292,6 +292,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         start_queue();
+        acquisition->set_local_code();
         acquisition->init();
         acquisition->reset();
         acquisition->set_state(1);

@@ -274,8 +274,8 @@ TEST_F(DataTypeAdapter, ByteToShortValidationOfResults)
             std::cerr << e.code().message() << std::endl;
     }
     ifs.close();
-    remove(file_name_input.c_str());
-    remove(file_name_output.c_str());
+    ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
+    ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
 }
 
 

@@ -34,15 +34,19 @@
 #include <complex>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
+#include <glog/logging.h>
 
-pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int length_)
+using google::LogMessage;
+
+pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int length_, 
+                                              int n_segments_est, int n_segments_reset)
 {
-    return pulse_blanking_cc_sptr(new pulse_blanking_cc(pfa, length_));
+    return pulse_blanking_cc_sptr(new pulse_blanking_cc(pfa, length_, n_segments_est, n_segments_reset));
 }
 
 
 
-pulse_blanking_cc::pulse_blanking_cc(float pfa, int length_) : gr::block("pulse_blanking_cc",
+pulse_blanking_cc::pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset) : gr::block("pulse_blanking_cc",
                         gr::io_signature::make (1, 1, sizeof(gr_complex)),
                         gr::io_signature::make (1, 1, sizeof(gr_complex)))
 {
@@ -53,8 +57,8 @@ pulse_blanking_cc::pulse_blanking_cc(float pfa, int length_) : gr::block("pulse_
     set_output_multiple(length_);
     last_filtered = false;
     n_segments = 0;
-    n_segments_est = 8;
-    n_segments_reset = 10000;
+    this->n_segments_est = n_segments_est;
+    this->n_segments_reset = n_segments_reset;
     noise_power_estimation = 0.0;
     n_deg_fred = 2*length_;
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
@@ -64,13 +68,13 @@ pulse_blanking_cc::pulse_blanking_cc(float pfa, int length_) : gr::block("pulse_
     for (int aux = 0; aux < length_; aux++)
     {
         zeros_[aux] = gr_complex(0, 0);
-    }
+    }    
 }
 
 pulse_blanking_cc::~pulse_blanking_cc()
 {
     volk_free(zeros_);
-    volk_free(magnitude);
+    volk_free(magnitude);    
 }
 
 int pulse_blanking_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
@@ -87,7 +91,7 @@ int pulse_blanking_cc::general_work (int noutput_items __attribute__((unused)), 
         if((n_segments < n_segments_est) && (last_filtered == false))
         {
             noise_power_estimation = (((float) n_segments) * noise_power_estimation + segment_energy / ((float)n_deg_fred)) / ((float)(n_segments + 1));
-            memcpy(out, in, sizeof(gr_complex)*length_);
+            memcpy(out, in, sizeof(gr_complex)*length_);            
         }
         else
         {

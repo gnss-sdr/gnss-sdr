@@ -39,9 +39,6 @@
 
 class ConfigurationInterface;
 
-/*!
- * \brief TODO
- */
 class PulseBlankingFilter: public GNSSBlockInterface
 {
 public:

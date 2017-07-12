@@ -38,12 +38,13 @@ class pulse_blanking_cc;
 
 typedef boost::shared_ptr<pulse_blanking_cc> pulse_blanking_cc_sptr;
 
-pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int length_);
+pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset);
 
 
 class pulse_blanking_cc : public gr::block
 {
 private:
+    
     int length_;
     int n_segments;
     int n_segments_est;
@@ -55,13 +56,16 @@ private:
     float pfa;
     float* magnitude;
     gr_complex* zeros_;
+    
 public:
-    pulse_blanking_cc(float pfa, int length_);
+    
+    pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset);
     
     ~pulse_blanking_cc();
 
     int general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    
 };
 
 #endif

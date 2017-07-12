@@ -76,15 +76,15 @@ bool tracking_dump_reader::restart()
         }
 }
 
+
 long int tracking_dump_reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int number_of_double_vars = 11;
     int number_of_float_vars = 5;
-    int epoch_size_bytes=sizeof(unsigned long int) +
-            sizeof(double) * number_of_double_vars +
-            sizeof(float) * number_of_float_vars;
-    std::ifstream tmpfile( d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+    int epoch_size_bytes = sizeof(unsigned long int) + sizeof(double) * number_of_double_vars +
+            sizeof(float) * number_of_float_vars + sizeof(unsigned int);
+    std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
         {
             size = tmpfile.tellg();
@@ -96,6 +96,7 @@ long int tracking_dump_reader::num_epochs()
             return 0;
         }
 }
+
 
 bool tracking_dump_reader::open_obs_file(std::string out_file)
 {

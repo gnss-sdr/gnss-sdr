@@ -215,6 +215,7 @@ public:
     size_t item_size;
 };
 
+
 int GpsL1CATelemetryDecoderTest::configure_generator()
 {
     // Configure signal generator
@@ -279,9 +280,8 @@ void GpsL1CATelemetryDecoderTest::configure_receiver()
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
 
     config->set_property("TelemetryDecoder_1C.dump","true");
-    config->set_property("TelemetryDecoder_1C.decimation_factor","1");
-
 }
+
 
 void GpsL1CATelemetryDecoderTest::check_results(arma::vec & true_time_s,
         arma::vec & true_value,
@@ -289,14 +289,20 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec & true_time_s,
         arma::vec & meas_value)
 {
     //1. True value interpolation to match the measurement times
-
     arma::vec true_value_interp;
+    arma::uvec true_time_s_valid = find(true_time_s > 0);
+    true_time_s = true_time_s(true_time_s_valid);
+    true_value = true_value(true_time_s_valid);
+    arma::uvec meas_time_s_valid = find(meas_time_s > 0);
+    meas_time_s = meas_time_s(meas_time_s_valid);
+    meas_value = meas_value(meas_time_s_valid);
+
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
     arma::vec err;
 
-    err = meas_value - true_value_interp;
+    err = meas_value - true_value_interp + 0.001;
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
@@ -325,6 +331,7 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec & true_time_s,
     ASSERT_LT(max_error, 0.5E-6);
     ASSERT_GT(min_error, -0.5E-6);
 }
+
 
 TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 {
@@ -468,7 +475,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     //Cut measurement initial transitory of the measurements
     arma::uvec initial_meas_point = arma::find(tlm_tow_s >= true_tow_s(0), 1, "first");
-
+    ASSERT_EQ(initial_meas_point.is_empty(), false);
     tlm_timestamp_s = tlm_timestamp_s.subvec(initial_meas_point(0), tlm_timestamp_s.size() - 1);
     tlm_tow_s = tlm_tow_s.subvec(initial_meas_point(0), tlm_tow_s.size() - 1);
 

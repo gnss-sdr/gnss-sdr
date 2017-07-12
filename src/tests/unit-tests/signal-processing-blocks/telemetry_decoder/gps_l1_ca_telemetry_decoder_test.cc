@@ -190,10 +190,10 @@ public:
 
     int configure_generator();
     int generate_signal();
-    void check_results(arma::vec true_time_s,
-            arma::vec true_value,
-            arma::vec meas_time_s,
-            arma::vec meas_value);
+    void check_results(arma::vec & true_time_s,
+            arma::vec & true_value,
+            arma::vec & meas_time_s,
+            arma::vec & meas_value);
 
     GpsL1CATelemetryDecoderTest()
     {
@@ -283,10 +283,10 @@ void GpsL1CATelemetryDecoderTest::configure_receiver()
 
 }
 
-void GpsL1CATelemetryDecoderTest::check_results(arma::vec true_time_s,
-        arma::vec true_value,
-        arma::vec meas_time_s,
-        arma::vec meas_value)
+void GpsL1CATelemetryDecoderTest::check_results(arma::vec & true_time_s,
+        arma::vec & true_value,
+        arma::vec & meas_time_s,
+        arma::vec & meas_value)
 {
     //1. True value interpolation to match the measurement times
 
@@ -309,13 +309,14 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec true_time_s,
     double min_error = arma::min(err);
 
     //5. report
-
+    std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TLM TOW RMSE="
               << rmse << ", mean=" << error_mean
               << ", stdev=" << sqrt(error_var)
               << " (max,min)=" << max_error
               << "," << min_error
               << " [Seconds]" << std::endl;
+    std::cout.precision (ss);
 
     ASSERT_LT(rmse, 0.2E-6);
     ASSERT_LT(error_mean, 0.2E-6);

@@ -195,11 +195,11 @@ public:
     int configure_generator();
     int generate_signal();
     void check_results(
-            arma::vec true_ch0_dist_m, arma::vec true_ch1_dist_m,
-            arma::vec true_ch0_tow_s,
-            arma::vec measuded_ch0_Pseudorange_m,
-            arma::vec measuded_ch1_Pseudorange_m,
-            arma::vec measuded_ch0_RX_time_s);
+            arma::vec & true_ch0_dist_m, arma::vec & true_ch1_dist_m,
+            arma::vec & true_ch0_tow_s,
+            arma::vec & measuded_ch0_Pseudorange_m,
+            arma::vec & measuded_ch1_Pseudorange_m,
+            arma::vec & measuded_ch0_RX_time_s);
 
     HybridObservablesTest()
     {
@@ -303,12 +303,12 @@ void HybridObservablesTest::configure_receiver()
 }
 
 void HybridObservablesTest::check_results(
-        arma::vec true_ch0_dist_m,
-        arma::vec true_ch1_dist_m,
-        arma::vec true_ch0_tow_s,
-        arma::vec measuded_ch0_Pseudorange_m,
-        arma::vec measuded_ch1_Pseudorange_m,
-        arma::vec measuded_ch0_RX_time_s)
+        arma::vec & true_ch0_dist_m,
+        arma::vec & true_ch1_dist_m,
+        arma::vec & true_ch0_tow_s,
+        arma::vec & measuded_ch0_Pseudorange_m,
+        arma::vec & measuded_ch1_Pseudorange_m,
+        arma::vec & measuded_ch0_RX_time_s)
 {
     //1. True value interpolation to match the measurement times
 
@@ -343,13 +343,14 @@ void HybridObservablesTest::check_results(
     double min_error = arma::min(err);
 
     //5. report
-
+    std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "Delta Observables RMSE="
               << rmse << ", mean=" << error_mean
               << ", stdev=" << sqrt(error_var)
               << " (max,min)=" << max_error
               << "," << min_error
               << " [meters]" << std::endl;
+    std::cout.precision (ss);
 
     ASSERT_LT(rmse, 10E-3);
     ASSERT_LT(error_mean, 10E-3);

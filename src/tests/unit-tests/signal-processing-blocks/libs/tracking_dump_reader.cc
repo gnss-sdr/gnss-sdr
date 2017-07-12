@@ -52,7 +52,7 @@ bool tracking_dump_reader::read_binary_obs()
             d_dump_file.read((char *) &carrier_lock_test, sizeof(double));
             d_dump_file.read((char *) &aux1, sizeof(double));
             d_dump_file.read((char *) &aux2, sizeof(double));
-
+            d_dump_file.read((char *) &PRN, sizeof(unsigned int));
     }
     catch (const std::exception &e)
     {
@@ -60,6 +60,7 @@ bool tracking_dump_reader::read_binary_obs()
     }
     return true;
 }
+
 
 bool tracking_dump_reader::restart()
 {

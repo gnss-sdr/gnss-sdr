@@ -300,8 +300,8 @@ TEST_F(DataTypeAdapter, IbyteToCbyteValidationOfResults)
             std::cerr << e.code().message() << std::endl;
     }
     ifs.close();
-    remove(file_name_input.c_str());
-    remove(file_name_output.c_str());
+    ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
+    ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
 }
 
 
@@ -326,8 +326,8 @@ TEST_F(DataTypeAdapter, IbyteToComplexValidationOfResults)
             std::cerr << e.code().message() << std::endl;
     }
     ifs.close();
-    remove(file_name_input.c_str());
-    remove(file_name_output.c_str());
+    ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
+    ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
 }
 
 
@@ -352,8 +352,8 @@ TEST_F(DataTypeAdapter, IbyteToCshortValidationOfResults)
             std::cerr << e.code().message() << std::endl;
     }
     ifs.close();
-    remove(file_name_input.c_str());
-    remove(file_name_output.c_str());
+    ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
+    ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
 }
 
 
@@ -378,8 +378,8 @@ TEST_F(DataTypeAdapter, IshortToComplexValidationOfResults)
             std::cerr << e.code().message() << std::endl;
     }
     ifs.close();
-    remove(file_name_input.c_str());
-    remove(file_name_output.c_str());
+    ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
+    ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
 }
 
 
@@ -404,6 +404,6 @@ TEST_F(DataTypeAdapter, IshortToCshortValidationOfResults)
             std::cerr << e.code().message() << std::endl;
     }
     ifs.close();
-    remove(file_name_input.c_str());
-    remove(file_name_output.c_str());
+    ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
+    ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
 }

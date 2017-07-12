@@ -79,6 +79,8 @@ public:
     double aux1;
     double aux2;
 
+    unsigned int PRN;
+
 private:
     std::string d_dump_filename;
     std::ifstream d_dump_file;

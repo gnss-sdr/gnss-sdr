@@ -227,12 +227,12 @@ public:
 
     int configure_generator();
     int generate_signal();
-    void check_results_doppler(arma::vec true_time_s, arma::vec true_value,
-            arma::vec meas_time_s, arma::vec meas_value);
-    void check_results_acc_carrier_phase(arma::vec true_time_s,
-            arma::vec true_value, arma::vec meas_time_s, arma::vec meas_value);
-    void check_results_codephase(arma::vec true_time_s, arma::vec true_value,
-            arma::vec meas_time_s, arma::vec meas_value);
+    void check_results_doppler(arma::vec & true_time_s, arma::vec & true_value,
+            arma::vec & meas_time_s, arma::vec & meas_value);
+    void check_results_acc_carrier_phase(arma::vec & true_time_s,
+            arma::vec & true_value, arma::vec & meas_time_s, arma::vec & meas_value);
+    void check_results_codephase(arma::vec & true_time_s, arma::vec & true_value,
+            arma::vec & meas_time_s, arma::vec & meas_value);
 
     GpsL1CADllPllTrackingTestFpga()
     {
@@ -328,11 +328,17 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
     config->set_property("Tracking_1C.device_base", "1");
 }
 
-void GpsL1CADllPllTrackingTestFpga::check_results_doppler(arma::vec true_time_s,
-        arma::vec true_value, arma::vec meas_time_s, arma::vec meas_value)
+void GpsL1CADllPllTrackingTestFpga::check_results_doppler(arma::vec & true_time_s,
+        arma::vec & true_value, arma::vec & meas_time_s, arma::vec & meas_value)
 {
     //1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
+    arma::uvec true_time_s_valid = find(true_time_s > 0);
+    true_time_s = true_time_s(true_time_s_valid);
+    true_value = true_value(true_time_s_valid);
+    arma::uvec meas_time_s_valid = find(meas_time_s > 0);
+    meas_time_s = meas_time_s(meas_time_s_valid);
+    meas_value = meas_value(meas_time_s_valid);
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
@@ -351,18 +357,26 @@ void GpsL1CADllPllTrackingTestFpga::check_results_doppler(arma::vec true_time_s,
     double min_error = arma::min(err);
 
     //5. report
+    std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TRK Doppler RMSE=" << rmse
             << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
             << " (max,min)=" << max_error << "," << min_error << " [Hz]"
             << std::endl;
+    std::cout.precision (ss);
 }
 
 void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(
-        arma::vec true_time_s, arma::vec true_value, arma::vec meas_time_s,
-        arma::vec meas_value)
+        arma::vec & true_time_s, arma::vec & true_value, arma::vec & meas_time_s,
+        arma::vec & meas_value)
 {
     //1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
+    arma::uvec true_time_s_valid = find(true_time_s > 0);
+    true_time_s = true_time_s(true_time_s_valid);
+    true_value = true_value(true_time_s_valid);
+    arma::uvec meas_time_s_valid = find(meas_time_s > 0);
+    meas_time_s = meas_time_s(meas_time_s_valid);
+    meas_value = meas_value(meas_time_s_valid);
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
@@ -381,19 +395,26 @@ void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(
     double min_error = arma::min(err);
 
     //5. report
+    std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TRK acc carrier phase RMSE=" << rmse
             << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
             << " (max,min)=" << max_error << "," << min_error << " [Hz]"
             << std::endl;
-
+    std::cout.precision (ss);
 }
 
 void GpsL1CADllPllTrackingTestFpga::check_results_codephase(
-        arma::vec true_time_s, arma::vec true_value, arma::vec meas_time_s,
-        arma::vec meas_value)
+        arma::vec & true_time_s, arma::vec & true_value, arma::vec & meas_time_s,
+        arma::vec & meas_value)
 {
     //1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
+    arma::uvec true_time_s_valid = find(true_time_s > 0);
+    true_time_s = true_time_s(true_time_s_valid);
+    true_value = true_value(true_time_s_valid);
+    arma::uvec meas_time_s_valid = find(meas_time_s > 0);
+    meas_time_s = meas_time_s(meas_time_s_valid);
+    meas_value = meas_value(meas_time_s_valid);
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
@@ -411,10 +432,12 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(
     double min_error = arma::min(err);
 
     //5. report
+    std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TRK code phase RMSE=" << rmse
             << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
             << " (max,min)=" << max_error << "," << min_error << " [Chips]"
             << std::endl;
+    std::cout.precision (ss);
 }
 
 TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)

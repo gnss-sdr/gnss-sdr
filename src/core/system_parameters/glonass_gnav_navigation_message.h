@@ -41,7 +41,6 @@
 #include <vector>
 #include "GLONASS_L1_CA.h"
 #include "glonass_gnav_ephemeris.h"
-//#include "gps_iono.h"
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_utc_model.h"
 
@@ -59,16 +58,15 @@ private:
     unsigned long int read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     signed long int read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    bool _CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits,boost::uint32_t checksum);
+    bool _CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits, std::bitset<GLONASS_GNAV_HAMMING_CODE_BITS> hamming_code);
 
     unsigned int get_frame_number(unsigned int satellite_slot_number);
 
 public:
     bool flag_CRC_test;
-    unsigned int u_frame_number;
+    unsigned int frame_number;
 
     Glonass_Gnav_Ephemeris gnav_ephemeris;      //!< Ephemeris information decoded
-    //Glonass_Gnav_Iono gnav_iono;                //!< Iono corrections information
     Glonass_Gnav_Utc_Model gnav_utc_model;      //!< UTC model information
     Glonass_Gnav_Almanac gnav_almanac[24];      //!< Almanac information for all 24 satellites
 
@@ -130,12 +128,6 @@ public:
     Glonass_Gnav_Ephemeris get_ephemeris();
 
     /*!
-    // TODO Should I keep this function ?
-     * \brief Obtain a GPS ionospheric correction parameters class filled with current SV data
-     */
-    Glonass_Gnav_Iono get_iono();
-
-    /*!
      * \brief Obtain a GLONASS GNAV UTC model parameters class filled with current SV data
      */
     Glonass_Gnav_Utc_Model get_utc_model();
@@ -149,11 +141,6 @@ public:
      * \brief Returns true if new Ephemeris has arrived. The flag is set to false when the function is executed
      */
     bool have_new_ephemeris();
-
-    /*
-     * \brief Returns true if new Iono model has arrived. The flag is set to false when the function is executed
-     */
-    bool have_new_iono();
 
     /*
      * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed

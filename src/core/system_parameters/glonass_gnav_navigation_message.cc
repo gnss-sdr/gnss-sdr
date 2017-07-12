@@ -63,21 +63,21 @@ void Glonass_Gnav_Navigation_Message::reset()
     flag_almanac_str_15 = false;
 
     //!< UTC and System Clocks Flags
-    flag_utc_model_valid;      //!< If set, it indicates that the UTC model parameters are filled
-    flag_utc_model_str_5;      //!< Clock info send in string 5 of navigation data
-    flag_utc_model_str_15;     //!< Clock info send in string 15 of frame 5 of navigation data
-    flag_TOW_5;
-    flag_TOW_6;
-    flag_TOW_set;              //!< it is true when page 5 or page 6 arrives
+    flag_utc_model_valid  = false;      //!< If set, it indicates that the UTC model parameters are filled
+    flag_utc_model_str_5 = false;      //!< Clock info send in string 5 of navigation data
+    flag_utc_model_str_15 = false;     //!< Clock info send in string 15 of frame 5 of navigation data
+    flag_TOW_5 = false;
+    flag_TOW_6 = false;
+    flag_TOW_set = false;              //!< it is true when page 5 or page 6 arrives
 
     //broadcast orbit 1
     //TODO Need to send the information regarding the frame number
-    double d_TOW;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-    double d_TOW_F1;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
-    double d_TOW_F2;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
-    double d_TOW_F3;        //!< Time of GPS Week from HOW word of Subframe 3 [s]
-    double d_TOW_F4;        //!< Time of GPS Week from HOW word of Subframe 4 [s]
-    double d_TOW_F5;        //!< Time of GPS Week from HOW word of Subframe 5 [s]
+    d_TOW = false;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
+    d_TOW_F1 = false;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
+    d_TOW_F2 = false;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
+    d_TOW_F3 = false;        //!< Time of GPS Week from HOW word of Subframe 3 [s]
+    d_TOW_F4 = false;        //!< Time of GPS Week from HOW word of Subframe 4 [s]
+    d_TOW_F5 = false;        //!< Time of GPS Week from HOW word of Subframe 5 [s]
 
     // Clock terms
     d_satClkCorr = 0.0;
@@ -103,30 +103,37 @@ Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
 }
 
 
-bool Glonass_Gnav_Navigation_Message::_CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> data_bits, std::bitset<GLONASS_GNAV_STRING_BITS> hamming_code_bits )
+bool Glonass_Gnav_Navigation_Message::_CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> data_bits, std::bitset<GLONASS_GNAV_HAMMING_CODE_BITS> hamming_code_bits )
 {
     int sum_bits;
     int sum_hamming;
-
+    int C1 = 0;
+    int C2 = 0;
+    int C3 = 0;
+    int C4 = 0;
+    int C5 = 0;
+    int C6 = 0;
+    int C7 = 0;
+    int C_Sigma = 0;
     //!< Compute C1 term
     sum_bits = 0;
-    for(int i = 0; i < GLONASS_GNAV_CRC_I_INDEX.size; i++)
+    for(int i = 0; i < GLONASS_GNAV_CRC_I_INDEX.size(); i++)
         {
-            sum_bits += data_bits[GLONASS_GNAV_CRC_I_INDEX[i]];
+            sum_bits += static_cast<int>(data_bits[GLONASS_GNAV_CRC_I_INDEX[i]]);
         }
-    C1 = hamming_code_bits[0]^fmod(sum_bits,2);
+    C1 = static_cast<int>(hamming_code_bits[0])^static_cast<int>(fmod(sum_bits,2));
 
     //!< Compute C2 term
     sum_bits = 0;
-    for(int j = 0; j < GLONASS_GNAV_CRC_J_INDEX.size; j++)
+    for(int j = 0; j < GLONASS_GNAV_CRC_J_INDEX.size(); j++)
         {
-            sum_bits += data_bits[GLONASS_GNAV_CRC_J_INDEX[j]];
+            sum_bits += static_cast<int>data_bits[GLONASS_GNAV_CRC_J_INDEX[j]];
         }
-    C2 = hamming_code_bits[1]^fmod(sum_bits,2);
+    C2 = static_cast<int>(hamming_code_bits[1])^static_cast<int>(fmod(sum_bits,2));
 
     //!< Compute C3 term
     sum_bits = 0;
-    for(int k = 0; k < GLONASS_GNAV_CRC_K_INDEX.size; k++)
+    for(int k = 0; k < GLONASS_GNAV_CRC_K_INDEX.size(); k++)
         {
             sum_bits += data_bits[GLONASS_GNAV_CRC_K_INDEX[k]];
         }
@@ -134,7 +141,7 @@ bool Glonass_Gnav_Navigation_Message::_CRC_test(std::bitset<GLONASS_GNAV_STRING_
 
     //!< Compute C4 term
     sum_bits = 0;
-    for(int l = 0; l < GLONASS_GNAV_CRC_L_INDEX.size; l++)
+    for(int l = 0; l < GLONASS_GNAV_CRC_L_INDEX.size(); l++)
         {
             sum_bits += data_bits[GLONASS_GNAV_CRC_L_INDEX[l]];
         }
@@ -142,7 +149,7 @@ bool Glonass_Gnav_Navigation_Message::_CRC_test(std::bitset<GLONASS_GNAV_STRING_
 
     //!< Compute C5 term
     sum_bits = 0;
-    for(int m = 0; m < GLONASS_GNAV_CRC_M_INDEX.size; m++)
+    for(int m = 0; m < GLONASS_GNAV_CRC_M_INDEX.size(); m++)
         {
             sum_bits += data_bits[GLONASS_GNAV_CRC_M_INDEX[m]];
         }
@@ -150,7 +157,7 @@ bool Glonass_Gnav_Navigation_Message::_CRC_test(std::bitset<GLONASS_GNAV_STRING_
 
     //!< Compute C6 term
     sum_bits = 0;
-    for(int n = 0; n < GLONASS_GNAV_CRC_N_INDEX.size; n++)
+    for(int n = 0; n < GLONASS_GNAV_CRC_N_INDEX.size(); n++)
         {
             sum_bits += data_bits[GLONASS_GNAV_CRC_N_INDEX[n]];
         }
@@ -158,7 +165,7 @@ bool Glonass_Gnav_Navigation_Message::_CRC_test(std::bitset<GLONASS_GNAV_STRING_
 
     //!< Compute C7 term
     sum_bits = 0;
-    for(int p = 0; p < GLONASS_GNAV_CRC_P_INDEX.size; p++)
+    for(int p = 0; p < GLONASS_GNAV_CRC_P_INDEX.size(); p++)
         {
             sum_bits += data_bits[GLONASS_GNAV_CRC_P_INDEX[p]];
         }
@@ -167,7 +174,7 @@ bool Glonass_Gnav_Navigation_Message::_CRC_test(std::bitset<GLONASS_GNAV_STRING_
     //!< Compute C_Sigma term
     sum_bits = 0;
     sum_hamming = 0;
-    for(int q = 0; q < GLONASS_GNAV_CRC_Q_INDEX.size; q++)
+    for(int q = 0; q < GLONASS_GNAV_CRC_Q_INDEX.size(); q++)
         {
             sum_bits += data_bits[GLONASS_GNAV_CRC_Q_INDEX[q]];
         }
@@ -280,7 +287,7 @@ signed long int Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bit
                         {
                             value <<= 1; //shift left
                             value &= 0xFFFFFFFE; //reset the corresponding bit
-                            if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1)
+                            if (bits[GLONASS_GNAV_STRING_BITS - parameter[i].first - j] == 1)
                                 {
                                     value += 1; // insert the bit
                                 }
@@ -320,6 +327,8 @@ unsigned int Glonass_Gnav_Navigation_Message::get_frame_number(unsigned int sate
             //TODO Find print statement and make it an error
             frame_ID = 0;
         }
+
+    return frame_ID;
 }
 
 
@@ -548,7 +557,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
 
         case 15:
             // --- It is string 9 ----------------------------------------------
-            if (frame_number != 5 and flag_almanac_str_14 = true )
+            if (frame_number != 5 and flag_almanac_str_14 == true )
               {
                 // TODO signed vs unsigned reading from datasheet
                 gnav_almanac[i_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_unsigned(string_bits, OMEGA_N_A));
@@ -613,16 +622,16 @@ bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a 
         }
 
 
-    if ((flag_ephemeris_str_1 == true) and (flag_ephemeris_str_2 == true) and (flag_ephemeris_str_3 == true) and (flag_ephemeris_str_4 == true) and (flag_iono_and_GST == true))
+    if ((flag_ephemeris_str_1 == true) and (flag_ephemeris_str_2 == true) and (flag_ephemeris_str_3 == true) and (flag_ephemeris_str_4 == true))
         {
             //if all ephemeris pages have the same IOD, then they belong to the same block
-            if ((gnav_ephemeris.d_t_b== IOD_nav_2) and (IOD_nav_3 == IOD_nav_4) and (IOD_nav_1 == IOD_nav_3))
+            if ((gnav_ephemeris.d_t_b == IOD_nav_2) and (IOD_nav_3 == IOD_nav_4) and (IOD_nav_1 == IOD_nav_3))
                 {
                     std::cout << "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
-                    flag_ephemeris_1 = false;// clear the flag
-                    flag_ephemeris_2 = false;// clear the flag
-                    flag_ephemeris_3 = false;// clear the flag
-                    flag_ephemeris_4 = false;// clear the flag
+                    flag_ephemeris_str_1 = false;// clear the flag
+                    flag_ephemeris_str_2 = false;// clear the flag
+                    flag_ephemeris_str_3 = false;// clear the flag
+                    flag_ephemeris_str_4 = false;// clear the flag
                     flag_all_ephemeris = true;
                     IOD_ephemeris = IOD_nav_1;
                     std::cout << "Batch number: "<< IOD_ephemeris << std::endl;

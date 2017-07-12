@@ -52,7 +52,7 @@ Glonass_Gnav_Almanac::Glonass_Gnav_Almanac()
   d_M_n_A = 0.0;
   d_KP = 0.0;
   d_tau_n_A = 0.0;
-  d_C_n_A = 0.0;
+  d_C_n = 0.0;
 }
 
 void Glonass_Gnav_Almanac::satellite_position(double N_i, double t_i)

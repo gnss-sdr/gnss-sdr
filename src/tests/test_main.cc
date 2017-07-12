@@ -61,7 +61,6 @@
 
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
-#include "glonass_gnav_iono.h"
 #include "glonass_gnav_utc_model.h"
 
 using google::LogMessage;

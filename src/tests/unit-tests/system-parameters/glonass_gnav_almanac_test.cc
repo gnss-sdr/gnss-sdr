@@ -43,18 +43,18 @@
 #include "glonass_gnav_almanac.h"
 
 // See A 3.2.3
-TEST(GlonassGnavEphemerisTest, SatellitePosition)
+TEST(GlonassGnavAlmanacTest, SatellitePosition)
 {
     double N_i = 615;           // [days]
-    double t_i = 33300.0        // [seconds]
+    double t_i = 33300.0;        // [seconds]
     double Xoi = 10947.021572;  // [km]
     double Yoi = 13078.978287;  // [km]
     double Zoi = 18922.063362;  // [km]
-    double Vxoi = -3.375497     // [m/s]
+    double Vxoi = -3.375497;     // [m/s]
     double Vyoi = -0.161453;    // [Кm/s]
     double Vzoi = 2.060844;     // [Кm/s]
 
-    Glonass_Gnav_Ephemeris gnav_almanac;
+    Glonass_Gnav_Almanac gnav_almanac;
 
     gnav_almanac.d_N_A              = 615;              // [days]
     gnav_almanac.d_lambda_n_A       = -0.189986229;     // [half cycles]

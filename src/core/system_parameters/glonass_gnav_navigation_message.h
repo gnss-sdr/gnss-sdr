@@ -58,7 +58,7 @@ private:
     unsigned long int read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     signed long int read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    bool _CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits, std::bitset<GLONASS_GNAV_HAMMING_CODE_BITS> hamming_code);
+    bool _CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits);
 
     unsigned int get_frame_number(unsigned int satellite_slot_number);
 
@@ -135,7 +135,7 @@ public:
     /*
      * \brief Returns a Galileo_Almanac object filled with the latest navigation data received
      */
-    Glonass_Gnav_Almanac get_almanac();
+    Glonass_Gnav_Almanac get_almanac(int satellite_slot_number);
 
     /*
      * \brief Returns true if new Ephemeris has arrived. The flag is set to false when the function is executed

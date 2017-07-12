@@ -178,7 +178,10 @@ const std::vector<std::pair<int,int>> T_LAMBDA_N_A({{22,21}});
 const std::vector<std::pair<int,int>> DELTA_T_N_A({{43,22}});
 const std::vector<std::pair<int,int>> DELTA_T_DOT_N_A({{65,7}});
 const std::vector<std::pair<int,int>> H_N_A({{72,5}});
-//const std::vector<std::pair<int,int>> L_N({{77,1}});
+
+// STRING 14 FRAME 5
+const std::vector<std::pair<int,int>> B1({{6,11}});
+const std::vector<std::pair<int,int>> B2({{17,10}});
 
 
 #endif /* GNSS_SDR_GLONASS_L1_CA_H_ */

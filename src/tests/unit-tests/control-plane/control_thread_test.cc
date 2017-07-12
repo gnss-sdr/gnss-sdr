@@ -40,7 +40,6 @@
 #include <sys/msg.h>
 #include <thread>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
 #include <gtest/gtest.h>
@@ -77,7 +76,7 @@ int ControlThreadTest::stop_receiver()
     while(((msqid_stop = msgget(key_stop, 0644))) == -1){ }
 
     // wait for a couple of seconds
-    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(2));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     // Stop the receiver
     msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
@@ -240,7 +239,7 @@ TEST_F(ControlThreadTest, StopReceiverProgrammatically)
     config->set_property("PVT.implementation", "Hybrid_PVT");
     config->set_property("PVT.item_type", "gr_complex");
 
-    std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
+    std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
     gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
     control_thread->set_control_queue(control_queue);
 

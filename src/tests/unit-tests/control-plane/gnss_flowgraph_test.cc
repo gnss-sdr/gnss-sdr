@@ -65,7 +65,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("Observables.implementation", "Hybrid_Observables");
-    config->set_property("PVT.implementation", "Hybrid_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 
@@ -100,7 +100,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("Observables.implementation", "Hybrid_Observables");
-    config->set_property("PVT.implementation", "Hybrid_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 
@@ -134,7 +134,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
     config->set_property("Tracking_1B.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
     config->set_property("TelemetryDecoder_1B.implementation", "Galileo_E1B_Telemetry_Decoder");
     config->set_property("Observables.implementation", "Hybrid_Observables");
-    config->set_property("PVT.implementation", "Hybrid_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 
@@ -266,7 +266,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid)
     config->set_property("TelemetryDecoder_1B15.decimation_factor", "1");
 
     config->set_property("Observables.implementation", "Hybrid_Observables");
-    config->set_property("PVT.implementation", "Hybrid_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 

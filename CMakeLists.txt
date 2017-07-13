@@ -564,7 +564,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
          BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
-         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install     
+         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
          )
     else(CMAKE_VERSION VERSION_LESS 3.2)
        ExternalProject_Add(volk_gnsssdr_module
@@ -578,7 +578,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
          BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                           ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
-         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install     
+         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
          )
     endif(CMAKE_VERSION VERSION_LESS 3.2)
     find_package(ORC)
@@ -602,7 +602,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
                 ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile
         BYPRODUCTS ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile)
     endif(CMAKE_VERSION VERSION_LESS 3.2)
-    
+
     add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr-config-info
         ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr-config-info)
@@ -614,13 +614,13 @@ endif(NOT VOLK_GNSSSDR_FOUND)
 # gflags - https://github.com/gflags/gflags
 ################################################################################
 set(LOCAL_GFLAGS false)
-set(gflags_RELEASE 2.2.0)
+set(gflags_RELEASE 2.2.1)
 find_package(GFlags)
 if (NOT GFlags_FOUND)
      message (STATUS " gflags library has not been found.")
      message (STATUS " gflags will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
-     
+
      if(CMAKE_VERSION VERSION_LESS 3.2)
           ExternalProject_Add(
           gflags-${gflags_RELEASE}
@@ -651,7 +651,7 @@ if (NOT GFlags_FOUND)
           INSTALL_COMMAND ""
      )
      endif(CMAKE_VERSION VERSION_LESS 3.2)
-     
+
      set(GFlags_INCLUDE_DIRS
           ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/include CACHE PATH "Local Gflags headers"
      )
@@ -983,7 +983,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
          BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
          UPDATE_COMMAND ""
          INSTALL_COMMAND ""
-      )    
+      )
      else(CMAKE_VERSION VERSION_LESS 3.2)
       ExternalProject_Add(
          armadillo-${armadillo_RELEASE}

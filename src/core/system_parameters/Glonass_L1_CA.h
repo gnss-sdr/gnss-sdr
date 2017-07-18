@@ -37,7 +37,8 @@ const double GLONASS_L1_CA_CHIP_PERIOD       = 1.9569e-06;     //!< GLONASS L1 C
 
 // GLONASS SV's orbital slots PRN = (orbital_slot - 1)
 const std::map<unsigned int, int> GLONASS_PRN = 
-                                               {{ 1, 1,},  //Plane 1
+                                               {{ 0, 8,},  //For test
+                                                { 1, 1,},  //Plane 1
                                                 { 2,-4,},  //Plane 1
                                                 { 3, 5,},  //Plane 1
                                                 { 4, 6,},  //Plane 1
@@ -61,5 +62,8 @@ const std::map<unsigned int, int> GLONASS_PRN =
                                                 {22,-3,},  //Plane 3
                                                 {23, 3,},  //Plane 3
                                                 {24, 2}};  //Plane 3
+
+
+const int GLONASS_CA_TELEMETRY_RATE_BITS_SECOND = 50;   //!< NAV message bit rate [bits/s]
 
 #endif /* GNSS_SDR_GLONASS_L1_CA_H_ */

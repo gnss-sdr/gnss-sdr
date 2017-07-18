@@ -157,7 +157,7 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
                     PRN = PRN_;
                 }
         }
-    else if (system.compare("Glonass") == 0)
+    else if (system.compare("GLONASS") == 0)
            {
                if (PRN_ < 1 or PRN_ > 24)
                    {
@@ -356,7 +356,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
         }
 
 
-    if (system_.compare("Glonass") == 0)
+    if (system_.compare("GLONASS") == 0)
         {
             switch ( PRN_ )
             {
@@ -557,6 +557,3 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_)
 {
     block = what_block(system_, PRN_);
 }
-
-
-

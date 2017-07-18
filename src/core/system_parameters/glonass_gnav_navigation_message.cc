@@ -449,7 +449,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_unsigned(string_bits, DELTA_T_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_unsigned(string_bits, DELTA_T_DOT_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                gnav_ephemeris.d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
 
                 flag_almanac_str_7 = true;
               }
@@ -482,7 +482,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_unsigned(string_bits, DELTA_T_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_unsigned(string_bits, DELTA_T_DOT_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                gnav_ephemeris.d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
 
                 flag_almanac_str_9 = true;
               }
@@ -512,7 +512,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_unsigned(string_bits, DELTA_T_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_unsigned(string_bits, DELTA_T_DOT_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                gnav_ephemeris.d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
 
                 flag_almanac_str_11 = true;
               }
@@ -543,7 +543,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_unsigned(string_bits, DELTA_T_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_unsigned(string_bits, DELTA_T_DOT_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                gnav_ephemeris.d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
 
                 flag_almanac_str_13 = true;
               }
@@ -582,7 +582,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_unsigned(string_bits, DELTA_T_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_unsigned(string_bits, DELTA_T_DOT_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                gnav_ephemeris.d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
 
                 flag_almanac_str_15 = true;
               }
@@ -631,6 +631,7 @@ bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a 
             //if all ephemeris pages have the same IOD, then they belong to the same block
             if ((gnav_ephemeris.d_t_b == 0) )
                 {
+                    std::cout << "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
                     flag_ephemeris_str_1 = false;// clear the flag
                     flag_ephemeris_str_2 = false;// clear the flag
                     flag_ephemeris_str_3 = false;// clear the flag

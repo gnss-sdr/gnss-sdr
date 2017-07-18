@@ -65,4 +65,5 @@ const std::map<unsigned int, int> GLONASS_PRN =
 
 
 const int GLONASS_CA_TELEMETRY_RATE_BITS_SECOND = 50;   //!< NAV message bit rate [bits/s]
+
 #endif /* GNSS_SDR_GLONASS_L1_CA_H_ */

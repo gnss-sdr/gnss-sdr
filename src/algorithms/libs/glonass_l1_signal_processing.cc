@@ -41,6 +41,7 @@ void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest,/* signed int _pr
     bool G1_register[9];
     bool feedback1;
     bool aux;
+    unsigned int delay;
     unsigned int lcv, lcv2;
 
     for(lcv = 0; lcv < 9; lcv++)
@@ -78,6 +79,26 @@ void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest,/* signed int _pr
         }
 
     /* TODO: Implement the chip shifting*/
+    /* Set the delay */
+    delay = _code_length;
+    delay += _chip_shift;
+    delay %= _code_length;
+
+    /* Generate PRN from G1 and G2 Registers */
+    for(lcv = 0; lcv < _code_length; lcv++)
+        {
+            aux = G1[(lcv + _chip_shift) % _code_length];
+            if(aux == true)
+                {
+                    _dest[lcv] = std::complex<float>(1, 0);
+                }
+            else
+                {
+                    _dest[lcv] = std::complex<float>(-1, 0);
+                }
+            delay++;
+            delay %= _code_length;
+        }
 }
 
 

@@ -1181,6 +1181,7 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                         }
 
                                     // ####################### RTCM MESSAGES #################
+                                    //TODO Add RTCM logic for GLONASS satellites
                                     if(b_rtcm_writing_started)
                                         {
                                             if(type_of_rx == 1) // GPS L1 C/A

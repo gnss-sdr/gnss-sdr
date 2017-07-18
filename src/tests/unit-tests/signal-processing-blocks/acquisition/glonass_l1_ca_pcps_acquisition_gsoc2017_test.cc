@@ -161,10 +161,10 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
     signal.copy(gnss_synchro.Signal,2,0);
 
     integration_time_ms = 1;
-    fs_in = 4e6;
+    fs_in = 62316000;
 
-    expected_delay_chips = 600;
-    expected_doppler_hz = 750;
+    expected_delay_chips = 457;
+    expected_doppler_hz = -2000;
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
 
@@ -178,13 +178,118 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
 
     config->set_property("SignalSource.item_type", "gr_complex");
 
-    config->set_property("SignalSource.num_satellites", "1");
+    config->set_property("SignalSource.num_satellites", "4");
 
-    config->set_property("SignalSource.system_0", "G");
+    config->set_property("SignalSource.system_0", "R");
     config->set_property("SignalSource.PRN_0", "10");
     config->set_property("SignalSource.CN0_dB_0", "44");
     config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
     config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
+
+    config->set_property("SignalSource.system_1", "R");
+    config->set_property("SignalSource.PRN_1", "15");
+    config->set_property("SignalSource.CN0_dB_1", "44");
+    config->set_property("SignalSource.doppler_Hz_1", "1000");
+    config->set_property("SignalSource.delay_chips_1", "100");
+
+    config->set_property("SignalSource.system_2", "R");
+    config->set_property("SignalSource.PRN_2", "21");
+    config->set_property("SignalSource.CN0_dB_2", "44");
+    config->set_property("SignalSource.doppler_Hz_2", "2000");
+    config->set_property("SignalSource.delay_chips_2", "200");
+
+    config->set_property("SignalSource.system_3", "G");
+    config->set_property("SignalSource.PRN_3", "22");
+    config->set_property("SignalSource.CN0_dB_3", "44");
+    config->set_property("SignalSource.doppler_Hz_3", "3000");
+    config->set_property("SignalSource.delay_chips_3", "300");
+
+    config->set_property("SignalSource.noise_flag", "false");
+    config->set_property("SignalSource.data_flag", "true");
+    config->set_property("SignalSource.BW_BB", "0.97");
+
+    config->set_property("InputFilter.implementation", "Fir_Filter");
+    config->set_property("InputFilter.input_item_type", "gr_complex");
+    config->set_property("InputFilter.output_item_type", "gr_complex");
+    config->set_property("InputFilter.taps_item_type", "float");
+    config->set_property("InputFilter.number_of_taps", "11");
+    config->set_property("InputFilter.number_of_bands", "2");
+    config->set_property("InputFilter.band1_begin", "0.0");
+    config->set_property("InputFilter.band1_end", "0.97");
+    config->set_property("InputFilter.band2_begin", "0.98");
+    config->set_property("InputFilter.band2_end", "1.0");
+    config->set_property("InputFilter.ampl1_begin", "1.0");
+    config->set_property("InputFilter.ampl1_end", "1.0");
+    config->set_property("InputFilter.ampl2_begin", "0.0");
+    config->set_property("InputFilter.ampl2_end", "0.0");
+    config->set_property("InputFilter.band1_error", "1.0");
+    config->set_property("InputFilter.band2_error", "1.0");
+    config->set_property("InputFilter.filter_type", "bandpass");
+    config->set_property("InputFilter.grid_density", "16");
+
+    config->set_property("Acquisition.item_type", "gr_complex");
+    config->set_property("Acquisition.if", "9540000");
+    config->set_property("Acquisition.coherent_integration_time_ms",
+                         std::to_string(integration_time_ms));
+    config->set_property("Acquisition.max_dwells", "1");
+    config->set_property("Acquisition.implementation", "GLONASS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition.threshold", "0.8");
+    config->set_property("Acquisition.doppler_max", "10000");
+    config->set_property("Acquisition.doppler_step", "250");
+    config->set_property("Acquisition.bit_transition_flag", "false");
+    config->set_property("Acquisition.dump", "false");
+}
+
+void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
+{
+    gnss_synchro.Channel_ID = 0;
+    gnss_synchro.System = 'R';
+    std::string signal = "1G";
+    signal.copy(gnss_synchro.Signal,2,0);
+
+    integration_time_ms = 1;
+    fs_in = 62316000;
+
+    expected_delay_chips = 457;
+    expected_doppler_hz = -2000;
+    max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
+    max_delay_error_chips = 0.50;
+
+    num_of_realizations = 100;
+
+    config = std::make_shared<InMemoryConfiguration>();
+
+    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+
+    config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
+
+    config->set_property("SignalSource.item_type", "gr_complex");
+
+    config->set_property("SignalSource.num_satellites", "4");
+
+    config->set_property("SignalSource.system_0", "R");
+    config->set_property("SignalSource.PRN_0", "10");
+    config->set_property("SignalSource.CN0_dB_0", "44");
+    config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
+    config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
+
+    config->set_property("SignalSource.system_1", "R");
+    config->set_property("SignalSource.PRN_1", "15");
+    config->set_property("SignalSource.CN0_dB_1", "44");
+    config->set_property("SignalSource.doppler_Hz_1", "1000");
+    config->set_property("SignalSource.delay_chips_1", "100");
+
+    config->set_property("SignalSource.system_2", "R");
+    config->set_property("SignalSource.PRN_2", "21");
+    config->set_property("SignalSource.CN0_dB_2", "44");
+    config->set_property("SignalSource.doppler_Hz_2", "2000");
+    config->set_property("SignalSource.delay_chips_2", "200");
+
+    config->set_property("SignalSource.system_3", "G");
+    config->set_property("SignalSource.PRN_3", "22");
+    config->set_property("SignalSource.CN0_dB_3", "44");
+    config->set_property("SignalSource.doppler_Hz_3", "3000");
+    config->set_property("SignalSource.delay_chips_3", "300");
 
     config->set_property("SignalSource.noise_flag", "false");
     config->set_property("SignalSource.data_flag", "false");
@@ -210,99 +315,12 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "0");
+    config->set_property("Acquisition.if", "9540000");
     config->set_property("Acquisition.coherent_integration_time_ms",
                          std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.implementation", "GLONASS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.threshold", "0.8");
-    config->set_property("Acquisition.doppler_max", "10000");
-    config->set_property("Acquisition.doppler_step", "250");
-    config->set_property("Acquisition.bit_transition_flag", "false");
-    config->set_property("Acquisition.dump", "false");
-}
-
-void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
-{
-    gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System = 'R';
-    std::string signal = "1G";
-    signal.copy(gnss_synchro.Signal,2,0);
-
-    integration_time_ms = 1;
-    fs_in = 4e6;
-
-    expected_delay_chips = 600;
-    expected_doppler_hz = 750;
-    max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
-    max_delay_error_chips = 0.50;
-
-    num_of_realizations = 100;
-
-    config = std::make_shared<InMemoryConfiguration>();
-
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
-
-    config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
-
-    config->set_property("SignalSource.item_type", "gr_complex");
-
-    config->set_property("SignalSource.num_satellites", "4");
-
-    config->set_property("SignalSource.system_0", "G");
-    config->set_property("SignalSource.PRN_0", "10");
-    config->set_property("SignalSource.CN0_dB_0", "44");
-    config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
-    config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
-
-    config->set_property("SignalSource.system_1", "G");
-    config->set_property("SignalSource.PRN_1", "15");
-    config->set_property("SignalSource.CN0_dB_1", "44");
-    config->set_property("SignalSource.doppler_Hz_1", "1000");
-    config->set_property("SignalSource.delay_chips_1", "100");
-
-    config->set_property("SignalSource.system_2", "G");
-    config->set_property("SignalSource.PRN_2", "21");
-    config->set_property("SignalSource.CN0_dB_2", "44");
-    config->set_property("SignalSource.doppler_Hz_2", "2000");
-    config->set_property("SignalSource.delay_chips_2", "200");
-
-    config->set_property("SignalSource.system_3", "G");
-    config->set_property("SignalSource.PRN_3", "22");
-    config->set_property("SignalSource.CN0_dB_3", "44");
-    config->set_property("SignalSource.doppler_Hz_3", "3000");
-    config->set_property("SignalSource.delay_chips_3", "300");
-
-    config->set_property("SignalSource.noise_flag", "true");
-    config->set_property("SignalSource.data_flag", "true");
-    config->set_property("SignalSource.BW_BB", "0.97");
-
-    config->set_property("InputFilter.implementation", "Fir_Filter");
-    config->set_property("InputFilter.input_item_type", "gr_complex");
-    config->set_property("InputFilter.output_item_type", "gr_complex");
-    config->set_property("InputFilter.taps_item_type", "float");
-    config->set_property("InputFilter.number_of_taps", "11");
-    config->set_property("InputFilter.number_of_bands", "2");
-    config->set_property("InputFilter.band1_begin", "0.0");
-    config->set_property("InputFilter.band1_end", "0.97");
-    config->set_property("InputFilter.band2_begin", "0.98");
-    config->set_property("InputFilter.band2_end", "1.0");
-    config->set_property("InputFilter.ampl1_begin", "1.0");
-    config->set_property("InputFilter.ampl1_end", "1.0");
-    config->set_property("InputFilter.ampl2_begin", "0.0");
-    config->set_property("InputFilter.ampl2_end", "0.0");
-    config->set_property("InputFilter.band1_error", "1.0");
-    config->set_property("InputFilter.band2_error", "1.0");
-    config->set_property("InputFilter.filter_type", "bandpass");
-    config->set_property("InputFilter.grid_density", "16");
-
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.coherent_integration_time_ms",
-                         std::to_string(integration_time_ms));
-    config->set_property("Acquisition.max_dwells", "1");
-    config->set_property("Acquisition.implementation", "GLONASS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.pfa", "0.1");
+    config->set_property("Acquisition.pfa", "0.0001");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
@@ -346,11 +364,16 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::process_message()
             detection_counter++;
 
             // The term -5 is here to correct the additional delay introduced by the FIR filter
-            double delay_error_chips = std::abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*1023.0/((double)fs_in*1e-3));
+            // The value 511.0 must be a variable, chips/length
+            double delay_error_chips = std::abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*511.0/((double)fs_in*1e-3));
+            // std::cout << "delay_error_chips = " << delay_error_chips << std::endl;
             double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
+            // std::cout << "doppler_error_hz = " << doppler_error_hz << std::endl;
 
             mse_delay += std::pow(delay_error_chips, 2);
+            // std::cout << "mse_delay = " << mse_delay << std::endl;
             mse_doppler += std::pow(doppler_error_hz, 2);
+            // std::cout << "mse_doppler = " << mse_doppler << std::endl;
 
             if ((delay_error_chips < max_delay_error_chips) && (doppler_error_hz < max_doppler_error_hz))
                 {
@@ -447,11 +470,11 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
     }) << "Failure setting doppler_max."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(500);
+        acquisition->set_doppler_step(250);
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.5);
+        acquisition->set_threshold(0.05);
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -461,14 +484,14 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
 
     acquisition->init();
 
-    ASSERT_NO_THROW( {
+    //ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    //}) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
@@ -565,7 +588,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
-    std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
+    std::cout << "Probability of false alarm (target) = " << 0.0001 << std::endl;
 
     // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
     // i = 1 --> satellite in acquisition is not visible (prob of false detection)
@@ -614,3 +637,4 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
 
     delete acquisition;
 }
+

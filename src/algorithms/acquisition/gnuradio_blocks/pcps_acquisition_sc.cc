@@ -76,6 +76,7 @@ pcps_acquisition_sc::pcps_acquisition_sc(
     d_active = false;
     d_state = 0;
     d_freq = freq;
+    d_old_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
@@ -161,6 +162,8 @@ pcps_acquisition_sc::~pcps_acquisition_sc()
 
 void pcps_acquisition_sc::set_local_code(std::complex<float> * code)
 {
+    // reset the intermediate frequency
+    d_freq = d_old_freq;
     // This will check if it's fdma, if yes will update the intermediate frequency and the doppler grid
     if( is_fdma() )
         {

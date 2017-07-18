@@ -97,6 +97,9 @@ private:
             int correlator_length_samples,
             float freq);
 
+    void update_grid_doppler_wipeoffs();
+    bool is_fdma();
+
     long d_fs_in;
     long d_freq;
     int d_samples_per_ms;

@@ -78,6 +78,7 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_active = false;
     d_state = 0;
     d_freq = freq;
+    d_old_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
@@ -160,6 +161,8 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 
 void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
 {
+    // reset the intermediate frequency
+    d_freq = d_old_freq;
     // This will check if it's fdma, if yes will update the intermediate frequency and the doppler grid
     if( is_fdma() )
         {
@@ -184,6 +187,7 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
     d_fft_if->execute(); // We need the FFT of local code
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
+
 
 bool pcps_acquisition_cc::is_fdma()
 {

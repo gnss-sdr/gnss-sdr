@@ -103,10 +103,10 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     gnss_synchro.System = 'R';
     std::string signal = "1G";
     signal.copy(gnss_synchro.Signal, 2, 0);
-    gnss_synchro.PRN = 1;
-    config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
+    gnss_synchro.PRN = 10;
+    config->set_property("GNSS-SDR.internal_fs_hz", "62316000");
     config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "0");
+    config->set_property("Acquisition.if", "9540000");
     config->set_property("Acquisition.coherent_integration_time_ms", "1");
     config->set_property("Acquisition.dump", "true");
     config->set_property("Acquisition.dump_filename", "./acquisition.dat");
@@ -128,8 +128,8 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, Instantiate)
 
 TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
 {
-    int fs_in = 4000000;
-    int nsamples = 4000;
+    int fs_in = 62316000;
+    int nsamples = 62316;
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
@@ -168,8 +168,8 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     long long int end = 0;
     top_block = gr::make_top_block("Acquisition test");
 
-    double expected_delay_samples = 524;
-    double expected_doppler_hz = 1680;
+    double expected_delay_samples = 31839;
+    double expected_doppler_hz = 250;
     init();
     std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 
@@ -184,7 +184,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.1);
+        acquisition->set_threshold(0.001);
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -201,8 +201,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-        // std::string file = path + "signal_samples/Glonass_L1_CA_ID_1_Fs_4Msps_2ms.dat";
+        std::string file = path + "signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
@@ -228,10 +227,9 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = (float)(delay_error_samples * 511 / 4000);
+    float delay_error_chips = (float)(delay_error_samples * 511 / 62316);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
-
 }

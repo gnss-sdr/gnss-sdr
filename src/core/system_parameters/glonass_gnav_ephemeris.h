@@ -68,7 +68,7 @@ private:
     double d_Jz_sun;            //!< Sun gravitational perturbation
 
 public:
-    unsigned int i_satellite_freq_channel; // SV Frequency Channel Number
+    int i_satellite_freq_channel; // SV Frequency Channel Number
     double d_m;               //!< String number within frame [dimensionless]
     double d_t_k;             //!< Time referenced to the beginning of the frame within the current day [hours, minutes, seconds]
     double d_t_b;             //!< Index of a time interval within current day according to UTC(SU) + 03 hours 00 min. [minutes]

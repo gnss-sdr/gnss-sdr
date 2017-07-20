@@ -294,8 +294,8 @@ int signal_generator_c::general_work (int noutput_items __attribute__((unused)),
     unsigned int out_idx = 0;
     unsigned int i = 0;
     unsigned int k = 0;
-    // the intermediate frequency must set by the user
-    unsigned int freq = 9540000;
+    // the intermediate frequency must be set by the user
+    unsigned int freq = 4e6;
 
     for (out_idx = 0; out_idx < vector_length_; out_idx++)
         {

@@ -186,7 +186,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
     config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
     config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
 
-    config->set_property("SignalSource.noise_flag", "true");
+    config->set_property("SignalSource.noise_flag", "false");
     config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
 
@@ -219,7 +219,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
-    config->set_property("Acquisition.dump", "true");
+    config->set_property("Acquisition.dump", "false");
 }
 
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()

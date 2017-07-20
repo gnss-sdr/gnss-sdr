@@ -37,10 +37,11 @@ function plot_acq_grid_gsoc_glonass(sat)
 
 file=['acquisition_R_1G_sat_' num2str(sat) '_doppler_0.dat'];
 
-sampling_freq_Hz=62316000
+% sampling_freq_Hz=62316000
+sampling_freq_Hz=31.75e6
 Doppler_max_Hz = 10000
 Doppler_min_Hz = -10000
-Doppler_step_Hz = 250
+Doppler_step_Hz = 500
 
 
 % read files

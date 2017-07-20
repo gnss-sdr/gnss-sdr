@@ -103,8 +103,8 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     gnss_synchro.System = 'R';
     std::string signal = "1G";
     signal.copy(gnss_synchro.Signal, 2, 0);
-    gnss_synchro.PRN = 10;
-    config->set_property("GNSS-SDR.internal_fs_hz", "62316000");
+    gnss_synchro.PRN = 1;
+    config->set_property("GNSS-SDR.internal_fs_hz", "62314000");
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "9540000");
     config->set_property("Acquisition.coherent_integration_time_ms", "1");
@@ -128,8 +128,8 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, Instantiate)
 
 TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
 {
-    int fs_in = 62316000;
-    int nsamples = 62316;
+    int fs_in = 62314000;
+    int nsamples = 62314;
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
@@ -168,8 +168,8 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     long long int end = 0;
     top_block = gr::make_top_block("Acquisition test");
 
-    double expected_delay_samples = 31839;
-    double expected_doppler_hz = 250;
+    double expected_delay_samples = 31874;
+    double expected_doppler_hz = -9500;
     init();
     std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 

@@ -585,7 +585,11 @@ void udpos(rtk_t *rtk, double tt)
             return;
         }
     /* check variance of estimated postion */
-    for (i = 0;i<3;i++) var += rtk->P[i+i*rtk->nx]; var/=3.0;
+    for (i = 0;i<3;i++)
+        {
+            var += rtk->P[i+i*rtk->nx];
+        }
+    var /= 3.0;
 
     if (var>VAR_POS)
         {
@@ -1178,8 +1182,11 @@ int constbl(rtk_t *rtk, const double *x, const double *P, double *v,
     /* approximate variance of solution */
     if (P)
         {
-            for (i = 0;i<3;i++) var+=P[i+i*rtk->nx];
-            var/=3.0;
+            for (i = 0;i<3;i++)
+                {
+                    var += P[i+i*rtk->nx];
+                }
+            var /= 3.0;
         }
     /* check nonlinearity */
     if (var>thres*thres*bb*bb)

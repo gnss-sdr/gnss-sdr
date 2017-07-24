@@ -62,7 +62,8 @@ public:
     double d_M_n_A;             //!< Type of satellite n_A [dimensionless]
     double d_KP;                //!< Notification on forthcoming leap second correction of UTC [dimensionless]
     double d_tau_n_A;           //!< Coarse value of d_n_A satellite time correction to GLONASS time at instant  t_lambdan_A[s]
-    double d_C_n;             //!< Generalized “unhealthy flag” of n_A satellite at instant of almanac upload [dimensionless]
+    double d_C_n;               //!< Generalized “unhealthy flag” of n_A satellite at instant of almanac upload [dimensionless]
+    double d_l_n;               //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
 
     // satellite positions
     double d_satpos_Xo;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
@@ -109,6 +110,7 @@ public:
         archive & make_nvp("d_KP", d_KP);
         archive & make_nvp("d_tau_n_A", d_tau_n_A);
         archive & make_nvp("d_C_n", d_C_n);
+        archive & make_nvp("d_l_n", d_l_n);
     }
 
     void satellite_position(double N_i, double t_i);

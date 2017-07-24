@@ -103,8 +103,8 @@ const int GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS = 1700;
 const int GLONASS_GNAV_FRAME_BITS = 1725;       //!< Number of chips per frame in the GNAV message  15 strings*(85 data bits + 30 time mark bits)[bits]
 const int GLONASS_GNAV_FRAME_SECONDS = 30;      //!< Subframe duration [seconds]
 const int GLONASS_GNAV_FRAME_MS = 30000;        //!< Subframe duration [seconds]
-const int GLONASS_GNAV_STRING_BITS = 115;       //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
-const int GLONASS_GNAV_HAMMING_CODE_BITS = 115; //!< Number of bits in hamming code sequence of GNAV message
+const int GLONASS_GNAV_STRING_BITS = 85;       //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
+const int GLONASS_GNAV_HAMMING_CODE_BITS = 8; //!< Number of bits in hamming code sequence of GNAV message
 
 const std::vector<int> GLONASS_GNAV_CRC_I_INDEX {9, 10, 12, 13, 15, 17, 19, 20, 22, 24, 26, 28, 30, 32, 34, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84};
 const std::vector<int> GLONASS_GNAV_CRC_J_INDEX {9, 11, 12, 14, 15, 18, 19, 21, 22, 25, 26, 29, 30, 33, 34, 36, 37, 40, 41, 44, 45, 48, 49, 52, 53, 56, 57, 60, 61, 64, 65, 67, 68, 71, 72, 75, 76, 79, 80, 83, 84};
@@ -124,7 +124,9 @@ const std::vector<std::pair<int,int>> STRING_ID({{2,4}});
 const std::vector<std::pair<int,int>> KX({{78,8}});
 //STRING 1
 const std::vector<std::pair<int,int>> P1({{8,2}});
-const std::vector<std::pair<int,int>> T_K({{10,12}});
+const std::vector<std::pair<int,int>> T_K_HR({{10,5}});
+const std::vector<std::pair<int,int>> T_K_MIN({{10,6}});
+const std::vector<std::pair<int,int>> T_K_SEC({{10,1}});
 const std::vector<std::pair<int,int>> X_N_DOT ({{22,24}});
 const std::vector<std::pair<int,int>> X_N_DOT_DOT ({{46,5}});
 const std::vector<std::pair<int,int>> X_N({{51,27}});

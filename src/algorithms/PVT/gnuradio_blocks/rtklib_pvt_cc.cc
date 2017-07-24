@@ -188,9 +188,9 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     glonass_gnav_eph = boost::any_cast<std::shared_ptr<Glonass_Gnav_Ephemeris>>(pmt::any_ref(msg));
                     // TODO Add GLONASS with gps week number and tow,
                     // insert new ephemeris record
-                    DLOG(INFO) << "GLONASS GNAV New Ephemeris record inserted in global map with TOW =" << glonass_gnav_eph->TOW_5
-                               << ", GLONASS GNAV Week Number =" << glonass_gnav_eph->WN_5
-                               << " and Ephemeris IOD = " << glonass_gnav_eph->IOD_ephemeris;
+                    DLOG(INFO) << "GLONASS GNAV New Ephemeris record inserted in global map with TOW =" << glonass_gnav_eph->d_TOW
+                               << ", GLONASS GNAV Week Number =" << glonass_gnav_eph->d_WN
+                               << " and Ephemeris IOD = " << glonass_gnav_eph->compute_GLONASS_time(glonass_gnav_eph->d_t_b);
                     // update/insert new ephemeris record to the global ephemeris map
                     d_ls_pvt->glonass_gnav_ephemeris_map[glonass_gnav_eph->i_satellite_PRN] = *glonass_gnav_eph;
                 }
@@ -200,7 +200,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     std::shared_ptr<Glonass_Gnav_Utc_Model> glonass_gnav_utc_model;
                     glonass_gnav_utc_model = boost::any_cast<std::shared_ptr<Glonass_Gnav_Utc_Model>>(pmt::any_ref(msg));
                     d_ls_pvt->glonass_gnav_utc_model = *glonass_gnav_utc_model;
-                    DLOG(INFO) << "New UTC record has arrived ";
+                    DLOG(INFO) << "New GLONASS GNAV UTC record has arrived ";
                 }
             else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Almanac>) )
                 {
@@ -557,7 +557,7 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                 {
                                     if(tmp_eph_iter_glo_gnav != d_ls_pvt->glonass_gnav_ephemeris_map.end())
                                         {
-                                            d_rtcm_printer->lock_time(d_ls_pvt->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]); // keep track of locking time
+                                            //d_rtcm_printer->lock_time(d_ls_pvt->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]); // keep track of locking time
                                         }
                                 }
 
@@ -853,7 +853,8 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                     if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) && (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()) )
                                                         {
                                                             std::string glo_signal("1C");
-                                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
+                                                            std::string gal_signal("1B");
+                                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal, gal_signal);
                                                             rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
                                                             b_rinex_header_written = true; // do not write header anymore
                                                         }
@@ -1068,9 +1069,7 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                         {
                                                             if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()) )
                                                                 {
-                                                                    std::string glo_signal("1C");
-                                                                    rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
-
+                                                                    rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
                                                                 }
                                                             if (!b_rinex_header_updated && (d_ls_pvt->gps_utc_model.d_A0 != 0))
                                                                 {
@@ -1081,10 +1080,10 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                         }
                                                     if(type_of_rx == 27) // Galileo E1B + GLONASS L1 C/A
                                                         {
-                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (gal_ephemeris_iter != d_ls_pvt->gal_ephemeris_map.end()) )
+                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()) )
                                                                 {
                                                                     std::string glo_signal("1C");
-                                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
+                                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
 
                                                                 }
                                                             if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))

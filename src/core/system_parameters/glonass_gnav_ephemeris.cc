@@ -34,6 +34,8 @@
 
 #include "glonass_gnav_ephemeris.h"
 #include <cmath>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include "GLONASS_L1_CA.h"
 #include "gnss_satellite.h"
 
@@ -74,6 +76,16 @@ Glonass_Gnav_Ephemeris::Glonass_Gnav_Ephemeris()
     // clock terms derived from ephemeris data
     d_satClkDrift = 0.0;    //!< GLONASS clock error
     d_dtr = 0.0;
+}
+
+
+boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(const double offset_time) const
+{
+    boost::posix_time::time_duration t(0, 0, offset_time);
+    boost::gregorian::date d(d_yr, 1, d_N_T);
+    boost::posix_time::ptime glonass_time(d, t);
+
+    return glonass_time;
 }
 
 

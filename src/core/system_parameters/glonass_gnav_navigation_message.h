@@ -58,13 +58,10 @@ private:
     unsigned long int read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     signed long int read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    bool _CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits);
-
-    unsigned int get_frame_number(unsigned int satellite_slot_number);
 
 public:
     bool flag_CRC_test;
-    unsigned int frame_number;
+    unsigned int frame_ID;
 
     Glonass_Gnav_Ephemeris gnav_ephemeris;      //!< Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model;      //!< UTC model information
@@ -117,6 +114,10 @@ public:
     double d_dtr;            // Relativistic clock correction term
     double d_satClkDrift;    // Satellite clock drift
 
+    bool CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits);
+
+    unsigned int get_frame_number(unsigned int satellite_slot_number);
+
     /*!
      * \brief Reset GLONASS GNAV Navigation Information
      */
@@ -160,7 +161,7 @@ public:
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and returns it in [s]
      */
-    double utc_time(const double gpstime_corrected) const;
+    double utc_time(const double glonasstime_corrected) const;
 
     /*!
      * Default constructor

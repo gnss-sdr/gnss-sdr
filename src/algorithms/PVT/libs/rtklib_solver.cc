@@ -126,6 +126,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
 
     obsd_t obs_data[MAXOBS];
     eph_t eph_data[MAXOBS];
+    geph_t geph_data[MAXOBS];
 
     for(gnss_observables_iter = gnss_observables_map.cbegin();
             gnss_observables_iter != gnss_observables_map.cend();
@@ -441,5 +442,5 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                 }
             }
         }
-    return this->is_valid_position();
-}
+        return b_valid_position;
+    }

@@ -37,6 +37,7 @@
 #include <string>
 #include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 
 
@@ -59,62 +60,68 @@ private:
 
     void gravitational_perturbations();
 
-    double d_Jx_moon;           //!< Moon gravitational perturbation
-    double d_Jy_moon;           //!< Moon gravitational perturbation
-    double d_Jz_moon;           //!< Moon gravitational perturbation
+    double d_Jx_moon;         //!< Moon gravitational perturbation
+    double d_Jy_moon;         //!< Moon gravitational perturbation
+    double d_Jz_moon;         //!< Moon gravitational perturbation
 
-    double d_Jx_sun;            //!< Sun gravitational perturbation
-    double d_Jy_sun;            //!< Sun gravitational perturbation
-    double d_Jz_sun;            //!< Sun gravitational perturbation
+    double d_Jx_sun;          //!< Sun gravitational perturbation
+    double d_Jy_sun;          //!< Sun gravitational perturbation
+    double d_Jz_sun;          //!< Sun gravitational perturbation
 
 public:
-    int i_satellite_freq_channel; // SV Frequency Channel Number
-    double d_m;               //!< String number within frame [dimensionless]
-    double d_t_k;             //!< Time referenced to the beginning of the frame within the current day [hours, minutes, seconds]
-    double d_t_b;             //!< Index of a time interval within current day according to UTC(SU) + 03 hours 00 min. [minutes]
-    double d_M;               //!< Type of satellite transmitting navigation signal [dimensionless]
-    double d_gamma_n;         //!< Relative deviation of predicted carrier frequency value of n- satellite from nominal value at the instant tb [dimensionless]
-    double d_tau_n;           //!< Correction to the nth satellite time (tn) relative to GLONASS time (te),
+    double d_m;             //!< String number within frame [dimensionless]
+    double d_t_k;           //!< GLONASS Time (UTC(SU) + 3 h) referenced to the beginning of the frame within the current day [s]
+    double d_t_b;           //!< Reference ephemeris relative time in GLONASS Time (UTC(SU) + 3 h). Index of a time interval within current day according to UTC(SU) + 03 hours 00 min. [s]
+    double d_M;             //!< Type of satellite transmitting navigation signal [dimensionless]
+    double d_gamma_n;       //!< Relative deviation of predicted carrier frequency value of n- satellite from nominal value at the instant tb [dimensionless]
+    double d_tau_n;         //!< Correction to the nth satellite time (tn) relative to GLONASS time (te),
+    double d_Xn;            //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
+    double d_Yn;            //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
+    double d_Zn;            //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
+    double d_VXn;           //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
+    double d_VYn;           //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
+    double d_VZn;           //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
+    double d_AXn;           //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
+    double d_AYn;           //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
+    double d_AZn;           //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
+    double d_B_n;           //!< Health flag [dimensionless]
+    double d_P;             //!< Technological parameter of control segment, indication the satellite operation mode in respect of time parameters [dimensionless]
+    double d_N_T;           //!< Current date, calendar number of day within four-year interval starting from the 1-st of January in a leap year [days]
+    double d_F_T;           //!< Parameter that provides the predicted satellite user range accuracy at time tb [dimensionless]
+    double d_n;             //!< Index of the satellite transmitting given navigation signal. It corresponds to a slot number within GLONASS constellation
+    double d_Delta_tau_n;   //!< Time difference between navigation RF signal transmitted in L2 sub- band and aviation RF signal transmitted in L1 sub-band by nth satellite. [dimensionless]
+    double d_E_n;           //!< Characterises "age" of a current information [days]
+    double d_P_1;           //!< Flag of the immediate data updating [minutes]
+    double d_P_2;           //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
+    double d_P_3;           //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
+    double d_P_4;           //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
+    double d_l_n;           //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
 
-    // satellite positions
-    double d_Xn;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
-    double d_Yn;        //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
-    double d_Zn;        //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
-    // Satellite velocity
-    double d_VXn;        //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_VYn;        //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_VZn;        //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
-    // Satellite acceleration
-    double d_AXn;        //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
-    double d_AYn;        //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
-    double d_AZn;        //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
+    // Inmediate deliverables of ephemris information
+    int i_satellite_freq_channel;           //!< SV Frequency Channel Number
+    unsigned int i_satellite_PRN;           //!< SV PRN NUMBER
+    unsigned int i_satellite_slot_number;   //!< SV PRN NUMBER
+    double d_TOD;                           //!< Time of Day of the ephemeris set based in start of frame [s]
+    double d_D4Y;                           //!< Day of Year after latest leap year (4 year interval)
+    double d_yr;                            //!< Current year
+    double d_satClkDrift;                   //!< GLONASS clock error
+    double d_dtr;                           //!< relativistic clock correction term
+    double d_iode;                          //!< Issue of data, ephemeris (Bit 0-6 of tb)
+    double d_tau_c;
+    double d_TOW; // tow of the start of frame
+    double d_WN; //  week number of the start of frame
 
-    double d_B_n;             //!< Health flag [dimensionless]
-    double d_P;               //!< Technological parameter of control segment, indication the satellite operation mode in respect of time parameters [dimensionless]
-    double d_N_T;             //!< Current date, calendar number of day within four-year interval starting from the 1-st of January in a leap year [days]
-    double d_F_T;             //!< Parameter that provides the predicted satellite user range accuracy at time tb [dimensionless]
-    double d_n;               //!< Index of the satellite transmitting given navigation signal. It corresponds to a slot number within GLONASS constellation
-    double d_Delta_tau_n;     //!< Time difference between navigation RF signal transmitted in L2 sub- band and aviation RF signal transmitted in L1 sub-band by nth satellite. [dimensionless]
-    double d_E_n;             //!< Characterises "age" of a current information [days]
-    double d_P_1;             //!< Flag of the immediate data updating.
-    double d_P_2;             //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
-    double d_P_3;             //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
-    double d_P_4;             //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
-    double d_l_n;             //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+    // Need to add a way to compute the GPS week number and GPS TIME OF WEEK from GLONASS ephemeris
 
-    // clock terms derived from ephemeris data
-    double d_satClkDrift;    //!< GPS clock error
-    double d_dtr;            //!< relativistic clock correction term
-
-    // satellite positions
+    // satellite positions after RK4 Integration
     double d_satpos_X;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
     double d_satpos_Y;        //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
     double d_satpos_Z;        //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
-    // Satellite velocity
+    // Satellite velocity after RK4 Integration
     double d_satvel_X;        //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
     double d_satvel_Y;        //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
     double d_satvel_Z;        //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
-    // Satellite acceleration
+    // Satellite acceleration after RK4 Integration
     double d_satacc_X;        //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
     double d_satacc_Y;        //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
     double d_satacc_Z;        //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
@@ -136,6 +143,15 @@ public:
         archive & make_nvp("d_M", d_M);             //!< Type of satellite transmitting navigation signal [dimensionless]
         archive & make_nvp("d_gamma_n", d_gamma_n); //!< Relative deviation of predicted carrier frequency value of n- satellite from nominal value at the instant tb [dimensionless]
         archive & make_nvp("d_tau_n", d_tau_n);     //!< Correction to the nth satellite time (tn) relative to GLONASS time (te)
+        archive & make_nvp("d_Xn", d_Xn);           //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
+        archive & make_nvp("d_Yn", d_Yn);           //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
+        archive & make_nvp("d_Zn", d_Zn);           //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
+        archive & make_nvp("d_VXn", d_VXn);         //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
+        archive & make_nvp("d_VYn", d_VYn);         //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
+        archive & make_nvp("d_VZn", d_VZn);         //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
+        archive & make_nvp("d_AXn", d_AXn);         //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
+        archive & make_nvp("d_AYn", d_AYn);         //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
+        archive & make_nvp("d_AZn", d_AZn);         //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
         archive & make_nvp("d_B_n", d_B_n);         //!< Health flag [dimensionless]
         archive & make_nvp("d_P", d_P);             //!< Technological parameter of control segment, indication the satellite operation mode in respect of time parameters [dimensionless]
         archive & make_nvp("d_N_T", d_N_T);         //!< Current date, calendar number of day within four-year interval starting from the 1-st of January in a leap year [days]
@@ -172,7 +188,7 @@ public:
      * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
      *  (IS-GPS-200E,  20.3.3.3.3.1)
      */
-    double sv_clock_drift(double transmitTime);
+    double sv_clock_drift(double transmitTime, double timeCorrUTC);
 
     /*!
      * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
@@ -180,6 +196,12 @@ public:
      */
     double sv_clock_relativistic_term(double transmitTime);
 
+
+    /*!
+     *  \brief Computes the GLONASS System Time and returns a boost::posix_time::ptime object
+     * \ param offset_time Is the start of day offset to compute the time
+     */
+    boost::posix_time::ptime compute_GLONASS_time(const double offset_time) const;
 
     /*!
      * Default constructor

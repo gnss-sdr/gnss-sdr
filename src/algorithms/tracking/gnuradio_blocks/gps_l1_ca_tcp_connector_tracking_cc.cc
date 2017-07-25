@@ -272,32 +272,34 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
 }
 
 
-
-
 Gps_L1_Ca_Tcp_Connector_Tracking_cc::~Gps_L1_Ca_Tcp_Connector_Tracking_cc()
 {
-	if (d_dump_file.is_open())
-	{
-		try
-		{
-			d_dump_file.close();
-		}catch(const std::exception & ex)
-		{
-			LOG(WARNING)<<"Exception in destructor "<<ex.what();
-		}
-	}
-	try{
-		volk_gnsssdr_free(d_local_code_shift_chips);
-		volk_gnsssdr_free(d_correlator_outs);
-		volk_gnsssdr_free(d_ca_code);
-	    d_tcp_com.close_tcp_connection(d_port);
-		delete[] d_Prompt_buffer;
-		multicorrelator_cpu.free();
-	}catch(const std::exception & ex)
-	{
-		LOG(WARNING)<<"Exception in destructor "<<ex.what();
-	}
+    if (d_dump_file.is_open())
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor " << ex.what();
+            }
+        }
+    try
+    {
+            volk_gnsssdr_free(d_local_code_shift_chips);
+            volk_gnsssdr_free(d_correlator_outs);
+            volk_gnsssdr_free(d_ca_code);
+            d_tcp_com.close_tcp_connection(d_port);
+            delete[] d_Prompt_buffer;
+            multicorrelator_cpu.free();
+    }
+    catch(const std::exception & ex)
+    {
+            LOG(WARNING) << "Exception in destructor " << ex.what();
+    }
 }
+
 
 int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)

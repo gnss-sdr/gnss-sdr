@@ -244,28 +244,30 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
 
 Galileo_E1_Tcp_Connector_Tracking_cc::~Galileo_E1_Tcp_Connector_Tracking_cc()
 {
-	if (d_dump_file.is_open())
-	{
-		try
-		{
-			d_dump_file.close();
-		}catch(const std::exception & ex)
-		{
-			LOG(WARNING)<<"Exception in destructor "<<ex.what();
-		}
-	}
-	try{
-		volk_gnsssdr_free(d_local_code_shift_chips);
-		volk_gnsssdr_free(d_correlator_outs);
-		volk_gnsssdr_free(d_ca_code);
-		delete[] d_Prompt_buffer;
-	    d_tcp_com.close_tcp_connection(d_port);
-		multicorrelator_cpu.free();
-	}catch(const std::exception & ex)
-	{
-		LOG(WARNING)<<"Exception in destructor "<<ex.what();
-	}
-
+    if (d_dump_file.is_open())
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor " << ex.what();
+            }
+        }
+    try
+    {
+            volk_gnsssdr_free(d_local_code_shift_chips);
+            volk_gnsssdr_free(d_correlator_outs);
+            volk_gnsssdr_free(d_ca_code);
+            delete[] d_Prompt_buffer;
+            d_tcp_com.close_tcp_connection(d_port);
+            multicorrelator_cpu.free();
+    }
+    catch(const std::exception & ex)
+    {
+            LOG(WARNING) << "Exception in destructor " << ex.what();
+    }
 }
 
 

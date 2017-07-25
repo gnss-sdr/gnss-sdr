@@ -132,7 +132,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     d_local_code_shift_chips[1] = 0.0;
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
-
     //--- Perform initializations ------------------------------
     multicorrelator_gpu = new cuda_multicorrelator();
     //local code resampler on GPU
@@ -259,45 +258,43 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
-
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
-            << " Code Phase correction [samples]=" << delay_correction_samples
-            << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
+              << " Code Phase correction [samples]=" << delay_correction_samples
+              << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
 
 
 Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc()
 {
-
-	if (d_dump_file.is_open())
-	{
-		try
-		{
-			d_dump_file.close();
-		}catch(const std::exception & ex)
-		{
-			LOG(WARNING)<<"Exception in destructor "<<ex.what();
-		}
-	}
-	try{
-	    cudaFreeHost(in_gpu);
-	    cudaFreeHost(d_correlator_outs);
-	    cudaFreeHost(d_local_code_shift_chips);
-	    cudaFreeHost(d_ca_code);
-		delete[] d_Prompt_buffer;
-	    multicorrelator_gpu->free_cuda();
-	    delete(multicorrelator_gpu);
-	}catch(const std::exception & ex)
-	{
-		LOG(WARNING)<<"Exception in destructor "<<ex.what();
-	}
-
+    if (d_dump_file.is_open())
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor " << ex.what();
+            }
+        }
+    try{
+            cudaFreeHost(in_gpu);
+            cudaFreeHost(d_correlator_outs);
+            cudaFreeHost(d_local_code_shift_chips);
+            cudaFreeHost(d_ca_code);
+            delete[] d_Prompt_buffer;
+            multicorrelator_gpu->free_cuda();
+            delete(multicorrelator_gpu);
+    }
+    catch(const std::exception & ex)
+    {
+            LOG(WARNING) << "Exception in destructor " << ex.what();
+    }
 }
-
 
 
 int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),

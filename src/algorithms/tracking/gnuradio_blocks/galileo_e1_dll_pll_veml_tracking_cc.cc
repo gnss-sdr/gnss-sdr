@@ -251,14 +251,27 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
 
 galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
 {
-    d_dump_file.close();
+	if (d_dump_file.is_open())
+	{
+		try
+		{
+			d_dump_file.close();
+		}catch(const std::exception & ex)
+		{
+			LOG(WARNING)<<"Exception in destructor "<<ex.what();
+		}
+	}
+	try{
+		volk_gnsssdr_free(d_local_code_shift_chips);
+		volk_gnsssdr_free(d_correlator_outs);
+		volk_gnsssdr_free(d_ca_code);
+		delete[] d_Prompt_buffer;
+		multicorrelator_cpu.free();
+	}catch(const std::exception & ex)
+	{
+		LOG(WARNING)<<"Exception in destructor "<<ex.what();
+	}
 
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_correlator_outs);
-    volk_gnsssdr_free(d_ca_code);
-
-    delete[] d_Prompt_buffer;
-    multicorrelator_cpu.free();
 }
 
 

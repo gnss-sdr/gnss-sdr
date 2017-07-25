@@ -213,20 +213,31 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
 
 Galileo_E5a_Dll_Pll_Tracking_cc::~Galileo_E5a_Dll_Pll_Tracking_cc ()
 {
-    d_dump_file.close();
+	if (d_dump_file.is_open())
+	{
+		try
+		{
+			d_dump_file.close();
+		}catch(const std::exception & ex)
+		{
+			LOG(WARNING)<<"Exception in destructor "<<ex.what();
+		}
+	}
+	try{
+	    delete[] d_codeI;
+	    delete[] d_codeQ;
+	    delete[] d_Prompt_buffer;
+		volk_gnsssdr_free(d_local_code_shift_chips);
+		volk_gnsssdr_free(d_correlator_outs);
+	    volk_gnsssdr_free(d_Single_Prompt_data);
+		delete[] d_Prompt_buffer;
+	    multicorrelator_cpu_Q.free();
+	    multicorrelator_cpu_I.free();
+	}catch(const std::exception & ex)
+	{
+		LOG(WARNING)<<"Exception in destructor "<<ex.what();
+	}
 
-    delete[] d_codeI;
-    delete[] d_codeQ;
-    delete[] d_Prompt_buffer;
-
-    d_dump_file.close();
-
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_correlator_outs);
-    volk_gnsssdr_free(d_Single_Prompt_data);
-
-    multicorrelator_cpu_Q.free();
-    multicorrelator_cpu_I.free();
 }
 
 

@@ -320,15 +320,27 @@ void gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::start_tracking()
 
 gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::~gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc()
 {
-    d_dump_file.close();
-
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_ca_code);
-    volk_gnsssdr_free(d_ca_code_16sc);
-    volk_gnsssdr_free(d_correlator_outs_16sc);
-
-    delete[] d_Prompt_buffer;
-    multicorrelator_fpga_8sc->free();
+	if (d_dump_file.is_open())
+	{
+		try
+		{
+			d_dump_file.close();
+		}catch(const std::exception & ex)
+		{
+			LOG(WARNING)<<"Exception in destructor "<<ex.what();
+		}
+	}
+	try{
+	    volk_gnsssdr_free(d_local_code_shift_chips);
+	    volk_gnsssdr_free(d_ca_code);
+	    volk_gnsssdr_free(d_ca_code_16sc);
+	    volk_gnsssdr_free(d_correlator_outs_16sc);
+		delete[] d_Prompt_buffer;
+	    multicorrelator_fpga_8sc->free();
+	}catch(const std::exception & ex)
+	{
+		LOG(WARNING)<<"Exception in destructor "<<ex.what();
+	}
 }
 
 

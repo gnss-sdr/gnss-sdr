@@ -273,14 +273,29 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
 Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc()
 {
 
-    d_dump_file.close();
-    cudaFreeHost(in_gpu);
-    cudaFreeHost(d_correlator_outs);
-    cudaFreeHost(d_local_code_shift_chips);
-    cudaFreeHost(d_ca_code);
-    multicorrelator_gpu->free_cuda();
-    delete[] d_Prompt_buffer;
-    delete(multicorrelator_gpu);
+	if (d_dump_file.is_open())
+	{
+		try
+		{
+			d_dump_file.close();
+		}catch(const std::exception & ex)
+		{
+			LOG(WARNING)<<"Exception in destructor "<<ex.what();
+		}
+	}
+	try{
+	    cudaFreeHost(in_gpu);
+	    cudaFreeHost(d_correlator_outs);
+	    cudaFreeHost(d_local_code_shift_chips);
+	    cudaFreeHost(d_ca_code);
+		delete[] d_Prompt_buffer;
+	    multicorrelator_gpu->free_cuda();
+	    delete(multicorrelator_gpu);
+	}catch(const std::exception & ex)
+	{
+		LOG(WARNING)<<"Exception in destructor "<<ex.what();
+	}
+
 }
 
 

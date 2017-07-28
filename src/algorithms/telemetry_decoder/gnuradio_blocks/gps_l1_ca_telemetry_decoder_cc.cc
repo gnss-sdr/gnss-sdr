@@ -98,7 +98,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     flag_TOW_set = false;
     d_average_count = 0;
     d_flag_preamble = false;
-    d_flag_new_tow_available=false;
+    d_flag_new_tow_available = false;
     d_word_number = 0;
     d_decimation_output_factor = 1;
     d_channel = 0;
@@ -110,8 +110,19 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
 gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
 {
     delete d_preambles_symbols;
-    d_dump_file.close();
+    if(d_dump_file.is_open() == true)
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+            }
+        }
 }
+
 
 bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
 {

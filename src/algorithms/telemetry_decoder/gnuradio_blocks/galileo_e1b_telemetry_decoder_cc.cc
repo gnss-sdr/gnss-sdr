@@ -164,7 +164,17 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
 galileo_e1b_telemetry_decoder_cc::~galileo_e1b_telemetry_decoder_cc()
 {
     delete d_preambles_symbols;
-    d_dump_file.close();
+    if(d_dump_file.is_open() == true)
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+            }
+        }
 }
 
 

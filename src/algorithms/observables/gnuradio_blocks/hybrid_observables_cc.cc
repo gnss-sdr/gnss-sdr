@@ -93,7 +93,17 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, 
 
 hybrid_observables_cc::~hybrid_observables_cc()
 {
-    d_dump_file.close();
+    if (d_dump_file.is_open() == true)
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+            }
+        }
 }
 
 

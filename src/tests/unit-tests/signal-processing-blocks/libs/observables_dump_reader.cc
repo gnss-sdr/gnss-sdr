@@ -43,6 +43,7 @@ bool observables_dump_reader::read_binary_obs()
             d_dump_file.read((char *) &Acc_carrier_phase_hz[i], sizeof(double));
             d_dump_file.read((char *) &Pseudorange_m[i], sizeof(double));
             d_dump_file.read((char *) &PRN[i], sizeof(double));
+            d_dump_file.read((char *) &valid[i], sizeof(double));
         }
     }
     catch (const std::ifstream::failure &e)
@@ -69,7 +70,7 @@ bool observables_dump_reader::restart()
 long int observables_dump_reader::num_epochs()
 {
     std::ifstream::pos_type size;
-    int number_of_vars_in_epoch = n_channels*6;
+    int number_of_vars_in_epoch = n_channels*7;
     int epoch_size_bytes = sizeof(double) * number_of_vars_in_epoch;
     std::ifstream tmpfile( d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
@@ -117,6 +118,7 @@ observables_dump_reader::observables_dump_reader(int n_channels_)
     Acc_carrier_phase_hz=new double[n_channels];
     Pseudorange_m=new double[n_channels];
     PRN=new double[n_channels];
+    valid=new double[n_channels];
 }
 observables_dump_reader::~observables_dump_reader()
 {
@@ -130,4 +132,5 @@ observables_dump_reader::~observables_dump_reader()
     delete[] Acc_carrier_phase_hz;
     delete[] Pseudorange_m;
     delete[] PRN;
+    delete[] valid;
 }

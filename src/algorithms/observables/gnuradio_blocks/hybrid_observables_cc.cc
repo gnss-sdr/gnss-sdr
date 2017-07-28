@@ -337,6 +337,8 @@ int hybrid_observables_cc::general_work (int noutput_items,
                                                     d_dump_file.write((char*)&tmp_double, sizeof(double));
                                                     tmp_double = current_gnss_synchro[i].PRN;
                                                     d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                                    tmp_double = current_gnss_synchro[i].Flag_valid_pseudorange;
+                                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
                                                 }
                                     }
                                     catch (const std::ifstream::failure& e)

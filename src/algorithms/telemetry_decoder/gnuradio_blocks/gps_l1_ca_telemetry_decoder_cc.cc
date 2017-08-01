@@ -350,7 +350,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
             //double decoder_latency_ms=(double)(current_symbol.Tracking_sample_counter-d_symbol_history.at(0).Tracking_sample_counter)
             //        /(double)current_symbol.fs;
             // update TOW at the preamble instant (account with decoder latency)
-            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
+            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 2*GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
 
             d_TOW_at_current_symbol = floor(d_TOW_at_Preamble*1000.0)/1000.0;
             flag_TOW_set = true;

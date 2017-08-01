@@ -230,22 +230,25 @@ int hybrid_observables_cc::general_work (int noutput_items,
                                                     int distance = std::distance(d_gnss_synchro_history_queue[i].begin(), gnss_synchro_deque_iter);
                                                     if (distance > 0)
                                                         {
-                                                            double T_rx_channel_prev = (double)d_gnss_synchro_history_queue[i].at(distance - 1).Tracking_sample_counter / (double)gnss_synchro_deque_iter->fs;
-                                                            double delta_T_rx_s_prev = T_rx_channel_prev - T_rx_s;
-                                                            if (fabs(delta_T_rx_s_prev) < fabs(delta_T_rx_s))
-                                                                {
-                                                                    realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(
-                                                                            d_gnss_synchro_history_queue[i].at(distance-1).Channel_ID,
-                                                                            d_gnss_synchro_history_queue[i].at(distance-1)));
-                                                                    adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
-                                                                }
-                                                            else
-                                                                {
-                                                                    realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
-                                                                    adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(
-                                                                            d_gnss_synchro_history_queue[i].at(distance-1).Channel_ID,
-                                                                            d_gnss_synchro_history_queue[i].at(distance-1)));
-                                                                }
+                                                    		   if (d_gnss_synchro_history_queue[i].at(distance-1).Flag_valid_word)
+                                                    		   {
+																double T_rx_channel_prev = (double)d_gnss_synchro_history_queue[i].at(distance - 1).Tracking_sample_counter / (double)gnss_synchro_deque_iter->fs;
+																double delta_T_rx_s_prev = T_rx_channel_prev - T_rx_s;
+																if (fabs(delta_T_rx_s_prev) < fabs(delta_T_rx_s))
+																	{
+																		realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(
+																				d_gnss_synchro_history_queue[i].at(distance-1).Channel_ID,
+																				d_gnss_synchro_history_queue[i].at(distance-1)));
+																		adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
+																	}
+																else
+																	{
+																		realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
+																		adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(
+																				d_gnss_synchro_history_queue[i].at(distance-1).Channel_ID,
+																				d_gnss_synchro_history_queue[i].at(distance-1)));
+																	}
+                                                    		   }
                                                         }
                                                     else
                                                         {

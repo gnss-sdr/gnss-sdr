@@ -97,8 +97,9 @@ public:
     double d_P_4;           //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
     double d_l_n;           //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
 
-    // Inmediate deliverables of ephemris information
-    int i_satellite_freq_channel;           //!< SV Frequency Channel Number
+    // Inmediate deliverables of ephemeris information
+    //TODO check how freq channel is managed in gnav message. I think it is a number greater thn 0
+    unsigned int i_satellite_freq_channel;  //!< SV Frequency Channel Number
     unsigned int i_satellite_PRN;           //!< SV PRN NUMBER
     unsigned int i_satellite_slot_number;   //!< SV PRN NUMBER
     double d_TOD;                           //!< Time of Day of the ephemeris set based in start of frame [s]

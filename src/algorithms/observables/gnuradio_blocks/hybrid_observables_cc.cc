@@ -295,7 +295,6 @@ int hybrid_observables_cc::general_work (int noutput_items,
               double channel_T_rx_s;
               double channel_fs_hz;
               double channel_TOW_s;
-              double delta_T_rx_s;
               for(gnss_synchro_map_iter = realigned_gnss_synchro_map.begin(); gnss_synchro_map_iter != realigned_gnss_synchro_map.end(); gnss_synchro_map_iter++)
                 {
                   channel_fs_hz = (double)gnss_synchro_map_iter->second.fs;

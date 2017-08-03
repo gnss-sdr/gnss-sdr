@@ -40,6 +40,7 @@ bool true_observables_reader::read_binary_obs()
             d_dump_file.read((char *) &doppler_l1_hz, sizeof(double));
             d_dump_file.read((char *) &acc_carrier_phase_l1_cycles[i], sizeof(double));
             d_dump_file.read((char *) &dist_m[i], sizeof(double));
+            d_dump_file.read((char *) &true_dist_m[i], sizeof(double));
             d_dump_file.read((char *) &carrier_phase_l1_cycles[i], sizeof(double));
             d_dump_file.read((char *) &prn[i], sizeof(double));
         }

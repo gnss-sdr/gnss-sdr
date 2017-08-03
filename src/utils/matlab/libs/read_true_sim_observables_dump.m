@@ -8,7 +8,7 @@ function [observables] = read_true_sim_observables_dump (filename, count)
 
   m = nargchk (1,2,nargin);
   channels=12; %Simulator always use 12 channels
-  num_double_vars=6;
+  num_double_vars=7;
   double_size_bytes=8;
   skip_bytes_each_read=double_size_bytes*num_double_vars*channels;
   bytes_shift=0;
@@ -37,6 +37,9 @@ function [observables] = read_true_sim_observables_dump (filename, count)
         observables.Pseudorange_m(N,:) = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
         bytes_shift=bytes_shift+double_size_bytes;
         fseek(f,bytes_shift,'bof'); % move to next interleaved
+        observables.True_range_m(N,:) = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+        bytes_shift=bytes_shift+double_size_bytes;
+        fseek(f,bytes_shift,'bof'); % move to next interleaved
         observables.Carrier_phase_hz_v2(N,:) = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
         bytes_shift=bytes_shift+double_size_bytes;
         fseek(f,bytes_shift,'bof'); % move to next interleaved
@@ -54,6 +57,7 @@ function [observables] = read_true_sim_observables_dump (filename, count)
 %             d_dump_file.read((char *) &doppler_l1_hz, sizeof(double));
 %             d_dump_file.read((char *) &acc_carrier_phase_l1_cycles[i], sizeof(double));
 %             d_dump_file.read((char *) &dist_m[i], sizeof(double));
+%             d_dump_file.read((char *) &true_dist_m[i], sizeof(double));
 %             d_dump_file.read((char *) &carrier_phase_l1_cycles[i], sizeof(double));
 %             d_dump_file.read((char *) &prn[i], sizeof(double));
 %         }

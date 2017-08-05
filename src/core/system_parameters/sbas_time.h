@@ -38,43 +38,39 @@
 #define EVENT 2 // logs important events which don't occur every update() call
 #define FLOW 3  // logs the function calls of block processing functions
 
-class Sbas_Time_Relation
-{
+class Sbas_Time_Relation {
 public:
-    Sbas_Time_Relation()
-    {
+    Sbas_Time_Relation() {
         i_gps_week = 0;
         d_delta_sec = 0;
         b_valid = false;
         VLOG(FLOW) << "<<R>> new invalid time relation: i_gps_week=" << i_gps_week << " d_delta_sec=" << d_delta_sec;
     }
 
-    Sbas_Time_Relation(double time_stamp_sec, int gps_week, double gps_sec)
-    {
+    Sbas_Time_Relation(double time_stamp_sec, int gps_week, double gps_sec) {
         i_gps_week = gps_week;
         d_delta_sec = gps_sec - time_stamp_sec;
         b_valid = true;
         VLOG(FLOW) << "<<R>> new time relation: i_gps_week=" << i_gps_week << " d_delta_sec=" << d_delta_sec;
     }
 
-    bool to_gps_time(double time_stamp_sec, int &gps_week, double &gps_sec)
-    {
-        int delta_weeks = int(trunc(time_stamp_sec + d_delta_sec))/604800;
-        gps_sec = time_stamp_sec + d_delta_sec - delta_weeks*604800;
+    bool to_gps_time(double time_stamp_sec, int &gps_week, double &gps_sec) {
+        int delta_weeks = int(trunc(time_stamp_sec + d_delta_sec)) / 604800;
+        gps_sec = time_stamp_sec + d_delta_sec - delta_weeks * 604800;
         gps_week = i_gps_week + delta_weeks;
-        VLOG(FLOW) << "<<R>> to gps time: time_stamp_sec=" << time_stamp_sec << " gps_week=" << gps_week << " gps_sec=" << gps_sec;
+        VLOG(FLOW)
+        << "<<R>> to gps time: time_stamp_sec=" << time_stamp_sec << " gps_week=" << gps_week << " gps_sec=" << gps_sec;
         return b_valid;
     }
 
-    bool to_sample_stamp(int gps_week, double gps_sec, double &time_stamp_sec)
-    {
-        time_stamp_sec = (gps_sec - d_delta_sec) + (gps_week - i_gps_week)*604800;
-        VLOG(FLOW) << "<<R>> to gps time: gps_week=" << gps_week << " gps_sec=" << gps_sec << " time_stamp_sec=" << time_stamp_sec;
+    bool to_sample_stamp(int gps_week, double gps_sec, double &time_stamp_sec) {
+        time_stamp_sec = (gps_sec - d_delta_sec) + (gps_week - i_gps_week) * 604800;
+        VLOG(FLOW)
+        << "<<R>> to gps time: gps_week=" << gps_week << " gps_sec=" << gps_sec << " time_stamp_sec=" << time_stamp_sec;
         return b_valid;
     }
 
-    bool is_valid()
-    {
+    bool is_valid() {
         return b_valid;
     }
 
@@ -92,26 +88,26 @@ private:
  *     - only absolute time (gps time) is known
  *     - absolute and relative time and their relation is known
  */
-class Sbas_Time
-{
+class Sbas_Time {
 public:
-    enum Sbas_Time_State {RELATIVE, /*ABSOLUTE,*/ RELATED, UNDEFINED};
+    enum Sbas_Time_State {
+        RELATIVE, /*ABSOLUTE,*/ RELATED, UNDEFINED
+    };
 
-    Sbas_Time()
-    {
+    Sbas_Time() {
         e_state = UNDEFINED;
         i_gps_week = 0;
         d_gps_sec = 0;
         d_time_stamp_sec = 0;
     }
 
-    Sbas_Time(double time_stamp_sec)
-    {
+    Sbas_Time(double time_stamp_sec) {
         d_time_stamp_sec = time_stamp_sec;
         i_gps_week = 0;
         d_gps_sec = 0;
         e_state = RELATIVE;
     }
+
     /*
     Sbas_Time(int gps_week, double gps_sec)
     {
@@ -120,20 +116,17 @@ public:
         d_time_stamp_sec = 0;
         e_state = ABSOLUTE;
     }*/
-    Sbas_Time(double time_stamp_sec, Sbas_Time_Relation relation)
-    {
-        if(relation.is_valid())
-            {    // construct a RELATED object
-                d_time_stamp_sec = time_stamp_sec;
-                relation.to_gps_time(d_time_stamp_sec, i_gps_week, d_gps_sec);
-                e_state = RELATED;
-            }
-        else
-            {    // construct a RELATIVE object
-                *this = Sbas_Time(time_stamp_sec);
-                VLOG(FLOW) << "<<R>> create RELATIVE time (invalid relation): time_stamp_sec=" << time_stamp_sec;
-            }
+    Sbas_Time(double time_stamp_sec, Sbas_Time_Relation relation) {
+        if (relation.is_valid()) {    // construct a RELATED object
+            d_time_stamp_sec = time_stamp_sec;
+            relation.to_gps_time(d_time_stamp_sec, i_gps_week, d_gps_sec);
+            e_state = RELATED;
+        } else {    // construct a RELATIVE object
+            *this = Sbas_Time(time_stamp_sec);
+            VLOG(FLOW) << "<<R>> create RELATIVE time (invalid relation): time_stamp_sec=" << time_stamp_sec;
+        }
     }
+
     /*Sbas_Time(int gps_week, double gps_sec, Sbas_Time_Relation relation)
     {
         i_gps_week = gps_week;
@@ -142,44 +135,46 @@ public:
         e_state = RELATED;
     }*/
 
-    void relate(Sbas_Time_Relation sbas_time_realtion)
-    {
-        switch (e_state)
-        {
-        case RELATIVE: *this = Sbas_Time(d_time_stamp_sec, sbas_time_realtion);
-        break;
+    void relate(Sbas_Time_Relation sbas_time_realtion) {
+        switch (e_state) {
+            case RELATIVE:
+                *this = Sbas_Time(d_time_stamp_sec, sbas_time_realtion);
+                break;
 
-        //case ABSOLUTE: return Sbas_Time(i_gps_week, d_gps_sec, sbas_time_realtion);
-        break;
+                //case ABSOLUTE: return Sbas_Time(i_gps_week, d_gps_sec, sbas_time_realtion);
+                break;
 
-        case RELATED:  LOG(INFO) << "Relating an already related Sbas_Time object is not possible";
-        break;
+            case RELATED:
+                LOG(INFO) << "Relating an already related Sbas_Time object is not possible";
+                break;
 
-        case UNDEFINED: std::cerr << "Sbas_Time object state undefined" << std::endl;
-        break;
+            case UNDEFINED:
+                std::cerr << "Sbas_Time object state undefined" << std::endl;
+                break;
 
-        default: std::cerr << "Sbas_Time object state not known" << std::endl;
-        break;
+            default:
+                std::cerr << "Sbas_Time object state not known" << std::endl;
+                break;
         }
         return;
     }
 
-    double get_time_stamp()
-    {
+    double get_time_stamp() {
         return d_time_stamp_sec;
         //return (e_state == RELATIVE || e_state == RELATED);
     }
 
-    bool get_gps_time(int &gps_week, double &gps_sec)
-    {
+    bool get_gps_time(int &gps_week, double &gps_sec) {
         gps_week = i_gps_week;
         gps_sec = d_gps_sec;
         return (/*e_state == ABSOLUTE ||*/ e_state == RELATED);
     }
 
     bool is_only_relativ() { return e_state == RELATIVE; }
+
     //bool is_only_absolute() {return e_state == ABSOLUTE;}
     bool is_related() { return e_state == RELATED; }
+
     Sbas_Time_State get_state() { return e_state; }
 
 private:

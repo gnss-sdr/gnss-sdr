@@ -64,54 +64,49 @@
 #define MAX_NAME 50
 
 /* Strip whitespace chars off end of given string, in place. Return s. */
-static char* rstrip(char* s)
-{
-    char* p = s + strlen(s);
+static char *rstrip(char *s) {
+    char *p = s + strlen(s);
     while (p > s && isspace(*--p))
         *p = '\0';
     return s;
 }
 
 /* Return pointer to first non-whitespace char in given string. */
-static char* lskip(const char* s)
-{
+static char *lskip(const char *s) {
     while (*s && isspace(*s))
         s++;
-    return (char*)s;
+    return (char *) s;
 }
 
 /* Return pointer to first char c or ';' in given string, or pointer to
    null at end of string if neither found. */
-static char* find_char_or_comment(const char* s, char c)
-{
+static char *find_char_or_comment(const char *s, char c) {
     while (*s && *s != c && *s != ';')
         s++;
-    return (char*)s;
+    return (char *) s;
 }
 
 /* Version of strncpy that ensures dest (size bytes) is null-terminated. */
-static char* strncpy0(char* dest, const char* src, size_t size)
-{
+static char *strncpy0(char *dest, const char *src, size_t size) {
     strncpy(dest, src, size);
     dest[size - 1] = '\0';
     return dest;
 }
 
 /* See documentation in header file. */
-int ini_parse(const char* filename,
-              int (*handler)(void*, const char*, const char*, const char*),
-              void* user)
-{
+int ini_parse(const char *filename,
+              int (*handler)(void *, const char *, const char *, const char *),
+              void *user) {
     /* Uses a fair bit of stack (use heap instead if you need to) */
     char line[MAX_LINE];
     char section[MAX_SECTION] = "";
     char prev_name[MAX_NAME] = "";
 
-    FILE* file;
-    char* start;
-    char* end;
-    char* name;
-    char* value;
+    FILE *file;
+    char *start;
+    char *end;
+    char *name;
+    char *value;
     int lineno = 0;
     int error = 0;
 
@@ -130,8 +125,7 @@ int ini_parse(const char* filename,
                of previous name's value (as per Python ConfigParser). */
             if (!handler(user, section, prev_name, start) && !error)
                 error = lineno;
-        }
-        else
+        } else
 #endif
         if (*start == '[') {
             /* A "[section]" line */
@@ -140,13 +134,11 @@ int ini_parse(const char* filename,
                 *end = '\0';
                 strncpy0(section, start + 1, sizeof(section));
                 *prev_name = '\0';
-            }
-            else if (!error) {
+            } else if (!error) {
                 /* No ']' found on section line */
                 error = lineno;
             }
-        }
-        else if (*start && *start != ';') {
+        } else if (*start && *start != ';') {
             /* Not a comment, must be a name=value pair */
             end = find_char_or_comment(start, '=');
             if (*end == '=') {
@@ -162,8 +154,7 @@ int ini_parse(const char* filename,
                 strncpy0(prev_name, name, sizeof(prev_name));
                 if (!handler(user, section, name, value) && !error)
                     error = lineno;
-            }
-            else if (!error) {
+            } else if (!error) {
                 /* No '=' found on name=value line */
                 error = lineno;
             }

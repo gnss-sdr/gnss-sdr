@@ -39,10 +39,9 @@
 using google::LogMessage;
 
 GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
-        ConfigurationInterface* configuration, std::string role,
+        ConfigurationInterface *configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams)
-{
+        role_(role), in_streams_(in_streams), out_streams_(out_streams) {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -50,7 +49,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration_->property(role + ".item_type",
-            default_item_type);
+                                          default_item_type);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration_->property(role + ".if", 0);
@@ -60,43 +59,37 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 
     bit_transition_flag_ = configuration_->property("Acquisition.bit_transition_flag", false);
 
-    if (!bit_transition_flag_)
-        {
-            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
-        }
-    else
-        {
-            max_dwells_ = 2;
-        }
+    if (!bit_transition_flag_) {
+        max_dwells_ = configuration_->property(role + ".max_dwells", 1);
+    } else {
+        max_dwells_ = 2;
+    }
 
     dump_filename_ = configuration_->property(role + ".dump_filename",
-            default_dump_filename);
+                                              default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_
-            / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+                         / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * sampled_ms_;
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_opencl_acquisition_cc(sampled_ms_, max_dwells_,
-                    doppler_max_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, dump_, dump_filename_);
+    if (item_type_.compare("gr_complex") == 0) {
+        item_size_ = sizeof(gr_complex);
+        acquisition_cc_ = pcps_make_opencl_acquisition_cc(sampled_ms_, max_dwells_,
+                                                          doppler_max_, if_, fs_in_, code_length_, code_length_,
+                                                          bit_transition_flag_, dump_, dump_filename_);
 
-            stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+        stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
 
-            DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
-        }
-    else
-        {
-            item_size_ = sizeof(gr_complex);
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-        }
+        DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
+        DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
+    } else {
+        item_size_ = sizeof(gr_complex);
+        LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    }
 
     channel_ = 0;
     threshold_ = 0.0;
@@ -105,138 +98,111 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 }
 
 
-GpsL1CaPcpsOpenClAcquisition::~GpsL1CaPcpsOpenClAcquisition()
-{
+GpsL1CaPcpsOpenClAcquisition::~GpsL1CaPcpsOpenClAcquisition() {
     delete[] code_;
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::set_channel(unsigned int channel)
-{
+void GpsL1CaPcpsOpenClAcquisition::set_channel(unsigned int channel) {
     channel_ = channel;
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            acquisition_cc_->set_channel(channel_);
-        }
+    if (item_type_.compare("gr_complex") == 0) {
+        acquisition_cc_->set_channel(channel_);
+    }
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::set_threshold(float threshold)
-{
+void GpsL1CaPcpsOpenClAcquisition::set_threshold(float threshold) {
     float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-    if(pfa == 0.0)
-        {
-            pfa = configuration_->property(role_ + ".pfa", 0.0);
-        }
-    if(pfa == 0.0)
-        {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
-        }
+    if (pfa == 0.0) {
+        pfa = configuration_->property(role_ + ".pfa", 0.0);
+    }
+    if (pfa == 0.0) {
+        threshold_ = threshold;
+    } else {
+        threshold_ = calculate_threshold(pfa);
+    }
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            acquisition_cc_->set_threshold(threshold_);
-        }
+    if (item_type_.compare("gr_complex") == 0) {
+        acquisition_cc_->set_threshold(threshold_);
+    }
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::set_doppler_max(unsigned int doppler_max)
-{
+void GpsL1CaPcpsOpenClAcquisition::set_doppler_max(unsigned int doppler_max) {
     doppler_max_ = doppler_max;
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            acquisition_cc_->set_doppler_max(doppler_max_);
-        }
+    if (item_type_.compare("gr_complex") == 0) {
+        acquisition_cc_->set_doppler_max(doppler_max_);
+    }
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::set_doppler_step(unsigned int doppler_step)
-{
+void GpsL1CaPcpsOpenClAcquisition::set_doppler_step(unsigned int doppler_step) {
     doppler_step_ = doppler_step;
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            acquisition_cc_->set_doppler_step(doppler_step_);
-        }
+    if (item_type_.compare("gr_complex") == 0) {
+        acquisition_cc_->set_doppler_step(doppler_step_);
+    }
 
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
-{
+void GpsL1CaPcpsOpenClAcquisition::set_gnss_synchro(Gnss_Synchro *gnss_synchro) {
     gnss_synchro_ = gnss_synchro;
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            acquisition_cc_->set_gnss_synchro(gnss_synchro_);
-        }
+    if (item_type_.compare("gr_complex") == 0) {
+        acquisition_cc_->set_gnss_synchro(gnss_synchro_);
+    }
 }
 
 
-signed int GpsL1CaPcpsOpenClAcquisition::mag()
-{
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            return acquisition_cc_->mag();
-        }
-    else
-        {
-            return 0;
-        }
+signed int GpsL1CaPcpsOpenClAcquisition::mag() {
+    if (item_type_.compare("gr_complex") == 0) {
+        return acquisition_cc_->mag();
+    } else {
+        return 0;
+    }
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::init()
-{
+void GpsL1CaPcpsOpenClAcquisition::init() {
     acquisition_cc_->init();
     set_local_code();
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::set_local_code()
-{
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            std::complex<float>* code = new std::complex<float>[code_length_];
+void GpsL1CaPcpsOpenClAcquisition::set_local_code() {
+    if (item_type_.compare("gr_complex") == 0) {
+        std::complex<float> *code = new std::complex<float>[code_length_];
 
-            gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+        gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
-            for (unsigned int i = 0; i < sampled_ms_; i++)
-                {
-                    memcpy(&(code_[i*code_length_]), code,
-                            sizeof(gr_complex)*code_length_);
-                }
-
-            acquisition_cc_->set_local_code(code_);
-
-            delete[] code;
+        for (unsigned int i = 0; i < sampled_ms_; i++) {
+            memcpy(&(code_[i * code_length_]), code,
+                   sizeof(gr_complex) * code_length_);
         }
+
+        acquisition_cc_->set_local_code(code_);
+
+        delete[] code;
+    }
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::reset()
-{
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            acquisition_cc_->set_active(true);
-        }
+void GpsL1CaPcpsOpenClAcquisition::reset() {
+    if (item_type_.compare("gr_complex") == 0) {
+        acquisition_cc_->set_active(true);
+    }
 }
 
 
-float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa)
-{
+float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa) {
     //Calculate the threshold
 
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
-        {
-            frequency_bins++;
-        }
+    for (int doppler = (int) (-doppler_max_); doppler <= (int) doppler_max_; doppler += doppler_step_) {
+        frequency_bins++;
+    }
 
     DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
 
@@ -244,39 +210,33 @@ float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa)
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
-    boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    boost::math::exponential_distribution<double> mydist(lambda);
+    float threshold = (float) quantile(mydist, val);
 
     return threshold;
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::connect(gr::top_block_sptr top_block)
-{
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
-        }
+void GpsL1CaPcpsOpenClAcquisition::connect(gr::top_block_sptr top_block) {
+    if (item_type_.compare("gr_complex") == 0) {
+        top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
+    }
 }
 
 
-void GpsL1CaPcpsOpenClAcquisition::disconnect(gr::top_block_sptr top_block)
-{
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
-        }
+void GpsL1CaPcpsOpenClAcquisition::disconnect(gr::top_block_sptr top_block) {
+    if (item_type_.compare("gr_complex") == 0) {
+        top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
+    }
 }
 
 
-gr::basic_block_sptr GpsL1CaPcpsOpenClAcquisition::get_left_block()
-{
+gr::basic_block_sptr GpsL1CaPcpsOpenClAcquisition::get_left_block() {
     return stream_to_vector_;
 }
 
 
-gr::basic_block_sptr GpsL1CaPcpsOpenClAcquisition::get_right_block()
-{
+gr::basic_block_sptr GpsL1CaPcpsOpenClAcquisition::get_right_block() {
     return acquisition_cc_;
 }
 

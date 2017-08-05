@@ -53,19 +53,18 @@
 #include "control_message_factory.h"
 
 
-class Control_Thread_Test: public ::testing::Test
-{
+class Control_Thread_Test : public ::testing::Test {
 public:
     static int stop_receiver();
-    typedef struct  {
+
+    typedef struct {
         long mtype; // required by SysV message
         double message;
     } message_buffer;
 };
 
 
-int Control_Thread_Test::stop_receiver()
-{
+int Control_Thread_Test::stop_receiver() {
     message_buffer msg_stop;
     msg_stop.mtype = 1;
     msg_stop.message = -200.0;
@@ -74,7 +73,7 @@ int Control_Thread_Test::stop_receiver()
     key_t key_stop = 1102;
 
     // wait for the receiver control queue to be created
-    while(((msqid_stop = msgget(key_stop, 0644))) == -1){ }
+    while (((msqid_stop = msgget(key_stop, 0644))) == -1) {}
 
     // wait for a couple of seconds
     std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(2));
@@ -86,14 +85,13 @@ int Control_Thread_Test::stop_receiver()
 }
 
 
-TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
-{
+TEST_F(Control_Thread_Test, InstantiateRunControlMessages) {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     std::string path = std::string(TEST_PATH);
     std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-    const char * file_name = file.c_str();
+    const char *file_name = file.c_str();
     config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -122,22 +120,19 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
 
     std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
 
-    control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(1,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(0, 0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(1, 0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(200, 0));
 
     control_thread->set_control_queue(control_queue);
-    try
-    {
-            control_thread->run();
+    try {
+        control_thread->run();
     }
-    catch( boost::exception & e )
-    {
-            std::cout << "Boost exception: " << boost::diagnostic_information(e);
+    catch (boost::exception &e) {
+        std::cout << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
+    catch (std::exception const &ex) {
+        std::cout << "STD exception: " << ex.what();
     }
 
     unsigned int expected3 = 3;
@@ -147,13 +142,12 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
 }
 
 
-TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
-{
+TEST_F(Control_Thread_Test, InstantiateRunControlMessages2) {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     std::string path = std::string(TEST_PATH);
     std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-    const char * file_name = file.c_str();
+    const char *file_name = file.c_str();
     config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -182,25 +176,22 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
 
     std::unique_ptr<ControlMessageFactory> control_msg_factory2(new ControlMessageFactory());
 
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(2,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(1,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(3,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(200,0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(0, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(2, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(1, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(3, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(200, 0));
 
     control_thread2->set_control_queue(control_queue2);
 
-    try
-    {
-            control_thread2->run();
+    try {
+        control_thread2->run();
     }
-    catch( boost::exception & e )
-    {
-            std::cout << "Boost exception: " << boost::diagnostic_information(e);
+    catch (boost::exception &e) {
+        std::cout << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
+    catch (std::exception const &ex) {
+        std::cout << "STD exception: " << ex.what();
     }
 
     unsigned int expected5 = 5;
@@ -210,14 +201,12 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
 }
 
 
-
-TEST_F(Control_Thread_Test, StopReceiverProgrammatically)
-{
+TEST_F(Control_Thread_Test, StopReceiverProgrammatically) {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     std::string path = std::string(TEST_PATH);
     std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-    const char * file_name = file.c_str();
+    const char *file_name = file.c_str();
     config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -246,17 +235,14 @@ TEST_F(Control_Thread_Test, StopReceiverProgrammatically)
 
     std::thread stop_receiver_thread(stop_receiver);
 
-    try
-    {
-            control_thread->run();
+    try {
+        control_thread->run();
     }
-    catch( boost::exception & e )
-    {
-            std::cout << "Boost exception: " << boost::diagnostic_information(e);
+    catch (boost::exception &e) {
+        std::cout << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
+    catch (std::exception const &ex) {
+        std::cout << "STD exception: " << ex.what();
     }
 
     stop_receiver_thread.join();

@@ -16,35 +16,36 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-if(ENABLE_CUDA)
-     set(OPT_TRACKING_ADAPTERS ${OPT_TRACKING_ADAPTERS} gps_l1_ca_dll_pll_tracking_gpu.cc)
-     set(OPT_TRACKING_INCLUDE_DIRS ${OPT_TRACKING_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS})
-endif(ENABLE_CUDA)
+if (ENABLE_CUDA)
+    set(OPT_TRACKING_ADAPTERS ${OPT_TRACKING_ADAPTERS} gps_l1_ca_dll_pll_tracking_gpu.cc)
+    set(OPT_TRACKING_INCLUDE_DIRS ${OPT_TRACKING_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS})
+endif (ENABLE_CUDA)
 
-set(TRACKING_ADAPTER_SOURCES 
-     galileo_e1_dll_pll_veml_tracking.cc
-     galileo_e1_tcp_connector_tracking.cc
-     gps_l1_ca_dll_pll_tracking.cc
-     gps_l1_ca_dll_pll_c_aid_tracking.cc
-     gps_l1_ca_tcp_connector_tracking.cc
-     galileo_e5a_dll_pll_tracking.cc
-     gps_l2_m_dll_pll_tracking.cc
-     ${OPT_TRACKING_ADAPTERS}
-)
- 
+set(TRACKING_ADAPTER_SOURCES
+        galileo_e1_dll_pll_veml_tracking.cc
+        galileo_e1_tcp_connector_tracking.cc
+        gps_l1_ca_dll_pll_tracking.cc
+        gps_l1_ca_dll_pll_c_aid_tracking.cc
+        gps_l1_ca_tcp_connector_tracking.cc
+        galileo_e5a_dll_pll_tracking.cc
+        gps_l2_m_dll_pll_tracking.cc
+        beidou_b1i_dll_pll_tracking.cc
+        ${OPT_TRACKING_ADAPTERS}
+        )
+
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
-     ${OPT_TRACKING_INCLUDE_DIRS}
+        $(CMAKE_CURRENT_SOURCE_DIR)
+        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
+        ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        ${GLOG_INCLUDE_DIRS}
+        ${GFlags_INCLUDE_DIRS}
+        ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+        ${VOLK_GNSSSDR_INCLUDE_DIRS}
+        ${OPT_TRACKING_INCLUDE_DIRS}
 )
 
 file(GLOB TRACKING_ADAPTER_HEADERS "*.h")

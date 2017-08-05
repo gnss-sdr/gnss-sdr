@@ -43,30 +43,33 @@ class ConfigurationInterface;
  * \brief Interface of an adapter of a direct resampler conditioner block
  * to a SignalConditionerInterface
  */
-class DirectResamplerConditioner: public GNSSBlockInterface
-{
+class DirectResamplerConditioner : public GNSSBlockInterface {
 public:
-    DirectResamplerConditioner(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream);
+    DirectResamplerConditioner(ConfigurationInterface *configuration,
+                               std::string role, unsigned int in_stream,
+                               unsigned int out_stream);
 
     virtual ~DirectResamplerConditioner();
-    std::string role()
-    {
+
+    std::string role() {
         return role_;
     }
+
     //! returns "Direct_Resampler"
-    std::string implementation()
-    {
+    std::string implementation() {
         return "Direct_Resampler";
     }
-    size_t item_size()
-    {
+
+    size_t item_size() {
         return item_size_;
     }
+
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
 private:

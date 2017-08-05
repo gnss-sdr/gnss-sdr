@@ -31,8 +31,7 @@
 
 #include "gps_ref_time.h"
 
-Gps_Ref_Time::Gps_Ref_Time()
-{
+Gps_Ref_Time::Gps_Ref_Time() {
     valid = false;
     d_TOW = 0.0;
     d_Week = 0.0;

@@ -41,53 +41,39 @@
 #include <gflags/gflags.h>
 
 
-
 using google::LogMessage;
 
 //DEFINE_string(NMEA_version, "2.1", "Specifies the NMEA version (2.1)");
 
-Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_tty_port, std::string nmea_dump_devname)
-{
+Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_tty_port, std::string nmea_dump_devname) {
     nmea_filename = filename;
     nmea_file_descriptor.open(nmea_filename.c_str(), std::ios::out);
-    if (nmea_file_descriptor.is_open())
-        {
-            DLOG(INFO) << "NMEA printer writing on " << nmea_filename.c_str();
-        }
+    if (nmea_file_descriptor.is_open()) {
+        DLOG(INFO) << "NMEA printer writing on " << nmea_filename.c_str();
+    }
 
     nmea_devname = nmea_dump_devname;
-    if (flag_nmea_tty_port == true)
-        {
-            nmea_dev_descriptor = init_serial(nmea_devname.c_str());
-            if (nmea_dev_descriptor != -1)
-                {
-                    DLOG(INFO) << "NMEA printer writing on " << nmea_devname.c_str();
-                }
+    if (flag_nmea_tty_port == true) {
+        nmea_dev_descriptor = init_serial(nmea_devname.c_str());
+        if (nmea_dev_descriptor != -1) {
+            DLOG(INFO) << "NMEA printer writing on " << nmea_devname.c_str();
         }
-    else
-        {
-            nmea_dev_descriptor = -1;
-        }
+    } else {
+        nmea_dev_descriptor = -1;
+    }
     print_avg_pos = false;
 }
 
 
-
-
-Nmea_Printer::~Nmea_Printer()
-{
-    if (nmea_file_descriptor.is_open())
-        {
-            nmea_file_descriptor.close();
-        }
+Nmea_Printer::~Nmea_Printer() {
+    if (nmea_file_descriptor.is_open()) {
+        nmea_file_descriptor.close();
+    }
     close_serial();
 }
 
 
-
-
-int Nmea_Printer::init_serial (std::string serial_device)
-{
+int Nmea_Printer::init_serial(std::string serial_device) {
     /*!
      * Opens the serial device and sets the default baud rate for a NMEA transmission (9600,8,N,1)
      */
@@ -102,10 +88,11 @@ int Nmea_Printer::init_serial (std::string serial_device)
     fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd == -1) return fd; //failed to open TTY port
 
-    if(fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";   // clear all flags on descriptor, enable direct I/O
+    if (fcntl(fd, F_SETFL, 0) == -1)
+        LOG(INFO) << "Error enabling direct I/O";   // clear all flags on descriptor, enable direct I/O
     tcgetattr(fd, &options);   // read serial port options
 
-    BAUD  = B9600;
+    BAUD = B9600;
     //BAUD  =  B38400;
     DATABITS = CS8;
     STOPBITS = 0;
@@ -123,18 +110,14 @@ int Nmea_Printer::init_serial (std::string serial_device)
 }
 
 
-
-void Nmea_Printer::close_serial ()
-{
-    if (nmea_dev_descriptor != -1)
-        {
-            close(nmea_dev_descriptor);
-        }
+void Nmea_Printer::close_serial() {
+    if (nmea_dev_descriptor != -1) {
+        close(nmea_dev_descriptor);
+    }
 }
 
 
-bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data, bool print_average_values)
-{
+bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution> &pvt_data, bool print_average_values) {
     std::string GPRMC;
     std::string GPGGA;
     std::string GPGSA;
@@ -156,81 +139,66 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data
     GPGSV = get_GPGSV();
 
     // write to log file
-    try
-    {
-            //GPRMC
-            nmea_file_descriptor << GPRMC;
-            //GPGGA (Global Positioning System Fixed Data)
-            nmea_file_descriptor << GPGGA;
-            //GPGSA
-            nmea_file_descriptor << GPGSA;
-            //GPGSV
-            nmea_file_descriptor << GPGSV;
+    try {
+        //GPRMC
+        nmea_file_descriptor << GPRMC;
+        //GPGGA (Global Positioning System Fixed Data)
+        nmea_file_descriptor << GPGGA;
+        //GPGSA
+        nmea_file_descriptor << GPGSA;
+        //GPGSV
+        nmea_file_descriptor << GPGSV;
     }
-    catch(std::exception ex)
-    {
-            DLOG(INFO) << "NMEA printer can not write on output file" << nmea_filename.c_str();;
+    catch (std::exception ex) {
+        DLOG(INFO) << "NMEA printer can not write on output file" << nmea_filename.c_str();;
     }
 
     //write to serial device
-    if (nmea_dev_descriptor!=-1)
-        {
-            if(write(nmea_dev_descriptor, GPRMC.c_str(), GPRMC.length()) == -1)
-                {
-                    DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
-                    return false;
-                }
-            if(write(nmea_dev_descriptor, GPGGA.c_str(), GPGGA.length()) == -1)
-                {
-                    DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
-                    return false;
-                }
-            if(write(nmea_dev_descriptor, GPGSA.c_str(), GPGSA.length()) == -1)
-                {
-                    DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
-                    return false;
-                }
-            if(write(nmea_dev_descriptor, GPGSV.c_str(), GPGSV.length()) == -1)
-                {
-                    DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
-                    return false;
-                }
+    if (nmea_dev_descriptor != -1) {
+        if (write(nmea_dev_descriptor, GPRMC.c_str(), GPRMC.length()) == -1) {
+            DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
+            return false;
         }
+        if (write(nmea_dev_descriptor, GPGGA.c_str(), GPGGA.length()) == -1) {
+            DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
+            return false;
+        }
+        if (write(nmea_dev_descriptor, GPGSA.c_str(), GPGSA.length()) == -1) {
+            DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
+            return false;
+        }
+        if (write(nmea_dev_descriptor, GPGSV.c_str(), GPGSV.length()) == -1) {
+            DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
+            return false;
+        }
+    }
     return true;
 }
 
 
-
-char Nmea_Printer::checkSum(std::string sentence)
-{
+char Nmea_Printer::checkSum(std::string sentence) {
     char check = 0;
     // iterate over the string, XOR each byte with the total sum:
-    for (unsigned int c = 0; c < sentence.length(); c++)
-        {
-            check = char(check ^ sentence.at(c));
-        }
+    for (unsigned int c = 0; c < sentence.length(); c++) {
+        check = char(check ^ sentence.at(c));
+    }
     // return the result
     return check;
 }
 
 
-
-std::string Nmea_Printer::latitude_to_hm(double lat)
-{
+std::string Nmea_Printer::latitude_to_hm(double lat) {
     bool north;
-    if (lat < 0.0)
-        {
-            north = false;
-            lat = -lat ;
-        }
-    else
-        {
-            north = true;
-        }
+    if (lat < 0.0) {
+        north = false;
+        lat = -lat;
+    } else {
+        north = true;
+    }
 
     int deg = static_cast<int>(lat);
     double mins = lat - static_cast<double>(deg);
-    mins *= 60.0 ;
+    mins *= 60.0;
     std::ostringstream out_string;
     out_string.setf(std::ios::fixed, std::ios::floatfield);
     out_string.fill('0');
@@ -240,34 +208,26 @@ std::string Nmea_Printer::latitude_to_hm(double lat)
     out_string.precision(4);
     out_string << mins;
 
-    if (north == true)
-        {
-            out_string << ",N";
-        }
-    else
-        {
-            out_string << ",S";
-        }
+    if (north == true) {
+        out_string << ",N";
+    } else {
+        out_string << ",S";
+    }
     return out_string.str();
 }
 
 
-
-std::string Nmea_Printer::longitude_to_hm(double longitude)
-{
+std::string Nmea_Printer::longitude_to_hm(double longitude) {
     bool east;
-    if (longitude < 0.0)
-        {
-            east = false;
-            longitude = -longitude ;
-        }
-    else
-        {
-            east = true;
-        }
+    if (longitude < 0.0) {
+        east = false;
+        longitude = -longitude;
+    } else {
+        east = true;
+    }
     int deg = static_cast<int>(longitude);
     double mins = longitude - static_cast<double>(deg);
-    mins *= 60.0 ;
+    mins *= 60.0;
     std::ostringstream out_string;
     out_string.setf(std::ios::fixed, std::ios::floatfield);
     out_string.width(3);
@@ -277,21 +237,16 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
     out_string.precision(4);
     out_string << mins;
 
-    if (east == true)
-        {
-            out_string << ",E";
-        }
-    else
-        {
-            out_string << ",W";
-        }
+    if (east == true) {
+        out_string << ",E";
+    } else {
+        out_string << ",W";
+    }
     return out_string.str();
 }
 
 
-
-std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_UTC_time)
-{
+std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_UTC_time) {
     //UTC Time: hhmmss.sss
     std::stringstream sentence_str;
 
@@ -304,7 +259,7 @@ std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_
     utc_hours = td.hours();
     utc_mins = td.minutes();
     utc_seconds = td.seconds();
-    utc_milliseconds = td.total_milliseconds() - td.total_seconds()*1000;
+    utc_milliseconds = td.total_milliseconds() - td.total_seconds() * 1000;
 
     if (utc_hours < 10) sentence_str << "0"; //  two digits for hours
     sentence_str << utc_hours;
@@ -315,28 +270,21 @@ std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_
     if (utc_seconds < 10) sentence_str << "0"; //  two digits for seconds
     sentence_str << utc_seconds;
 
-    if (utc_milliseconds < 10)
-        {
-            sentence_str << ".00"; //  three digits for ms
-            sentence_str << utc_milliseconds;
-        }
-    else if (utc_milliseconds < 100)
-        {
-            sentence_str << ".0"; //   three digits for ms
-            sentence_str << utc_milliseconds;
-        }
-    else
-        {
-            sentence_str << "."; //   three digits for ms
-            sentence_str << utc_milliseconds;
-        }
+    if (utc_milliseconds < 10) {
+        sentence_str << ".00"; //  three digits for ms
+        sentence_str << utc_milliseconds;
+    } else if (utc_milliseconds < 100) {
+        sentence_str << ".0"; //   three digits for ms
+        sentence_str << utc_milliseconds;
+    } else {
+        sentence_str << "."; //   three digits for ms
+        sentence_str << utc_milliseconds;
+    }
     return sentence_str.str();
 }
 
 
-
-std::string Nmea_Printer::get_GPRMC()
-{
+std::string Nmea_Printer::get_GPRMC() {
     // Sample -> $GPRMC,161229.487,A,3723.2475,N,12158.3416,W,0.13,309.62,120598,*10
     bool valid_fix = d_PVT_data->b_valid_position;
 
@@ -358,29 +306,23 @@ std::string Nmea_Printer::get_GPRMC()
 
     //Status: A: data valid, V: data NOT valid
 
-    if (valid_fix == true)
-        {
-            sentence_str << ",A";
-        }
-    else
-        {
-            sentence_str << ",V";
-        };
+    if (valid_fix == true) {
+        sentence_str << ",A";
+    } else {
+        sentence_str << ",V";
+    };
 
-    if (print_avg_pos == true)
-        {
-            // Latitude ddmm.mmmm,(N or S)
-            sentence_str << "," << latitude_to_hm(d_PVT_data->d_avg_latitude_d);
-            // longitude dddmm.mmmm,(E or W)
-            sentence_str << "," << longitude_to_hm(d_PVT_data->d_avg_longitude_d);
-        }
-    else
-        {
-            // Latitude ddmm.mmmm,(N or S)
-            sentence_str << "," << latitude_to_hm(d_PVT_data->d_latitude_d);
-            // longitude dddmm.mmmm,(E or W)
-            sentence_str << "," << longitude_to_hm(d_PVT_data->d_longitude_d);
-        }
+    if (print_avg_pos == true) {
+        // Latitude ddmm.mmmm,(N or S)
+        sentence_str << "," << latitude_to_hm(d_PVT_data->d_avg_latitude_d);
+        // longitude dddmm.mmmm,(E or W)
+        sentence_str << "," << longitude_to_hm(d_PVT_data->d_avg_longitude_d);
+    } else {
+        // Latitude ddmm.mmmm,(N or S)
+        sentence_str << "," << latitude_to_hm(d_PVT_data->d_latitude_d);
+        // longitude dddmm.mmmm,(E or W)
+        sentence_str << "," << longitude_to_hm(d_PVT_data->d_longitude_d);
+    }
 
     //Speed over ground (knots)
     sentence_str << ",";
@@ -436,9 +378,7 @@ std::string Nmea_Printer::get_GPRMC()
 }
 
 
-
-std::string Nmea_Printer::get_GPGSA()
-{
+std::string Nmea_Printer::get_GPGSA() {
     //$GPGSA,A,3,07,02,26,27,09,04,15, , , , , ,1.8,1.0,1.5*33
     // GSA-GNSS DOP and Active Satellites
     bool valid_fix = d_PVT_data->b_valid_position;
@@ -462,26 +402,21 @@ std::string Nmea_Printer::get_GPGSA()
     // 1 fix not available
     // 2 fix 2D
     // 3 fix 3D
-    if (valid_fix==true)
-        {
-            sentence_str << ",3";
-        }
-    else
-        {
-            sentence_str << ",1";
-        };
+    if (valid_fix == true) {
+        sentence_str << ",3";
+    } else {
+        sentence_str << ",1";
+    };
 
     // Used satellites
-    for (int i=0; i<12; i++)
-        {
-            sentence_str << ",";
-            if (i < n_sats_used)
-                {
-                    sentence_str.width(2);
-                    sentence_str.fill('0');
-                    sentence_str << d_PVT_data->d_visible_satellites_IDs[i];
-                }
+    for (int i = 0; i < 12; i++) {
+        sentence_str << ",";
+        if (i < n_sats_used) {
+            sentence_str.width(2);
+            sentence_str.fill('0');
+            sentence_str << d_PVT_data->d_visible_satellites_IDs[i];
         }
+    }
 
     // PDOP
     sentence_str << ",";
@@ -491,7 +426,7 @@ std::string Nmea_Printer::get_GPGSA()
     sentence_str.fill('0');
     sentence_str << pdop;
     //HDOP
-    sentence_str<<",";
+    sentence_str << ",";
     sentence_str.setf(std::ios::fixed, std::ios::floatfield);
     sentence_str.width(2);
     sentence_str.precision(1);
@@ -521,10 +456,7 @@ std::string Nmea_Printer::get_GPGSA()
 }
 
 
-
-
-std::string Nmea_Printer::get_GPGSV()
-{
+std::string Nmea_Printer::get_GPGSV() {
     // GSV-GNSS Satellites in View
     // Notice that NMEA 2.1 only supports 12 channels
     int n_sats_used = d_PVT_data->d_valid_observations;
@@ -542,94 +474,84 @@ std::string Nmea_Printer::get_GPGSV()
 
     // generate the frames
     int current_satellite = 0;
-    for (int i=1; i<(n_frames+1); i++)
-        {
-            frame_str.str("");
-            frame_str << sentence_header;
+    for (int i = 1; i < (n_frames + 1); i++) {
+        frame_str.str("");
+        frame_str << sentence_header;
 
-            // number of messages
-            frame_str << n_frames;
+        // number of messages
+        frame_str << n_frames;
 
-            // message number
-            frame_str << ",";
-            frame_str << i;
+        // message number
+        frame_str << ",";
+        frame_str << i;
 
-            // total number of satellites in view
+        // total number of satellites in view
+        frame_str << ",";
+        frame_str.width(2);
+        frame_str.fill('0');
+        frame_str << std::dec << n_sats_used;
+
+        //satellites info
+        for (int j = 0; j < 4; j++) {
+            // write satellite info
             frame_str << ",";
             frame_str.width(2);
             frame_str.fill('0');
-            frame_str << std::dec << n_sats_used;
+            frame_str << std::dec << d_PVT_data->d_visible_satellites_IDs[current_satellite];
 
-            //satellites info
-            for (int j=0; j<4; j++)
-                {
-                    // write satellite info
-                    frame_str << ",";
-                    frame_str.width(2);
-                    frame_str.fill('0');
-                    frame_str << std::dec << d_PVT_data->d_visible_satellites_IDs[current_satellite];
-
-                    frame_str << ",";
-                    frame_str.width(2);
-                    frame_str.fill('0');
-                    frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_El[current_satellite]);
-
-                    frame_str << ",";
-                    frame_str.width(3);
-                    frame_str.fill('0');
-                    frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_Az[current_satellite]);
-
-                    frame_str << ",";
-                    frame_str.width(2);
-                    frame_str.fill('0');
-                    frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_CN0_dB[current_satellite]);
-
-                    current_satellite++;
-
-                    if (current_satellite == n_sats_used)
-                        {
-                            break;
-                        }
-                }
-
-            // frame checksum
-            tmpstr = frame_str.str();
-            checksum = checkSum(tmpstr.substr(1));
-            frame_str << "*";
+            frame_str << ",";
             frame_str.width(2);
             frame_str.fill('0');
-            frame_str << std::hex << static_cast<int>(checksum);
+            frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_El[current_satellite]);
 
-            // end NMEA sentence
-            frame_str << "\r\n";
+            frame_str << ",";
+            frame_str.width(3);
+            frame_str.fill('0');
+            frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_Az[current_satellite]);
 
-            //add frame to sentence
-            sentence_str << frame_str.str();
+            frame_str << ",";
+            frame_str.width(2);
+            frame_str.fill('0');
+            frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_CN0_dB[current_satellite]);
+
+            current_satellite++;
+
+            if (current_satellite == n_sats_used) {
+                break;
+            }
         }
+
+        // frame checksum
+        tmpstr = frame_str.str();
+        checksum = checkSum(tmpstr.substr(1));
+        frame_str << "*";
+        frame_str.width(2);
+        frame_str.fill('0');
+        frame_str << std::hex << static_cast<int>(checksum);
+
+        // end NMEA sentence
+        frame_str << "\r\n";
+
+        //add frame to sentence
+        sentence_str << frame_str.str();
+    }
     return sentence_str.str();
     //$GPGSV,2,1,07,07,79,048,42,02,51,062,43,26,36,256,42,27,27,138,42*71
 }
 
 
-
-
-
-std::string Nmea_Printer::get_GPGGA()
-{
+std::string Nmea_Printer::get_GPGGA() {
     //boost::posix_time::ptime d_position_UTC_time=boost::posix_time::microsec_clock::universal_time();
     bool valid_fix = d_PVT_data->b_valid_position;
     int n_channels = d_PVT_data->d_valid_observations;//d_nchannels
     double hdop = d_PVT_data->d_HDOP;
     double MSL_altitude;
 
-    if (d_PVT_data->d_flag_averaging == true)
-        {
-            MSL_altitude = d_PVT_data->d_avg_height_m;
-        }
-    else
-        {
-            MSL_altitude = d_PVT_data->d_height_m;
-        }
+    if (d_PVT_data->d_flag_averaging == true) {
+        MSL_altitude = d_PVT_data->d_avg_height_m;
+    } else {
+        MSL_altitude = d_PVT_data->d_height_m;
+    }
 
     std::stringstream sentence_str;
 
@@ -641,20 +563,17 @@ std::string Nmea_Printer::get_GPGGA()
     //UTC Time: hhmmss.sss
     sentence_str << get_UTC_NMEA_time(d_PVT_data->d_position_UTC_time);
 
-    if (d_PVT_data->d_flag_averaging == true)
-        {
-            // Latitude ddmm.mmmm,(N or S)
-            sentence_str << "," << latitude_to_hm(d_PVT_data->d_avg_latitude_d);
-            // longitude dddmm.mmmm,(E or W)
-            sentence_str << "," << longitude_to_hm(d_PVT_data->d_avg_longitude_d);
-        }
-    else
-        {
-            // Latitude ddmm.mmmm,(N or S)
-            sentence_str << "," << latitude_to_hm(d_PVT_data->d_latitude_d);
-            // longitude dddmm.mmmm,(E or W)
-            sentence_str << "," << longitude_to_hm(d_PVT_data->d_longitude_d);
-        }
+    if (d_PVT_data->d_flag_averaging == true) {
+        // Latitude ddmm.mmmm,(N or S)
+        sentence_str << "," << latitude_to_hm(d_PVT_data->d_avg_latitude_d);
+        // longitude dddmm.mmmm,(E or W)
+        sentence_str << "," << longitude_to_hm(d_PVT_data->d_avg_longitude_d);
+    } else {
+        // Latitude ddmm.mmmm,(N or S)
+        sentence_str << "," << latitude_to_hm(d_PVT_data->d_latitude_d);
+        // longitude dddmm.mmmm,(E or W)
+        sentence_str << "," << longitude_to_hm(d_PVT_data->d_longitude_d);
+    }
 
     // Position fix indicator
     // 0 - Fix not available or invalid
@@ -664,25 +583,19 @@ std::string Nmea_Printer::get_GPGGA()
     // 6 - Dead Reckoning Mode, fix valid
     // ToDo: Update PVT module to identify the fix mode
 
-    if (valid_fix == true)
-        {
-            sentence_str << ",1";
-        }
-    else
-        {
-            sentence_str << ",0";
-        }
+    if (valid_fix == true) {
+        sentence_str << ",1";
+    } else {
+        sentence_str << ",0";
+    }
 
     // Number of satellites used in PVT
     sentence_str << ",";
-    if (n_channels < 10)
-        {
-            sentence_str << '0' << n_channels;
-        }
-    else
-        {
-            sentence_str << n_channels;
-        }
+    if (n_channels < 10) {
+        sentence_str << '0' << n_channels;
+    } else {
+        sentence_str << n_channels;
+    }
 
     // HDOP
     sentence_str << ",";

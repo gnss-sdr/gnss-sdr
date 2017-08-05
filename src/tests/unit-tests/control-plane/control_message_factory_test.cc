@@ -36,10 +36,7 @@
 #include "control_message_factory.h"
 
 
-
-
-TEST(Control_Message_Factory_Test, GetQueueMessage)
-{
+TEST(Control_Message_Factory_Test, GetQueueMessage) {
     std::shared_ptr<ControlMessageFactory> factory = std::make_shared<ControlMessageFactory>();
     gr::message::sptr queue_message = factory->GetQueueMessage(0, 2);
     auto control_messages = factory->GetControlMessages(queue_message);
@@ -51,10 +48,7 @@ TEST(Control_Message_Factory_Test, GetQueueMessage)
 }
 
 
-
-
-TEST(Control_Message_Factory_Test, GetControlMessages)
-{
+TEST(Control_Message_Factory_Test, GetControlMessages) {
     std::shared_ptr<ControlMessageFactory> factory = std::make_shared<ControlMessageFactory>();
     gr::message::sptr queue_message = gr::message::make(0, 0, 0, sizeof(ControlMessage));
     std::shared_ptr<ControlMessage> control_message = std::make_shared<ControlMessage>();
@@ -63,7 +57,8 @@ TEST(Control_Message_Factory_Test, GetControlMessages)
     control_message->what = 4;
 
     memcpy(queue_message->msg(), control_message.get(), sizeof(ControlMessage));
-    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages = factory->GetControlMessages(queue_message);
+    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages = factory->GetControlMessages(
+            queue_message);
 
     unsigned int expected1 = 1;
     unsigned int expected4 = 4;

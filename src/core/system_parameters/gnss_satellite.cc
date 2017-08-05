@@ -32,17 +32,12 @@
 #include <glog/logging.h>
 
 
-
-Gnss_Satellite::Gnss_Satellite()
-{
+Gnss_Satellite::Gnss_Satellite() {
     Gnss_Satellite::reset();
 }
 
 
-
-
-Gnss_Satellite::Gnss_Satellite(const std::string& system_, unsigned int PRN_)
-{
+Gnss_Satellite::Gnss_Satellite(const std::string &system_, unsigned int PRN_) {
     Gnss_Satellite::reset();
     Gnss_Satellite::set_system(system_);
     Gnss_Satellite::set_PRN(PRN_);
@@ -50,17 +45,10 @@ Gnss_Satellite::Gnss_Satellite(const std::string& system_, unsigned int PRN_)
 }
 
 
+Gnss_Satellite::~Gnss_Satellite() {}
 
 
-Gnss_Satellite::~Gnss_Satellite()
-{}
-
-
-
-
-
-void Gnss_Satellite::reset()
-{
+void Gnss_Satellite::reset() {
     system_set = {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"};
     satelliteSystem["GPS"] = "G";
     satelliteSystem["GLONASS"] = "R";
@@ -74,28 +62,24 @@ void Gnss_Satellite::reset()
 }
 
 
-
-std::ostream& operator<<(std::ostream &out, const Gnss_Satellite &sat) // output
+std::ostream &operator<<(std::ostream &out, const Gnss_Satellite &sat) // output
 {
     std::string tag("");
     std::string tag2("");
-    if(sat.get_system().compare("Galileo") == 0) tag = "E";
-    if(sat.get_PRN() < 10) tag2 = "0";
+    if (sat.get_system().compare("Galileo") == 0) tag = "E";
+    if (sat.get_PRN() < 10) tag2 = "0";
     out << sat.get_system() << " PRN " << tag << tag2 << sat.get_PRN() << " (Block " << sat.get_block() << ")";
     return out;
 }
 
 
-bool operator== (const Gnss_Satellite &sat1, const Gnss_Satellite &sat2)
-{
+bool operator==(const Gnss_Satellite &sat1, const Gnss_Satellite &sat2) {
     bool equal = false;
-    if (sat1.get_system().compare(sat2.get_system()) == 0)
-        {
-            if (sat1.get_PRN() == (sat2.get_PRN()))
-                {
-                    equal = true;
-                }
+    if (sat1.get_system().compare(sat2.get_system()) == 0) {
+        if (sat1.get_PRN() == (sat2.get_PRN())) {
+            equal = true;
         }
+    }
     return equal;
 }
 
@@ -118,95 +102,74 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite &rhs) {
 }*/
 
 
-void Gnss_Satellite::set_system(const std::string& system_)
-{
-    // Set the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
+void Gnss_Satellite::set_system(const std::string &system_) {
+    // Set the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}
     std::set<std::string>::iterator it = system_set.find(system_);
 
-    if(it != system_set.end())
-        {
-            system = system_;
-        }
-    else
-        {
-            DLOG(INFO) << "System " << system_ << " is not defined {GPS, GLONASS, SBAS, Galileo, Beidou}. Initialization?";
-            system =  std::string("");
-        }
+    if (it != system_set.end()) {
+        system = system_;
+    } else {
+        DLOG(INFO) << "System " << system_ << " is not defined {GPS, GLONASS, SBAS, Galileo, Beidou}. Initialization?";
+        system = std::string("");
+    }
 }
 
 
-
-
-void Gnss_Satellite::set_PRN(unsigned int PRN_)
-{
+void Gnss_Satellite::set_PRN(unsigned int PRN_) {
     // Set satellite's PRN
-    if (system.compare("") == 0)
-        {
-            DLOG(INFO) << "Trying to define PRN while system is not defined";
+    if (system.compare("") == 0) {
+        DLOG(INFO) << "Trying to define PRN while system is not defined";
+        PRN = 0;
+    }
+    if (system.compare("GPS") == 0) {
+        if (PRN_ < 1 or PRN_ > 32) {
+            DLOG(INFO) << "This PRN is not defined";
+            PRN = 0;
+        } else {
+            PRN = PRN_;
+        }
+    }
+    if (system.compare("Beidou") == 0) {
+        if (PRN_ < 1 or PRN_ > 37) {
+            DLOG(INFO) << "This PRN is not defined";
+            PRN = 0;
+        } else {
+            PRN = PRN_;
+        }
+    } else if (system.compare("Glonass") == 0) {
+        if (PRN_ < 1 or PRN_ > 24) {
+            DLOG(INFO) << "This PRN is not defined";
+            PRN = 0;
+        } else {
+            PRN = PRN_;
+        }
+    } else if (system.compare("SBAS") == 0) {
+        if (PRN_ == 122) { PRN = PRN_; }        // WAAS Inmarsat 3F4 (AOR-W)
+        else if (PRN_ == 134) { PRN = PRN_; }   // WAAS Inmarsat 3F3 (POR)
+        else if (PRN_ ==
+                 120) { PRN = PRN_; }   // EGNOS AOR-E Broadcast satellite http://www.egnos-pro.esa.int/index.html
+        else if (PRN_ == 124) { PRN = PRN_; }   // EGNOS ESA ARTEMIS used for EGNOS Operations
+        else if (PRN_ ==
+                 126) { PRN = PRN_; }   // EGNOS IOR-W  currently used by Industry to perform various tests on the system.
+        else {
+            DLOG(INFO) << "This PRN is not defined";
             PRN = 0;
         }
-    if (system.compare("GPS") == 0)
-        {
-            if (PRN_ < 1 or PRN_ > 32)
-                {
-                    DLOG(INFO) << "This PRN is not defined";
-                    PRN = 0;
-                }
-            else
-                {
-                    PRN = PRN_;
-                }
-        }
-    else if (system.compare("Glonass") == 0)
-           {
-               if (PRN_ < 1 or PRN_ > 24)
-                   {
-                       DLOG(INFO) << "This PRN is not defined";
-                       PRN = 0;
-                   }
-               else
-                   {
-                       PRN = PRN_;
-                   }
-           }
-    else if (system.compare("SBAS") == 0)
-        {
-            if (PRN_ == 122){ PRN = PRN_; }        // WAAS Inmarsat 3F4 (AOR-W)
-            else if (PRN_ == 134){ PRN = PRN_; }   // WAAS Inmarsat 3F3 (POR)
-            else if (PRN_ == 120){ PRN = PRN_; }   // EGNOS AOR-E Broadcast satellite http://www.egnos-pro.esa.int/index.html
-            else if (PRN_ == 124){ PRN = PRN_; }   // EGNOS ESA ARTEMIS used for EGNOS Operations
-            else if (PRN_ == 126){ PRN = PRN_; }   // EGNOS IOR-W  currently used by Industry to perform various tests on the system.
-            else
-                {
-                    DLOG(INFO) << "This PRN is not defined";
-                    PRN = 0;
-                }
-        }
-    else if (system.compare("Galileo") == 0)
-        {
-        if (PRN_ < 1 or PRN_ > 36)
-            {
-                DLOG(INFO) << "This PRN is not defined";
-                PRN = 0;
-            }
-        else
-            {
-                PRN = PRN_;
-            }
-        }
-    else
-        {
-            DLOG(INFO) << "System " << system << " is not defined";
+    } else if (system.compare("Galileo") == 0) {
+        if (PRN_ < 1 or PRN_ > 36) {
+            DLOG(INFO) << "This PRN is not defined";
             PRN = 0;
+        } else {
+            PRN = PRN_;
         }
+    } else {
+        DLOG(INFO) << "System " << system << " is not defined";
+        PRN = 0;
+    }
 }
 
 
-
-
-
-unsigned int Gnss_Satellite::get_PRN() const
-{
+unsigned int Gnss_Satellite::get_PRN() const {
     // Get satellite's PRN
     unsigned int PRN_;
     PRN_ = PRN;
@@ -214,29 +177,20 @@ unsigned int Gnss_Satellite::get_PRN() const
 }
 
 
-
-
-
-
-std::string Gnss_Satellite::get_system() const
-{
+std::string Gnss_Satellite::get_system() const {
     // Get the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}
     std::string system_;
     system_ = system;
     return system_;
 }
 
-std::string Gnss_Satellite::get_system_short() const
-{
+std::string Gnss_Satellite::get_system_short() const {
     // Get the satellite system {"G", "R", "S", "E", "C"}
     return satelliteSystem.at(system);
 }
 
 
-
-
-std::string Gnss_Satellite::get_block() const
-{
+std::string Gnss_Satellite::get_block() const {
     // Get the satellite block
     std::string block_;
     block_ = block;
@@ -244,14 +198,10 @@ std::string Gnss_Satellite::get_block() const
 }
 
 
-
-std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int PRN_)
-{
+std::string Gnss_Satellite::what_block(const std::string &system_, unsigned int PRN_) {
     std::string block_ = "Unknown";
-    if (system_.compare("GPS") == 0)
-        {
-            switch ( PRN_ )
-            {
+    if (system_.compare("GPS") == 0) {
+        switch (PRN_) {
             // info from http://www.navcen.uscg.gov/?Do=constellationStatus
 
             case 1 :
@@ -352,14 +302,12 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                 break;
             default :
                 block_ = std::string("Unknown");
-            }
         }
+    }
 
 
-    if (system_.compare("Glonass") == 0)
-        {
-            switch ( PRN_ )
-            {
+    if (system_.compare("Glonass") == 0) {
+        switch (PRN_) {
             // info from http://www.sdcm.ru/smglo/grupglo?version=eng&site=extern
             // See also http://www.glonass-center.ru/en/GLONASS/
 
@@ -461,12 +409,10 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                 break;
             default :
                 block_ = std::string("Unknown");
-            }
         }
-    if (system_.compare("SBAS") == 0)
-        {
-            switch ( PRN_ )
-            {
+    }
+    if (system_.compare("SBAS") == 0) {
+        switch (PRN_) {
             case 122 :
                 block_ = std::string("WAAS");  // WAAS Inmarsat 3F4 (AOR-W)
                 break;
@@ -474,87 +420,104 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                 block_ = std::string("WAAS");  // WAAS Inmarsat 3F3 (POR)
                 break;
             case 120 :
-                block_ = std::string("EGNOS"); // EGNOS AOR-E Broadcast satellite http://www.egnos-pro.esa.int/index.html
+                block_ = std::string(
+                        "EGNOS"); // EGNOS AOR-E Broadcast satellite http://www.egnos-pro.esa.int/index.html
                 break;
             case 124 :
                 block_ = std::string("EGNOS"); // EGNOS ESA ARTEMIS used for EGNOS Operations
                 break;
             case 126 :
-                block_ = std::string("EGNOS"); // EGNOS IOR-W  currently used by Industry to perform various tests on the system.
+                block_ = std::string(
+                        "EGNOS"); // EGNOS IOR-W  currently used by Industry to perform various tests on the system.
                 break;
             default:
                 block_ = std::string("Unknown");
-            }
         }
-    if (system_.compare("Galileo") == 0)
-        {
-            // Check http://en.wikipedia.org/wiki/List_of_Galileo_satellites
-            switch ( PRN_ )
-            {
+    }
+    if (system_.compare("Galileo") == 0) {
+        // Check http://en.wikipedia.org/wiki/List_of_Galileo_satellites
+        switch (PRN_) {
             case 1:
-                block_ = std::string("FOC-FM10"); // Galileo Full Operational Capability (FOC) satellite FM10 / GSAT-0210, launched on May 24, 2016
+                block_ = std::string(
+                        "FOC-FM10"); // Galileo Full Operational Capability (FOC) satellite FM10 / GSAT-0210, launched on May 24, 2016
                 break;
             case 2:
-                block_ = std::string("FOC-FM11"); // Galileo Full Operational Capability (FOC) satellite FM11 / GSAT-0211, launched on May 24, 2016
+                block_ = std::string(
+                        "FOC-FM11"); // Galileo Full Operational Capability (FOC) satellite FM11 / GSAT-0211, launched on May 24, 2016
                 break;
             case 3:
-                block_ = std::string("FOC-FM12"); // Galileo Full Operational Capability (FOC) satellite FM12 / GSAT-0212, launched on November 17, 2016
+                block_ = std::string(
+                        "FOC-FM12"); // Galileo Full Operational Capability (FOC) satellite FM12 / GSAT-0212, launched on November 17, 2016
                 break;
             case 4:
-                block_ = std::string("FOC-FM13"); // Galileo Full Operational Capability (FOC) satellite FM13 / GSAT-0213, launched on November 17, 2016
+                block_ = std::string(
+                        "FOC-FM13"); // Galileo Full Operational Capability (FOC) satellite FM13 / GSAT-0213, launched on November 17, 2016
                 break;
             case 5:
-                block_ = std::string("FOC-FM14"); // Galileo Full Operational Capability (FOC) satellite FM14 / GSAT-0214, launched on November 17, 2016
+                block_ = std::string(
+                        "FOC-FM14"); // Galileo Full Operational Capability (FOC) satellite FM14 / GSAT-0214, launched on November 17, 2016
                 break;
             case 7:
-                block_ = std::string("FOC-FM7"); // Galileo Full Operational Capability (FOC) satellite FM7 / GSAT-0207, launched on November 17, 2016
+                block_ = std::string(
+                        "FOC-FM7"); // Galileo Full Operational Capability (FOC) satellite FM7 / GSAT-0207, launched on November 17, 2016
                 break;
             case 8:
-                block_ = std::string("FOC-FM8"); // Galileo Full Operational Capability (FOC) satellite FM8 / GSAT0208, launched on December 17, 2015
+                block_ = std::string(
+                        "FOC-FM8"); // Galileo Full Operational Capability (FOC) satellite FM8 / GSAT0208, launched on December 17, 2015
                 break;
             case 9:
-                block_ = std::string("FOC-FM9"); // Galileo Full Operational Capability (FOC) satellite FM9 / GSAT0209, launched on December 17, 2015
+                block_ = std::string(
+                        "FOC-FM9"); // Galileo Full Operational Capability (FOC) satellite FM9 / GSAT0209, launched on December 17, 2015
                 break;
             case 11 :
-                block_ = std::string("IOV-PFM"); //  PFM, the ProtoFlight Model / GSAT0101, launched from French Guiana at 10:30 GMT on October 21, 2011
+                block_ = std::string(
+                        "IOV-PFM"); //  PFM, the ProtoFlight Model / GSAT0101, launched from French Guiana at 10:30 GMT on October 21, 2011
                 break;
             case 12 :
-                block_ = std::string("IOV-FM2**"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011
+                block_ = std::string(
+                        "IOV-FM2**"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011
                 break;
             case 14 :
-                block_ = std::string("FOC-FM2*"); // Galileo Full Operational Capability (FOC) satellite FM2 / GSAT0202, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in March, 2015.
+                block_ = std::string(
+                        "FOC-FM2*"); // Galileo Full Operational Capability (FOC) satellite FM2 / GSAT0202, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in March, 2015.
                 break;
             case 18 :
-                block_ = std::string("FOC-FM1*"); // Galileo Full Operational Capability (FOC) satellite FM1 / GSAT0201, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in December, 2014.
+                block_ = std::string(
+                        "FOC-FM1*"); // Galileo Full Operational Capability (FOC) satellite FM1 / GSAT0201, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in December, 2014.
                 break;
             case 19 :
-                block_ = std::string("IOV-FM3"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3) / GSAT0103, launched on October 12, 2012
+                block_ = std::string(
+                        "IOV-FM3"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3) / GSAT0103, launched on October 12, 2012
                 break;
             case 20 :
-                block_ = std::string("IOV-FM4**"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4) / GSAT0104, launched on October 12, 2012. Partially unavailable: Payload power problem beginning May 27, 2014 led to permanent loss of E5 and E6 transmissions, E1 transmission restored.
+                block_ = std::string(
+                        "IOV-FM4**"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4) / GSAT0104, launched on October 12, 2012. Partially unavailable: Payload power problem beginning May 27, 2014 led to permanent loss of E5 and E6 transmissions, E1 transmission restored.
                 break;
             case 22 :
-                block_ = std::string("FOC-FM4"); // Galileo Full Operational Capability (FOC) satellite FM4 / GSAT0204, launched on March 27, 2015.
+                block_ = std::string(
+                        "FOC-FM4"); // Galileo Full Operational Capability (FOC) satellite FM4 / GSAT0204, launched on March 27, 2015.
                 break;
             case 24 :
-                block_ = std::string("FOC-FM5"); // Galileo Full Operational Capability (FOC) satellite FM5 / GSAT0205, launched on Sept. 11, 2015.
+                block_ = std::string(
+                        "FOC-FM5"); // Galileo Full Operational Capability (FOC) satellite FM5 / GSAT0205, launched on Sept. 11, 2015.
                 break;
             case 26 :
-                block_ = std::string("FOC-FM3"); // Galileo Full Operational Capability (FOC) satellite FM3 / GSAT0203, launched on March 27, 2015.
+                block_ = std::string(
+                        "FOC-FM3"); // Galileo Full Operational Capability (FOC) satellite FM3 / GSAT0203, launched on March 27, 2015.
                 break;
             case 30 :
-                block_ = std::string("FOC-FM6"); // Galileo Full Operational Capability (FOC) satellite FM6 / GSAT0206, launched on Sept. 11, 2015.
+                block_ = std::string(
+                        "FOC-FM6"); // Galileo Full Operational Capability (FOC) satellite FM6 / GSAT0206, launched on Sept. 11, 2015.
                 break;
             default:
                 block_ = std::string("Unknown(Simulated)");
-            }
         }
+    }
     return block_;
 }
 
 
-void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_)
-{
+void Gnss_Satellite::set_block(const std::string &system_, unsigned int PRN_) {
     block = what_block(system_, PRN_);
 }
 

@@ -45,8 +45,7 @@
  * and Galileo Receiver. A Single-Frequency Approach,
  * Birkhauser, 2007, Applied and Numerical Harmonic Analysis.
  */
-class Tracking_2nd_DLL_filter
-{
+class Tracking_2nd_DLL_filter {
 private:
     // PLL filter parameters
     float d_tau1_code = 0;
@@ -56,7 +55,8 @@ private:
     float d_dlldampingratio = 0;
     float d_old_code_error = 0;
     float d_old_code_nco = 0;
-    void calculate_lopp_coef(float* tau1,float* tau2, float lbw, float zeta, float k);
+
+    void calculate_lopp_coef(float *tau1, float *tau2, float lbw, float zeta, float k);
 
 public:
     void set_DLL_BW(float dll_bw_hz); //! Set DLL filter bandwidth [Hz]
@@ -64,7 +64,9 @@ public:
     void initialize();                //! Start tracking with acquisition information
     float get_code_nco(float DLL_discriminator); //! Numerically controlled oscillator
     Tracking_2nd_DLL_filter(float pdi_code);
+
     Tracking_2nd_DLL_filter();
+
     ~Tracking_2nd_DLL_filter();
 };
 

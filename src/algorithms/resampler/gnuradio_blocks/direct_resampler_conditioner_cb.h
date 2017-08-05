@@ -36,25 +36,26 @@
 #include <volk/volk.h>
 
 class direct_resampler_conditioner_cb;
+
 typedef boost::shared_ptr<direct_resampler_conditioner_cb>
         direct_resampler_conditioner_cb_sptr;
 
 direct_resampler_conditioner_cb_sptr
 direct_resampler_make_conditioner_cb(double sample_freq_in,
-        double sample_freq_out);
+                                     double sample_freq_out);
+
 /*!
  * \brief This class implements a direct resampler conditioner for std::complex<signed char>
  *
  * Direct resampling without interpolation
  */
-class direct_resampler_conditioner_cb: public gr::block
-{
+class direct_resampler_conditioner_cb : public gr::block {
 
 private:
 
     friend direct_resampler_conditioner_cb_sptr
     direct_resampler_make_conditioner_cb(double sample_freq_in,
-            double sample_freq_out);
+                                         double sample_freq_out);
 
     double d_sample_freq_in;
     double d_sample_freq_out;
@@ -64,24 +65,25 @@ private:
     unsigned int d_history;
 
     direct_resampler_conditioner_cb(double sample_freq_in,
-            double sample_freq_out);
+                                    double sample_freq_out);
 
 public:
 
     ~direct_resampler_conditioner_cb();
 
-    unsigned int sample_freq_in() const
-    {
+    unsigned int sample_freq_in() const {
         return d_sample_freq_in;
     }
-    unsigned int sample_freq_out() const
-    {
+
+    unsigned int sample_freq_out() const {
         return d_sample_freq_out;
     }
+
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+                     gr_vector_const_void_star &input_items,
+                     gr_vector_void_star &output_items);
 };
 
 #endif /* GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H */

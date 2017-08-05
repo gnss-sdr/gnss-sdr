@@ -31,57 +31,48 @@
 
 #include "gnss_signal.h"
 
-Gnss_Signal::Gnss_Signal()
-{
+Gnss_Signal::Gnss_Signal() {
     this->signal = "";
 }
 
-Gnss_Signal::Gnss_Signal(const std::string& signal_)
-{
+Gnss_Signal::Gnss_Signal(const std::string &signal_) {
     this->signal = signal_;
 }
 
-Gnss_Signal::Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& signal_)
-{
+Gnss_Signal::Gnss_Signal(const Gnss_Satellite &satellite_, const std::string &signal_) {
     this->satellite = satellite_;
     this->signal = signal_;
 }
 
 
-Gnss_Signal::~Gnss_Signal()
-{}
+Gnss_Signal::~Gnss_Signal() {}
 
 
-std::string Gnss_Signal::get_signal_str() const
-{
+std::string Gnss_Signal::get_signal_str() const {
     return this->signal;
 }
 
 
-Gnss_Satellite Gnss_Signal::get_satellite() const
-{
+Gnss_Satellite Gnss_Signal::get_satellite() const {
     return this->satellite;
 }
 
 
-std::ostream& operator<<(std::ostream &out, const Gnss_Signal &sig) // output
+std::ostream &operator<<(std::ostream &out, const Gnss_Signal &sig) // output
 {
     out << sig.get_satellite() << " Signal " << sig.get_signal_str();
     return out;
 }
 
 
-bool operator==(const Gnss_Signal &sig1, const Gnss_Signal &sig2)
-{
+bool operator==(const Gnss_Signal &sig1, const Gnss_Signal &sig2) {
     bool equal = false;
 
-    if (sig1.get_satellite() == sig2.get_satellite())
-        {
-            if (sig1.get_signal_str().compare(sig1.get_signal_str()) == 0)
-                {
-                    equal = true;
-                }
+    if (sig1.get_satellite() == sig2.get_satellite()) {
+        if (sig1.get_signal_str().compare(sig1.get_signal_str()) == 0) {
+            equal = true;
         }
+    }
     return equal;
 }
 

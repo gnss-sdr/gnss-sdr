@@ -44,17 +44,20 @@
  *
  * See http://www.opengeospatial.org/standards/kml
  */
-class Kml_Printer
-{
+class Kml_Printer {
 private:
     std::ofstream kml_file;
     bool positions_printed;
     std::string kml_filename;
 public:
     Kml_Printer();
+
     ~Kml_Printer();
+
     bool set_headers(std::string filename, bool time_tag_name = true);
-    bool print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);
+
+    bool print_position(const std::shared_ptr<Pvt_Solution> &position, bool print_average_values);
+
     bool close_file();
 };
 

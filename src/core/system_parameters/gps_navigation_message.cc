@@ -36,8 +36,7 @@ m * \file gps_navigation_message.cc
 #include <gnss_satellite.h>
 
 
-void Gps_Navigation_Message::reset()
-{
+void Gps_Navigation_Message::reset() {
     b_valid_ephemeris_set_flag = false;
     d_TOW = 0;
     d_TOW_SF1 = 0;
@@ -122,15 +121,14 @@ void Gps_Navigation_Message::reset()
     d_DeltaT_LS = 0;
     i_WN_LSF = 0;
     i_DN = 0;
-    d_DeltaT_LSF= 0;
+    d_DeltaT_LSF = 0;
 
     //Almanac
     d_Toa = 0;
     i_WN_A = 0;
-    for (int i=1; i < 32; i++ )
-        {
-            almanacHealth[i] = 0;
-        }
+    for (int i = 1; i < 32; i++) {
+        almanacHealth[i] = 0;
+    }
 
     // Satellite velocity
     d_satvel_X = 0;
@@ -138,156 +136,116 @@ void Gps_Navigation_Message::reset()
     d_satvel_Z = 0;
 
     auto gnss_sat = Gnss_Satellite();
-    std::string _system ("GPS");
-    for(unsigned int i = 1; i < 33; i++)
-        {
-            satelliteBlock[i] = gnss_sat.what_block(_system, i);
-        }
+    std::string _system("GPS");
+    for (unsigned int i = 1; i < 33; i++) {
+        satelliteBlock[i] = gnss_sat.what_block(_system, i);
+    }
 }
 
 
-
-Gps_Navigation_Message::Gps_Navigation_Message()
-{
+Gps_Navigation_Message::Gps_Navigation_Message() {
     reset();
 }
 
 
-
-void Gps_Navigation_Message::print_gps_word_bytes(unsigned int GPS_word)
-{
+void Gps_Navigation_Message::print_gps_word_bytes(unsigned int GPS_word) {
     std::cout << " Word =";
     std::cout << std::bitset<32>(GPS_word);
     std::cout << std::endl;
 }
 
 
-
-bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
-{
+bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits,
+                                                  const std::vector<std::pair<int, int>> parameter) {
     bool value;
 
-    if (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1)
-        {
-            value = true;
-        }
-    else
-        {
-            value = false;
-        }
+    if (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1) {
+        value = true;
+    } else {
+        value = false;
+    }
     return value;
 }
 
 
-
-
-unsigned long int Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
-{
+unsigned long int Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits,
+                                                                   const std::vector<std::pair<int, int>> parameter) {
     unsigned long int value = 0;
     int num_of_slices = parameter.size();
-    for (int i = 0; i < num_of_slices; i++)
-        {
-            for (int j = 0; j < parameter[i].second; j++)
-                {
-                    value <<= 1; //shift left
-                    if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1)
-                        {
-                            value += 1; // insert the bit
-                        }
-                }
+    for (int i = 0; i < num_of_slices; i++) {
+        for (int j = 0; j < parameter[i].second; j++) {
+            value <<= 1; //shift left
+            if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1) {
+                value += 1; // insert the bit
+            }
         }
+    }
     return value;
 }
 
 
-
-
-
-signed long int Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
-{
+signed long int Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits,
+                                                               const std::vector<std::pair<int, int>> parameter) {
     signed long int value = 0;
     int num_of_slices = parameter.size();
     // Discriminate between 64 bits and 32 bits compiler
     int long_int_size_bytes = sizeof(signed long int);
     if (long_int_size_bytes == 8) // if a long int takes 8 bytes, we are in a 64 bits system
-        {
-            // read the MSB and perform the sign extension
-            if (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1)
-                {
-                    value ^= 0xFFFFFFFFFFFFFFFF; //64 bits variable
-                }
-            else
-                {
-                    value &= 0;
-                }
-
-            for (int i = 0; i < num_of_slices; i++)
-                {
-                    for (int j = 0; j < parameter[i].second; j++)
-                        {
-                            value <<= 1; //shift left
-                            value &= 0xFFFFFFFFFFFFFFFE; //reset the corresponding bit (for the 64 bits variable)
-                            if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1)
-                                {
-                                    value += 1; // insert the bit
-                                }
-                        }
-                }
+    {
+        // read the MSB and perform the sign extension
+        if (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1) {
+            value ^= 0xFFFFFFFFFFFFFFFF; //64 bits variable
+        } else {
+            value &= 0;
         }
-    else  // we assume we are in a 32 bits system
-        {
-            // read the MSB and perform the sign extension
-            if (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1)
-                {
-                    value ^= 0xFFFFFFFF;
-                }
-            else
-                {
-                    value &= 0;
-                }
 
-            for (int i = 0; i < num_of_slices; i++)
-                {
-                    for (int j = 0; j < parameter[i].second; j++)
-                        {
-                            value <<= 1; //shift left
-                            value &= 0xFFFFFFFE; //reset the corresponding bit
-                            if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1)
-                                {
-                                    value += 1; // insert the bit
-                                }
-                        }
+        for (int i = 0; i < num_of_slices; i++) {
+            for (int j = 0; j < parameter[i].second; j++) {
+                value <<= 1; //shift left
+                value &= 0xFFFFFFFFFFFFFFFE; //reset the corresponding bit (for the 64 bits variable)
+                if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1) {
+                    value += 1; // insert the bit
                 }
+            }
         }
+    } else  // we assume we are in a 32 bits system
+    {
+        // read the MSB and perform the sign extension
+        if (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1) {
+            value ^= 0xFFFFFFFF;
+        } else {
+            value &= 0;
+        }
+
+        for (int i = 0; i < num_of_slices; i++) {
+            for (int j = 0; j < parameter[i].second; j++) {
+                value <<= 1; //shift left
+                value &= 0xFFFFFFFE; //reset the corresponding bit
+                if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1) {
+                    value += 1; // insert the bit
+                }
+            }
+        }
+    }
     return value;
 }
 
 
-
-
-
-double Gps_Navigation_Message::check_t(double time)
-{
+double Gps_Navigation_Message::check_t(double time) {
     double corrTime;
     double half_week = 302400;     // seconds
     corrTime = time;
-    if (time > half_week)
-        {
-            corrTime = time - 2 * half_week;
-        }
-    else if (time < -half_week)
-        {
-            corrTime = time + 2 * half_week;
-        }
+    if (time > half_week) {
+        corrTime = time - 2 * half_week;
+    } else if (time < -half_week) {
+        corrTime = time + 2 * half_week;
+    }
     return corrTime;
 }
 
 
-
-
 // 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
-double Gps_Navigation_Message::sv_clock_correction(double transmitTime)
-{
+double Gps_Navigation_Message::sv_clock_correction(double transmitTime) {
     double dt;
     dt = check_t(transmitTime - d_Toc);
     d_satClkCorr = (d_A_f2 * dt + d_A_f1) * dt + d_A_f0 + d_dtr;
@@ -296,11 +254,7 @@ double Gps_Navigation_Message::sv_clock_correction(double transmitTime)
 }
 
 
-
-
-
-void Gps_Navigation_Message::satellitePosition(double transmitTime)
-{
+void Gps_Navigation_Message::satellitePosition(double transmitTime) {
     double tk;
     double a;
     double n;
@@ -340,17 +294,15 @@ void Gps_Navigation_Message::satellitePosition(double transmitTime)
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1; ii < 20; ii++)
-        {
-            E_old   = E;
-            E       = M + d_e_eccentricity * sin(E);
-            dE      = fmod(E - E_old, 2 * GPS_PI);
-            if (fabs(dE) < 1e-12)
-                {
-                    //Necessary precision is reached, exit from the loop
-                    break;
-                }
+    for (int ii = 1; ii < 20; ii++) {
+        E_old = E;
+        E = M + d_e_eccentricity * sin(E);
+        dE = fmod(E - E_old, 2 * GPS_PI);
+        if (fabs(dE) < 1e-12) {
+            //Necessary precision is reached, exit from the loop
+            break;
         }
+    }
 
     // Compute relativistic correction term
     d_dtr = F * d_e_eccentricity * d_sqrt_A * sin(E);
@@ -367,10 +319,10 @@ void Gps_Navigation_Message::satellitePosition(double transmitTime)
     phi = fmod((phi), (2 * GPS_PI));
 
     // Correct argument of latitude
-    u = phi + d_Cuc * cos(2 * phi) +  d_Cus * sin(2 * phi);
+    u = phi + d_Cuc * cos(2 * phi) + d_Cus * sin(2 * phi);
 
     // Correct radius
-    r = a * (1 - d_e_eccentricity * cos(E)) +  d_Crc * cos(2 * phi) +  d_Crs * sin(2 * phi);
+    r = a * (1 - d_e_eccentricity * cos(E)) + d_Crc * cos(2 * phi) + d_Crs * sin(2 * phi);
 
     // Correct inclination
     i = d_i_0 + d_IDOT * tk + d_Cic * cos(2 * phi) + d_Cis * sin(2 * phi);
@@ -388,17 +340,15 @@ void Gps_Navigation_Message::satellitePosition(double transmitTime)
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
     double Omega_dot = d_OMEGA_DOT - OMEGA_EARTH_DOT;
-    d_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
-    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
+    d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) -
+                 d_satpos_Y * cos(i) * sin(Omega);
+    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) +
+                 d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
 }
 
 
-
-
-
-int Gps_Navigation_Message::subframe_decoder(char *subframe)
-{
+int Gps_Navigation_Message::subframe_decoder(char *subframe) {
     int subframe_ID = 0;
 
     //double tmp_TOW;
@@ -408,135 +358,135 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
     // UNPACK BYTES TO BITS AND REMOVE THE CRC REDUNDANCE
     std::bitset<GPS_SUBFRAME_BITS> subframe_bits;
     std::bitset<GPS_WORD_BITS + 2> word_bits;
-    for (int i = 0; i < 10; i++)
-        {
-            memcpy(&gps_word, &subframe[i * 4], sizeof(char) * 4);
-            word_bits = std::bitset<(GPS_WORD_BITS + 2) > (gps_word);
-            for (int j = 0; j < GPS_WORD_BITS; j++)
-                {
-                    subframe_bits[GPS_WORD_BITS * (9 - i) + j] = word_bits[j];
-                }
+    for (int i = 0; i < 10; i++) {
+        memcpy(&gps_word, &subframe[i * 4], sizeof(char) * 4);
+        word_bits = std::bitset<(GPS_WORD_BITS + 2)>(gps_word);
+        for (int j = 0; j < GPS_WORD_BITS; j++) {
+            subframe_bits[GPS_WORD_BITS * (9 - i) + j] = word_bits[j];
         }
+    }
 
     subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, SUBFRAME_ID));
 
     // Decode all 5 sub-frames
-    switch (subframe_ID)
-    {
-    //--- Decode the sub-frame id ------------------------------------------
-    // ICD (IS-GPS-200E Appendix II). http://www.losangeles.af.mil/shared/media/document/AFD-100813-045.pdf
-    case 1:
-        //--- It is subframe 1 -------------------------------------
-        // Compute the time of week (TOW) of the first sub-frames in the array ====
-        // The transmitted TOW is actual TOW of the next subframe
-        // (the variable subframe at this point contains bits of the last subframe).
-        //TOW = bin2dec(subframe(31:47)) * 6;
-        d_TOW_SF1 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        //we are in the first subframe (the transmitted TOW is the start time of the next subframe) !
-        d_TOW_SF1 = d_TOW_SF1 * 6;
-        d_TOW = d_TOW_SF1; // Set transmission time
-        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        i_GPS_week = static_cast<int>(read_navigation_unsigned(subframe_bits, GPS_WEEK));
-        i_SV_accuracy = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_ACCURACY));  // (20.3.3.3.1.3)
-        i_SV_health = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_HEALTH));
-        b_L2_P_data_flag = read_navigation_bool(subframe_bits, L2_P_DATA_FLAG); //
-        i_code_on_L2 = static_cast<int>(read_navigation_unsigned(subframe_bits, CA_OR_P_ON_L2));
-        d_TGD = static_cast<double>(read_navigation_signed(subframe_bits, T_GD));
-        d_TGD = d_TGD * T_GD_LSB;
-        d_IODC = static_cast<double>(read_navigation_unsigned(subframe_bits, IODC));
-        d_Toc = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OC));
-        d_Toc = d_Toc * T_OC_LSB;
-        d_A_f0 = static_cast<double>(read_navigation_signed(subframe_bits, A_F0));
-        d_A_f0 = d_A_f0 * A_F0_LSB;
-        d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, A_F1));
-        d_A_f1 = d_A_f1 * A_F1_LSB;
-        d_A_f2 = static_cast<double>(read_navigation_signed(subframe_bits, A_F2));
-        d_A_f2 = d_A_f2 * A_F2_LSB;
+    switch (subframe_ID) {
+        //--- Decode the sub-frame id ------------------------------------------
+        // ICD (IS-GPS-200E Appendix II). http://www.losangeles.af.mil/shared/media/document/AFD-100813-045.pdf
+        case 1:
+            //--- It is subframe 1 -------------------------------------
+            // Compute the time of week (TOW) of the first sub-frames in the array ====
+            // The transmitted TOW is actual TOW of the next subframe
+            // (the variable subframe at this point contains bits of the last subframe).
+            //TOW = bin2dec(subframe(31:47)) * 6;
+            d_TOW_SF1 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
+            //we are in the first subframe (the transmitted TOW is the start time of the next subframe) !
+            d_TOW_SF1 = d_TOW_SF1 * 6;
+            d_TOW = d_TOW_SF1; // Set transmission time
+            b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
+            b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
+            b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
+            i_GPS_week = static_cast<int>(read_navigation_unsigned(subframe_bits, GPS_WEEK));
+            i_SV_accuracy = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_ACCURACY));  // (20.3.3.3.1.3)
+            i_SV_health = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_HEALTH));
+            b_L2_P_data_flag = read_navigation_bool(subframe_bits, L2_P_DATA_FLAG); //
+            i_code_on_L2 = static_cast<int>(read_navigation_unsigned(subframe_bits, CA_OR_P_ON_L2));
+            d_TGD = static_cast<double>(read_navigation_signed(subframe_bits, T_GD));
+            d_TGD = d_TGD * T_GD_LSB;
+            d_IODC = static_cast<double>(read_navigation_unsigned(subframe_bits, IODC));
+            d_Toc = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OC));
+            d_Toc = d_Toc * T_OC_LSB;
+            d_A_f0 = static_cast<double>(read_navigation_signed(subframe_bits, A_F0));
+            d_A_f0 = d_A_f0 * A_F0_LSB;
+            d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, A_F1));
+            d_A_f1 = d_A_f1 * A_F1_LSB;
+            d_A_f2 = static_cast<double>(read_navigation_signed(subframe_bits, A_F2));
+            d_A_f2 = d_A_f2 * A_F2_LSB;
 
-        break;
+            break;
 
-    case 2:  //--- It is subframe 2 -------------------
-        d_TOW_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF2 = d_TOW_SF2 * 6;
-        d_TOW = d_TOW_SF2; // Set transmission time
-        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        d_IODE_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, IODE_SF2));
-        d_Crs = static_cast<double>(read_navigation_signed(subframe_bits, C_RS));
-        d_Crs = d_Crs * C_RS_LSB;
-        d_Delta_n = static_cast<double>(read_navigation_signed(subframe_bits, DELTA_N));
-        d_Delta_n = d_Delta_n * DELTA_N_LSB;
-        d_M_0 = static_cast<double>(read_navigation_signed(subframe_bits, M_0));
-        d_M_0 = d_M_0 * M_0_LSB;
-        d_Cuc = static_cast<double>(read_navigation_signed(subframe_bits, C_UC));
-        d_Cuc = d_Cuc * C_UC_LSB;
-        d_e_eccentricity = static_cast<double>(read_navigation_unsigned(subframe_bits, E));
-        d_e_eccentricity = d_e_eccentricity * E_LSB;
-        d_Cus = static_cast<double>(read_navigation_signed(subframe_bits, C_US));
-        d_Cus = d_Cus * C_US_LSB;
-        d_sqrt_A = static_cast<double>(read_navigation_unsigned(subframe_bits, SQRT_A));
-        d_sqrt_A = d_sqrt_A * SQRT_A_LSB;
-        d_Toe = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OE));
-        d_Toe = d_Toe * T_OE_LSB;
-        b_fit_interval_flag = read_navigation_bool(subframe_bits, FIT_INTERVAL_FLAG);
-        i_AODO = static_cast<int>(read_navigation_unsigned(subframe_bits, AODO));
-        i_AODO = i_AODO * AODO_LSB;
+        case 2:  //--- It is subframe 2 -------------------
+            d_TOW_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
+            d_TOW_SF2 = d_TOW_SF2 * 6;
+            d_TOW = d_TOW_SF2; // Set transmission time
+            b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
+            b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
+            b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
+            d_IODE_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, IODE_SF2));
+            d_Crs = static_cast<double>(read_navigation_signed(subframe_bits, C_RS));
+            d_Crs = d_Crs * C_RS_LSB;
+            d_Delta_n = static_cast<double>(read_navigation_signed(subframe_bits, DELTA_N));
+            d_Delta_n = d_Delta_n * DELTA_N_LSB;
+            d_M_0 = static_cast<double>(read_navigation_signed(subframe_bits, M_0));
+            d_M_0 = d_M_0 * M_0_LSB;
+            d_Cuc = static_cast<double>(read_navigation_signed(subframe_bits, C_UC));
+            d_Cuc = d_Cuc * C_UC_LSB;
+            d_e_eccentricity = static_cast<double>(read_navigation_unsigned(subframe_bits, E));
+            d_e_eccentricity = d_e_eccentricity * E_LSB;
+            d_Cus = static_cast<double>(read_navigation_signed(subframe_bits, C_US));
+            d_Cus = d_Cus * C_US_LSB;
+            d_sqrt_A = static_cast<double>(read_navigation_unsigned(subframe_bits, SQRT_A));
+            d_sqrt_A = d_sqrt_A * SQRT_A_LSB;
+            d_Toe = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OE));
+            d_Toe = d_Toe * T_OE_LSB;
+            b_fit_interval_flag = read_navigation_bool(subframe_bits, FIT_INTERVAL_FLAG);
+            i_AODO = static_cast<int>(read_navigation_unsigned(subframe_bits, AODO));
+            i_AODO = i_AODO * AODO_LSB;
 
-        break;
+            break;
 
-    case 3: // --- It is subframe 3 -------------------------------------
-        d_TOW_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF3 = d_TOW_SF3 * 6;
-        d_TOW = d_TOW_SF3; // Set transmission time
-        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        d_Cic = static_cast<double>(read_navigation_signed(subframe_bits, C_IC));
-        d_Cic = d_Cic * C_IC_LSB;
-        d_OMEGA0 = static_cast<double>(read_navigation_signed(subframe_bits, OMEGA_0));
-        d_OMEGA0 = d_OMEGA0 * OMEGA_0_LSB;
-        d_Cis = static_cast<double>(read_navigation_signed(subframe_bits, C_IS));
-        d_Cis = d_Cis * C_IS_LSB;
-        d_i_0 = static_cast<double>(read_navigation_signed(subframe_bits, I_0));
-        d_i_0 = d_i_0 * I_0_LSB;
-        d_Crc = static_cast<double>(read_navigation_signed(subframe_bits, C_RC));
-        d_Crc = d_Crc * C_RC_LSB;
-        d_OMEGA = static_cast<double>(read_navigation_signed(subframe_bits, OMEGA));
-        d_OMEGA = d_OMEGA * OMEGA_LSB;
-        d_OMEGA_DOT = static_cast<double>(read_navigation_signed(subframe_bits, OMEGA_DOT));
-        d_OMEGA_DOT = d_OMEGA_DOT * OMEGA_DOT_LSB;
-        d_IODE_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, IODE_SF3));
-        d_IDOT = static_cast<double>(read_navigation_signed(subframe_bits, I_DOT));
-        d_IDOT = d_IDOT * I_DOT_LSB;
+        case 3: // --- It is subframe 3 -------------------------------------
+            d_TOW_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
+            d_TOW_SF3 = d_TOW_SF3 * 6;
+            d_TOW = d_TOW_SF3; // Set transmission time
+            b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
+            b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
+            b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
+            d_Cic = static_cast<double>(read_navigation_signed(subframe_bits, C_IC));
+            d_Cic = d_Cic * C_IC_LSB;
+            d_OMEGA0 = static_cast<double>(read_navigation_signed(subframe_bits, OMEGA_0));
+            d_OMEGA0 = d_OMEGA0 * OMEGA_0_LSB;
+            d_Cis = static_cast<double>(read_navigation_signed(subframe_bits, C_IS));
+            d_Cis = d_Cis * C_IS_LSB;
+            d_i_0 = static_cast<double>(read_navigation_signed(subframe_bits, I_0));
+            d_i_0 = d_i_0 * I_0_LSB;
+            d_Crc = static_cast<double>(read_navigation_signed(subframe_bits, C_RC));
+            d_Crc = d_Crc * C_RC_LSB;
+            d_OMEGA = static_cast<double>(read_navigation_signed(subframe_bits, OMEGA));
+            d_OMEGA = d_OMEGA * OMEGA_LSB;
+            d_OMEGA_DOT = static_cast<double>(read_navigation_signed(subframe_bits, OMEGA_DOT));
+            d_OMEGA_DOT = d_OMEGA_DOT * OMEGA_DOT_LSB;
+            d_IODE_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, IODE_SF3));
+            d_IDOT = static_cast<double>(read_navigation_signed(subframe_bits, I_DOT));
+            d_IDOT = d_IDOT * I_DOT_LSB;
 
-        break;
+            break;
 
-    case 4: // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
-        int SV_data_ID;
-        int SV_page;
-        d_TOW_SF4 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF4 = d_TOW_SF4 * 6;
-        d_TOW = d_TOW_SF4; // Set transmission time
-        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        SV_data_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_DATA_ID));
-        SV_page = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_PAGE));
-        if (SV_page > 24 && SV_page < 33) // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
+        case 4: // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
+            int SV_data_ID;
+            int SV_page;
+            d_TOW_SF4 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
+            d_TOW_SF4 = d_TOW_SF4 * 6;
+            d_TOW = d_TOW_SF4; // Set transmission time
+            b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
+            b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
+            b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
+            SV_data_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_DATA_ID));
+            SV_page = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_PAGE));
+            if (SV_page > 24 && SV_page <
+                                33) // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {
                 //! \TODO read almanac
-                if(SV_data_ID){}
+                if (SV_data_ID) {}
             }
 
-        if (SV_page == 52) // Page 13 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
+            if (SV_page ==
+                52) // Page 13 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {
                 //! \TODO read Estimated Range Deviation (ERD) values
             }
 
-        if (SV_page == 56)  // Page 18 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
+            if (SV_page ==
+                56)  // Page 18 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {
                 // Page 18 - Ionospheric and UTC data
                 d_alpha0 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_0));
@@ -569,12 +519,12 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
                 flag_iono_valid = true;
                 flag_utc_model_valid = true;
             }
-        if (SV_page == 57)
-            {
+            if (SV_page == 57) {
                 // Reserved
             }
 
-        if (SV_page == 63) // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
+            if (SV_page ==
+                63) // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {
                 // Page 25 Anti-Spoofing, SV config and almanac health (PRN: 25-32)
                 //! \TODO Read Anti-Spoofing, SV config
@@ -588,25 +538,25 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
                 almanacHealth[32] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV32));
             }
 
-        break;
+            break;
 
-    case 5://--- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
-        int SV_data_ID_5;
-        int SV_page_5;
-        d_TOW_SF5 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF5 = d_TOW_SF5 * 6;
-        d_TOW = d_TOW_SF5; // Set transmission time
-        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        SV_data_ID_5 = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_DATA_ID));
-        SV_page_5 = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_PAGE));
-        if (SV_page_5 < 25)
-            {
+        case 5://--- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
+            int SV_data_ID_5;
+            int SV_page_5;
+            d_TOW_SF5 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
+            d_TOW_SF5 = d_TOW_SF5 * 6;
+            d_TOW = d_TOW_SF5; // Set transmission time
+            b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
+            b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
+            b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
+            SV_data_ID_5 = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_DATA_ID));
+            SV_page_5 = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_PAGE));
+            if (SV_page_5 < 25) {
                 //! \TODO read almanac
-                if(SV_data_ID_5){}
+                if (SV_data_ID_5) {}
             }
-        if (SV_page_5 == 51) // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
+            if (SV_page_5 ==
+                51) // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {
                 d_Toa = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OA));
                 d_Toa = d_Toa * T_OA_LSB;
@@ -636,77 +586,70 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
                 almanacHealth[23] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV23));
                 almanacHealth[24] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV24));
             }
-        break;
+            break;
 
-    default:
-        break;
+        default:
+            break;
     } // switch subframeID ...
 
     return subframe_ID;
 }
 
 
-
-
-double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
-{
+double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const {
     double t_utc;
     double t_utc_daytime;
-    double Delta_t_UTC =  d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+    double Delta_t_UTC = d_DeltaT_LS + d_A0 +
+                         d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
 
     // Determine if the effectivity time of the leap second event is in the past
-    int  weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
+    int weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
 
     if ((weeksToLeapSecondEvent) >= 0) // is not in the past
-        {
-            //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
-            int secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
-            if (weeksToLeapSecondEvent > 0)
-                {
-                    t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
-                }
-            else //we are in the same week than the leap second event
-                {
-                    if  (std::abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
-                        {
-                            /* 20.3.3.5.2.4a
-                             * Whenever the effectivity time indicated by the WN_LSF and the DN values
-                             * is not in the past (relative to the user's present time), and the user's
-                             * present time does not fall in the time span which starts at six hours prior
-                             * to the effectivity time and ends at six hours after the effectivity time,
-                             * the UTC/GPS-time relationship is given by
-                             */
-                            t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
-                        }
-                    else
-                        {
-                            /* 20.3.3.5.2.4b
-                             * Whenever the user's current time falls within the time span of six hours
-                             * prior to the effectivity time to six hours after the effectivity time,
-                             * proper accommodation of the leap second event with a possible week number
-                             * transition is provided by the following expression for UTC:
-                             */
-                            int W = fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
-                            t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
-                            //implement something to handle a leap second event!
-                        }
-                    if ( (gpstime_corrected - secondOfLeapSecondEvent) > 21600)
-                        {
-                            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
-                            t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
-                        }
-                }
-        }
-    else // the effectivity time is in the past
-        {
-            /* 20.3.3.5.2.4c
-             * Whenever the effectivity time of the leap second event, as indicated by the
-             * WNLSF and DN values, is in the "past" (relative to the user's current time),
-             * and the user�s current time does not fall in the time span as given above
-             * in 20.3.3.5.2.4b,*/
-            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+    {
+        //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
+        int secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
+        if (weeksToLeapSecondEvent > 0) {
             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
+        } else //we are in the same week than the leap second event
+        {
+            if (std::abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600) {
+                /* 20.3.3.5.2.4a
+                 * Whenever the effectivity time indicated by the WN_LSF and the DN values
+                 * is not in the past (relative to the user's present time), and the user's
+                 * present time does not fall in the time span which starts at six hours prior
+                 * to the effectivity time and ends at six hours after the effectivity time,
+                 * the UTC/GPS-time relationship is given by
+                 */
+                t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
+            } else {
+                /* 20.3.3.5.2.4b
+                 * Whenever the user's current time falls within the time span of six hours
+                 * prior to the effectivity time to six hours after the effectivity time,
+                 * proper accommodation of the leap second event with a possible week number
+                 * transition is provided by the following expression for UTC:
+                 */
+                int W = fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
+                t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
+                //implement something to handle a leap second event!
+            }
+            if ((gpstime_corrected - secondOfLeapSecondEvent) > 21600) {
+                Delta_t_UTC = d_DeltaT_LSF + d_A0 +
+                              d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+                t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
+            }
         }
+    } else // the effectivity time is in the past
+    {
+        /* 20.3.3.5.2.4c
+         * Whenever the effectivity time of the leap second event, as indicated by the
+         * WNLSF and DN values, is in the "past" (relative to the user's current time),
+         * and the user�s current time does not fall in the time span as given above
+         * in 20.3.3.5.2.4b,*/
+        Delta_t_UTC = d_DeltaT_LSF + d_A0 +
+                      d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+        t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
+    }
 
     double secondsOfWeekBeforeToday = 43200 * floor(gpstime_corrected / 43200);
     t_utc = secondsOfWeekBeforeToday + t_utc_daytime;
@@ -714,9 +657,7 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
 }
 
 
-
-Gps_Ephemeris Gps_Navigation_Message::get_ephemeris()
-{
+Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() {
     Gps_Ephemeris ephemeris;
     ephemeris.i_satellite_PRN = i_satellite_PRN;
     ephemeris.d_TOW = d_TOW;
@@ -769,8 +710,7 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris()
 }
 
 
-Gps_Iono Gps_Navigation_Message::get_iono()
-{
+Gps_Iono Gps_Navigation_Message::get_iono() {
     Gps_Iono iono;
     iono.d_alpha0 = d_alpha0;
     iono.d_alpha1 = d_alpha1;
@@ -787,8 +727,7 @@ Gps_Iono Gps_Navigation_Message::get_iono()
 }
 
 
-Gps_Utc_Model Gps_Navigation_Message::get_utc_model()
-{
+Gps_Utc_Model Gps_Navigation_Message::get_utc_model() {
     Gps_Utc_Model utc_model;
     utc_model.valid = flag_utc_model_valid;
     // UTC parameters
@@ -806,21 +745,18 @@ Gps_Utc_Model Gps_Navigation_Message::get_utc_model()
 }
 
 
-bool Gps_Navigation_Message::satellite_validation()
-{
+bool Gps_Navigation_Message::satellite_validation() {
     bool flag_data_valid = false;
     b_valid_ephemeris_set_flag = false;
 
     // First Step:
     // check Issue Of Ephemeris Data (IODE IODC..) to find a possible interrupted reception
     // and check if the data have been filled (!=0)
-    if (d_TOW_SF1 != 0 and d_TOW_SF2 != 0 and d_TOW_SF3 != 0)
-        {
-            if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!= -1)
-                {
-                    flag_data_valid = true;
-                    b_valid_ephemeris_set_flag = true;
-                }
+    if (d_TOW_SF1 != 0 and d_TOW_SF2 != 0 and d_TOW_SF3 != 0) {
+        if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC != -1) {
+            flag_data_valid = true;
+            b_valid_ephemeris_set_flag = true;
         }
+    }
     return flag_data_valid;
 }

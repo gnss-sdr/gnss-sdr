@@ -16,16 +16,16 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(RESAMPLER_ADAPTER_SOURCES direct_resampler_conditioner.cc )
+set(RESAMPLER_ADAPTER_SOURCES direct_resampler_conditioner.cc)
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_INCLUDE_DIRS}
+        $(CMAKE_CURRENT_SOURCE_DIR)
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
+        ${GLOG_INCLUDE_DIRS}
+        ${GFlags_INCLUDE_DIRS}
+        ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+        ${VOLK_INCLUDE_DIRS}
 )
 
 file(GLOB RESAMPLER_ADAPTER_HEADERS "*.h")

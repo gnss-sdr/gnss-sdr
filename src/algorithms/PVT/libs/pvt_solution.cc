@@ -40,8 +40,7 @@ using google::LogMessage;
 
 DEFINE_bool(tropo, true, "Apply tropospheric correction");
 
-Pvt_Solution::Pvt_Solution()
-{
+Pvt_Solution::Pvt_Solution() {
     d_latitude_d = 0.0;
     d_longitude_d = 0.0;
     d_height_m = 0.0;
@@ -57,12 +56,11 @@ Pvt_Solution::Pvt_Solution()
     b_valid_position = false;
     d_averaging_depth = 0;
     d_valid_observations = 0;
-    d_rx_pos = arma::zeros(3,1);
+    d_rx_pos = arma::zeros(3, 1);
     d_rx_dt_s = 0.0;
 }
 
-arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec & X_sat)
-{
+arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec &X_sat) {
     /*
      *  Returns rotated satellite ECEF coordinates due to Earth
      * rotation during signal travel time
@@ -80,7 +78,7 @@ arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec
     omegatau = OMEGA_EARTH_DOT * traveltime;
 
     //--- Build a rotation matrix ----------------------------------------------
-    arma::mat R3 = arma::zeros(3,3);
+    arma::mat R3 = arma::zeros(3, 3);
     R3(0, 0) = cos(omegatau);
     R3(0, 1) = sin(omegatau);
     R3(0, 2) = 0.0;
@@ -98,8 +96,7 @@ arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec
 }
 
 
-int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
-{
+int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection) {
     /* Conversion of Cartesian coordinates (X,Y,Z) to geographical
      coordinates (latitude, longitude, h) on a selected reference ellipsoid.
 
@@ -114,8 +111,9 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
     const double a[5] = {6378388.0, 6378160.0, 6378135.0, 6378137.0, 6378137.0};
     const double f[5] = {1.0 / 297.0, 1.0 / 298.247, 1.0 / 298.26, 1.0 / 298.257222101, 1.0 / 298.257223563};
 
-    double lambda  = atan2(Y, X);
-    double ex2 = (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1.0 - f[elipsoid_selection]) * (1.0 - f[elipsoid_selection]));
+    double lambda = atan2(Y, X);
+    double ex2 = (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] /
+                 ((1.0 - f[elipsoid_selection]) * (1.0 - f[elipsoid_selection]));
     double c = a[elipsoid_selection] * sqrt(1.0 + ex2);
     double phi = atan(Z / ((sqrt(X * X + Y * Y) * (1.0 - (2.0 - f[elipsoid_selection])) * f[elipsoid_selection])));
 
@@ -123,20 +121,18 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
     double oldh = 0.0;
     double N;
     int iterations = 0;
-    do
-        {
-            oldh = h;
-            N = c / sqrt(1 + ex2 * (cos(phi) * cos(phi)));
-            phi = atan(Z / ((sqrt(X * X + Y * Y) * (1.0 - (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] * N / (N + h) ))));
-            h = sqrt(X * X + Y * Y) / cos(phi) - N;
-            iterations = iterations + 1;
-            if (iterations > 100)
-                {
-                    LOG(WARNING) << "Failed to approximate h with desired precision. h-oldh= " << h - oldh;
-                    break;
-                }
+    do {
+        oldh = h;
+        N = c / sqrt(1 + ex2 * (cos(phi) * cos(phi)));
+        phi = atan(Z / ((sqrt(X * X + Y * Y) *
+                         (1.0 - (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] * N / (N + h)))));
+        h = sqrt(X * X + Y * Y) / cos(phi) - N;
+        iterations = iterations + 1;
+        if (iterations > 100) {
+            LOG(WARNING) << "Failed to approximate h with desired precision. h-oldh= " << h - oldh;
+            break;
         }
-    while (std::abs(h - oldh) > 1.0e-12);
+    } while (std::abs(h - oldh) > 1.0e-12);
     d_latitude_d = phi * 180.0 / GPS_PI;
     d_longitude_d = lambda * 180.0 / GPS_PI;
     d_height_m = h;
@@ -144,8 +140,8 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
 }
 
 
-int Pvt_Solution::togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z)
-{
+int
+Pvt_Solution::togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z) {
     /* Subroutine to calculate geodetic coordinates latitude, longitude,
        height given Cartesian coordinates X,Y,Z, and reference ellipsoid
        values semi-major axis (a) and the inverse of flattening (finv).
@@ -174,56 +170,45 @@ int Pvt_Solution::togeod(double *dphi, double *dlambda, double *h, double a, dou
 
     // compute square of eccentricity
     double esq;
-    if (finv < 1.0E-20)
-        {
-            esq = 0.0;
-        }
-    else
-        {
-            esq = (2.0 - 1.0 / finv) / finv;
-        }
+    if (finv < 1.0E-20) {
+        esq = 0.0;
+    } else {
+        esq = (2.0 - 1.0 / finv) / finv;
+    }
 
     // first guess
     double P = sqrt(X * X + Y * Y); // P is distance from spin axis
 
     //direct calculation of longitude
-    if (P > 1.0E-20)
-        {
-            *dlambda = atan2(Y, X) * rtd;
-        }
-    else
-        {
-            *dlambda = 0.0;
-        }
+    if (P > 1.0E-20) {
+        *dlambda = atan2(Y, X) * rtd;
+    } else {
+        *dlambda = 0.0;
+    }
 
     // correct longitude bound
-    if (*dlambda < 0)
-        {
-            *dlambda = *dlambda + 360.0;
-        }
+    if (*dlambda < 0) {
+        *dlambda = *dlambda + 360.0;
+    }
 
     double r = sqrt(P * P + Z * Z); // r is distance from origin (0,0,0)
 
     double sinphi;
-    if (r > 1.0E-20)
-        {
-            sinphi = Z/r;
-        }
-    else
-        {
-            sinphi = 0.0;
-        }
+    if (r > 1.0E-20) {
+        sinphi = Z / r;
+    } else {
+        sinphi = 0.0;
+    }
     *dphi = asin(sinphi);
 
     // initial value of height  =  distance from origin minus
     // approximate distance from origin to surface of ellipsoid
-    if (r < 1.0E-20)
-        {
-            *h = 0;
-            return 1;
-        }
+    if (r < 1.0E-20) {
+        *h = 0;
+        return 1;
+    }
 
-    *h = r - a * (1 - sinphi * sinphi/finv);
+    *h = r - a * (1 - sinphi * sinphi / finv);
 
     // iterate
     double cosphi;
@@ -232,39 +217,37 @@ int Pvt_Solution::togeod(double *dphi, double *dlambda, double *h, double a, dou
     double dZ;
     double oneesq = 1.0 - esq;
 
-    for (int i = 0; i < maxit; i++)
-        {
-            sinphi = sin(*dphi);
-            cosphi = cos(*dphi);
+    for (int i = 0; i < maxit; i++) {
+        sinphi = sin(*dphi);
+        cosphi = cos(*dphi);
 
-            // compute radius of curvature in prime vertical direction
-            N_phi = a / sqrt(1 - esq * sinphi * sinphi);
+        // compute radius of curvature in prime vertical direction
+        N_phi = a / sqrt(1 - esq * sinphi * sinphi);
 
-            //    compute residuals in P and Z
-            dP = P - (N_phi + (*h)) * cosphi;
-            dZ = Z - (N_phi * oneesq + (*h)) * sinphi;
+        //    compute residuals in P and Z
+        dP = P - (N_phi + (*h)) * cosphi;
+        dZ = Z - (N_phi * oneesq + (*h)) * sinphi;
 
-            //    update height and latitude
-            *h = *h + (sinphi * dZ + cosphi * dP);
-            *dphi = *dphi + (cosphi * dZ - sinphi * dP)/(N_phi + (*h));
+        //    update height and latitude
+        *h = *h + (sinphi * dZ + cosphi * dP);
+        *dphi = *dphi + (cosphi * dZ - sinphi * dP) / (N_phi + (*h));
 
-            //     test for convergence
-            if ((dP * dP + dZ * dZ) < tolsq)
-                {
-                    break;
-                }
-            if (i == (maxit - 1))
-                {
-                    LOG(WARNING) << "The computation of geodetic coordinates did not converge";
-                }
+        //     test for convergence
+        if ((dP * dP + dZ * dZ) < tolsq) {
+            break;
         }
+        if (i == (maxit - 1)) {
+            LOG(WARNING) << "The computation of geodetic coordinates did not converge";
+        }
+    }
     *dphi = (*dphi) * rtd;
     return 0;
 }
 
 
-int Pvt_Solution::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km)
-{
+int
+Pvt_Solution::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km,
+                    double htkel_km, double hhum_km) {
     /*   Inputs:
            sinel     - sin of elevation angle of satellite
            hsta_km   - height of station in km
@@ -287,85 +270,81 @@ int Pvt_Solution::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb
      Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
      */
 
-    const double a_e    = 6378.137;    // semi-major axis of earth ellipsoid
-    const double b0     = 7.839257e-5;
+    const double a_e = 6378.137;    // semi-major axis of earth ellipsoid
+    const double b0 = 7.839257e-5;
     const double tlapse = -6.5;
-    const double em     = -978.77 / (2.8704e6 * tlapse * 1.0e-5);
+    const double em = -978.77 / (2.8704e6 * tlapse * 1.0e-5);
 
-    double tkhum  = t_kel + tlapse * (hhum_km - htkel_km);
-    double atkel  = 7.5 * (tkhum - 273.15) / (237.3 + tkhum - 273.15);
-    double e0     = 0.0611 * hum * pow(10, atkel);
-    double tksea  = t_kel - tlapse * htkel_km;
-    double tkelh  = tksea + tlapse * hhum_km;
-    double e0sea  = e0 * pow((tksea / tkelh), (4 * em));
-    double tkelp  = tksea + tlapse * hp_km;
-    double psea   = p_mb * pow((tksea / tkelp), em);
+    double tkhum = t_kel + tlapse * (hhum_km - htkel_km);
+    double atkel = 7.5 * (tkhum - 273.15) / (237.3 + tkhum - 273.15);
+    double e0 = 0.0611 * hum * pow(10, atkel);
+    double tksea = t_kel - tlapse * htkel_km;
+    double tkelh = tksea + tlapse * hhum_km;
+    double e0sea = e0 * pow((tksea / tkelh), (4 * em));
+    double tkelp = tksea + tlapse * hp_km;
+    double psea = p_mb * pow((tksea / tkelp), em);
 
-    if(sinel < 0) { sinel = 0.0; }
+    if (sinel < 0) { sinel = 0.0; }
 
-    double tropo_delay   = 0.0;
-    bool done      = false;
-    double refsea  = 77.624e-6 / tksea;
-    double htop    = 1.1385e-5 / refsea;
-    refsea         = refsea * psea;
-    double ref     = refsea * pow(((htop - hsta_km) / htop), 4);
+    double tropo_delay = 0.0;
+    bool done = false;
+    double refsea = 77.624e-6 / tksea;
+    double htop = 1.1385e-5 / refsea;
+    refsea = refsea * psea;
+    double ref = refsea * pow(((htop - hsta_km) / htop), 4);
 
     double a;
     double b;
     double rtop;
 
-    while(1)
-        {
-            rtop = pow((a_e + htop), 2) - pow((a_e + hsta_km), 2) * (1 - pow(sinel, 2));
+    while (1) {
+        rtop = pow((a_e + htop), 2) - pow((a_e + hsta_km), 2) * (1 - pow(sinel, 2));
 
-            // check to see if geometry is crazy
-            if(rtop < 0) { rtop = 0; }
+        // check to see if geometry is crazy
+        if (rtop < 0) { rtop = 0; }
 
-            rtop = sqrt(rtop) - (a_e + hsta_km) * sinel;
+        rtop = sqrt(rtop) - (a_e + hsta_km) * sinel;
 
-            a    = -sinel / (htop - hsta_km);
-            b    = -b0 * (1 - pow(sinel,2)) / (htop - hsta_km);
+        a = -sinel / (htop - hsta_km);
+        b = -b0 * (1 - pow(sinel, 2)) / (htop - hsta_km);
 
-            arma::vec rn = arma::vec(8);
-            rn.zeros();
+        arma::vec rn = arma::vec(8);
+        rn.zeros();
 
-            for(int i = 0; i<8; i++)
-                {
-                    rn(i) = pow(rtop, (i+1+1));
+        for (int i = 0; i < 8; i++) {
+            rn(i) = pow(rtop, (i + 1 + 1));
 
-                }
-
-            arma::rowvec alpha = {2 * a, 2 * pow(a, 2) + 4 * b /3, a * (pow(a, 2) + 3 * b),
-                    pow(a, 4)/5 + 2.4 * pow(a, 2) * b + 1.2 * pow(b, 2), 2 * a * b * (pow(a, 2) + 3 * b)/3,
-                    pow(b, 2) * (6 * pow(a, 2) + 4 * b) * 1.428571e-1, 0, 0};
-
-            if(pow(b, 2) > 1.0e-35)
-                {
-                    alpha(6) = a * pow(b, 3) /2;
-                    alpha(7) = pow(b, 4) / 9;
-                }
-
-            double dr = rtop;
-            arma::mat aux_ = alpha * rn;
-            dr = dr + aux_(0, 0);
-            tropo_delay = tropo_delay + dr * ref * 1000;
-
-            if(done == true)
-                {
-                    *ddr_m = tropo_delay;
-                    break;
-                }
-
-            done    = true;
-            refsea  = (371900.0e-6 / tksea - 12.92e-6) / tksea;
-            htop    = 1.1385e-5 * (1255 / tksea + 0.05) / refsea;
-            ref     = refsea * e0sea * pow(((htop - hsta_km) / htop), 4);
         }
+
+        arma::rowvec alpha = {2 * a, 2 * pow(a, 2) + 4 * b / 3, a * (pow(a, 2) + 3 * b),
+                              pow(a, 4) / 5 + 2.4 * pow(a, 2) * b + 1.2 * pow(b, 2),
+                              2 * a * b * (pow(a, 2) + 3 * b) / 3,
+                              pow(b, 2) * (6 * pow(a, 2) + 4 * b) * 1.428571e-1, 0, 0};
+
+        if (pow(b, 2) > 1.0e-35) {
+            alpha(6) = a * pow(b, 3) / 2;
+            alpha(7) = pow(b, 4) / 9;
+        }
+
+        double dr = rtop;
+        arma::mat aux_ = alpha * rn;
+        dr = dr + aux_(0, 0);
+        tropo_delay = tropo_delay + dr * ref * 1000;
+
+        if (done == true) {
+            *ddr_m = tropo_delay;
+            break;
+        }
+
+        done = true;
+        refsea = (371900.0e-6 / tksea - 12.92e-6) / tksea;
+        htop = 1.1385e-5 * (1255 / tksea + 0.05) / refsea;
+        ref = refsea * e0sea * pow(((htop - hsta_km) / htop), 4);
+    }
     return 0;
 }
 
-int Pvt_Solution::topocent(double *Az, double *El, double *D, const arma::vec & x, const arma::vec & dx)
-{
+int Pvt_Solution::topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::vec &dx) {
     /*  Transformation of vector dx into topocentric coordinate
       system with origin at x
          Inputs:
@@ -395,19 +374,19 @@ int Pvt_Solution::topocent(double *Az, double *El, double *D, const arma::vec & 
     double cb = cos(phi * dtr);
     double sb = sin(phi * dtr);
 
-    arma::mat F = arma::zeros(3,3);
+    arma::mat F = arma::zeros(3, 3);
 
-    F(0,0) = -sl;
-    F(0,1) = -sb * cl;
-    F(0,2) = cb * cl;
+    F(0, 0) = -sl;
+    F(0, 1) = -sb * cl;
+    F(0, 2) = cb * cl;
 
-    F(1,0) = cl;
-    F(1,1) = -sb * sl;
-    F(1,2) = cb * sl;
+    F(1, 0) = cl;
+    F(1, 1) = -sb * sl;
+    F(1, 2) = cb * sl;
 
-    F(2,0) = 0;
-    F(2,1) = cb;
-    F(2,2) = sb;
+    F(2, 0) = 0;
+    F(2, 1) = cb;
+    F(2, 2) = sb;
 
     arma::vec local_vector;
 
@@ -420,131 +399,112 @@ int Pvt_Solution::topocent(double *Az, double *El, double *D, const arma::vec & 
     double hor_dis;
     hor_dis = sqrt(E * E + N * N);
 
-    if (hor_dis < 1.0E-20)
-        {
-            *Az = 0;
-            *El = 90;
-        }
-    else
-        {
-            *Az = atan2(E, N) / dtr;
-            *El = atan2(U, hor_dis) / dtr;
-        }
+    if (hor_dis < 1.0E-20) {
+        *Az = 0;
+        *El = 90;
+    } else {
+        *Az = atan2(E, N) / dtr;
+        *El = atan2(U, hor_dis) / dtr;
+    }
 
-    if (*Az < 0)
-        {
-            *Az = *Az + 360.0;
-        }
+    if (*Az < 0) {
+        *Az = *Az + 360.0;
+    }
 
     *D = sqrt(dx(0) * dx(0) + dx(1) * dx(1) + dx(2) * dx(2));
     return 0;
 }
 
 
-
-int Pvt_Solution::compute_DOP()
-{
+int Pvt_Solution::compute_DOP() {
     // ###### Compute DOPs ########
 
     // 1- Rotation matrix from ECEF coordinates to ENU coordinates
     // ref: http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
-    arma::mat F = arma::zeros(3,3);
-    F(0,0) = -sin(GPS_TWO_PI * (d_longitude_d/360.0));
-    F(0,1) = -sin(GPS_TWO_PI * (d_latitude_d/360.0)) * cos(GPS_TWO_PI * (d_longitude_d/360.0));
-    F(0,2) =  cos(GPS_TWO_PI * (d_latitude_d/360.0)) * cos(GPS_TWO_PI * (d_longitude_d/360.0));
+    arma::mat F = arma::zeros(3, 3);
+    F(0, 0) = -sin(GPS_TWO_PI * (d_longitude_d / 360.0));
+    F(0, 1) = -sin(GPS_TWO_PI * (d_latitude_d / 360.0)) * cos(GPS_TWO_PI * (d_longitude_d / 360.0));
+    F(0, 2) = cos(GPS_TWO_PI * (d_latitude_d / 360.0)) * cos(GPS_TWO_PI * (d_longitude_d / 360.0));
 
-    F(1,0) =  cos((GPS_TWO_PI * d_longitude_d)/360.0);
-    F(1,1) = -sin((GPS_TWO_PI * d_latitude_d)/360.0) * sin((GPS_TWO_PI * d_longitude_d)/360.0);
-    F(1,2) =  cos((GPS_TWO_PI * d_latitude_d/360.0)) * sin((GPS_TWO_PI * d_longitude_d)/360.0);
+    F(1, 0) = cos((GPS_TWO_PI * d_longitude_d) / 360.0);
+    F(1, 1) = -sin((GPS_TWO_PI * d_latitude_d) / 360.0) * sin((GPS_TWO_PI * d_longitude_d) / 360.0);
+    F(1, 2) = cos((GPS_TWO_PI * d_latitude_d / 360.0)) * sin((GPS_TWO_PI * d_longitude_d) / 360.0);
 
-    F(2,0) = 0;
-    F(2,1) = cos((GPS_TWO_PI * d_latitude_d)/360.0);
-    F(2,2) = sin((GPS_TWO_PI * d_latitude_d/360.0));
+    F(2, 0) = 0;
+    F(2, 1) = cos((GPS_TWO_PI * d_latitude_d) / 360.0);
+    F(2, 2) = sin((GPS_TWO_PI * d_latitude_d / 360.0));
 
     // 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
     arma::mat Q_ECEF = d_Q.submat(0, 0, 2, 2);
     arma::mat DOP_ENU = arma::zeros(3, 3);
 
-    try
-    {
-            DOP_ENU = arma::htrans(F) * Q_ECEF * F;
-            d_GDOP = sqrt(arma::trace(DOP_ENU));                         // Geometric DOP
-            d_PDOP = sqrt(DOP_ENU(0, 0) + DOP_ENU(1, 1) + DOP_ENU(2, 2));// PDOP
-            d_HDOP = sqrt(DOP_ENU(0, 0) + DOP_ENU(1, 1));                // HDOP
-            d_VDOP = sqrt(DOP_ENU(2, 2));                                // VDOP
-            d_TDOP = sqrt(d_Q(3, 3));                                    // TDOP
+    try {
+        DOP_ENU = arma::htrans(F) * Q_ECEF * F;
+        d_GDOP = sqrt(arma::trace(DOP_ENU));                         // Geometric DOP
+        d_PDOP = sqrt(DOP_ENU(0, 0) + DOP_ENU(1, 1) + DOP_ENU(2, 2));// PDOP
+        d_HDOP = sqrt(DOP_ENU(0, 0) + DOP_ENU(1, 1));                // HDOP
+        d_VDOP = sqrt(DOP_ENU(2, 2));                                // VDOP
+        d_TDOP = sqrt(d_Q(3, 3));                                    // TDOP
     }
-    catch(std::exception& ex)
-    {
-            d_GDOP = -1; // Geometric DOP
-            d_PDOP = -1; // PDOP
-            d_HDOP = -1; // HDOP
-            d_VDOP = -1; // VDOP
-            d_TDOP = -1; // TDOP
+    catch (std::exception &ex) {
+        d_GDOP = -1; // Geometric DOP
+        d_PDOP = -1; // PDOP
+        d_HDOP = -1; // HDOP
+        d_VDOP = -1; // VDOP
+        d_TDOP = -1; // TDOP
     }
     return 0;
 
 }
 
 
-
-
-int Pvt_Solution::set_averaging_depth(int depth)
-{
+int Pvt_Solution::set_averaging_depth(int depth) {
     d_averaging_depth = depth;
     return 0;
 }
 
 
-int Pvt_Solution::pos_averaging(bool flag_averaring)
-{
+int Pvt_Solution::pos_averaging(bool flag_averaring) {
     // MOVING AVERAGE PVT
     bool avg = flag_averaring;
-    if (avg == true)
-        {
-            if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
-                {
-                    // Pop oldest value
-                    d_hist_longitude_d.pop_back();
-                    d_hist_latitude_d.pop_back();
-                    d_hist_height_m.pop_back();
-                    // Push new values
-                    d_hist_longitude_d.push_front(d_longitude_d);
-                    d_hist_latitude_d.push_front(d_latitude_d);
-                    d_hist_height_m.push_front(d_height_m);
+    if (avg == true) {
+        if (d_hist_longitude_d.size() == (unsigned int) d_averaging_depth) {
+            // Pop oldest value
+            d_hist_longitude_d.pop_back();
+            d_hist_latitude_d.pop_back();
+            d_hist_height_m.pop_back();
+            // Push new values
+            d_hist_longitude_d.push_front(d_longitude_d);
+            d_hist_latitude_d.push_front(d_latitude_d);
+            d_hist_height_m.push_front(d_height_m);
 
-                    d_avg_latitude_d = 0.0;
-                    d_avg_longitude_d = 0.0;
-                    d_avg_height_m = 0.0;
-                    for (unsigned int i = 0; i < d_hist_longitude_d.size(); i++)
-                        {
-                            d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
-                            d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
-                            d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
-                        }
-                    d_avg_latitude_d = d_avg_latitude_d / static_cast<double>(d_averaging_depth);
-                    d_avg_longitude_d = d_avg_longitude_d / static_cast<double>(d_averaging_depth);
-                    d_avg_height_m = d_avg_height_m / static_cast<double>(d_averaging_depth);
-                    b_valid_position = true;
-                }
-            else
-                {
-                    //int current_depth=d_hist_longitude_d.size();
-                    // Push new values
-                    d_hist_longitude_d.push_front(d_longitude_d);
-                    d_hist_latitude_d.push_front(d_latitude_d);
-                    d_hist_height_m.push_front(d_height_m);
-
-                    d_avg_latitude_d = d_latitude_d;
-                    d_avg_longitude_d = d_longitude_d;
-                    d_avg_height_m = d_height_m;
-                    b_valid_position = false;
-                }
-        }
-    else
-        {
+            d_avg_latitude_d = 0.0;
+            d_avg_longitude_d = 0.0;
+            d_avg_height_m = 0.0;
+            for (unsigned int i = 0; i < d_hist_longitude_d.size(); i++) {
+                d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
+                d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
+                d_avg_height_m = d_avg_height_m + d_hist_height_m.at(i);
+            }
+            d_avg_latitude_d = d_avg_latitude_d / static_cast<double>(d_averaging_depth);
+            d_avg_longitude_d = d_avg_longitude_d / static_cast<double>(d_averaging_depth);
+            d_avg_height_m = d_avg_height_m / static_cast<double>(d_averaging_depth);
             b_valid_position = true;
+        } else {
+            //int current_depth=d_hist_longitude_d.size();
+            // Push new values
+            d_hist_longitude_d.push_front(d_longitude_d);
+            d_hist_latitude_d.push_front(d_latitude_d);
+            d_hist_height_m.push_front(d_height_m);
+
+            d_avg_latitude_d = d_latitude_d;
+            d_avg_longitude_d = d_longitude_d;
+            d_avg_height_m = d_height_m;
+            b_valid_position = false;
         }
+    } else {
+        b_valid_position = true;
+    }
     return 0;
 }
 

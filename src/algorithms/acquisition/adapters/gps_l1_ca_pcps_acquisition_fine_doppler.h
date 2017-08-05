@@ -40,42 +40,41 @@
 #include "pcps_acquisition_fine_doppler_cc.h"
 
 
-
 class ConfigurationInterface;
 
 /*!
  * \brief This class Adapts a PCPS acquisition block with fine Doppler estimation to an AcquisitionInterface for
  *  GPS L1 C/A signals
  */
-class GpsL1CaPcpsAcquisitionFineDoppler: public AcquisitionInterface
-{
+class GpsL1CaPcpsAcquisitionFineDoppler : public AcquisitionInterface {
 public:
-    GpsL1CaPcpsAcquisitionFineDoppler(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+    GpsL1CaPcpsAcquisitionFineDoppler(ConfigurationInterface *configuration,
+                                      std::string role, unsigned int in_streams,
+                                      unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsAcquisitionFineDoppler();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     /*!
      * \brief Returns "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler"
      */
-    std::string implementation()
-    {
+    std::string implementation() {
         return "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler";
     }
-    size_t item_size()
-    {
+
+    size_t item_size() {
         return item_size_;
     }
 
     void connect(boost::shared_ptr<gr::top_block> top_block);
+
     void disconnect(boost::shared_ptr<gr::top_block> top_block);
+
     boost::shared_ptr<gr::basic_block> get_left_block();
+
     boost::shared_ptr<gr::basic_block> get_right_block();
 
     /*!
@@ -83,7 +82,7 @@ public:
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
     /*!
      * \brief Set acquisition channel unique ID
@@ -138,8 +137,8 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float> *code_;
+    Gnss_Synchro *gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

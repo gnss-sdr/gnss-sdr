@@ -48,19 +48,26 @@
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.
  */
-class ConfigurationInterface
-{
+class ConfigurationInterface {
 public:
-    virtual ~ConfigurationInterface()
-    {}
+    virtual ~ConfigurationInterface() {}
+
     virtual std::string property(std::string property_name, std::string default_value) = 0;
+
     virtual bool property(std::string property_name, bool default_value) = 0;
+
     virtual long property(std::string property_name, long default_value) = 0;
+
     virtual int property(std::string property_name, int default_value) = 0;
+
     virtual unsigned int property(std::string property_name, unsigned int default_value) = 0;
+
     virtual unsigned short property(std::string property_name, unsigned short default_value) = 0;
+
     virtual float property(std::string property_name, float default_value) = 0;
+
     virtual double property(std::string property_name, double default_value) = 0;
+
     virtual void set_property(std::string property_name, std::string value) = 0;
 };
 

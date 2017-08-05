@@ -16,31 +16,31 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
+add_definitions(-DGNSS_SDR_VERSION="${VERSION}")
 
-set(PVT_LIB_SOURCES 
-     pvt_solution.cc
-     ls_pvt.cc
-     gps_l1_ca_ls_pvt.cc
-     galileo_e1_ls_pvt.cc
-     hybrid_ls_pvt.cc
-     kml_printer.cc
-     rinex_printer.cc
-     nmea_printer.cc  
-     rtcm_printer.cc
-     geojson_printer.cc
-)
+set(PVT_LIB_SOURCES
+        pvt_solution.cc
+        ls_pvt.cc
+        gps_l1_ca_ls_pvt.cc
+        galileo_e1_ls_pvt.cc
+        hybrid_ls_pvt.cc
+        kml_printer.cc
+        rinex_printer.cc
+        nmea_printer.cc
+        rtcm_printer.cc
+        geojson_printer.cc
+        )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
-     ${Boost_INCLUDE_DIRS}
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
+        $(CMAKE_CURRENT_SOURCE_DIR)
+        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
+        ${Boost_INCLUDE_DIRS}
+        ${ARMADILLO_INCLUDE_DIRS}
+        ${GFlags_INCLUDE_DIRS}
+        ${GLOG_INCLUDE_DIRS}
 )
 file(GLOB PVT_LIB_HEADERS "*.h")
 list(SORT PVT_LIB_HEADERS)

@@ -32,9 +32,8 @@
 
 #include "gps_almanac.h"
 
-Gps_Almanac::Gps_Almanac() 
-{
-    i_satellite_PRN = 0; 
+Gps_Almanac::Gps_Almanac() {
+    i_satellite_PRN = 0;
     d_Delta_i = 0.0;
     d_Toa = 0.0;
     d_M_0 = 0.0;

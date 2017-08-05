@@ -174,6 +174,7 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
         }
     
     d_fft_if->execute(); // We need the FFT of local code
+
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 
@@ -332,7 +333,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
                     // compute the inverse FFT
                     d_ifft->execute();
-
+                    
                     // Search maximum
                     size_t offset = ( d_bit_transition_flag ? effective_fft_size : 0 );
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);

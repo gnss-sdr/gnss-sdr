@@ -22,6 +22,7 @@ set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
      galileo_e1b_telemetry_decoder_cc.cc
      sbas_l1_telemetry_decoder_cc.cc
      galileo_e5a_telemetry_decoder_cc.cc
+     beidou_b1i_telemetry_decoder_cc.cc
 )
       
 include_directories(

@@ -37,8 +37,7 @@
  *
  * See https://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf paragraph 5.1.10
  */
-class Galileo_Almanac
-{
+class Galileo_Almanac {
 public:
     /*Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number*/
     int IOD_a_7;

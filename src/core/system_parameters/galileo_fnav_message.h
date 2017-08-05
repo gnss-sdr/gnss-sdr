@@ -54,8 +54,7 @@
  * Galileo Open Service Signal in Space Interface Control Document (OS SIS ICD), Issue 1.2 (Nov 2015).
  * See https://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf
  */
-class Galileo_Fnav_Message
-{
+class Galileo_Fnav_Message {
 public:
 //    void Galileo_Fnav_Message::split_page(std::string page_string);
 //    void Galileo_Fnav_Message::reset();
@@ -69,14 +68,23 @@ public:
 //    Galileo_Almanac Galileo_Fnav_Message::get_almanac();
     //
     void split_page(std::string page_string);
+
     void reset();
+
     bool have_new_ephemeris();
+
     bool have_new_iono_and_GST();
+
     bool have_new_utc_model();
+
     bool have_new_almanac();
+
     Galileo_Ephemeris get_ephemeris();
+
     Galileo_Iono get_iono();
+
     Galileo_Utc_Model get_utc_model();
+
     Galileo_Almanac get_almanac();
 
     Galileo_Fnav_Message();
@@ -210,12 +218,16 @@ public:
     double FNAV_E5ahs_3_6;
 
 
-
 private:
-    bool _CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits,boost::uint32_t checksum);
+    bool _CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, boost::uint32_t checksum);
+
     void decode_page(std::string data);
-    unsigned long int read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+
+    unsigned long int read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits,
+                                               const std::vector<std::pair<int, int>> parameter);
+
+    signed long int read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits,
+                                           const std::vector<std::pair<int, int>> parameter);
 
     std::string omega0_1;
     //std::string omega0_2;

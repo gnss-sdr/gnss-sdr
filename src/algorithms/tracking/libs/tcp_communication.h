@@ -43,15 +43,20 @@
 /*!
  * \brief TCP communication class
  */
-class tcp_communication
-{
+class tcp_communication {
 public:
     tcp_communication();
+
     ~tcp_communication();
 
     int listen_tcp_connection(size_t d_port_, size_t d_port_ch0_);
-    void send_receive_tcp_packet_galileo_e1(boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> buf, tcp_packet_data *tcp_data_);
-    void send_receive_tcp_packet_gps_l1_ca(boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> buf, tcp_packet_data *tcp_data_);
+
+    void send_receive_tcp_packet_galileo_e1(boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> buf,
+                                            tcp_packet_data *tcp_data_);
+
+    void
+    send_receive_tcp_packet_gps_l1_ca(boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> buf, tcp_packet_data *tcp_data_);
+
     void close_tcp_connection(size_t d_port_);
 
 private:

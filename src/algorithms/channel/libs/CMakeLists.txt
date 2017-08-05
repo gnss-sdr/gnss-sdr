@@ -16,21 +16,21 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(CHANNEL_FSM_SOURCES 
-    channel_fsm.cc 
-    channel_msg_receiver_cc.cc
-    )
+set(CHANNEL_FSM_SOURCES
+        channel_fsm.cc
+        channel_msg_receiver_cc.cc
+        )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+        $(CMAKE_CURRENT_SOURCE_DIR)
+        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
+        ${Boost_INCLUDE_DIRS}
+        ${GLOG_INCLUDE_DIRS}
+        ${GFlags_INCLUDE_DIRS}
+        ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 file(GLOB CHANNEL_FSM_HEADERS "*.h")

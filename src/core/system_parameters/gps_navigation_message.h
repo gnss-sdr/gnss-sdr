@@ -45,19 +45,23 @@
 #include "gps_utc_model.h"
 
 
-
 /*!
  * \brief This class decodes a GPS NAV Data message as described in IS-GPS-200E
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  */
-class Gps_Navigation_Message
-{
+class Gps_Navigation_Message {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    unsigned long int
+    read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+
+    signed long int
+    read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+
+    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+
     void print_gps_word_bytes(unsigned int GPS_word);
+
     /*
      * Accounts for the beginning or end of week crossover
      *
@@ -123,9 +127,9 @@ public:
     // Almanac
     double d_Toa;           //!< Almanac reference time [s]
     int i_WN_A;             //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
-    std::map<int,int> almanacHealth; //!< Map that stores the health information stored in the almanac
+    std::map<int, int> almanacHealth; //!< Map that stores the health information stored in the almanac
 
-    std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
+    std::map<int, std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 
     // Flags
 

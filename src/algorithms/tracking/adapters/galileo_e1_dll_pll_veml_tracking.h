@@ -49,34 +49,34 @@ class ConfigurationInterface;
  * \brief This class Adapts a DLL+PLL VEML (Very Early Minus Late) tracking
  * loop block to a TrackingInterface for Galileo E1 signals
  */
-class GalileoE1DllPllVemlTracking : public TrackingInterface
-{
+class GalileoE1DllPllVemlTracking : public TrackingInterface {
 public:
-    GalileoE1DllPllVemlTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+    GalileoE1DllPllVemlTracking(ConfigurationInterface *configuration,
+                                std::string role,
+                                unsigned int in_streams,
+                                unsigned int out_streams);
 
     virtual ~GalileoE1DllPllVemlTracking();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     //! Returns "Galileo_E1_DLL_PLL_VEML_Tracking"
-    std::string implementation()
-    {
+    std::string implementation() {
         return "Galileo_E1_DLL_PLL_VEML_Tracking";
     }
-    size_t item_size()
-    {
+
+    size_t item_size() {
         return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
 
@@ -90,7 +90,7 @@ public:
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
 
     void start_tracking();

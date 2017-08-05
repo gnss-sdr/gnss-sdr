@@ -32,8 +32,7 @@
 
 #include "gps_iono.h"
 
-Gps_Iono::Gps_Iono()
-{
+Gps_Iono::Gps_Iono() {
     valid = false;
     d_alpha0 = 0.0;
     d_alpha1 = 0.0;

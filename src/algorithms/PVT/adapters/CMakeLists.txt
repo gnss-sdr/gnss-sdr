@@ -16,24 +16,24 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(PVT_ADAPTER_SOURCES 
-	gps_l1_ca_pvt.cc
-	galileo_e1_pvt.cc
-	hybrid_pvt.cc
-)
+set(PVT_ADAPTER_SOURCES
+        gps_l1_ca_pvt.cc
+        galileo_e1_pvt.cc
+        hybrid_pvt.cc
+        )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+        $(CMAKE_CURRENT_SOURCE_DIR)
+        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
+        ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+        ${ARMADILLO_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
+        ${GLOG_INCLUDE_DIRS}
+        ${GFlags_INCLUDE_DIRS}
+        ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 file(GLOB PVT_ADAPTER_HEADERS "*.h")

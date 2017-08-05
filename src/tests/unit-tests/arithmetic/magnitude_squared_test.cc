@@ -37,103 +37,156 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
-DEFINE_int32(size_magnitude_test, 100000, "Size of the arrays used for magnitude testing");
+DEFINE_int32(size_magnitude_test,
+100000, "Size of the arrays used for magnitude testing");
 
 
-TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
+TEST(MagnitudeSquared_Test, StandardCComplexImplementation
+)
 {
-    std::complex<float>* input = new std::complex<float>[FLAGS_size_magnitude_test];
-    float* output = new float[FLAGS_size_magnitude_test];
-    unsigned int number = 0;
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+std::complex<float> *input = new std::complex<float>[FLAGS_size_magnitude_test];
+float *output = new float[FLAGS_size_magnitude_test];
+unsigned int number = 0;
+struct timeval tv;
+gettimeofday(&tv, NULL
+);
+long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-    for(number = 0; number < (unsigned int)FLAGS_size_magnitude_test; number++)
-        {
-            output[number] = (input[number].real() * input[number].real()) + (input[number].imag() * input[number].imag());
-        }
+for(
+number = 0;
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout << "The squared magnitude of a " << FLAGS_size_magnitude_test
-              << "-length vector in standard C computed in " << (end - begin)
-              << " microseconds" << std::endl;
-    delete[] input;
-    delete[] output;
-    ASSERT_LE(0, end - begin);
+number<(unsigned int)
+
+FLAGS_size_magnitude_test;
+number++)
+{
+output[number] = (input[number].
+
+real()
+
+* input[number].
+
+real()
+
+) + (input[number].
+
+imag()
+
+* input[number].
+
+imag()
+
+);
 }
 
-TEST(MagnitudeSquared_Test, C11ComplexImplementation)
+gettimeofday(&tv, NULL
+);
+long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+std::cout << "The squared magnitude of a " << FLAGS_size_magnitude_test
+<< "-length vector in standard C computed in " << (end - begin)
+<< " microseconds" <<
+std::endl;
+delete[]
+input;
+delete[]
+output;
+ASSERT_LE(0, end - begin);
+}
+
+TEST(MagnitudeSquared_Test, C11ComplexImplementation
+)
 {
-    const std::vector<std::complex<float>> input(FLAGS_size_magnitude_test);
-    std::vector<float> output(FLAGS_size_magnitude_test);
-    struct timeval tv;
-    int pos = 0;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+const std::vector <std::complex<float>> input(FLAGS_size_magnitude_test);
+std::vector<float> output(FLAGS_size_magnitude_test);
+struct timeval tv;
+int pos = 0;
+gettimeofday(&tv, NULL
+);
+long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-    for (const auto &item : input)
-        {
-            output[pos++] = std::norm(item);
-        }
+for (
+const auto &item :
+input)
+{
+output[pos++] =
+std::norm(item);
+}
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout << "The squared magnitude of a " << FLAGS_size_magnitude_test
-              << " complex<float> vector (C++11-style) finished in " << (end - begin)
-              << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+gettimeofday(&tv, NULL
+);
+long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+std::cout << "The squared magnitude of a " << FLAGS_size_magnitude_test
+<< " complex<float> vector (C++11-style) finished in " << (end - begin)
+<< " microseconds" <<
+std::endl;
+ASSERT_LE(0, end - begin);
 
-    std::complex<float> expected(0,0);
-    std::complex<float> result(0,0);
-    for (const auto &item : output)
-        {
-            result += item;
-        }
-    ASSERT_EQ(expected, result);
+std::complex<float> expected(0, 0);
+std::complex<float> result(0, 0);
+for (
+const auto &item :
+output)
+{
+result +=
+item;
+}
+ASSERT_EQ(expected, result
+);
 }
 
 
-TEST(MagnitudeSquared_Test, ArmadilloComplexImplementation)
+TEST(MagnitudeSquared_Test, ArmadilloComplexImplementation
+)
 {
-    arma::cx_fvec input(FLAGS_size_magnitude_test, arma::fill::zeros);
-    arma::fvec output(FLAGS_size_magnitude_test);
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+arma::cx_fvec input(FLAGS_size_magnitude_test, arma::fill::zeros);
+arma::fvec output(FLAGS_size_magnitude_test);
+struct timeval tv;
+gettimeofday(&tv, NULL
+);
+long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-    output = arma::abs(arma::square(input));
+output = arma::abs(arma::square(input));
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout <<  "The squared magnitude of a " << FLAGS_size_magnitude_test
-              << "-length vector using Armadillo computed in " << (end - begin)
-              << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+gettimeofday(&tv, NULL
+);
+long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+std::cout <<  "The squared magnitude of a " << FLAGS_size_magnitude_test
+<< "-length vector using Armadillo computed in " << (end - begin)
+<< " microseconds" <<
+std::endl;
+ASSERT_LE(0, end - begin);
 }
 
 
-
-TEST(MagnitudeSquared_Test, VolkComplexImplementation)
+TEST(MagnitudeSquared_Test, VolkComplexImplementation
+)
 {
-    std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_magnitude_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
-    memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_magnitude_test);
-    float* output = static_cast<float*>(volk_gnsssdr_malloc(FLAGS_size_magnitude_test * sizeof(float), volk_gnsssdr_get_alignment()));
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+std::complex<float> *input = static_cast<std::complex<float> *>(volk_gnsssdr_malloc(
+        FLAGS_size_magnitude_test * sizeof(std::complex < float > ), volk_gnsssdr_get_alignment()));
+memset(input,
+0, sizeof(std::complex<float>) * FLAGS_size_magnitude_test);
+float *output = static_cast<float *>(volk_gnsssdr_malloc(FLAGS_size_magnitude_test * sizeof(float),
+                                                         volk_gnsssdr_get_alignment()));
+struct timeval tv;
+gettimeofday(&tv, NULL
+);
+long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-    volk_32fc_magnitude_squared_32f(output, input, static_cast<unsigned int>(FLAGS_size_magnitude_test));
+volk_32fc_magnitude_squared_32f(output, input,
+static_cast
+<unsigned int>(FLAGS_size_magnitude_test)
+);
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout <<  "The squared magnitude of a " << FLAGS_size_magnitude_test
-              << "-length vector using VOLK computed in " << (end - begin)
-              << " microseconds" << std::endl;
-    volk_gnsssdr_free(input);
-    volk_gnsssdr_free(output);
-    ASSERT_LE(0, end - begin);
+gettimeofday(&tv, NULL
+);
+long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+std::cout <<  "The squared magnitude of a " << FLAGS_size_magnitude_test
+<< "-length vector using VOLK computed in " << (end - begin)
+<< " microseconds" <<
+std::endl;
+volk_gnsssdr_free(input);
+volk_gnsssdr_free(output);
+ASSERT_LE(0, end - begin);
 }
 
 //            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);

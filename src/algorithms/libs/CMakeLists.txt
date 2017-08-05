@@ -18,51 +18,53 @@
 
 
 set(GNSS_SPLIBS_SOURCES
-	gps_l2c_signal.cc
-    galileo_e1_signal_processing.cc
-    gnss_sdr_valve.cc
-    gnss_signal_processing.cc
-    gps_sdr_signal_processing.cc
-    pass_through.cc
-    galileo_e5_signal_processing.cc
-    complex_byte_to_float_x2.cc
-    byte_x2_to_complex_byte.cc
-    cshort_to_float_x2.cc
-    short_x2_to_cshort.cc
-    complex_float_to_complex_byte.cc
-)
+        gps_l2c_signal.cc
+        galileo_e1_signal_processing.cc
+        gnss_sdr_valve.cc
+        gnss_signal_processing.cc
+        beidou_b1i_signal_processing.cc
+        gps_sdr_signal_processing.cc
+        #    beidou_sdr_signal_processing_test_2ms.cc
+        pass_through.cc
+        galileo_e5_signal_processing.cc
+        complex_byte_to_float_x2.cc
+        byte_x2_to_complex_byte.cc
+        cshort_to_float_x2.cc
+        short_x2_to_cshort.cc
+        complex_float_to_complex_byte.cc
+        )
 
 
-if(OPENCL_FOUND)
+if (OPENCL_FOUND)
     set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
-         fft_execute.cc # Needs OpenCL
-         fft_setup.cc # Needs OpenCL
-         fft_kernelstring.cc # Needs OpenCL
-    )
-endif(OPENCL_FOUND)
+            fft_execute.cc # Needs OpenCL
+            fft_setup.cc # Needs OpenCL
+            fft_kernelstring.cc # Needs OpenCL
+            )
+endif (OPENCL_FOUND)
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${GNURADIO_BLOCKS_INCLUDE_DIRS}
-     ${VOLK_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
+        $(CMAKE_CURRENT_SOURCE_DIR)
+        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${Boost_INCLUDE_DIRS}
+        ${GLOG_INCLUDE_DIRS}
+        ${GFlags_INCLUDE_DIRS}
+        ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+        ${GNURADIO_BLOCKS_INCLUDE_DIRS}
+        ${VOLK_INCLUDE_DIRS}
+        ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
-if(OPENCL_FOUND)
-    include_directories( ${OPENCL_INCLUDE_DIRS} )
-    if(OS_IS_MACOSX)
-         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
-    else(OS_IS_MACOSX)
-         set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
-    endif(OS_IS_MACOSX)
-endif(OPENCL_FOUND)
+if (OPENCL_FOUND)
+    include_directories(${OPENCL_INCLUDE_DIRS})
+    if (OS_IS_MACOSX)
+        set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
+    else (OS_IS_MACOSX)
+        set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
+    endif (OS_IS_MACOSX)
+endif (OPENCL_FOUND)
 
 file(GLOB GNSS_SPLIBS_HEADERS "*.h")
 list(SORT GNSS_SPLIBS_HEADERS)
@@ -70,15 +72,15 @@ add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
 
 target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES}
-                                   ${VOLK_LIBRARIES} ${ORC_LIBRARIES}
-                                   ${VOLK_GNSSSDR_LIBRARIES}  ${ORC_LIBRARIES}
-                                   ${GNURADIO_BLOCKS_LIBRARIES}
-                                   ${GNURADIO_FFT_LIBRARIES}
-                                   ${GNURADIO_FILTER_LIBRARIES}
-                                   ${OPT_LIBRARIES}
-                                   gnss_rx
-)
+        ${VOLK_LIBRARIES} ${ORC_LIBRARIES}
+        ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+        ${GNURADIO_BLOCKS_LIBRARIES}
+        ${GNURADIO_FFT_LIBRARIES}
+        ${GNURADIO_FILTER_LIBRARIES}
+        ${OPT_LIBRARIES}
+        gnss_rx
+        )
 
-if(NOT VOLK_GNSSSDR_FOUND)
+if (NOT VOLK_GNSSSDR_FOUND)
     add_dependencies(gnss_sp_libs volk_gnsssdr_module)
-endif(NOT VOLK_GNSSSDR_FOUND)
+endif (NOT VOLK_GNSSSDR_FOUND)

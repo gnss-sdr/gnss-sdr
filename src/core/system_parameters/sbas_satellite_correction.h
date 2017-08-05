@@ -33,8 +33,7 @@
 
 #include "sbas_time.h"
 
-struct Fast_Correction
-{
+struct Fast_Correction {
     Sbas_Time d_tof; // for fast corrections the time of applicability (tof) is defined as the time when the corresponding message was send
     double d_prc;
     double d_rrc;
@@ -45,8 +44,7 @@ struct Fast_Correction
 };
 
 
-struct Long_Term_Correction
-{
+struct Long_Term_Correction {
     double d_trx;     //!< Time when message was received
     int i_tapp;       //!< Time of applicability (only valid if vel=1, equals the sent t0)
     int i_vel;        //!< Use velocity corrections if vel=1
@@ -61,30 +59,42 @@ struct Long_Term_Correction
 /*!
  * \brief Valid long and fast term SBAS corrections for one SV
  */
-class Sbas_Satellite_Correction
-{
+class Sbas_Satellite_Correction {
 public:
     int d_prn;
     Fast_Correction d_fast_correction;
     Long_Term_Correction d_long_term_correction;
+
     void print(std::ostream &out);
+
     void print_fast_correction(std::ostream &out);
+
     void print_long_term_correction(std::ostream &out);
+
     int apply_fast(double sample_stamp, double &pr, double &var);
+
     int apply_long_term_sv_pos(double sample_stamp, double sv_pos[], double &var);
+
     int apply_long_term_sv_clk(double sample_stamp, double &dts, double &var);
+
     bool alarm();
+
 private:
     /* debug trace functions -----------------------------------------------------*/
     void trace(int level, const char *format, ...);
+
     /* variance of fast correction (udre=UDRE+1) ---------------------------------*/
     double varfcorr(int udre);
+
     /* fast correction degradation -----------------------------------------------*/
     double degfcorr(int ai);
+
     /* long term correction ------------------------------------------------------*/
     int sbslongcorr(double time_stamp, double *drs, double *ddts);
+
     /* fast correction -----------------------------------------------------------*/
     int sbsfastcorr(double time_stamp, double *prc, double *var);
+
     /* sbas satellite ephemeris and clock correction -------------------------------
      * correct satellite position and clock bias with sbas satellite corrections
      * args   : long time_stamp     I   reception time stamp

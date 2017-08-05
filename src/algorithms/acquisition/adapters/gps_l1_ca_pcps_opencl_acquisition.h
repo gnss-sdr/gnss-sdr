@@ -39,42 +39,41 @@
 #include "pcps_opencl_acquisition_cc.h"
 
 
-
 class ConfigurationInterface;
 
 /*!
  * \brief This class adapts an OpenCL PCPS acquisition block to an
  *  AcquisitionInterface for GPS L1 C/A signals
  */
-class GpsL1CaPcpsOpenClAcquisition: public AcquisitionInterface
-{
+class GpsL1CaPcpsOpenClAcquisition : public AcquisitionInterface {
 public:
-    GpsL1CaPcpsOpenClAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+    GpsL1CaPcpsOpenClAcquisition(ConfigurationInterface *configuration,
+                                 std::string role, unsigned int in_streams,
+                                 unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsOpenClAcquisition();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     /*!
      * \brief Returns "GPS_L1_CA_PCPS_OpenCl_Acquisition"
      */
-    std::string implementation()
-    {
+    std::string implementation() {
         return "GPS_L1_CA_PCPS_OpenCl_Acquisition";
     }
-    size_t item_size()
-    {
+
+    size_t item_size() {
         return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
     /*!
@@ -82,7 +81,7 @@ public:
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
     /*!
      * \brief Set acquisition channel unique ID
@@ -125,7 +124,7 @@ public:
     void reset();
 
 private:
-    ConfigurationInterface* configuration_;
+    ConfigurationInterface *configuration_;
     pcps_opencl_acquisition_cc_sptr acquisition_cc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     size_t item_size_;
@@ -143,8 +142,8 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float> *code_;
+    Gnss_Synchro *gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

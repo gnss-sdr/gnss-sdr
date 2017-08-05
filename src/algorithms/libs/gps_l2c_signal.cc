@@ -36,37 +36,31 @@
 #include "GPS_L2C.h"
 
 
-int32_t gps_l2c_m_shift(int32_t x)
-{
-    return static_cast<int32_t>((x >> 1)^((x & 1) * 0445112474));
+int32_t gps_l2c_m_shift(int32_t x) {
+    return static_cast<int32_t>((x >> 1) ^ ((x & 1) * 0445112474));
 }
 
 
-void gps_l2c_m_code(int32_t * _dest, unsigned int _prn)
-{
+void gps_l2c_m_code(int32_t *_dest, unsigned int _prn) {
     int32_t x;
-    x = GPS_L2C_M_INIT_REG[ _prn - 1];
-    for (int n = 0; n < GPS_L2_M_CODE_LENGTH_CHIPS; n++)
-        {
-            _dest[n] = (int8_t)(x&1);
-            x = gps_l2c_m_shift(x);
-        }
+    x = GPS_L2C_M_INIT_REG[_prn - 1];
+    for (int n = 0; n < GPS_L2_M_CODE_LENGTH_CHIPS; n++) {
+        _dest[n] = (int8_t) (x & 1);
+        x = gps_l2c_m_shift(x);
+    }
 }
 
 
-void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
-{
-    int32_t* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+void gps_l2c_m_code_gen_complex(std::complex<float> *_dest, unsigned int _prn) {
+    int32_t *_code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
 
-    if (_prn > 0 and _prn < 51)
-        {
-            gps_l2c_m_code(_code, _prn);
-        }
+    if (_prn > 0 and _prn < 51) {
+        gps_l2c_m_code(_code, _prn);
+    }
 
-    for (signed int i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
-        {
-            _dest[i] = std::complex<float>(1.0 - 2.0 * _code[i], 0.0);
-        }
+    for (signed int i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++) {
+        _dest[i] = std::complex<float>(1.0 - 2.0 * _code[i], 0.0);
+    }
 
     delete[] _code;
 }
@@ -75,13 +69,11 @@ void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
 /*
  *  Generates complex GPS L2C M code for the desired SV ID and sampled to specific sampling frequency
  */
-void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs)
-{
-    int32_t* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
-    if (_prn > 0 and _prn < 51)
-        {
-            gps_l2c_m_code(_code, _prn);
-        }
+void gps_l2c_m_code_gen_complex_sampled(std::complex<float> *_dest, unsigned int _prn, signed int _fs) {
+    int32_t *_code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    if (_prn > 0 and _prn < 51) {
+        gps_l2c_m_code(_code, _prn);
+    }
 
     signed int _samplesPerCode, _codeValueIndex;
     float _ts;
@@ -89,34 +81,31 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
     const signed int _codeLength = GPS_L2_M_CODE_LENGTH_CHIPS;
 
     //--- Find number of samples per spreading code ----------------------------
-    _samplesPerCode = static_cast<int>(static_cast<double>(_fs) / (static_cast<double>(GPS_L2_M_CODE_RATE_HZ) / static_cast<double>(_codeLength)));
+    _samplesPerCode = static_cast<int>(static_cast<double>(_fs) /
+                                       (static_cast<double>(GPS_L2_M_CODE_RATE_HZ) / static_cast<double>(_codeLength)));
 
     //--- Find time constants --------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);   // Sampling period in sec
     _tc = 1.0 / static_cast<float>(GPS_L2_M_CODE_RATE_HZ);  // C/A chip period in sec
 
     //float aux;
-    for (signed int i = 0; i < _samplesPerCode; i++)
-        {
-            //=== Digitizing =======================================================
+    for (signed int i = 0; i < _samplesPerCode; i++) {
+        //=== Digitizing =======================================================
 
-            //--- Make index array to read L2C code values -------------------------
-            //TODO: Check this formula! Seems to start with an extra sample
-            _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
-            //aux = (_ts * (i + 1)) / _tc;
-            //_codeValueIndex = static_cast<int>(static_cast<long>(aux)) - 1;
+        //--- Make index array to read L2C code values -------------------------
+        //TODO: Check this formula! Seems to start with an extra sample
+        _codeValueIndex = ceil((_ts * ((float) i + 1)) / _tc) - 1;
+        //aux = (_ts * (i + 1)) / _tc;
+        //_codeValueIndex = static_cast<int>(static_cast<long>(aux)) - 1;
 
-            //--- Make the digitized version of the L2C code -----------------------
-            if (i == _samplesPerCode - 1)
-                {
-                    //--- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0);
-                }
-            else
-                {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0); //repeat the chip -> upsample
-                }
+        //--- Make the digitized version of the L2C code -----------------------
+        if (i == _samplesPerCode - 1) {
+            //--- Correct the last index (due to number rounding issues) -----------
+            _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0);
+        } else {
+            _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0); //repeat the chip -> upsample
         }
+    }
     delete[] _code;
 }
 

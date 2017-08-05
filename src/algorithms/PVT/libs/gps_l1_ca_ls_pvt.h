@@ -49,25 +49,26 @@
 /*!
  * \brief This class implements a simple PVT Least Squares solution for GPS L1 C/A signals
  */
-class gps_l1_ca_ls_pvt : public Ls_Pvt
-{
+class gps_l1_ca_ls_pvt : public Ls_Pvt {
 public:
     gps_l1_ca_ls_pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file);
+
     ~gps_l1_ca_ls_pvt();
 
-    bool get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double GPS_current_time, bool flag_averaging);
+    bool get_PVT(std::map<int, Gnss_Synchro> gnss_pseudoranges_map, double GPS_current_time, bool flag_averaging);
+
     int d_nchannels; //!< Number of available channels for positioning
 
-    Gps_Navigation_Message* d_ephemeris;
+    Gps_Navigation_Message *d_ephemeris;
 
     // new ephemeris storage
-    std::map<int,Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new Gps_Ephemeris
+    std::map<int, Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new Gps_Ephemeris
     Gps_Utc_Model gps_utc_model;
     Gps_Iono gps_iono;
 
     Sbas_Ionosphere_Correction sbas_iono;
-    std::map<int,Sbas_Satellite_Correction> sbas_sat_corr_map;
-    std::map<int,Sbas_Ephemeris> sbas_ephemeris_map;
+    std::map<int, Sbas_Satellite_Correction> sbas_sat_corr_map;
+    std::map<int, Sbas_Ephemeris> sbas_ephemeris_map;
 
     double d_GPS_current_time;
 

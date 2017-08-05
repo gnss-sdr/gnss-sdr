@@ -45,35 +45,35 @@ class ConfigurationInterface;
  * \brief Adapts a PCPS CCCWSR acquisition block to an AcquisitionInterface
  *  for Galileo E1 Signals
  */
-class GalileoE1PcpsCccwsrAmbiguousAcquisition: public AcquisitionInterface
-{
+class GalileoE1PcpsCccwsrAmbiguousAcquisition : public AcquisitionInterface {
 public:
-    GalileoE1PcpsCccwsrAmbiguousAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+    GalileoE1PcpsCccwsrAmbiguousAcquisition(ConfigurationInterface *configuration,
+                                            std::string role, unsigned int in_streams,
+                                            unsigned int out_streams);
 
     virtual ~GalileoE1PcpsCccwsrAmbiguousAcquisition();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     /*!
      * \brief Returns "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition"
      */
-    std::string implementation()
-    {
+    std::string implementation() {
         return "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition";
     }
-    size_t item_size()
-    {
+
+    size_t item_size() {
         return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
     /*!
@@ -81,7 +81,7 @@ public:
      * to efficiently exchange synchronization data between acquisition and
      * tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
     /*!
      * \brief Set acquisition channel unique ID
@@ -126,7 +126,7 @@ public:
     void set_state(int state);
 
 private:
-    ConfigurationInterface* configuration_;
+    ConfigurationInterface *configuration_;
     pcps_cccwsr_acquisition_cc_sptr acquisition_cc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     size_t item_size_;
@@ -144,12 +144,13 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_data_;
-    std::complex<float> * code_pilot_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float> *code_data_;
+    std::complex<float> *code_pilot_;
+    Gnss_Synchro *gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+
     float calculate_threshold(float pfa);
 };
 

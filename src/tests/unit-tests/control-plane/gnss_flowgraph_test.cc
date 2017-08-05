@@ -44,8 +44,7 @@
 #include "file_signal_source.h"
 
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
-{
+TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation) {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
@@ -79,8 +78,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
 }
 
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStop)
-{
+TEST(GNSSFlowgraph, InstantiateConnectStartStop) {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -113,8 +111,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     EXPECT_FALSE(flowgraph->running());
 }
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
-{
+TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B) {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -148,8 +145,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
 }
 
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid)
-{
+TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid) {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("SignalSource.sampling_frequency", "4000000");

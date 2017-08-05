@@ -34,16 +34,15 @@
 #include <volk/volk.h>
 
 
-short_x2_to_cshort_sptr make_short_x2_to_cshort()
-{
+short_x2_to_cshort_sptr make_short_x2_to_cshort() {
     return short_x2_to_cshort_sptr(new short_x2_to_cshort());
 }
 
 
-
 short_x2_to_cshort::short_x2_to_cshort() : sync_block("short_x2_to_cshort",
-                        gr::io_signature::make (2, 2, sizeof(short)),
-                        gr::io_signature::make (1, 1, sizeof(lv_16sc_t))) // lv_8sc_t is a Volk's typedef for std::complex<signed char>
+                                                      gr::io_signature::make(2, 2, sizeof(short)),
+                                                      gr::io_signature::make(1, 1,
+                                                                             sizeof(lv_16sc_t))) // lv_8sc_t is a Volk's typedef for std::complex<signed char>
 {
     const int alignment_multiple = volk_get_alignment() / sizeof(lv_16sc_t);
     set_alignment(std::max(1, alignment_multiple));
@@ -51,22 +50,20 @@ short_x2_to_cshort::short_x2_to_cshort() : sync_block("short_x2_to_cshort",
 
 
 int short_x2_to_cshort::work(int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
-{
+                             gr_vector_const_void_star &input_items,
+                             gr_vector_void_star &output_items) {
     const short *in0 = (const short *) input_items[0];
     const short *in1 = (const short *) input_items[1];
     lv_16sc_t *out = (lv_16sc_t *) output_items[0];
     // This could be put into a volk kernel
     short real_part;
     short imag_part;
-    for(int number = 0; number < noutput_items; number++)
-        {
-            // lv_cmake(r, i) defined at volk/volk_complex.h
-            real_part = *in0++;
-            imag_part = *in1++;
-            *out++ = lv_cmake(real_part, imag_part);
-        }
+    for (int number = 0; number < noutput_items; number++) {
+        // lv_cmake(r, i) defined at volk/volk_complex.h
+        real_part = *in0++;
+        imag_part = *in1++;
+        *out++ = lv_cmake(real_part, imag_part);
+    }
 
     return noutput_items;
 }

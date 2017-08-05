@@ -41,10 +41,10 @@
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Appendix III
  */
-class Gps_CNAV_Ephemeris
-{
+class Gps_CNAV_Ephemeris {
 private:
     double check_t(double time);
+
 public:
     unsigned int i_satellite_PRN; // SV PRN NUMBER
 
@@ -129,30 +129,40 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
-    {
+    void serialize(Archive &archive, const unsigned int version) {
         using boost::serialization::make_nvp;
-        if(version){};
+        if (version) {};
 
         archive & make_nvp("i_satellite_PRN", i_satellite_PRN); // SV PRN NUMBER
-        archive & make_nvp("d_TOW", d_TOW);          //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-        archive & make_nvp("d_Crs", d_Crs);          //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
+        archive &
+        make_nvp("d_TOW", d_TOW);          //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
+        archive &
+        make_nvp("d_Crs", d_Crs);          //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
         archive & make_nvp("d_M_0", d_M_0);          //!< Mean Anomaly at Reference Time [semi-circles]
-        archive & make_nvp("d_Cuc", d_Cuc);          //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+        archive & make_nvp("d_Cuc",
+                           d_Cuc);          //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
         archive & make_nvp("d_e_eccentricity", d_e_eccentricity); //!< Eccentricity [dimensionless]
-        archive & make_nvp("d_Cus", d_Cus);          //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
-        archive & make_nvp("d_Toe1", d_Toe1);          //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
-        archive & make_nvp("d_Toe2", d_Toe2);          //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+        archive & make_nvp("d_Cus",
+                           d_Cus);          //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
+        archive & make_nvp("d_Toe1",
+                           d_Toe1);          //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+        archive & make_nvp("d_Toe2",
+                           d_Toe2);          //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
         archive & make_nvp("d_Toc", d_Toc);          //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
-        archive & make_nvp("d_Cic", d_Cic);          //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
-        archive & make_nvp("d_OMEGA0", d_OMEGA0);    //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
-        archive & make_nvp("d_Cis", d_Cis);          //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
+        archive & make_nvp("d_Cic",
+                           d_Cic);          //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
+        archive & make_nvp("d_OMEGA0",
+                           d_OMEGA0);    //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
+        archive & make_nvp("d_Cis",
+                           d_Cis);          //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
         archive & make_nvp("d_i_0", d_i_0);          //!< Inclination Angle at Reference Time [semi-circles]
-        archive & make_nvp("d_Crc", d_Crc);          //!< Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius [m]
+        archive &
+        make_nvp("d_Crc", d_Crc);          //!< Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius [m]
         archive & make_nvp("d_OMEGA", d_OMEGA);      //!< Argument of Perigee [semi-cicles]
         archive & make_nvp("d_IDOT", d_IDOT);        //!< Rate of Inclination Angle [semi-circles/s]
         archive & make_nvp("i_GPS_week", i_GPS_week);      //!< GPS week number, aka WN [week]
-        archive & make_nvp("d_TGD", d_TGD);           //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
+        archive & make_nvp("d_TGD",
+                           d_TGD);           //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
 
 
         archive & make_nvp("d_A_f0", d_A_f0);          //!< Coefficient 0 of code phase offset model [s]
@@ -160,8 +170,10 @@ public:
         archive & make_nvp("d_A_f2", d_A_f2);          //!< Coefficient 2 of code phase offset model [s/s^2]
 
         archive & make_nvp("b_integrity_status_flag", b_integrity_status_flag);
-        archive & make_nvp("b_alert_flag", b_alert_flag);     //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
-        archive & make_nvp("b_antispoofing_flag", b_antispoofing_flag); //!<  If true, the AntiSpoofing mode is ON in that SV
+        archive & make_nvp("b_alert_flag",
+                           b_alert_flag);     //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
+        archive &
+        make_nvp("b_antispoofing_flag", b_antispoofing_flag); //!<  If true, the AntiSpoofing mode is ON in that SV
     }
 
     /*!
@@ -181,6 +193,7 @@ public:
      *  (IS-GPS-200E,  20.3.3.3.3.1)
      */
     double sv_clock_relativistic_term(double transmitTime);
+
     /*!
      * Default constructor
      */

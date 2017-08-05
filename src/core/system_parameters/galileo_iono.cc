@@ -31,8 +31,7 @@
 
 #include "galileo_iono.h"
 
-Galileo_Iono::Galileo_Iono()
-{
+Galileo_Iono::Galileo_Iono() {
     /* Ionospheric correction */
     ai0_5 = 0; // Effective Ionisation Level 1st order parameter [sfu]
     ai1_5 = 0; // Effective Ionisation Level 2st order parameter [sfu/degree]

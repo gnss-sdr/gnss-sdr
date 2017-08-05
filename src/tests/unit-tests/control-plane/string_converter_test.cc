@@ -33,45 +33,49 @@
 #include "string_converter.h"
 
 
-
-TEST(String_Converter_Test, StringToBool)
+TEST(String_Converter_Test, StringToBool
+)
 {
-    std::unique_ptr<StringConverter> converter(new StringConverter());
-    bool conversion_result = converter->convert("false", true);
-    bool expected_false = false;
-    EXPECT_EQ(expected_false, conversion_result);
+std::unique_ptr <StringConverter> converter(new StringConverter());
+bool conversion_result = converter->convert("false", true);
+bool expected_false = false;
+EXPECT_EQ(expected_false, conversion_result
+);
 }
 
 
-TEST(String_Converter_Test, StringToSizeT)
+TEST(String_Converter_Test, StringToSizeT
+)
 {
-    // Example using a raw pointer
-    StringConverter* converter;
-    converter = new StringConverter();
-    size_t conversion_result = converter->convert("8", 1);
-    unsigned int expected8 = 8;
-    EXPECT_EQ(expected8, conversion_result);
-    delete converter;
+// Example using a raw pointer
+StringConverter *converter;
+converter = new StringConverter();
+size_t conversion_result = converter->convert("8", 1);
+unsigned int expected8 = 8;
+EXPECT_EQ(expected8, conversion_result
+);
+delete
+converter;
 }
 
 
-
-
-TEST(String_Converter_Test, StringToBoolFail)
+TEST(String_Converter_Test, StringToBoolFail
+)
 {
-    std::unique_ptr<StringConverter> converter(new StringConverter());
-    bool conversion_result = converter->convert("lse", true);
-    bool expected_true = true;
-    EXPECT_EQ(expected_true, conversion_result);
+std::unique_ptr <StringConverter> converter(new StringConverter());
+bool conversion_result = converter->convert("lse", true);
+bool expected_true = true;
+EXPECT_EQ(expected_true, conversion_result
+);
 }
 
 
-
-
-TEST(String_Converter_Test, StringToSizeTFail)
+TEST(String_Converter_Test, StringToSizeTFail
+)
 {
-    std::unique_ptr<StringConverter> converter(new StringConverter());
-    size_t conversion_result = converter->convert("false", 1);
-    unsigned int expected1 = 1;
-    EXPECT_EQ(expected1, conversion_result);
+std::unique_ptr <StringConverter> converter(new StringConverter());
+size_t conversion_result = converter->convert("false", 1);
+unsigned int expected1 = 1;
+EXPECT_EQ(expected1, conversion_result
+);
 }

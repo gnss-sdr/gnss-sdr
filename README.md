@@ -284,7 +284,7 @@ $ make doc-clean
 
 will remove the content of previously-generated documentation.
 
-GNSS-SDR comes with a library which is a module of the Vector-Optimized Library of Kernels (so called [VOLK_GNSSSDR](./src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/README.md)) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ```volk_gnsssdr_profile``` that is installed into ```$PREFIX/bin```. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to ```$HOME/.volk_gnsssdr/volk_gnsssdr_config``` the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's [VOLK](http://libvolk.org/) library, so if you still have not run ```volk_profile```, this is a good moment to do so.
+GNSS-SDR comes with a library which is a module of the Vector-Optimized Library of Kernels (so called [VOLK_GNSSSDR](./src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/README.md)) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ```volk_gnsssdr_profile``` that is installed into ```$PREFIX/bin```. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to ```$HOME/.volk_gnsssdr/volk_gnsssdr_config``` the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's [VOLK](http://libvolk.org/) library, so if you still have not run ```volk_gnsssdr_profile```, this is a good moment to do so.
 
 
 
@@ -502,7 +502,7 @@ and can be viewed doing:
 $ open ./docs/html/index.html
 ~~~~~~
 
-GNSS-SDR comes with a library which is a module of the Vector-Optimized Library of Kernels (so called [VOLK_GNSSSDR](./src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/README.md)) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ```volk_gnsssdr_profile``` that is installed into ```$PREFIX/bin```. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to ```$HOME/.volk_gnsssdr/volk_gnsssdr_config``` the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's [VOLK](http://libvolk.org/) library, so if you still have not run ```volk_profile```, this is a good moment to do so.
+GNSS-SDR comes with a library which is a module of the Vector-Optimized Library of Kernels (so called [VOLK_GNSSSDR](./src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/README.md)) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ```volk_gnsssdr_profile``` that is installed into ```$PREFIX/bin```. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to ```$HOME/.volk_gnsssdr/volk_gnsssdr_config``` the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's [VOLK](http://libvolk.org/) library, so if you still have not run ```volk_gnsssdr_profile```, this is a good moment to do so.
 
 ###### Other package managers
 
@@ -571,7 +571,7 @@ Getting started
 ===============
 
 
-1. After building the code, you will find the ```gnss-sdr``` executable file at gnss-sdr/install. You can make it available everywhere else by ```sudo make install```. Run the profilers ```volk_profile``` and ```volk_gnsssdr_profile``` for testing all available VOLK kernels for each architecture supported by your processor. This only has to be done once.
+1. After building the code, you will find the ```gnss-sdr``` executable file at gnss-sdr/install. You can make it available everywhere else by ```sudo make install```. Run the profilers ```volk_gnsssdr_profile``` and ```volk_gnsssdr_profile``` for testing all available VOLK kernels for each architecture supported by your processor. This only has to be done once.
 2. In post-processing mode, you have to provide a captured GNSS signal file.
     1. The signal file can be easily recorded using the GNU Radio file sink in ```gr_complex<float>``` mode.
     2. You will need a GPS active antenna, a [USRP](http://www.ettus.com/product) and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).

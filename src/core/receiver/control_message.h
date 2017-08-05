@@ -36,8 +36,7 @@
 /*!
  * \brief This class defines the different Control Messages
  */
-class ControlMessage
-{
+class ControlMessage {
 
 public:
     static unsigned int const ack_success = 0;

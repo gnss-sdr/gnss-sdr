@@ -50,28 +50,32 @@
 
 // GPU new internal data types for complex numbers
 
-struct GPU_Complex
-{
+struct GPU_Complex {
     float r;
     float i;
     CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex() {};
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex( float a, float b ) : r(a), i(b) {}
-    CUDA_CALLABLE_MEMBER_DEVICE float magnitude2( void ) { return r * r + i * i; }
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex operator*(const GPU_Complex& a)
-    {
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex(float a, float b) : r(a), i(b) {}
+
+    CUDA_CALLABLE_MEMBER_DEVICE float magnitude2(void) { return r * r + i * i; }
+
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex operator*(const GPU_Complex &a) {
 #ifdef __CUDACC__
         return GPU_Complex(__fmul_rn(r, a.r) - __fmul_rn(i, a.i), __fmul_rn(i, a.r) + __fmul_rn(r, a.i));
 #else
-        return GPU_Complex(r*a.r - i*a.i, i*a.r + r*a.i);
+        return GPU_Complex(r * a.r - i * a.i, i * a.r + r * a.i);
 #endif
     }
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex operator+(const GPU_Complex& a)
-    {
+
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex operator+(const GPU_Complex &a) {
         return GPU_Complex(r + a.r, i + a.i);
     }
-    CUDA_CALLABLE_MEMBER_DEVICE void operator+=(const GPU_Complex& a) { r += a.r; i += a.i; }
-    CUDA_CALLABLE_MEMBER_DEVICE void multiply_acc(const GPU_Complex& a, const GPU_Complex& b)
-    {
+
+    CUDA_CALLABLE_MEMBER_DEVICE void operator+=(const GPU_Complex &a) {
+        r += a.r;
+        i += a.i;
+    }
+
+    CUDA_CALLABLE_MEMBER_DEVICE void multiply_acc(const GPU_Complex &a, const GPU_Complex &b) {
         //c=a*b+c
         //real part
         //c.r=(a.r*b.r - a.i*b.i)+c.r
@@ -82,29 +86,28 @@ struct GPU_Complex
         i = __fmaf_rn(a.i, b.r, i);
         i = __fmaf_rn(a.r, b.i, i);
 #else
-        r = (a.r*b.r - a.i*b.i) + r;
-        i = (a.i*b.r - a.r*b.i) + i;
+        r = (a.r * b.r - a.i * b.i) + r;
+        i = (a.i * b.r - a.r * b.i) + i;
 #endif
 
     }
 };
 
-struct GPU_Complex_Short
-{
+struct GPU_Complex_Short {
     float r;
     float i;
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short( short int a, short int b ) : r(a), i(b) {}
-    CUDA_CALLABLE_MEMBER_DEVICE float magnitude2( void )
-    {
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short(short int a, short int b) : r(a), i(b) {}
+
+    CUDA_CALLABLE_MEMBER_DEVICE float magnitude2(void) {
         return r * r + i * i;
     }
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short operator*(const GPU_Complex_Short& a)
-    {
-        return GPU_Complex_Short(r*a.r - i*a.i, i*a.r + r*a.i);
+
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short operator*(const GPU_Complex_Short &a) {
+        return GPU_Complex_Short(r * a.r - i * a.i, i * a.r + r * a.i);
     }
-    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short operator+(const GPU_Complex_Short& a)
-    {
-        return GPU_Complex_Short(r+a.r, i+a.i);
+
+    CUDA_CALLABLE_MEMBER_DEVICE GPU_Complex_Short operator+(const GPU_Complex_Short &a) {
+        return GPU_Complex_Short(r + a.r, i + a.i);
     }
 };
 
@@ -112,27 +115,30 @@ struct GPU_Complex_Short
 /*!
  * \brief Class that implements carrier wipe-off and correlators using NVIDIA CUDA GPU accelerators.
  */
-class cuda_multicorrelator
-{
+class cuda_multicorrelator {
 public:
     cuda_multicorrelator();
+
     bool init_cuda_integrated_resampler(
             int signal_length_samples,
             int code_length_chips,
             int n_correlators
     );
+
     bool set_local_code_and_taps(
             int code_length_chips,
-            const std::complex<float>* local_codes_in,
+            const std::complex<float> *local_codes_in,
             float *shifts_chips,
             int n_correlators
     );
+
     bool set_input_output_vectors(
-            std::complex<float>* corr_out,
-            std::complex<float>* sig_in
+            std::complex<float> *corr_out,
+            std::complex<float> *sig_in
     );
 
     bool free_cuda();
+
     bool Carrier_wipeoff_multicorrelator_resampler_cuda(
             float rem_carrier_phase_in_rad,
             float phase_step_rad,

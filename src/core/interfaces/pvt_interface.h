@@ -48,8 +48,7 @@
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.
  */
-class PvtInterface : public GNSSBlockInterface
-{
+class PvtInterface : public GNSSBlockInterface {
 public:
     virtual void reset() = 0;
 };

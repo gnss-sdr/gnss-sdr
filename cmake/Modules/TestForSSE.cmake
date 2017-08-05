@@ -5,19 +5,19 @@
 ###############################################################################
 
 
-function (test_for_sse h_file result_var name)
-  if (NOT DEFINED ${result_var})
-    execute_process(COMMAND echo "#include <${h_file}>"
-                    COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -c -x c++ -
-		    RESULT_VARIABLE COMPILE_RESULT
-		    OUTPUT_QUIET ERROR_QUIET)
-    set(detected 0)
-    if (COMPILE_RESULT EQUAL 0)
-      message(STATUS "Detected ${name}")
-      set(detected 1)
-    endif(COMPILE_RESULT EQUAL 0)
-    set(${result_var} ${detected} CACHE INTERNAL "${name} Available")
-  endif (NOT DEFINED ${result_var})
+function(test_for_sse h_file result_var name)
+    if (NOT DEFINED ${result_var})
+        execute_process(COMMAND echo "#include <${h_file}>"
+                COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -c -x c++ -
+                RESULT_VARIABLE COMPILE_RESULT
+                OUTPUT_QUIET ERROR_QUIET)
+        set(detected 0)
+        if (COMPILE_RESULT EQUAL 0)
+            message(STATUS "Detected ${name}")
+            set(detected 1)
+        endif (COMPILE_RESULT EQUAL 0)
+        set(${result_var} ${detected} CACHE INTERNAL "${name} Available")
+    endif (NOT DEFINED ${result_var})
 endfunction(test_for_sse)
 
 message(STATUS "Testing for SIMD extensions")

@@ -6,9 +6,9 @@ INCLUDE(FindPkgConfig)
 INCLUDE(FindPackageHandleStandardArgs)
 
 # if GR_REQUIRED_COMPONENTS is not defined, it will be set to the following list 
-if(NOT GR_REQUIRED_COMPONENTS)
-  set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS DIGITAL FFT FILTER PMT FEC TRELLIS UHD)
-endif()
+if (NOT GR_REQUIRED_COMPONENTS)
+    set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS DIGITAL FFT FILTER PMT FEC TRELLIS UHD)
+endif ()
 
 
 # Allows us to use all .cmake files in this directory
@@ -19,30 +19,30 @@ set(GNURADIO_ALL_LIBRARIES "")
 set(GNURADIO_ALL_INCLUDE_DIRS "")
 
 MACRO(LIST_CONTAINS var value)
-  SET(${var})
-  FOREACH(value2 ${ARGN})
-    IF (${value} STREQUAL ${value2})
-      SET(${var} TRUE)
-    ENDIF(${value} STREQUAL ${value2})
-  ENDFOREACH(value2)
+    SET(${var})
+    FOREACH (value2 ${ARGN})
+        IF (${value} STREQUAL ${value2})
+            SET(${var} TRUE)
+        ENDIF (${value} STREQUAL ${value2})
+    ENDFOREACH (value2)
 ENDMACRO(LIST_CONTAINS)
 
 function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
 
     LIST_CONTAINS(REQUIRED_MODULE ${EXTVAR} ${GR_REQUIRED_COMPONENTS})
-    if(NOT REQUIRED_MODULE)
+    if (NOT REQUIRED_MODULE)
         #message("Ignoring GNU Radio Module ${EXTVAR}")
         return()
-    endif()
+    endif ()
 
     message(STATUS "Checking for GNU Radio Module: ${EXTVAR}")
 
     # check for .pc hints
     PKG_CHECK_MODULES(PC_GNURADIO_${EXTVAR} ${PCNAME})
 
-    if(NOT PC_GNURADIO_${EXTVAR}_FOUND)
+    if (NOT PC_GNURADIO_${EXTVAR}_FOUND)
         set(PC_GNURADIO_${EXTVAR}_LIBRARIES ${LIBFILE})
-    endif()
+    endif ()
 
     set(INCVAR_NAME "GNURADIO_${EXTVAR}_INCLUDE_DIRS")
     set(LIBVAR_NAME "GNURADIO_${EXTVAR}_LIBRARIES")
@@ -51,58 +51,58 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
 
     # look for include files
     FIND_PATH(
-        ${INCVAR_NAME}
-        NAMES ${INCFILE}
-        HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
+            ${INCVAR_NAME}
+            NAMES ${INCFILE}
+            HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
             ${PC_INCDIR}
             ${CMAKE_INSTALL_PREFIX}/include
             ${GNURADIO_INSTALL_PREFIX}/include
-        PATHS /usr/local/include
-              /usr/include
-              ${GNURADIO_INSTALL_PREFIX}/include
+            PATHS /usr/local/include
+            /usr/include
+            ${GNURADIO_INSTALL_PREFIX}/include
     )
 
     # look for libs
-    foreach(libname ${PC_GNURADIO_${EXTVAR}_LIBRARIES})
+    foreach (libname ${PC_GNURADIO_${EXTVAR}_LIBRARIES})
         FIND_LIBRARY(
-            ${LIBVAR_NAME}_${libname}
-            NAMES ${libname} ${libname}-${PC_GNURADIO_RUNTIME_VERSION}
-            HINTS $ENV{GNURADIO_RUNTIME_DIR}/lib
+                ${LIBVAR_NAME}_${libname}
+                NAMES ${libname} ${libname}-${PC_GNURADIO_RUNTIME_VERSION}
+                HINTS $ENV{GNURADIO_RUNTIME_DIR}/lib
                 ${PC_LIBDIR}
                 ${CMAKE_INSTALL_PREFIX}/lib/
                 ${CMAKE_INSTALL_PREFIX}/lib64/
                 ${GNURADIO_INSTALL_PREFIX}/lib/
                 ${GNURADIO_INSTALL_PREFIX}/lib64
-            PATHS /usr/local/lib
-                  /usr/lib/x86_64-linux-gnu
-                  /usr/lib/i386-linux-gnu
-                  /usr/lib/arm-linux-gnueabihf
-                  /usr/lib/arm-linux-gnueabi
-                  /usr/lib/aarch64-linux-gnu
-                  /usr/lib/mipsel-linux-gnu
-                  /usr/lib/mips-linux-gnu
-                  /usr/lib/mips64el-linux-gnuabi64
-                  /usr/lib/powerpc-linux-gnu
-                  /usr/lib/powerpc64-linux-gnu
-                  /usr/lib/powerpc64le-linux-gnu
-                  /usr/lib/powerpc-linux-gnuspe
-                  /usr/lib/hppa-linux-gnu
-                  /usr/lib/s390x-linux-gnu
-                  /usr/lib/i386-gnu
-                  /usr/lib/hppa-linux-gnu
-                  /usr/lib/x86_64-kfreebsd-gnu
-                  /usr/lib/i386-kfreebsd-gnu
-                  /usr/lib/m68k-linux-gnu
-                  /usr/lib/sh4-linux-gnu
-                  /usr/lib/sparc64-linux-gnu
-                  /usr/lib/x86_64-linux-gnux32
-                  /usr/lib/alpha-linux-gnu
-                  /usr/lib64
-                  /usr/lib
-                  ${GNURADIO_INSTALL_PREFIX}/lib
+                PATHS /usr/local/lib
+                /usr/lib/x86_64-linux-gnu
+                /usr/lib/i386-linux-gnu
+                /usr/lib/arm-linux-gnueabihf
+                /usr/lib/arm-linux-gnueabi
+                /usr/lib/aarch64-linux-gnu
+                /usr/lib/mipsel-linux-gnu
+                /usr/lib/mips-linux-gnu
+                /usr/lib/mips64el-linux-gnuabi64
+                /usr/lib/powerpc-linux-gnu
+                /usr/lib/powerpc64-linux-gnu
+                /usr/lib/powerpc64le-linux-gnu
+                /usr/lib/powerpc-linux-gnuspe
+                /usr/lib/hppa-linux-gnu
+                /usr/lib/s390x-linux-gnu
+                /usr/lib/i386-gnu
+                /usr/lib/hppa-linux-gnu
+                /usr/lib/x86_64-kfreebsd-gnu
+                /usr/lib/i386-kfreebsd-gnu
+                /usr/lib/m68k-linux-gnu
+                /usr/lib/sh4-linux-gnu
+                /usr/lib/sparc64-linux-gnu
+                /usr/lib/x86_64-linux-gnux32
+                /usr/lib/alpha-linux-gnu
+                /usr/lib64
+                /usr/lib
+                ${GNURADIO_INSTALL_PREFIX}/lib
         )
-	list(APPEND ${LIBVAR_NAME} ${${LIBVAR_NAME}_${libname}})
-    endforeach(libname)
+        list(APPEND ${LIBVAR_NAME} ${${LIBVAR_NAME}_${libname}})
+    endforeach (libname)
 
     set(${LIBVAR_NAME} ${${LIBVAR_NAME}} PARENT_SCOPE)
 
@@ -112,16 +112,16 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
 
     # append to all includes and libs list
     set(GNURADIO_ALL_INCLUDE_DIRS ${GNURADIO_ALL_INCLUDE_DIRS} ${GNURADIO_${EXTVAR}_INCLUDE_DIRS} PARENT_SCOPE)
-    set(GNURADIO_ALL_LIBRARIES    ${GNURADIO_ALL_LIBRARIES}    ${GNURADIO_${EXTVAR}_LIBRARIES}    PARENT_SCOPE)
+    set(GNURADIO_ALL_LIBRARIES ${GNURADIO_ALL_LIBRARIES} ${GNURADIO_${EXTVAR}_LIBRARIES} PARENT_SCOPE)
 
     FIND_PACKAGE_HANDLE_STANDARD_ARGS(GNURADIO_${EXTVAR} DEFAULT_MSG GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
     message(STATUS "GNURADIO_${EXTVAR}_FOUND = ${GNURADIO_${EXTVAR}_FOUND}")
     set(GNURADIO_${EXTVAR}_FOUND ${GNURADIO_${EXTVAR}_FOUND} PARENT_SCOPE)
 
     # generate an error if the module is missing
-    if(NOT GNURADIO_${EXTVAR}_FOUND)
-       message(STATUS "Required GNU Radio Component: ${EXTVAR} missing!")
-    endif()
+    if (NOT GNURADIO_${EXTVAR}_FOUND)
+        message(STATUS "Required GNU Radio Component: ${EXTVAR} missing!")
+    endif ()
 
     MARK_AS_ADVANCED(GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
 
@@ -150,18 +150,18 @@ GR_MODULE(PMT gnuradio-runtime pmt/pmt.h gnuradio-pmt)
 list(REMOVE_DUPLICATES GNURADIO_ALL_INCLUDE_DIRS)
 list(REMOVE_DUPLICATES GNURADIO_ALL_LIBRARIES)
 
- # Trick to find out that GNU Radio is >= 3.7.4 if pkgconfig is not present
-if(NOT PC_GNURADIO_RUNTIME_VERSION)
+# Trick to find out that GNU Radio is >= 3.7.4 if pkgconfig is not present
+if (NOT PC_GNURADIO_RUNTIME_VERSION)
     find_file(GNURADIO_VERSION_GREATER_THAN_373
-              NAMES gnuradio/blocks/tsb_vector_sink_f.h
-              HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
-                    ${CMAKE_INSTALL_PREFIX}/include
-                    ${GNURADIO_INSTALL_PREFIX}/include
-              PATHS /usr/local/include
-                    /usr/include
-                    ${GNURADIO_INSTALL_PREFIX}/include
-              )
-     if(GNURADIO_VERSION_GREATER_THAN_373)
-         set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
-     endif(GNURADIO_VERSION_GREATER_THAN_373)
-endif(NOT PC_GNURADIO_RUNTIME_VERSION)
+            NAMES gnuradio/blocks/tsb_vector_sink_f.h
+            HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
+            ${CMAKE_INSTALL_PREFIX}/include
+            ${GNURADIO_INSTALL_PREFIX}/include
+            PATHS /usr/local/include
+            /usr/include
+            ${GNURADIO_INSTALL_PREFIX}/include
+            )
+    if (GNURADIO_VERSION_GREATER_THAN_373)
+        set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
+    endif (GNURADIO_VERSION_GREATER_THAN_373)
+endif (NOT PC_GNURADIO_RUNTIME_VERSION)

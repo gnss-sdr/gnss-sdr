@@ -34,8 +34,7 @@
 #include <cmath>
 #include "GPS_L2C.h"
 
-Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
-{
+Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris() {
     i_satellite_PRN = 0;
 
     d_Toe1 = -1;
@@ -96,26 +95,21 @@ Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
     b_l2c_phasing_flag = false;
 }
 
-double Gps_CNAV_Ephemeris::check_t(double time)
-{
+double Gps_CNAV_Ephemeris::check_t(double time) {
     double corrTime;
     double half_week = 302400.0;     // seconds
     corrTime = time;
-    if (time > half_week)
-        {
-            corrTime = time - 2.0 * half_week;
-        }
-    else if (time < -half_week)
-        {
-            corrTime = time + 2.0 * half_week;
-        }
+    if (time > half_week) {
+        corrTime = time - 2.0 * half_week;
+    } else if (time < -half_week) {
+        corrTime = time + 2.0 * half_week;
+    }
     return corrTime;
 }
 
 
 // 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
-double Gps_CNAV_Ephemeris::sv_clock_drift(double transmitTime)
-{
+double Gps_CNAV_Ephemeris::sv_clock_drift(double transmitTime) {
     double dt;
     dt = check_t(transmitTime - d_Toc);
     d_satClkDrift = d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt) + sv_clock_relativistic_term(transmitTime);
@@ -124,8 +118,7 @@ double Gps_CNAV_Ephemeris::sv_clock_drift(double transmitTime)
 
 
 // compute the relativistic correction term
-double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
-{
+double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime) {
     double tk;
     double a;
     double n;
@@ -159,17 +152,15 @@ double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1; ii < 20; ii++)
-        {
-            E_old   = E;
-            E       = M + d_e_eccentricity * sin(E);
-            dE      = fmod(E - E_old, 2.0 * GPS_L2_PI);
-            if (fabs(dE) < 1e-12)
-                {
-                    //Necessary precision is reached, exit from the loop
-                    break;
-                }
+    for (int ii = 1; ii < 20; ii++) {
+        E_old = E;
+        E = M + d_e_eccentricity * sin(E);
+        dE = fmod(E - E_old, 2.0 * GPS_L2_PI);
+        if (fabs(dE) < 1e-12) {
+            //Necessary precision is reached, exit from the loop
+            break;
         }
+    }
 
     // Compute relativistic correction term
     d_dtr = F * d_e_eccentricity * d_sqrt_A * sin(E);
@@ -177,8 +168,7 @@ double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
 }
 
 
-void Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
-{
+void Gps_CNAV_Ephemeris::satellitePosition(double transmitTime) {
     double tk;
     double a;
     double n;
@@ -202,13 +192,13 @@ void Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     // Find satellite's position ----------------------------------------------
 
     // Restore semi-major axis
-    a = d_sqrt_A*d_sqrt_A;
+    a = d_sqrt_A * d_sqrt_A;
 
     // Time from ephemeris reference epoch
     tk = check_t(transmitTime - d_Toe1);
 
     // Computed mean motion
-    n0 = sqrt(GM / (a*a*a));
+    n0 = sqrt(GM / (a * a * a));
 
     // Corrected mean motion
     n = n0 + d_Delta_n;
@@ -223,17 +213,15 @@ void Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1; ii < 20; ii++)
-        {
-            E_old   = E;
-            E       = M + d_e_eccentricity * sin(E);
-            dE      = fmod(E - E_old, 2 * GPS_L2_PI);
-            if (fabs(dE) < 1e-12)
-                {
-                    //Necessary precision is reached, exit from the loop
-                    break;
-                }
+    for (int ii = 1; ii < 20; ii++) {
+        E_old = E;
+        E = M + d_e_eccentricity * sin(E);
+        dE = fmod(E - E_old, 2 * GPS_L2_PI);
+        if (fabs(dE) < 1e-12) {
+            //Necessary precision is reached, exit from the loop
+            break;
         }
+    }
 
     // Compute the true anomaly
     double tmp_Y = sqrt(1.0 - d_e_eccentricity * d_e_eccentricity) * sin(E);
@@ -244,22 +232,22 @@ void Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     phi = nu + d_OMEGA;
 
     // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi), (2*GPS_L2_PI));
+    phi = fmod((phi), (2 * GPS_L2_PI));
 
     // Correct argument of latitude
-    u = phi + d_Cuc * cos(2*phi) +  d_Cus * sin(2*phi);
+    u = phi + d_Cuc * cos(2 * phi) + d_Cus * sin(2 * phi);
 
     // Correct radius
-    r = a * (1 - d_e_eccentricity*cos(E)) +  d_Crc * cos(2*phi) +  d_Crs * sin(2*phi);
+    r = a * (1 - d_e_eccentricity * cos(E)) + d_Crc * cos(2 * phi) + d_Crs * sin(2 * phi);
 
     // Correct inclination
-    i = d_i_0 + d_IDOT * tk + d_Cic * cos(2*phi) + d_Cis * sin(2*phi);
+    i = d_i_0 + d_IDOT * tk + d_Cic * cos(2 * phi) + d_Cis * sin(2 * phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    Omega = d_OMEGA0 + (d_OMEGA_DOT - OMEGA_EARTH_DOT)*tk - OMEGA_EARTH_DOT * d_Toe1;
+    Omega = d_OMEGA0 + (d_OMEGA_DOT - OMEGA_EARTH_DOT) * tk - OMEGA_EARTH_DOT * d_Toe1;
 
     // Reduce to between 0 and 2*pi rad
-    Omega = fmod((Omega + 2*GPS_L2_PI), (2*GPS_L2_PI));
+    Omega = fmod((Omega + 2 * GPS_L2_PI), (2 * GPS_L2_PI));
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
@@ -268,7 +256,9 @@ void Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
     double Omega_dot = d_OMEGA_DOT - OMEGA_EARTH_DOT;
-    d_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
-    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
+    d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) -
+                 d_satpos_Y * cos(i) * sin(Omega);
+    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) +
+                 d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
 }

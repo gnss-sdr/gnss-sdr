@@ -36,11 +36,10 @@
 #include <gnuradio/message.h>
 
 //! Message described by who sent it and what it says
-typedef struct ControlMessage_
-{
+typedef struct ControlMessage_ {
     unsigned int who;
     unsigned int what;
-} ControlMessage ;
+} ControlMessage;
 
 
 /*!
@@ -48,8 +47,7 @@ typedef struct ControlMessage_
  *
  * It encapsulates the complexity behind getting Queue Messages and associated Control Messages
  */
-class ControlMessageFactory
-{
+class ControlMessageFactory {
 
 public:
     //! Constructor
@@ -59,6 +57,7 @@ public:
     virtual ~ControlMessageFactory();
 
     boost::shared_ptr<gr::message> GetQueueMessage(unsigned int who, unsigned int what);
+
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> GetControlMessages(gr::message::sptr queue_message);
 };
 

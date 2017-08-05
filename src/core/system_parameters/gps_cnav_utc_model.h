@@ -41,8 +41,7 @@
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Appendix III
  */
-class Gps_CNAV_Utc_Model
-{
+class Gps_CNAV_Utc_Model {
 public:
     bool valid;
     // UTC parameters
@@ -64,19 +63,18 @@ public:
     /*
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
-    {
+    void serialize(Archive &archive, const unsigned int version) {
         using boost::serialization::make_nvp;
-        if(version){};
-        archive & make_nvp("valid",valid);
-        archive & make_nvp("d_A1",d_A1);
-        archive & make_nvp("d_A0",d_A0);
-        archive & make_nvp("d_t_OT",d_t_OT);
-        archive & make_nvp("i_WN_T",i_WN_T);
-        archive & make_nvp("d_DeltaT_LS",d_DeltaT_LS);
-        archive & make_nvp("i_WN_LSF",i_WN_LSF);
-        archive & make_nvp("i_DN",i_DN);
-        archive & make_nvp("d_DeltaT_LSF",d_DeltaT_LSF);
+        if (version) {};
+        archive & make_nvp("valid", valid);
+        archive & make_nvp("d_A1", d_A1);
+        archive & make_nvp("d_A0", d_A0);
+        archive & make_nvp("d_t_OT", d_t_OT);
+        archive & make_nvp("i_WN_T", i_WN_T);
+        archive & make_nvp("d_DeltaT_LS", d_DeltaT_LS);
+        archive & make_nvp("i_WN_LSF", i_WN_LSF);
+        archive & make_nvp("i_DN", i_DN);
+        archive & make_nvp("d_DeltaT_LSF", d_DeltaT_LSF);
     }
 
 };

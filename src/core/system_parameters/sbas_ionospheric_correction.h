@@ -44,8 +44,7 @@
 /*!
  * \brief Struct that represents a Ionospheric Grid Point (IGP)
  */
-struct Igp
-{
+struct Igp {
 public:
     //bool d_valid; // valid==true indicates that the IGP can be used for corrections. it is set to false when a new IGP mask (MT18) has been received but no corresponding delays (MT26)
     double t0; // time of reception, time of correction
@@ -55,9 +54,9 @@ public:
     double d_delay;
 private:
     friend class boost::serialization::access;
+
     template<class Archive>
-    void serialize(Archive& ar, const unsigned int version)
-    {
+    void serialize(Archive &ar, const unsigned int version) {
         ar & t0;
         ar & d_latitude;
         ar & d_longitude;
@@ -70,27 +69,24 @@ private:
 /*!
  * \brief Struct that represents the band of a Ionospheric Grid Point (IGP)
  */
-struct Igp_Band
-{
+struct Igp_Band {
     //int d_iodi;
     //int d_nigp;       // number if IGPs in this band (defined by IGP mask from MT18)
     std::vector<Igp> d_igps;
 private:
     friend class boost::serialization::access;
+
     template<class Archive>
-    void serialize(Archive& ar, const unsigned int version)
-    {
+    void serialize(Archive &ar, const unsigned int version) {
         ar & d_igps;
     }
 };
 
 
-
 /*!
  * \brief Class that handles valid SBAS ionospheric correction for GPS
  */
-class Sbas_Ionosphere_Correction
-{
+class Sbas_Ionosphere_Correction {
 private:
     /* Inner product of vectors
      * params : double *a,*b     I   vector a,b (n x 1)
@@ -101,7 +97,7 @@ private:
 
     /* Multiply matrix  */
     void matmul(const char *tr, int n, int k, int m, double alpha,
-            const double *A, const double *B, double beta, double *C);
+                const double *A, const double *B, double beta, double *C);
 
     /* EFEC to local coordinate transfomartion matrix
      * Compute ecef to local coordinate transfomartion matrix
@@ -150,7 +146,7 @@ private:
      *          fixing bug on ref [2] A.4.4.10.1 A-22,23
      *-----------------------------------------------------------------------------*/
     double ionppp(const double *pos, const double *azel, double re,
-            double hion, double *posp);
+                  double hion, double *posp);
 
     /* Variance of ionosphere correction (give = GIVEI + 1) */
     double varicorr(int give);
@@ -171,14 +167,16 @@ private:
      *          sbsupdatecorr()
      */
     int sbsioncorr(const double sample_stamp, const double *pos,
-            const double *azel, double *delay, double *var);
+                   const double *azel, double *delay, double *var);
 
     friend class boost::serialization::access;
+
     template<class Archive>
-    void serialize(Archive& ar, const unsigned int version){ar & d_bands;}
+    void serialize(Archive &ar, const unsigned int version) { ar & d_bands; }
 
 public:
     std::vector<Igp_Band> d_bands;
+
     void print(std::ostream &out);
 
     /*!
@@ -195,7 +193,7 @@ public:
      *                             with respect to the local-tangent-plane
      */
     bool apply(double sample_stamp, double latitude_d, double longitude_d,
-            double azimut_d, double evaluation_d, double &delay, double &var);
+               double azimut_d, double evaluation_d, double &delay, double &var);
 
 };
 

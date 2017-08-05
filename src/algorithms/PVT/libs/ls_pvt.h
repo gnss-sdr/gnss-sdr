@@ -39,25 +39,25 @@
  * \brief Base class for the Least Squares PVT solution
  *
  */
-class Ls_Pvt : public Pvt_Solution
-{
+class Ls_Pvt : public Pvt_Solution {
 private:
     /*!
      * \brief Computes the Lorentz inner product between two vectors
      */
-    double lorentz(const arma::vec & x,const arma::vec & y);
+    double lorentz(const arma::vec &x, const arma::vec &y);
+
 public:
     Ls_Pvt();
 
     /*!
      * \brief Computes the initial position solution based on the Bancroft algorithm
      */
-    arma::vec bancroftPos(const arma::mat & satpos, const arma::vec & obs);
+    arma::vec bancroftPos(const arma::mat &satpos, const arma::vec &obs);
 
     /*!
      * \brief Computes the Weighted Least Squares position solution
      */
-    arma::vec leastSquarePos(const arma::mat & satpos, const arma::vec & obs, const arma::vec & w_vec);
+    arma::vec leastSquarePos(const arma::mat &satpos, const arma::vec &obs, const arma::vec &w_vec);
 
 };
 

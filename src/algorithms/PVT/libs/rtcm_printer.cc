@@ -43,219 +43,194 @@
 using google::LogMessage;
 
 
-Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port, unsigned short rtcm_station_id, std::string rtcm_dump_devname, bool time_tag_name)
-{
+Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port,
+                           unsigned short rtcm_tcp_port, unsigned short rtcm_station_id, std::string rtcm_dump_devname,
+                           bool time_tag_name) {
     time_t rawtime;
-    struct tm * timeinfo;
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
+    struct tm *timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
 
-    if (time_tag_name)
-        {
-            std::stringstream strm0;
-            const int year = timeinfo->tm_year - 100;
-            strm0 << year;
-            const int month = timeinfo->tm_mon + 1;
-            if(month < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << month;
-            const int day = timeinfo->tm_mday;
-            if(day < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << day << "_";
-            const int hour = timeinfo->tm_hour;
-            if(hour < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << hour;
-            const int min = timeinfo->tm_min;
-            if(min < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << min;
-            const int sec = timeinfo->tm_sec;
-            if(sec < 10)
-                {
-                    strm0 << "0";
-                }
-            strm0 << sec;
+    if (time_tag_name) {
+        std::stringstream strm0;
+        const int year = timeinfo->tm_year - 100;
+        strm0 << year;
+        const int month = timeinfo->tm_mon + 1;
+        if (month < 10) {
+            strm0 << "0";
+        }
+        strm0 << month;
+        const int day = timeinfo->tm_mday;
+        if (day < 10) {
+            strm0 << "0";
+        }
+        strm0 << day << "_";
+        const int hour = timeinfo->tm_hour;
+        if (hour < 10) {
+            strm0 << "0";
+        }
+        strm0 << hour;
+        const int min = timeinfo->tm_min;
+        if (min < 10) {
+            strm0 << "0";
+        }
+        strm0 << min;
+        const int sec = timeinfo->tm_sec;
+        if (sec < 10) {
+            strm0 << "0";
+        }
+        strm0 << sec;
 
-            rtcm_filename = filename + "_" +  strm0.str() + ".rtcm";
-        }
-    else
-        {
-            rtcm_filename = filename + ".rtcm";
-        }
+        rtcm_filename = filename + "_" + strm0.str() + ".rtcm";
+    } else {
+        rtcm_filename = filename + ".rtcm";
+    }
 
     rtcm_file_descriptor.open(rtcm_filename.c_str(), std::ios::out);
-    if (rtcm_file_descriptor.is_open())
-        {
-            DLOG(INFO) << "RTCM printer writing on " << rtcm_filename.c_str();
-        }
+    if (rtcm_file_descriptor.is_open()) {
+        DLOG(INFO) << "RTCM printer writing on " << rtcm_filename.c_str();
+    }
 
     rtcm_devname = rtcm_dump_devname;
-    if (flag_rtcm_tty_port == true)
-        {
-            rtcm_dev_descriptor = init_serial(rtcm_devname.c_str());
-            if (rtcm_dev_descriptor != -1)
-                {
-                    DLOG(INFO) << "RTCM printer writing on " << rtcm_devname.c_str();
-                }
+    if (flag_rtcm_tty_port == true) {
+        rtcm_dev_descriptor = init_serial(rtcm_devname.c_str());
+        if (rtcm_dev_descriptor != -1) {
+            DLOG(INFO) << "RTCM printer writing on " << rtcm_devname.c_str();
         }
-    else
-        {
-            rtcm_dev_descriptor = -1;
-        }
+    } else {
+        rtcm_dev_descriptor = -1;
+    }
 
     port = rtcm_tcp_port;
     station_id = rtcm_station_id;
 
     rtcm = std::make_shared<Rtcm>(port);
 
-    if(flag_rtcm_server)
-        {
-            rtcm->run_server();
-        }
+    if (flag_rtcm_server) {
+        rtcm->run_server();
+    }
 }
 
 
-Rtcm_Printer::~Rtcm_Printer()
-{
-    if(rtcm->is_server_running())
-        {
-            try
-            {
-                    rtcm->stop_server();
-            }
-            catch( boost::exception & e )
-            {
-                    LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
-            }
-            catch(std::exception const&  ex)
-            {
-                    LOG(WARNING) << "STD exception: " << ex.what();
-            }
+Rtcm_Printer::~Rtcm_Printer() {
+    if (rtcm->is_server_running()) {
+        try {
+            rtcm->stop_server();
         }
-    if (rtcm_file_descriptor.is_open())
-        {
-            long pos;
-            pos = rtcm_file_descriptor.tellp();
-            rtcm_file_descriptor.close();
-            if (pos == 0)
-                {
-                    if(remove(rtcm_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary RTCM file";
-                }
+        catch (boost::exception &e) {
+            LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
         }
+        catch (std::exception const &ex) {
+            LOG(WARNING) << "STD exception: " << ex.what();
+        }
+    }
+    if (rtcm_file_descriptor.is_open()) {
+        long pos;
+        pos = rtcm_file_descriptor.tellp();
+        rtcm_file_descriptor.close();
+        if (pos == 0) {
+            if (remove(rtcm_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary RTCM file";
+        }
+    }
     close_serial();
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables)
-{
+bool Rtcm_Printer::Print_Rtcm_MT1001(const Gps_Ephemeris &gps_eph, double obs_time,
+                                     const std::map<int, Gnss_Synchro> &observables) {
     std::string m1001 = rtcm->print_MT1001(gps_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1001);
     return true;
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables)
-{
+bool Rtcm_Printer::Print_Rtcm_MT1002(const Gps_Ephemeris &gps_eph, double obs_time,
+                                     const std::map<int, Gnss_Synchro> &observables) {
     std::string m1002 = rtcm->print_MT1002(gps_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1002);
     return true;
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1003(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables)
-{
+bool Rtcm_Printer::Print_Rtcm_MT1003(const Gps_Ephemeris &gps_eph, const Gps_CNAV_Ephemeris &cnav_eph, double obs_time,
+                                     const std::map<int, Gnss_Synchro> &observables) {
     std::string m1003 = rtcm->print_MT1003(gps_eph, cnav_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1003);
     return true;
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1004(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables)
-{
+bool Rtcm_Printer::Print_Rtcm_MT1004(const Gps_Ephemeris &gps_eph, const Gps_CNAV_Ephemeris &cnav_eph, double obs_time,
+                                     const std::map<int, Gnss_Synchro> &observables) {
     std::string m1003 = rtcm->print_MT1004(gps_eph, cnav_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1003);
     return true;
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph)
-{
+bool Rtcm_Printer::Print_Rtcm_MT1019(const Gps_Ephemeris &gps_eph) {
     std::string m1019 = rtcm->print_MT1019(gps_eph);
     Rtcm_Printer::Print_Message(m1019);
     return true;
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1045(const Galileo_Ephemeris & gal_eph)
-{
+bool Rtcm_Printer::Print_Rtcm_MT1045(const Galileo_Ephemeris &gal_eph) {
     std::string m1045 = rtcm->print_MT1045(gal_eph);
     Rtcm_Printer::Print_Message(m1045);
     return true;
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MSM(unsigned int msm_number, const Gps_Ephemeris & gps_eph,
-        const Gps_CNAV_Ephemeris & gps_cnav_eph,
-        const Galileo_Ephemeris & gal_eph,
-        double obs_time,
-        const std::map<int, Gnss_Synchro> & observables,
-        unsigned int clock_steering_indicator,
-        unsigned int external_clock_indicator,
-        int smooth_int,
-        bool divergence_free,
-        bool more_messages)
-{
+bool Rtcm_Printer::Print_Rtcm_MSM(unsigned int msm_number, const Gps_Ephemeris &gps_eph,
+                                  const Gps_CNAV_Ephemeris &gps_cnav_eph,
+                                  const Galileo_Ephemeris &gal_eph,
+                                  double obs_time,
+                                  const std::map<int, Gnss_Synchro> &observables,
+                                  unsigned int clock_steering_indicator,
+                                  unsigned int external_clock_indicator,
+                                  int smooth_int,
+                                  bool divergence_free,
+                                  bool more_messages) {
     std::string msm;
-    if(msm_number == 1)
-        {
-            msm = rtcm->print_MSM_1(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
-        }
-    else if(msm_number == 2)
-        {
-            msm = rtcm->print_MSM_2(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
-        }
-    else if(msm_number == 3)
-        {
-            msm = rtcm->print_MSM_3(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
-        }
-    else if(msm_number == 4)
-        {
-            msm = rtcm->print_MSM_4(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
-        }
-    else if(msm_number == 5)
-        {
-            msm = rtcm->print_MSM_5(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
-        }
-    else if(msm_number == 6)
-        {
-            msm = rtcm->print_MSM_6(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
-        }
-    else if(msm_number == 7)
-        {
-            msm = rtcm->print_MSM_7(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
-        }
-    else
-        {
-            return false;
-        }
+    if (msm_number == 1) {
+        msm = rtcm->print_MSM_1(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id,
+                                clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free,
+                                more_messages);
+    } else if (msm_number == 2) {
+        msm = rtcm->print_MSM_2(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id,
+                                clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free,
+                                more_messages);
+    } else if (msm_number == 3) {
+        msm = rtcm->print_MSM_3(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id,
+                                clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free,
+                                more_messages);
+    } else if (msm_number == 4) {
+        msm = rtcm->print_MSM_4(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id,
+                                clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free,
+                                more_messages);
+    } else if (msm_number == 5) {
+        msm = rtcm->print_MSM_5(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id,
+                                clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free,
+                                more_messages);
+    } else if (msm_number == 6) {
+        msm = rtcm->print_MSM_6(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id,
+                                clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free,
+                                more_messages);
+    } else if (msm_number == 7) {
+        msm = rtcm->print_MSM_7(gps_eph, gps_cnav_eph, gal_eph, obs_time, observables, station_id,
+                                clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free,
+                                more_messages);
+    } else {
+        return false;
+    }
 
     Rtcm_Printer::Print_Message(msm);
     return true;
 }
 
 
-int Rtcm_Printer::init_serial(std::string serial_device)
-{
+int Rtcm_Printer::init_serial(std::string serial_device) {
     /*
      * Opens the serial device and sets the default baud rate for a RTCM transmission (9600,8,N,1)
      */
@@ -270,10 +245,11 @@ int Rtcm_Printer::init_serial(std::string serial_device)
     fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd == -1) return fd;  // failed to open TTY port
 
-    if(fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";    // clear all flags on descriptor, enable direct I/O
+    if (fcntl(fd, F_SETFL, 0) == -1)
+        LOG(INFO) << "Error enabling direct I/O";    // clear all flags on descriptor, enable direct I/O
     tcgetattr(fd, &options);  // read serial port options
 
-    BAUD  = B9600;
+    BAUD = B9600;
     //BAUD  =  B38400;
     DATABITS = CS8;
     STOPBITS = 0;
@@ -291,62 +267,51 @@ int Rtcm_Printer::init_serial(std::string serial_device)
 }
 
 
-void Rtcm_Printer::close_serial()
-{
-    if (rtcm_dev_descriptor != -1)
-        {
-            close(rtcm_dev_descriptor);
-        }
+void Rtcm_Printer::close_serial() {
+    if (rtcm_dev_descriptor != -1) {
+        close(rtcm_dev_descriptor);
+    }
 }
 
 
-bool Rtcm_Printer::Print_Message(const std::string & message)
-{
+bool Rtcm_Printer::Print_Message(const std::string &message) {
     //write to file
-    try
-    {
-            rtcm_file_descriptor << message << std::endl;
+    try {
+        rtcm_file_descriptor << message << std::endl;
     }
-    catch(std::exception ex)
-    {
-            DLOG(INFO) << "RTCM printer can not write on output file" << rtcm_filename.c_str();
-            return false;
+    catch (std::exception ex) {
+        DLOG(INFO) << "RTCM printer can not write on output file" << rtcm_filename.c_str();
+        return false;
     }
 
     //write to serial device
-    if (rtcm_dev_descriptor != -1)
-        {
-            if(write(rtcm_dev_descriptor, message.c_str(), message.length()) == -1)
-                {
-                    DLOG(INFO) << "RTCM printer cannot write on serial device" << rtcm_devname.c_str();
-                    std::cout << "RTCM printer cannot write on serial device" << rtcm_devname.c_str() << std::endl;
-                    return false;
-                }
+    if (rtcm_dev_descriptor != -1) {
+        if (write(rtcm_dev_descriptor, message.c_str(), message.length()) == -1) {
+            DLOG(INFO) << "RTCM printer cannot write on serial device" << rtcm_devname.c_str();
+            std::cout << "RTCM printer cannot write on serial device" << rtcm_devname.c_str() << std::endl;
+            return false;
         }
+    }
     return true;
 }
 
 
-std::string Rtcm_Printer::print_MT1005_test()
-{
+std::string Rtcm_Printer::print_MT1005_test() {
     std::string test = rtcm->print_MT1005_test();
     return test;
 }
 
 
-unsigned int Rtcm_Printer::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro)
-{
+unsigned int Rtcm_Printer::lock_time(const Gps_Ephemeris &eph, double obs_time, const Gnss_Synchro &gnss_synchro) {
     return rtcm->lock_time(eph, obs_time, gnss_synchro);
 }
 
 
-unsigned int Rtcm_Printer::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro)
-{
+unsigned int Rtcm_Printer::lock_time(const Gps_CNAV_Ephemeris &eph, double obs_time, const Gnss_Synchro &gnss_synchro) {
     return rtcm->lock_time(eph, obs_time, gnss_synchro);
 }
 
 
-unsigned int Rtcm_Printer::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro)
-{
+unsigned int Rtcm_Printer::lock_time(const Galileo_Ephemeris &eph, double obs_time, const Gnss_Synchro &gnss_synchro) {
     return rtcm->lock_time(eph, obs_time, gnss_synchro);
 }

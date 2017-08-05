@@ -45,35 +45,35 @@ class ConfigurationInterface;
  * \brief Adapts a PCPS 8ms acquisition block to an
  * AcquisitionInterface for Galileo E1 Signals
  */
-class GalileoE1Pcps8msAmbiguousAcquisition: public AcquisitionInterface
-{
+class GalileoE1Pcps8msAmbiguousAcquisition : public AcquisitionInterface {
 public:
-    GalileoE1Pcps8msAmbiguousAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+    GalileoE1Pcps8msAmbiguousAcquisition(ConfigurationInterface *configuration,
+                                         std::string role, unsigned int in_streams,
+                                         unsigned int out_streams);
 
     virtual ~GalileoE1Pcps8msAmbiguousAcquisition();
 
-    std::string role()
-    {
+    std::string role() {
         return role_;
     }
 
     /*!
      * \brief Returns "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition"
      */
-    std::string implementation()
-    {
+    std::string implementation() {
         return "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition";
     }
-    size_t item_size()
-    {
+
+    size_t item_size() {
         return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block);
+
     void disconnect(gr::top_block_sptr top_block);
+
     gr::basic_block_sptr get_left_block();
+
     gr::basic_block_sptr get_right_block();
 
     /*!
@@ -81,7 +81,7 @@ public:
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
 
     /*!
      * \brief Set acquisition channel unique ID
@@ -124,7 +124,7 @@ public:
     void reset();
 
 private:
-    ConfigurationInterface* configuration_;
+    ConfigurationInterface *configuration_;
     galileo_pcps_8ms_acquisition_cc_sptr acquisition_cc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     size_t item_size_;
@@ -141,11 +141,12 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float> *code_;
+    Gnss_Synchro *gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+
     float calculate_threshold(float pfa);
 };
 

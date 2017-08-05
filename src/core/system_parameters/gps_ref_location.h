@@ -40,13 +40,13 @@
  * \brief  Interface of a GPS REFERENCE LOCATION storage
  *
  */
-class Gps_Ref_Location
-{
+class Gps_Ref_Location {
 public:
     bool valid;
     double lat;
     double lon;
     double uncertainty;
+
     /*!
      * Default constructor
      */
@@ -57,15 +57,14 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the Ref location on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
-        {
-            using boost::serialization::make_nvp;
-            if(version){};
-            archive & make_nvp("valid", valid);
-            archive & make_nvp("lat", lat);
-            archive & make_nvp("lon", lon);
-            archive & make_nvp("uncertainty", uncertainty);
-        }
+    void serialize(Archive &archive, const unsigned int version) {
+        using boost::serialization::make_nvp;
+        if (version) {};
+        archive & make_nvp("valid", valid);
+        archive & make_nvp("lat", lat);
+        archive & make_nvp("lon", lon);
+        archive & make_nvp("uncertainty", uncertainty);
+    }
 };
 
 #endif

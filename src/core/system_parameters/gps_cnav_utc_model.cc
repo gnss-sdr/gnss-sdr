@@ -31,8 +31,7 @@
 #include "gps_cnav_utc_model.h"
 
 
-Gps_CNAV_Utc_Model::Gps_CNAV_Utc_Model()
-{
+Gps_CNAV_Utc_Model::Gps_CNAV_Utc_Model() {
     valid = false;
     d_A1 = 0;
     d_A0 = 0;

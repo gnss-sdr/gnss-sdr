@@ -64,14 +64,13 @@ galileo_e1_pvt_cc_sptr galileo_e1_make_pvt_cc(unsigned int n_channels,
                                               bool flag_rtcm_tty_port,
                                               unsigned short rtcm_tcp_port,
                                               unsigned short rtcm_station_id,
-                                              std::map<int,int> rtcm_msg_rate_ms,
+                                              std::map<int, int> rtcm_msg_rate_ms,
                                               std::string rtcm_dump_devname);
 
 /*!
  * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
  */
-class galileo_e1_pvt_cc : public gr::block
-{
+class galileo_e1_pvt_cc : public gr::block {
 private:
     friend galileo_e1_pvt_cc_sptr galileo_e1_make_pvt_cc(unsigned int nchannels,
                                                          bool dump,
@@ -87,8 +86,9 @@ private:
                                                          bool flag_rtcm_tty_port,
                                                          unsigned short rtcm_tcp_port,
                                                          unsigned short rtcm_station_id,
-                                                         std::map<int,int> rtcm_msg_rate_ms,
+                                                         std::map<int, int> rtcm_msg_rate_ms,
                                                          std::string rtcm_dump_devname);
+
     galileo_e1_pvt_cc(unsigned int nchannels,
                       bool dump, std::string dump_filename,
                       int averaging_depth,
@@ -102,7 +102,7 @@ private:
                       bool flag_rtcm_tty_port,
                       unsigned short rtcm_tcp_port,
                       unsigned short rtcm_station_id,
-                      std::map<int,int> rtcm_msg_rate_ms,
+                      std::map<int, int> rtcm_msg_rate_ms,
                       std::string rtcm_dump_devname);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
@@ -112,7 +112,8 @@ private:
     bool b_rinex_header_updated;
     bool b_rtcm_writing_started;
 
-    void print_receiver_status(Gnss_Synchro** channels_synchronization_data);
+    void print_receiver_status(Gnss_Synchro **channels_synchronization_data);
+
     int d_last_status_print_seg; //for status printer
 
     unsigned int d_nchannels;
@@ -139,17 +140,19 @@ private:
     bool first_fix;
     key_t sysv_msg_key;
     int sysv_msqid;
-    typedef struct  {
+    typedef struct {
         long mtype;//required by sys v message
         double ttff;
     } ttff_msgbuf;
+
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
 
 public:
-    ~galileo_e1_pvt_cc (); //!< Default destructor
+    ~galileo_e1_pvt_cc(); //!< Default destructor
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items); //!< PVT Signal Processing
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+                     gr_vector_const_void_star &input_items,
+                     gr_vector_void_star &output_items); //!< PVT Signal Processing
 };
 
 #endif

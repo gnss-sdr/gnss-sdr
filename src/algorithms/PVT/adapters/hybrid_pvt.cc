@@ -42,14 +42,13 @@
 
 using google::LogMessage;
 
-HybridPvt::HybridPvt(ConfigurationInterface* configuration,
-        std::string role,
-        unsigned int in_streams,
-        unsigned int out_streams) :
-                role_(role),
-                in_streams_(in_streams),
-                out_streams_(out_streams)
-{
+HybridPvt::HybridPvt(ConfigurationInterface *configuration,
+                     std::string role,
+                     unsigned int in_streams,
+                     unsigned int out_streams) :
+        role_(role),
+        in_streams_(in_streams),
+        out_streams_(out_streams) {
     // dump parameters
     std::string default_dump_filename = "./pvt.dat";
     std::string default_nmea_dump_filename = "./nmea_pvt.nmea";
@@ -81,22 +80,26 @@ HybridPvt::HybridPvt(ConfigurationInterface* configuration,
     unsigned short rtcm_tcp_port = configuration->property(role + ".rtcm_tcp_port", 2101);
     unsigned short rtcm_station_id = configuration->property(role + ".rtcm_station_id", 1234);
     // RTCM message rates: least common multiple with output_rate_ms
-    int rtcm_MT1019_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), output_rate_ms);
-    int rtcm_MT1045_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), output_rate_ms);
+    int rtcm_MT1019_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000),
+                                               output_rate_ms);
+    int rtcm_MT1045_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000),
+                                               output_rate_ms);
     int rtcm_MSM_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
-    int rtcm_MT1077_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
-    int rtcm_MT1097_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1097_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
-    std::map<int,int> rtcm_msg_rate_ms;
+    int rtcm_MT1077_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms),
+                                               output_rate_ms);
+    int rtcm_MT1097_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1097_rate_ms", rtcm_MSM_rate_ms),
+                                               output_rate_ms);
+    std::map<int, int> rtcm_msg_rate_ms;
     rtcm_msg_rate_ms[1019] = rtcm_MT1019_rate_ms;
     rtcm_msg_rate_ms[1045] = rtcm_MT1045_rate_ms;
     for (int k = 1071; k < 1078; k++) // All GPS MSM
-        {
-            rtcm_msg_rate_ms[k] = rtcm_MT1077_rate_ms;
-        }
+    {
+        rtcm_msg_rate_ms[k] = rtcm_MT1077_rate_ms;
+    }
     for (int k = 1091; k < 1098; k++) // All Galileo MSM
-        {
-            rtcm_msg_rate_ms[k] = rtcm_MT1097_rate_ms;
-        }
+    {
+        rtcm_msg_rate_ms[k] = rtcm_MT1097_rate_ms;
+    }
     // getting names from the config file, if available
     // default filename for assistance data
     const std::string eph_default_xml_filename = "./gps_ephemeris.xml";
@@ -144,94 +147,116 @@ HybridPvt::HybridPvt(ConfigurationInterface* configuration,
     int gal_E5b_count = configuration->property("Channels_7X.count", 0);
 
     unsigned int type_of_receiver = 0;
-    if( (gps_1C_count != 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 1;
-    if( (gps_1C_count == 0) && (gps_2S_count != 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 2;
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 1;
+    if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 2;
 
-    if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 4;
-    if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0)) type_of_receiver = 5;
-    if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0)) type_of_receiver = 6;
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 4;
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gal_1B_count == 0) && (gal_E5a_count != 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 5;
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count != 0))
+        type_of_receiver = 6;
 
-    if( (gps_1C_count != 0) && (gps_2S_count != 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 7;
+    if ((gps_1C_count != 0) && (gps_2S_count != 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 7;
     //if( (gps_1C_count != 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 8;
-    if( (gps_1C_count != 0) && (gps_2S_count == 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 9;
-    if( (gps_1C_count != 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0)) type_of_receiver = 10;
-    if( (gps_1C_count != 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0)) type_of_receiver = 11;
-    if( (gps_1C_count == 0) && (gps_2S_count != 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 12;
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 9;
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gal_1B_count == 0) && (gal_E5a_count != 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 10;
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count != 0))
+        type_of_receiver = 11;
+    if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 12;
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 13;
-    if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count != 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0)) type_of_receiver = 14;
-    if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0)) type_of_receiver = 15;
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gal_1B_count != 0) && (gal_E5a_count != 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 14;
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count != 0))
+        type_of_receiver = 15;
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 16;
-    if( (gps_1C_count == 0) && (gps_2S_count != 0)  && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0)) type_of_receiver = 17;
-    if( (gps_1C_count == 0) && (gps_2S_count != 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0)) type_of_receiver = 18;
+    if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gal_1B_count == 0) && (gal_E5a_count != 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 17;
+    if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count != 0))
+        type_of_receiver = 18;
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 19;
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 20;
-    if( (gps_1C_count != 0) && (gps_2S_count != 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 21;
+    if ((gps_1C_count != 0) && (gps_2S_count != 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) &&
+        (gal_E5b_count == 0))
+        type_of_receiver = 21;
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count = 0)) type_of_receiver = 22;
 
     // make PVT object
-    pvt_ = hybrid_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver);
+    pvt_ = hybrid_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms,
+                              display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname,
+                              flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms,
+                              rtcm_dump_devname, type_of_receiver);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 
 
-bool HybridPvt::save_assistance_to_XML()
-{
+bool HybridPvt::save_assistance_to_XML() {
     LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename_;
-    std::map<int,Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
+    std::map<int, Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
 
-    if (eph_map.size() > 0)
-        {
-            try
-                {
-                    std::ofstream ofs(eph_xml_filename_.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_map);
-                    ofs.close();
-                    LOG(INFO) << "Saved GPS L1 Ephemeris map data";
-                }
-            catch (std::exception& e)
-                {
-                    LOG(WARNING) << e.what();
-                    return false;
-                }
-            return true;     // return variable (true == succeeded)
+    if (eph_map.size() > 0) {
+        try {
+            std::ofstream ofs(eph_xml_filename_.c_str(), std::ofstream::trunc | std::ofstream::out);
+            boost::archive::xml_oarchive xml(ofs);
+            xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_map);
+            ofs.close();
+            LOG(INFO) << "Saved GPS L1 Ephemeris map data";
         }
-    else
-        {
-            LOG(WARNING) << "Failed to save Ephemeris, map is empty";
+        catch (std::exception &e) {
+            LOG(WARNING) << e.what();
             return false;
         }
+        return true;     // return variable (true == succeeded)
+    } else {
+        LOG(WARNING) << "Failed to save Ephemeris, map is empty";
+        return false;
+    }
 }
 
 
-HybridPvt::~HybridPvt()
-{
+HybridPvt::~HybridPvt() {
     save_assistance_to_XML();
 }
 
 
-void HybridPvt::connect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void HybridPvt::connect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
-void HybridPvt::disconnect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void HybridPvt::disconnect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     // Nothing to disconnect
 }
 
 
-gr::basic_block_sptr HybridPvt::get_left_block()
-{
+gr::basic_block_sptr HybridPvt::get_left_block() {
     return pvt_;
 }
 
 
-gr::basic_block_sptr HybridPvt::get_right_block()
-{
+gr::basic_block_sptr HybridPvt::get_right_block() {
     return pvt_; // this is a sink, nothing downstream
 }

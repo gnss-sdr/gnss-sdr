@@ -39,14 +39,13 @@
 
 using google::LogMessage;
 
-GalileoE1Pvt::GalileoE1Pvt(ConfigurationInterface* configuration,
-        std::string role,
-        unsigned int in_streams,
-        unsigned int out_streams) :
-                role_(role),
-                in_streams_(in_streams),
-                out_streams_(out_streams)
-{
+GalileoE1Pvt::GalileoE1Pvt(ConfigurationInterface *configuration,
+                           std::string role,
+                           unsigned int in_streams,
+                           unsigned int out_streams) :
+        role_(role),
+        in_streams_(in_streams),
+        out_streams_(out_streams) {
     // dump parameters
     std::string default_dump_filename = "./pvt.dat";
     std::string default_nmea_dump_filename = "./nmea_pvt.nmea";
@@ -79,63 +78,59 @@ GalileoE1Pvt::GalileoE1Pvt(ConfigurationInterface* configuration,
     unsigned short rtcm_tcp_port = configuration->property(role + ".rtcm_tcp_port", 2101);
     unsigned short rtcm_station_id = configuration->property(role + ".rtcm_station_id", 1234);
     // RTCM message rates: least common multiple with output_rate_ms
-    int rtcm_MT1045_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), output_rate_ms);
+    int rtcm_MT1045_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000),
+                                               output_rate_ms);
     int rtcm_MSM_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
-    std::map<int,int> rtcm_msg_rate_ms;
+    std::map<int, int> rtcm_msg_rate_ms;
     rtcm_msg_rate_ms[1045] = rtcm_MT1045_rate_ms;
     for (int k = 1091; k < 1098; k++) // All Galileo MSM
-        {
-            rtcm_msg_rate_ms[k] = rtcm_MSM_rate_ms;
-        }
+    {
+        rtcm_msg_rate_ms[k] = rtcm_MSM_rate_ms;
+    }
 
     // make PVT object
     pvt_ = galileo_e1_make_pvt_cc(in_streams_,
-            dump_,
-            dump_filename_,
-            averaging_depth,
-            flag_averaging,
-            output_rate_ms,
-            display_rate_ms,
-            flag_nmea_tty_port,
-            nmea_dump_filename,
-            nmea_dump_devname,
-            flag_rtcm_server,
-            flag_rtcm_tty_port,
-            rtcm_tcp_port,
-            rtcm_station_id,
-            rtcm_msg_rate_ms,
-            rtcm_dump_devname);
+                                  dump_,
+                                  dump_filename_,
+                                  averaging_depth,
+                                  flag_averaging,
+                                  output_rate_ms,
+                                  display_rate_ms,
+                                  flag_nmea_tty_port,
+                                  nmea_dump_filename,
+                                  nmea_dump_devname,
+                                  flag_rtcm_server,
+                                  flag_rtcm_tty_port,
+                                  rtcm_tcp_port,
+                                  rtcm_station_id,
+                                  rtcm_msg_rate_ms,
+                                  rtcm_dump_devname);
 
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 
 
-GalileoE1Pvt::~GalileoE1Pvt()
-{}
+GalileoE1Pvt::~GalileoE1Pvt() {}
 
 
-void GalileoE1Pvt::connect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void GalileoE1Pvt::connect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
-void GalileoE1Pvt::disconnect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void GalileoE1Pvt::disconnect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     // Nothing to disconnect
 }
 
-gr::basic_block_sptr GalileoE1Pvt::get_left_block()
-{
+gr::basic_block_sptr GalileoE1Pvt::get_left_block() {
     return pvt_;
 }
 
 
-gr::basic_block_sptr GalileoE1Pvt::get_right_block()
-{
+gr::basic_block_sptr GalileoE1Pvt::get_right_block() {
     return pvt_;
 }
 

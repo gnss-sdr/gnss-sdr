@@ -38,8 +38,7 @@
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  */
-class Gps_Almanac
-{
+class Gps_Almanac {
 public:
     unsigned int i_satellite_PRN; //!< SV PRN NUMBER
     double d_Delta_i;

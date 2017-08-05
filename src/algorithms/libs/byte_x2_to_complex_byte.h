@@ -45,16 +45,16 @@ byte_x2_to_complex_byte_sptr make_byte_x2_to_complex_byte();
  * \brief This class adapts two signed char streams
  * into a std::complex<signed char> stream
  */
-class byte_x2_to_complex_byte : public gr::sync_block
-{
+class byte_x2_to_complex_byte : public gr::sync_block {
 private:
     friend byte_x2_to_complex_byte_sptr make_byte_x2_to_complex_byte();
+
 public:
     byte_x2_to_complex_byte();
 
     int work(int noutput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+             gr_vector_const_void_star &input_items,
+             gr_vector_void_star &output_items);
 };
 
 #endif

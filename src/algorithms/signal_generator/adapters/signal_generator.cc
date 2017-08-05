@@ -36,38 +36,56 @@
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E5a.h"
+#include "BEIDOU_B1I.h"
 
 
 using google::LogMessage;
 
 SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
-        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) :
-                role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+                                 std::string role,
+                                 unsigned int in_stream,
+                                 unsigned int out_stream,
+                                 boost::shared_ptr<gr::msg_queue> queue) :
+                                 role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
+    /* Satellite signal parameters */
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/gen_source.dat";
+    
+    // Signal system (G/E/B)
     std::string default_system = "G";
+    
+    // Signal system modulation (1C/5X/B1I)
     std::string default_signal = "1C";
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
+    // Sample Frequency [Hz]
     unsigned int fs_in = configuration->property("SignalSource.fs_hz", 4e6);
+    
+    // Data flag (0 = no data bits, 1 = data bits simulated)
     bool data_flag = configuration->property("SignalSource.data_flag", false);
+    
+    // Adding channel noise (0 = without noise, 1 = with noise)
     bool noise_flag = configuration->property("SignalSource.noise_flag", false);
+    
+    // Bandwidth (Hz)(the parameter has to be slightly below Fs/2 to avoid instability problems)
     float BW_BB = configuration->property("SignalSource.BW_BB", 1.0);
+    
+    // Number of signal satellite to be generated
     unsigned int num_satellites = configuration->property("SignalSource.num_satellites", 1);
 
-    std::vector<std::string> signal1;
-    std::vector<std::string> system;
-    std::vector<unsigned int> PRN;
-    std::vector<float> CN0_dB;
-    std::vector<float> doppler_Hz;
-    std::vector<unsigned int> delay_chips;
-    std::vector<unsigned int> delay_sec;
+    std::vector<std::string> signal1;       // Signal generated
+    std::vector<std::string> system;        // 
+    std::vector<unsigned int> PRN;          // PRN codes
+    std::vector<float> CN0_dB;              // Carrier-to-noise density ratio [dB]
+    std::vector<float> doppler_Hz;          // Doppler freq. [Hz]
+    std::vector<unsigned int> delay_chips;  // Chip delay [s]
+    std::vector<unsigned int> delay_sec;    // Code delay [s]
 
+    // Assign configuration parameters for every satellite that it shall generates
     for (unsigned int sat_idx = 0; sat_idx < num_satellites; sat_idx++)
         {
             std::string sat = std::to_string(sat_idx);
@@ -82,6 +100,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
 
     // If Galileo signal is present -> vector duration = 100 ms (25 * 4 ms)
     // If there is only GPS signal (Galileo signal not present) -> vector duration = 1 ms
+    // TODO: If there is only BeiDou signal (Galileo and GPS signals not present) -> vector duration = 1 ms
     unsigned int vector_length = 0;
     if (std::find(system.begin(), system.end(), "E") != system.end())
         {
@@ -102,13 +121,17 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
             vector_length = round((float)fs_in
                     / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
         }
+    else if (std::find(system.begin(), system.end(), "C") != system.end())
+        {
+            vector_length = round((float)fs_in
+                    / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
+        }
 
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
             DLOG(INFO) << "Item size " << item_size_;
-            gen_source_ = signal_make_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips, delay_sec,
-                    data_flag, noise_flag, fs_in, vector_length, BW_BB);
+            gen_source_ = signal_make_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips,delay_sec, data_flag, noise_flag, fs_in, vector_length, BW_BB);
 
             vector_to_stream_ = gr::blocks::vector_to_stream::make(item_size_, vector_length);
 

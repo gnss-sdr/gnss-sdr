@@ -45,10 +45,9 @@
 using google::LogMessage;
 
 GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
-        ConfigurationInterface* configuration, std::string role,
+        ConfigurationInterface *configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams) :
-                role_(role), in_streams_(in_streams), out_streams_(out_streams)
-{
+        role_(role), in_streams_(in_streams), out_streams_(out_streams) {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
@@ -78,79 +77,68 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
-            default_dump_filename); //unused!
+                                            default_dump_filename); //unused!
     vector_length = std::round(fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
-        {
-            item_size_ = sizeof(gr_complex);
-            tracking_ = galileo_e5a_dll_pll_make_tracking_cc(
-                    f_if,
-                    fs_in,
-                    vector_length,
-                    dump,
-                    dump_filename,
-                    pll_bw_hz,
-                    dll_bw_hz,
-                    pll_bw_init_hz,
-                    dll_bw_init_hz,
-                    ti_ms,
-                    early_late_space_chips);
-        }
-    else
-        {
-            item_size_ = sizeof(gr_complex);
-            LOG(WARNING) << item_type << " unknown tracking item type.";
-        }
+    if (item_type.compare("gr_complex") == 0) {
+        item_size_ = sizeof(gr_complex);
+        tracking_ = galileo_e5a_dll_pll_make_tracking_cc(
+                f_if,
+                fs_in,
+                vector_length,
+                dump,
+                dump_filename,
+                pll_bw_hz,
+                dll_bw_hz,
+                pll_bw_init_hz,
+                dll_bw_init_hz,
+                ti_ms,
+                early_late_space_chips);
+    } else {
+        item_size_ = sizeof(gr_complex);
+        LOG(WARNING) << item_type << " unknown tracking item type.";
+    }
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
 
-GalileoE5aDllPllTracking::~GalileoE5aDllPllTracking()
-{}
+GalileoE5aDllPllTracking::~GalileoE5aDllPllTracking() {}
 
 
-void GalileoE5aDllPllTracking::start_tracking()
-{
+void GalileoE5aDllPllTracking::start_tracking() {
     tracking_->start_tracking();
 }
 
 /*
  * Set tracking channel unique ID
  */
-void GalileoE5aDllPllTracking::set_channel(unsigned int channel)
-{
+void GalileoE5aDllPllTracking::set_channel(unsigned int channel) {
     channel_ = channel;
     tracking_->set_channel(channel);
 }
 
 
-void GalileoE5aDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-{
+void GalileoE5aDllPllTracking::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro) {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
-void GalileoE5aDllPllTracking::connect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void GalileoE5aDllPllTracking::connect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
-void GalileoE5aDllPllTracking::disconnect(gr::top_block_sptr top_block)
-{
-    if(top_block) { /* top_block is not null */};
+void GalileoE5aDllPllTracking::disconnect(gr::top_block_sptr top_block) {
+    if (top_block) { /* top_block is not null */};
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
-gr::basic_block_sptr GalileoE5aDllPllTracking::get_left_block()
-{
+gr::basic_block_sptr GalileoE5aDllPllTracking::get_left_block() {
     return tracking_;
 }
 
-gr::basic_block_sptr GalileoE5aDllPllTracking::get_right_block()
-{
+gr::basic_block_sptr GalileoE5aDllPllTracking::get_right_block() {
     return tracking_;
 }
 

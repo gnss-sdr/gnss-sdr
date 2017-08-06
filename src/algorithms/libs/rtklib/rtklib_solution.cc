@@ -1627,7 +1627,7 @@ int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
     double gpst;
     int week,timeu;
     const char *sep = opt2sep(opt);
-    char s[64];
+    char s[255];
     unsigned char *p = buff;
 
     trace(3,"outsols :\n");
@@ -1656,7 +1656,7 @@ int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
                     week++;
                     gpst = 0.0;
                 }
-            snprintf(s, 64, "%4d%s%*.*f", week, sep, 6 + (timeu <= 0 ? 0 : timeu+1), timeu, gpst);
+            snprintf(s, 255, "%4d%s%*.*f", week, sep, 6 + (timeu <= 0 ? 0 : timeu+1), timeu, gpst);
         }
     switch (opt->posf)
     {

@@ -22,6 +22,7 @@
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(WARNING "In-tree build is bad practice. Try 'cd build && cmake ../' ")
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+
 cmake_minimum_required(VERSION 2.8)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
@@ -81,6 +82,7 @@ option(ENABLE_INSTALL_TESTS "Install QA code system-wide" OFF)
 if(ENABLE_FPGA)
     set(ENABLE_INSTALL_TESTS ON)
 endif(ENABLE_FPGA)
+
 
 
 ###############################
@@ -278,6 +280,8 @@ if(UNIX)
                      -D_LARGE_FILES
                    )
 endif(UNIX)
+
+# Determine if we are using make or ninja
 if(CMAKE_MAKE_PROGRAM MATCHES "make")
    set(CMAKE_MAKE_PROGRAM_PRETTY_NAME "make")
 endif(CMAKE_MAKE_PROGRAM MATCHES "make")
@@ -291,29 +295,72 @@ endif(NOT CMAKE_MAKE_PROGRAM_PRETTY_NAME)
 
 
 ################################################################################
-# Checkout cmake version
+# Minimum required versions
 ################################################################################
-if(CMAKE_VERSION VERSION_LESS 2.8.8)
-      message(STATUS "Your CMake version is too old and does not support some features required by GNSS-SDR. CMake version must be at least 2.8.8. For more information check https://github.com/joakimkarlsson/bandit/issues/40")
-      message(FATAL_ERROR "Fatal error: CMake >= 2.8.8 required.")
-endif(CMAKE_VERSION VERSION_LESS 2.8.8)
+set(GNSSSDR_CMAKE_MIN_VERSION "2.8.8")
+set(GNSSSDR_GCC_MIN_VERSION "4.7.2")
+set(GNSSSDR_CLANG_MIN_VERSION "3.4.0")
+set(GNSSSDR_APPLECLANG_MIN_VERSION "500")
+set(GNSSSDR_GNURADIO_MIN_VERSION "3.7.3")
+set(GNSSSDR_BOOST_MIN_VERSION "1.45")
+set(GNSSSDR_PYTHON_MIN_VERSION "2.7")
+set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
+set(GNSSSDR_ARMADILLO_MIN_VERSION "4.200.0")
+
+
+################################################################################
+# Check cmake version
+################################################################################
+if(CMAKE_VERSION VERSION_LESS ${GNSSSDR_CMAKE_MIN_VERSION})
+      message(STATUS "Your CMake version is too old and does not support some features required by GNSS-SDR. CMake version must be at least ${GNSSSDR_CMAKE_MIN_VERSION}. For more information check https://github.com/joakimkarlsson/bandit/issues/40")
+      message(FATAL_ERROR "Fatal error: CMake >= ${GNSSSDR_CMAKE_MIN_VERSION} required.")
+endif(CMAKE_VERSION VERSION_LESS ${GNSSSDR_CMAKE_MIN_VERSION})
 
 
 
 ################################################################################
-# Checkout compiler version
+# Check compiler version
 ################################################################################
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-      if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7)
-          message(STATUS "Your GCC version is too old and does not support some C++11 features required by GNSS-SDR. GCC version must be at least 4.7")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${GNSSSDR_GCC_MIN_VERSION})
+          message(STATUS "Your GCC version is too old and does not support some C++11 features required by GNSS-SDR. GCC version must be at least ${GNSSSDR_GCC_MIN_VERSION}")
           if(${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
               if(${LINUX_VER} MATCHES "12.04")
                   message(STATUS "For instructions on how to upgrade GCC, check http://askubuntu.com/a/271561")
               endif(${LINUX_VER} MATCHES "12.04")
           endif(${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
-          message(FATAL_ERROR "Fatal error: GCC >= 4.7 required.")
-      endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7)
-endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+          message(FATAL_ERROR "Fatal error: GCC >= ${GNSSSDR_GCC_MIN_VERSION} required.")
+      endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${GNSSSDR_GCC_MIN_VERSION})
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    execute_process(COMMAND
+        ${CMAKE_CXX_COMPILER} -v
+        RESULT_VARIABLE _res ERROR_VARIABLE _err
+        ERROR_STRIP_TRAILING_WHITESPACE)
+    if(${_res} STREQUAL "0")
+        # output is in error stream
+        string(REGEX MATCH "^Apple.*" IS_APPLE ${_err})
+        if("${IS_APPLE}" STREQUAL "")
+            set(MIN_VERSION ${GNSSSDR_CLANG_MIN_VERSION})
+            set(APPLE_STR "")
+            # retrieve the compiler's version from it
+            string(REGEX MATCH "clang version [0-9.]+" CLANG_OTHER_VERSION ${_err})
+            string(REGEX MATCH "[0-9.]+" CLANG_VERSION ${CLANG_OTHER_VERSION})
+        else("${IS_APPLE}" STREQUAL "")
+            set(MIN_VERSION ${GNSSSDR_APPLECLANG_MIN_VERSION})
+            set(APPLE_STR "Apple ")
+            # retrieve the compiler's version from it
+            string(REGEX MATCH "(clang-[0-9.]+)" CLANG_APPLE_VERSION ${_err})
+            string(REGEX MATCH "[0-9.]+" CLANG_VERSION ${CLANG_APPLE_VERSION})
+        endif("${IS_APPLE}" STREQUAL "")
+        if(${CLANG_VERSION} VERSION_LESS "${MIN_VERSION}")
+            message(WARNING "\nThe compiler selected to build GNSS-SDR (${APPLE_STR}Clang version ${CLANG_VERSION} : ${CMAKE_CXX_COMPILER}) is older than that officially supported (${MIN_VERSION} minimum). This build may or not work. We highly recommend using Apple Clang version ${APPLECLANG_MIN_VERSION} or more recent, or Clang version ${CLANG_MIN_VERSION} or more recent.")
+        endif(${CLANG_VERSION} VERSION_LESS "${MIN_VERSION}")
+    else(${_res} STREQUAL "0")
+        message(WARNING "\nCannot determine the version of the compiler selected to build GNSS-SDR (${APPLE_STR}Clang : ${CMAKE_CXX_COMPILER}). This build may or not work. We highly recommend using Apple Clang version ${APPLECLANG_MIN_VERSION} or more recent, or Clang version ${CLANG_MIN_VERSION} or more recent.")
+    endif(${_res} STREQUAL "0")
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
 
 
@@ -393,12 +440,13 @@ set(Boost_ADDITIONAL_VERSIONS
     "1.60.0" "1.60" "1.61.0" "1.61" "1.62.0" "1.62" "1.63.0" "1.63" "1.64.0" "1.64"
     "1.65.0" "1.65" "1.66.0" "1.66" "1.67.0" "1.67" "1.68.0" "1.68" "1.69.0" "1.69"
     "1.70.0" "1.70" "1.71.0" "1.71" "1.72.0" "1.72" "1.73.0" "1.73" "1.74.0" "1.74"
+    "1.75.0" "1.75" "1.76.0" "1.76" "1.77.0" "1.77" "1.78.0" "1.78" "1.79.0" "1.79"
 )
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost COMPONENTS date_time system filesystem thread serialization chrono unit_test_framework program_options REQUIRED)
 if(NOT Boost_FOUND)
-     message(FATAL_ERROR "Fatal error: Boost (version >=1.45.0) required.")
+     message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
 endif(NOT Boost_FOUND)
 
 
@@ -409,17 +457,17 @@ endif(NOT Boost_FOUND)
 set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER PMT)
 find_package(Gnuradio)
 if(PC_GNURADIO_RUNTIME_VERSION)
-   if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS 3.7.3)
+   if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS ${GNSSSDR_GNURADIO_MIN_VERSION})
        set(GNURADIO_RUNTIME_FOUND)
        message(STATUS "The GNU Radio version installed in your system is too old.")
-   endif(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS 3.7.3)
+   endif(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS ${GNSSSDR_GNURADIO_MIN_VERSION})
 endif(PC_GNURADIO_RUNTIME_VERSION)
 if(NOT GNURADIO_RUNTIME_FOUND)
-   message(STATUS "CMake cannot find GNU Radio >= 3.7.3")
+   message(STATUS "CMake cannot find GNU Radio >= ${GNSSSDR_GNURADIO_MIN_VERSION}")
    if(OS_IS_LINUX)
        message("Go to https://github.com/gnuradio/pybombs")
        message("and follow the instructions to install GNU Radio in your system.")
-       message(FATAL_ERROR "GNU Radio 3.7.3 or later is required to build gnss-sdr")
+       message(FATAL_ERROR "GNU Radio ${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
    endif(OS_IS_LINUX)
    if(OS_IS_MACOSX)
        message("You can install it easily via Macports:")
@@ -427,24 +475,24 @@ if(NOT GNURADIO_RUNTIME_FOUND)
        message("Alternatively, you can use homebrew:")
        message("  brew tap odrisci/gnuradio")
        message("  brew install gnuradio" )
-       message(FATAL_ERROR "GNU Radio 3.7.3 or later is required to build gnss-sdr")
+       message(FATAL_ERROR "GNU Radio ${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
    endif(OS_IS_MACOSX)
 endif(NOT GNURADIO_RUNTIME_FOUND)
 
 if(NOT GNURADIO_ANALOG_FOUND)
-    message(FATAL_ERROR "*** The gnuradio-analog library v3.7.3 or later is required to build gnss-sdr")
+    message(FATAL_ERROR "*** The gnuradio-analog library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_BLOCKS_FOUND)
-    message(FATAL_ERROR "*** The gnuradio-blocks library v3.7.3 or later is required to build gnss-sdr")
+    message(FATAL_ERROR "*** The gnuradio-blocks library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_FILTER_FOUND)
-    message(FATAL_ERROR "*** The gnuradio-filter library v3.7.3 or later is required to build gnss-sdr")
+    message(FATAL_ERROR "*** The gnuradio-filter library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_FFT_FOUND)
-    message(FATAL_ERROR "*** The gnuradio-fft library v3.7.3 or later is required to build gnss-sdr")
+    message(FATAL_ERROR "*** The gnuradio-fft library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_PMT_FOUND)
-    message(FATAL_ERROR "*** The gnuradio-pmt library v3.7.3 or later is required to build gnss-sdr")
+    message(FATAL_ERROR "*** The gnuradio-pmt library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
 endif()
 
 
@@ -480,12 +528,12 @@ if(NOT VOLK_GNSSSDR_FOUND)
     # Find Python required modules
     ###############################
     include(SetupPython) #sets PYTHON_EXECUTABLE and PYTHON_DASH_B
-    GNSSSDR_PYTHON_CHECK_MODULE("python >= 2.7" sys "sys.version.split()[0] >= '2.7'" PYTHON_MIN_VER_FOUND)
-    GNSSSDR_PYTHON_CHECK_MODULE("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
+    GNSSSDR_PYTHON_CHECK_MODULE("python >= ${GNSSSDR_PYTHON_MIN_VERSION}" sys "sys.version.split()[0] >= '${GNSSSDR_PYTHON_MIN_VERSION}'" PYTHON_MIN_VER_FOUND)
+    GNSSSDR_PYTHON_CHECK_MODULE("mako >= ${GNSSSDR_MAKO_MIN_VERSION}" mako "mako.__version__ >= '${GNSSSDR_MAKO_MIN_VERSION}'" MAKO_FOUND)
     GNSSSDR_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
 
     if(NOT PYTHON_MIN_VER_FOUND)
-        message(FATAL_ERROR "Python 2.7 or greater required to build VOLK_GNSSSDR")
+        message(FATAL_ERROR "Python ${GNSSSDR_PYTHON_MIN_VERSION} or greater required to build VOLK_GNSSSDR")
     endif()
 
     #  Mako
@@ -949,6 +997,28 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/sparc64-linux-gnu/6
                        /usr/lib/gcc/x86_64-linux-gnux32/6
                        /usr/lib/gcc/sh4-linux-gnu/6
+                       /usr/lib/gcc/x86_64-linux-gnu/7      # Debian 9 Buster
+                       /usr/lib/gcc/alpha-linux-gnu/7
+                       /usr/lib/gcc/aarch64-linux-gnu/7
+                       /usr/lib/gcc/arm-linux-gnueabi/7
+                       /usr/lib/gcc/arm-linux-gnueabihf/7
+                       /usr/lib/gcc/hppa-linux-gnu/7
+                       /usr/lib/gcc/i686-gnu/7
+                       /usr/lib/gcc/i686-linux-gnu/7
+                       /usr/lib/gcc/x86_64-kfreebsd-gnu/7
+                       /usr/lib/gcc/i686-kfreebsd-gnu/7
+                       /usr/lib/gcc/m68k-linux-gnu/7
+                       /usr/lib/gcc/mips-linux-gnu/7
+                       /usr/lib/gcc/mips64el-linux-gnuabi64/7
+                       /usr/lib/gcc/mipsel-linux-gnu/7
+                       /usr/lib/gcc/powerpc-linux-gnu/7
+                       /usr/lib/gcc/powerpc-linux-gnuspe/7
+                       /usr/lib/gcc/powerpc64-linux-gnu/7
+                       /usr/lib/gcc/powerpc64le-linux-gnu/7
+                       /usr/lib/gcc/s390x-linux-gnu/7
+                       /usr/lib/gcc/sparc64-linux-gnu/7
+                       /usr/lib/gcc/x86_64-linux-gnux32/7
+                       /usr/lib/gcc/sh4-linux-gnu/7
                 )
     if(NOT GFORTRAN)
         message(STATUS "The gfortran library has not been found.")
@@ -964,6 +1034,11 @@ if(OS_IS_LINUX)
 endif(OS_IS_LINUX)
 
 find_package(Armadillo)
+if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
+    set(ARMADILLO_FOUND false)
+    set(ENABLE_OWN_ARMADILLO true)
+endif(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
+
 if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " Armadillo has not been found.")
      message(STATUS " Armadillo will be downloaded and built automatically")
@@ -1213,6 +1288,8 @@ else(ENABLE_CUDA)
     message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA." )
 endif(ENABLE_CUDA)
 
+
+
 ###############################################################################
 # FPGA (OPTIONAL)
 ###############################################################################
@@ -1223,6 +1300,8 @@ else(ENABLE_FPGA)
     message(STATUS "Fpga Acceleration will be not enabled." )
     message(STATUS "Enable it with 'cmake -DENABLE_FPGA=ON ../' to add support for GPU-based acceleration using the FPGA." )
 endif(ENABLE_FPGA)
+
+
 
 ################################################################################
 # Setup of optional drivers

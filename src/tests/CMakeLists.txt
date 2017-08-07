@@ -141,7 +141,9 @@ if(OPENSSL_FOUND)
 endif(OPENSSL_FOUND)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(CLANG_FLAGS "-stdlib=libc++ -std=c++11 -lc++")
+    if(OS_IS_MACOSX)
+       set(CLANG_FLAGS "-stdlib=libc++ -lc++")
+    endif(OS_IS_MACOSX)
 endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 if(OPENCL_FOUND)

@@ -1351,11 +1351,16 @@ endif(ENABLE_GPROF)
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+
+# Enable C++11 support in Clang and use lib++ if working in macOS
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
     if(CMAKE_BUILD_TYPE MATCHES "Release")
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wno-unused-private-field")
     endif(CMAKE_BUILD_TYPE MATCHES "Release")
+    if(OS_IS_MACOSX)
+       set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -stdlib=libc++")
+    endif(OS_IS_MACOSX)
 endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 # Processor-architecture related flags

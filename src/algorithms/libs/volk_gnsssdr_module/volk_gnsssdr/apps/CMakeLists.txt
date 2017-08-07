@@ -34,11 +34,14 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
 )
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-   set(Clang_required_link "c++")
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-   set(Clang_required_link "")
-endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+
+set(Clang_required_link "")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+      set(Clang_required_link "c++")
+   endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
 
 if(ORC_FOUND)
     set(orc_lib ${ORC_LIBRARIES})

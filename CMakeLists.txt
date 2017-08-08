@@ -308,6 +308,7 @@ set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_ARMADILLO_MIN_VERSION "4.200.0")
 
 
+
 ################################################################################
 # Check cmake version
 ################################################################################
@@ -323,7 +324,7 @@ endif(CMAKE_VERSION VERSION_LESS ${GNSSSDR_CMAKE_MIN_VERSION})
 ################################################################################
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${GNSSSDR_GCC_MIN_VERSION})
-          message(STATUS "Your GCC version is too old and does not support some C++11 features required by GNSS-SDR. GCC version must be at least ${GNSSSDR_GCC_MIN_VERSION}")
+          message(STATUS "Your GCC version is too old and does not support some C++ features required by GNSS-SDR. GCC version must be at least ${GNSSSDR_GCC_MIN_VERSION}")
           if(${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
               if(${LINUX_VER} MATCHES "12.04")
                   message(STATUS "For instructions on how to upgrade GCC, check http://askubuntu.com/a/271561")
@@ -393,6 +394,7 @@ if(OS_IS_LINUX)
     find_package(Threads REQUIRED)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(OS_IS_LINUX)
+
 
 
 ################################################################################
@@ -580,8 +582,34 @@ if(NOT VOLK_GNSSSDR_FOUND)
         endif(CMAKE_GENERATOR STREQUAL Xcode)
     endif(OS_IS_MACOSX)
 
-    set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     set(C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
+    set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+    if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+            set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+            set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+    endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        if(OS_IS_LINUX)
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+                set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+                set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+            endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+        endif(OS_IS_LINUX)
+        if(OS_IS_MACOSX)
+            if(CLANG_VERSION VERSION_LESS "600")
+                set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            else(CLANG_VERSION VERSION_LESS "600")
+                set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+            endif(CLANG_VERSION VERSION_LESS "600")
+        endif(OS_IS_MACOSX)
+    endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
     if(CMAKE_CROSSCOMPILING)
         set(VOLK_GNSSSDR_COMPILER "")
     else(CMAKE_CROSSCOMPILING)
@@ -1034,10 +1062,12 @@ if(OS_IS_LINUX)
 endif(OS_IS_LINUX)
 
 find_package(Armadillo)
-if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
-    set(ARMADILLO_FOUND false)
-    set(ENABLE_OWN_ARMADILLO true)
-endif(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
+if(ARMADILLO_FOUND)
+    if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
+        set(ARMADILLO_FOUND false)
+        set(ENABLE_OWN_ARMADILLO true)
+    endif(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
+endif(ARMADILLO_FOUND)
 
 if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " Armadillo has not been found.")
@@ -1426,14 +1456,34 @@ endif(ENABLE_GPROF)
 ########################################################################
 # Set compiler flags
 ########################################################################
-# Enable C++11 support in GCC
+# Enable C++14 support in GCC / Fallback to C++11 when using GCC < 6.1.1
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+    else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+    endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 
-# Enable C++11 support in Clang and use lib++ if working in macOS
+# Enable C++14 support in Clang from 3.5 / Fallback to C++11 if older version and use lib++ if working in macOS
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+    if(OS_IS_LINUX)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+    endif(OS_IS_LINUX)
+    if(OS_IS_MACOSX)
+        # See https://trac.macports.org/wiki/XcodeVersionInfo for Apple Clang version equivalences
+        if(CLANG_VERSION VERSION_LESS "600")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+        else(CLANG_VERSION VERSION_LESS "600")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+        endif(CLANG_VERSION VERSION_LESS "600")
+    endif(OS_IS_MACOSX)
+
     if(CMAKE_BUILD_TYPE MATCHES "Release")
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wno-unused-private-field")
     endif(CMAKE_BUILD_TYPE MATCHES "Release")
@@ -1441,6 +1491,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -stdlib=libc++")
     endif(OS_IS_MACOSX)
 endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+if(NOT (CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32) AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+    if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
+        set(CMAKE_C_STANDARD 11)
+        set(CMAKE_CXX_STANDARD 14)
+    endif(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
+endif(NOT (CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32) AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
 
 # Processor-architecture related flags
 # See http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html#i386-and-x86_002d64-Options

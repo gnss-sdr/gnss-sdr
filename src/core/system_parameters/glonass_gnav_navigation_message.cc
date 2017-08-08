@@ -394,7 +394,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
             gnav_ephemeris.d_P_3 = static_cast<double>(read_navigation_unsigned(string_bits, P3));
             gnav_ephemeris.d_gamma_n = static_cast<double>(read_navigation_signed(string_bits, GAMMA_N)) * TWO_N30;
             gnav_ephemeris.d_P = static_cast<double>(read_navigation_unsigned(string_bits, P));
-            gnav_ephemeris.d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, EPH_L_N));
+            gnav_ephemeris.d_l3rd_n = static_cast<double>(read_navigation_unsigned(string_bits, EPH_L_N));
             gnav_ephemeris.d_VZn = static_cast<double>(read_navigation_signed(string_bits, Z_N_DOT)) * TWO_N20;
             gnav_ephemeris.d_AZn = static_cast<double>(read_navigation_signed(string_bits, Z_N_DOT_DOT)) * TWO_N30;
             gnav_ephemeris.d_Zn = static_cast<double>(read_navigation_signed(string_bits, Z_N)) * TWO_N11;
@@ -428,7 +428,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
             gnav_utc_model.d_tau_c = static_cast<double>(read_navigation_signed(string_bits, TAU_C)) * TWO_N31;
             gnav_utc_model.d_N_4 = static_cast<double>(read_navigation_unsigned(string_bits, N_4));
             gnav_utc_model.d_tau_gps = static_cast<double>(read_navigation_signed(string_bits, TAU_GPS)) * TWO_N30;
-            gnav_ephemeris.d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+            gnav_ephemeris.d_l5th_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
 
             // Compute Year and DoY based on Algorithm A3.11 of GLONASS ICD
             if(flag_ephemeris_str_4 == true)

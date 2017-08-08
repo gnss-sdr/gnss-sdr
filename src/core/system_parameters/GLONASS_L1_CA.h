@@ -78,6 +78,8 @@ const double GLONASS_SUN_SEMI_MAJOR_AXIS    = 1.49598e8;            //!< Semi-ma
 const double GLONASS_SUN_ECCENTRICITY       = 0.016719;             //!< Eccentricity of solar orbit
 
 // carrier and code frequencies
+const double GLONASS_L2_FREQ_HZ              = FREQ2_GLO;     //!< L1 [Hz]
+
 const double GLONASS_L1_FREQ_HZ              = FREQ1_GLO;     //!< L1 [Hz]
 const double GLONASS_L1_DFREQ_HZ             = DFRQ1_GLO;     //!< Freq Bias for GLONASS L1 [Hz]
 const double GLONASS_L1_CA_CODE_RATE_HZ      = 0.511e6;       //!< GLONASS L1 C/A code rate [chips/s]

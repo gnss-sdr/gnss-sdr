@@ -95,7 +95,8 @@ public:
     double d_P_2;           //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
     double d_P_3;           //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
     double d_P_4;           //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
-    double d_l_n;           //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+    double d_l3rd_n;           //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+    double d_l5th_n;           //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
 
     // Inmediate deliverables of ephemeris information
     //TODO check how freq channel is managed in gnav message. I think it is a number greater thn 0
@@ -164,7 +165,8 @@ public:
         archive & make_nvp("d_P_2", d_P_2);         //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
         archive & make_nvp("d_P_3", d_P_3);         //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
         archive & make_nvp("d_P_4", d_P_4);         //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
-        archive & make_nvp("d_l_n", d_l_n);         //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+        archive & make_nvp("d_l3rd_n", d_l3rd_n);         //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+        archive & make_nvp("d_l5th_n", d_l5th_n);         //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
     }
 
     /*!

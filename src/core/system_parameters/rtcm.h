@@ -158,7 +158,7 @@ public:
      * \params observables Set of observables as defined by the platform
      * \return string with message contents
      */
-    std::string print_MT1011(Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id);
+    std::string print_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id);
     /*!
      * \brief Prints Extended L1&L2 GLONASS RTK Observables
      * \details This GLONASS message type is the most common observational message type, with L1/L2/SNR content.  This is one of the most common messages found.
@@ -168,7 +168,7 @@ public:
      * \params observables Set of observables as defined by the platform
      * \return string with message contents
      */
-    std::string print_MT1012(Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id);
+    std::string print_MT1012(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id);
 
     /*!
      * \brief Prints message type 1019 (GPS Ephemeris), should be broadcast in the event that
@@ -185,18 +185,20 @@ public:
     * \brief Prints message type 1020 (GLONASS Ephemeris).
     * \note Code added as part of GSoC 2017 program
     * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+    * \param glonass_gnav_utc_model GLONASS GNAV Clock Information
     * \return Returns message type as a string type
     */
-    std::string print_MT1020(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
+    std::string print_MT1020(const Glonass_Gnav_Ephemeris & glonass_gnav_eph, const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model);
 
     /*!
      * \brief Verifies and reads messages of type 1020 (GLONASS Ephemeris).
      * \note Code added as part of GSoC 2017 program
      * \param message Message to read as a string type
      * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \param glonass_gnav_utc_model GLONASS GNAV Clock Information
      * \return Returns 1 if anything goes wrong, 0 otherwise.
      */
-    int read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glonass_gnav_eph);
+    int read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glonass_gnav_eph, Glonass_Gnav_Utc_Model & glonass_gnav_utc_model);
 
     /*!
      * \brief Prints message type 1029 (Unicode Text String)
@@ -1023,7 +1025,7 @@ private:
     int set_DF036(bool divergence_free_smoothing_indicator);
 
     std::bitset<3> DF037;       //!< GLONASS Smoothing Interval
-    int set_DF037(unsigned short smoothing_interval);
+    int set_DF037(short int smoothing_interval);
 
     std::bitset<6> DF038;       //!< GLONASS Satellite ID (Satellite Slot Number)
     int set_DF038(const Gnss_Synchro & gnss_synchro);
@@ -1161,10 +1163,10 @@ private:
     int set_DF103(const Gps_Ephemeris & gps_eph);
 
     std::bitset<1> DF104;       //!< GLONASS Almanac Health
-    int set_DF104(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
+    int set_DF104(unsigned int glonass_gnav_alm_health);
 
     std::bitset<1> DF105;       //!< GLONASS Almanac Health Availability Indicator
-    int set_DF105(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
+    int set_DF105(unsigned int glonass_gnav_alm_health_ind);
 
     std::bitset<2> DF106;       //!< GLONASS P1 Word
     int set_DF106(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
@@ -1235,26 +1237,26 @@ private:
     std::bitset<4> DF128;       //!< GLONASS F_T
     int set_DF128(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
 
-    std::bitset<1> DF129;       //!< GLONASS N_T
+    std::bitset<11> DF129;       //!< GLONASS N_T
     int set_DF129(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
 
     std::bitset<2> DF130;       //!< GLONASS M
     int set_DF130(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
 
     std::bitset<1> DF131;       //!< GLONASS Availability of additional data
-    int set_DF131(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
+    int set_DF131(unsigned int fifth_str_additional_data_ind);
 
     std::bitset<11> DF132;       //!< GLONASS N_A
-    int set_DF132(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
+    int set_DF132(const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model);
 
     std::bitset<32> DF133;       //!< GLONASS TAU_C
-    int set_DF133(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
+    int set_DF133(const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model);
 
     std::bitset<5> DF134;       //!< GLONASS N_4
-    int set_DF134(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
+    int set_DF134(const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model);
 
     std::bitset<22> DF135;       //!< GLONASS TAU_GPS
-    int set_DF135(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
+    int set_DF135(const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model);
 
     std::bitset<1> DF136;       //!< GLONASS L_N (FIFTH STRING)
     int set_DF136(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
@@ -1387,7 +1389,7 @@ private:
     int set_DF401(const Gnss_Synchro & gnss_synchro);
 
     std::bitset<4> DF402;
-    int set_DF402(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const Gnss_Synchro & gnss_synchro);
+    int set_DF402(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, const Glonass_Gnav_Ephemeris & ephGNAV, double obs_time, const Gnss_Synchro & gnss_synchro);
 
     std::bitset<6> DF403;
     int set_DF403(const Gnss_Synchro & gnss_synchro);
@@ -1402,7 +1404,7 @@ private:
     int set_DF406(const Gnss_Synchro & gnss_synchro);
 
     std::bitset<10> DF407;
-    int set_DF407(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const Gnss_Synchro & gnss_synchro);
+    int set_DF407(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, const Glonass_Gnav_Ephemeris & ephGNAV, double obs_time, const Gnss_Synchro & gnss_synchro);
 
     std::bitset<10> DF408;
     int set_DF408(const Gnss_Synchro & gnss_synchro);

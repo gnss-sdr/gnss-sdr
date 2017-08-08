@@ -74,7 +74,7 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
     rtklib_sat.sat    = glonass_gnav_eph.i_satellite_slot_number;       /* satellite number */
     rtklib_sat.iode   = glonass_gnav_eph.d_t_b;                         /* IODE (0-6 bit of tb field) */
     rtklib_sat.frq    = glonass_gnav_eph.i_satellite_freq_channel;      /* satellite frequency number */
-    rtklib_sat.svh    = glonass_gnav_eph.d_l_n;                         /* satellite health*/
+    rtklib_sat.svh    = glonass_gnav_eph.d_l3rd_n;                         /* satellite health*/
     rtklib_sat.sva    = glonass_gnav_eph.d_F_T;                         /* satellite accuracy*/
     rtklib_sat.age    = glonass_gnav_eph.d_E_n;                         /* satellite age*/
     rtklib_sat.pos[0] = glonass_gnav_eph.d_Xn*1000;                     /* satellite position (ecef) (m) */

@@ -33,7 +33,6 @@
 #define GNSS_SDR_VITERBI_DECODER_H_
 
 #include <deque>
-#include <cstdio>
 
 /*!
  * \brief Class that implements a Viterbi decoder

@@ -31,7 +31,6 @@
 
 
 #include "galileo_e1b_telemetry_decoder_cc.h"
-#include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <boost/lexical_cast.hpp>

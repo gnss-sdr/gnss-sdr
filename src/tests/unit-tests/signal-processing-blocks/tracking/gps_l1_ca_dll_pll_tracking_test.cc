@@ -43,7 +43,6 @@
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
 #include <gtest/gtest.h>
-#include <sys/wait.h>
 #include "GPS_L1_CA.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"

@@ -17,21 +17,17 @@
  */
 
 #include "qa_utils.h"
+
+#include <ctime>
+#include <cmath>
+#include <limits>
+#include <list>
+
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/type_traits.hpp>
-
-#include <iostream>
-#include <cstring>
-#include <fstream>
-#include <vector>
-#include <map>
-#include <list>
-#include <ctime>
-#include <cmath>
-#include <limits>
 
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>

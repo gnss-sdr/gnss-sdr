@@ -53,13 +53,12 @@
 #ifndef GNSS_SDR_RTKLIB_H_
 #define GNSS_SDR_RTKLIB_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
 #include <cmath>
-#include <time.h>
-#include <ctype.h>
+#include <ctime>
+#include <cctype>
 #include <pthread.h>
 #include <netinet/in.h>
 #include "MATH_CONSTANTS.h"

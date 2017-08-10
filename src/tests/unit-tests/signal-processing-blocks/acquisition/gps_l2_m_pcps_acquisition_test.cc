@@ -34,7 +34,6 @@
 
 #include <ctime>
 #include <cstdlib>
-#include <cstring>
 #include <iostream>
 #include <boost/chrono.hpp>
 #include <boost/make_shared.hpp>

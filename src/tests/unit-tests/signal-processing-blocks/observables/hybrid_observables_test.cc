@@ -30,15 +30,11 @@
  * -------------------------------------------------------------------------
  */
 
-
-#include <exception>
-#include <cstring>
-#include <ctime>
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/wait.h>
 #include <unistd.h>
+#include <cstdlib>
+#include <ctime>
+#include <exception>
+#include <iostream>
 #include <armadillo>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>

@@ -30,14 +30,12 @@
  */
 
 #include <algorithm>
+#include <chrono>
+#include <cstdlib>
 #include <exception>
 #include <iostream>
-#include <cstring>
-#include <chrono>
 #include <numeric>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/wait.h>
+#include <string>
 #include <thread>
 #include <unistd.h>
 #include <gflags/gflags.h>

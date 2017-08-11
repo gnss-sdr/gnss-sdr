@@ -51,18 +51,17 @@
 
 #include <unistd.h>
 
-#define DMA_ACQ_TRANSFER_SIZE 2046				// DMA transfer size for the acquisition
-#define RX_SIGNAL_MAX_VALUE 127					// 2^7 - 1 for 8-bit signed values
-#define NTIMES_CYCLE_THROUGH_RX_SAMPLES_FILE 50	// number of times we cycle through the file containing the received samples
-#define ONE_SECOND 1000000						// one second in microseconds
-#define FLOAT_SIZE (sizeof(float))				// size of the float variable in characters
+#define DMA_ACQ_TRANSFER_SIZE 2046  // DMA transfer size for the acquisition
+#define RX_SIGNAL_MAX_VALUE 127     // 2^7 - 1 for 8-bit signed values
+#define NTIMES_CYCLE_THROUGH_RX_SAMPLES_FILE 50 // number of times we cycle through the file containing the received samples
+#define ONE_SECOND 1000000          // one second in microseconds
+#define FLOAT_SIZE (sizeof(float))  // size of the float variable in characters
 
 // thread that reads the file containing the received samples, scales the samples to the dynamic range of the fixed point values, sends
 // the samples to the DMA and finally it stops the top block
 void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
         const char * file_name)
 {
-
     FILE *rx_signal_file; // file descriptor
     int file_length; // length of the file containing the received samples
     int dma_descr; // DMA descriptor
@@ -106,7 +105,6 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
                 {
                     max = (pointer_float[0]);
                 }
-
         }
 
     // go back to the beginning of the file containing the received samples
@@ -132,26 +130,20 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
 
     for (int k = 0; k < NTIMES_CYCLE_THROUGH_RX_SAMPLES_FILE; k++)
         {
-
             fseek(rx_signal_file, 0, SEEK_SET);
 
             int transfer_size;
             int num_transferred_samples = 0;
             while (num_transferred_samples < (int) (file_length / FLOAT_SIZE))
                 {
-                    if (((file_length / FLOAT_SIZE) - num_transferred_samples)
-                            > DMA_ACQ_TRANSFER_SIZE)
+                    if (((file_length / FLOAT_SIZE) - num_transferred_samples) > DMA_ACQ_TRANSFER_SIZE)
                         {
-
                             transfer_size = DMA_ACQ_TRANSFER_SIZE;
-                            num_transferred_samples = num_transferred_samples
-                                    + DMA_ACQ_TRANSFER_SIZE;
-
+                            num_transferred_samples = num_transferred_samples + DMA_ACQ_TRANSFER_SIZE;
                         }
                     else
                         {
-                            transfer_size = file_length / FLOAT_SIZE
-                                    - num_transferred_samples;
+                            transfer_size = file_length / FLOAT_SIZE - num_transferred_samples;
                             num_transferred_samples = file_length / FLOAT_SIZE;
                         }
 
@@ -160,16 +152,12 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
                             fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
 
                             // specify (float) (int) for a quantization maximizing the dynamic range
-                            buffer_DMA[t] = (signed char) ((pointer_float[0]
-                                    * (RX_SIGNAL_MAX_VALUE - 1)) / max);
-
+                            buffer_DMA[t] = (signed char) ((pointer_float[0] * (RX_SIGNAL_MAX_VALUE - 1)) / max);
                         }
 
                     //send_acquisition_gps_input_samples(buffer_DMA, transfer_size, dma_descr);
-                    assert(
-                            transfer_size == write(dma_descr, &buffer_DMA[0], transfer_size));
+                    assert(transfer_size == write(dma_descr, &buffer_DMA[0], transfer_size));
                 }
-
         }
     fclose(rx_signal_file);
     free(buffer_float);
@@ -179,8 +167,8 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     // when all the samples are sent stop the top block
 
     top_block->stop();
-
 }
+
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTestFpga_msg_rx;
@@ -200,11 +188,13 @@ public:
     ~GpsL1CaPcpsAcquisitionTestFpga_msg_rx(); //!< Default destructor
 };
 
+
 GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr GpsL1CaPcpsAcquisitionTestFpga_msg_rx_make()
 {
     return GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr(
             new GpsL1CaPcpsAcquisitionTestFpga_msg_rx());
 }
+
 
 void GpsL1CaPcpsAcquisitionTestFpga_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
@@ -220,6 +210,7 @@ void GpsL1CaPcpsAcquisitionTestFpga_msg_rx::msg_handler_events(pmt::pmt_t msg)
         }
 }
 
+
 GpsL1CaPcpsAcquisitionTestFpga_msg_rx::GpsL1CaPcpsAcquisitionTestFpga_msg_rx() :
         gr::block("GpsL1CaPcpsAcquisitionTestFpga_msg_rx",
                 gr::io_signature::make(0, 0, 0),
@@ -227,15 +218,14 @@ GpsL1CaPcpsAcquisitionTestFpga_msg_rx::GpsL1CaPcpsAcquisitionTestFpga_msg_rx() :
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
-            boost::bind(
-                    &GpsL1CaPcpsAcquisitionTestFpga_msg_rx::msg_handler_events,
-                    this, _1));
+            boost::bind( &GpsL1CaPcpsAcquisitionTestFpga_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
 
+
 GpsL1CaPcpsAcquisitionTestFpga_msg_rx::~GpsL1CaPcpsAcquisitionTestFpga_msg_rx()
-{
-}
+{}
+
 
 class GpsL1CaPcpsAcquisitionTestFpga : public ::testing::Test
 {
@@ -249,8 +239,7 @@ protected:
     }
 
     ~GpsL1CaPcpsAcquisitionTestFpga()
-    {
-    }
+    {}
 
     void init();
 
@@ -260,6 +249,7 @@ protected:
     Gnss_Synchro gnss_synchro;
     size_t item_size;
 };
+
 
 void GpsL1CaPcpsAcquisitionTestFpga::init()
 {
@@ -282,7 +272,6 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
     config->set_property("Acquisition.pfa", "0.0");
     config->set_property("Acquisition.select_queue_Fpga", "0");
     config->set_property("Acquisition.devicename", "/dev/uio0");
-
 }
 
 
@@ -290,15 +279,14 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, Instantiate)
 {
     init();
     boost::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition =
-            boost::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(),
-                    "Acquisition", 0, 1);
+            boost::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 1);
 }
 
 
 TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
 
     double expected_delay_samples = 524;

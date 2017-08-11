@@ -70,10 +70,12 @@ public:
 
 };
 
+
 GpsL2MDllPllTrackingTest_msg_rx_sptr GpsL2MDllPllTrackingTest_msg_rx_make()
 {
     return GpsL2MDllPllTrackingTest_msg_rx_sptr(new GpsL2MDllPllTrackingTest_msg_rx());
 }
+
 
 void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
@@ -89,6 +91,7 @@ void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
     }
 }
 
+
 GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() :
             gr::block("GpsL2MDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
@@ -97,12 +100,12 @@ GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() :
     rx_message = 0;
 }
 
+
 GpsL2MDllPllTrackingTest_msg_rx::~GpsL2MDllPllTrackingTest_msg_rx()
 {}
 
 
 // ###########################################################
-
 
 class GpsL2MDllPllTrackingTest: public ::testing::Test
 {
@@ -152,7 +155,7 @@ void GpsL2MDllPllTrackingTest::init()
 TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     int fs_in = 5000000;
     int nsamples = fs_in*9;
 

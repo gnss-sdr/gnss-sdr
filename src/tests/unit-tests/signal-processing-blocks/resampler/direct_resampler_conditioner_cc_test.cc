@@ -48,7 +48,7 @@ TEST(DirectResamplerConditionerCcTest, InstantiationAndRunTest)
     double fs_in = 8000000.0; // Input sampling frequency in Hz
     double fs_out = 4000000.0; // sampling freuqncy of the resampled signal in Hz
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     int nsamples = 1000000; //Number of samples to be computed
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     gr::top_block_sptr top_block = gr::make_top_block("direct_resampler_conditioner_cc_test");

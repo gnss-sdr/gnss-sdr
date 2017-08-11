@@ -176,7 +176,7 @@ TEST_F(FirFilterTest, ConnectAndRun)
 {
     int fs_in = 4000000;
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -207,7 +207,7 @@ TEST_F(FirFilterTest, ConnectAndRun)
 TEST_F(FirFilterTest, ConnectAndRunGrcomplex)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -248,7 +248,7 @@ TEST_F(FirFilterTest, ConnectAndRunGrcomplex)
 TEST_F(FirFilterTest, ConnectAndRunCshorts)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -293,7 +293,7 @@ TEST_F(FirFilterTest, ConnectAndRunCshorts)
 TEST_F(FirFilterTest, ConnectAndRunCbytes)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -337,7 +337,7 @@ TEST_F(FirFilterTest, ConnectAndRunCbytes)
 TEST_F(FirFilterTest, ConnectAndRunCbyteGrcomplex)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Fir filter test");
 
     init();

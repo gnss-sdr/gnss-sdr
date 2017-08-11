@@ -360,7 +360,7 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::start_queue()
 void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::wait_message()
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     while (!stop)
         {
@@ -440,7 +440,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
 {
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     config_1();

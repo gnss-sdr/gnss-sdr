@@ -98,10 +98,8 @@ void GalileoE1DllPllVemlTrackingInternalTest::init()
 }
 
 
-
 TEST_F(GalileoE1DllPllVemlTrackingInternalTest, Instantiate)
 {
-
     init();
     auto tracking = factory->GetBlock(config, "Tracking", "Galileo_E1_DLL_PLL_VEML_Tracking", 1, 1);
     EXPECT_STREQ("Galileo_E1_DLL_PLL_VEML_Tracking", tracking->implementation().c_str());
@@ -113,7 +111,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
     int fs_in = 8000000;
     int nsamples = 40000000;
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     init();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Tracking test");
@@ -154,11 +152,10 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
 }
 
 
-
 TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     // int num_samples = 40000000; // 4 Msps
     // unsigned int skiphead_sps = 24000000; // 4 Msps
     int num_samples = 80000000; // 8 Msps

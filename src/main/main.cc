@@ -155,8 +155,8 @@ int main(int argc, char** argv)
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
 
-    std::cout << "Total GNSS-SDR run time "
-              <<  elapsed_seconds.count()
+    std::cout << "Total GNSS-SDR run time: "
+              << elapsed_seconds.count()
               << " [seconds]" << std::endl;
 
     google::ShutDownCommandLineFlags();

@@ -450,7 +450,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         }
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     configure_receiver();
 

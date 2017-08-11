@@ -149,6 +149,7 @@ protected:
     boost::thread ch_thread;
 };
 
+
 void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
 {
     gnss_synchro.Channel_ID = 0;
@@ -169,6 +170,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
     config->set_property("Acquisition.repeat_satellite", "false");
     config->set_property("Acquisition0.cboc", "true");
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::start_queue()
 {
@@ -193,11 +195,11 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::wait_message()
         }
 }
 
+
 void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::stop_queue()
 {
     stop = true;
 }
-
 
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, Instantiate)
@@ -208,12 +210,13 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, Instantiate)
     EXPECT_STREQ("Galileo_E1_PCPS_Ambiguous_Acquisition", acquisition->implementation().c_str());
 }
 
+
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
 {
     int fs_in = 4000000;
     int nsamples = 4*fs_in;
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
@@ -240,10 +243,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
+
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 

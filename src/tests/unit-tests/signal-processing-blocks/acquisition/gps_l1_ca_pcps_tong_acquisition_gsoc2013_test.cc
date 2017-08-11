@@ -167,6 +167,7 @@ protected:
     double Pfa_a = 0.0;
 };
 
+
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::init()
 {
     message = 0;
@@ -181,6 +182,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::init()
     Pfa_p = 0;
     Pfa_a = 0;
 }
+
 
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_1()
 {
@@ -250,6 +252,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_1()
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.dump", "false");
 }
+
 
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_2()
 {
@@ -338,16 +341,18 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_2()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
     ch_thread = boost::thread(&GpsL1CaPcpsTongAcquisitionGSoC2013Test::wait_message, this);
 }
 
+
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::wait_message()
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     while (!stop)
         {
@@ -364,6 +369,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::wait_message()
             process_message();
         }
 }
+
 
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::process_message()
 {
@@ -406,10 +412,12 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::process_message()
         }
 }
 
+
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::stop_queue()
 {
     stop = true;
 }
+
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, Instantiate)
 {
@@ -417,11 +425,12 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, Instantiate)
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
+
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
 {
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
@@ -447,6 +456,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
 
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
+
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 {
@@ -526,7 +536,6 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
                     {
                         EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                     }
-
             }
             else if (i == 1)
             {
@@ -536,6 +545,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
             ch_thread.join();
         }
 }
+
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {

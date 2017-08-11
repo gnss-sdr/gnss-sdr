@@ -167,10 +167,11 @@ TEST_F(GpsL2MPcpsAcquisitionTest, Instantiate)
     std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
+
 TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
@@ -197,10 +198,11 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
+
 TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     double expected_delay_samples = 1;//2004;
@@ -250,7 +252,6 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
-
     ASSERT_NO_THROW( {
         acquisition->set_local_code();
         acquisition->set_state(1); // Ensure that acquisition starts at the first sample
@@ -278,5 +279,4 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
 
     EXPECT_LE(doppler_error_hz, 200) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
-
 }

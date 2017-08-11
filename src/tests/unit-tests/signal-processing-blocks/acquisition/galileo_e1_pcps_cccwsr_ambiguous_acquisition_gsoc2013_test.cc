@@ -167,6 +167,7 @@ protected:
     double Pfa_a;
 };
 
+
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::init()
 {
     message = 0;
@@ -181,6 +182,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::init()
     Pfa_p = 0;
     Pfa_a = 0;
 }
+
 
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_1()
 {
@@ -251,6 +253,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_1()
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.dump", "false");
 }
+
 
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_2()
 {
@@ -340,6 +343,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_2()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::start_queue()
 {
     stop = false;
@@ -350,7 +354,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::start_queue()
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::wait_message()
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     while (!stop)
         {
@@ -368,6 +372,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::wait_message()
             process_message();
         }
 }
+
 
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::process_message()
 {
@@ -410,10 +415,12 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::process_message()
         }
 }
 
+
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::stop_queue()
 {
     stop = true;
 }
+
 
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, Instantiate)
 {
@@ -422,11 +429,12 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, Instantiate)
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsCccwsrAmbiguousAcquisition>(acq_);
 }
 
+
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ConnectAndRun)
 {
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     config_1();
     top_block = gr::make_top_block("Acquisition test");
@@ -454,6 +462,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ConnectAndRun)
 
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
+
 
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
 {
@@ -552,6 +561,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
 #endif
         }
 }
+
 
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabilities)
 {

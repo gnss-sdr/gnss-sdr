@@ -42,7 +42,6 @@ GeoJSON_Printer::GeoJSON_Printer()
 }
 
 
-
 GeoJSON_Printer::~GeoJSON_Printer ()
 {
     GeoJSON_Printer::close_file();
@@ -51,7 +50,7 @@ GeoJSON_Printer::~GeoJSON_Printer ()
 
 bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
 {
-    boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time(); //::local_sec_clock::local_time(zone);
+    boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     tm timeinfo = boost::posix_time::to_tm(pt);
 
     if (time_tag_name)
@@ -129,7 +128,6 @@ bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
 }
 
 
-
 bool GeoJSON_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values)
 {
     double latitude;
@@ -170,7 +168,6 @@ bool GeoJSON_Printer::print_position(const std::shared_ptr<Pvt_Solution>& positi
             return false;
         }
 }
-
 
 
 bool GeoJSON_Printer::close_file()

@@ -66,7 +66,7 @@ void run_correlator_gpu(cuda_multicorrelator* correlator,
 TEST(GpuMulticorrelatorTest, MeasureExecutionTime)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     int max_threads = FLAGS_gpu_multicorrelator_max_threads_test;
     std::vector<std::thread> thread_pool;
     cuda_multicorrelator* correlator_pool[max_threads];

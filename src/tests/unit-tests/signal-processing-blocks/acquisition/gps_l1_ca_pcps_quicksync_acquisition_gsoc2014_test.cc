@@ -108,13 +108,12 @@ GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::GpsL1CaPcpsQuickSyncAcquisit
     rx_message = 0;
 }
 
+
 GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::~GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx()
 {}
 
 
 // ###########################################################
-
-
 
 class GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test: public ::testing::Test
 {
@@ -361,6 +360,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_3()
 {
     gnss_synchro.Channel_ID = 0;
@@ -463,7 +463,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::start_queue()
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::wait_message()
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     while (!stop)
         {
@@ -482,9 +482,9 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::wait_message()
         }
 }
 
+
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::process_message()
 {
-
     if (message == 1)
         {
             detection_counter++;
@@ -540,11 +540,12 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, Instantiate)
     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
+
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ConnectAndRun)
 {
     int nsamples = floor(fs_in * integration_time_ms * 1e-3);
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     boost::shared_ptr<GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
@@ -569,9 +570,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ConnectAndRun)
     }) << "Failure running the top_block."<< std::endl;
 
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
-
 }
-
 
 
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
@@ -652,11 +651,9 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
                     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
                     if (message == 1)
                         {
-
                             EXPECT_EQ((unsigned int)1, correct_estimation_counter)
                                 << "Acquisition failure. Incorrect parameters estimation.";
                         }
-
                 }
             else if (i == 1)
                 {

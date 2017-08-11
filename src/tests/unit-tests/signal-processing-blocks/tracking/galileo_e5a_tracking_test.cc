@@ -99,10 +99,11 @@ void GalileoE5aTrackingTest::init()
     config->set_property("Tracking_Galileo.ti_ms", "1");
 }
 
+
 TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     int fs_in = 32000000;
     int nsamples = 32000000*5;
     init();

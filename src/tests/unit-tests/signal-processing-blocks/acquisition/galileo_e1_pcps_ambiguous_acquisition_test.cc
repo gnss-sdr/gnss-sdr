@@ -166,7 +166,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
     int fs_in = 4000000;
     int nsamples = 4*fs_in;
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     init();
@@ -196,7 +196,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     double expected_delay_samples = 2920; //18250;
     double expected_doppler_hz = -632;

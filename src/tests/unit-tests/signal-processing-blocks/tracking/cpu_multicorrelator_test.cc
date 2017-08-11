@@ -50,20 +50,20 @@ void run_correlator_cpu(cpu_multicorrelator* correlator,
                     int correlation_size)
 {
     for(int k = 0; k < FLAGS_cpu_multicorrelator_iterations_test; k++)
-    {
-        correlator->Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
-                                                                   d_carrier_phase_step_rad,
-                                                                   d_code_phase_step_chips,
-                                                                   d_rem_code_phase_chips,
-                                                                   correlation_size);
-    }
+        {
+            correlator->Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
+                    d_carrier_phase_step_rad,
+                    d_code_phase_step_chips,
+                    d_rem_code_phase_chips,
+                    correlation_size);
+        }
 }
 
 
 TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     int max_threads = FLAGS_cpu_multicorrelator_max_threads_test;
     std::vector<std::thread> thread_pool;
     cpu_multicorrelator* correlator_pool[max_threads];

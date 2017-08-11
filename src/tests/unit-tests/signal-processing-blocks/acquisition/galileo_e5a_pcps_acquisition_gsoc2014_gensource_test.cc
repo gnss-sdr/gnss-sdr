@@ -476,7 +476,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::start_queue()
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::wait_message()
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     while (!stop)
         {
@@ -581,7 +581,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
     //int nsamples = floor(5*fs_in*integration_time_ms*1e-3);
     int nsamples = 21000*3;
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1);
     boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx> msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
     queue = gr::msg_queue::make(0);
@@ -761,7 +761,6 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
                             //std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
                             EXPECT_EQ((unsigned int) 1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                         }
-
                 }
             else if (i == 1)
                 {

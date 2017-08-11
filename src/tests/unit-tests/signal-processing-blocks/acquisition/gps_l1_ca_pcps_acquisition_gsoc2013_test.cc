@@ -257,6 +257,7 @@ void GpsL1CaPcpsAcquisitionGSoC2013Test::config_1()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GpsL1CaPcpsAcquisitionGSoC2013Test::config_2()
 {
     gnss_synchro.Channel_ID = 0;
@@ -344,16 +345,18 @@ void GpsL1CaPcpsAcquisitionGSoC2013Test::config_2()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GpsL1CaPcpsAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
     ch_thread = boost::thread(&GpsL1CaPcpsAcquisitionGSoC2013Test::wait_message, this);
 }
 
+
 void GpsL1CaPcpsAcquisitionGSoC2013Test::wait_message()
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     while (!stop)
         {
@@ -371,6 +374,7 @@ void GpsL1CaPcpsAcquisitionGSoC2013Test::wait_message()
             process_message();
         }
 }
+
 
 void GpsL1CaPcpsAcquisitionGSoC2013Test::process_message()
 {
@@ -411,10 +415,12 @@ void GpsL1CaPcpsAcquisitionGSoC2013Test::process_message()
         }
 }
 
+
 void GpsL1CaPcpsAcquisitionGSoC2013Test::stop_queue()
 {
     stop = true;
 }
+
 
 TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, Instantiate)
 {
@@ -423,11 +429,12 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, Instantiate)
     delete acquisition;
 }
 
+
 TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ConnectAndRun)
 {
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
@@ -455,6 +462,7 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ConnectAndRun)
 
     delete acquisition;
 }
+
 
 TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResults)
 {
@@ -551,6 +559,7 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResults)
 
     delete acquisition;
 }
+
 
 TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {

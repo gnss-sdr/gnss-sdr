@@ -29,6 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <numeric>

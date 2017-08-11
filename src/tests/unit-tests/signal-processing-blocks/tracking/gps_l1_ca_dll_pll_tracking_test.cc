@@ -31,7 +31,6 @@
  */
 
 
-#include <chrono>
 #include <iostream>
 #include <unistd.h>
 #include <armadillo>
@@ -75,10 +74,12 @@ public:
     ~GpsL1CADllPllTrackingTest_msg_rx(); //!< Default destructor
 };
 
+
 GpsL1CADllPllTrackingTest_msg_rx_sptr GpsL1CADllPllTrackingTest_msg_rx_make()
 {
     return GpsL1CADllPllTrackingTest_msg_rx_sptr(new GpsL1CADllPllTrackingTest_msg_rx());
 }
+
 
 void GpsL1CADllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
@@ -94,6 +95,7 @@ void GpsL1CADllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
     }
 }
 
+
 GpsL1CADllPllTrackingTest_msg_rx::GpsL1CADllPllTrackingTest_msg_rx() :
             gr::block("GpsL1CADllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
@@ -102,16 +104,15 @@ GpsL1CADllPllTrackingTest_msg_rx::GpsL1CADllPllTrackingTest_msg_rx() :
     rx_message = 0;
 }
 
+
 GpsL1CADllPllTrackingTest_msg_rx::~GpsL1CADllPllTrackingTest_msg_rx()
 {}
 
 
 // ###########################################################
 
-
 class GpsL1CADllPllTrackingTest: public ::testing::Test
 {
-
 public:
     std::string generator_binary;
     std::string p1;
@@ -352,10 +353,10 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    if (FLAGS_disable_generator==false)
-    {
-        generate_signal();
-    }
+    if (FLAGS_disable_generator == false)
+        {
+            generate_signal();
+        }
 
     struct timeval tv;
     long long int begin = 0;
@@ -424,7 +425,6 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     }) << "Failure connecting the blocks of tracking test." << std::endl;
 
     tracking->start_tracking();
-
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);

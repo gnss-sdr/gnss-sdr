@@ -165,6 +165,7 @@ protected:
     double Pfa_a;
 };
 
+
 void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::init()
 {
     message = 0;
@@ -179,6 +180,7 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::init()
     Pfa_p = 0;
     Pfa_a = 0;
 }
+
 
 void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::config_1()
 {
@@ -246,6 +248,7 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::config_1()
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.dump", "false");
 }
+
 
 void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::config_2()
 {
@@ -332,11 +335,13 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::config_2()
     config->set_property("Acquisition.dump", "false");    
 }
 
+
 void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
     ch_thread = boost::thread(&GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::wait_message, this);
 }
+
 
 void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::wait_message()
 {
@@ -365,6 +370,7 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::wait_message()
             process_message();
         }
 }
+
 
 void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::process_message()
 {
@@ -405,10 +411,12 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::process_message()
         }
 }
 
+
 void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::stop_queue()
 {
     stop = true;
 }
+
 
 TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, Instantiate)
 {
@@ -416,11 +424,12 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, Instantiate)
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition", 1, 1);
 }
 
+
 TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
 {
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     config_1();
     queue = gr::msg_queue::make(0);
@@ -468,6 +477,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
 
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
+
 
 TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 {
@@ -557,6 +567,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
             ch_thread.join();
         }
 }
+
 
 TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {

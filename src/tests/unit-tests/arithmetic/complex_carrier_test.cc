@@ -29,9 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-
+#include <chrono>
 #include <complex>
-#include <ctime>
 #include <armadillo>
 #include "gnss_signal_processing.h"
 
@@ -48,9 +47,8 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
     const double phase_step = (double)((GPS_TWO_PI * _f) / _fs);
     double phase = 0;
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     for(int i = 0; i < FLAGS_size_carrier_test; i++)
          {
@@ -58,10 +56,10 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
              phase += phase_step;
          }
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "A " << FLAGS_size_carrier_test
-              << "-length complex carrier in standard C++ (dynamic allocation) generated in " << (end - begin)
+              << "-length complex carrier in standard C++ (dynamic allocation) generated in " <<  elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
 
     std::complex<float> expected(1,0);
@@ -76,7 +74,7 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
             ASSERT_FLOAT_EQ(std::norm(expected), std::norm(mag[i]));
         }
 
-    ASSERT_LE(0, end - begin);
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 }
 
 
@@ -89,20 +87,20 @@ TEST(ComplexCarrierTest, C11ComplexImplementation)
     const double phase_step = (double)((GPS_TWO_PI * _f) / _fs);
     double phase = 0;
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
+
     for (int i = 0; i < FLAGS_size_carrier_test; i++)
         {
             output[i] = std::complex<float>(cos(phase), sin(phase));
             phase += phase_step;
         }
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "A " << FLAGS_size_carrier_test
-              << "-length complex carrier in standard C++ (declaration) generated in " << (end - begin)
+              << "-length complex carrier in standard C++ (declaration) generated in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     std::complex<float> expected(1,0);
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
     for(int i = 0; i < FLAGS_size_carrier_test; i++)
@@ -120,16 +118,15 @@ TEST(ComplexCarrierTest, OwnComplexImplementation)
     std::complex<float>* output = new std::complex<float>[FLAGS_size_carrier_test];
     double _f = 2000;
     double _fs = 2000000;
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     complex_exp_gen(output, _f, _fs, (unsigned int)FLAGS_size_carrier_test);
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "A " << FLAGS_size_carrier_test
-              << "-length complex carrier using fixed point generated in " << (end - begin)
+              << "-length complex carrier using fixed point generated in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
 
     std::complex<float> expected(1,0);
@@ -143,5 +140,5 @@ TEST(ComplexCarrierTest, OwnComplexImplementation)
         {
             ASSERT_NEAR(std::norm(expected), std::norm(mag[i]), 0.0001);
         }
-    ASSERT_LE(0, end - begin);
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 }

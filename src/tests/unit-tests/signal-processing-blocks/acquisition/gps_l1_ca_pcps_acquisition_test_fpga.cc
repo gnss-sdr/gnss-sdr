@@ -29,11 +29,11 @@
  * -------------------------------------------------------------------------
  */
 
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <boost/make_shared.hpp>
 #include <boost/thread.hpp>
-#include <boost/chrono.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -285,6 +285,7 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
 
 }
 
+
 TEST_F(GpsL1CaPcpsAcquisitionTestFpga, Instantiate)
 {
     init();
@@ -293,11 +294,11 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, Instantiate)
                     "Acquisition", 0, 1);
 }
 
+
 TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Acquisition test");
 
     double expected_delay_samples = 524;
@@ -305,11 +306,9 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
     init();
 
     std::shared_ptr < GpsL1CaPcpsAcquisitionFpga > acquisition =
-            std::make_shared < GpsL1CaPcpsAcquisitionFpga
-                    > (config.get(), "Acquisition", 0, 1);
+            std::make_shared < GpsL1CaPcpsAcquisitionFpga > (config.get(), "Acquisition", 0, 1);
 
-    boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx> msg_rx =
-            GpsL1CaPcpsAcquisitionTestFpga_msg_rx_make();
+    boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTestFpga_msg_rx_make();
 
     ASSERT_NO_THROW(
                 {
@@ -374,32 +373,25 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
 
     EXPECT_NO_THROW(
                 {
-                    gettimeofday(&tv, NULL);
-                    begin = tv.tv_sec * 1000000 + tv.tv_usec;
+                    start = std::chrono::system_clock::now();
                     acquisition->reset(); // launch the tracking process
                     top_block->wait();
-                    gettimeofday(&tv, NULL);
-                    end = tv.tv_sec * 1000000 + tv.tv_usec;
+                    end = std::chrono::system_clock::now();
+                    elapsed_seconds = end - start;
                 })<< "Failure running the top_block." << std::endl;
 
     t3.join();
 
-    std::cout << "Ran GpsL1CaPcpsAcquisitionTestFpga in " << (end - begin)
-            << " microseconds" << std::endl;
+    std::cout << "Ran GpsL1CaPcpsAcquisitionTestFpga in " << elapsed_seconds.count() * 1e6
+              << " microseconds" << std::endl;
 
-    ASSERT_EQ(1, msg_rx->rx_message)
-            << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+    ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
-    double delay_error_samples = std::abs(
-            expected_delay_samples - gnss_synchro.Acq_delay_samples);
+    double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
     float delay_error_chips = (float) (delay_error_samples * 1023 / 4000);
-    double doppler_error_hz = std::abs(
-            expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
+    double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
-    EXPECT_LE(doppler_error_hz, 666)
-            << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
-    EXPECT_LT(delay_error_chips, 0.5)
-            << "Delay error exceeds the expected value: 0.5 chips";
-
+    EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
+    EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 }
 

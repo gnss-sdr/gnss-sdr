@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include <ctime>
+#include <chrono>
 #include <gnuradio/fft/fft.h>
 
 
@@ -38,7 +38,7 @@ DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT le
 TEST(FFTLengthTest, MeasureExecutionTime)
 {
     unsigned int d_fft_size;
-    struct timeval tv;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
 
     unsigned int fft_sizes [18] = { 1000, 1024, 1960, 2000, 2048, 4000, 4096, 4725, 8000, 8192, 10368, 12000, 16000, 16384, 27000, 32768, 50000, 65536 };
     double execution_times [18];
@@ -50,15 +50,14 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                     d_fft = new gr::fft::fft_complex(d_fft_size, true);
                     std::fill_n( d_fft->get_inbuf(), d_fft_size, gr_complex( 0.0, 0.0 ) );
 
-                    gettimeofday(&tv, NULL);
-                    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+                    start = std::chrono::system_clock::now();
                     for(int k = 0; k < FLAGS_fft_iterations_test; k++)
                         {
                             d_fft->execute();
                         }
-                    gettimeofday(&tv, NULL);
-                    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-                    execution_times[i] = static_cast<double>(end - begin) / (1000000.0 * static_cast<double>(FLAGS_fft_iterations_test));
+                    end = std::chrono::system_clock::now();
+                    std::chrono::duration<double> elapsed_seconds = end - start;
+                    execution_times[i] = elapsed_seconds.count() / static_cast<double>(FLAGS_fft_iterations_test);
                     std::cout << "FFT execution time for length=" << d_fft_size << " : " << execution_times[i] << " [s]" << std::endl;
                     delete d_fft;
                 }

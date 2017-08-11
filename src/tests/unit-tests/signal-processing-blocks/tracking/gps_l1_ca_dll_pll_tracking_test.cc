@@ -31,7 +31,7 @@
  */
 
 
-#include <ctime>
+#include <chrono>
 #include <iostream>
 #include <unistd.h>
 #include <armadillo>

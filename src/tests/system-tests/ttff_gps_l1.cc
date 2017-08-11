@@ -32,9 +32,8 @@
 
 #include <cerrno>
 #include <chrono>
-#include <cstdlib>
 #include <cmath>
-#include <ctime>
+#include <cstdlib>
 #include <limits>
 #include <numeric>
 #include <random>
@@ -484,12 +483,9 @@ TEST_F(TfttGpsL1CATest, ColdStart)
                 }
 
             // record startup time
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-            long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
-
             std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << std::endl;
-
+            std::chrono::time_point<std::chrono::system_clock> start, end;
+            start = std::chrono::system_clock::now();
             // start receiver
             try
             {
@@ -505,9 +501,9 @@ TEST_F(TfttGpsL1CATest, ColdStart)
             }
 
             // stop clock
-            gettimeofday(&tv, NULL);
-            long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-            double ttff = static_cast<double>(end - begin) / 1000000.0;
+            end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            double ttff = elapsed_seconds.count();
 
             std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
             EXPECT_FALSE(flowgraph->running());
@@ -569,11 +565,9 @@ TEST_F(TfttGpsL1CATest, HotStart)
                     control_thread = std::make_shared<ControlThread>(config2);
                 }
             // record startup time
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-            long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
-
             std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << std::endl;
+            std::chrono::time_point<std::chrono::system_clock> start, end;
+            start = std::chrono::system_clock::now();
 
             // start receiver
             try
@@ -590,9 +584,9 @@ TEST_F(TfttGpsL1CATest, HotStart)
             }
 
             // stop clock
-            gettimeofday(&tv, NULL);
-            long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-            double ttff = static_cast<double>(end - begin) / 1000000.0;
+            end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            double ttff = elapsed_seconds.count();
 
             std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
             EXPECT_FALSE(flowgraph->running());

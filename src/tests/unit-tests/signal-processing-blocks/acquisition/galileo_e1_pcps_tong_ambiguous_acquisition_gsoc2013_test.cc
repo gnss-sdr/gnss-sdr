@@ -33,10 +33,9 @@
 
 
 
-#include <ctime>
+#include <chrono>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
-#include <boost/chrono.hpp>
 #include <boost/thread.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -107,8 +106,10 @@ GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx::GalileoE1PcpsTongAmbig
     rx_message = 0;
 }
 
+
 GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx::~GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx()
 {}
+
 
 class GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test: public ::testing::Test
 {
@@ -170,6 +171,7 @@ protected:
     double Pfa_a;
 };
 
+
 void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::init()
 {
     message = 0;
@@ -184,6 +186,7 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::init()
     Pfa_p = 0;
     Pfa_a = 0;
 }
+
 
 void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::config_1()
 {
@@ -255,6 +258,7 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::config_1()
     config->set_property("Acquisition_Galileo.doppler_step", "250");
     config->set_property("Acquisition_Galileo.dump", "false");
 }
+
 
 void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::config_2()
 {
@@ -345,35 +349,36 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::config_2()
     config->set_property("Acquisition_Galileo.dump", "false");
 }
 
+
 void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
     ch_thread = boost::thread(&GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::wait_message, this);
 }
 
+
 void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::wait_message()
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
 
     while (!stop)
         {
             acquisition->reset();
 
-            gettimeofday(&tv, NULL);
-            begin = tv.tv_sec *1e6 + tv.tv_usec;
+            start = std::chrono::system_clock::now();
 
             channel_internal_queue.wait_and_pop(message);
 
-            gettimeofday(&tv, NULL);
-            end = tv.tv_sec *1e6 + tv.tv_usec;
+            end = std::chrono::system_clock::now();
+            elapsed_seconds = end - start;
 
-            mean_acq_time_us += (end - begin);
+            mean_acq_time_us += elapsed_seconds.count() * 1e6;
 
             process_message();
         }
 }
+
 
 void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::process_message()
 {
@@ -416,10 +421,12 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::process_message()
         }
 }
 
+
 void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::stop_queue()
 {
     stop = true;
 }
+
 
 TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, Instantiate)
 {
@@ -428,12 +435,12 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, Instantiate)
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsTongAmbiguousAcquisition>(acq_);
 }
 
+
 TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
 {
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     config_1();
@@ -449,15 +456,15 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1e6 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1e6 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
+
 
 TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 {
@@ -546,6 +553,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
             ch_thread.join();
         }
 }
+
 
 TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {

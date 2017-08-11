@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
+#include <chrono>
 #include <complex>
-#include <ctime>
 #include <iostream>
 #include <stdint.h>
 #include <gflags/gflags.h>
@@ -75,6 +75,7 @@ protected:
     int nsamples = FLAGS_filter_test_nsamples;
 };
 
+
 void FirFilterTest::init()
 {
     config->set_property("InputFilter.taps_item_type", "float");
@@ -99,11 +100,13 @@ void FirFilterTest::init()
     //config->set_property("InputFilter.dump", "true");
 }
 
+
 void FirFilterTest::configure_cbyte_cbyte()
 {
     config->set_property("InputFilter.input_item_type", "cbyte");
     config->set_property("InputFilter.output_item_type", "cbyte");
 }
+
 
 void FirFilterTest::configure_gr_complex_gr_complex()
 {
@@ -111,11 +114,13 @@ void FirFilterTest::configure_gr_complex_gr_complex()
     config->set_property("InputFilter.output_item_type", "gr_complex");
 }
 
+
 void FirFilterTest::configure_cshort_cshort()
 {
     config->set_property("InputFilter.input_item_type", "cshort");
     config->set_property("InputFilter.output_item_type", "cshort");
 }
+
 
 void FirFilterTest::configure_cbyte_gr_complex()
 {
@@ -144,6 +149,7 @@ TEST_F(FirFilterTest, InstantiateCshortCshort)
     ASSERT_EQ(1, res);
 }
 
+
 TEST_F(FirFilterTest, InstantiateCbyteCbyte)
 {
     init();
@@ -153,6 +159,7 @@ TEST_F(FirFilterTest, InstantiateCbyteCbyte)
     if (filter) res = 1;
     ASSERT_EQ(1, res);
 }
+
 
 TEST_F(FirFilterTest, InstantiateCbyteGrComplex)
 {
@@ -164,12 +171,12 @@ TEST_F(FirFilterTest, InstantiateCbyteGrComplex)
     ASSERT_EQ(1, res);
 }
 
+
 TEST_F(FirFilterTest, ConnectAndRun)
 {
     int fs_in = 4000000;
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -188,21 +195,19 @@ TEST_F(FirFilterTest, ConnectAndRun)
     }) << "Failure connecting the top_block."<< std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6  << " microseconds" << std::endl;
 }
 
 
 TEST_F(FirFilterTest, ConnectAndRunGrcomplex)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -232,20 +237,18 @@ TEST_F(FirFilterTest, ConnectAndRunGrcomplex)
     }) << "Failure connecting the top_block."<< std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " gr_complex samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Filtered " << nsamples << " gr_complex samples in " << elapsed_seconds.count() * 1e6  << " microseconds" << std::endl;
 }
 
 TEST_F(FirFilterTest, ConnectAndRunCshorts)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -277,22 +280,20 @@ TEST_F(FirFilterTest, ConnectAndRunCshorts)
     }) << "Failure connecting the top_block."<< std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " std::complex<int16_t> samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Filtered " << nsamples << " std::complex<int16_t> samples in " << elapsed_seconds.count() * 1e6  << " microseconds" << std::endl;
 }
 
 
 
 TEST_F(FirFilterTest, ConnectAndRunCbytes)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -324,21 +325,19 @@ TEST_F(FirFilterTest, ConnectAndRunCbytes)
     }) << "Failure connecting the top_block."<< std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " std::complex<int8_t> samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Filtered " << nsamples << " std::complex<int8_t> samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 
 TEST_F(FirFilterTest, ConnectAndRunCbyteGrcomplex)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -370,11 +369,10 @@ TEST_F(FirFilterTest, ConnectAndRunCbyteGrcomplex)
     }) << "Failure connecting the top_block."<< std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }

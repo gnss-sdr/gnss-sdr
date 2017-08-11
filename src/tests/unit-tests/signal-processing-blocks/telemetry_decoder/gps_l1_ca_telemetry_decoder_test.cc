@@ -31,8 +31,8 @@
  */
 
 #include <unistd.h>
+#include <chrono>
 #include <cstdlib>
-#include <ctime>
 #include <exception>
 #include <iostream>
 #include <string>
@@ -336,14 +336,13 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    if (FLAGS_disable_generator==false)
-    {
-        generate_signal();
-    }
+    if (FLAGS_disable_generator == false)
+        {
+            generate_signal();
+        }
 
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
 
     configure_receiver();
 
@@ -416,11 +415,10 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     tracking->start_tracking();
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
     //check results
@@ -478,6 +476,6 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     check_results(true_timestamp_s, true_tow_s, tlm_timestamp_s, tlm_tow_s);
 
-    std::cout <<  "Test completed in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 

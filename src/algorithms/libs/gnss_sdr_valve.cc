@@ -32,6 +32,7 @@
 
 #include "gnss_sdr_valve.h"
 #include <algorithm> // for min
+#include <cstring>  // for memcpy
 #include <gnuradio/io_signature.h>
 #include "control_message_factory.h"
 
@@ -66,6 +67,10 @@ int gnss_sdr_valve::work (int noutput_items,
     unsigned long long n = std::min(d_nitems - d_ncopied_items, (long long unsigned int)noutput_items);
     if (n == 0) return 0;
     memcpy (output_items[0], input_items[0], n * input_signature()->sizeof_stream_item(0));
+    //for(long long i = 0; i++; i<n)
+    //    {
+    //        output_items[i] = input_items[i];
+    //    }
     d_ncopied_items += n;
     return n;
 }

@@ -38,8 +38,7 @@
 #define GOOGLE_STRIP_LOG 0
 #endif
 
-#include <ctime>
-#include <cstdlib>
+#include <chrono>
 #include <memory>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
@@ -118,12 +117,11 @@ int main(int argc, char** argv)
                                       << " does not exist, attempting to create it."
                                       << std::endl;
                             boost::system::error_code ec;
-                            boost::filesystem::create_directory(p, ec);
-                            if(ec != 0)
+                            if(!boost::filesystem::create_directory(p, ec))
                                 {
                                     std::cout << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended." << std::endl;
                                     google::ShutDownCommandLineFlags();
-                                    std::exit(0);
+                                    return 1;
                                 }
                         }
                     std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
@@ -133,9 +131,8 @@ int main(int argc, char** argv)
     std::unique_ptr<ControlThread> control_thread(new ControlThread());
 
     // record startup time
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     try
     {
@@ -153,11 +150,13 @@ int main(int argc, char** argv)
     {
             LOG(INFO) << "Unexpected catch";
     }
+
     // report the elapsed time
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+
     std::cout << "Total GNSS-SDR run time "
-              << (static_cast<double>(end - begin)) / 1000000.0
+              <<  elapsed_seconds.count()
               << " [seconds]" << std::endl;
 
     google::ShutDownCommandLineFlags();

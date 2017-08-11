@@ -29,9 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#include <ctime>
+#include <chrono>
 #include <iostream>
-#include <boost/chrono.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -104,6 +103,7 @@ GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::GalileoE5aPcpsAcquisition
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
+
 
 GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx()
 {}
@@ -183,6 +183,7 @@ protected:
     int sat = 0;
 };
 
+
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::init()
 {
     message = 0;
@@ -198,6 +199,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::init()
     Pfa_a = 0;
 }
 
+
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
 {
     gnss_synchro.Channel_ID = 0;
@@ -206,7 +208,6 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     //    std::string signal = "5Q";
     std::string signal = "5X";
     signal.copy(gnss_synchro.Signal,2,0);
-
 
     integration_time_ms = 3;
     //fs_in = 11e6;
@@ -295,6 +296,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
+
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_2()
 {
     gnss_synchro.Channel_ID = 0;
@@ -341,6 +343,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_2()
     config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
+
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
 {
     gnss_synchro.Channel_ID = 0;
@@ -348,7 +351,6 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     //std::string signal = "5Q";
     std::string signal = "5X";
     signal.copy(gnss_synchro.Signal,2,0);
-
 
     integration_time_ms = 3;
     //fs_in = 10.24e6;
@@ -463,35 +465,36 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
+
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::start_queue()
 {
     stop = false;
     ch_thread = boost::thread(&GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::wait_message, this);
 }
 
+
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::wait_message()
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
 
     while (!stop)
         {
             acquisition->reset();
 
-            gettimeofday(&tv, NULL);
-            begin = tv.tv_sec *1e6 + tv.tv_usec;
+            start = std::chrono::system_clock::now();
 
             channel_internal_queue.wait_and_pop(message);
 
-            gettimeofday(&tv, NULL);
-            end = tv.tv_sec *1e6 + tv.tv_usec;
+            end = std::chrono::system_clock::now();
+            elapsed_seconds = end - start;
 
-            mean_acq_time_us += (end-begin);
+            mean_acq_time_us += elapsed_seconds.count() * 1e6;
 
             process_message();
         }
 }
+
 
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::process_message()
 {
@@ -577,9 +580,8 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
     config_1();
     //int nsamples = floor(5*fs_in*integration_time_ms*1e-3);
     int nsamples = 21000*3;
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1);
     boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx> msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
     queue = gr::msg_queue::make(0);
@@ -595,14 +597,13 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test."<< std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1e6 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1e6 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block."<< std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 /*

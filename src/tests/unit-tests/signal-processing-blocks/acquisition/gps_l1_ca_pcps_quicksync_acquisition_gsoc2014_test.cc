@@ -32,7 +32,7 @@
 
 
 
-#include <ctime>
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <glog/logging.h>
@@ -198,8 +198,8 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::init()
 
     miss_detection_counter = 0;
     Pmd = 0;
-
 }
+
 
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_1()
 {
@@ -268,6 +268,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_1()
     config->set_property("Acquisition.bit_transition_flag", "false");
     config->set_property("Acquisition.dump", "false");
 }
+
 
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
 {
@@ -451,31 +452,31 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_3()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::start_queue()
 {
     stop = false;
     ch_thread = boost::thread(&GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::wait_message, this);
 }
 
+
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::wait_message()
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
 
     while (!stop)
         {
             acquisition->reset();
 
-            gettimeofday(&tv, NULL);
-            begin = tv.tv_sec * 1e6 + tv.tv_usec;
+            start = std::chrono::system_clock::now();
 
             channel_internal_queue.wait_and_pop(message);
 
-            gettimeofday(&tv, NULL);
-            end = tv.tv_sec * 1e6 + tv.tv_usec;
+            end = std::chrono::system_clock::now();
+            elapsed_seconds = end - start;
 
-            mean_acq_time_us += (end - begin);
+            mean_acq_time_us += elapsed_seconds.count() * 1e6;
 
             process_message();
         }
@@ -542,9 +543,8 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, Instantiate)
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ConnectAndRun)
 {
     int nsamples = floor(fs_in * integration_time_ms * 1e-3);
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     boost::shared_ptr<GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
@@ -562,14 +562,13 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test."<< std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1e6 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1e6 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block."<< std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
 }
 

@@ -31,9 +31,9 @@
 
 
 #include "geojson_printer.h"
-#include <ctime>
 #include <iomanip>
 #include <sstream>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 
 GeoJSON_Printer::GeoJSON_Printer()
@@ -51,41 +51,39 @@ GeoJSON_Printer::~GeoJSON_Printer ()
 
 bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
 {
-    time_t rawtime;
-    struct tm * timeinfo;
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
+    boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time(); //::local_sec_clock::local_time(zone);
+    tm timeinfo = boost::posix_time::to_tm(pt);
 
     if (time_tag_name)
         {
             std::stringstream strm0;
-            const int year = timeinfo->tm_year - 100;
+            const int year = timeinfo.tm_year - 100;
             strm0 << year;
-            const int month = timeinfo->tm_mon + 1;
+            const int month = timeinfo.tm_mon + 1;
             if(month < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << month;
-            const int day = timeinfo->tm_mday;
+            const int day = timeinfo.tm_mday;
             if(day < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << day << "_";
-            const int hour = timeinfo->tm_hour;
+            const int hour = timeinfo.tm_hour;
             if(hour < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << hour;
-            const int min = timeinfo->tm_min;
+            const int min = timeinfo.tm_min;
             if(min < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << min;
-            const int sec = timeinfo->tm_sec;
+            const int sec = timeinfo.tm_sec;
             if(sec < 10)
                 {
                     strm0 << "0";

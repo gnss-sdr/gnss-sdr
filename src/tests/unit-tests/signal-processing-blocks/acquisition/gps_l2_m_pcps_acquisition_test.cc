@@ -32,10 +32,9 @@
 
 
 
-#include <ctime>
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
-#include <boost/chrono.hpp>
 #include <boost/make_shared.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -170,9 +169,8 @@ TEST_F(GpsL2MPcpsAcquisitionTest, Instantiate)
 
 TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
@@ -190,21 +188,19 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     double expected_delay_samples = 1;//2004;
@@ -262,15 +258,14 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure set_state and init acquisition test" << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
     //unsigned long int Acq_samplestamp_samples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout <<  "Acquisition process runtime duration: " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Acquisition process runtime duration: " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     std::cout <<  "gnss_synchro.Acq_doppler_hz = " << gnss_synchro.Acq_doppler_hz << " Hz" << std::endl;
     std::cout <<  "gnss_synchro.Acq_delay_samples = " << gnss_synchro.Acq_delay_samples << " Samples" << std::endl;

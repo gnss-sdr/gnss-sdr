@@ -30,9 +30,8 @@
  */
 
 
-#include <ctime>
+#include <chrono>
 #include <iostream>
-#include <boost/chrono.hpp>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -341,16 +340,13 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::start_queue()
 
 void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::wait_message()
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
 
     while (!stop)
         {
             acquisition->reset();
 
-            gettimeofday(&tv, NULL);
-            begin = tv.tv_sec *1e6 + tv.tv_usec;
+            start = std::chrono::system_clock::now();
 
             try
             {
@@ -361,10 +357,10 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::wait_message()
                     DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
             }
 
-            gettimeofday(&tv, NULL);
-            end = tv.tv_sec*1e6 + tv.tv_usec;
+            end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
 
-            mean_acq_time_us += (end - begin);
+            mean_acq_time_us += elapsed_seconds.count() * 1e6;
 
             process_message();
         }
@@ -423,9 +419,8 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, Instantiate)
 TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
 {
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
 
     config_1();
     queue = gr::msg_queue::make(0);
@@ -465,14 +460,13 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1e6 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1e6 + tv.tv_usec;
-    }) << "Failure running he top_block." << std::endl;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
+    }) << "Failure running the top_block." << std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)

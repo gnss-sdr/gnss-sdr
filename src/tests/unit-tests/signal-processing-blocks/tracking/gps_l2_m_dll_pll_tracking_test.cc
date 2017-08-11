@@ -31,7 +31,7 @@
  */
 
 
-#include <ctime>
+#include <chrono>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -148,11 +148,11 @@ void GpsL2MDllPllTrackingTest::init()
     config->set_property("Tracking_2S.dll_bw_hz", "0.5");
 }
 
+
 TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
     int fs_in = 5000000;
     int nsamples = fs_in*9;
 
@@ -195,14 +195,13 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     tracking->start_tracking();
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
     // TODO: Verify tracking results
-    std::cout <<  "Tracked " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Tracked " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 

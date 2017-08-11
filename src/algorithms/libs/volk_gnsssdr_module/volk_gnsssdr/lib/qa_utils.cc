@@ -18,7 +18,7 @@
 
 #include "qa_utils.h"
 
-#include <ctime>
+#include <chrono>
 #include <cmath>
 #include <limits>
 #include <list>
@@ -486,10 +486,10 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
 
     //now run the test
     vlen = vlen - vlen_twiddle;
-    clock_t start, end;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
     std::vector<double> profile_times;
     for(size_t i = 0; i < arch_list.size(); i++) {
-        start = clock();
+        start = std::chrono::system_clock::now();
 
         switch(both_sigs.size())
         {
@@ -614,8 +614,9 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                 break;
         }
 
-        end = clock();
-        double arch_time = 1000.0 * (double)(end-start)/(double)CLOCKS_PER_SEC;
+        end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        double arch_time = 1000.0 * elapsed_seconds.count();
         std::cout << arch_list[i] << " completed in " << arch_time << "ms" << std::endl;
         volk_gnsssdr_test_time_t result;
         result.name = arch_list[i];

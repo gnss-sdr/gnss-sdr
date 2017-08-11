@@ -31,8 +31,8 @@
  */
 
 
+#include <chrono>
 #include <complex>
-#include <ctime>
 #include <numeric>
 #include <armadillo>
 #include <volk/volk.h>
@@ -46,19 +46,18 @@ TEST(MultiplyTest, StandardCDoubleImplementation)
     double* input = new double[FLAGS_size_multiply_test];
     double* output = new double[FLAGS_size_multiply_test];
     memset(input, 0, sizeof(double) * FLAGS_size_multiply_test);
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     for(int i = 0; i < FLAGS_size_multiply_test; i++)
         {
             output[i] = input[i] * input[i];
         }
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
-              << " doubles in standard C finished in " << (end - begin)
+              << " doubles in standard C finished in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
 
     double acc = 0;
@@ -69,7 +68,7 @@ TEST(MultiplyTest, StandardCDoubleImplementation)
         }
     delete[] input;
     delete[] output;
-    ASSERT_LE(0, end - begin);
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     ASSERT_EQ(expected, acc);
 }
 
@@ -79,18 +78,17 @@ TEST(MultiplyTest, ArmadilloImplementation)
     arma::vec input(FLAGS_size_multiply_test, arma::fill::zeros);
     arma::vec output(FLAGS_size_multiply_test);
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     output = input % input;
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
-              << "-length double Armadillo vectors finished in " << (end - begin)
+              << "-length double Armadillo vectors finished in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     ASSERT_EQ(0, arma::norm(output,2));
 }
 
@@ -101,19 +99,18 @@ TEST(MultiplyTest, StandardCComplexImplementation)
     std::complex<float>* input = new std::complex<float>[FLAGS_size_multiply_test];
     std::complex<float>* output = new std::complex<float>[FLAGS_size_multiply_test];
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_multiply_test);
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     for(int i = 0; i < FLAGS_size_multiply_test; i++)
         {
             output[i] = input[i] * input[i];
         }
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
-              << " complex<float> in standard C finished in " << (end - begin)
+              << " complex<float> in standard C finished in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
 
     std::complex<float> expected(0,0);
@@ -124,7 +121,7 @@ TEST(MultiplyTest, StandardCComplexImplementation)
          }
     delete[] input;
     delete[] output;
-    ASSERT_LE(0, end - begin);
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     ASSERT_EQ(expected, result);
 }
 
@@ -135,9 +132,8 @@ TEST(MultiplyTest, C11ComplexImplementation)
     const std::vector<std::complex<float>> input(FLAGS_size_multiply_test);
     std::vector<std::complex<float>> output(FLAGS_size_multiply_test);
     int pos = 0;
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     // Trying a range-based for
     for (const auto &item : input)
@@ -145,12 +141,12 @@ TEST(MultiplyTest, C11ComplexImplementation)
             output[pos++] = item * item;
         }
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
-              << " complex<float> vector (C++11-style) finished in " << (end - begin)
+              << " complex<float> vector (C++11-style) finished in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 
     std::complex<float> expected(0,0);
     auto result = std::inner_product(output.begin(), output.end(), output.begin(), expected);
@@ -163,18 +159,17 @@ TEST(MultiplyTest, ArmadilloComplexImplementation)
     arma::cx_fvec input(FLAGS_size_multiply_test, arma::fill::zeros);
     arma::cx_fvec output(FLAGS_size_multiply_test);
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     output = input % input;
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
-              << "-length complex float Armadillo vectors finished in " << (end - begin)
+              << "-length complex float Armadillo vectors finished in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     ASSERT_EQ(0, arma::norm(output,2));
 }
 
@@ -187,18 +182,17 @@ TEST(MultiplyTest, VolkComplexImplementation)
     std::complex<float>* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_multiply_test);
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     volk_32fc_x2_multiply_32fc(output, input, input, FLAGS_size_multiply_test);
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
-              << "-length complex float vector using VOLK finished in " << (end - begin)
+              << "-length complex float vector using VOLK finished in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+    ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 
     float* mag = static_cast<float*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(float), volk_gnsssdr_get_alignment()));
     volk_32fc_magnitude_32f(mag, output, FLAGS_size_multiply_test);

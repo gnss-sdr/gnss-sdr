@@ -31,8 +31,8 @@
  */
 
 #include <unistd.h>
+#include <chrono>
 #include <cstdlib>
-#include <ctime>
 #include <exception>
 #include <iostream>
 #include <armadillo>
@@ -437,6 +437,7 @@ void HybridObservablesTest::check_results_code_psudorange(
     ASSERT_GT(min_error, -2);
 }
 
+
 TEST_F(HybridObservablesTest, ValidationOfResults)
 {
     // Configure the signal generator
@@ -444,13 +445,12 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
     // Generate signal raw signal samples and observations RINEX file
     if (FLAGS_disable_generator==false)
-    {
-        generate_signal();
-    }
+        {
+            generate_signal();
+        }
 
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
 
     configure_receiver();
 
@@ -502,7 +502,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         {
             throw std::exception();
         };
-    })<< "Failure reading true observables file" << std::endl;
+    }) << "Failure reading true observables file" << std::endl;
 
     //restart the epoch counter
     true_obs_data_ch0.restart();
@@ -524,8 +524,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     std::shared_ptr<TelemetryDecoderInterface> tlm_ch0(new GpsL1CaTelemetryDecoder(config.get(), "TelemetryDecoder_1C",1, 1));
     std::shared_ptr<TelemetryDecoderInterface> tlm_ch1(new GpsL1CaTelemetryDecoder(config.get(), "TelemetryDecoder_1C",1, 1));
 
-
-
     ASSERT_NO_THROW( {
         tlm_ch0->set_channel(0);
         tlm_ch1->set_channel(1);
@@ -539,7 +537,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
     //Observables
     std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables",2, 2));
-
 
     ASSERT_NO_THROW( {
         tracking_ch0->set_channel(gnss_synchro_ch0.Channel_ID);
@@ -584,11 +581,10 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     tracking_ch1->start_tracking();
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
     //check results
@@ -700,7 +696,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     measuded_ch1_Pseudorange_m = measuded_ch1_Pseudorange_m.subvec(initial_meas_point(0), measuded_ch1_Pseudorange_m.size() - 1);
     measuded_ch1_Acc_carrier_phase_hz = measuded_ch1_Acc_carrier_phase_hz.subvec(initial_meas_point(0), measuded_ch1_Acc_carrier_phase_hz.size() - 1);
 
-
     //correct the clock error using true values (it is not possible for a receiver to correct
     //the receiver clock offset error at the observables level because it is required the
     //decoding of the ephemeris data and solve the PVT equations)
@@ -708,14 +703,16 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     //find the reference satellite and compute the receiver time offset at obsevable level
     arma::vec receiver_time_offset_s;
     if (measuded_ch0_Pseudorange_m(0)<measuded_ch1_Pseudorange_m(0))
-      {
-          receiver_time_offset_s=true_ch0_dist_m/GPS_C_m_s-GPS_STARTOFFSET_ms/1000.0;
-      }else{
-          receiver_time_offset_s=true_ch1_dist_m/GPS_C_m_s-GPS_STARTOFFSET_ms/1000.0;
-      }
-    arma::vec corrected_reference_TOW_s=true_ch0_tow_s-receiver_time_offset_s;
+        {
+            receiver_time_offset_s = true_ch0_dist_m / GPS_C_m_s - GPS_STARTOFFSET_ms/1000.0;
+        }
+    else
+        {
+            receiver_time_offset_s = true_ch1_dist_m / GPS_C_m_s - GPS_STARTOFFSET_ms/1000.0;
+        }
+    arma::vec corrected_reference_TOW_s = true_ch0_tow_s - receiver_time_offset_s;
 
-    std::cout<<"receiver_time_offset_s [0]: "<<receiver_time_offset_s(0)<<std::endl;
+    std::cout <<" receiver_time_offset_s [0]: " << receiver_time_offset_s(0) << std::endl;
 
     //compare measured observables
     check_results_code_psudorange(true_ch0_dist_m, true_ch1_dist_m, corrected_reference_TOW_s,
@@ -728,6 +725,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             measuded_ch1_Acc_carrier_phase_hz,
             measuded_ch0_RX_time_s);
 
-    std::cout <<  "Test completed in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 

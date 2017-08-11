@@ -30,51 +30,47 @@
  */
 
 #include "kml_printer.h"
-#include <ctime>
 #include <sstream>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 
 using google::LogMessage;
 
 bool Kml_Printer::set_headers(std::string filename,  bool time_tag_name)
 {
+    boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
+    tm timeinfo = boost::posix_time::to_tm(pt);
 
-    time_t rawtime;
-    struct tm * timeinfo;
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
     if (time_tag_name)
         {
-
-
             std::stringstream strm0;
-            const int year = timeinfo->tm_year - 100;
+            const int year = timeinfo.tm_year - 100;
             strm0 << year;
-            const int month = timeinfo->tm_mon + 1;
+            const int month = timeinfo.tm_mon + 1;
             if(month < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << month;
-            const int day = timeinfo->tm_mday;
+            const int day = timeinfo.tm_mday;
             if(day < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << day << "_";
-            const int hour = timeinfo->tm_hour;
+            const int hour = timeinfo.tm_hour;
             if(hour < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << hour;
-            const int min = timeinfo->tm_min;
+            const int min = timeinfo.tm_min;
             if(min < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << min;
-            const int sec = timeinfo->tm_sec;
+            const int sec = timeinfo.tm_sec;
             if(sec < 10)
                 {
                     strm0 << "0";
@@ -88,6 +84,7 @@ bool Kml_Printer::set_headers(std::string filename,  bool time_tag_name)
             kml_filename = filename + ".kml";
         }
     kml_file.open(kml_filename.c_str());
+
     if (kml_file.is_open())
         {
             DLOG(INFO) << "KML printer writing on " << filename.c_str();
@@ -98,7 +95,7 @@ bool Kml_Printer::set_headers(std::string filename,  bool time_tag_name)
                     << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
                     << "    <Document>" << std::endl
                     << "    <name>GNSS Track</name>" << std::endl
-                    << "    <description>GNSS-SDR Receiver position log file created at " << asctime (timeinfo)
+                    << "    <description>GNSS-SDR Receiver position log file created at " << pt
                     << "    </description>" << std::endl
                     << "<Style id=\"yellowLineGreenPoly\">" << std::endl
                     << " <LineStyle>" << std::endl

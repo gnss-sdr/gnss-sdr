@@ -29,9 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-
+#include <chrono>
 #include <complex>
-#include <ctime>
 #include "gps_sdr_signal_processing.h"
 #include "gnss_signal_processing.h"
 
@@ -45,22 +44,20 @@ TEST(CodeGenerationTest, CodeGenGPSL1Test)
 
     int iterations = 1000;
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     for(int i = 0; i < iterations; i++)
         {
             gps_l1_ca_code_gen_complex( _dest,  _prn,  _chip_shift);
         }
+
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    ASSERT_LE(0, elapsed_seconds.count());
+    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+
     delete[] _dest;
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    ASSERT_LE(0, end - begin);
-    std::cout << "Generation completed in " << (end - begin) << " microseconds" << std::endl;
-
-
-
     /* std::complex<float>* _dest2 = new std::complex<float>[1023];gettimeofday(&tv, NULL);
     long long int begin2 = tv.tv_sec * 1000000 + tv.tv_usec;
 
@@ -95,21 +92,20 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
 
     int iterations = 1000;
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     for(int i = 0; i < iterations; i++)
         {
             gps_l1_ca_code_gen_complex_sampled( _dest,  _prn, _fs, _chip_shift);
         }
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    delete[] _dest;
-    ASSERT_LE(0, end - begin);
-    std::cout << "Generation completed in " << (end - begin) << " microseconds" << std::endl;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    ASSERT_LE(0, elapsed_seconds.count());
+    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
+    delete[] _dest;
 
     /* std::complex<float>* _dest2 = new std::complex<float>[_samplesPerCode];
     gettimeofday(&tv, NULL);
@@ -143,18 +139,18 @@ TEST(CodeGenerationTest, ComplexConjugateTest)
 
     int iterations = 1000;
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     for(int i = 0; i < iterations; i++)
         {
             complex_exp_gen_conj( _dest, _f,  _fs,  _samplesPerCode);
         }
 
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    ASSERT_LE(0, elapsed_seconds.count());
+    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+
     delete[] _dest;
-    ASSERT_LE(0, end - begin);
-    std::cout << "Carrier generation completed in " << (end - begin) << " microseconds" << std::endl;
 }

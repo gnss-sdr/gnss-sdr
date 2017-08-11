@@ -31,7 +31,7 @@
  */
 
 
-#include <ctime>
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -466,27 +466,26 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::start_queue()
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::wait_message()
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> begin, end;
+    std::chrono::duration<double> elapsed_seconds;
 
     while (!stop)
         {
             acquisition->reset();
 
-            gettimeofday(&tv, NULL);
-            begin = tv.tv_sec*1e6 + tv.tv_usec;
+            begin = std::chrono::system_clock::now();
 
             channel_internal_queue.wait_and_pop(message);
 
-            gettimeofday(&tv, NULL);
-            end = tv.tv_sec*1e6 + tv.tv_usec;
+            end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - begin;
 
-            mean_acq_time_us += (end - begin);
+            mean_acq_time_us += elapsed_seconds.count() * 1e6;
 
             process_message();
         }
 }
+
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::process_message()
 {
@@ -505,7 +504,6 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::process_message()
                 {
                     correct_estimation_counter++;
                 }
-
         }
     else if(message == 2 &&  gnss_synchro.PRN == 10)
         {
@@ -539,6 +537,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::process_message()
         }
 }
 
+
 void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::stop_queue()
 {
     stop = true;
@@ -557,9 +556,8 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ConnectAndRun)
 {
     LOG(INFO) << "**Start connect and run test";
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> begin, end;
+    std::chrono::duration<double> elapsed_seconds;
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
@@ -581,17 +579,17 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test."<< std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1e6 + tv.tv_usec;
+        begin = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1e6 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - begin;
     }) << "Failure running the top_block."<< std::endl;
 
-    std::cout << "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
     LOG(INFO) << "----end connect and run test-----";
     LOG(INFO) << "**End connect and run test";
 }
+
 
 TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResults)
 {
@@ -772,6 +770,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     DLOG(INFO) << "End validation of results with noise+interference test";
 }
 
+
 TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResultsProbabilities)
 {
     config_2();
@@ -866,8 +865,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                             pdpfafile << FLAGS_e1_value_threshold << "," << Pd << "," << Pfa_p << "," << Pmd << std::endl;
                             pdpfafile.close();
                         }
-
-
                 }
             else if (i == 1)
                 {

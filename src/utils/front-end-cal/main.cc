@@ -33,7 +33,8 @@
 #endif
 
 #include <stdlib.h>
-#include <ctime>
+#include <chrono>
+#include <ctime> // for ctime
 #include <exception>
 #include <memory>
 #include <queue>
@@ -410,9 +411,9 @@ int main(int argc, char** argv)
     boost::thread ch_thread;
 
     // record startup time
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
+    start = std::chrono::system_clock::now();
 
     bool start_msg = true;
 
@@ -469,10 +470,10 @@ int main(int argc, char** argv)
     std::cout << "]" << std::endl;
 
     // report the elapsed time
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    elapsed_seconds = end - start;
     std::cout << "Total signal acquisition run time "
-              << ((double)(end - begin))/1000000.0
+              << elapsed_seconds.count()
               << " [seconds]" << std::endl;
 
     //6. find TOW from SUPL assistance

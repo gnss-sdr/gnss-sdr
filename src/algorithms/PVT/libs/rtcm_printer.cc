@@ -32,11 +32,11 @@
  */
 
 #include "rtcm_printer.h"
-#include <ctime>
 #include <iostream>
 #include <iomanip>
 #include <fcntl.h>    // for O_RDWR
 #include <termios.h>  // for tcgetattr
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
@@ -45,41 +45,39 @@ using google::LogMessage;
 
 Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port, unsigned short rtcm_station_id, std::string rtcm_dump_devname, bool time_tag_name)
 {
-    time_t rawtime;
-    struct tm * timeinfo;
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
+    boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
+    tm timeinfo = boost::posix_time::to_tm(pt);
 
     if (time_tag_name)
         {
             std::stringstream strm0;
-            const int year = timeinfo->tm_year - 100;
+            const int year = timeinfo.tm_year - 100;
             strm0 << year;
-            const int month = timeinfo->tm_mon + 1;
+            const int month = timeinfo.tm_mon + 1;
             if(month < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << month;
-            const int day = timeinfo->tm_mday;
+            const int day = timeinfo.tm_mday;
             if(day < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << day << "_";
-            const int hour = timeinfo->tm_hour;
+            const int hour = timeinfo.tm_hour;
             if(hour < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << hour;
-            const int min = timeinfo->tm_min;
+            const int min = timeinfo.tm_min;
             if(min < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << min;
-            const int sec = timeinfo->tm_sec;
+            const int sec = timeinfo.tm_sec;
             if(sec < 10)
                 {
                     strm0 << "0";

@@ -30,7 +30,6 @@
  */
 
 #include "two_bit_cpx_file_signal_source.h"
-#include <cstdlib>
 #include <exception>
 #include <fstream>
 #include <iomanip>
@@ -42,9 +41,6 @@
 
 
 using google::LogMessage;
-
-//DEFINE_string(two_bit_cpx_signal_source, "-",
-//        "If defined, path to the file containing the NSR (byte to 2-bit packed) signal samples (overrides the configuration file)");
 
 
 TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* configuration,
@@ -235,10 +231,6 @@ void TwoBitCpxFileSignalSource::connect(gr::top_block_sptr top_block)
                 }
         }
 }
-
-
-
-
 
 
 void TwoBitCpxFileSignalSource::disconnect(gr::top_block_sptr top_block)

@@ -33,7 +33,6 @@
 #include <cerrno>
 #include <chrono>
 #include <cmath>
-#include <cstdlib>
 #include <limits>
 #include <numeric>
 #include <random>
@@ -652,7 +651,7 @@ int main(int argc, char **argv)
     if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
     {
         std::cout << "GNSS-SDR can not create message queues!" << std::endl;
-        exit(1);
+        return 1;
     }
     ttff_msgbuf msg;
     msg.mtype = 1;

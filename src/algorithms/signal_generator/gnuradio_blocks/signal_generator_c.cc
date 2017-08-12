@@ -29,7 +29,6 @@
 */
 
 #include "signal_generator_c.h"
-#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <gnuradio/io_signature.h>

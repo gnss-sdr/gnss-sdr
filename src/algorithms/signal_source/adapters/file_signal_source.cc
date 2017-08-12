@@ -31,7 +31,6 @@
  */
 
 #include "file_signal_source.h"
-#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <iomanip>

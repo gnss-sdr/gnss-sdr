@@ -30,7 +30,6 @@
  */
 
 #include "spir_file_signal_source.h"
-#include <cstdlib>
 #include <exception>
 #include <fstream>
 #include <iomanip>

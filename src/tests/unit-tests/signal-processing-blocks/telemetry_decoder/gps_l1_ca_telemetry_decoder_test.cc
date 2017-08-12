@@ -32,7 +32,6 @@
 
 #include <unistd.h>
 #include <chrono>
-#include <cstdlib>
 #include <exception>
 #include <iostream>
 #include <string>

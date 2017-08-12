@@ -33,7 +33,6 @@
 
 #include <string>
 #include <vector>
-#include <cstdlib>
 #include <random>
 #include <boost/scoped_array.hpp>
 #include <gnuradio/random.h>

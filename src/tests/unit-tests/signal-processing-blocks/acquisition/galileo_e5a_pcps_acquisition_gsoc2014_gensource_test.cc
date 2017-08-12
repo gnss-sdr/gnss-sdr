@@ -37,10 +37,8 @@
 #include <gnuradio/analog/sig_source_c.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
-#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
-#include "configuration_interface.h"
 #include "gnss_synchro.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "signal_generator.h"
@@ -49,8 +47,6 @@
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
 #include "pass_through.h"
-
-#include "gnss_block_factory.h"
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
@@ -136,7 +132,6 @@ protected:
     concurrent_queue<int> channel_internal_queue;
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    //std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
     std::shared_ptr<GalileoE5aNoncoherentIQAcquisitionCaf> acquisition;
 
     std::shared_ptr<InMemoryConfiguration> config;
@@ -204,35 +199,20 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
-    //    std::string signal = "5I";
-    //    std::string signal = "5Q";
     std::string signal = "5X";
     signal.copy(gnss_synchro.Signal,2,0);
 
-    integration_time_ms = 3;
-    //fs_in = 11e6;
-    //fs_in = 18e6;
+    integration_time_ms = 1;
     fs_in = 32e6;
-    //fs_in = 30.69e6;
-    //fs_in = 20.47e6;
 
-    //    unsigned int delay_samples = (delay_chips_[sat] % codelen)
-    //                          * samples_per_code_[sat] / codelen;
     expected_delay_chips = round(14000*((double)10230000/(double)fs_in));
     expected_doppler_hz = 2800;
-    //expected_doppler_hz = 0;
     expected_delay_sec = 94;
-    //    CAF_window_hz = 3000;
     CAF_window_hz = 0;
     Zero_padding = 0;
 
-    //expected_delay_chips = 1000;
-    //expected_doppler_hz = 250;
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
-
-    //max_doppler_error_hz = 1000;
-    //max_delay_error_chips = 1;
 
     num_of_realizations = 1;
 
@@ -277,22 +257,21 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
 
-    config->set_property("Acquisition_Galileo.item_type", "gr_complex");
-    config->set_property("Acquisition_Galileo.if", "0");
-    config->set_property("Acquisition_Galileo.coherent_integration_time_ms",
+    config->set_property("Acquisition_5X.item_type", "gr_complex");
+    config->set_property("Acquisition_5X.if", "0");
+    config->set_property("Acquisition_5X.coherent_integration_time_ms",
             std::to_string(integration_time_ms));
-    config->set_property("Acquisition_Galileo.max_dwells", "1");
-    config->set_property("Acquisition_Galileo.CAF_window_hz",std::to_string(CAF_window_hz));
-    config->set_property("Acquisition_Galileo.Zero_padding",std::to_string(Zero_padding));
+    config->set_property("Acquisition_5X.max_dwells", "1");
+    config->set_property("Acquisition_5X.CAF_window_hz",std::to_string(CAF_window_hz));
+    config->set_property("Acquisition_5X.Zero_padding",std::to_string(Zero_padding));
 
-    config->set_property("Acquisition_Galileo.implementation", "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF");
-    config->set_property("Acquisition_Galileo.pfa","0.003");
-    //    config->set_property("Acquisition_Galileo.threshold", "0.01");
-    config->set_property("Acquisition_Galileo.doppler_max", "10000");
-    config->set_property("Acquisition_Galileo.doppler_step", "250");
-    //    config->set_property("Acquisition_Galileo.doppler_step", "500");
-    config->set_property("Acquisition_Galileo.bit_transition_flag", "false");
-    config->set_property("Acquisition_Galileo.dump", "false");
+    config->set_property("Acquisition_5X.implementation", "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF");
+    config->set_property("Acquisition_5X.pfa","0.003");
+    //    config->set_property("Acquisition_5X.threshold", "0.01");
+    config->set_property("Acquisition_5X.doppler_max", "10000");
+    config->set_property("Acquisition_5X.doppler_step", "250");
+    config->set_property("Acquisition_5X.bit_transition_flag", "false");
+    config->set_property("Acquisition_5X.dump", "false");
     config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
@@ -301,25 +280,17 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_2()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
-    std::string signal = "5Q";
-    //std::string signal = "5X";
+    std::string signal = "5X";
     signal.copy(gnss_synchro.Signal,2,0);
 
     integration_time_ms = 3;
-    //fs_in = 10.24e6;
-    //fs_in = 12e6;
-    fs_in = 12e6;
 
-    //expected_delay_chips = 600;
-    //expected_doppler_hz = 750;
+    fs_in = 12e6;
 
     expected_delay_chips = 1000;
     expected_doppler_hz = 250;
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
-
-    //max_doppler_error_hz = 1000;
-    //max_delay_error_chips = 1;
 
     num_of_realizations = 1;
 
@@ -327,19 +298,17 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_2()
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
 
-    config->set_property("Acquisition_Galileo.item_type", "gr_complex");
-    config->set_property("Acquisition_Galileo.if", "0");
-    config->set_property("Acquisition_Galileo.coherent_integration_time_ms",
+    config->set_property("Acquisition_5X.item_type", "gr_complex");
+    config->set_property("Acquisition_5X.if", "0");
+    config->set_property("Acquisition_5X.coherent_integration_time_ms",
             std::to_string(integration_time_ms));
-    config->set_property("Acquisition_Galileo.max_dwells", "1");
-    config->set_property("Acquisition_Galileo.implementation", "Galileo_E5a_PCPS_Acquisition");
-    //config->set_property("Acquisition_Galileo.implementation", "Galileo_E5a_Pilot_3ms_Acquisition");
-    //config->set_property("Acquisition_Galileo.implementation", "Galileo_E5ax_2ms_Pcps_Acquisition");
-    config->set_property("Acquisition_Galileo.threshold", "0.1");
-    config->set_property("Acquisition_Galileo.doppler_max", "10000");
-    config->set_property("Acquisition_Galileo.doppler_step", "250");
-    config->set_property("Acquisition_Galileo.bit_transition_flag", "false");
-    config->set_property("Acquisition_Galileo.dump", "false");
+    config->set_property("Acquisition_5X.max_dwells", "1");
+    config->set_property("Acquisition_5X.implementation", "Galileo_E5a_PCPS_Acquisition");
+    config->set_property("Acquisition_5X.threshold", "0.1");
+    config->set_property("Acquisition_5X.doppler_max", "10000");
+    config->set_property("Acquisition_5X.doppler_step", "250");
+    config->set_property("Acquisition_5X.bit_transition_flag", "false");
+    config->set_property("Acquisition_5X.dump", "false");
     config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
@@ -353,12 +322,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     signal.copy(gnss_synchro.Signal,2,0);
 
     integration_time_ms = 3;
-    //fs_in = 10.24e6;
-    //fs_in = 12e6;
     fs_in = 12e6;
-
-    //expected_delay_chips = 600;
-    //expected_doppler_hz = 750;
 
     expected_delay_chips = 0;
     expected_delay_sec = 0;
@@ -375,8 +339,6 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
 
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
-    //max_doppler_error_hz = 1000;
-    //max_delay_error_chips = 1;
 
     num_of_realizations = 10;
 
@@ -448,20 +410,17 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
 
-    config->set_property("Acquisition_Galileo.item_type", "gr_complex");
-    config->set_property("Acquisition_Galileo.if", "0");
-    config->set_property("Acquisition_Galileo.coherent_integration_time_ms",
+    config->set_property("Acquisition_5X.item_type", "gr_complex");
+    config->set_property("Acquisition_5X.if", "0");
+    config->set_property("Acquisition_5X.coherent_integration_time_ms",
             std::to_string(integration_time_ms));
-    config->set_property("Acquisition_Galileo.max_dwells", "1");
-    config->set_property("Acquisition_Galileo.implementation", "Galileo_E5a_PCPS_Acquisition");
-    //config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
-    //config->set_property("Acquisition.implementation", "Galileo_E5a_Pilot_3ms_Acquisition");
-
-    config->set_property("Acquisition_Galileo.threshold", "0.5");
-    config->set_property("Acquisition_Galileo.doppler_max", "10000");
-    config->set_property("Acquisition_Galileo.doppler_step", "250");
-    config->set_property("Acquisition_Galileo.bit_transition_flag", "false");
-    config->set_property("Acquisition_Galileo.dump", "false");
+    config->set_property("Acquisition_5X.max_dwells", "1");
+    config->set_property("Acquisition_5X.implementation", "Galileo_E5a_PCPS_Acquisition");
+    config->set_property("Acquisition_5X.threshold", "0.5");
+    config->set_property("Acquisition_5X.doppler_max", "10000");
+    config->set_property("Acquisition_5X.doppler_step", "250");
+    config->set_property("Acquisition_5X.bit_transition_flag", "false");
+    config->set_property("Acquisition_5X.dump", "false");
     config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
@@ -606,45 +565,6 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
-/*
-TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, SOURCEValidation)
-{
-    config_1();
-    ASSERT_NO_THROW( {
-        boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
-        signal_source->connect(top_block);
-
-
-        //top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-
-    }) << "Failure generating signal" << std::endl;
-}
- */
-/*
-TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, SOURCEValidationTOFILE)
-{
-    config_1();
-    ASSERT_NO_THROW( {
-    std::string filename_ = "../data/Tiered_sinknull.dat";
-    boost::shared_ptr<gr::blocks::file_sink> file_sink_;
-
-        boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
-        //signal_source->connect(top_block);
-        file_sink_=gr::blocks::file_sink::make(sizeof(gr_complex), filename_.c_str());
-
-        top_block->connect(signal_source->get_right_block(),0,file_sink_,0);
-
-        //top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-
-    }) << "Failure generating signal" << std::endl;
-}
- */
 
 TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
 {
@@ -663,22 +583,21 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     }) << "Failure setting gnss_synchro."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition_Galileo.doppler_max", 10000));
+        acquisition->set_doppler_max(config->property("Acquisition_5X.doppler_max", 5000));
     }) << "Failure setting doppler_max."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition_Galileo.doppler_step", 500));
+        acquisition->set_doppler_step(config->property("Acquisition_5X.doppler_step", 100));
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition_Galileo.threshold", 0.0));
+        acquisition->set_threshold(config->property("Acquisition_5X.threshold", 0.0001));
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block."<< std::endl;
 
-    acquisition->init();
     // USING SIGNAL GENERATOR
 
     ASSERT_NO_THROW( {
@@ -696,27 +615,6 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     acquisition->reset();
     acquisition->init();
 
-    // USING SIGNAL FROM FILE SOURCE
-    //unsigned int skiphead_sps = 28000+32000; // 32 Msps
-    //    unsigned int skiphead_sps = 0;
-    //    unsigned int skiphead_sps = 84000;
-
-    // ASSERT_NO_THROW( {
-    //   //noiseless sim
-    //   //std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11_long.dat";
-    //   // real
-    // std::string file =  "/home/marc/E5a_acquisitions/32MS_complex.dat";
-    //
-    // const char * file_name = file.c_str();
-    // gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
-    //
-    // gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);
-    // top_block->connect(file_source, 0, skip_head, 0);
-    // top_block->connect(skip_head, 0, acquisition->get_left_block(), 0);
-    //
-    //   // top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
-    //  }) << "Failure connecting the blocks of acquisition test." << std::endl;
-
     // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
     for (unsigned int i = 0; i < 1; i++)
@@ -727,21 +625,20 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
             {
             case 0:
                 {
-                    gnss_synchro.PRN = 19; // present
+                    gnss_synchro.PRN = 11; // present
+                    break;
                 }
             case 1:
                 {
-                    gnss_synchro.PRN = 11;
+                    gnss_synchro.PRN = 19; // not present
+                    break;
                 }
             }
 
-            start_queue();
-
-            acquisition->reset();
-            acquisition->init();
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
             acquisition->set_state(1);
+            start_queue();
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
@@ -750,15 +647,14 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
             stop_queue();
 
             ch_thread.join();
-            //std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
-            //std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler" <<std::endl;
-            //std::cout << gnss_synchro.Acq_samplestamp_samples << "acq samples" <<std::endl;
+
             if (i == 0)
                 {
                     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
                     if (message == 1)
                         {
-                            //std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
+                            // std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
+                            // std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler" <<std::endl;
                             EXPECT_EQ((unsigned int) 1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                         }
                 }

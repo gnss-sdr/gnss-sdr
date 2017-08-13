@@ -598,12 +598,11 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block."<< std::endl;
 
-    // USING SIGNAL GENERATOR
+    // USING THE SIGNAL GENERATOR
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
         filter->connect(top_block);
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
@@ -664,6 +663,3 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
                 }
         }
 }
-
-
-

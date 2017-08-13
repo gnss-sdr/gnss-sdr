@@ -1811,9 +1811,9 @@ int Rtcm::read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glon
 {
     // Convert message to binary
     std::string message_bin = Rtcm::binary_data_to_bin(message);
-    int glonass_gnav_alm_health;
-    int glonass_gnav_alm_health_ind;
-    int fifth_str_additional_data_ind;
+    int glonass_gnav_alm_health = 0;
+    int glonass_gnav_alm_health_ind = 0;
+    int fifth_str_additional_data_ind = 0;
 
     if(!Rtcm::check_CRC(message) )
         {
@@ -1853,9 +1853,11 @@ int Rtcm::read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glon
 
     glonass_gnav_alm_health = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
+    if(glonass_gnav_alm_health){} //Avoid comiler warning
 
     glonass_gnav_alm_health_ind = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
+    if(glonass_gnav_alm_health_ind){} //Avoid comiler warning
 
     glonass_gnav_eph.d_P_1 = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
     index += 2;
@@ -1940,19 +1942,22 @@ int Rtcm::read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glon
     fifth_str_additional_data_ind = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
-    glonass_gnav_utc_model.d_N_A = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 11)));
-    index += 11;
+    if(fifth_str_additional_data_ind == true)
+        {
+            glonass_gnav_utc_model.d_N_A = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 11)));
+            index += 11;
 
-    glonass_gnav_utc_model.d_tau_c = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32)))* TWO_N31;
-    index += 32;
+            glonass_gnav_utc_model.d_tau_c = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32)))* TWO_N31;
+            index += 32;
 
-    glonass_gnav_utc_model.d_N_4 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 5)));
-    index += 5;
+            glonass_gnav_utc_model.d_N_4 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 5)));
+            index += 5;
 
-    glonass_gnav_utc_model.d_tau_gps = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 22)))* TWO_N30;
-    index += 22;
+            glonass_gnav_utc_model.d_tau_gps = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 22)))* TWO_N30;
+            index += 22;
 
-    glonass_gnav_eph.d_l5th_n = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+            glonass_gnav_eph.d_l5th_n = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+        }
 
     return 0;
 }
@@ -2301,7 +2306,8 @@ std::string Rtcm::get_MSM_header(unsigned int msg_number,
         bool divergence_free,
         bool more_messages)
 {
-    std::string sys(&observables.second.System, 1);
+    std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
+    std::string sys(gnss_synchro_iter->second.System, 1);
     Rtcm::set_DF002(msg_number);
     Rtcm::set_DF003(ref_id);
 
@@ -4466,7 +4472,7 @@ int Rtcm::set_DF133(const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model)
 int Rtcm::set_DF134(const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model)
 {
     unsigned int N_4 = static_cast<unsigned int>(std::round(glonass_gnav_utc_model.d_N_4));
-    DF134 = std::bitset<11>(N_4);
+    DF134 = std::bitset<5>(N_4);
     return 0;
 }
 

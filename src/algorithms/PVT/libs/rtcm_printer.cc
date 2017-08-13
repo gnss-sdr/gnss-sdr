@@ -202,17 +202,17 @@ bool Rtcm_Printer::Print_Rtcm_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables)
+bool Rtcm_Printer::Print_Rtcm_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int, Gnss_Synchro> & observables)
 {
-    std::string m1011 = rtcm->print_MT1011(glonass_gnav_eph, obs_time, observables, station_id);
+    std::string m1011 = rtcm->print_MT1011(glonass_gnav_ephL1, glonass_gnav_ephL2, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1011);
     return true;
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1012(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables)
+bool Rtcm_Printer::Print_Rtcm_MT1012(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int, Gnss_Synchro> & observables)
 {
-    std::string m1012 = rtcm->print_MT1012(glonass_gnav_eph, obs_time, observables, station_id);
+    std::string m1012 = rtcm->print_MT1012(glonass_gnav_ephL1, glonass_gnav_ephL2, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1012);
     return true;
 }
@@ -226,9 +226,9 @@ bool Rtcm_Printer::Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph)
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1020(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
+bool Rtcm_Printer::Print_Rtcm_MT1020(const Glonass_Gnav_Ephemeris & glonass_gnav_eph, const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model)
 {
-    std::string m1020 = rtcm->print_MT1020(glonass_gnav_eph);
+    std::string m1020 = rtcm->print_MT1020(glonass_gnav_eph, glonass_gnav_utc_model);
     Rtcm_Printer::Print_Message(m1020);
     return true;
 }

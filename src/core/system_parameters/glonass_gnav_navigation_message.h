@@ -69,8 +69,8 @@ public:
 
     //!< Satellite Identification
     int i_channel_ID;               //!< Channel ID assigned by the receiver
-    int i_satellite_freq_channel;   //!< SV Frequency Slot Number
-    int i_satellite_slot_number;    //!< SV Orbit Slot Number
+    unsigned int i_satellite_freq_channel;   //!< SV Frequency Slot Number
+    unsigned int i_satellite_slot_number;    //!< SV Orbit Slot Number
 
     //!< Ephmeris Flags
     bool flag_all_ephemeris;  //!< Flag indicating that all strings containing ephemeris have been received

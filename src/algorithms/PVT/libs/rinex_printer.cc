@@ -410,6 +410,7 @@ std::string Rinex_Printer::getLocalTime()
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
 {
+    if(glonass_gnav_almanac.i_satellite_freq_channel){}
     std::string line;
     stringVersion = "3.02";
     version = 3;
@@ -508,6 +509,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
 {
+    if(glonass_gnav_almanac.i_satellite_freq_channel){} //Avoid compiler warning
     std::string line;
     stringVersion = "3.02";
     version = 3;
@@ -630,6 +632,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
 
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
 {
+    if(glonass_gnav_almanac.i_satellite_freq_channel){} //Avoid compiler warning
     std::string line;
     stringVersion = "3.02";
     version = 3;
@@ -1389,6 +1392,7 @@ void Rinex_Printer::rinex_sbs_header(std::fstream& out)
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
 {
+    if(glonass_gnav_almanac.i_satellite_freq_channel){} //Avoid compiler warning
     std::vector<std::string> data;
     std::string line_aux;
 
@@ -1935,6 +1939,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
 {
+    if(glonass_gnav_almanac.i_satellite_freq_channel){} //Avoid compiler warning
     std::vector<std::string> data;
     std::string line_aux;
 
@@ -2041,6 +2046,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
 
 void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
 {
+    if(glonass_gnav_almanac.i_satellite_freq_channel){} //Avoid compiler warning
     std::vector<std::string> data;
     std::string line_aux;
 
@@ -3031,6 +3037,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int, Galileo
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string bands)
 {
+    if(eph.d_m){} //Avoid compiler warning
     std::string line;
     std::map<int,Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
 
@@ -5163,7 +5170,7 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Glonass_Gnav_Utc_
 {
     if(utc_model.d_N_4)
         {
-            
+
         }
 }
 

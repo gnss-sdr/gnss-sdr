@@ -66,7 +66,7 @@
 /* Strip whitespace chars off end of given string, in place. Return s. */
 static char* rstrip(char* s)
 {
-    char* p = s + strlen(s);
+    char* p = s + std::char_traits<char>::length(s);
     while (p > s && isspace(*--p))
         *p = '\0';
     return s;
@@ -92,7 +92,10 @@ static char* find_char_or_comment(const char* s, char c)
 /* Version of strncpy that ensures dest (size bytes) is null-terminated. */
 static char* strncpy0(char* dest, const char* src, size_t size)
 {
-    strncpy(dest, src, size);
+    for(unsigned int i = 0; i < size - 1; i++)
+        {
+            dest[i] = src [i];
+        }
     dest[size - 1] = '\0';
     return dest;
 }

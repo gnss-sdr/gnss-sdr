@@ -94,7 +94,7 @@ static char* strncpy0(char* dest, const char* src, size_t size)
 {
     for(unsigned int i = 0; i < size - 1; i++)
         {
-            dest[i] = src [i];
+            dest[i] = src[i];
         }
     dest[size - 1] = '\0';
     return dest;

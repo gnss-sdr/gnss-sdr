@@ -3310,6 +3310,13 @@ boost::posix_time::ptime Rtcm::compute_Galileo_time(const Galileo_Ephemeris & ep
 }
 
 
+boost::posix_time::ptime Rtcm::compute_GLONASS_time(const Glonass_Gnav_Ephemeris & eph, double obs_time) const
+{
+    boost::posix_time::ptime p_time = eph.compute_GLONASS_time(obs_time);
+    return p_time;
+}
+
+
 unsigned int Rtcm::lock_time(const Gps_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro)
 {
     unsigned int lock_time_in_seconds;
@@ -3378,6 +3385,49 @@ unsigned int Rtcm::lock_time(const Galileo_Ephemeris & eph, double obs_time, con
     if((sig_.compare("5X") == 0) || (sig_.compare("8X") == 0) || (sig_.compare("7X") == 0) )
         {
             lock_duration = current_time - Rtcm::gal_E5_last_lock_time[65 - gnss_synchro.PRN];
+        }
+
+    lock_time_in_seconds = static_cast<unsigned int>(lock_duration.total_seconds());
+    return lock_time_in_seconds;
+}
+
+
+unsigned int Rtcm::lock_time(const Glonass_Gnav_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro)
+{
+    unsigned int lock_time_in_seconds;
+    boost::posix_time::ptime current_time = Rtcm::compute_GLONASS_time(eph, obs_time);
+
+    boost::posix_time::ptime last_lock_time;
+    std::string sig_(gnss_synchro.Signal);
+    if(sig_.compare("1C") == 0)
+        {
+            last_lock_time = Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN];
+        }
+    if(sig_.compare("2C") == 0)
+        {
+            last_lock_time = Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN];
+        }
+
+    if(last_lock_time.is_not_a_date_time() )// || CHECK LLI!!......)
+        {
+            if(sig_.compare("1C") == 0)
+                {
+                    Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN] = current_time;
+                }
+            if(sig_.compare("2C") == 0)
+                {
+                    Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN] = current_time;
+                }
+        }
+
+    boost::posix_time::time_duration lock_duration = current_time - current_time;
+    if(sig_.compare("1C") == 0)
+        {
+            lock_duration = current_time - Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN];
+        }
+    if(sig_.compare("2C") == 0)
+        {
+            lock_duration = current_time - Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN];
         }
 
     lock_time_in_seconds = static_cast<unsigned int>(lock_duration.total_seconds());

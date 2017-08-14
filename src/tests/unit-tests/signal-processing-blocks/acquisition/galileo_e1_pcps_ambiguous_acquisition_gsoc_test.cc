@@ -187,7 +187,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::wait_message()
                     channel_internal_queue.wait_and_pop(message);
                     stop_queue();
             }
-            catch( boost::exception & e )
+            catch( const boost::exception & e )
             {
                     DLOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
             }

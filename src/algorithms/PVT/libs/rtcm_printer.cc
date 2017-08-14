@@ -131,11 +131,11 @@ Rtcm_Printer::~Rtcm_Printer()
             {
                     rtcm->stop_server();
             }
-            catch( boost::exception & e )
+            catch(const boost::exception & e)
             {
                     LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
             }
-            catch(std::exception const&  ex)
+            catch(const std::exception & ex)
             {
                     LOG(WARNING) << "STD exception: " << ex.what();
             }
@@ -305,9 +305,9 @@ bool Rtcm_Printer::Print_Message(const std::string & message)
     {
             rtcm_file_descriptor << message << std::endl;
     }
-    catch(std::exception ex)
+    catch(const std::exception & ex)
     {
-            DLOG(INFO) << "RTCM printer can not write on output file" << rtcm_filename.c_str();
+            DLOG(INFO) << "RTCM printer cannot write on the output file " << rtcm_filename.c_str();
             return false;
     }
 
@@ -316,8 +316,8 @@ bool Rtcm_Printer::Print_Message(const std::string & message)
         {
             if(write(rtcm_dev_descriptor, message.c_str(), message.length()) == -1)
                 {
-                    DLOG(INFO) << "RTCM printer cannot write on serial device" << rtcm_devname.c_str();
-                    std::cout << "RTCM printer cannot write on serial device" << rtcm_devname.c_str() << std::endl;
+                    DLOG(INFO) << "RTCM printer cannot write on serial device " << rtcm_devname.c_str();
+                    std::cout << "RTCM printer cannot write on serial device " << rtcm_devname.c_str() << std::endl;
                     return false;
                 }
         }

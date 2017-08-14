@@ -167,7 +167,7 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data
             //GPGSV
             nmea_file_descriptor << GPGSV;
     }
-    catch(std::exception ex)
+    catch(const std::exception & ex)
     {
             DLOG(INFO) << "NMEA printer can not write on output file" << nmea_filename.c_str();;
     }

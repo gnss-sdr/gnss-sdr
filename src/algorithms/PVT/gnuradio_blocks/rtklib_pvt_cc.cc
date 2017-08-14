@@ -335,7 +335,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     msgctl(sysv_msqid, IPC_RMID, NULL);
 
     //save GPS L2CM ephemeris to XML file
-    std::string file_name="eph_GPS_L2CM.xml";
+    std::string file_name = "eph_GPS_L2CM.xml";
 
     if (d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
         {
@@ -347,7 +347,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                     ofs.close();
                     LOG(INFO) << "Saved GPS L2CM Ephemeris map data";
             }
-            catch (std::exception& e)
+            catch (const std::exception & e)
             {
                     LOG(WARNING) << e.what();
             }
@@ -370,7 +370,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                     ofs.close();
                     LOG(INFO) << "Saved GPS L1 CA Ephemeris map data";
             }
-            catch (std::exception& e)
+            catch (const std::exception & e)
             {
                     LOG(WARNING) << e.what();
             }
@@ -393,7 +393,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                     ofs.close();
                     LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
             }
-            catch (std::exception& e)
+            catch (const std::exception & e)
             {
                     LOG(WARNING) << e.what();
             }
@@ -403,6 +403,17 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
             LOG(WARNING) << "Failed to save Galileo E1 Ephemeris, map is empty";
         }
 
+    if (d_dump_file.is_open() == true)
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+            }
+        }
 }
 
 

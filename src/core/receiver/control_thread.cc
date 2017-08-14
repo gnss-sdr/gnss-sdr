@@ -33,7 +33,6 @@
  */
 
 #include "control_thread.h"
-#include <unistd.h>
 #include <cmath>
 #include <iostream>
 #include <limits>

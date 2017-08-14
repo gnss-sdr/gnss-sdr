@@ -364,6 +364,7 @@ int Pvt_Solution::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb
     return 0;
 }
 
+
 int Pvt_Solution::topocent(double *Az, double *El, double *D, const arma::vec & x, const arma::vec & dx)
 {
     /*  Transformation of vector dx into topocentric coordinate
@@ -474,7 +475,7 @@ int Pvt_Solution::compute_DOP()
             d_VDOP = sqrt(DOP_ENU(2, 2));                                // VDOP
             d_TDOP = sqrt(d_Q(3, 3));                                    // TDOP
     }
-    catch(std::exception& ex)
+    catch(const std::exception & ex)
     {
             d_GDOP = -1; // Geometric DOP
             d_PDOP = -1; // PDOP
@@ -483,10 +484,7 @@ int Pvt_Solution::compute_DOP()
             d_TDOP = -1; // TDOP
     }
     return 0;
-
 }
-
-
 
 
 int Pvt_Solution::set_averaging_depth(int depth)

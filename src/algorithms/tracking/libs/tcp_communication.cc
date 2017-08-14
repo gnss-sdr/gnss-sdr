@@ -67,7 +67,7 @@ int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
             std::cout << "Socket accepted on port " << d_port_ << std::endl;
     }
 
-    catch(std::exception& e)
+    catch(const std::exception& e)
     {
             std::cerr << "Exception: " << e.what() << std::endl;
     }
@@ -102,7 +102,7 @@ void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, N
             tcp_data_->proc_pack_carrier_doppler_hz = readbuf.data()[3];
     }
 
-    catch(std::exception& e)
+    catch(const std::exception& e)
     {
             std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
             std::cin >> controlc;
@@ -137,7 +137,7 @@ void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
             tcp_data_->proc_pack_carrier_doppler_hz = readbuf.data()[3];
     }
 
-    catch(std::exception& e)
+    catch(const std::exception& e)
     {
             std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
             std::cin >> controlc;

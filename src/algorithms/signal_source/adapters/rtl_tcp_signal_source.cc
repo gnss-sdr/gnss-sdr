@@ -84,7 +84,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
                     LOG (INFO) << "Connecting to " << address_ << ":" << port_;
                     signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
             }
-            catch( boost::exception & e )
+            catch( const boost::exception & e )
             {
                     DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
             }

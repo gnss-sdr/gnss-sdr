@@ -65,11 +65,11 @@ Rtcm::~Rtcm()
             {
                     stop_server();
             }
-            catch( boost::exception & e )
+            catch(const boost::exception & e)
             {
                     LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
             }
-            catch(std::exception const&  ex)
+            catch(const std::exception & ex)
             {
                     LOG(WARNING) << "STD exception: " << ex.what();
             }
@@ -95,7 +95,7 @@ void Rtcm::run_server()
             server_is_running = true;
             t.detach();
     }
-    catch (std::exception& e)
+    catch (const std::exception & e)
     {
             std::cerr << "Exception: " << e.what() << "\n";
     }

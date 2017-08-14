@@ -447,7 +447,7 @@ bool RtklibPvt::save_assistance_to_XML()
                     ofs.close();
                     LOG(INFO) << "Saved GPS L1 Ephemeris map data";
                 }
-            catch (std::exception& e)
+            catch (const std::exception & e)
                 {
                     LOG(WARNING) << e.what();
                     return false;

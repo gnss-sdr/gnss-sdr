@@ -489,11 +489,11 @@ TEST_F(TfttGpsL1CATest, ColdStart)
             {
                     control_thread->run();
             }
-            catch( boost::exception & e )
+            catch(const boost::exception & e)
             {
                     std::cout << "Boost exception: " << boost::diagnostic_information(e);
             }
-            catch(std::exception const&  ex)
+            catch(const std::exception & ex)
             {
                     std::cout  << "STD exception: " << ex.what();
             }
@@ -572,11 +572,11 @@ TEST_F(TfttGpsL1CATest, HotStart)
             {
                     control_thread->run();
             }
-            catch( boost::exception & e )
+            catch(const boost::exception & e)
             {
                     std::cout << "Boost exception: " << boost::diagnostic_information(e);
             }
-            catch(std::exception const&  ex)
+            catch(const std::exception & ex)
             {
                     std::cout  << "STD exception: " << ex.what();
             }

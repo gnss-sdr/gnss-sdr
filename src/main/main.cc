@@ -101,7 +101,7 @@ int main(int argc, char** argv)
             google::InitGoogleLogging(argv[0]);
             if (FLAGS_log_dir.empty())
                 {
-                    std::cout << "Logging will be done at "
+                    std::cout << "Logging will be written at "
                               << boost::filesystem::temp_directory_path()
                               << std::endl
                               << "Use gnss-sdr --log_dir=/path/to/log to change that."
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
                                     return 1;
                                 }
                         }
-                    std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
+                    std::cout << "Logging will be written at " << FLAGS_log_dir << std::endl;
                 }
         }
 
@@ -138,11 +138,11 @@ int main(int argc, char** argv)
     {
             control_thread->run();
     }
-    catch( boost::exception & e )
+    catch(const boost::exception & e)
     {
             LOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
+    catch(const std::exception & ex)
     {
             LOG(FATAL) << "STD exception: " << ex.what();
     }

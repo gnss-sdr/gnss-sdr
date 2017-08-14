@@ -61,7 +61,7 @@ TEST(RtcmPrinterTest, Run)
     //            xml >> boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", gps_ephemeris_map);
     //            ifs.close();
     //    }
-    //    catch (std::exception& e)
+    //    catch (const std::exception& e)
     //    {
     //            //LOG(WARNING) << e.what() << "File: " << file_name;
     //            //std::cout << "File not found" << std::endl;

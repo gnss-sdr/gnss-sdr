@@ -329,11 +329,11 @@ int ObsGpsL1SystemTest::run_receiver()
     {
             control_thread->run();
     }
-    catch( boost::exception & e )
+    catch(const boost::exception & e)
     {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
+    catch(const std::exception & ex)
     {
             std::cout  << "STD exception: " << ex.what();
     }
@@ -413,12 +413,12 @@ void ObsGpsL1SystemTest::check_results()
                         } // end for
                 } // end while
     } // End of 'try' block
-    catch(gpstk::FFStreamError& e)
+    catch(const gpstk::FFStreamError& e)
     {
             std::cout << e;
             exit(1);
     }
-    catch(gpstk::Exception& e)
+    catch(const gpstk::Exception& e)
     {
             std::cout << e;
             exit(1);
@@ -473,12 +473,12 @@ void ObsGpsL1SystemTest::check_results()
                         } // end for
                 } // end while
     } // End of 'try' block
-    catch(gpstk::FFStreamError& e)
+    catch(const gpstk::FFStreamError& e)
     {
             std::cout << e;
             exit(1);
     }
-    catch(gpstk::Exception& e)
+    catch(const gpstk::Exception& e)
     {
             std::cout << e;
             exit(1);

@@ -1402,7 +1402,7 @@ if(FLEXIBAND_DRIVER)
 endif(FLEXIBAND_DRIVER)
 
 if(ENABLE_FLEXIBAND)
-    message(STATUS "CTTC's Antenna Array front-end driver will be compiled." )
+    message(STATUS "The Teleorbit Flexiband front-end source will be compiled." )
     message(STATUS "You can disable it with 'cmake -DENABLE_FLEXIBAND=OFF ../'" )
 else(ENABLE_FLEXIBAND)
     message(STATUS "The (optional) Teleorbit Flexiband front-end driver adapter is not enabled." )

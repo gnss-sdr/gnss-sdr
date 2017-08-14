@@ -54,30 +54,11 @@ TEST(CodeGenerationTest, CodeGenGPSL1Test)
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
-    ASSERT_LE(0, elapsed_seconds.count());
-    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     delete[] _dest;
-    /* std::complex<float>* _dest2 = new std::complex<float>[1023];gettimeofday(&tv, NULL);
-    long long int begin2 = tv.tv_sec * 1000000 + tv.tv_usec;
-
-    for(int i = 0; i < iterations; i++)
-        {
-            gps_l1_ca_code_gen_complex2( _dest2,  _prn,  _chip_shift);
-        }
-
-    gettimeofday(&tv, NULL);
-    long long int end2 = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout << "Generation 2 completed in " << (end2 - begin2) << " microseconds" << std::endl;
-
-    for (int j=0; j<1023;j++)
-        {
-            if(_dest[j] != _dest2[j]) std::cout << "Error!" << std::endl;
-        }
-    delete _dest2; */
+    ASSERT_LE(0, elapsed_seconds.count());
+    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
-
-
 
 
 TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
@@ -102,29 +83,10 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
-    ASSERT_LE(0, elapsed_seconds.count());
-    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     delete[] _dest;
-
-    /* std::complex<float>* _dest2 = new std::complex<float>[_samplesPerCode];
-    gettimeofday(&tv, NULL);
-    long long int begin2 = tv.tv_sec * 1000000 + tv.tv_usec;
-
-    for(int i = 0; i < iterations; i++)
-        {
-            gps_l1_ca_code_gen_complex_sampled2( _dest2,  _prn, _fs, _chip_shift);
-        }
-
-    gettimeofday(&tv, NULL);
-    long long int end2 = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout << "Generation completed in " << (end2 - begin2) << " microseconds  (New)" << std::endl;
-
-    for (int j=0; j<_samplesPerCode;j++)
-        {
-            if(_dest[j] != _dest2[j]) std::cout << "Error!" << std::endl;
-        }
-    delete[] _dest2; */
+    ASSERT_LE(0, elapsed_seconds.count());
+    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 
@@ -149,8 +111,8 @@ TEST(CodeGenerationTest, ComplexConjugateTest)
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
-    ASSERT_LE(0, elapsed_seconds.count());
-    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     delete[] _dest;
+    ASSERT_LE(0, elapsed_seconds.count());
+    std::cout << "Generation completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }

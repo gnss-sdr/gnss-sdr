@@ -17,21 +17,14 @@
  */
 
 #include "qa_utils.h"
-
 #include <chrono>
-#include <cmath>
-#include <list>
 #include <random>
-
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/type_traits.hpp>
-
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>
-#include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 
 float uniform() {
@@ -625,7 +618,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
         end = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = end - start;
         double arch_time = 1000.0 * elapsed_seconds.count();
-        std::cout << arch_list[i] << " completed in " << arch_time << "ms" << std::endl;
+        std::cout << arch_list[i] << " completed in " << arch_time << " ms" << std::endl;
         volk_gnsssdr_test_time_t result;
         result.name = arch_list[i];
         result.time = arch_time;

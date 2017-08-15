@@ -57,39 +57,40 @@ public:
 
     virtual ~GpsL1CaDllPllCAidTrackingFpga();
 
-    std::string role()
+    std::string role() override
     {
         return role_;
     }
 
     //! Returns "GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga"
-    std::string implementation()
+    std::string implementation() override
     {
         return "GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga";
     }
-    size_t item_size()
+
+    size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
     // CONVERT TO SOURCE
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set tracking channel unique ID
      */
-    void set_channel(unsigned int channel);
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
-    void start_tracking();
+    void start_tracking() override;
 
     void reset(void);
 

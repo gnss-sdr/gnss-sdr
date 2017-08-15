@@ -58,7 +58,8 @@ public:
             boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~FileSignalSource();
-    std::string role()
+
+    std::string role() override
     {
         return role_;
     }
@@ -66,18 +67,21 @@ public:
     /*!
      * \brief Returns "File_Signal_Source".
      */
-    std::string implementation()
+    std::string implementation() override
     {
         return "File_Signal_Source";
     }
-    size_t item_size()
+
+    size_t item_size() override
     {
         return item_size_;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
+
     std::string filename()
     {
         return filename_;

@@ -58,15 +58,15 @@ public:
     //! Virtual destructor
     virtual ~ArraySignalConditioner();
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
-    std::string role(){ return role_; }
-    //! Returns "Signal_Conditioner"
-    std::string implementation(){ return "Array_Signal_Conditioner"; }
-    size_t item_size(){ return 0; }
+    std::string role() override { return role_; }
+    //! Returns "Array_Signal_Conditioner"
+    std::string implementation() override { return "Array_Signal_Conditioner"; }
+    size_t item_size() override { return 0; }
 
     std::shared_ptr<GNSSBlockInterface> data_type_adapter(){ return data_type_adapt_; }
     std::shared_ptr<GNSSBlockInterface> input_filter(){ return in_filt_; }
@@ -79,7 +79,6 @@ private:
     std::string role_;
     std::string implementation_;
     bool connected_;
-    //bool stop_;
 };
 
 #endif /*GNSS_SDR_SIGNAL_CONDITIONER_H_*/

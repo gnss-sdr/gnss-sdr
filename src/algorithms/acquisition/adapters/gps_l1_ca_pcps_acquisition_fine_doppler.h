@@ -56,7 +56,7 @@ public:
 
     virtual ~GpsL1CaPcpsAcquisitionFineDoppler();
 
-    std::string role()
+    std::string role() override
     {
         return role_;
     }
@@ -64,63 +64,64 @@ public:
     /*!
      * \brief Returns "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler"
      */
-    std::string implementation()
+    std::string implementation() override
     {
         return "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler";
     }
-    size_t item_size()
+
+    size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(boost::shared_ptr<gr::top_block> top_block);
-    void disconnect(boost::shared_ptr<gr::top_block> top_block);
-    boost::shared_ptr<gr::basic_block> get_left_block();
-    boost::shared_ptr<gr::basic_block> get_right_block();
+    void connect(boost::shared_ptr<gr::top_block> top_block) override;
+    void disconnect(boost::shared_ptr<gr::top_block> top_block) override;
+    boost::shared_ptr<gr::basic_block> get_left_block() override;
+    boost::shared_ptr<gr::basic_block> get_right_block() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel);
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
-    void set_threshold(float threshold);
+    void set_threshold(float threshold) override;
 
     /*!
      * \brief Set maximum Doppler off grid search
      */
-    void set_doppler_max(unsigned int doppler_max);
+    void set_doppler_max(unsigned int doppler_max) override;
 
     /*!
      * \brief Set Doppler steps for the grid search
      */
-    void set_doppler_step(unsigned int doppler_step);
+    void set_doppler_step(unsigned int doppler_step) override;
 
     /*!
      * \brief Initializes acquisition algorithm.
      */
-    void init();
+    void init() override;
 
-    void set_local_code();
+    void set_local_code() override;
 
     /*!
      * \brief Returns the maximum peak of grid search
      */
-    signed int mag();
+    signed int mag() override;
 
     /*!
      * \brief Restart acquisition algorithm
      */
-    void reset();
+    void reset() override;
 
 private:
     pcps_acquisition_fine_doppler_cc_sptr acquisition_cc_;

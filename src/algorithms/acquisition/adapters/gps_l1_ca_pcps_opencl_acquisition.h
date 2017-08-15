@@ -55,7 +55,7 @@ public:
 
     virtual ~GpsL1CaPcpsOpenClAcquisition();
 
-    std::string role()
+    std::string role() override
     {
         return role_;
     }
@@ -63,66 +63,67 @@ public:
     /*!
      * \brief Returns "GPS_L1_CA_PCPS_OpenCl_Acquisition"
      */
-    std::string implementation()
+    std::string implementation() override
     {
         return "GPS_L1_CA_PCPS_OpenCl_Acquisition";
     }
-    size_t item_size()
+
+    size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel);
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
-    void set_threshold(float threshold);
+    void set_threshold(float threshold) override;
 
     /*!
      * \brief Set maximum Doppler off grid search
      */
-    void set_doppler_max(unsigned int doppler_max);
+    void set_doppler_max(unsigned int doppler_max) override;
 
     /*!
      * \brief Set Doppler steps for the grid search
      */
-    void set_doppler_step(unsigned int doppler_step);
+    void set_doppler_step(unsigned int doppler_step) override;
 
     /*!
      * \brief Initializes acquisition algorithm.
      */
-    void init();
+    void init() override;
 
     /*!
      * \brief Sets local code for GPS L1/CA PCPS acquisition algorithm.
      */
-    void set_local_code();
+    void set_local_code() override;
 
     /*!
      * \brief Returns the maximum peak of grid search
      */
-    signed int mag();
+    signed int mag() override;
 
     /*!
      * \brief Restart acquisition algorithm
      */
-    void reset();
+    void reset() override;
 
 private:
     ConfigurationInterface* configuration_;

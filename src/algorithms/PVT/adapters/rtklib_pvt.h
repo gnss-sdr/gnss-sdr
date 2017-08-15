@@ -53,29 +53,29 @@ public:
 
     virtual ~RtklibPvt();
 
-    std::string role()
+    std::string role() override
     {
         return role_;
     }
 
     //!  Returns "RTKLIB_Pvt"
-    std::string implementation()
+    std::string implementation() override
     {
         return "RTKLIB_PVT";
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
-    void reset()
+    void reset() override
     {
         return;
     }
 
     //! All blocks must have an item_size() function implementation. Returns sizeof(gr_complex)
-    size_t item_size()
+    size_t item_size() override
     {
         return sizeof(gr_complex);
     }

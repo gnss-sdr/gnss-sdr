@@ -52,24 +52,26 @@ public:
 
     virtual ~ByteToShort();
 
-    std::string role()
+    std::string role() override
     {
         return role_;
     }
+
     //! Returns "Byte_To_Short"
-    std::string implementation()
+    std::string implementation() override
     {
         return "Byte_To_Short";
     }
-    size_t item_size()
+
+    size_t item_size() override
     {
         return 0;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     gr::blocks::char_to_short::sptr gr_char_to_short_;

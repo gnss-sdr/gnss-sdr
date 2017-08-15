@@ -55,7 +55,8 @@ public:
             unsigned int out_streams);
 
     virtual ~GalileoE1BTelemetryDecoder();
-    std::string role()
+
+    std::string role() override
     {
         return role_;
     }
@@ -63,21 +64,25 @@ public:
     /*!
      * \brief Returns "Galileo_E1B_Telemetry_Decoder"
      */
-    std::string implementation()
+    std::string implementation() override
     {
         return "Galileo_E1B_Telemetry_Decoder";
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
-    void set_satellite(Gnss_Satellite satellite);
-    void set_channel(int channel){telemetry_decoder_->set_channel(channel);}
-    void reset()
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
+
+    void set_satellite(Gnss_Satellite satellite) override;
+    void set_channel(int channel)  override {telemetry_decoder_->set_channel(channel);}
+
+    void reset() override
     {
         return;
     }
-    size_t item_size()
+
+    size_t item_size() override
     {
         return 0;
     }

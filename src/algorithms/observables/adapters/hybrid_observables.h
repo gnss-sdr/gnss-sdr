@@ -51,28 +51,32 @@ public:
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams);
+
     virtual ~HybridObservables();
-    std::string role()
+
+    std::string role() override
     {
         return role_;
     }
 
     //!  Returns "Hybrid_Observables"
-    std::string implementation()
+    std::string implementation() override
     {
         return "Hybrid_Observables";
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
-    void reset()
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
+
+    void reset() override
     {
         return;
     }
 
     //! All blocks must have an item_size() function implementation
-    size_t item_size()
+    size_t item_size() override
     {
         return sizeof(gr_complex);
     }

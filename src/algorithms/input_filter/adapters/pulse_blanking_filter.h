@@ -50,24 +50,27 @@ public:
             unsigned int out_streams);
 
     virtual ~PulseBlankingFilter();
-    std::string role()
+
+    std::string role() override
     {
         return role_;
     }
 
     //! Returns "Pulse_Blanking_Filter"
-    std::string implementation()
+    std::string implementation() override
     {
         return "Pulse_Blanking_Filter";
     }
-    size_t item_size()
+
+    size_t item_size() override
     {
         return 0;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     ConfigurationInterface* config_;

@@ -67,24 +67,28 @@ public:
             boost::shared_ptr<gr::msg_queue> queue);
     //! Virtual destructor
     virtual ~Channel();
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
-    std::string role(){ return role_; }
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
+
+    std::string role() override { return role_; }
 
     //! Returns "Channel"
-    std::string implementation(){ return implementation_; }
-    size_t item_size(){ return 0; }
-    Gnss_Signal get_signal() const { return gnss_signal_; }
+    std::string implementation() override { return implementation_; }
+
+    size_t item_size() override { return 0; }
+    Gnss_Signal get_signal() const override { return gnss_signal_; }
+
+    void start_acquisition() override;   //!< Start the State Machine
+    void set_signal(const Gnss_Signal& gnss_signal_) override;  //!< Sets the channel GNSS signal
+
     std::shared_ptr<AcquisitionInterface> acquisition(){ return acq_; }
     std::shared_ptr<TrackingInterface> tracking(){ return trk_; }
     std::shared_ptr<TelemetryDecoderInterface> telemetry(){ return nav_; }
-    void start_acquisition();                   //!< Start the State Machine
-    void set_signal(const Gnss_Signal& gnss_signal_);  //!< Sets the channel GNSS signal
 
     void msg_handler_events(pmt::pmt_t msg);
-
 
 private:
     channel_msg_receiver_cc_sptr channel_msg_rx;

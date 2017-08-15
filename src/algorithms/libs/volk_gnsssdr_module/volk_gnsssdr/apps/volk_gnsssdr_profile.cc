@@ -23,7 +23,6 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <volk_gnsssdr/volk_gnsssdr_prefs.h>
 
-//#include <ciso646>
 #include <vector>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/filesystem.hpp>
@@ -31,8 +30,6 @@
 #include <boost/xpressive/xpressive.hpp>
 #include <iostream>
 #include <fstream>
-//#include <sys/stat.h>
-//#include <sys/types.h>
 
 namespace fs = boost::filesystem;
 

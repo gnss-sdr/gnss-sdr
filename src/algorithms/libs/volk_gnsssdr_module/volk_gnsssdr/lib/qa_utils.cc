@@ -20,8 +20,8 @@
 
 #include <chrono>
 #include <cmath>
-#include <limits>
 #include <list>
+#include <random>
 
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
@@ -35,7 +35,10 @@
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 
 float uniform() {
-    return 2.0f * ((float) rand() / RAND_MAX - 0.5f);     // uniformly (-1, 1)
+    std::random_device r;
+    std::default_random_engine e1(r());
+    std::uniform_real_distribution<float> uniform_dist(-1, 1);
+    return uniform_dist(e1);    // uniformly (-1, 1)
 }
 
 template <class t>
@@ -47,7 +50,11 @@ void random_floats (t *buf, unsigned n)
 
 void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
 {
+    std::random_device r;
+    std::default_random_engine e2(r());
+
     if(type.is_complex) n *= 2;
+
     if(type.is_float)
         {
             if(type.size == 8) random_floats<double>((double *)data, n);
@@ -57,10 +64,11 @@ void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
         {
             float int_max = float(uint64_t(2) << (type.size*8));
             if(type.is_signed) int_max /= 2.0;
+            std::uniform_real_distribution<float> uniform_dist(-int_max, int_max);
             for(unsigned int i = 0; i < n; i++)
                 {
-                    float scaled_rand = (((float) (rand() - (RAND_MAX/2))) / static_cast<float>((RAND_MAX/2))) * int_max;
-                    //man i really don't know how to do this in a more clever way, you have to cast down at some point
+                    float scaled_rand = uniform_dist(e2);
+
                     switch(type.size)
                     {
                     case 8:

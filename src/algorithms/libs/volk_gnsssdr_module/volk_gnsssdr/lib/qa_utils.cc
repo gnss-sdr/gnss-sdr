@@ -22,8 +22,6 @@
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/typeof/typeof.hpp>
-#include <boost/type_traits.hpp>
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 

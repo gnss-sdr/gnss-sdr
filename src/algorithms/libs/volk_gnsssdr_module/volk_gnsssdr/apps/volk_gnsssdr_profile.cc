@@ -23,202 +23,211 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <volk_gnsssdr/volk_gnsssdr_prefs.h>
 
-#include <ciso646>
+//#include <ciso646>
 #include <vector>
+#include <boost/exception/diagnostic_information.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <iostream>
 #include <fstream>
-#include <sys/stat.h>
-#include <sys/types.h>
+//#include <sys/stat.h>
+//#include <sys/types.h>
 
 namespace fs = boost::filesystem;
 
 int main(int argc, char *argv[]) {
     // Adding program options
-    boost::program_options::options_description desc("Options");
-    desc.add_options()
-      ("help,h", "Print help messages")
-      ("benchmark,b",
-            boost::program_options::value<bool>()->default_value( false )
-                                                ->implicit_value( true ),
-            "Run all kernels (benchmark mode)")
-      ("tol,t",
-            boost::program_options::value<float>()->default_value( 1e-6 ),
-            "Set the default error tolerance for tests")
-      ("vlen,v",
-            boost::program_options::value<int>()->default_value( 8111 ), //it is also prime
-            "Set the default vector length for tests") // default is a mersenne prime
-      ("iter,i",
-            boost::program_options::value<int>()->default_value( 1987 ),
-            "Set the default number of test iterations per kernel")
-      ("tests-regex,R",
-            boost::program_options::value<std::string>(),
-            "Run tests matching regular expression.")
-      ("update,u",
-            boost::program_options::value<bool>()->default_value( false )
-                                                     ->implicit_value( true ),
-            "Run only kernels missing from config; use -R to further restrict the candidates")
-      ("dry-run,n",
-            boost::program_options::value<bool>()->default_value( false )
-                                                     ->implicit_value( true ),
-            "Dry run. Respect other options, but don't write to file")
-      ("json,j",
-            boost::program_options::value<std::string>(),
-            "JSON output file")
-      ("path,p",
-            boost::program_options::value<std::string>(),
-            "Specify volk_config path.")
-      ;
+    try
+    {
+            boost::program_options::options_description desc("Options");
+            desc.add_options()
+              ("help,h", "Print help messages")
+              ("benchmark,b",
+                 boost::program_options::value<bool>()->default_value( false )
+                                                      ->implicit_value( true ),
+                 "Run all kernels (benchmark mode)")
+              ("tol,t",
+                 boost::program_options::value<float>()->default_value( 1e-6 ),
+                 "Set the default error tolerance for tests")
+              ("vlen,v",
+                 boost::program_options::value<int>()->default_value( 8111 ), //it is also prime
+                 "Set the default vector length for tests") // default is a mersenne prime
+              ("iter,i",
+                 boost::program_options::value<int>()->default_value( 1987 ),
+                 "Set the default number of test iterations per kernel")
+              ("tests-regex,R",
+                  boost::program_options::value<std::string>(),
+                  "Run tests matching regular expression.")
+              ("update,u",
+                  boost::program_options::value<bool>()->default_value( false )
+                                                       ->implicit_value( true ),
+                  "Run only kernels missing from config; use -R to further restrict the candidates")
+              ("dry-run,n",
+                  boost::program_options::value<bool>()->default_value( false )
+                                                        ->implicit_value( true ),
+                  "Dry run. Respect other options, but don't write to file")
+              ("json,j",
+                  boost::program_options::value<std::string>(),
+                  "JSON output file")
+              ("path,p",
+                  boost::program_options::value<std::string>(),
+                  "Specify volk_config path.")
+              ;
 
-    // Handle the options that were given
-    boost::program_options::variables_map vm;
-    bool benchmark_mode;
-    std::string kernel_regex;
-    std::ofstream json_file;
-    float def_tol;
-    lv_32fc_t def_scalar;
-    int def_iter;
-    int def_vlen;
-    bool def_benchmark_mode;
-    std::string def_kernel_regex;
-    bool update_mode = false;
-    bool dry_run = false;
-    std::string config_file;
+            // Handle the options that were given
+            boost::program_options::variables_map vm;
+            bool benchmark_mode;
+            std::string kernel_regex;
+            std::ofstream json_file;
+            float def_tol;
+            lv_32fc_t def_scalar;
+            int def_iter;
+            int def_vlen;
+            bool def_benchmark_mode;
+            std::string def_kernel_regex;
+            bool update_mode = false;
+            bool dry_run = false;
+            std::string config_file;
 
-    // Handle the provided options
-    try {
-        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
-        boost::program_options::notify(vm);
-        benchmark_mode = vm.count("benchmark")?vm["benchmark"].as<bool>():false;
-        if ( vm.count("tests-regex" ) ) {
-            kernel_regex = vm["tests-regex"].as<std::string>();
-        }
-        else {
-            kernel_regex = ".*";
-        }
+            // Handle the provided options
+            try {
+                    boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
+                    boost::program_options::notify(vm);
+                    benchmark_mode = vm.count("benchmark")?vm["benchmark"].as<bool>():false;
+                    if ( vm.count("tests-regex" ) ) {
+                            kernel_regex = vm["tests-regex"].as<std::string>();
+                    }
+                    else {
+                            kernel_regex = ".*";
+                    }
 
-        def_tol = vm["tol"].as<float>();
-        def_scalar = 327.0;
-        def_vlen = vm["vlen"].as<int>();
-        def_iter = vm["iter"].as<int>();
-        def_benchmark_mode = benchmark_mode;
-        def_kernel_regex = kernel_regex;
-        update_mode = vm["update"].as<bool>();
-        dry_run = vm["dry-run"].as<bool>();
+                    def_tol = vm["tol"].as<float>();
+                    def_scalar = 327.0;
+                    def_vlen = vm["vlen"].as<int>();
+                    def_iter = vm["iter"].as<int>();
+                    def_benchmark_mode = benchmark_mode;
+                    def_kernel_regex = kernel_regex;
+                    update_mode = vm["update"].as<bool>();
+                    dry_run = vm["dry-run"].as<bool>();
+            }
+            catch (const boost::program_options::error & error) {
+                    std::cerr << "Error: " << error.what() << std::endl << std::endl;
+                    std::cerr << desc << std::endl;
+                    return 1;
+            }
+
+            /** --help option */
+            if ( vm.count("help") ) {
+                    std::cout << "The VOLK_GNSSSDR profiler." << std::endl
+                            << desc << std::endl;
+                    return 0;
+            }
+
+            if ( vm.count("json") ) {
+                    std::string filename;
+                    try {
+                            filename = vm["json"].as<std::string>();
+                    }
+                    catch (const boost::bad_any_cast& error) {
+                            std::cerr << error.what() << std::endl;
+                            return 1;
+                    }
+                    json_file.open( filename.c_str() );
+            }
+
+            if ( vm.count("path") ) {
+                    try {
+                            config_file = vm["path"].as<std::string>() + "/volk_config";
+                    }
+                    catch (const boost::bad_any_cast& error) {
+                            std::cerr << error.what() << std::endl;
+                            return 1;
+                    }
+            }
+
+            volk_gnsssdr_test_params_t test_params(def_tol, def_scalar, def_vlen, def_iter,
+                    def_benchmark_mode, def_kernel_regex);
+
+            // Run tests
+            std::vector<volk_gnsssdr_test_results_t> results;
+            if(update_mode) {
+                    read_results(&results);
+                    if( vm.count("path") ) read_results(&results, config_file);
+                    else read_results(&results);
+            }
+
+
+            // Initialize the list of tests
+            // the default test parameters come from options
+            std::vector<volk_gnsssdr_test_case_t> test_cases = init_test_list(test_params);
+            boost::xpressive::sregex kernel_expression;
+            try {
+                    kernel_expression = boost::xpressive::sregex::compile(kernel_regex);
+            }
+            catch (const boost::xpressive::regex_error& error) {
+                    std::cerr << "Error occurred while compiling regex" << std::endl << std::endl;
+                    return 1;
+            }
+
+            // Iteratate through list of tests running each one
+            for(unsigned int ii = 0; ii < test_cases.size(); ++ii) {
+                    bool regex_match = true;
+
+                    volk_gnsssdr_test_case_t test_case = test_cases[ii];
+                    // if the kernel name matches regex then do the test
+                    if(boost::xpressive::regex_search(test_case.name(), kernel_expression)) {
+                            regex_match = true;
+                    }
+                    else {
+                            regex_match = false;
+                    }
+
+                    // if we are in update mode check if we've already got results
+                    // if we have any, then no need to test that kernel
+                    bool update = true;
+                    if(update_mode) {
+                            for(unsigned int jj=0; jj < results.size(); ++jj) {
+                                    if(results[jj].name == test_case.name() ||
+                                            results[jj].name == test_case.puppet_master_name()) {
+                                            update = false;
+                                            break;
+                                    }
+                            }
+                    }
+
+                    if( regex_match && update ) {
+                            try {
+                                    run_volk_gnsssdr_tests(test_case.desc(), test_case.kernel_ptr(), test_case.name(),
+                                            test_case.test_parameters(), &results, test_case.puppet_master_name());
+                            }
+                            catch (const std::string & error) {
+                                    std::cerr << "Caught Exception in 'run_volk_gnsssdr_tests': " << error << std::endl;
+                            }
+
+                    }
+            }
+
+
+            // Output results according to provided options
+            if(vm.count("json")) {
+                    write_json(json_file, results);
+                    json_file.close();
+            }
+
+            if(!dry_run) {
+                    write_results(&results, false);
+                    if(vm.count("path")) write_results(&results, false, config_file);
+                    else write_results(&results, false);
+            }
+            else {
+                    std::cout << "Warning: this was a dry-run. Config not generated" << std::endl;
+            }
     }
-    catch (boost::program_options::error& error) {
-        std::cerr << "Error: " << error.what() << std::endl << std::endl;
-        std::cerr << desc << std::endl;
-        return 1;
-    }
-
-    /** --help option */
-    if ( vm.count("help") ) {
-      std::cout << "The VOLK_GNSSSDR profiler." << std::endl
-                << desc << std::endl;
-      return 0;
-    }
-
-    if ( vm.count("json") ) {
-        std::string filename;
-        try {
-             filename = vm["json"].as<std::string>();
-        }
-        catch (boost::bad_any_cast& error) {
-            std::cerr << error.what() << std::endl;
+    catch(const boost::exception & e)
+    {
+            std::cerr << boost::diagnostic_information(e) << std::endl;
             return 1;
-        }
-        json_file.open( filename.c_str() );
-    }
-
-    if ( vm.count("path") ) {
-            try {
-                    config_file = vm["path"].as<std::string>() + "/volk_config";
-                }
-            catch (boost::bad_any_cast& error) {
-                std::cerr << error.what() << std::endl;
-                return 1;
-          }
-     }
-
-    volk_gnsssdr_test_params_t test_params(def_tol, def_scalar, def_vlen, def_iter,
-        def_benchmark_mode, def_kernel_regex);
-
-    // Run tests
-    std::vector<volk_gnsssdr_test_results_t> results;
-    if(update_mode) {
-        read_results(&results);
-        if( vm.count("path") ) read_results(&results, config_file);
-        else read_results(&results);
-    }
-
-
-    // Initialize the list of tests
-    // the default test parameters come from options
-    std::vector<volk_gnsssdr_test_case_t> test_cases = init_test_list(test_params);
-    boost::xpressive::sregex kernel_expression;
-    try {
-        kernel_expression = boost::xpressive::sregex::compile(kernel_regex);
-    }
-    catch (boost::xpressive::regex_error& error) {
-        std::cerr << "Error occurred while compiling regex" << std::endl << std::endl;
-        return 1;
-    }
-
-    // Iteratate through list of tests running each one
-    for(unsigned int ii = 0; ii < test_cases.size(); ++ii) {
-        bool regex_match = true;
-
-        volk_gnsssdr_test_case_t test_case = test_cases[ii];
-        // if the kernel name matches regex then do the test
-        if(boost::xpressive::regex_search(test_case.name(), kernel_expression)) {
-            regex_match = true;
-        }
-        else {
-            regex_match = false;
-        }
-
-        // if we are in update mode check if we've already got results
-        // if we have any, then no need to test that kernel
-        bool update = true;
-        if(update_mode) {
-            for(unsigned int jj=0; jj < results.size(); ++jj) {
-                if(results[jj].name == test_case.name() ||
-                    results[jj].name == test_case.puppet_master_name()) {
-                    update = false;
-                    break;
-                }
-            }
-        }
-
-        if( regex_match && update ) {
-            try {
-            run_volk_gnsssdr_tests(test_case.desc(), test_case.kernel_ptr(), test_case.name(),
-                test_case.test_parameters(), &results, test_case.puppet_master_name());
-            }
-            catch (std::string error) {
-                std::cerr << "Caught Exception in 'run_volk_gnsssdr_tests': " << error << std::endl;
-            }
-
-        }
-    }
-
-
-    // Output results according to provided options
-    if(vm.count("json")) {
-        write_json(json_file, results);
-        json_file.close();
-    }
-
-    if(!dry_run) {
-        write_results(&results, false);
-        if(vm.count("path")) write_results(&results, false, config_file);
-        else write_results(&results, false);
-    }
-    else {
-        std::cout << "Warning: this was a dry-run. Config not generated" << std::endl;
     }
 }
 

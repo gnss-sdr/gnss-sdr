@@ -462,8 +462,8 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, c
     std::map<int, Gnss_Synchro> observablesL1;
     std::map<int, Gnss_Synchro>::const_iterator observables_iter;
 
-    for(observables_iter = observables.begin();
-            observables_iter != observables.end();
+    for(observables_iter = observables.cbegin();
+            observables_iter != observables.cend();
             observables_iter++)
         {
             std::string system_(&observables_iter->second.System, 1);
@@ -477,8 +477,8 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, c
     std::bitset<64> header = Rtcm::get_MT1001_4_header(1001, obs_time, observablesL1, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
-    for(observables_iter = observablesL1.begin();
-            observables_iter != observablesL1.end();
+    for(observables_iter = observablesL1.cbegin();
+            observables_iter != observablesL1.cend();
             observables_iter++)
         {
             std::bitset<58> content = Rtcm::get_MT1001_sat_content(gps_eph, obs_time, observables_iter->second);
@@ -512,8 +512,8 @@ std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, c
     std::map<int, Gnss_Synchro> observablesL1;
     std::map<int, Gnss_Synchro>::const_iterator observables_iter;
 
-    for(observables_iter = observables.begin();
-            observables_iter != observables.end();
+    for(observables_iter = observables.cbegin();
+            observables_iter != observables.cend();
             observables_iter++)
         {
             std::string system_(&observables_iter->second.System, 1);
@@ -527,8 +527,8 @@ std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, c
     std::bitset<64> header = Rtcm::get_MT1001_4_header(1002, obs_time, observablesL1, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
-    for(observables_iter = observablesL1.begin();
-            observables_iter != observablesL1.end();
+    for(observables_iter = observablesL1.cbegin();
+            observables_iter != observablesL1.cend();
             observables_iter++)
         {
             std::bitset<74> content = Rtcm::get_MT1002_sat_content(gps_eph, obs_time, observables_iter->second);
@@ -586,8 +586,8 @@ std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
     std::map<int, Gnss_Synchro>::const_iterator observables_iter;
     std::map<int, Gnss_Synchro>::const_iterator observables_iter2;
 
-    for(observables_iter = observables.begin();
-            observables_iter != observables.end();
+    for(observables_iter = observables.cbegin();
+            observables_iter != observables.cend();
             observables_iter++)
         {
             std::string system_(&observables_iter->second.System, 1);
@@ -607,13 +607,13 @@ std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
     std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >::const_iterator common_observables_iter;
     std::map<int, Gnss_Synchro> observablesL1_with_L2;
 
-    for(observables_iter = observablesL1.begin();
-            observables_iter != observablesL1.end();
+    for(observables_iter = observablesL1.cbegin();
+            observables_iter != observablesL1.cend();
             observables_iter++)
         {
             unsigned int prn_ = observables_iter->second.PRN;
-            for(observables_iter2 = observablesL2.begin();
-                    observables_iter2 != observablesL2.end();
+            for(observables_iter2 = observablesL2.cbegin();
+                    observables_iter2 != observablesL2.cend();
                     observables_iter2++)
                 {
                     if(observables_iter2->second.PRN == prn_)
@@ -631,8 +631,8 @@ std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
     std::bitset<64> header = Rtcm::get_MT1001_4_header(1003, obs_time, observablesL1_with_L2, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
-    for(common_observables_iter = common_observables.begin();
-            common_observables_iter != common_observables.end();
+    for(common_observables_iter = common_observables.cbegin();
+            common_observables_iter != common_observables.cend();
             common_observables_iter++)
         {
             std::bitset<101> content = Rtcm::get_MT1003_sat_content(ephL1, ephL2, obs_time, common_observables_iter->first, common_observables_iter->second);
@@ -696,8 +696,8 @@ std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
     std::map<int, Gnss_Synchro>::const_iterator observables_iter;
     std::map<int, Gnss_Synchro>::const_iterator observables_iter2;
 
-    for(observables_iter = observables.begin();
-            observables_iter != observables.end();
+    for(observables_iter = observables.cbegin();
+            observables_iter != observables.cend();
             observables_iter++)
         {
             std::string system_(&observables_iter->second.System, 1);
@@ -717,13 +717,13 @@ std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
     std::vector< std::pair< Gnss_Synchro, Gnss_Synchro > >::const_iterator common_observables_iter;
     std::map<int, Gnss_Synchro> observablesL1_with_L2;
 
-    for(observables_iter = observablesL1.begin();
-            observables_iter != observablesL1.end();
+    for(observables_iter = observablesL1.cbegin();
+            observables_iter != observablesL1.cend();
             observables_iter++)
         {
             unsigned int prn_ = observables_iter->second.PRN;
-            for(observables_iter2 = observablesL2.begin();
-                    observables_iter2 != observablesL2.end();
+            for(observables_iter2 = observablesL2.cbegin();
+                    observables_iter2 != observablesL2.cend();
                     observables_iter2++)
                 {
                     if(observables_iter2->second.PRN == prn_)
@@ -741,8 +741,8 @@ std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
     std::bitset<64> header = Rtcm::get_MT1001_4_header(1004, obs_time, observablesL1_with_L2, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
-    for(common_observables_iter = common_observables.begin();
-            common_observables_iter != common_observables.end();
+    for(common_observables_iter = common_observables.cbegin();
+            common_observables_iter != common_observables.cend();
             common_observables_iter++)
         {
             std::bitset<125> content = Rtcm::get_MT1004_sat_content(ephL1, ephL2, obs_time, common_observables_iter->first, common_observables_iter->second);
@@ -1037,7 +1037,7 @@ std::string Rtcm::print_MT1008(unsigned int ref_id, const std::string & antenna_
     DF029 = std::bitset<8>(len);
 
     std::string DF030_str_;
-    for(auto it = ant_descriptor.begin(); it != ant_descriptor.end(); it++)
+    for(auto it = ant_descriptor.cbegin(); it != ant_descriptor.cend(); it++)
         {
             char c = *it;
             std::bitset<8> character = std::bitset<8>(c);
@@ -1056,7 +1056,7 @@ std::string Rtcm::print_MT1008(unsigned int ref_id, const std::string & antenna_
     DF032 = std::bitset<8>(len2);
 
     std::string DF033_str_;
-    for(auto it = ant_sn.begin(); it != ant_sn.end(); it++)
+    for(auto it = ant_sn.cbegin(); it != ant_sn.cend(); it++)
         {
             char c = *it;
             std::bitset<8> character = std::bitset<8>(c);
@@ -1317,7 +1317,7 @@ std::string Rtcm::print_MT1029(unsigned int ref_id, const Gps_Ephemeris & gps_ep
     unsigned int i = 0;
     bool first = true;
     std::string text_binary;
-    for(auto it = message.begin(); it != message.end(); it++)
+    for(auto it = message.cbegin(); it != message.cend(); it++)
         {
             char c = *it;
             if(isgraph(c))
@@ -1684,8 +1684,8 @@ std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro> &
     std::vector<unsigned int> pos;
     std::vector<unsigned int>::iterator it;
 
-    for(gnss_synchro_iter = observables.begin();
-            gnss_synchro_iter != observables.end();
+    for(gnss_synchro_iter = observables.cbegin();
+            gnss_synchro_iter != observables.cend();
             gnss_synchro_iter++)
         {
             it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
@@ -1717,8 +1717,8 @@ std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro
     std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = observables.begin();
-            map_iter != observables.end();
+    for(map_iter = observables.cbegin();
+            map_iter != observables.cend();
             map_iter++)
         {
             observables_vector.push_back(*map_iter);
@@ -1806,8 +1806,8 @@ std::string Rtcm::get_MSM_2_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = observables.begin();
-            map_iter != observables.end();
+    for(map_iter = observables.cbegin();
+            map_iter != observables.cend();
             map_iter++)
         {
             observables_vector.push_back(*map_iter);
@@ -1902,8 +1902,8 @@ std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = observables.begin();
-            map_iter != observables.end();
+    for(map_iter = observables.cbegin();
+            map_iter != observables.cend();
             map_iter++)
         {
             observables_vector.push_back(*map_iter);
@@ -2000,8 +2000,8 @@ std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro> &
     std::vector<unsigned int> pos;
     std::vector<unsigned int>::iterator it;
 
-    for(gnss_synchro_iter = observables.begin();
-            gnss_synchro_iter != observables.end();
+    for(gnss_synchro_iter = observables.cbegin();
+            gnss_synchro_iter != observables.cend();
             gnss_synchro_iter++)
         {
             it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
@@ -2040,8 +2040,8 @@ std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = observables.begin();
-            map_iter != observables.end();
+    for(map_iter = observables.cbegin();
+            map_iter != observables.cend();
             map_iter++)
         {
             observables_vector.push_back(*map_iter);
@@ -2142,8 +2142,8 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int, Gnss_Synchro> &
     std::vector<unsigned int> pos;
     std::vector<unsigned int>::iterator it;
 
-    for(gnss_synchro_iter = observables.begin();
-            gnss_synchro_iter != observables.end();
+    for(gnss_synchro_iter = observables.cbegin();
+            gnss_synchro_iter != observables.cend();
             gnss_synchro_iter++)
         {
             it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
@@ -2187,8 +2187,8 @@ std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = observables.begin();
-            map_iter != observables.end();
+    for(map_iter = observables.cbegin();
+            map_iter != observables.cend();
             map_iter++)
         {
             observables_vector.push_back(*map_iter);
@@ -2290,8 +2290,8 @@ std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = observables.begin();
-            map_iter != observables.end();
+    for(map_iter = observables.cbegin();
+            map_iter != observables.cend();
             map_iter++)
         {
             observables_vector.push_back(*map_iter);
@@ -2392,8 +2392,8 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris & ephNAV, co
     std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
     std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(map_iter = observables.begin();
-            map_iter != observables.end();
+    for(map_iter = observables.cbegin();
+            map_iter != observables.cend();
             map_iter++)
         {
             observables_vector.push_back(*map_iter);
@@ -2442,8 +2442,8 @@ std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_PRN_mask(const std::vec
         }
     } has_lower_pos;
 
-    for(synchro_map_iter = synchro_map.begin();
-            synchro_map_iter != synchro_map.end();
+    for(synchro_map_iter = synchro_map.cbegin();
+            synchro_map_iter != synchro_map.cend();
             synchro_map_iter++)
 
         {
@@ -2499,8 +2499,8 @@ std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_signal(const std::vecto
     } has_lower_signalID;
 
 
-    for(synchro_map_iter = synchro_map.begin();
-            synchro_map_iter != synchro_map.end();
+    for(synchro_map_iter = synchro_map.cbegin();
+            synchro_map_iter != synchro_map.cend();
             synchro_map_iter++)
 
         {
@@ -2785,8 +2785,8 @@ int Rtcm::set_DF006(const std::map<int, Gnss_Synchro> & observables)
     //Number of satellites observed in current epoch
     unsigned short int nsats = 0;
     std::map<int, Gnss_Synchro>::const_iterator observables_iter;
-    for(observables_iter = observables.begin();
-            observables_iter != observables.end();
+    for(observables_iter = observables.cbegin();
+            observables_iter != observables.cend();
             observables_iter++)
         {
             nsats++;
@@ -3566,8 +3566,8 @@ int Rtcm::set_DF394(const std::map<int, Gnss_Synchro> & gnss_synchro)
     DF394.reset();
     std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
     unsigned int mask_position;
-    for(gnss_synchro_iter = gnss_synchro.begin();
-            gnss_synchro_iter != gnss_synchro.end();
+    for(gnss_synchro_iter = gnss_synchro.cbegin();
+            gnss_synchro_iter != gnss_synchro.cend();
             gnss_synchro_iter++)
         {
             mask_position = 64 - gnss_synchro_iter->second.PRN;
@@ -3587,8 +3587,8 @@ int Rtcm::set_DF395(const std::map<int, Gnss_Synchro> & gnss_synchro)
     std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
     std::string sig;
     unsigned int mask_position;
-    for(gnss_synchro_iter = gnss_synchro.begin();
-            gnss_synchro_iter != gnss_synchro.end();
+    for(gnss_synchro_iter = gnss_synchro.cbegin();
+            gnss_synchro_iter != gnss_synchro.cend();
             gnss_synchro_iter++)
         {
             std::string sig_(gnss_synchro_iter->second.Signal);
@@ -3654,8 +3654,8 @@ std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro> & observables)
     std::vector<unsigned int> list_of_sats;
     std::vector<int> list_of_signals;
 
-    for(observables_iter = observables.begin();
-            observables_iter != observables.end();
+    for(observables_iter = observables.cbegin();
+            observables_iter != observables.cend();
             observables_iter++)
         {
             list_of_sats.push_back(observables_iter->second.PRN);
@@ -3708,8 +3708,8 @@ std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro> & observables)
             for(unsigned int sat = 0; sat < num_satellites; sat++)
                 {
                     value = false;
-                    for(observables_iter = observables.begin();
-                            observables_iter != observables.end();
+                    for(observables_iter = observables.cbegin();
+                            observables_iter != observables.cend();
                             observables_iter++)
                         {
                             std::string sig_(observables_iter->second.Signal);

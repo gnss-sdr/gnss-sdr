@@ -1526,8 +1526,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Gps_Ephe
     std::string line;
     std::map<int,Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
 
-    for(gps_ephemeris_iter = eph_map.begin();
-            gps_ephemeris_iter != eph_map.end();
+    for(gps_ephemeris_iter = eph_map.cbegin();
+            gps_ephemeris_iter != eph_map.cend();
             gps_ephemeris_iter++)
     {
             // -------- SV / EPOCH / SV CLK
@@ -1857,8 +1857,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Gps_CNAV
     std::string line;
     std::map<int,Gps_CNAV_Ephemeris>::const_iterator gps_ephemeris_iter;
 
-    for(gps_ephemeris_iter = eph_map.begin();
-            gps_ephemeris_iter != eph_map.end();
+    for(gps_ephemeris_iter = eph_map.cbegin();
+            gps_ephemeris_iter != eph_map.cend();
             gps_ephemeris_iter++)
         {
             // -------- SV / EPOCH / SV CLK
@@ -2020,8 +2020,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int, Galileo
     std::string line;
     std::map<int,Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
     line.clear();
-    for(galileo_ephemeris_iter = eph_map.begin();
-            galileo_ephemeris_iter != eph_map.end();
+    for(galileo_ephemeris_iter = eph_map.cbegin();
+            galileo_ephemeris_iter != eph_map.cend();
             galileo_ephemeris_iter++)
         {
             // -------- SV / EPOCH / SV CLK

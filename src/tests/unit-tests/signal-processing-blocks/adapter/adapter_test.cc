@@ -93,7 +93,7 @@ int DataTypeAdapter::run_ishort_to_cshort_block()
     EXPECT_EQ(expected_implementation, ishort_to_cshort->implementation());
 
     std::ofstream ofs(file_name_input.c_str(), std::ofstream::binary);
-    for(std::vector<short>::const_iterator i = input_data_shorts.begin(); i != input_data_shorts.end(); ++i)
+    for(std::vector<short>::const_iterator i = input_data_shorts.cbegin(); i != input_data_shorts.cend(); ++i)
         {
             short aux = *i;
             ofs.write(reinterpret_cast<const char*>(&aux), sizeof(short));
@@ -122,7 +122,7 @@ int DataTypeAdapter::run_ishort_to_complex_block()
     EXPECT_EQ(expected_implementation, ishort_to_complex->implementation());
 
     std::ofstream ofs(file_name_input.c_str(), std::ofstream::binary);
-    for(std::vector<short>::const_iterator i = input_data_shorts.begin(); i != input_data_shorts.end(); ++i)
+    for(std::vector<short>::const_iterator i = input_data_shorts.cbegin(); i != input_data_shorts.cend(); ++i)
         {
             short aux = *i;
             ofs.write(reinterpret_cast<const char*>(&aux), sizeof(short));
@@ -151,7 +151,7 @@ int DataTypeAdapter::run_ibyte_to_cshort_block()
     EXPECT_EQ(expected_implementation, ibyte_to_cshort->implementation());
 
     std::ofstream ofs(file_name_input.c_str());
-    for(std::vector<int8_t>::const_iterator i = input_data_bytes.begin(); i != input_data_bytes.end(); ++i)
+    for(std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
         {
             ofs << *i;
         }
@@ -179,7 +179,7 @@ int DataTypeAdapter::run_ibyte_to_complex_block()
     EXPECT_EQ(expected_implementation, ibyte_to_complex->implementation());
 
     std::ofstream ofs(file_name_input.c_str() );
-    for(std::vector<int8_t>::const_iterator i = input_data_bytes.begin(); i != input_data_bytes.end(); ++i)
+    for(std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
         {
             ofs << *i;
         }
@@ -207,7 +207,7 @@ int DataTypeAdapter::run_ibyte_to_cbyte_block()
     EXPECT_EQ(expected_implementation, ibyte_to_cbyte->implementation());
 
     std::ofstream ofs(file_name_input.c_str());
-    for(std::vector<int8_t>::const_iterator i = input_data_bytes.begin(); i != input_data_bytes.end(); ++i)
+    for(std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
         {
             ofs << *i;
         }
@@ -235,7 +235,7 @@ int DataTypeAdapter::run_byte_to_short_block()
     EXPECT_EQ(expected_implementation, byte_to_short->implementation());
 
     std::ofstream ofs(file_name_input.c_str());
-    for(std::vector<int8_t>::const_iterator i = input_data_bytes.begin(); i != input_data_bytes.end(); ++i)
+    for(std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
         {
             ofs << *i;
         }

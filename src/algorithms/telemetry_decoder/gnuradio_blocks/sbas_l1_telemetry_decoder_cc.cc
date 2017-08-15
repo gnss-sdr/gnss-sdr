@@ -136,8 +136,8 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
             // compute message sample stamp
             // and fill messages in SBAS raw message objects
             //std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
-            for(std::vector<msg_candiate_char_t>::const_iterator it = valid_msgs.begin();
-                    it != valid_msgs.end(); ++it)
+            for(std::vector<msg_candiate_char_t>::const_iterator it = valid_msgs.cbegin();
+                    it != valid_msgs.cend(); ++it)
                 {
                     int message_sample_offset =
                             (sample_alignment ? 0 : -1)
@@ -314,7 +314,7 @@ bool sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const st
     std::vector<double> symbols_vd1(symbols); // aligned symbol vector -> copy input symbol vector
     std::vector<double> symbols_vd2;  // shifted symbol vector -> add past sample in front of input vector
     symbols_vd2.push_back(d_past_symbol);
-    for (std::vector<double>::const_iterator symbol_it = symbols.begin(); symbol_it != symbols.end() - 1; ++symbol_it)
+    for (std::vector<double>::const_iterator symbol_it = symbols.cbegin(); symbol_it != symbols.cend() - 1; ++symbol_it)
         {
             symbols_vd2.push_back(*symbol_it);
         }
@@ -361,7 +361,7 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
     ss << "copy bits ";
     int count = 0;
     // copy new bits into the working buffer
-    for (std::vector<int>::const_iterator bit_it = bits.begin(); bit_it < bits.end(); ++bit_it)
+    for (std::vector<int>::const_iterator bit_it = bits.cbegin(); bit_it < bits.cend(); ++bit_it)
         {
             d_buffer.push_back(*bit_it);
             ss << *bit_it;
@@ -421,7 +421,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vec
     std::stringstream ss;
     VLOG(FLOW) << "get_valid_frames(): " << "msg_candidates.size()=" << msg_candidates.size();
     // for each candidate
-    for (std::vector<msg_candiate_int_t>::const_iterator candidate_it = msg_candidates.begin(); candidate_it < msg_candidates.end(); ++candidate_it)
+    for (std::vector<msg_candiate_int_t>::const_iterator candidate_it = msg_candidates.cbegin(); candidate_it < msg_candidates.cend(); ++candidate_it)
         {
             // convert to bytes
             std::vector<unsigned char> candidate_bytes;
@@ -462,7 +462,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_by
     const size_t bits_per_byte = 8;
     unsigned char byte = 0;
     VLOG(LMORE) << "zerropad_back_and_convert_to_bytes():" << byte;
-    for (std::vector<int>::const_iterator candidate_bit_it = msg_candidate.begin(); candidate_bit_it < msg_candidate.end(); ++candidate_bit_it)
+    for (std::vector<int>::const_iterator candidate_bit_it = msg_candidate.cbegin(); candidate_bit_it < msg_candidate.cend(); ++candidate_bit_it)
         {
             int idx_bit = candidate_bit_it - msg_candidate.begin();
             int bit_pos_in_current_byte = (bits_per_byte - 1) - (idx_bit % bits_per_byte);
@@ -490,7 +490,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_b
     unsigned char byte = 0;
     int idx_bit = 6; // insert 6 zeros at the front to fit the 250bits into a multiple of bytes
     VLOG(LMORE) << "zerropad_front_and_convert_to_bytes():" << byte;
-    for (std::vector<int>::const_iterator candidate_bit_it = msg_candidate.begin(); candidate_bit_it < msg_candidate.end(); ++candidate_bit_it)
+    for (std::vector<int>::const_iterator candidate_bit_it = msg_candidate.cbegin(); candidate_bit_it < msg_candidate.cend(); ++candidate_bit_it)
         {
             int bit_pos_in_current_byte = (bits_per_byte - 1) - (idx_bit % bits_per_byte);
             byte |= (unsigned char)(*candidate_bit_it) << bit_pos_in_current_byte;

@@ -168,7 +168,7 @@ public:
      *
      * It is used to save the assistance data at the receiver shutdown
      */
-    std::map<int,Gps_Ephemeris> get_GPS_L1_ephemeris_map() const;
+    std::map<int,Gps_Ephemeris> get_GPS_L1_ephemeris_map();
 
     ~rtklib_pvt_cc(); //!< Default destructor
 

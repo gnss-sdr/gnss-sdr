@@ -52,6 +52,7 @@ public:
             unsigned int out_stream, gr::msg_queue::sptr queue);
 
     virtual ~Gn3sSignalSource();
+
     std::string role() override
     {
         return role_;

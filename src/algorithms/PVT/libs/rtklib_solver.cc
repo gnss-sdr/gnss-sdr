@@ -312,7 +312,8 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                     rx_position_and_time(2) = pvt_sol.rr[2];
                     rx_position_and_time(3) = pvt_sol.dtr[0];
                     this->set_rx_pos(rx_position_and_time.rows(0, 2)); // save ECEF position for the next iteration
-                    this->set_time_offset_s(this->get_time_offset_s() + (rx_position_and_time(3) / GPS_C_m_s)); // accumulate the rx time error for the next iteration [meters]->[seconds]
+                    double offset_s = this->get_time_offset_s();
+                    this->set_time_offset_s(offset_s + (rx_position_and_time(3) / GPS_C_m_s)); // accumulate the rx time error for the next iteration [meters]->[seconds]
                     DLOG(INFO) << "RTKLIB Position at TOW=" << Rx_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
 
                     boost::posix_time::ptime p_time;

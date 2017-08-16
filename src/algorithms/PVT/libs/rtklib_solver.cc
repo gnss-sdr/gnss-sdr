@@ -67,7 +67,7 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     d_dump_filename = dump_filename;
     d_flag_dump_enabled = flag_dump_to_file;
     count_valid_position = 0;
-    d_flag_averaging = false;
+    this->set_averaging_flag(false);
     rtk_ = rtk;
 
     pvt_sol = {{0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, '0', '0', '0', 0, 0, 0 };
@@ -115,7 +115,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
     std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
     std::map<int,Gps_CNAV_Ephemeris>::iterator gps_cnav_ephemeris_iter;
 
-    d_flag_averaging = flag_averaging;
+    this->set_averaging_flag(flag_averaging);
 
     // ********************************************************************************
     // ****** PREPARE THE DATA (SV EPHEMERIS AND OBSERVATIONS) ************************
@@ -280,7 +280,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
     // ****** SOLVE PVT******************************************************
     // **********************************************************************
 
-    b_valid_position = false;
+    this->set_valid_position(false);
     if (valid_obs > 0)
         {
             int result = 0;
@@ -298,33 +298,33 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
             if(result == 0)
                 {
                     LOG(INFO) << "RTKLIB rtkpos error message: " << rtk_.errbuf;
-                    d_rx_dt_s = 0; //reset rx time estimation
-                    d_valid_observations = 0;
+                    this->set_time_offset_s(0.0); //reset rx time estimation
+                    this->set_num_valid_observations(0);
                 }
             else
                 {
-                    d_valid_observations = rtk_.sol.ns; //record the number of valid satellites used by the PVT solver
+                    this->set_num_valid_observations(rtk_.sol.ns); //record the number of valid satellites used by the PVT solver
                     pvt_sol = rtk_.sol;
-                    b_valid_position = true;
+                    this->set_valid_position(true);
                     arma::vec rx_position_and_time(4);
                     rx_position_and_time(0) = pvt_sol.rr[0];
                     rx_position_and_time(1) = pvt_sol.rr[1];
                     rx_position_and_time(2) = pvt_sol.rr[2];
                     rx_position_and_time(3) = pvt_sol.dtr[0];
-                    d_rx_pos = rx_position_and_time.rows(0, 2); // save ECEF position for the next iteration
-                    d_rx_dt_s += rx_position_and_time(3) / GPS_C_m_s; // accumulate the rx time error for the next iteration [meters]->[seconds]
+                    this->set_rx_pos(rx_position_and_time.rows(0, 2)); // save ECEF position for the next iteration
+                    this->set_time_offset_s(this->get_time_offset_s() + (rx_position_and_time(3) / GPS_C_m_s)); // accumulate the rx time error for the next iteration [meters]->[seconds]
                     DLOG(INFO) << "RTKLIB Position at TOW=" << Rx_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
 
                     boost::posix_time::ptime p_time;
                     gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time);
                     p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
-                    p_time+=boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
-                    d_position_UTC_time = p_time;
+                    p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
+                    this->set_position_UTC_time(p_time);
                     cart2geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
 
                     DLOG(INFO) << "RTKLIB Position at " << boost::posix_time::to_simple_string(p_time)
-                               << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                               << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_s << " [s]";
+                               << " is Lat = " << this->get_latitude() << " [deg], Long = " << this->get_longitude()
+                               << " [deg], Height= " << this->get_height() << " [m]" << " RX time offset= " << this->get_time_offset_s() << " [s]";
 
                     // ######## LOG FILE #########
                     if(d_flag_dump_enabled == true)
@@ -349,13 +349,13 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                                     tmp_double = rx_position_and_time(3);
                                     d_dump_file.write((char*)&tmp_double, sizeof(double));
                                     // GEO user position Latitude [deg]
-                                    tmp_double = d_latitude_d;
+                                    tmp_double = this->get_latitude();
                                     d_dump_file.write((char*)&tmp_double, sizeof(double));
                                     // GEO user position Longitude [deg]
-                                    tmp_double = d_longitude_d;
+                                    tmp_double = this->get_longitude();
                                     d_dump_file.write((char*)&tmp_double, sizeof(double));
                                     // GEO user position Height [m]
-                                    tmp_double = d_height_m;
+                                    tmp_double = this->get_height();
                                     d_dump_file.write((char*)&tmp_double, sizeof(double));
                             }
                             catch (const std::ifstream::failure& e)
@@ -365,5 +365,5 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                         }
                 }
         }
-    return b_valid_position;
+    return this->is_valid_position();
 }

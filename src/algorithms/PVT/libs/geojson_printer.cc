@@ -138,15 +138,15 @@ bool GeoJSON_Printer::print_position(const std::shared_ptr<Pvt_Solution>& positi
 
     if (print_average_values == false)
         {
-            latitude = position_->d_latitude_d;
-            longitude = position_->d_longitude_d;
-            height = position_->d_height_m;
+            latitude = position_->get_latitude();
+            longitude = position_->get_longitude();
+            height = position_->get_height();
         }
     else
         {
-            latitude = position_->d_avg_latitude_d;
-            longitude = position_->d_avg_longitude_d;
-            height = position_->d_avg_height_m;
+            latitude = position_->get_avg_latitude();
+            longitude = position_->get_avg_longitude();
+            height = position_->get_avg_height();
         }
 
     if (geojson_file.is_open())

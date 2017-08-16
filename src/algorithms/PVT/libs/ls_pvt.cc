@@ -192,7 +192,8 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
     arma::mat w = arma::zeros(nmbOfSatellites, nmbOfSatellites);
     w.diag() = w_vec; //diagonal weight matrix
 
-    arma::vec pos = {d_rx_pos(0), d_rx_pos(0), d_rx_pos(0), 0}; // time error in METERS (time x speed)
+    arma::vec rx_pos = this->get_rx_pos();
+    arma::vec pos = {rx_pos(0), rx_pos(1), rx_pos(2), 0}; // time error in METERS (time x speed)
     arma::mat A;
     arma::mat omc;
     arma::mat az;
@@ -236,11 +237,12 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
                             Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i)); //armadillo
 
                             //--- Find DOA and range of satellites
-                            Ls_Pvt::topocent(&d_visible_satellites_Az[i],
-                                    &d_visible_satellites_El[i],
-                                    &d_visible_satellites_Distance[i],
-                                    pos.subvec(0,2),
-                                    Rot_X - pos.subvec(0, 2));
+                            double *az, *el, *dist;
+                            Ls_Pvt::topocent(az, el, dist, pos.subvec(0,2), Rot_X - pos.subvec(0, 2));
+                            this->set_visible_satellites_Az(i, *az);
+                            this->set_visible_satellites_El(i, *el);
+                            this->set_visible_satellites_Distance(i, *dist);
+
                             if(traveltime < 0.1 && nmbOfSatellites > 3)
                                 {
                                     //--- Find receiver's height
@@ -254,7 +256,7 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
                                     else
                                         {
                                             //--- Find delay due to troposphere (in meters)
-                                            Ls_Pvt::tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                            Ls_Pvt::tropo(&trop, sin(this->get_visible_satellites_El(i) * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
                                             if(trop > 5.0 ) trop = 0.0; //check for erratic values
                                         }
                                 }
@@ -282,7 +284,7 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
         }
 
     //-- compute the Dilution Of Precision values
-    d_Q = arma::inv(arma::htrans(A) * A);
+    this->set_Q(arma::inv(arma::htrans(A) * A));
 
     // check the consistency of the PVT solution
     if (((fabs(pos(3)) * 1000.0) / GPS_C_m_s) > GPS_STARTOFFSET_ms * 2)

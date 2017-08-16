@@ -569,13 +569,13 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
 
                                     for (std::map<int,Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
                                         {
-                                            it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->d_rx_dt_s * GPS_C_m_s;
+                                            it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->get_time_offset_s() * GPS_C_m_s;
                                         }
                                     if(first_fix == true)
                                         {
-                                            std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                                            << " UTC is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
-                                            << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
+                                            std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
+                                                      << " UTC is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
+                                                      << " [deg], Height= " << d_ls_pvt->get_height() << " [m]" << std::endl;
                                             ttff_msgbuf ttff;
                                             ttff.mtype = 1;
                                             end = std::chrono::system_clock::now();
@@ -1136,20 +1136,20 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                         }
 
                     // DEBUG MESSAGE: Display position in console output
-                    if( (d_ls_pvt->b_valid_position == true) && (flag_display_pvt == true) )
+                    if( (d_ls_pvt->is_valid_position() == true) && (flag_display_pvt == true) )
                         {
-                            std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                                      << " UTC using " << d_ls_pvt->d_valid_observations << " observations is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
-                                      << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
+                            std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
+                                      << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
+                                      << " [deg], Height= " << d_ls_pvt->get_height() << " [m]" << std::endl;
 
-                            LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                                      << " UTC using "<< d_ls_pvt->d_valid_observations << " observations is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
-                                      << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]";
+                            LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
+                                      << " UTC using "<< d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
+                                      << " [deg], Height= " << d_ls_pvt->get_height() << " [m]";
 
-                            /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                                         << " UTC using "<< d_ls_pvt->d_valid_observations<<" observations is HDOP = " << d_ls_pvt->d_HDOP << " VDOP = "
-                                         << d_ls_pvt->d_VDOP <<" TDOP = " << d_ls_pvt->d_TDOP
-                                         << " GDOP = " << d_ls_pvt->d_GDOP << std::endl; */
+                            /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
+                                         << " UTC using "<< d_ls_pvt->get_num_valid_observations()<<" observations is HDOP = " << d_ls_pvt->get_HDOP() << " VDOP = "
+                                         << d_ls_pvt->get_VDOP() <<" TDOP = " << d_ls_pvt->get_TDOP()
+                                         << " GDOP = " << d_ls_pvt->get_GDOP() << std::endl; */
                         }
 
                     // MULTIPLEXED FILE RECORDING - Record results to file

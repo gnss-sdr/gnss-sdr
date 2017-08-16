@@ -487,17 +487,22 @@ int Pvt_Solution::compute_DOP()
 }
 
 
-int Pvt_Solution::set_averaging_depth(int depth)
+void Pvt_Solution::set_averaging_depth(int depth)
 {
     d_averaging_depth = depth;
-    return 0;
 }
 
 
-int Pvt_Solution::pos_averaging(bool flag_averaring)
+void Pvt_Solution::set_averaging_flag(bool flag)
+{
+    d_flag_averaging = flag;
+}
+
+
+void Pvt_Solution::perform_pos_averaging()
 {
     // MOVING AVERAGE PVT
-    bool avg = flag_averaring;
+    bool avg = d_flag_averaging;
     if (avg == true)
         {
             if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
@@ -543,6 +548,201 @@ int Pvt_Solution::pos_averaging(bool flag_averaring)
         {
             b_valid_position = true;
         }
-    return 0;
 }
 
+
+double Pvt_Solution::get_time_offset_s() const
+{
+    return d_rx_dt_s;
+}
+
+
+void Pvt_Solution::set_time_offset_s(double offset)
+{
+    d_rx_dt_s = offset;
+}
+
+
+double Pvt_Solution::get_latitude() const
+{
+    return d_latitude_d;
+}
+
+
+double Pvt_Solution::get_longitude() const
+{
+    return d_longitude_d;
+}
+
+
+double Pvt_Solution::get_height() const
+{
+    return d_height_m;
+}
+
+
+double Pvt_Solution::get_avg_latitude() const
+{
+    return d_avg_latitude_d;
+}
+
+
+double Pvt_Solution::get_avg_longitude() const
+{
+    return d_avg_longitude_d;
+}
+
+
+double Pvt_Solution::get_avg_height() const
+{
+    return d_avg_height_m;
+}
+
+
+bool Pvt_Solution::is_averaging() const
+{
+    return d_flag_averaging;
+}
+
+bool Pvt_Solution::is_valid_position() const
+{
+    return b_valid_position;
+}
+
+
+void Pvt_Solution::set_valid_position(bool is_valid)
+{
+    b_valid_position = is_valid;
+}
+
+
+void Pvt_Solution::set_rx_pos(arma::vec pos)
+{
+    d_rx_pos = pos;
+}
+
+
+arma::vec Pvt_Solution::get_rx_pos() const
+{
+    return d_rx_pos;
+}
+
+
+boost::posix_time::ptime Pvt_Solution::get_position_UTC_time() const
+{
+    return d_position_UTC_time;
+}
+
+
+void Pvt_Solution::set_position_UTC_time(const boost::posix_time::ptime pt)
+{
+    d_position_UTC_time = pt;
+}
+
+
+int Pvt_Solution::get_num_valid_observations() const
+{
+    return d_valid_observations;
+}
+
+
+void Pvt_Solution::set_num_valid_observations(int num)
+{
+    d_valid_observations = num;
+}
+
+
+void Pvt_Solution::set_visible_satellites_ID(size_t index, unsigned int prn)
+{
+    d_visible_satellites_IDs[index] = prn;
+}
+
+
+unsigned int Pvt_Solution::get_visible_satellites_ID(size_t index) const
+{
+    return d_visible_satellites_IDs[index];
+}
+
+
+void Pvt_Solution::set_visible_satellites_El(size_t index, double el)
+{
+    d_visible_satellites_El[index] = el;
+}
+
+
+double Pvt_Solution::get_visible_satellites_El(size_t index) const
+{
+    return d_visible_satellites_El[index];
+}
+
+
+void Pvt_Solution::set_visible_satellites_Az(size_t index, double az)
+{
+    d_visible_satellites_Az[index] = az;
+}
+
+
+double Pvt_Solution::get_visible_satellites_Az(size_t index) const
+{
+    return d_visible_satellites_Az[index];
+}
+
+
+void Pvt_Solution::set_visible_satellites_Distance(size_t index, double dist)
+{
+    d_visible_satellites_Distance[index] = dist;
+}
+
+
+double Pvt_Solution::get_visible_satellites_Distance(size_t index) const
+{
+    return d_visible_satellites_Distance[index];
+}
+
+
+void Pvt_Solution::set_visible_satellites_CN0_dB(size_t index, double cn0)
+{
+    d_visible_satellites_CN0_dB[index] = cn0;
+}
+
+
+double Pvt_Solution::get_visible_satellites_CN0_dB(size_t index) const
+{
+    return d_visible_satellites_CN0_dB[index];
+}
+
+
+void Pvt_Solution::set_Q(arma::mat Q)
+{
+    d_Q = Q;
+}
+
+
+double Pvt_Solution::get_GDOP() const
+{
+    return d_GDOP;
+}
+
+
+double Pvt_Solution::get_PDOP() const
+{
+    return d_PDOP;
+}
+
+
+double Pvt_Solution::get_HDOP() const
+{
+    return d_HDOP;
+}
+
+
+double Pvt_Solution::get_VDOP() const
+{
+    return d_VDOP;
+}
+
+
+double Pvt_Solution::get_TDOP() const
+{
+    return d_TDOP;
+}

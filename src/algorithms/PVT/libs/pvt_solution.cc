@@ -652,63 +652,172 @@ void Pvt_Solution::set_num_valid_observations(int num)
 }
 
 
-void Pvt_Solution::set_visible_satellites_ID(size_t index, unsigned int prn)
+bool Pvt_Solution::set_visible_satellites_ID(size_t index, unsigned int prn)
 {
-    d_visible_satellites_IDs[index] = prn;
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Setting sat ID to channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return false;
+        }
+    else
+        {
+            if(prn >= PVT_MAX_PRN)
+                {
+                    LOG(WARNING) << "Setting to channel " << index << " a PRN of " << prn << " (the maximum is " << PVT_MAX_PRN << ")";
+                    return false;
+                }
+            else
+                {
+                    d_visible_satellites_IDs[index] = prn;
+                    return true;
+                }
+        }
 }
 
 
 unsigned int Pvt_Solution::get_visible_satellites_ID(size_t index) const
 {
-    return d_visible_satellites_IDs[index];
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting sat ID for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return 0;
+        }
+    else
+        {
+            return d_visible_satellites_IDs[index];
+        }
 }
 
 
-void Pvt_Solution::set_visible_satellites_El(size_t index, double el)
+bool Pvt_Solution::set_visible_satellites_El(size_t index, double el)
 {
-    d_visible_satellites_El[index] = el;
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Setting sat elevation for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return false;
+        }
+    else
+        {
+            if(el > 90.0)
+                {
+                    LOG(WARNING) << "Setting a sat elevation > 90 [degrees]. Saturating to 90";
+                    d_visible_satellites_El[index] = 90.0;
+                }
+            else
+                {
+                    if(el < -90.0)
+                        {
+                            LOG(WARNING) << "Setting a sat elevation < -90 [degrees]. Saturating to -90";
+                            d_visible_satellites_El[index] = -90.0;
+                        }
+                    else
+                        {
+                            d_visible_satellites_El[index] = el;
+                        }
+                }
+            return true;
+        }
 }
 
 
 double Pvt_Solution::get_visible_satellites_El(size_t index) const
 {
-    return d_visible_satellites_El[index];
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting sat elevation for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return 0.0;
+        }
+    else
+        {
+            return d_visible_satellites_El[index];
+        }
 }
 
 
-void Pvt_Solution::set_visible_satellites_Az(size_t index, double az)
+bool Pvt_Solution::set_visible_satellites_Az(size_t index, double az)
 {
-    d_visible_satellites_Az[index] = az;
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting sat azimuth for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return false;
+        }
+    else
+        {
+            d_visible_satellites_Az[index] = az;
+            return true;
+        }
 }
 
 
 double Pvt_Solution::get_visible_satellites_Az(size_t index) const
 {
-    return d_visible_satellites_Az[index];
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting sat azimuth for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return 0.0;
+        }
+    else
+        {
+            return d_visible_satellites_Az[index];
+        }
 }
 
 
-void Pvt_Solution::set_visible_satellites_Distance(size_t index, double dist)
+bool Pvt_Solution::set_visible_satellites_Distance(size_t index, double dist)
 {
-    d_visible_satellites_Distance[index] = dist;
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Setting sat distance for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return false;
+        }
+    else
+        {
+            d_visible_satellites_Distance[index] = dist;
+            return true;
+        }
 }
 
 
 double Pvt_Solution::get_visible_satellites_Distance(size_t index) const
 {
-    return d_visible_satellites_Distance[index];
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting sat distance for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return 0.0;
+        }
+    else
+        {
+            return d_visible_satellites_Distance[index];
+        }
 }
 
 
-void Pvt_Solution::set_visible_satellites_CN0_dB(size_t index, double cn0)
+bool Pvt_Solution::set_visible_satellites_CN0_dB(size_t index, double cn0)
 {
-    d_visible_satellites_CN0_dB[index] = cn0;
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Setting sat Cn0 for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return false;
+        }
+    else
+        {
+            d_visible_satellites_CN0_dB[index] = cn0;
+            return true;
+        }
 }
 
 
 double Pvt_Solution::get_visible_satellites_CN0_dB(size_t index) const
 {
-    return d_visible_satellites_CN0_dB[index];
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting received CN0 for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return 0.0;
+        }
+    else
+        {
+            return d_visible_satellites_CN0_dB[index];
+        }
 }
 
 

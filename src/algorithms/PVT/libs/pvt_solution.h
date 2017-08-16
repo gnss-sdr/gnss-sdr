@@ -37,7 +37,8 @@
 #include <armadillo>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#define PVT_MAX_CHANNELS 24
+const unsigned int PVT_MAX_CHANNELS = 24;
+const unsigned int PVT_MAX_PRN = 127;  // 126 is SBAS
 
 /*!
  * \brief Base class for a PVT solution
@@ -69,8 +70,6 @@ private:
     boost::posix_time::ptime d_position_UTC_time;
     int d_valid_observations;
 
-    int d_visible_satellites_IDs[PVT_MAX_CHANNELS] = {};        // Array with the IDs of the valid satellites
-
     arma::mat d_Q;
     double d_GDOP;
     double d_PDOP;
@@ -78,6 +77,7 @@ private:
     double d_VDOP;
     double d_TDOP;
 
+    int d_visible_satellites_IDs[PVT_MAX_CHANNELS] = {};        // Array with the IDs of the valid satellites
     double d_visible_satellites_El[PVT_MAX_CHANNELS] = {};       // Array with the LOS Elevation of the valid satellites
     double d_visible_satellites_Az[PVT_MAX_CHANNELS] = {};       // Array with the LOS Azimuth of the valid satellites
     double d_visible_satellites_Distance[PVT_MAX_CHANNELS] = {}; // Array with the LOS Distance of the valid satellites
@@ -109,19 +109,19 @@ public:
     int get_num_valid_observations() const;    //!< Get the number of valid pseudorange observations (valid satellites)
     void set_num_valid_observations(int num);  //!< Set the number of valid pseudorange observations (valid satellites)
 
-    void set_visible_satellites_ID(size_t index, unsigned int prn);  //!< Set the ID of the visible satellite index channel
+    bool set_visible_satellites_ID(size_t index, unsigned int prn);  //!< Set the ID of the visible satellite index channel
     unsigned int get_visible_satellites_ID(size_t index) const;      //!< Get the ID of the visible satellite index channel
 
-    void set_visible_satellites_El(size_t index, double el);         //!< Set the LOS Elevation of the visible satellite index channel
-    double get_visible_satellites_El(size_t index) const;            //!< Get the LOS Elevation of the visible satellite index channel
+    bool set_visible_satellites_El(size_t index, double el);         //!< Set the LOS Elevation, in degrees, of the visible satellite index channel
+    double get_visible_satellites_El(size_t index) const;            //!< Get the LOS Elevation, in degrees, of the visible satellite index channel
 
-    void set_visible_satellites_Az(size_t index, double az);         //!< Set the LOS Azimuth of the visible satellite index channel
-    double get_visible_satellites_Az(size_t index) const;            //!< Get the LOS Azimuth of the visible satellite index channel
+    bool set_visible_satellites_Az(size_t index, double az);         //!< Set the LOS Azimuth, in degrees, of the visible satellite index channel
+    double get_visible_satellites_Az(size_t index) const;            //!< Get the LOS Azimuth, in degrees, of the visible satellite index channel
 
-    void set_visible_satellites_Distance(size_t index, double dist); //!< Set the LOS Distance of the visible satellite index channel
+    bool set_visible_satellites_Distance(size_t index, double dist); //!< Set the LOS Distance of the visible satellite index channel
     double get_visible_satellites_Distance(size_t index) const;      //!< Get the LOS Distance of the visible satellite index channel
 
-    void set_visible_satellites_CN0_dB(size_t index, double cn0);    //!< Set the CN0 in dB of the visible satellite index channel
+    bool set_visible_satellites_CN0_dB(size_t index, double cn0);    //!< Set the CN0 in dB of the visible satellite index channel
     double get_visible_satellites_CN0_dB(size_t index) const;        //!< Get the CN0 in dB of the visible satellite index channel
 
     //averaging

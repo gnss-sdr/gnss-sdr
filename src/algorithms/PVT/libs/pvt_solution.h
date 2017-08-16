@@ -37,7 +37,7 @@
 #include <armadillo>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-const unsigned int PVT_MAX_CHANNELS = 24;
+const unsigned int PVT_MAX_CHANNELS = 90;
 const unsigned int PVT_MAX_PRN = 127;  // 126 is SBAS
 
 /*!

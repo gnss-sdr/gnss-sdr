@@ -108,6 +108,24 @@ rtklib_solver::~rtklib_solver()
 }
 
 
+std::map<int,Galileo_Ephemeris> rtklib_solver::get_galileo_ephemeris_map() const
+{
+    return galileo_ephemeris_map;
+}
+
+
+std::map<int,Gps_Ephemeris> rtklib_solver::get_gps_ephemeris_map() const
+{
+    return gps_ephemeris_map;
+}
+
+
+std::map<int,Gps_CNAV_Ephemeris> rtklib_solver::get_gps_cnav_ephemeris_map() const
+{
+    return gps_cnav_ephemeris_map;
+}
+
+
 bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_map, double Rx_time, bool flag_averaging)
 {
     std::map<int,Gnss_Synchro>::const_iterator gnss_observables_iter;

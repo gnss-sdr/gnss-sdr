@@ -717,7 +717,7 @@ void GNSSFlowgraph::set_signals_list()
     /*
      * Ordering the list of signals from configuration file
      */
-    std::list<Gnss_Signal>::const_iterator gnss_it = available_GNSS_signals_.cbegin();
+    std::list<Gnss_Signal>::iterator gnss_it = available_GNSS_signals_.begin();
 
     // Pre-assignation if not defined at ChannelX.signal=1C ...? In what order?
 
@@ -737,7 +737,7 @@ void GNSSFlowgraph::set_signals_list()
                 {
                     Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
                     available_GNSS_signals_.remove(signal_value);
-                    available_GNSS_signals_.insert(gnss_it, signal_value);
+                    gnss_it = available_GNSS_signals_.insert(gnss_it, signal_value);
                 }
         }
 

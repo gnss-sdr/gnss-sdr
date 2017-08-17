@@ -84,16 +84,23 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     unsigned short rtcm_station_id = configuration->property(role + ".rtcm_station_id", 1234);
     // RTCM message rates: least common multiple with output_rate_ms
     int rtcm_MT1019_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), output_rate_ms);
+    int rtcm_MT1020_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1020_rate_ms", 5000), output_rate_ms);
     int rtcm_MT1045_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), output_rate_ms);
     int rtcm_MSM_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
     int rtcm_MT1077_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
+    int rtcm_MT1087_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1087_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
     int rtcm_MT1097_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1097_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
     std::map<int,int> rtcm_msg_rate_ms;
     rtcm_msg_rate_ms[1019] = rtcm_MT1019_rate_ms;
+    rtcm_msg_rate_ms[1020] = rtcm_MT1020_rate_ms;
     rtcm_msg_rate_ms[1045] = rtcm_MT1045_rate_ms;
     for (int k = 1071; k < 1078; k++) // All GPS MSM
         {
             rtcm_msg_rate_ms[k] = rtcm_MT1077_rate_ms;
+        }
+    for (int k = 1081; k < 1088; k++) // All GLONASS MSM
+        {
+            rtcm_msg_rate_ms[k] = rtcm_MT1087_rate_ms;
         }
     for (int k = 1091; k < 1098; k++) // All Galileo MSM
         {

@@ -48,9 +48,8 @@
 
 /*!
  * \brief This class decodes a GLONASS GNAV Data message as described in GLONASS ICD (Edition 5.1)
- *
- * See http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdfdescribed in IS-GPS-200E
- *
+ * \note Code added as part of GSoC 2017 program
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  */
 class Glonass_Gnav_Navigation_Message
 {

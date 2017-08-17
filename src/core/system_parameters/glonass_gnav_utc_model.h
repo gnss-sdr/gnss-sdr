@@ -38,13 +38,14 @@
 
 /*!
  * \brief This class is a storage for the GLONASS GNAV UTC MODEL data as described in GLONASS ICD (Edition 5.1)
- * See http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf
+ * \note Code added as part of GSoC 2017 program
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  */
 class Glonass_Gnav_Utc_Model
 {
 public:
     bool valid;
-    // UTC
+    // Clock Parameters
     double d_tau_c;             //!< GLONASS time scale correction to UTC(SU) time. [s]
     double d_tau_gps;           //!< Correction to GPS time to GLONASS time [day]
     double d_N_4;               //!< Four year interval number starting from 1996 [4 year interval]
@@ -60,7 +61,6 @@ public:
     {
         using boost::serialization::make_nvp;
         if(version){};
-
         archive & make_nvp("valid",valid);
         archive & make_nvp("d_tau_c", d_tau_c);
         archive & make_nvp("d_tau_gps", d_tau_gps);

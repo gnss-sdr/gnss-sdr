@@ -53,10 +53,11 @@ TEST(GlonassGnavAlmanacTest, SatellitePosition)
     double Vxoi = -3.375497;     // [m/s]
     double Vyoi = -0.161453;    // [Кm/s]
     double Vzoi = 2.060844;     // [Кm/s]
+    double N_A  = 615;          // [days]
 
     Glonass_Gnav_Almanac gnav_almanac;
 
-    gnav_almanac.d_N_A              = 615;              // [days]
+
     gnav_almanac.d_lambda_n_A       = -0.189986229;     // [half cycles]
     gnav_almanac.d_t_lambda_n_A     = 27122.09375;      // [second]
     gnav_almanac.d_Delta_i_n_A      = 0.011929512;      // [half cycle]
@@ -65,7 +66,7 @@ TEST(GlonassGnavAlmanacTest, SatellitePosition)
     gnav_almanac.d_epsilon_n_A      = 0.001482010;      // [unitless]
     gnav_almanac.d_omega_n_A        = 0.440277100;      // [Half cycle]
 
-    gnav_almanac.satellite_position(N_i, t_i);
+    gnav_almanac.satellite_position(N_A, N_i, t_i);
 
     ASSERT_TRUE(gnav_almanac.d_satpos_Xo - Xoi < DBL_EPSILON );
     ASSERT_TRUE(gnav_almanac.d_satpos_Yo - Yoi < DBL_EPSILON );

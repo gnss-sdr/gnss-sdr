@@ -39,19 +39,14 @@
 
 /*!
  * \brief This class is a storage for the GLONASS SV ALMANAC data as described GLONASS ICD (Edition 5.1)
- *
- * See http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf
+ * \note Code added as part of GSoC 2017 program
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  */
 class Glonass_Gnav_Almanac
 {
 public:
-    int i_satellite_freq_channel; //!< SV Frequency Channel NUMBER
-    double d_tau_c;             //!< GLONASS time scale correction to UTC(SU) time. [s]
-    double d_tau_gps;           //!< Correction to GPS time to GLONASS time [day]
-    double d_N_4;               //!< Four year interval number starting from 1996 [4 year interval]
-    double d_N_A;               //!< Calendar day number within the four-year period beginning since the leap year [days]
     double d_n_A;               //!< Conventional number of satellite within GLONASS space segment [dimensionless]
-    double d_H_n_A;             //!< Carrier frequency number of navigation RF signal transmitted by d_nA satellite [dimensionless]
+    double d_H_n_A;             //!< Carrier frequency number of navigation RF signal transmitted by d_nA satellite as table 4.10 (0-31) [dimensionless]
     double d_lambda_n_A;        //!< Longitude of the first (within the d_NA day) ascending node of d_nA  [semi-circles]
     double d_t_lambda_n_A;      //!< Time of first ascending node passage [s]
     double d_Delta_i_n_A;       //!< Correction of the mean value of inclination of d_n_A satellite at instant t_lambda_n_A [semi-circles]
@@ -64,6 +59,11 @@ public:
     double d_tau_n_A;           //!< Coarse value of d_n_A satellite time correction to GLONASS time at instant  t_lambdan_A[s]
     double d_C_n;               //!< Generalized “unhealthy flag” of n_A satellite at instant of almanac upload [dimensionless]
     double d_l_n;               //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+
+    // Satellite Identification Information
+    int i_satellite_freq_channel;           //!< SV Frequency Channel Number
+    unsigned int i_satellite_PRN;           //!< SV PRN Number, equivalent to slot number for compatibility with GPS
+    unsigned int i_satellite_slot_number;   //!< SV Slot Number
 
     // satellite positions
     double d_satpos_Xo;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
@@ -93,10 +93,8 @@ public:
         if(version){};
 
         archive & make_nvp("i_satellite_freq_channel", i_satellite_freq_channel);
-        archive & make_nvp("d_tau_c", d_tau_c);
-        archive & make_nvp("d_tau_gps", d_tau_gps);
-        archive & make_nvp("d_N_4", d_N_4);
-        archive & make_nvp("d_N_A", d_N_A);
+        archive & make_nvp("i_satellite_PRN", i_satellite_PRN);
+        archive & make_nvp("i_satellite_slot_number", i_satellite_slot_number);
         archive & make_nvp("d_n_A", d_n_A);
         archive & make_nvp("d_H_n_A", d_H_n_A);
         archive & make_nvp("d_lambda_n_A", d_lambda_n_A);
@@ -113,7 +111,7 @@ public:
         archive & make_nvp("d_l_n", d_l_n);
     }
 
-    void satellite_position(double N_i, double t_i);
+    void satellite_position(double N_A, double N_i, double t_i);
     /*!
      * Default constructor
      */

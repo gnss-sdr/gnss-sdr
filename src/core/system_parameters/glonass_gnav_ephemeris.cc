@@ -1,11 +1,9 @@
 /*!
  * \file glonass_gnav_ephemeris.cc
  * \brief  Interface of a GLONASS GNAV EPHEMERIS storage and orbital model functions
- *
- * See Russian Institute of Space Device Engineering,
- “Global Navigation Satellite System GLONASS Interface Control Document,
- Navigational radiosignal in bands L1, L2,” Moscow, Edition 5.1, 2008.
+ * \note Code added as part of GSoC 2017 program
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  * -------------------------------------------------------------------------
  *

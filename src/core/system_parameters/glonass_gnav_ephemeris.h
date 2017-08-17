@@ -43,8 +43,8 @@
 
 /*!
  * \brief This class is a storage and orbital model functions for the GLONASS SV ephemeris data as described in GLONASS ICD (Edition 5.1)
- *
- * See http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf
+ * \note Code added as part of GSoC 2017 program
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  */
 class Glonass_Gnav_Ephemeris
 {
@@ -100,9 +100,10 @@ public:
 
     // Inmediate deliverables of ephemeris information
     //TODO check how freq channel is managed in gnav message. I think it is a number greater thn 0
-    unsigned int i_satellite_freq_channel;  //!< SV Frequency Channel Number
-    unsigned int i_satellite_PRN;           //!< SV PRN NUMBER
-    unsigned int i_satellite_slot_number;   //!< SV PRN NUMBER
+    // Satellite Identification Information
+    int i_satellite_freq_channel;  //!< SV Frequency Channel Number
+    unsigned int i_satellite_PRN;           //!< SV PRN Number, equivalent to slot number for compatibility with GPS
+    unsigned int i_satellite_slot_number;   //!< SV Slot Number
     double d_TOD;                           //!< Time of Day of the ephemeris set based in start of frame [s]
     double d_D4Y;                           //!< Day of Year after latest leap year (4 year interval)
     double d_yr;                            //!< Current year
@@ -139,6 +140,8 @@ public:
         if(version){};
 
         archive & make_nvp("i_satellite_freq_channel", i_satellite_freq_channel); //!< SV PRN frequency channel number
+        archive & make_nvp("i_satellite_PRN", i_satellite_PRN);
+        archive & make_nvp("i_satellite_slot_number", i_satellite_slot_number);
         archive & make_nvp("d_m", d_m);             //!< String number within frame [dimensionless]
         archive & make_nvp("d_t_k", d_t_k);         //!< Time referenced to the beginning of the frame within the current day [hours, minutes, seconds]
         archive & make_nvp("d_t_b", d_t_b);         //!< Index of a time interval within current day according to UTC(SU) + 03 hours 00 min. [minutes]

@@ -133,9 +133,9 @@ public:
      * \brief Prints L1-Only GLONASS RTK Observables
      * \details This GLONASS message type is not generally used or supported; type 1012 is to be preferred.
      * \note Code added as part of GSoC 2017 program
-     * \params glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
-     * \params obs_time Time of observation at the moment of printing
-     * \params observables Set of observables as defined by the platform
+     * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \param obs_time Time of observation at the moment of printing
+     * \param observables Set of observables as defined by the platform
      * \return string with message contents
      */
     std::string print_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id);
@@ -143,9 +143,9 @@ public:
      * \brief Prints Extended L1-Only GLONASS RTK Observables
      * \details This GLONASS message type is used when only L1 data is present and bandwidth is very tight, often 1012 is used in such cases.
      * \note Code added as part of GSoC 2017 program
-     * \params glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
-     * \params obs_time Time of observation at the moment of printing
-     * \params observables Set of observables as defined by the platform
+     * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \param obs_time Time of observation at the moment of printing
+     * \param observables Set of observables as defined by the platform
      * \return string with message contents
      */
     std::string print_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id);
@@ -153,9 +153,9 @@ public:
      * \brief Prints L1&L2 GLONASS RTK Observables
      * \details This GLONASS message type is not generally used or supported; type 1012 is to be preferred
      * \note Code added as part of GSoC 2017 program
-     * \params glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
-     * \params obs_time Time of observation at the moment of printing
-     * \params observables Set of observables as defined by the platform
+     * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \param obs_time Time of observation at the moment of printing
+     * \param observables Set of observables as defined by the platform
      * \return string with message contents
      */
     std::string print_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id);
@@ -163,9 +163,9 @@ public:
      * \brief Prints Extended L1&L2 GLONASS RTK Observables
      * \details This GLONASS message type is the most common observational message type, with L1/L2/SNR content.  This is one of the most common messages found.
      * \note Code added as part of GSoC 2017 program
-     * \params glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
-     * \params obs_time Time of observation at the moment of printing
-     * \params observables Set of observables as defined by the platform
+     * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \param obs_time Time of observation at the moment of printing
+     * \param observables Set of observables as defined by the platform
      * \return string with message contents
      */
     std::string print_MT1012(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int, Gnss_Synchro> & observables, unsigned short station_id);
@@ -333,9 +333,9 @@ public:
     /*!
      * \brief Locks time period in which GLONASS signals have been continually tracked.
      * \note Code added as part of GSoC 2017 program
-     * \params eph GLONASS GNAV Broadcast Ephemeris
-     * \params obs_time Time of observation at the moment of printing
-     * \params observables Set of observables as defined by the platform
+     * \param eph GLONASS GNAV Broadcast Ephemeris
+     * \param obs_time Time of observation at the moment of printing
+     * \param observables Set of observables as defined by the platform
      * \return Returns the time period in which GLONASS signals have been continually tracked.
      */
     unsigned int lock_time(const Glonass_Gnav_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro);
@@ -1015,8 +1015,14 @@ private:
 
     std::bitset<8> DF032;
 
-    std::bitset<27> DF034;      //!< GLONASS Epoch Time (tk)
+    /*!
+     * \brief Sets the Data Field value
+     * \note Code added as part of GSoC 2017 program
+     * \param obs_time Time of observation at the moment of printing
+     * \return returns 0 upon success
+     */
     int set_DF034(double obs_time);
+    std::bitset<27> DF034;      //!< GLONASS Epoch Time (tk)
 
     std::bitset<5> DF035;       //!< No. of GLONASS Satellite Signals Processed
     int set_DF035(const std::map<int, Gnss_Synchro> & observables);
@@ -1035,7 +1041,7 @@ private:
     int set_DF039(bool code_indicator);
 
     std::bitset<5> DF040;       //!< GLONASS Satellite Frequency Number
-    int set_DF040(unsigned int frequency_channel_number);
+    int set_DF040(int frequency_channel_number);
     int set_DF040(const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
 
     std::bitset<25> DF041;      //!< GLONASS L1 Pseudorange

@@ -1,8 +1,9 @@
 /*!
  * \file glonass_gnav_almanac.cc
  * \brief  Interface of a GLONASS GNAV ALMANAC storage as described in GLONASS ICD (Edition 5.1)
- * See http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf
- * \author Damian Miralles , 2017. dmiralles2009(at)gmail.com
+ * \note Code added as part of GSoC 2017 program
+ * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  * -------------------------------------------------------------------------
  *
@@ -36,10 +37,9 @@
 Glonass_Gnav_Almanac::Glonass_Gnav_Almanac()
 {
   i_satellite_freq_channel = 0;
-  d_tau_c = 0.0;
-  d_tau_gps = 0.0;
-  d_N_4 = 0.0;
-  d_N_A = 0.0;
+  i_satellite_PRN = 0;
+  i_satellite_slot_number = 0;
+
   d_n_A = 0.0;
   d_H_n_A = 0.0;
   d_lambda_n_A = 0.0;
@@ -56,7 +56,7 @@ Glonass_Gnav_Almanac::Glonass_Gnav_Almanac()
   d_l_n = 0.0;
 }
 
-void Glonass_Gnav_Almanac::satellite_position(double N_i, double t_i)
+void Glonass_Gnav_Almanac::satellite_position(double N_A, double N_i, double t_i)
 {
   double T_nom = 43200;     // [seconds]
   double i_nom = D2R*63.0;  // [rad]
@@ -85,7 +85,7 @@ void Glonass_Gnav_Almanac::satellite_position(double N_i, double t_i)
   double e2_y = 0.0;
   double e2_z = 0.0;
   // Compute time difference to reference time
-  Delta_t = (N_i - d_N_A) * 86400 + (t_i + d_t_lambda_n_A);
+  Delta_t = (N_i - N_A) * 86400 + (t_i + d_t_lambda_n_A);
 
   // Compute the actual inclination
   i = i_nom + d_Delta_i_n_A;

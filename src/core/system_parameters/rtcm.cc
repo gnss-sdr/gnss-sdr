@@ -1848,7 +1848,7 @@ int Rtcm::read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glon
     glonass_gnav_eph.i_satellite_slot_number = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
     index += 6;
 
-    glonass_gnav_eph.i_satellite_freq_channel = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 5)));
+    glonass_gnav_eph.i_satellite_freq_channel = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 5)) - 7.0);
     index += 5;
 
     glonass_gnav_alm_health = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
@@ -3882,12 +3882,14 @@ int Rtcm::set_DF039(bool code_indicator)
 }
 
 
-int Rtcm::set_DF040(unsigned int frequency_channel_number)
+int Rtcm::set_DF040(int frequency_channel_number)
 {
-    unsigned int freq_ = frequency_channel_number;
+    unsigned int freq_ = frequency_channel_number + 7;
     if(freq_ > 20)
         {
-            LOG(WARNING) << "GLONASS Satellite Frequency Number must be between 0 and 20, but channel frequency number " << freq_ << " was found";
+            LOG(WARNING) << "GLONASS Satellite Frequency Number Conversion Error."
+                         << "Value must be between 0 and 20, but converted channel"
+                         << "frequency number " << freq_ << " was found";
         }
 
     DF040 = std::bitset<5>(freq_);
@@ -3897,10 +3899,12 @@ int Rtcm::set_DF040(unsigned int frequency_channel_number)
 
 int Rtcm::set_DF040(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    unsigned int freq_ = glonass_gnav_eph.i_satellite_freq_channel;
+    unsigned int freq_ = glonass_gnav_eph.i_satellite_freq_channel + 7;
     if(freq_ > 20)
         {
-            LOG(WARNING) << "GLONASS Satellite Frequency Number must be between 0 and 20, but channel frequency number " << freq_ << " was found";
+            LOG(WARNING) << "GLONASS Satellite Frequency Number Conversion Error."
+                         << "Value must be between 0 and 20, but converted channel"
+                         << "frequency number " << freq_ << " was found";
         }
 
     DF040 = std::bitset<5>(freq_);

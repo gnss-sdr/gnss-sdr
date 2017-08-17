@@ -87,6 +87,7 @@
 #include "galileo_e5a_dll_pll_tracking.h"
 #include "gps_l2_m_dll_pll_tracking.h"
 #include "glonass_l1_ca_dll_pll_tracking.h"
+#include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l2c_telemetry_decoder.h"
 #include "galileo_e1b_telemetry_decoder.h"
@@ -1164,6 +1165,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GlonassL1CaDllPllCAidTracking(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
 
     // TELEMETRY DECODERS ----------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_Telemetry_Decoder") == 0)
@@ -1419,6 +1426,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     else if (implementation.compare("GLONASS_L1_CA_DLL_PLL_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GlonassL1CaDllPllTracking(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GlonassL1CaDllPllCAidTracking(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

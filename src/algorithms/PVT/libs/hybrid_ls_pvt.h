@@ -51,7 +51,6 @@ class hybrid_ls_pvt : public Ls_Pvt
 private:
     int count_valid_position;
     bool d_flag_dump_enabled;
-    bool d_flag_averaging;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
     int d_nchannels; // Number of available channels for positioning

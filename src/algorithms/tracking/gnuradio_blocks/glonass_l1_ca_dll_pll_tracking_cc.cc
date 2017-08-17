@@ -217,7 +217,7 @@ void Glonass_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     sys = sys_.substr(0,1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of GLONASS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
@@ -229,16 +229,32 @@ void Glonass_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
 
+
 Glonass_L1_Ca_Dll_Pll_Tracking_cc::~Glonass_L1_Ca_Dll_Pll_Tracking_cc()
 {
-    d_dump_file.close();
-
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_correlator_outs);
-    volk_gnsssdr_free(d_ca_code);
-
-    delete[] d_Prompt_buffer;
-    multicorrelator_cpu.free();
+    if (d_dump_file.is_open())
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor " << ex.what();
+            }
+        }
+    try
+    {
+            volk_gnsssdr_free(d_local_code_shift_chips);
+            volk_gnsssdr_free(d_correlator_outs);
+            volk_gnsssdr_free(d_ca_code);
+            delete[] d_Prompt_buffer;
+            multicorrelator_cpu.free();
+    }
+    catch(const std::exception & ex)
+    {
+            LOG(WARNING) << "Exception in destructor " << ex.what();
+    }
 }
 
 
@@ -279,7 +295,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
             d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * samples_offset;
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
-            current_synchro_data.fs=d_fs_in;
+            current_synchro_data.fs = d_fs_in;
             current_synchro_data.correlation_length_ms = 1;
             *out[0] = current_synchro_data;
             consume_each(samples_offset); // shift input to perform alignment with local replica
@@ -398,7 +414,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
     }
 
     //assign the GNURadio block output data
-    current_synchro_data.fs=d_fs_in;
+    current_synchro_data.fs = d_fs_in;
     *out[0] = current_synchro_data;
     if(d_dump)
     {
@@ -449,6 +465,10 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
             d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             tmp_double = static_cast<double>(d_sample_counter);
             d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+
+            // PRN
+            unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
+            d_dump_file.write(reinterpret_cast<char*>(&prn_), sizeof(unsigned int));
         }
         catch (const std::ifstream::failure &e)
         {

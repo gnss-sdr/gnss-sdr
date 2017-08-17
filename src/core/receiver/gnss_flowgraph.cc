@@ -565,7 +565,7 @@ void GNSSFlowgraph::set_signals_list()
     /*
      * Sets a sequential list of GNSS satellites
      */
-    std::set<unsigned int>::iterator available_gnss_prn_iter;
+    std::set<unsigned int>::const_iterator available_gnss_prn_iter;
 
     /*
      * \TODO Describe GNSS satellites more nicely, with RINEX notation
@@ -649,8 +649,8 @@ void GNSSFlowgraph::set_signals_list()
             /*
              * Loop to create GPS L1 C/A signals
              */
-            for (available_gnss_prn_iter = available_gps_prn.begin();
-                    available_gnss_prn_iter != available_gps_prn.end();
+            for (available_gnss_prn_iter = available_gps_prn.cbegin();
+                    available_gnss_prn_iter != available_gps_prn.cend();
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
@@ -663,8 +663,8 @@ void GNSSFlowgraph::set_signals_list()
             /*
              * Loop to create GPS L2C M signals
              */
-            for (available_gnss_prn_iter = available_gps_prn.begin();
-                    available_gnss_prn_iter != available_gps_prn.end();
+            for (available_gnss_prn_iter = available_gps_prn.cbegin();
+                    available_gnss_prn_iter != available_gps_prn.cend();
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
@@ -677,8 +677,8 @@ void GNSSFlowgraph::set_signals_list()
             /*
              * Loop to create SBAS L1 C/A signals
              */
-            for (available_gnss_prn_iter = available_sbas_prn.begin();
-                    available_gnss_prn_iter != available_sbas_prn.end();
+            for (available_gnss_prn_iter = available_sbas_prn.cbegin();
+                    available_gnss_prn_iter != available_sbas_prn.cend();
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("SBAS"),
@@ -692,8 +692,8 @@ void GNSSFlowgraph::set_signals_list()
             /*
              * Loop to create the list of Galileo E1 B signals
              */
-            for (available_gnss_prn_iter = available_galileo_prn.begin();
-                    available_gnss_prn_iter != available_galileo_prn.end();
+            for (available_gnss_prn_iter = available_galileo_prn.cbegin();
+                    available_gnss_prn_iter != available_galileo_prn.cend();
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
@@ -706,8 +706,8 @@ void GNSSFlowgraph::set_signals_list()
             /*
              * Loop to create the list of Galileo E1 B signals
              */
-            for (available_gnss_prn_iter = available_galileo_prn.begin();
-                    available_gnss_prn_iter != available_galileo_prn.end();
+            for (available_gnss_prn_iter = available_galileo_prn.cbegin();
+                    available_gnss_prn_iter != available_galileo_prn.cend();
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
@@ -717,7 +717,7 @@ void GNSSFlowgraph::set_signals_list()
     /*
      * Ordering the list of signals from configuration file
      */
-    std::list<Gnss_Signal>::iterator gnss_it = available_GNSS_signals_.begin();
+    std::list<Gnss_Signal>::const_iterator gnss_it = available_GNSS_signals_.cbegin();
 
     // Pre-assignation if not defined at ChannelX.signal=1C ...? In what order?
 
@@ -742,9 +742,9 @@ void GNSSFlowgraph::set_signals_list()
         }
 
     //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
-    //    std::list<Gnss_Signal>::iterator available_gnss_list_iter;
-    //    for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
-    //    != available_GNSS_signals_.end(); available_gnss_list_iter++)
+    //    std::list<Gnss_Signal>::const_iterator available_gnss_list_iter;
+    //    for (available_gnss_list_iter = available_GNSS_signals_.cbegin(); available_gnss_list_iter
+    //    != available_GNSS_signals_.cend(); available_gnss_list_iter++)
     //        {
     //            std::cout << *available_gnss_list_iter << std::endl;
     //        }

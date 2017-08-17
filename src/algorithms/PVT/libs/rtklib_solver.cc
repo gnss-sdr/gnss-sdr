@@ -111,9 +111,9 @@ rtklib_solver::~rtklib_solver()
 bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_map, double Rx_time, bool flag_averaging)
 {
     std::map<int,Gnss_Synchro>::const_iterator gnss_observables_iter;
-    std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
-    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
-    std::map<int,Gps_CNAV_Ephemeris>::iterator gps_cnav_ephemeris_iter;
+    std::map<int,Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
+    std::map<int,Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
+    std::map<int,Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
 
     this->set_averaging_flag(flag_averaging);
 
@@ -139,7 +139,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                         {
                             // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
                             galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                            if (galileo_ephemeris_iter != galileo_ephemeris_map.end())
+                            if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
                                 {
                                     //convert ephemeris from GNSS-SDR class to RTKLIB structure
                                     eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
@@ -163,7 +163,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
 
                             // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
                             galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                            if (galileo_ephemeris_iter != galileo_ephemeris_map.end())
+                            if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
                                 {
                                     bool found_E1_obs=false;
                                     for (int i = 0; i < valid_obs; i++)
@@ -207,7 +207,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                     if(sig_.compare("1C") == 0)
                         {
                             gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                            if (gps_ephemeris_iter != gps_ephemeris_map.end())
+                            if (gps_ephemeris_iter != gps_ephemeris_map.cend())
                                 {
                                     //convert ephemeris from GNSS-SDR class to RTKLIB structure
                                     eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second);
@@ -228,11 +228,11 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                     if(sig_.compare("2S") == 0)
                         {
                             gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                            if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.end())
+                            if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.cend())
                                 {
                                     // 1. Find the same satellite in GPS L1 band
                                     gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                    if (gps_ephemeris_iter != gps_ephemeris_map.end())
+                                    if (gps_ephemeris_iter != gps_ephemeris_map.cend())
                                         {
                                             // 2. If found, replace the existing GPS L1 ephemeris with the GPS L2 ephemeris
                                             // (more precise!), and attach the L2 observation to the L1 observation in RTKLIB structure

@@ -616,7 +616,7 @@ void Pvt_Solution::set_valid_position(bool is_valid)
 }
 
 
-void Pvt_Solution::set_rx_pos(arma::vec pos)
+void Pvt_Solution::set_rx_pos(const arma::vec & pos)
 {
     d_rx_pos = pos;
 }
@@ -634,7 +634,7 @@ boost::posix_time::ptime Pvt_Solution::get_position_UTC_time() const
 }
 
 
-void Pvt_Solution::set_position_UTC_time(const boost::posix_time::ptime pt)
+void Pvt_Solution::set_position_UTC_time(const boost::posix_time::ptime & pt)
 {
     d_position_UTC_time = pt;
 }
@@ -821,7 +821,7 @@ double Pvt_Solution::get_visible_satellites_CN0_dB(size_t index) const
 }
 
 
-void Pvt_Solution::set_Q(arma::mat Q)
+void Pvt_Solution::set_Q(const arma::mat & Q)
 {
     d_Q = Q;
 }

@@ -97,14 +97,14 @@ public:
     double get_avg_longitude() const;      //!< Get RX position averaged Longitude WGS84 [deg]
     double get_avg_height() const;         //!< Get RX position averaged height WGS84 [m]
 
-    void set_rx_pos(arma::vec pos);
+    void set_rx_pos(const arma::vec & pos);
     arma::vec get_rx_pos() const;
 
     bool is_valid_position() const;
     void set_valid_position(bool is_valid);
 
     boost::posix_time::ptime get_position_UTC_time() const;
-    void set_position_UTC_time(const boost::posix_time::ptime pt);
+    void set_position_UTC_time(const boost::posix_time::ptime & pt);
 
     int get_num_valid_observations() const;    //!< Get the number of valid pseudorange observations (valid satellites)
     void set_num_valid_observations(int num);  //!< Set the number of valid pseudorange observations (valid satellites)
@@ -131,7 +131,7 @@ public:
     void set_averaging_flag(bool flag);
 
     // DOP estimations
-    void set_Q(arma::mat Q);
+    void set_Q(const arma::mat & Q);
     int compute_DOP(); //!< Compute Dilution Of Precision parameters
 
     double get_GDOP() const;

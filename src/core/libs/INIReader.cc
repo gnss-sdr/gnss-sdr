@@ -94,7 +94,7 @@ std::string INIReader::MakeKey(std::string section, std::string name)
 int INIReader::ValueHandler(void* user, const char* section, const char* name,
                             const char* value)
 {
-    INIReader* reader = (INIReader*)user;
+    INIReader* reader = static_cast<INIReader*>(user);
     reader->_values[MakeKey(section, name)] = value;
     return 1;
 }

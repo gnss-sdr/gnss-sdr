@@ -73,20 +73,20 @@ static char* rstrip(char* s)
 }
 
 /* Return pointer to first non-whitespace char in given string. */
-static char* lskip(const char* s)
+static char* lskip(char* s)
 {
     while (*s && isspace(*s))
         s++;
-    return (char*)s;
+    return static_cast<char*>(s);
 }
 
 /* Return pointer to first char c or ';' in given string, or pointer to
    null at end of string if neither found. */
-static char* find_char_or_comment(const char* s, char c)
+static char* find_char_or_comment(char* s, char c)
 {
     while (*s && *s != c && *s != ';')
         s++;
-    return (char*)s;
+    return static_cast<char*>(s);
 }
 
 /* Version of strncpy that ensures dest (size bytes) is null-terminated. */

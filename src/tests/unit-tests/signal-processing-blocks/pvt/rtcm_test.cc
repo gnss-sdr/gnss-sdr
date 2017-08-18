@@ -246,12 +246,11 @@ TEST(RtcmTest, MT1005)
     EXPECT_EQ(expected_false, glonass);
     EXPECT_EQ(expected_false, galileo);
 
-    EXPECT_EQ(2003, ref_id);
+    EXPECT_EQ(static_cast<unsigned int>(2003), ref_id);
     EXPECT_DOUBLE_EQ(1114104.5999, ecef_x);
     EXPECT_DOUBLE_EQ(-4850729.7108, ecef_y);
     EXPECT_DOUBLE_EQ(3975521.4643, ecef_z);
 }
-
 
 
 TEST(RtcmTest, MT1019)

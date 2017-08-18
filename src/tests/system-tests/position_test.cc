@@ -118,7 +118,7 @@ void StaticPositionSystemTest::geodetic2Ecef(const double latitude, const double
 }
 
 
-void StaticPositionSystemTest::geodetic2Enu(const double latitude, const double longitude, const double altitude,
+void StaticPositionSystemTest::geodetic2Enu(double latitude, double longitude, double altitude,
         double* east, double* north, double* up)
 {
     double x, y, z;
@@ -480,7 +480,9 @@ void StaticPositionSystemTest::check_results()
                     std::string str2;
                     std::istringstream iss(line);
                     double value;
-                    double lat, longitude, h;
+                    double lat = 0.0;
+                    double longitude = 0.0;
+                    double h = 0.0;
                     for (int i = 0; i < 3; i++)
                         {
                             std::getline(iss, str2, ',');

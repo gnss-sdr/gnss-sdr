@@ -148,9 +148,9 @@ TEST(RtcmTest, BinToUint)
 TEST(RtcmTest, BinToInt)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    long unsigned int expected1 = 42;
+    long int expected1 = 42;
     EXPECT_EQ(expected1, rtcm->bin_to_int("00101010"));
-    long unsigned int expected2 = -42;
+    long int expected2 = -42;
     EXPECT_EQ(expected2, rtcm->bin_to_int("11010110"));
 }
 
@@ -232,7 +232,7 @@ TEST(RtcmTest, MT1005)
     EXPECT_EQ(expected_false, glonass);
     EXPECT_EQ(expected_false, galileo);
 
-    EXPECT_EQ(2003, ref_id);
+    EXPECT_EQ(static_cast<unsigned int>(2003), ref_id);
     EXPECT_DOUBLE_EQ(1114104.5999, ecef_x);
     EXPECT_DOUBLE_EQ(-4850729.7108, ecef_y);
     EXPECT_DOUBLE_EQ(3975521.4643, ecef_z);

@@ -226,7 +226,6 @@ void GpsL1CaPcpsQuickSyncAcquisition::init()
 {
     acquisition_cc_->init();
     //set_local_code();
-
 }
 
 
@@ -260,6 +259,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::reset()
             acquisition_cc_->set_active(true);
         }
 }
+
 
 void GpsL1CaPcpsQuickSyncAcquisition::set_state(int state)
 {

@@ -69,16 +69,16 @@ int unpack_byte_2bit_samples::work(int noutput_items,
             // Read packed input sample (1 byte = 4 samples)
             signed char c = in[i];
             sample.two_bit_sample = c & 3;
-            out[n++] = (float)sample.two_bit_sample;
+            out[n++] = static_cast<float>(sample.two_bit_sample);
 
             sample.two_bit_sample = (c>>2) & 3;
-            out[n++] = (float)sample.two_bit_sample;
+            out[n++] = static_cast<float>(sample.two_bit_sample);
 
             sample.two_bit_sample = (c>>4) & 3;
-            out[n++] = (float)sample.two_bit_sample;
+            out[n++] = static_cast<float>(sample.two_bit_sample);
 
             sample.two_bit_sample = (c>>6) & 3;
-            out[n++] = (float)sample.two_bit_sample;
+            out[n++] = static_cast<float>(sample.two_bit_sample);
         }
     return noutput_items;
 }

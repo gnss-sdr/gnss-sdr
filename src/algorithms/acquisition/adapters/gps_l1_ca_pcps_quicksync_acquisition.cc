@@ -59,34 +59,32 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
 
-
     //--- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_
             / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-
     /*Calculate the folding factor value based on the calculations*/
-    unsigned int temp = (unsigned int)ceil(sqrt(log2(code_length_)));
+    unsigned int temp = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
     folding_factor_ = configuration_->property(role + ".folding_factor", temp);
 
     if ( sampled_ms_ % folding_factor_ != 0)
         {
             LOG(WARNING) << "QuickSync Algorithm requires a coherent_integration_time"
-                    << " multiple of " << folding_factor_ << "ms, Value entered "
-                    << sampled_ms_ << " ms";
+                         << " multiple of " << folding_factor_ << "ms, Value entered "
+                         << sampled_ms_ << " ms";
             if(sampled_ms_ < folding_factor_)
                 {
-                    sampled_ms_ = (int) folding_factor_;
+                    sampled_ms_ = static_cast<int>(folding_factor_);
                 }
             else
                 {
-                    sampled_ms_ = (int)(sampled_ms_/folding_factor_) * folding_factor_;
+                    sampled_ms_ = static_cast<int>(sampled_ms_ / folding_factor_) * folding_factor_;
                 }
 
-            LOG(WARNING) <<" Coherent_integration_time of "
-                    << sampled_ms_ << " ms will be used instead.";
-
+            LOG(WARNING) << " Coherent_integration_time of "
+                         << sampled_ms_ << " ms will be used instead.";
         }
+
     vector_length_ = code_length_ * sampled_ms_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
@@ -276,7 +274,7 @@ float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa)
 {
     //Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
             frequency_bins++;
         }
@@ -298,7 +296,6 @@ void GpsL1CaPcpsQuickSyncAcquisition::connect(gr::top_block_sptr top_block)
         {
             top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
-
 }
 
 

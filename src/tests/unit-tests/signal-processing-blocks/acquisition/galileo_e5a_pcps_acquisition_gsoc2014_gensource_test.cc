@@ -205,7 +205,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     integration_time_ms = 1;
     fs_in = 32e6;
 
-    expected_delay_chips = round(14000*((double)10230000/(double)fs_in));
+    expected_delay_chips = round(14000.0 * 10230000.0 / static_cast<double>(fs_in));
     expected_doppler_hz = 2800;
     expected_delay_sec = 94;
     CAF_window_hz = 0;
@@ -464,19 +464,19 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::process_message()
             switch (sat)
             {
             case 0:
-                delay_error_chips = std::abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
+                delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
                 doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
                 break;
             case 1:
-                delay_error_chips = std::abs((double)expected_delay_chips1 - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
+                delay_error_chips = std::abs(static_cast<double>(expected_delay_chips1) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
                 doppler_error_hz = std::abs(expected_doppler_hz1 - gnss_synchro.Acq_doppler_hz);
                 break;
             case 2:
-                delay_error_chips = std::abs((double)expected_delay_chips2 - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
+                delay_error_chips = std::abs(static_cast<double>(expected_delay_chips2) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
                 doppler_error_hz = std::abs(expected_doppler_hz2 - gnss_synchro.Acq_doppler_hz);
                 break;
             case 3:
-                delay_error_chips = std::abs((double)expected_delay_chips3 - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
+                delay_error_chips = std::abs(static_cast<double>(expected_delay_chips3) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
                 doppler_error_hz = std::abs(expected_doppler_hz3 - gnss_synchro.Acq_doppler_hz);
                 break;
             default: // case 3
@@ -502,16 +502,16 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::process_message()
     realization_counter++;
 
     //std::cout << correct_estimation_counter << "correct estimation counter" << std::endl;
-    std::cout << "Progress: " << round((float)realization_counter/num_of_realizations*100) << "% \r" << std::flush;
+    std::cout << "Progress: " << round(static_cast<float>(realization_counter / num_of_realizations * 100)) << "% \r" << std::flush;
     //std::cout << message << "message" <<std::endl;
     if (realization_counter == num_of_realizations)
         {
             mse_delay /= num_of_realizations;
             mse_doppler /= num_of_realizations;
 
-            Pd = (double)correct_estimation_counter / (double)num_of_realizations;
-            Pfa_a = (double)detection_counter / (double)num_of_realizations;
-            Pfa_p = (double)(detection_counter - correct_estimation_counter) / (double)num_of_realizations;
+            Pd = static_cast<double>(correct_estimation_counter) / static_cast<double>(num_of_realizations);
+            Pfa_a = static_cast<double>(detection_counter) / static_cast<double>(num_of_realizations);
+            Pfa_p = static_cast<double>(detection_counter - correct_estimation_counter) / static_cast<double>(num_of_realizations);
 
             mean_acq_time_us /= num_of_realizations;
 
@@ -654,7 +654,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
                         {
                             // std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
                             // std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler" <<std::endl;
-                            EXPECT_EQ((unsigned int) 1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                            EXPECT_EQ(1U, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                         }
                 }
             else if (i == 1)

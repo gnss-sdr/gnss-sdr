@@ -89,12 +89,14 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
 
-        }else{
-                item_size_ = sizeof(gr_complex);
-                acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
-                        doppler_max_, if_, fs_in_, code_length_, code_length_,
-                        bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
-                DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
+        }
+    else
+        {
+            item_size_ = sizeof(gr_complex);
+            acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
+                    doppler_max_, if_, fs_in_, code_length_, code_length_,
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
@@ -130,7 +132,6 @@ void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
         {
             acquisition_cc_->set_channel(channel_);
         }
-
 }
 
 
@@ -188,8 +189,8 @@ void GpsL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
-
 }
+
 
 void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
@@ -236,7 +237,6 @@ void GpsL1CaPcpsAcquisition::init()
 
 void GpsL1CaPcpsAcquisition::set_local_code()
 {
-
     std::complex<float>* code = new std::complex<float>[code_length_];
 
     gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
@@ -291,7 +291,7 @@ float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
 {
     //Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
             frequency_bins++;
         }
@@ -301,7 +301,7 @@ float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    float threshold = static_cast<float>(quantile(mydist,val));
 
     return threshold;
 }

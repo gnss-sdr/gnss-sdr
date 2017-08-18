@@ -165,8 +165,8 @@ void pcps_multithread_acquisition_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (int doppler = (int)(-d_doppler_max);
-         doppler <= (int)d_doppler_max;
+    for (int doppler = static_cast<int>(-d_doppler_max);
+         doppler <= static_cast<int>(d_doppler_max);
          doppler += d_doppler_step)
     {
         d_num_doppler_bins++;
@@ -177,7 +177,7 @@ void pcps_multithread_acquisition_cc::init()
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
-            int doppler = -(int)d_doppler_max + d_doppler_step * doppler_index;
+            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = static_cast<float>(GPS_TWO_PI) * (d_freq + doppler) / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
@@ -201,7 +201,7 @@ void pcps_multithread_acquisition_cc::acquisition_core()
     int doppler;
     uint32_t indext = 0;
     float magt = 0.0;
-    float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
+    float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
     gr_complex* in = d_in_buffer[d_well_count];
     unsigned long int samplestamp = d_sample_counter_buffer[d_well_count];
 
@@ -219,14 +219,14 @@ void pcps_multithread_acquisition_cc::acquisition_core()
     // 1- Compute the input signal power estimation
     volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
     volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
-    d_input_power /= (float)d_fft_size;
+    d_input_power /= static_cast<float>(d_fft_size);
 
     // 2- Doppler frequency search loop
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             // doppler search steps
 
-            doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
+            doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
             volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                         d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
@@ -264,8 +264,8 @@ void pcps_multithread_acquisition_cc::acquisition_core()
                     // restarted between consecutive dwells in multidwell operation.
                     if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
                     {
-                        d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
-                        d_gnss_synchro->Acq_doppler_hz = (double)doppler;
+                        d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                        d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                         d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
 
                         // 5- Compute the test statistics and compare to the threshold
@@ -384,7 +384,7 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
                     // Fill internal buffer with d_max_dwells signal blocks. This step ensures that
                     // consecutive signal blocks will be processed in multi-dwell operation. This is
                     // essential when d_bit_transition_flag = true.
-                    unsigned int num_dwells = std::min((int)(d_max_dwells-d_in_dwell_count),ninput_items[0]);
+                    unsigned int num_dwells = std::min(static_cast<int>(d_max_dwells - d_in_dwell_count), ninput_items[0]);
                     for (unsigned int i = 0; i < num_dwells; i++)
                         {
                             memcpy(d_in_buffer[d_in_dwell_count++], (gr_complex*)input_items[i],
@@ -393,7 +393,7 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
                             d_sample_counter_buffer.push_back(d_sample_counter);
                         }
 
-                    if (ninput_items[0] > (int)num_dwells)
+                    if (ninput_items[0] > static_cast<int>(num_dwells))
                         {
                             d_sample_counter += d_fft_size * (ninput_items[0]-num_dwells);
                         }

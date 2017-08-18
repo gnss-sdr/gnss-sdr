@@ -60,7 +60,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
     if (sampled_ms_ % 4 != 0)
         {
-            sampled_ms_ = (int)(sampled_ms_ / 4) * 4;
+            sampled_ms_ = static_cast<int>(sampled_ms_ / 4) * 4;
             LOG(WARNING) << "coherent_integration_time should be multiple of "
                          << "Galileo code length (4 ms). coherent_integration_time = "
                          << sampled_ms_ << " ms will be used.";
@@ -93,12 +93,14 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
 
-        }else{
-                item_size_ = sizeof(gr_complex);
-                acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
-                        doppler_max_, if_, fs_in_, samples_per_ms, code_length_,
-                        bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
-                DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
+        }
+    else
+        {
+            item_size_ = sizeof(gr_complex);
+            acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
+                    doppler_max_, if_, fs_in_, samples_per_ms, code_length_,
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
@@ -296,7 +298,7 @@ void GalileoE1PcpsAmbiguousAcquisition::set_state(int state)
 float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
 {
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
             frequency_bins++;
         }
@@ -308,7 +310,7 @@ float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
     double val = pow(1.0 - pfa,exponent);
     double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    float threshold = static_cast<float>(quantile(mydist,val));
 
     return threshold;
 }

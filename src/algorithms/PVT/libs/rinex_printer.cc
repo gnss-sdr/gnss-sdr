@@ -1133,7 +1133,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& gal
     out.close();
     out.open(navGalfilename, std::ios::out | std::ios::trunc);
     out.seekp(0);
-    for (int i = 0; i < (int) data.size() - 1; i++)
+    for (int i = 0; i < static_cast<int>(data.size()) - 1; i++)
         {
             out << data[i] << std::endl;
         }
@@ -1284,7 +1284,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
     out.close();
     out.open(navfilename, std::ios::out | std::ios::trunc);
     out.seekp(0);
-    for (int i = 0; i < (int) data.size() - 1; i++)
+    for (int i = 0; i < static_cast<int>(data.size()) - 1; i++)
         {
             out << data[i] << std::endl;
         }
@@ -1379,7 +1379,7 @@ void Rinex_Printer::update_nav_header(std::fstream & out, const Gps_CNAV_Utc_Mod
     out.close();
     out.open(navfilename, std::ios::out | std::ios::trunc);
     out.seekp(0);
-    for (int i = 0; i < (int) data.size() - 1; i++)
+    for (int i = 0; i < static_cast<int>(data.size()) - 1; i++)
         {
             out << data[i] << std::endl;
         }
@@ -1510,7 +1510,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
     out.close();
     out.open(navMixfilename, std::ios::out | std::ios::trunc);
     out.seekp(0);
-    for (int i = 0; i < (int) data.size() - 1; i++)
+    for (int i = 0; i < static_cast<int>(data.size()) - 1; i++)
         {
             out << data[i] << std::endl;
         }
@@ -3522,7 +3522,7 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Gps_Utc_Model& ut
     out.close();
     out.open(obsfilename, std::ios::out | std::ios::trunc);
     out.seekp(0);
-    for (int i = 0; i < (int) data.size() - 1; i++)
+    for (int i = 0; i < static_cast<int>( data.size()) - 1; i++)
         {
             out << data[i] << std::endl;
         }
@@ -3581,7 +3581,7 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Gps_CNAV_Utc_Mode
     out.close();
     out.open(obsfilename, std::ios::out | std::ios::trunc);
     out.seekp(0);
-    for (int i = 0; i < (int) data.size() - 1; i++)
+    for (int i = 0; i < static_cast<int>(data.size()) - 1; i++)
         {
             out << data[i] << std::endl;
         }
@@ -3641,7 +3641,7 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Galileo_Utc_Model
     out.close();
     out.open(obsfilename, std::ios::out | std::ios::trunc);
     out.seekp(0);
-    for (int i = 0; i < (int) data.size() - 1; i++)
+    for (int i = 0; i < static_cast<int>(data.size()) - 1; i++)
         {
             out << data[i] << std::endl;
         }

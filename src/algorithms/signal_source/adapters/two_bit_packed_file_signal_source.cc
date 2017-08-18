@@ -185,7 +185,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
             if (file.is_open())
                 {
                     size = file.tellg();
-                    samples_ = floor((double)size * ( is_complex_ ? 2.0 : 4.0 ) );
+                    samples_ = floor(static_cast<double>(size) * ( is_complex_ ? 2.0 : 4.0 ) );
                     LOG(INFO) << "Total samples in the file= " << samples_; // 4 samples per byte
                     samples_ -= bytes_to_skip;
 
@@ -199,13 +199,13 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
                 }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
-            std::cout << "Processing file " << filename_ << ", which contains " << (double)size << " [bytes]" << std::endl;
+            std::cout << "Processing file " << filename_ << ", which contains " << size << " [bytes]" << std::endl;
             std::cout.precision (ss);
         }
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
-    signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
+    signal_duration_s = static_cast<double>(samples_) * ( 1 /static_cast<double>(sampling_frequency_));
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 

@@ -88,12 +88,14 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
 
-        }else{
-                item_size_ = sizeof(gr_complex);
-                acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
-                        doppler_max_, if_, fs_in_, code_length_, code_length_,
-                        bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
-                DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
+        }
+    else
+        {
+            item_size_ = sizeof(gr_complex);
+            acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
+                    doppler_max_, if_, fs_in_, code_length_, code_length_,
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
@@ -305,7 +307,7 @@ float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    float threshold = static_cast<float>(quantile(mydist,val));
 
     return threshold;
 }

@@ -65,10 +65,10 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
 {
     signed int _prn = 1;
     unsigned int _chip_shift = 4;
-    double _fs = 8000000;
+    double _fs = 8000000.0;
     const signed int _codeFreqBasis = 1023000; //Hz
     const signed int _codeLength = 1023;
-    int _samplesPerCode = round(_fs / (double)(_codeFreqBasis / _codeLength));
+    int _samplesPerCode = round(_fs / static_cast<double>(_codeFreqBasis / _codeLength));
     std::complex<float>* _dest = new std::complex<float>[_samplesPerCode];
 
     int iterations = 1000;
@@ -92,11 +92,11 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
 
 TEST(CodeGenerationTest, ComplexConjugateTest)
 {
-    double _fs = 8000000;
-    double _f = 4000;
+    double _fs = 8000000.0;
+    double _f = 4000.0;
     const signed int _codeFreqBasis = 1023000; //Hz
     const signed int _codeLength = 1023;
-    int _samplesPerCode = round(_fs / (double)(_codeFreqBasis / _codeLength));
+    int _samplesPerCode = round(_fs / static_cast<double>(_codeFreqBasis / _codeLength));
     std::complex<float>* _dest = new std::complex<float>[_samplesPerCode];
 
     int iterations = 1000;

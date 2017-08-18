@@ -143,7 +143,7 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
                             (sample_alignment ? 0 : -1)
                             + d_samples_per_symbol*(symbol_alignment ? -1 : 0)
                             + d_samples_per_symbol * d_symbols_per_bit * it->first;
-                    double message_sample_stamp = sample_stamp + ((double)message_sample_offset)/1000;
+                    double message_sample_stamp = sample_stamp + static_cast<double>(message_sample_offset) / 1000.0;
                     VLOG(EVENT) << "message_sample_stamp=" << message_sample_stamp
                             << " (sample_stamp=" << sample_stamp
                             << " sample_alignment=" << sample_alignment
@@ -446,7 +446,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vec
             ss << " Relbitoffset=" << candidate_it->first << " content=";
             for (std::vector<unsigned char>::iterator byte_it = candidate_bytes.begin(); byte_it < candidate_bytes.end(); ++byte_it)
                 {
-                    ss << std::setw(2) << std::setfill('0') << std::hex << (unsigned int)(*byte_it);
+                    ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>((*byte_it));
                 }
             VLOG(SAMP_SYNC) << ss.str() << std::setfill(' ') << std::resetiosflags(std::ios::hex) << std::endl;
         }
@@ -471,13 +471,13 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_by
             if (idx_bit % bits_per_byte == bits_per_byte - 1)
                 {
                     bytes.push_back(byte);
-                    VLOG(LMORE) << ss.str() << " -> byte=" << std::setw(2) << std::setfill('0') << std::hex << (unsigned int)byte; ss.str("");
+                    VLOG(LMORE) << ss.str() << " -> byte=" << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(byte); ss.str("");
                     byte = 0;
                 }
         }
     bytes.push_back(byte); // implies: insert 6 zeros at the end to fit the 250bits into a multiple of bytes
     VLOG(LMORE) << " -> byte=" << std::setw(2)
-                << std::setfill('0') << std::hex << (unsigned int)byte
+                << std::setfill('0') << std::hex << static_cast<unsigned int>(byte)
                 << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }
 
@@ -499,12 +499,12 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_b
                 {
                     bytes.push_back(byte);
                     VLOG(LMORE) << ss.str() << " -> byte=" << std::setw(2)
-                                << std::setfill('0') << std::hex << (unsigned int)byte; ss.str("");
+                                << std::setfill('0') << std::hex << static_cast<unsigned int>(byte); ss.str("");
                     byte = 0;
                 }
             idx_bit++;
         }
     VLOG(LMORE) << " -> byte=" << std::setw(2)
-                << std::setfill('0') << std::hex << (unsigned int)byte
+                << std::setfill('0') << std::hex << static_cast<unsigned int>(byte)
                 << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }

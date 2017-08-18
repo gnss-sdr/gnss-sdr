@@ -149,13 +149,13 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
                 }
 
             //update TOW at the preamble instant
-            d_TOW_at_Preamble = (int)msg.tow;
+            d_TOW_at_Preamble = static_cast<int>(msg.tow);
             //std::cout<<"["<<(int)msg.prn<<"] deco delay: "<<delay<<"[symbols]"<<std::endl;
             //* The time of the last input symbol can be computed from the message ToW and
             //* delay by the formulae:
             //* \code
             //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20
-            d_TOW_at_current_symbol = ((double)msg.tow) * 6.0 + ((double)delay) * GPS_L2_M_PERIOD + 12 * GPS_L2_M_PERIOD;
+            d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD + 12 * GPS_L2_M_PERIOD;
             d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
             d_flag_valid_word = true;
         }

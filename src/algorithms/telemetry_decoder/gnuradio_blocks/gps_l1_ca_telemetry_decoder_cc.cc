@@ -206,7 +206,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                 }
             else if (d_stat == 1) //check 6 seconds of preamble separation
                 {
-                    preamble_diff_ms = round((((double)d_symbol_history.at(0).Tracking_sample_counter - d_preamble_time_samples)/(double)d_symbol_history.at(0).fs) * 1000.0);
+                    preamble_diff_ms = round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
                     if (abs(preamble_diff_ms - GPS_SUBFRAME_MS) < 1)
                         {
                             DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;
@@ -216,7 +216,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                             if (!d_flag_frame_sync)
                                 {
                                     // send asynchronous message to tracking to inform of frame sync and extend correlation time
-                                    pmt::pmt_t value = pmt::from_double((double)d_preamble_time_samples/(double)d_symbol_history.at(0).fs - 0.001);
+                                    pmt::pmt_t value = pmt::from_double(static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) - 0.001);
                                     this->message_port_pub(pmt::mp("preamble_timestamp_s"), value);
                                     d_flag_frame_sync = true;
                                     if (corr_value < 0)
@@ -228,7 +228,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                                         {
                                             flag_PLL_180_deg_phase_locked = false;
                                         }
-                                    DLOG(INFO)  << " Frame sync SAT " << this->d_satellite << " with preamble start at " << (double)d_preamble_time_samples/(double)d_symbol_history.at(0).fs << " [s]";
+                                    DLOG(INFO)  << " Frame sync SAT " << this->d_satellite << " with preamble start at "
+                                                << static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) << " [s]";
                                 }
                         }
                 }
@@ -237,7 +238,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
         {
             if (d_stat == 1)
                 {
-                    preamble_diff_ms =  round((((double)d_symbol_history.at(0).Tracking_sample_counter - (double)d_preamble_time_samples)/(double)d_symbol_history.at(0).fs) * 1000.0);
+                    preamble_diff_ms =  round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - static_cast<double>(d_preamble_time_samples)) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
                     if (preamble_diff_ms > GPS_SUBFRAME_MS+1)
                         {
                             DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff_ms;

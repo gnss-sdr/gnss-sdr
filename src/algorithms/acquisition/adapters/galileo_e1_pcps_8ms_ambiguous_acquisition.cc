@@ -61,10 +61,10 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
 
     if (sampled_ms_ % 4 != 0)
         {
-            sampled_ms_ = (int)(sampled_ms_/4) * 4;
+            sampled_ms_ = static_cast<int>(sampled_ms_ / 4) * 4;
             LOG(WARNING) << "coherent_integration_time should be multiple of "
-                                     << "Galileo code length (4 ms). coherent_integration_time = "
-                                     << sampled_ms_ << " ms will be used.";
+                         << "Galileo code length (4 ms). coherent_integration_time = "
+                         << sampled_ms_ << " ms will be used.";
         }
 
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
@@ -73,13 +73,12 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
             default_dump_filename);
 
     //--- Find number of samples per spreading code (4 ms)  -----------------
-
     code_length_ = round(
             fs_in_
             / (Galileo_E1_CODE_CHIP_RATE_HZ
                     / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
-    vector_length_ = code_length_ * (int)(sampled_ms_/4);
+    vector_length_ = code_length_ * static_cast<int>(sampled_ms_ / 4);
 
     int samples_per_ms = code_length_ / 4;
 
@@ -239,7 +238,7 @@ void GalileoE1Pcps8msAmbiguousAcquisition::reset()
 float GalileoE1Pcps8msAmbiguousAcquisition::calculate_threshold(float pfa)
 {
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
             frequency_bins++;
         }
@@ -251,7 +250,7 @@ float GalileoE1Pcps8msAmbiguousAcquisition::calculate_threshold(float pfa)
     double val = pow(1.0 - pfa,exponent);
     double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    float threshold = static_cast<float>(quantile(mydist,val));
 
     return threshold;
 }

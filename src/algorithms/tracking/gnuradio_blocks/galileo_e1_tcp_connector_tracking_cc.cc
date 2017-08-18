@@ -297,7 +297,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
                     float acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_current_prn_length_samples);
+                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
                     current_synchro_data.fs = d_fs_in;
@@ -370,10 +370,10 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             double T_prn_samples;
             double K_blk_samples;
             // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
-            T_chip_seconds = 1 / (double)d_code_freq_chips;
+            T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips);
             T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
-            T_prn_samples = T_prn_seconds * (double)d_fs_in;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * (double)d_fs_in;
+            T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
             //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
@@ -415,15 +415,15 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
                 }
 
             // ########### Output the tracking data to navigation and PVT ##########
-            current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
-            current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
+            current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
+            current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
             // Tracking_timestamp_secs is aligned with the PRN start sample
             current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
             current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
-            current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
-            current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
-            current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
+            current_synchro_data.Carrier_phase_rads = static_cast<double>(d_acc_carrier_phase_rad);
+            current_synchro_data.Carrier_Doppler_hz = static_cast<double>(d_carrier_doppler_hz);
+            current_synchro_data.CN0_dB_hz = static_cast<double>(d_CN0_SNV_dB_Hz);
             current_synchro_data.Flag_valid_symbol_output = true;
             current_synchro_data.correlation_length_ms = 4;
         }
@@ -498,7 +498,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
                     // AUX vars (for debug purposes)
                     tmp_float = d_rem_code_phase_samples;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    tmp_double = (double)(d_sample_counter+d_current_prn_length_samples);
+                    tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write((char*)&tmp_double, sizeof(double));
 
                     // PRN

@@ -461,7 +461,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     epoch_counter = 0;
     while(tlm_dump.read_binary_obs())
     {
-        tlm_timestamp_s(epoch_counter) = (double)tlm_dump.Tracking_sample_counter/(double)baseband_sampling_freq;
+        tlm_timestamp_s(epoch_counter) = static_cast<double>(tlm_dump.Tracking_sample_counter) / static_cast<double>(baseband_sampling_freq);
         tlm_TOW_at_Preamble(epoch_counter) = tlm_dump.d_TOW_at_Preamble;
         tlm_tow_s(epoch_counter) = tlm_dump.TOW_at_current_symbol;
         epoch_counter++;

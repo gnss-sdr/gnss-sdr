@@ -258,7 +258,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = (float)(delay_error_samples * 1023 / 4000000);
+    float delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 166) << "Doppler error exceeds the expected value: 166 Hz = 2/(3*integration period)";

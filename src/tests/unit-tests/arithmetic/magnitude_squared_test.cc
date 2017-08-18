@@ -48,7 +48,7 @@ TEST(MagnitudeSquaredTest, StandardCComplexImplementation)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    for(number = 0; number < (unsigned int)FLAGS_size_magnitude_test; number++)
+    for(number = 0; number < static_cast<unsigned int>(FLAGS_size_magnitude_test); number++)
         {
             output[number] = (input[number].real() * input[number].real()) + (input[number].imag() * input[number].imag());
         }

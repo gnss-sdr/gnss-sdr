@@ -505,7 +505,7 @@ void Pvt_Solution::perform_pos_averaging()
     bool avg = d_flag_averaging;
     if (avg == true)
         {
-            if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
+            if (d_hist_longitude_d.size() == static_cast<unsigned int>(d_averaging_depth))
                 {
                     // Pop oldest value
                     d_hist_longitude_d.pop_back();

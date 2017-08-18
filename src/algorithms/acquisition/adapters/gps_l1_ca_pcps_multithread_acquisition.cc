@@ -236,7 +236,7 @@ float GpsL1CaPcpsMultithreadAcquisition::calculate_threshold(float pfa)
     //Calculate the threshold
 
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
             frequency_bins++;
         }
@@ -248,7 +248,7 @@ float GpsL1CaPcpsMultithreadAcquisition::calculate_threshold(float pfa)
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    float threshold = static_cast<float>(quantile(mydist,val));
 
     return threshold;
 }

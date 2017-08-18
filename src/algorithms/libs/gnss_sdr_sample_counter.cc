@@ -57,7 +57,7 @@ int gnss_sdr_sample_counter::work (int noutput_items,
 {
     const Gnss_Synchro *in = (const Gnss_Synchro *)  input_items[0]; // input
 
-    double current_T_rx_s = in[noutput_items-1].Tracking_sample_counter / (double)in[noutput_items-1].fs;
+    double current_T_rx_s = in[noutput_items-1].Tracking_sample_counter / static_cast<double>(in[noutput_items-1].fs);
     if ((current_T_rx_s - last_T_rx_s) > report_interval_s)
         {
             std::cout << "Current receiver time: " << floor(current_T_rx_s) << " [s]" << std::endl;

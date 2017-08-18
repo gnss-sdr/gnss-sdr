@@ -60,10 +60,10 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
     // OSMOSDR Driver parameters
     AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    gain_ = configuration->property(role + ".gain", (double)40.0);
-    rf_gain_ = configuration->property(role + ".rf_gain", (double)40.0);
-    if_gain_ = configuration->property(role + ".if_gain", (double)40.0);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", (double)2.0e6);
+    gain_ = configuration->property(role + ".gain", 40.0);
+    rf_gain_ = configuration->property(role + ".rf_gain", 40.0);
+    if_gain_ = configuration->property(role + ".if_gain", 40.0);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 2.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     osmosdr_args_ = configuration->property(role + ".osmosdr_args", std::string( ));
 

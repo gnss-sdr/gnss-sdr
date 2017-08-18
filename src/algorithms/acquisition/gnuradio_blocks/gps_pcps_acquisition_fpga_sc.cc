@@ -218,7 +218,7 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 
             d_sample_counter = initial_sample;
 
-            temp_peak_to_noise_level = (float) (magt / input_power);
+            temp_peak_to_noise_level = static_cast<float>(magt) / static_cast<float>(input_power);
             if (peak_to_noise_level < temp_peak_to_noise_level)
                 {
                     peak_to_noise_level = temp_peak_to_noise_level;

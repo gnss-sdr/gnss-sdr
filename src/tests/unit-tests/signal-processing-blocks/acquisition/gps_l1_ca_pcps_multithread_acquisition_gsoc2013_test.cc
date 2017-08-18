@@ -471,7 +471,7 @@ TEST_F(GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test, ValidationOfResults)
                 EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
                 if (message == 1)
                     {
-                        EXPECT_EQ(1U, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                        EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                     }
 
             }

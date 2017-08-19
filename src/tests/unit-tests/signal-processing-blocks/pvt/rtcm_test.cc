@@ -281,20 +281,49 @@ TEST(RtcmTest, MT1020)
     auto rtcm = std::make_shared<Rtcm>();
     bool expected_true = true;
 
-    Glonass_Gnav_Ephemeris glonass_gnav_eph = Glonass_Gnav_Ephemeris();
-    Glonass_Gnav_Utc_Model glonass_gnav_utc_model = Glonass_Gnav_Utc_Model();
-    Glonass_Gnav_Ephemeris glonass_gnav_eph_read = Glonass_Gnav_Ephemeris();
-    Glonass_Gnav_Utc_Model glonass_gnav_utc_model_read = Glonass_Gnav_Utc_Model();
+    // Objects to populate the ephemeris and utc fields
+    Glonass_Gnav_Ephemeris gnav_eph = Glonass_Gnav_Ephemeris();
+    Glonass_Gnav_Utc_Model gnav_utc_model = Glonass_Gnav_Utc_Model();
+    // Objects read, used for comparison
+    Glonass_Gnav_Ephemeris gnav_eph_read = Glonass_Gnav_Ephemeris();
+    Glonass_Gnav_Utc_Model gnav_utc_model_read = Glonass_Gnav_Utc_Model();
 
-    glonass_gnav_eph.i_satellite_PRN    = 3;
-    glonass_gnav_eph.d_t_b              = 4;
-    glonass_gnav_eph.d_E_n              = 2.0 * E_LSB;
-    glonass_gnav_eph.d_l3rd_n           = true;
-    glonass_gnav_utc_model.d_tau_gps    = 5;
-    std::string tx_msg                  = rtcm->print_MT1020(glonass_gnav_eph, glonass_gnav_utc_model);
+    glonass_gnav_eph.i_satellite_slot_number    = 3;
+    gnav_ephemeris.d_P_1        = 0;
+    gnav_ephemeris.d_t_k        = 7560;
+    gnav_ephemeris.d_VXn        = -0.490900039672852;
+    gnav_ephemeris.d_AXn        = 0;
+    gnav_ephemeris.d_Xn         = -11025.6669921875;
+    gnav_ephemeris.d_B_n        = 0;
+    gnav_ephemeris.d_P_2        = 1;
+    gnav_ephemeris.d_t_b        = 8100;
+    gnav_ephemeris.d_VYn        = -2.69022750854492;
+    gnav_ephemeris.d_AYn        = 0;
+    gnav_ephemeris.d_Yn         = -11456.7348632812;
+    gnav_ephemeris.d_P_3        = 1;
+    gnav_ephemeris.d_gamma_n    = 1.81898940354586e-12;
+    gnav_ephemeris.d_P          = 3;
+    gnav_ephemeris.d_l3rd_n     = 0;
+    gnav_ephemeris.d_VZn        = -1.82016849517822;
+    gnav_ephemeris.d_AZn        = -2.79396772384644e-09;
+    gnav_ephemeris.d_Zn         = 19929.2377929688;
+    gnav_ephemeris.d_tau_n      = -8.30907374620438e-05;
+    gnav_ephemeris.d_Delta_tau_n = 9.31322574615479e-10;
+    gnav_ephemeris.d_E_n        = 0;
+    gnav_ephemeris.d_P_4        = 0;
+    gnav_ephemeris.d_F_T        = 6;
+    gnav_ephemeris.d_N_T        = 268;
+    gnav_ephemeris.d_n          = 21;
+    gnav_ephemeris.d_M          = 1;
+    gnav_utc_model.d_N_A        = 268;
+    gnav_utc_model.d_tau_c      = 9.6391886472702e-08;
+    gnav_utc_model.d_N_4        = 6;
+    gnav_utc_model.d_tau_gps    = 9.313225746154785e-08;
+
+    std::string tx_msg = rtcm->print_MT1020(glonass_gnav_eph, glonass_gnav_utc_model);
 
     EXPECT_EQ(0, rtcm->read_MT1020(tx_msg, glonass_gnav_eph_read, glonass_gnav_utc_model_read));
-    EXPECT_EQ(3, glonass_gnav_eph_read.i_satellite_PRN);
+    EXPECT_EQ(3, glonass_gnav_eph_read.i_satellite_slot_number);
     EXPECT_DOUBLE_EQ(4, glonass_gnav_eph_read.d_t_b);
     EXPECT_DOUBLE_EQ( 2.0 * E_LSB, glonass_gnav_eph_read.d_E_n);
     EXPECT_DOUBLE_EQ( 5, glonass_gnav_utc_model_read.d_tau_gps);

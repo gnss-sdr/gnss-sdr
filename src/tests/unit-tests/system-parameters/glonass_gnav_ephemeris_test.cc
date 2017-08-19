@@ -1,7 +1,8 @@
 /*!
  * \file code_generation_test.cc
- * \brief  This file implements tests for the generation of complex exponentials.
- * \author Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
+ * \note Code added as part of GSoC 2017 program
+ * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  *
  * -------------------------------------------------------------------------
@@ -32,23 +33,33 @@
 
 #include <complex>
 #include <ctime>
+#include <iostream>
 #include "gnss_signal_processing.h"
 #include "glonass_gnav_ephemeris.h"
 
 
-TEST(GlonassGnavEphemerisTest, SatellitePosition)
+TEST(GlonassGnavEphemerisTest, ComputeGlonassTime)
 {
     Glonass_Gnav_Ephemeris gnav_eph;
+    gnav_eph.d_yr = 2016;
+    gnav_eph.d_N_T = 367;
+    boost::posix_time::time_duration t(0, 0, 7560);
+    boost::gregorian::date d(gnav_eph.d_yr, 1, 1);
+    boost::gregorian::days d2(gnav_eph.d_N_T);
+    d = d + d2;
 
-    gnav_eph.d_Xn = 12317.934082000;
-    gnav_eph.d_Yn = -2245.13232422;
-    gnav_eph.d_Zn = 22212.8173828;
-    gnav_eph.d_VXn = -1.25356674194;
-    gnav_eph.d_VYn = 2.774200439450;
-    gnav_eph.d_VZn = 0.9808206558230000;
-    gnav_eph.d_AXn = -0.931322574616e-9;
-    gnav_eph.d_AYn = 0.0000000000000000;
-    gnav_eph.d_AZn =  -0.186264514923e-8;
+    boost::gregorian::date expected_gdate;
+	boost::posix_time::time_duration expected_gtime;
 
-    gnav_eph.simplified_satellite_position(60);
+	boost::posix_time::ptime gtime = gnav_eph.compute_GLONASS_time(7560);
+	expected_gdate = gtime.date();
+	expected_gtime = gtime.time_of_day();
+
+    // Perform assertions of decoded fields
+	ASSERT_TRUE(expected_gdate.year() - d.year() < FLT_EPSILON );
+	ASSERT_TRUE(expected_gdate.month() - d.month() < FLT_EPSILON );
+	ASSERT_TRUE(expected_gdate.day() - d.day() < FLT_EPSILON );
+	ASSERT_TRUE(expected_gtime.hours() -  t.hours() < FLT_EPSILON );
+	ASSERT_TRUE(expected_gtime.minutes() -  t.minutes() < FLT_EPSILON );
+	ASSERT_TRUE(expected_gtime.seconds() -  t.seconds() < FLT_EPSILON );
 }

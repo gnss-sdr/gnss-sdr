@@ -1,7 +1,8 @@
 /*!
  * \file code_generation_test.cc
- * \brief  This file implements tests for the generation of complex exponentials.
- * \author Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
+ * \note Code added as part of GSoC 2017 program
+ * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  *
  * -------------------------------------------------------------------------
@@ -34,8 +35,6 @@
 #include <ctime>
 #include "gps_sdr_signal_processing.h"
 #include "gnss_signal_processing.h"
-
-
 
 #include <complex>
 #include <ctime>

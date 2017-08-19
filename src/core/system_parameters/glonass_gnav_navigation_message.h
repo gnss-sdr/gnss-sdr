@@ -1,8 +1,9 @@
 /*!
  * \file glonass_gnav_navigation_message.h
  * \brief  Interface of a GLONASS GNAV Data message decoder as described in GLONASS ICD (Edition 5.1)
- * See http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf
+ * \note Code added as part of GSoC 2017 program
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  * -------------------------------------------------------------------------
  *

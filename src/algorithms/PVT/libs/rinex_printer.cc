@@ -3293,14 +3293,13 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 3);
     line += std::string(1, ' ');
 
-        // TODO Add this here, we need to know all satellites in system to get this done
-        line += satelliteSystem["GLONASS"];
-        line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 2); // Slot Number
-        line += std::string(1, ' ');
-        line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 2); // Frequency Number
-        line += std::string(1, ' ');
-
-
+    // TODO Add this here, we need to know all satellites in system to get this done
+    line += satelliteSystem["GLONASS"];
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 2); // Slot Number
+    line += std::string(1, ' ');
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 2); // Frequency Number
+    line += std::string(1, ' ');
+    line += std::string(60-line.size(), ' ');
     line += Rinex_Printer::leftJustify("GLONASS SLOT / FRQ #", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -3328,7 +3327,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     line += observationCode["GLONASS_G2_P"];
     line += std::string(1, ' ');
     line += Rinex_Printer::rightJustify(asString(0.0, 3), 8);
-    line += Rinex_Printer::leftJustify("GLONASS SLOT / FRQ #", 20);
+    line += std::string(60-line.size(), ' ');
+    line += Rinex_Printer::leftJustify("GLONASS COD/PHS/BIS", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 

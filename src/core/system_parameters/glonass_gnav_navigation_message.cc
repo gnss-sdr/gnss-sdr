@@ -31,6 +31,8 @@
  */
 
 #include "glonass_gnav_navigation_message.h"
+#include <boost/crc.hpp>
+#include <boost/dynamic_bitset.hpp>
 #include <cmath>
 #include <iostream>
 #include <sstream>
@@ -107,8 +109,8 @@ Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
 
 bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits)
 {
-    int sum_bits;
-    int sum_hamming;
+    int sum_bits = 0;
+    int sum_hamming = 0;
     int C1 = 0;
     int C2 = 0;
     int C3 = 0;
@@ -117,84 +119,83 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
     int C6 = 0;
     int C7 = 0;
     int C_Sigma = 0;
+    std::vector<int> string_bits(GLONASS_GNAV_STRING_BITS);
 
-    std::bitset<GLONASS_GNAV_STRING_BITS> data = std::bitset<GLONASS_GNAV_STRING_BITS>(bits.to_string(), 0, 77);
-    std::bitset<GLONASS_GNAV_HAMMING_CODE_BITS> hamming_code = std::bitset<GLONASS_GNAV_HAMMING_CODE_BITS>(bits.to_string(), 77, 8);
+	//!< Populate data and hamming code vectors
+	for(int i = 0; i < static_cast<int>(GLONASS_GNAV_STRING_BITS); i++)
+		{
+			string_bits[i] = static_cast<int>(bits[i]);
+		}
 
-    std::istringstream dsb = std::istringstream( data.to_string() );
-    std::istringstream hcb = std::istringstream( hamming_code.to_string() );
-    std::vector<int> data_bits = std::vector<int>( std::istream_iterator<int>( dsb ), std::istream_iterator<int>() );
-    std::vector<int> hamming_code_bits = std::vector<int>( std::istream_iterator<int>( dsb ), std::istream_iterator<int>() );
 
     //!< Compute C1 term
     sum_bits = 0;
     for(int i = 0; i < static_cast<int>(GLONASS_GNAV_CRC_I_INDEX.size()); i++)
         {
-            sum_bits += data_bits[GLONASS_GNAV_CRC_I_INDEX[i]];
+            sum_bits += string_bits[GLONASS_GNAV_CRC_I_INDEX[i]];
         }
-    C1 = hamming_code_bits[0]^(sum_bits%2);
+    C1 = string_bits[0]^(sum_bits%2);
 
     //!< Compute C2 term
     sum_bits = 0;
     for(int j = 0; j < static_cast<int>(GLONASS_GNAV_CRC_J_INDEX.size()); j++)
         {
-            sum_bits += data_bits[GLONASS_GNAV_CRC_J_INDEX[j]];
+            sum_bits += string_bits[GLONASS_GNAV_CRC_J_INDEX[j]];
         }
-    C2 = (hamming_code_bits[1])^(sum_bits%2);
+    C2 = (string_bits[1])^(sum_bits%2);
 
     //!< Compute C3 term
     sum_bits = 0;
     for(int k = 0; k < static_cast<int>(GLONASS_GNAV_CRC_K_INDEX.size()); k++)
         {
-            sum_bits += data_bits[GLONASS_GNAV_CRC_K_INDEX[k]];
+            sum_bits += string_bits[GLONASS_GNAV_CRC_K_INDEX[k]];
         }
-    C3 = hamming_code_bits[2]^(sum_bits%2);
+    C3 = string_bits[2]^(sum_bits%2);
 
     //!< Compute C4 term
     sum_bits = 0;
     for(int l = 0; l < static_cast<int>(GLONASS_GNAV_CRC_L_INDEX.size()); l++)
         {
-            sum_bits += data_bits[GLONASS_GNAV_CRC_L_INDEX[l]];
+            sum_bits += string_bits[GLONASS_GNAV_CRC_L_INDEX[l]];
         }
-    C4 = hamming_code_bits[3]^(sum_bits%2);
+    C4 = string_bits[3]^(sum_bits%2);
 
     //!< Compute C5 term
     sum_bits = 0;
     for(int m = 0; m < static_cast<int>(GLONASS_GNAV_CRC_M_INDEX.size()); m++)
         {
-            sum_bits += data_bits[GLONASS_GNAV_CRC_M_INDEX[m]];
+            sum_bits += string_bits[GLONASS_GNAV_CRC_M_INDEX[m]];
         }
-    C5 = hamming_code_bits[4]^(sum_bits%2);
+    C5 = string_bits[4]^(sum_bits%2);
 
     //!< Compute C6 term
     sum_bits = 0;
     for(int n = 0; n < static_cast<int>(GLONASS_GNAV_CRC_N_INDEX.size()); n++)
         {
-            sum_bits += data_bits[GLONASS_GNAV_CRC_N_INDEX[n]];
+            sum_bits += string_bits[GLONASS_GNAV_CRC_N_INDEX[n]];
         }
-    C6 = hamming_code_bits[5]^(sum_bits%2);
+    C6 = string_bits[5]^(sum_bits%2);
 
     //!< Compute C7 term
     sum_bits = 0;
     for(int p = 0; p < static_cast<int>(GLONASS_GNAV_CRC_P_INDEX.size()); p++)
         {
-            sum_bits += data_bits[GLONASS_GNAV_CRC_P_INDEX[p]];
+            sum_bits += string_bits[GLONASS_GNAV_CRC_P_INDEX[p]];
         }
-    C7 = hamming_code_bits[6]^(sum_bits%2);
+    C7 = string_bits[6]^(sum_bits%2);
 
     //!< Compute C_Sigma term
     sum_bits = 0;
     sum_hamming = 0;
     for(int q = 0; q < static_cast<int>(GLONASS_GNAV_CRC_Q_INDEX.size()); q++)
         {
-            sum_bits += data_bits[GLONASS_GNAV_CRC_Q_INDEX[q]];
+            sum_bits += string_bits[GLONASS_GNAV_CRC_Q_INDEX[q]];
         }
     for(int q = 0; q < 8; q++)
         {
-            sum_hamming += hamming_code_bits[q];
+            sum_hamming += string_bits[q];
         }
     C_Sigma = (sum_hamming%2)^(sum_bits%2);
-
 
     //!< Verification of the data
     // All of the checksums are equal to zero
@@ -252,60 +253,29 @@ unsigned long int Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std:
 signed long int Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     signed long int value = 0;
+    signed long int sign = 0;
     int num_of_slices = parameter.size();
-    // Discriminate between 64 bits and 32 bits compiler
-    int long_int_size_bytes = sizeof(signed long int);
-    if (long_int_size_bytes == 8) // if a long int takes 8 bytes, we are in a 64 bits system
+    // read the MSB and perform the sign extension
+	if (bits[GLONASS_GNAV_STRING_BITS - parameter[0].first] == 1)
+		{
+			sign = -1;
+		}
+	else
+		{
+			sign = 1;
+		}
+    for (int i = 0; i < num_of_slices; i++)
         {
-            // read the MSB and perform the sign extension
-            if (bits[GLONASS_GNAV_STRING_BITS - parameter[0].first] == 1)
+            for (int j = 1; j < parameter[i].second; j++)
                 {
-                    value ^= 0xFFFFFFFFFFFFFFFF; //64 bits variable
-                }
-            else
-                {
-                    value &= 0;
-                }
-
-            for (int i = 0; i < num_of_slices; i++)
-                {
-                    for (int j = 0; j < parameter[i].second; j++)
+                    value <<= 1; //shift left
+                    if (bits[GLONASS_GNAV_STRING_BITS - parameter[i].first - j] == 1)
                         {
-                            value <<= 1; //shift left
-                            value &= 0xFFFFFFFFFFFFFFFE; //reset the corresponding bit (for the 64 bits variable)
-                            if (bits[GLONASS_GNAV_STRING_BITS - parameter[i].first - j] == 1)
-                                {
-                                    value += 1; // insert the bit
-                                }
+                            value += 1; // insert the bit
                         }
                 }
         }
-    else  // we assume we are in a 32 bits system
-        {
-            // read the MSB and perform the sign extension
-            if (bits[GLONASS_GNAV_STRING_BITS - parameter[0].first] == 1)
-                {
-                    value ^= 0xFFFFFFFF;
-                }
-            else
-                {
-                    value &= 0;
-                }
-
-            for (int i = 0; i < num_of_slices; i++)
-                {
-                    for (int j = 0; j < parameter[i].second; j++)
-                        {
-                            value <<= 1; //shift left
-                            value &= 0xFFFFFFFE; //reset the corresponding bit
-                            if (bits[GLONASS_GNAV_STRING_BITS - parameter[i].first - j] == 1)
-                                {
-                                    value += 1; // insert the bit
-                                }
-                        }
-                }
-        }
-    return value;
+    return (sign*value);
 }
 
 
@@ -393,7 +363,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
         case 3:
             // --- It is string 3 ----------------------------------------------
             gnav_ephemeris.d_P_3 = static_cast<double>(read_navigation_unsigned(string_bits, P3));
-            gnav_ephemeris.d_gamma_n = static_cast<double>(read_navigation_signed(string_bits, GAMMA_N)) * TWO_N30;
+            gnav_ephemeris.d_gamma_n = static_cast<double>(read_navigation_signed(string_bits, GAMMA_N)) * TWO_N40;
             gnav_ephemeris.d_P = static_cast<double>(read_navigation_unsigned(string_bits, P));
             gnav_ephemeris.d_l3rd_n = static_cast<double>(read_navigation_unsigned(string_bits, EPH_L_N));
             gnav_ephemeris.d_VZn = static_cast<double>(read_navigation_signed(string_bits, Z_N_DOT)) * TWO_N20;
@@ -541,6 +511,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
 
                 flag_almanac_str_9 = true;
               }
+            break;
         case 10:
             // --- It is string 10 ---------------------------------------------
             i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
@@ -618,6 +589,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
 
                 flag_almanac_str_13 = true;
               }
+            break;
         case 14:
             // --- It is string 14 ---------------------------------------------
             if( frame_ID == 5)
@@ -665,6 +637,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
 
                 flag_almanac_str_15 = true;
               }
+            break;
         default:
             break;
         } // switch subframeID ...

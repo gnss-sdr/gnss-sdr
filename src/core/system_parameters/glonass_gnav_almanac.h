@@ -1,7 +1,9 @@
 /*!
  * \file glonass_gnav_almanac.h
  * \brief  Interface of a GLONASS GNAV ALMANAC storage
- * \author Damian Miralles, 2017. dmiralles2009@gmail.com
+ * \note Code added as part of GSoC 2017 program
+ * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  * -------------------------------------------------------------------------
  *

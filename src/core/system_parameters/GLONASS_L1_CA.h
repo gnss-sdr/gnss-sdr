@@ -127,8 +127,8 @@ const std::vector<std::pair<int,int>> KX({{78,8}});
 //STRING 1
 const std::vector<std::pair<int,int>> P1({{8,2}});
 const std::vector<std::pair<int,int>> T_K_HR({{10,5}});
-const std::vector<std::pair<int,int>> T_K_MIN({{10,6}});
-const std::vector<std::pair<int,int>> T_K_SEC({{10,1}});
+const std::vector<std::pair<int,int>> T_K_MIN({{15,6}});
+const std::vector<std::pair<int,int>> T_K_SEC({{21,1}});
 const std::vector<std::pair<int,int>> X_N_DOT ({{22,24}});
 const std::vector<std::pair<int,int>> X_N_DOT_DOT ({{46,5}});
 const std::vector<std::pair<int,int>> X_N({{51,27}});

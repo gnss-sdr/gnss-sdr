@@ -1,7 +1,9 @@
 /*!
  * \file glonass_gnav_ephemeris.h
  * \brief  Interface of a GLONASS EPHEMERIS storage
+ * \note Code added as part of GSoC 2017 program
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  * -------------------------------------------------------------------------
  *
@@ -99,9 +101,8 @@ public:
     double d_l5th_n;        //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
 
     // Inmediate deliverables of ephemeris information
-    //TODO check how freq channel is managed in gnav message. I think it is a number greater thn 0
     // Satellite Identification Information
-    int i_satellite_freq_channel;  //!< SV Frequency Channel Number
+    int i_satellite_freq_channel;  			//!< SV Frequency Channel Number
     unsigned int i_satellite_PRN;           //!< SV PRN Number, equivalent to slot number for compatibility with GPS
     unsigned int i_satellite_slot_number;   //!< SV Slot Number
     double d_TOD;                           //!< Time of Day of the ephemeris set based in start of frame [s]
@@ -113,8 +114,6 @@ public:
     double d_tau_c;
     double d_TOW; // tow of the start of frame
     double d_WN; //  week number of the start of frame
-
-    // Need to add a way to compute the GPS week number and GPS TIME OF WEEK from GLONASS ephemeris
 
     // satellite positions after RK4 Integration
     double d_satpos_X;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].

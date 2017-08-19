@@ -188,7 +188,7 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
     //=== Initialization =======================================================
     int nmbOfIterations = 10; // TODO: include in config
     int nmbOfSatellites;
-    nmbOfSatellites = satpos.n_cols;    //Armadillo
+    nmbOfSatellites = satpos.n_cols;    // Armadillo
     arma::mat w = arma::zeros(nmbOfSatellites, nmbOfSatellites);
     w.diag() = w_vec; //diagonal weight matrix
 
@@ -196,12 +196,8 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
     arma::vec pos = {rx_pos(0), rx_pos(1), rx_pos(2), 0}; // time error in METERS (time x speed)
     arma::mat A;
     arma::mat omc;
-    arma::mat az;
-    arma::mat el;
     A = arma::zeros(nmbOfSatellites, 4);
     omc = arma::zeros(nmbOfSatellites, 1);
-    az = arma::zeros(1, nmbOfSatellites);
-    el = arma::zeros(1, nmbOfSatellites);
     arma::mat X = satpos;
     arma::vec Rot_X;
     double rho2;
@@ -210,7 +206,6 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
     double dlambda;
     double dphi;
     double h;
-    arma::mat mat_tmp;
     arma::vec x;
 
     //=== Iteratively find receiver position ===================================
@@ -237,10 +232,12 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
                             Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i)); //armadillo
 
                             //--- Find DOA and range of satellites
-                            double *az, *el, *dist;
-                            Ls_Pvt::topocent(az, el, dist, pos.subvec(0,2), Rot_X - pos.subvec(0, 2));
-                            this->set_visible_satellites_Az(i, *az);
-                            this->set_visible_satellites_El(i, *el);
+                            double * azim = 0;
+                            double * elev = 0;
+                            double * dist = 0;
+                            Ls_Pvt::topocent(azim, elev, dist, pos.subvec(0,2), Rot_X - pos.subvec(0, 2));
+                            this->set_visible_satellites_Az(i, *azim);
+                            this->set_visible_satellites_El(i, *elev);
                             this->set_visible_satellites_Distance(i, *dist);
 
                             if(traveltime < 0.1 && nmbOfSatellites > 3)

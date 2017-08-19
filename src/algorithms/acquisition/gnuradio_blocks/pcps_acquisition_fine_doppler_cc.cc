@@ -261,7 +261,7 @@ double pcps_acquisition_fine_doppler_cc::search_maximum()
                     << d_gnss_synchro->PRN << "_doppler_" <<  d_gnss_synchro->Acq_doppler_hz << ".dat";
             d_dump_file.open(filename.str().c_str(), std::ios::out
                     | std::ios::binary);
-            d_dump_file.write((char*)d_grid_data[index_doppler], n); //write directly |abs(x)|^2 in this Doppler bin?
+            d_dump_file.write(reinterpret_cast<char*>(d_grid_data[index_doppler]), n); //write directly |abs(x)|^2 in this Doppler bin?
             d_dump_file.close();
         }
 
@@ -400,14 +400,14 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
             //        filename << "../data/code_prn_" << d_gnss_synchro->PRN << ".dat";
             //        d_dump_file.open(filename.str().c_str(), std::ios::out
             //                | std::ios::binary);
-            //        d_dump_file.write((char*)code_replica, n); //write directly |abs(x)|^2 in this Doppler bin?
+            //        d_dump_file.write(reinterpret_cast<char*>(code_replica), n); //write directly |abs(x)|^2 in this Doppler bin?
             //        d_dump_file.close();
             //
             //        filename.str("");
             //        filename << "../data/signal_prn_" << d_gnss_synchro->PRN << ".dat";
             //        d_dump_file.open(filename.str().c_str(), std::ios::out
             //                | std::ios::binary);
-            //        d_dump_file.write((char*)in, n); //write directly |abs(x)|^2 in this Doppler bin?
+            //        d_dump_file.write(reinterpret_cast<char*>(in), n); //write directly |abs(x)|^2 in this Doppler bin?
             //        d_dump_file.close();
             //
             //
@@ -416,7 +416,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
             //        filename << "../data/fft_prn_" << d_gnss_synchro->PRN << ".dat";
             //        d_dump_file.open(filename.str().c_str(), std::ios::out
             //                | std::ios::binary);
-            //        d_dump_file.write((char*)p_tmp_vector, n); //write directly |abs(x)|^2 in this Doppler bin?
+            //        d_dump_file.write(reinterpret_cast<char*>(p_tmp_vector), n); //write directly |abs(x)|^2 in this Doppler bin?
             //        d_dump_file.close();
         }
 

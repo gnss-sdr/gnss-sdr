@@ -284,7 +284,7 @@ void pcps_multithread_acquisition_cc::acquisition_core()
                              <<"_" << d_gnss_synchro->Signal << "_sat_"
                              << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                     d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                    d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
+                    d_dump_file.write(reinterpret_cast<char*>(d_ifft->get_outbuf()), n); //write directly |abs(x)|^2 in this Doppler bin?
                     d_dump_file.close();
                 }
         }

@@ -395,7 +395,7 @@ int pcps_acquisition_sc::general_work(int noutput_items,
                             DLOG(INFO) << "Writing ACQ out to " << filename.str();
 
                             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                            d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
+                            d_dump_file.write(reinterpret_cast<char*>(d_ifft->get_outbuf()), n); //write directly |abs(x)|^2 in this Doppler bin?
                             d_dump_file.close();
                         }
                 }

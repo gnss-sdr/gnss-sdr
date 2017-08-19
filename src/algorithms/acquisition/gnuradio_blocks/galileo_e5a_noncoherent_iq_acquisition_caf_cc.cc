@@ -628,16 +628,16 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                 {
                                     if (magt_IA >= magt_IB)
                                         {
-                                            d_dump_file.write((char*)d_magnitudeIA, n);
+                                            d_dump_file.write(reinterpret_cast<char*>(d_magnitudeIA), n);
                                         }
                                     else
                                         {
-                                            d_dump_file.write((char*)d_magnitudeIB, n);
+                                            d_dump_file.write(reinterpret_cast<char*>(d_magnitudeIB), n);
                                         }
                                 }
                             else
                                 {
-                                    d_dump_file.write((char*)d_magnitudeIA, n);
+                                    d_dump_file.write(reinterpret_cast<char*>(d_magnitudeIA), n);
                                 }
                             d_dump_file.close();
                         }
@@ -738,7 +738,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                             filename.str("");
                             filename << "../data/test_statistics_E5a_sat_" << d_gnss_synchro->PRN << "_CAF.dat";
                             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                            d_dump_file.write((char*)d_CAF_vector, n);
+                            d_dump_file.write(reinterpret_cast<char*>(d_CAF_vector), n);
                             d_dump_file.close();
                         }
                     volk_gnsssdr_free(accum);

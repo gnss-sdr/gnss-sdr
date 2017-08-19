@@ -361,28 +361,28 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, dou
                                     double tmp_double;
                                     //  PVT GPS time
                                     tmp_double = hybrid_current_time;
-                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // ECEF User Position East [m]
                                     tmp_double = rx_position_and_time(0);
-                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // ECEF User Position North [m]
                                     tmp_double = rx_position_and_time(1);
-                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // ECEF User Position Up [m]
                                     tmp_double = rx_position_and_time(2);
-                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // User clock offset [s]
                                     tmp_double = rx_position_and_time(3);
-                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // GEO user position Latitude [deg]
                                     tmp_double = this->get_latitude();
-                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // GEO user position Longitude [deg]
                                     tmp_double = this->get_longitude();
-                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // GEO user position Height [m]
                                     tmp_double = this->get_height();
-                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                             }
                             catch (const std::ifstream::failure& e)
                             {

@@ -253,17 +253,15 @@ void GpsL2MPcpsAcquisition::set_local_code()
             acquisition_cc_->set_local_code(code_);
         }
         
-//    //debug
-//    std::ofstream d_dump_file;
-//    std::stringstream filename;
-//    std::streamsize n = 2 * sizeof(float) * (code_length_); // complex file write
-//    filename.str("");
-//    filename << "../data/local_prn_sampled.dat";
-//    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-//    d_dump_file.write((char*)code_, n);
-//    d_dump_file.close();
-
-    //  }
+    //    //debug
+    //    std::ofstream d_dump_file;
+    //    std::stringstream filename;
+    //    std::streamsize n = 2 * sizeof(float) * (code_length_); // complex file write
+    //    filename.str("");
+    //    filename << "../data/local_prn_sampled.dat";
+    //    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
+    //    d_dump_file.write(reinterpret_cast<char*>(code_), n);
+    //    d_dump_file.close();
 }
 
 

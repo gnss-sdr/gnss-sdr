@@ -479,7 +479,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                     << "_" << d_gnss_synchro->Signal << "_sat_"
                                     << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                            d_dump_file.write((char*)d_magnitude_folded, n); //write directly |abs(x)|^2 in this Doppler bin?
+                            d_dump_file.write(reinterpret_cast<char*>(d_magnitude_folded), n); //write directly |abs(x)|^2 in this Doppler bin?
                             d_dump_file.close();
                         }
                 }
@@ -489,12 +489,10 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                     if (d_test_statistics > d_threshold)
                         {
                             d_state = 2; // Positive acquisition
-
                         }
                     else if (d_well_count == d_max_dwells)
                         {
                             d_state = 3; // Negative acquisition
-
                         }
                 }
             else

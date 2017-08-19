@@ -452,11 +452,11 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
                 double tmp_double;
                 unsigned long int tmp_ulong_int;
                 tmp_double = d_TOW_at_current_symbol;
-                d_dump_file.write((char*)&tmp_double, sizeof(double));
+                d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                 tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
+                d_dump_file.write(reinterpret_cast<char*>(&tmp_ulong_int), sizeof(unsigned long int));
                 tmp_double = 0;
-                d_dump_file.write((char*)&tmp_double, sizeof(double));
+                d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }
             catch (const std::ifstream::failure & e)
             {
@@ -465,7 +465,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
         }
 
     // remove used symbols from history
-    if (d_symbol_history.size()>required_symbols)
+    if (d_symbol_history.size() > required_symbols)
         {
             d_symbol_history.pop_front();
         }

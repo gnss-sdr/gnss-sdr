@@ -1161,10 +1161,10 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                     for (unsigned int i = 0; i < d_nchannels; i++)
                                         {
                                             tmp_double = in[i][epoch].Pseudorange_m;
-                                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                             tmp_double = 0;
-                                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                                            d_dump_file.write((char*)&d_rx_time, sizeof(double));
+                                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                            d_dump_file.write(reinterpret_cast<char*>(&d_rx_time), sizeof(double));
                                         }
                             }
                             catch (const std::ifstream::failure& e)

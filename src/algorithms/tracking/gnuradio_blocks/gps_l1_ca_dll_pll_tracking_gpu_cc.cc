@@ -301,8 +301,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items __attribu
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // Block input data and block output stream pointers
-    const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
@@ -538,6 +538,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items __attribu
 
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
+
 
 void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::set_channel(unsigned int channel)
 {

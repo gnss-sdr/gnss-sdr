@@ -282,7 +282,7 @@ int pcps_acquisition_sc::general_work(int noutput_items,
             int doppler;
             uint32_t indext = 0;
             float magt = 0.0;
-            const lv_16sc_t *in = (const lv_16sc_t *)input_items[0]; //Get the input samples pointer
+            const lv_16sc_t *in = reinterpret_cast<const lv_16sc_t *>(input_items[0]); //Get the input samples pointer
             int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
 
             //TODO: optimize the signal processing chain to not use gr_complex. This is a temporary solution

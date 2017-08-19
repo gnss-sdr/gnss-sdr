@@ -55,8 +55,8 @@ int interleaved_short_to_complex_short::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    const int16_t *in = (const int16_t *) input_items[0];
-    lv_16sc_t *out = (lv_16sc_t *) output_items[0];
+    const int16_t *in = reinterpret_cast<const int16_t *>(input_items[0]);
+    lv_16sc_t *out =  reinterpret_cast<lv_16sc_t *>(output_items[0]);
     // This could be put into a Volk kernel
     int16_t real_part;
     int16_t imag_part;

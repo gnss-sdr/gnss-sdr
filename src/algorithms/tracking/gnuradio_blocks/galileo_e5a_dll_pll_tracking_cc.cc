@@ -388,7 +388,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
     double code_error_filt_chips;
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]); //block output streams pointer
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data;
@@ -404,7 +404,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
     {
     case 0:
         {
-
             d_Early = gr_complex(0,0);
             d_Prompt = gr_complex(0,0);
             d_Late = gr_complex(0,0);
@@ -438,7 +437,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
     case 2:
         {
             // Block input data and block output stream pointers
-            const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment
+            const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]); //PRN start block alignment
             gr_complex sec_sign_Q;
             gr_complex sec_sign_I;
             // Secondary code Chip

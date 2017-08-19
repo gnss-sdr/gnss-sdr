@@ -81,9 +81,9 @@ void gps_l2_m_dll_pll_tracking_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
     if (noutput_items != 0)
-    {
-        ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; //set the required available samples in each call
-    }
+        {
+            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; //set the required available samples in each call
+        }
 }
 
 
@@ -310,8 +310,8 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items __attribute__(
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     // Block input data and block output stream pointers
-    const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     if (d_enable_tracking == true)
         {

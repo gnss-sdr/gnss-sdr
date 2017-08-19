@@ -93,8 +93,8 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // get pointers on in- and output gnss-synchro objects
-    const Gnss_Synchro *in = (const Gnss_Synchro *)  input_items[0]; // input
-    Gnss_Synchro *out = (Gnss_Synchro *) output_items[0];            // output
+    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);           // Get the output buffer pointer
+    const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]); // Get the input buffer pointer
 
     bool flag_new_cnav_frame = false;
     cnav_msg_t msg;

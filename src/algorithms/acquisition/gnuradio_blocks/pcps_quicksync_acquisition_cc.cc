@@ -302,7 +302,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             int doppler;
             uint32_t indext = 0;
             float magt = 0.0;
-            const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+            const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
 
             gr_complex* in_temp = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             gr_complex* in_temp_folded = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));

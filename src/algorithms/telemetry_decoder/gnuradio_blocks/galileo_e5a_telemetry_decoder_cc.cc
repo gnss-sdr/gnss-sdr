@@ -175,7 +175,6 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
             std::cout << "New Galileo E5a F/NAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
-
 }
 
 
@@ -246,8 +245,9 @@ galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
 int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    const Gnss_Synchro *in = (const Gnss_Synchro *)  input_items[0]; // input
-    Gnss_Synchro *out = (Gnss_Synchro *) output_items[0];            // output
+    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);           // Get the output buffer pointer
+    const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]); // Get the input buffer pointer
+
     /* Terminology:     Prompt: output from tracking Prompt correlator (Prompt samples)
      *             Symbol: encoded navigation bits. 1 symbol = 20 samples in E5a
      *             Bit: decoded navigation bits forming words as described in Galileo ICD

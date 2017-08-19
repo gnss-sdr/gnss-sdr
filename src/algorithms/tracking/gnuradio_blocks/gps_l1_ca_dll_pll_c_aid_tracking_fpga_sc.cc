@@ -335,7 +335,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work(
     int samples_offset;
 
     // Block input data and block output stream pointers
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 

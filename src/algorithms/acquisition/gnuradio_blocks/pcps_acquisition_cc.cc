@@ -256,6 +256,7 @@ void pcps_acquisition_cc::send_positive_acquisition()
 
 }
 
+
 void pcps_acquisition_cc::send_negative_acquisition()
 {
     // 6.2- Declare negative acquisition using a message port
@@ -273,6 +274,7 @@ void pcps_acquisition_cc::send_negative_acquisition()
     this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
 
 }
+
 
 int pcps_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -318,7 +320,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             int doppler;
             uint32_t indext = 0;
             float magt = 0.0;
-            const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+            const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);
 
             int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
 

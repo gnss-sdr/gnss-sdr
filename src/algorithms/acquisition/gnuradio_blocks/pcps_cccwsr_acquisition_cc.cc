@@ -260,7 +260,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
             float magt = 0.0;
             float magt_plus = 0.0;
             float magt_minus = 0.0;
-            const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+            const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
             float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
             d_sample_counter += d_fft_size; // sample counter

@@ -457,7 +457,7 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
             unsigned int gal_channel = 0;
 
             gnss_observables_map.clear();
-            Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
+            const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]); // Get the input buffer pointer
 
             // ############ 1. READ PSEUDORANGES ####
             for (unsigned int i = 0; i < d_nchannels; i++)

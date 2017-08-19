@@ -314,7 +314,7 @@ double pcps_assisted_acquisition_cc::search_maximum()
 
 float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items)
 {
-    const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
     // 1- Compute the input signal power estimation
     float* p_tmp_vector = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
@@ -332,7 +332,7 @@ float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_st
 int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
 {
     // initialize acquisition algorithm
-    const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "

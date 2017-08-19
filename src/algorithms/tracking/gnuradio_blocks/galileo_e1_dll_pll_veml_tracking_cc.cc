@@ -286,8 +286,8 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
     double code_error_filt_chips = 0.0;
 
     // Block input data and block output stream pointers
-    const gr_complex* in = (gr_complex*) input_items[0];
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 

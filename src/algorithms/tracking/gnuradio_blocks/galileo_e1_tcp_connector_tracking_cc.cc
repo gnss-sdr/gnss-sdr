@@ -282,8 +282,8 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     // Block input data and block output stream pointers
-    const gr_complex* in = (gr_complex*) input_items[0];
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     if (d_enable_tracking == true)
         {
             // Fill the acquisition data

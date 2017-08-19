@@ -189,6 +189,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     d_code_phase_step_chips = 0.0;
 }
 
+
 void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
 {
     /*
@@ -315,8 +316,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     // Block input data and block output stream pointers
-    const gr_complex* in = (gr_complex*) input_items[0];
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     if (d_enable_tracking == true)
         {
@@ -344,7 +345,6 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
                     consume_each(samples_offset); //shift input to perform alignement with local replica
                     return 1;
                 }
-
 
             // Update the prn length based on code freq (variable) and
             // sampling frequency (fixed)

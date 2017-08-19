@@ -284,8 +284,8 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
     int corr_value = 0;
     int preamble_diff = 0;
 
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
-    const Gnss_Synchro **in = (const Gnss_Synchro **)  &input_items[0]; //Get the input samples pointer
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);           // Get the output buffer pointer
+    const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]); // Get the input buffer pointer
 
     Gnss_Synchro current_symbol; //structure to save the synchronization information and send the output object to the next block
     //1. Copy the current tracking output
@@ -295,9 +295,9 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
     consume_each(1);
 
     d_flag_preamble = false;
-    unsigned int required_symbols=GALILEO_INAV_PAGE_SYMBOLS+d_symbols_per_preamble;
+    unsigned int required_symbols = GALILEO_INAV_PAGE_SYMBOLS + d_symbols_per_preamble;
 
-    if (d_symbol_history.size()>required_symbols)
+    if (d_symbol_history.size() > required_symbols)
     {
         // TODO Optimize me!
         //******* preamble correlation ********
@@ -432,7 +432,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
             delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64)));
         }
 
-    if (d_flag_frame_sync == true and d_nav.flag_TOW_set == true)
+    if(d_flag_frame_sync == true and d_nav.flag_TOW_set == true)
         {
             current_symbol.Flag_valid_word = true;
         }
@@ -442,7 +442,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
         }
 
     current_symbol.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol*1000.0)/1000.0;
-    current_symbol.TOW_at_current_symbol_s -=delta_t; //Galileo to GPS TOW
+    current_symbol.TOW_at_current_symbol_s -= delta_t; //Galileo to GPS TOW
 
     if(d_dump == true)
         {
@@ -466,9 +466,9 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
 
     // remove used symbols from history
     if (d_symbol_history.size()>required_symbols)
-    {
-        d_symbol_history.pop_front();
-    }
+        {
+            d_symbol_history.pop_front();
+        }
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_symbol;
     //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;

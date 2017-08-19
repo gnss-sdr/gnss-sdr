@@ -4103,7 +4103,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream & out, const Gps_Ephemeris & eph,
                     std::string sys = "G";
                     gs.System = *sys.c_str();
                     std::string sig = "2S";
-                    std::memcpy((void*)gs.Signal, sig.c_str(), 3);
+                    std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
                     gs.PRN = mmap_iter->second.PRN;
                     total_mmap.insert(std::pair<unsigned int, Gnss_Synchro>(mmap_iter->second.PRN, gs));
                 }
@@ -4315,7 +4315,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                             std::string sys = "E";
                             gs.System = *sys.c_str();
                             std::string sig = "1B";
-                            std::memcpy((void*)gs.Signal, sig.c_str(), 3);
+                            std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
                             gs.PRN = prn_;
                             total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, gs));
                         }
@@ -4340,7 +4340,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                                 std::string sys = "E";
                                 gs.System = *sys.c_str();
                                 std::string sig = "1B";
-                                std::memcpy((void*)gs.Signal, sig.c_str(), 3);
+                                std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
                                 gs.PRN = prn_;
                                 total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, gs));
                             }
@@ -4350,7 +4350,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                                 std::string sys = "E";
                                 gs.System = *sys.c_str();
                                 std::string sig = "5X";
-                                std::memcpy((void*)gs.Signal, sig.c_str(), 3);
+                                std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
                                 gs.PRN = prn_;
                                 total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, gs));
                             }
@@ -4366,7 +4366,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                                         std::string sys = "E";
                                         gs.System = *sys.c_str();
                                         std::string sig = "5X";
-                                        std::memcpy((void*)gs.Signal, sig.c_str(), 3);
+                                        std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
                                         gs.PRN = prn_;
                                         total_map.insert(std::pair<unsigned int, Gnss_Synchro>(prn_, gs));
                                     }

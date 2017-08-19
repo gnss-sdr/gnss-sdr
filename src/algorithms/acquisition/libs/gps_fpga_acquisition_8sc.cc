@@ -211,7 +211,7 @@ void gps_fpga_acquisition_8sc::run_acquisition(void)
 {
     // enable interrupts
     int reenable = 1;
-    write(d_fd, (void *) &reenable, sizeof(int));
+    write(d_fd, reinterpret_cast<void*>(&reenable), sizeof(int));
 
     d_map_base[5] = 0; // writing anything to reg 4 launches the acquisition process
 
@@ -241,7 +241,7 @@ void gps_fpga_acquisition_8sc::set_phase_step(unsigned int doppler_index)
     float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
 
-    int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+    int doppler = static_cast<int>(-d_doppler_max) + d_doppler_step * doppler_index;
     float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
@@ -297,10 +297,10 @@ void gps_fpga_acquisition_8sc::open_device()
             LOG(WARNING) << "Cannot open deviceio" << d_device_name;
         }
 
-    d_map_base = (volatile unsigned *) mmap(NULL, PAGE_SIZE,
-            PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0);
+    d_map_base = reinterpret_cast<volatile unsigned *>(mmap(NULL, PAGE_SIZE,
+            PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0));
 
-    if (d_map_base == (void *) -1)
+    if (d_map_base == reinterpret_cast<void*>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
         }
@@ -328,7 +328,8 @@ void gps_fpga_acquisition_8sc::open_device()
 
 void gps_fpga_acquisition_8sc::close_device()
 {
-    if (munmap((void*) d_map_base, PAGE_SIZE) == -1)
+    unsigned * aux = const_cast<unsigned*>(d_map_base);
+    if (munmap(static_cast<void*>(aux), PAGE_SIZE) == -1)
         {
             printf("Failed to unmap memory uio\n");
         }

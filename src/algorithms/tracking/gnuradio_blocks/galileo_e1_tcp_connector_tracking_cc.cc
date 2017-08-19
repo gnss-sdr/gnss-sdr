@@ -441,7 +441,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
     current_synchro_data.System = {'E'};
     std::string str_aux = "1B";
     const char * str = str_aux.c_str(); // get a C style null terminated string
-    std::memcpy((void*)current_synchro_data.Signal, str, 3);
+    std::memcpy(static_cast<void*>(current_synchro_data.Signal), str, 3);
 
     current_synchro_data.fs = d_fs_in;
     *out[0] = current_synchro_data;

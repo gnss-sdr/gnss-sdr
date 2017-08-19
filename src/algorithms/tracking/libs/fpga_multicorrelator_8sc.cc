@@ -149,7 +149,6 @@ bool fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
 fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
         std::string device_name, unsigned int device_base)
 {
-
     d_n_correlators = n_correlators;
     d_device_name = device_name;
     d_device_base = device_base;
@@ -188,7 +187,6 @@ fpga_multicorrelator_8sc::~fpga_multicorrelator_8sc()
 bool fpga_multicorrelator_8sc::free()
 {
     // unlock the hardware
-
     fpga_multicorrelator_8sc::unlock_channel(); // unlock the channel
 
     // free the FPGA dynamically created variables
@@ -228,10 +226,10 @@ void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
             LOG(WARNING) << "Cannot open deviceio" << device_io_name;
         }
 
-    d_map_base = (volatile unsigned *) mmap(NULL, PAGE_SIZE,
-            PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0);
+    d_map_base = reinterpret_cast<volatile unsigned *>(mmap(NULL, PAGE_SIZE,
+            PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));
 
-    if (d_map_base == (void *) -1)
+    if (d_map_base == reinterpret_cast<void*>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA tracking module "
                     << d_channel << "into user memory";
@@ -240,8 +238,7 @@ void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
     // sanity check : check test register
     unsigned writeval = TEST_REGISTER_TRACK_WRITEVAL;
     unsigned readval;
-    readval = fpga_multicorrelator_8sc::fpga_acquisition_test_register(
-            writeval);
+    readval = fpga_multicorrelator_8sc::fpga_acquisition_test_register(writeval);
     if (writeval != readval)
         {
             LOG(WARNING) << "Test register sanity check failed";
@@ -250,7 +247,6 @@ void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
         {
             LOG(INFO) << "Test register sanity check success !";
         }
-
 }
 
 
@@ -269,7 +265,6 @@ unsigned fpga_multicorrelator_8sc::fpga_acquisition_test_register(
 
 void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(void)
 {
-
     int k, s;
     unsigned code_chip;
     unsigned select_fpga_correlator;
@@ -278,7 +273,6 @@ void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(void)
 
     for (s = 0; s < d_n_correlators; s++)
         {
-
             d_map_base[11] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
             for (k = 0; k < d_code_length_chips; k++)
                 {
@@ -393,7 +387,7 @@ void fpga_multicorrelator_8sc::fpga_launch_multicorrelator_fpga(void)
 {
     // enable interrupts
     int reenable = 1;
-    write(d_device_descriptor, (void *) &reenable, sizeof(int));
+    write(d_device_descriptor, reinterpret_cast<void*>(&reenable), sizeof(int));
 
     d_map_base[14] = 0; // writing anything to reg 14 launches the tracking
 }
@@ -423,7 +417,6 @@ void fpga_multicorrelator_8sc::read_tracking_gps_results(void)
 
             d_corr_out[k] = lv_cmake(readval_real, readval_imag);
         }
-
 }
 
 

@@ -141,7 +141,7 @@ void GpsL2MPcpsAcquisitionTest::init()
     gnss_synchro.System = 'G';
     std::string signal = "2S";
     //strncpy(gnss_synchro.Signal, signal.c_str(), 3);
-    std::memcpy((void*)gnss_synchro.Signal, signal.c_str(), 3); // copy string into synchro char array: 2 char + null
+    std::memcpy(static_cast<void*>(gnss_synchro.Signal), signal.c_str(), 3); // copy string into synchro char array: 2 char + null
     gnss_synchro.Signal[2] = 0; // make sure that string length is only two characters
     gnss_synchro.PRN = 7;
 

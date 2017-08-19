@@ -387,7 +387,7 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
                     unsigned int num_dwells = std::min(static_cast<int>(d_max_dwells - d_in_dwell_count), ninput_items[0]);
                     for (unsigned int i = 0; i < num_dwells; i++)
                         {
-                            memcpy(d_in_buffer[d_in_dwell_count++], (gr_complex*)input_items[i],
+                            memcpy(d_in_buffer[d_in_dwell_count++], reinterpret_cast<const gr_complex*>(input_items[i]),
                                     sizeof(gr_complex)*d_fft_size);
                             d_sample_counter += d_fft_size;
                             d_sample_counter_buffer.push_back(d_sample_counter);
@@ -395,7 +395,7 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
 
                     if (ninput_items[0] > static_cast<int>(num_dwells))
                         {
-                            d_sample_counter += d_fft_size * (ninput_items[0]-num_dwells);
+                            d_sample_counter += d_fft_size * (ninput_items[0] - num_dwells);
                         }
                 }
             else

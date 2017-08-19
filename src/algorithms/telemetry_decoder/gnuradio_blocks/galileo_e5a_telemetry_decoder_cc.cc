@@ -78,10 +78,10 @@ void galileo_e5a_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols
     //create appropriate transition matrices
 
     int *out0, *out1, *state0, *state1;
-    out0 = (int*)calloc( max_states, sizeof(int) );
-    out1 = (int*)calloc( max_states, sizeof(int) );
-    state0 = (int*)calloc( max_states, sizeof(int) );
-    state1 = (int*)calloc( max_states, sizeof(int) );
+    out0 = static_cast<int*>(calloc( max_states, sizeof(int) ));
+    out1 = static_cast<int*>(calloc( max_states, sizeof(int) ));
+    state0 = static_cast<int*>(calloc( max_states, sizeof(int) ));
+    state1 = static_cast<int*>(calloc( max_states, sizeof(int) ));
 
     nsc_transit( out0, state0, 0, g_encoder, KK, nn );
     nsc_transit( out1, state1, 1, g_encoder, KK, nn );

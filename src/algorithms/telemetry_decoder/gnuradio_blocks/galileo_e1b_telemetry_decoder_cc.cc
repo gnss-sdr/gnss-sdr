@@ -122,10 +122,10 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
 
     d_symbols_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS * d_samples_per_symbol;
 
-    memcpy((unsigned short int*)this->d_preambles_bits, (unsigned short int*)preambles_bits, GALILEO_INAV_PREAMBLE_LENGTH_BITS*sizeof(unsigned short int));
+    memcpy(static_cast<unsigned short int*>(this->d_preambles_bits), static_cast<unsigned short int*>(preambles_bits), GALILEO_INAV_PREAMBLE_LENGTH_BITS * sizeof(unsigned short int));
 
     // preamble bits to sampled symbols
-    d_preambles_symbols = (signed int*)malloc(sizeof(signed int) * d_symbols_per_preamble);
+    d_preambles_symbols = static_cast<signed int*>(malloc(sizeof(signed int) * d_symbols_per_preamble));
     int n = 0;
     for (int i = 0; i < GALILEO_INAV_PREAMBLE_LENGTH_BITS; i++)
         {

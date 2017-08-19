@@ -234,7 +234,7 @@ bool sbas_l1_telemetry_decoder_cc::sample_aligner::get_symbols(const std::vector
             // get the next samples
             for (int i = 0; i < d_n_smpls_in_history; i++)
                 {
-                    smpls[i] = ((int)i_sym)*sbas_l1_telemetry_decoder_cc::d_samples_per_symbol + i - 1 == -1 ? d_past_sample : samples[i_sym*sbas_l1_telemetry_decoder_cc::d_samples_per_symbol + i - 1];
+                    smpls[i] = static_cast<int>(i_sym) * sbas_l1_telemetry_decoder_cc::d_samples_per_symbol + i - 1 == -1 ? d_past_sample : samples[i_sym*sbas_l1_telemetry_decoder_cc::d_samples_per_symbol + i - 1];
                 }
 
             // update the pseudo correlations (IIR method) of the two possible alignments
@@ -466,7 +466,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_by
         {
             int idx_bit = candidate_bit_it - msg_candidate.begin();
             int bit_pos_in_current_byte = (bits_per_byte - 1) - (idx_bit % bits_per_byte);
-            byte |= (unsigned char)(*candidate_bit_it) << bit_pos_in_current_byte;
+            byte |= static_cast<unsigned char>(*candidate_bit_it) << bit_pos_in_current_byte;
             ss << *candidate_bit_it;
             if (idx_bit % bits_per_byte == bits_per_byte - 1)
                 {
@@ -493,7 +493,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_b
     for (std::vector<int>::const_iterator candidate_bit_it = msg_candidate.cbegin(); candidate_bit_it < msg_candidate.cend(); ++candidate_bit_it)
         {
             int bit_pos_in_current_byte = (bits_per_byte - 1) - (idx_bit % bits_per_byte);
-            byte |= (unsigned char)(*candidate_bit_it) << bit_pos_in_current_byte;
+            byte |= static_cast<unsigned char>(*candidate_bit_it) << bit_pos_in_current_byte;
             ss << *candidate_bit_it;
             if (idx_bit % bits_per_byte == bits_per_byte - 1)
                 {

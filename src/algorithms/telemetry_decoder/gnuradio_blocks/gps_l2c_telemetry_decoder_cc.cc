@@ -101,7 +101,7 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
     u32 delay = 0;
 
     //add the symbol to the decoder
-    u8 symbol_clip = (u8)(in[0].Prompt_I > 0) * 255;
+    u8 symbol_clip = static_cast<u8>(in[0].Prompt_I > 0) * 255;
     flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
 
     consume_each(1); //one by one

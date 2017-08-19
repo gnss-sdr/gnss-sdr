@@ -87,7 +87,7 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::forecast (int noutput_items,
 {
     if (noutput_items != 0)
         {
-            ninput_items_required[0] = (int)d_vector_length*2; // set the required available samples in each call
+            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; // set the required available samples in each call
         }
 }
 
@@ -173,7 +173,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_enable_tracking = false;
     d_pull_in = false;
 
-    d_current_prn_length_samples = (int)d_vector_length;
+    d_current_prn_length_samples = static_cast<int>(d_vector_length);
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;

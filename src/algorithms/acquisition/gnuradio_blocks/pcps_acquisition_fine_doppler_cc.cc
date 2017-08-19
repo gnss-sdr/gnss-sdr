@@ -284,7 +284,7 @@ float pcps_acquisition_fine_doppler_cc::estimate_input_power(gr_vector_const_voi
 int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
 {
     // initialize acquisition algorithm
-    const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
 
     DLOG(INFO) << "Channel: " << d_channel
             << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN

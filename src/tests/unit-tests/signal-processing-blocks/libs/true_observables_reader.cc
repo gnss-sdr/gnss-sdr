@@ -36,13 +36,13 @@ bool true_observables_reader::read_binary_obs()
     {
         for(int i=0;i<12;i++)
         {
-            d_dump_file.read((char *) &gps_time_sec[i], sizeof(double));
-            d_dump_file.read((char *) &doppler_l1_hz, sizeof(double));
-            d_dump_file.read((char *) &acc_carrier_phase_l1_cycles[i], sizeof(double));
-            d_dump_file.read((char *) &dist_m[i], sizeof(double));
-            d_dump_file.read((char *) &true_dist_m[i], sizeof(double));
-            d_dump_file.read((char *) &carrier_phase_l1_cycles[i], sizeof(double));
-            d_dump_file.read((char *) &prn[i], sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&gps_time_sec[i]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&doppler_l1_hz), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_l1_cycles[i]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&dist_m[i]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&true_dist_m[i]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&carrier_phase_l1_cycles[i]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&prn[i]), sizeof(double));
         }
     }
     catch (const std::ifstream::failure &e)
@@ -51,6 +51,7 @@ bool true_observables_reader::read_binary_obs()
     }
     return true;
 }
+
 
 bool true_observables_reader::restart()
 {
@@ -65,6 +66,7 @@ bool true_observables_reader::restart()
             return false;
         }
 }
+
 
 long int true_observables_reader::num_epochs()
 {
@@ -84,14 +86,15 @@ long int true_observables_reader::num_epochs()
         }
 }
 
+
 bool true_observables_reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
             try
             {
-                    d_dump_filename=out_file;
-                    d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+                    d_dump_filename = out_file;
+                    d_dump_file.exceptions( std::ifstream::failbit | std::ifstream::badbit );
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
                     std::cout << "True observables Log file opened: " << d_dump_filename.c_str() << std::endl;
                     return true;
@@ -107,6 +110,7 @@ bool true_observables_reader::open_obs_file(std::string out_file)
             return false;
         }
 }
+
 
 true_observables_reader::~true_observables_reader()
 {

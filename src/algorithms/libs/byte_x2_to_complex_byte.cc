@@ -54,9 +54,9 @@ int byte_x2_to_complex_byte::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    const int8_t *in0 = (const int8_t *) input_items[0];
-    const int8_t *in1 = (const int8_t *) input_items[1];
-    lv_8sc_t *out = (lv_8sc_t *) output_items[0];
+    const int8_t *in0 = reinterpret_cast<const int8_t *>(input_items[0]);
+    const int8_t *in1 = reinterpret_cast<const int8_t *>(input_items[1]);
+    lv_8sc_t *out = reinterpret_cast<lv_8sc_t *>(output_items[0]);
     // This could be put into a volk kernel
     int8_t real_part;
     int8_t imag_part;

@@ -1138,12 +1138,10 @@ In case you are configuring a multi-system receiver, you will need to decimate t
 ;######### TELEMETRY DECODER GPS L1 CONFIG ############
 TelemetryDecoder_1C.implementation=GPS_L1_CA_Telemetry_Decoder
 TelemetryDecoder_1C.dump=false
-TelemetryDecoder_1C.decimation_factor=4;
 
 ;######### TELEMETRY DECODER GALILEO E1B CONFIG ############
 TelemetryDecoder_1B.implementation=Galileo_E1B_Telemetry_Decoder
 TelemetryDecoder_1B.dump=false
-TelemetryDecoder_1B.decimation_factor=1;
 ~~~~~~
 
 More documentation at the [Telemetry Decoder Blocks page](http://gnss-sdr.org/docs/sp-blocks/telemetry-decoder/).
@@ -1155,25 +1153,7 @@ GNSS systems provide different kinds of observations. The most commonly used are
 
 The common interface is [ObservablesInterface](./src/core/interfaces/observables_interface.h).
 
-Configuration example for GPS L1 C/A signals:
-
-~~~~~~
-;######### OBSERVABLES CONFIG ############
-Observables.implementation=GPS_L1_CA_Observables
-Observables.dump=false
-Observables.dump_filename=./observables.dat
-~~~~~~
-
-For Galileo E1B receivers:
-
-~~~~~~
-;######### OBSERVABLES CONFIG ############
-Observables.implementation=Galileo_E1B_Observables
-Observables.dump=false
-Observables.dump_filename=./observables.dat
-~~~~~~
-
-For hybrid GPS L1 / Galileo E1B receivers:
+Configuration example:
 
 ~~~~~~
 ;######### OBSERVABLES CONFIG ############
@@ -1190,57 +1170,30 @@ Although data processing for obtaining high-accuracy PVT solutions is out of the
 
 The common interface is [PvtInterface](./src/core/interfaces/pvt_interface.h).
 
-Configuration example for GPS L1 C/A signals:
+Configuration example:
 
 ~~~~~~
 ;######### PVT CONFIG ############
-PVT.implementation=GPS_L1_CA_PVT
-PVT.averaging_depth=10 ; Number of PVT observations in the moving average algorithm
-PVT.flag_averaging=true ; Enables the PVT averaging between output intervals (arithmetic mean) [true] or [false]
-PVT.output_rate_ms=100 ; Period in [ms] between two PVT outputs
-PVT.display_rate_ms=500 ; Position console print (std::out) interval [ms].
-PVT.dump=false ; Enables the PVT internal binary data file logging [true] or [false]
-PVT.dump_filename=./PVT ; Log path and filename without extension of GeoJSON and KML files
+PVT.implementation=RTKLIB_PVT
+PVT.positioning_mode=Single      ; options: Single, Static, Kinematic, PPP_Static, PPP_Kinematic
+PVT.iono_model=Broadcast         ; options: OFF, Broadcast
+PVT.trop_model=Saastamoinen      ; options: OFF, Saastamoinen
+PVT.rinex_version=2              ; options: 2 or 3
+PVT.output_rate_ms=100           ; Period in [ms] between two PVT outputs
+PVT.display_rate_ms=500          ; Position console print (std::out) interval [ms].
 PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
-PVT.flag_nmea_tty_port=true ; Enables the NMEA log to a serial TTY port
+PVT.flag_nmea_tty_port=false     ; Enables the NMEA log to a serial TTY port
 PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
-PVT.flag_rtcm_server=false ; Enables or disables a TCP/IP server dispatching RTCM messages
-PVT.flag_rtcm_tty_port=true ; Enables the RTCM log to a serial TTY port
+PVT.flag_rtcm_server=true        ; Enables or disables a TCP/IP server dispatching RTCM messages
+PVT.flag_rtcm_tty_port=false     ; Enables the RTCM log to a serial TTY port
 PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
+PVT.rtcm_tcp_port=2101
+PVT.rtcm_MT1019_rate_ms=5000
+PVT.rtcm_MT1045_rate_ms=5000
+PVT.rtcm_MT1097_rate_ms=1000
+PVT.rtcm_MT1077_rate_ms=1000
 ~~~~~~
 
-For Galileo E1B receivers:
-
-~~~~~~
-;######### PVT CONFIG ############
-PVT.implementation=GALILEO_E1_PVT
-PVT.averaging_depth=100
-PVT.flag_averaging=false
-PVT.output_rate_ms=100;
-PVT.display_rate_ms=500;
-PVT.dump=false
-PVT.dump_filename=./PVT
-PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
-PVT.flag_nmea_tty_port=true ; Enables the NMEA log to a serial TTY port
-PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
-PVT.flag_rtcm_server=false ; Enables or disables a TCP/IP server dispatching RTCM messages
-PVT.flag_rtcm_tty_port=true ; Enables the RTCM log to a serial TTY port
-PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
-~~~~~~
-
-
-For hybrid GPS L1 / Galileo E1B receivers:
-
-~~~~~~
-;######### PVT CONFIG ############
-PVT.implementation=Hybrid_PVT
-PVT.averaging_depth=10
-PVT.flag_averaging=false
-PVT.output_rate_ms=100;
-PVT.display_rate_ms=500;
-PVT.dump=false
-PVT.dump_filename=./PVT
-~~~~~~
 
 **Notes on the output formats:**
 
@@ -1250,9 +1203,9 @@ PVT.dump_filename=./PVT
 
  * **NMEA 0183** is a combined electrical and data specification for communication between marine electronics such as echo sounder, sonars, anemometer, gyrocompass, autopilot, GPS receivers and many other types of instruments. It has been defined by, and is controlled by, the U.S. [National Marine Electronics Association](http://www.nmea.org/). The NMEA 0183 standard uses a simple ASCII, serial communications protocol that defines how data are transmitted in a *sentence* from one *talker* to multiple *listeners* at a time. Through the use of intermediate expanders, a talker can have a unidirectional conversation with a nearly unlimited number of listeners, and using multiplexers, multiple sensors can talk to a single computer port. At the application layer, the standard also defines the contents of each sentence (message) type, so that all listeners can parse messages accurately. Those messages can be sent through the serial port (that could be for instance a Bluetooth link) and be used/displayed by a number of software applications such as [gpsd](http://www.catb.org/gpsd/ "The UNIX GPS daemon"), [JOSM](https://josm.openstreetmap.de/ "The Java OpenStreetMap Editor"), [OpenCPN](http://opencpn.org/ocpn/ "Open Chart Plotter Navigator"), and many others (and maybe running on other devices).
 
- * **RINEX** (Receiver Independent Exchange Format) is an interchange format for raw satellite navigation system data, covering observables and the information contained in the navigation message broadcast by GNSS satellites. This allows the user to post-process the received data to produce a more accurate result (usually with other data unknown to the original receiver, such as better models of the atmospheric conditions at time of measurement). RINEX files can be used by software packages such as [GPSTk](http://www.gpstk.org), [RTKLIB](http://www.rtklib.com/) and [gLAB](http://gage14.upc.es/gLAB/). GNSS-SDR by default generates RINEX version [3.02](https://igscb.jpl.nasa.gov/igscb/data/format/rinex302.pdf). If [2.11](https://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt) is needed, it can be requested through a commandline flag when invoking the software receiver:
+ * **RINEX** (Receiver Independent Exchange Format) is an interchange format for raw satellite navigation system data, covering observables and the information contained in the navigation message broadcast by GNSS satellites. This allows the user to post-process the received data to produce a more accurate result (usually with other data unknown to the original receiver, such as better models of the atmospheric conditions at time of measurement). RINEX files can be used by software packages such as [GPSTk](http://www.gpstk.org), [RTKLIB](http://www.rtklib.com/) and [gLAB](http://gage14.upc.es/gLAB/). GNSS-SDR by default generates RINEX version [3.02](https://igscb.jpl.nasa.gov/igscb/data/format/rinex302.pdf). If [2.11](https://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt) is needed, it can be requested through the `rinex_version` parameter in the configuration file:
 ~~~~~~
-$ gnss-sdr --RINEX_version=2
+PVT.rinex_version=2
 ~~~~~~
 
 * **RTCM SC-104** provides standards that define the data structure for differential GNSS correction information for a variety of differential correction applications. Developed by the Radio Technical Commission for Maritime Services ([RTCM](http://www.rtcm.org/overview.php#Standards "Radio Technical Commission for Maritime Services")), they have become an industry standard for communication of correction information. GNSS-SDR implements RTCM version 3.2, defined in the document *RTCM 10403.2, Differential GNSS (Global Navigation Satellite Systems) Services - Version 3* (February 1, 2013), which can be [purchased online](https://ssl29.pair.com/dmarkle/puborder.php?show=3 "RTCM Online Publication Order Form"). By default, the generated RTCM binary messages are dumped into a text file in hexadecimal format. However, GNSS-SDR is equipped with a TCP/IP server, acting as an NTRIP source that can feed an NTRIP server. NTRIP (Networked Transport of RTCM via Internet Protocol) is an open standard protocol that can be freely download from [BKG](http://igs.bkg.bund.de/root_ftp/NTRIP/documentation/NtripDocumentation.pdf "Networked Transport of RTCM via Internet Protocol (Ntrip) Version 1.0"), and it is designed for disseminating differential correction data (*e.g.* in the RTCM-104 format) or other kinds of GNSS streaming data to stationary or mobile users over the Internet. The TCP/IP server can be enabled by setting ```PVT.flag_rtcm_server=true``` in the configuration file, and will be active during the execution of the software receiver. By default, the server will operate on port 2101 (which is the recommended port for RTCM services according to the Internet Assigned Numbers Authority, [IANA](http://www.iana.org/assignments/service-names-port-numbers "Service Name and Transport Protocol Port Number Registry")), and will identify the Reference Station with ID=1234. This behaviour can be changed in the configuration file:

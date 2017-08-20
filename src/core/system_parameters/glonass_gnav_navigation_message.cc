@@ -330,7 +330,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
         {
         case 1:
             //--- It is string 1 -----------------------------------------------
-            gnav_ephemeris.d_P_1 = static_cast<double>(read_navigation_unsigned(string_bits, P1));
+            gnav_ephemeris.d_P_1 = (static_cast<double>(read_navigation_unsigned(string_bits, P1)) + 1)*15;
             gnav_ephemeris.d_t_k =  static_cast<double>(read_navigation_unsigned(string_bits, T_K_HR)) * 3600 +
                                     static_cast<double>(read_navigation_unsigned(string_bits, T_K_MIN)) * 60 +
                                     static_cast<double>(read_navigation_unsigned(string_bits, T_K_SEC)) * 30;
@@ -338,25 +338,24 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
             gnav_ephemeris.d_AXn = static_cast<double>(read_navigation_signed(string_bits, X_N_DOT_DOT)) * TWO_N30;
             gnav_ephemeris.d_Xn = static_cast<double>(read_navigation_signed(string_bits, X_N)) * TWO_N11;
 
-            if(gnav_ephemeris.d_P_1 != 0)
-                {
-                    gnav_ephemeris.d_P_1 = (gnav_ephemeris.d_P_1 + 1)*15;
-                }
             flag_ephemeris_str_1 = true;
 
             break;
 
         case 2:
             //--- It is string 2 -----------------------------------------------
-            gnav_ephemeris.d_B_n = static_cast<double>(read_navigation_unsigned(string_bits, B_N));
-            gnav_ephemeris.d_P_2 = static_cast<double>(read_navigation_unsigned(string_bits, P2));
-            gnav_ephemeris.d_t_b = static_cast<double>(read_navigation_unsigned(string_bits, T_B))*15*60;
-            gnav_ephemeris.d_VYn = static_cast<double>(read_navigation_signed(string_bits, Y_N_DOT))* TWO_N20;
-            gnav_ephemeris.d_AYn = static_cast<double>(read_navigation_signed(string_bits, Y_N_DOT_DOT)) * TWO_N30;
-            gnav_ephemeris.d_Yn = static_cast<double>(read_navigation_signed(string_bits, Y_N)) * TWO_N11;
+            if (flag_ephemeris_str_1 == true)
+                {
+                    gnav_ephemeris.d_B_n = static_cast<double>(read_navigation_unsigned(string_bits, B_N));
+                    gnav_ephemeris.d_P_2 = static_cast<double>(read_navigation_unsigned(string_bits, P2));
+                    gnav_ephemeris.d_t_b = static_cast<double>(read_navigation_unsigned(string_bits, T_B))*gnav_ephemeris.d_P_1*60;
+                    gnav_ephemeris.d_VYn = static_cast<double>(read_navigation_signed(string_bits, Y_N_DOT))* TWO_N20;
+                    gnav_ephemeris.d_AYn = static_cast<double>(read_navigation_signed(string_bits, Y_N_DOT_DOT)) * TWO_N30;
+                    gnav_ephemeris.d_Yn = static_cast<double>(read_navigation_signed(string_bits, Y_N)) * TWO_N11;
 
-            gnav_ephemeris.d_iode   = read_navigation_unsigned(string_bits, T_B);
-            flag_ephemeris_str_2 = true;
+                    gnav_ephemeris.d_iode   = read_navigation_unsigned(string_bits, T_B);
+                    flag_ephemeris_str_2 = true;
+                }
 
             break;
 

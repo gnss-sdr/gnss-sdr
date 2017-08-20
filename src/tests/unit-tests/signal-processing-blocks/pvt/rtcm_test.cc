@@ -253,6 +253,7 @@ TEST(RtcmTest, MT1005)
 }
 
 
+
 TEST(RtcmTest, MT1019)
 {
     auto rtcm = std::make_shared<Rtcm>();
@@ -282,53 +283,32 @@ TEST(RtcmTest, MT1020)
     bool expected_true = true;
 
     // Objects to populate the ephemeris and utc fields
-    Glonass_Gnav_Ephemeris gnav_eph = Glonass_Gnav_Ephemeris();
+    Glonass_Gnav_Ephemeris gnav_ephemeris = Glonass_Gnav_Ephemeris();
     Glonass_Gnav_Utc_Model gnav_utc_model = Glonass_Gnav_Utc_Model();
     // Objects read, used for comparison
-    Glonass_Gnav_Ephemeris gnav_eph_read = Glonass_Gnav_Ephemeris();
+    Glonass_Gnav_Ephemeris gnav_ephemeris_read = Glonass_Gnav_Ephemeris();
     Glonass_Gnav_Utc_Model gnav_utc_model_read = Glonass_Gnav_Utc_Model();
 
-    glonass_gnav_eph.i_satellite_slot_number    = 3;
-    gnav_ephemeris.d_P_1        = 0;
+    // Perform data read and print of special values types
+    gnav_ephemeris.d_P_1        = 15;
+    // Bit distribution per fields
     gnav_ephemeris.d_t_k        = 7560;
+    // Glonass signed values
     gnav_ephemeris.d_VXn        = -0.490900039672852;
-    gnav_ephemeris.d_AXn        = 0;
-    gnav_ephemeris.d_Xn         = -11025.6669921875;
-    gnav_ephemeris.d_B_n        = 0;
-    gnav_ephemeris.d_P_2        = 1;
+    // Bit distribution per fields dependant on other factors
     gnav_ephemeris.d_t_b        = 8100;
-    gnav_ephemeris.d_VYn        = -2.69022750854492;
-    gnav_ephemeris.d_AYn        = 0;
-    gnav_ephemeris.d_Yn         = -11456.7348632812;
+    // Binary flag representation
     gnav_ephemeris.d_P_3        = 1;
-    gnav_ephemeris.d_gamma_n    = 1.81898940354586e-12;
-    gnav_ephemeris.d_P          = 3;
-    gnav_ephemeris.d_l3rd_n     = 0;
-    gnav_ephemeris.d_VZn        = -1.82016849517822;
-    gnav_ephemeris.d_AZn        = -2.79396772384644e-09;
-    gnav_ephemeris.d_Zn         = 19929.2377929688;
-    gnav_ephemeris.d_tau_n      = -8.30907374620438e-05;
-    gnav_ephemeris.d_Delta_tau_n = 9.31322574615479e-10;
-    gnav_ephemeris.d_E_n        = 0;
-    gnav_ephemeris.d_P_4        = 0;
-    gnav_ephemeris.d_F_T        = 6;
-    gnav_ephemeris.d_N_T        = 268;
-    gnav_ephemeris.d_n          = 21;
-    gnav_ephemeris.d_M          = 1;
-    gnav_utc_model.d_N_A        = 268;
-    gnav_utc_model.d_tau_c      = 9.6391886472702e-08;
-    gnav_utc_model.d_N_4        = 6;
-    gnav_utc_model.d_tau_gps    = 9.313225746154785e-08;
 
-    std::string tx_msg = rtcm->print_MT1020(glonass_gnav_eph, glonass_gnav_utc_model);
+    std::string tx_msg = rtcm->print_MT1020(gnav_ephemeris, gnav_utc_model);
 
-    EXPECT_EQ(0, rtcm->read_MT1020(tx_msg, glonass_gnav_eph_read, glonass_gnav_utc_model_read));
-    EXPECT_EQ(3, glonass_gnav_eph_read.i_satellite_slot_number);
-    EXPECT_DOUBLE_EQ(4, glonass_gnav_eph_read.d_t_b);
-    EXPECT_DOUBLE_EQ( 2.0 * E_LSB, glonass_gnav_eph_read.d_E_n);
-    EXPECT_DOUBLE_EQ( 5, glonass_gnav_utc_model_read.d_tau_gps);
-    EXPECT_EQ(expected_true, glonass_gnav_eph_read.d_l3rd_n);
-    EXPECT_EQ(1, rtcm->read_MT1020(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), glonass_gnav_eph_read, glonass_gnav_utc_model_read));
+    EXPECT_EQ(0, rtcm->read_MT1020(tx_msg, gnav_ephemeris_read, gnav_utc_model_read));
+    EXPECT_EQ(gnav_ephemeris.d_P_1, gnav_ephemeris_read.d_P_1);
+    EXPECT_TRUE(gnav_ephemeris.d_t_b - gnav_ephemeris_read.d_t_b < FLT_EPSILON);
+    EXPECT_TRUE( gnav_ephemeris.d_VXn - gnav_ephemeris_read.d_VXn < FLT_EPSILON);
+    EXPECT_TRUE( gnav_ephemeris.d_t_k - gnav_ephemeris.d_t_k < FLT_EPSILON);
+    EXPECT_EQ(gnav_ephemeris.d_P_3, gnav_ephemeris_read.d_P_3);
+    EXPECT_EQ(1, rtcm->read_MT1020(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gnav_ephemeris_read, gnav_utc_model_read));
 }
 
 
@@ -409,12 +389,12 @@ TEST(RtcmTest, MSMCell)
     gnss_synchro5.System = *gps.c_str();
     gnss_synchro6.System = *glo.c_str();
 
-    std::memcpy(static_cast<void*>(gnss_synchro.Signal), x5.c_str(), 3);
-    std::memcpy(static_cast<void*>(gnss_synchro2.Signal), s2.c_str(), 3);
-    std::memcpy(static_cast<void*>(gnss_synchro3.Signal), c1.c_str(), 3);
-    std::memcpy(static_cast<void*>(gnss_synchro4.Signal), x5.c_str(), 3);
-    std::memcpy(static_cast<void*>(gnss_synchro5.Signal), c1.c_str(), 3);
-	std::memcpy(static_cast<void*>(gnss_synchro6.Signal), c1.c_str(), 3);
+    std::memcpy((void*)gnss_synchro.Signal, x5.c_str(), 3);
+    std::memcpy((void*)gnss_synchro2.Signal, s2.c_str(), 3);
+    std::memcpy((void*)gnss_synchro3.Signal, c1.c_str(), 3);
+    std::memcpy((void*)gnss_synchro4.Signal, x5.c_str(), 3);
+    std::memcpy((void*)gnss_synchro5.Signal, c1.c_str(), 3);
+    std::memcpy((void*)gnss_synchro6.Signal, c1.c_str(), 3);
 
     gnss_synchro.Pseudorange_m = 20000000.0;
     gnss_synchro2.Pseudorange_m = 20001010.0;
@@ -445,7 +425,7 @@ TEST(RtcmTest, MSMCell)
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
             {},
             gal_eph,
-            glo_gnav_eph,
+			{},
             obs_time,
             pseudoranges,
             ref_id,
@@ -473,7 +453,7 @@ TEST(RtcmTest, MSMCell)
     std::string MSM1_2 = rtcm->print_MSM_1(gps_eph,
              {},
              gal_eph,
-             glo_gnav_eph,
+			 {},
              obs_time,
              pseudoranges2,
              ref_id,
@@ -488,7 +468,7 @@ TEST(RtcmTest, MSMCell)
     Gnss_Synchro gnss_synchro7;
     gnss_synchro7.PRN = 10;
     gnss_synchro7.System = *gps.c_str();
-    std::memcpy(static_cast<void*>(gnss_synchro7.Signal), s2.c_str(), 3);
+    std::memcpy((void*)gnss_synchro7.Signal, s2.c_str(), 3);
     gnss_synchro7.Pseudorange_m = 24000000.0;
 
     std::map<int, Gnss_Synchro> pseudoranges3;

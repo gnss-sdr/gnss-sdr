@@ -74,7 +74,7 @@ TEST(GlonassGnavNavigationMessageTest, String1Decoder)
     Glonass_Gnav_Ephemeris gnav_ephemeris;
 
     // Fill out ephemeris values for truth
-    gnav_ephemeris.d_P_1    = 0;
+    gnav_ephemeris.d_P_1    = 15;
     gnav_ephemeris.d_t_k    = 7560;
     gnav_ephemeris.d_VXn    = -0.490900039672852;
     gnav_ephemeris.d_AXn    = 0;
@@ -114,6 +114,8 @@ TEST(GlonassGnavNavigationMessageTest, String2Decoder)
     gnav_ephemeris.d_Yn  = -11456.7348632812;
 
     // Call target test method
+    gnav_nav_message.flag_ephemeris_str_1 = true;
+    gnav_nav_message.gnav_ephemeris.d_P_1 = 15;
     gnav_nav_message.string_decoder(const_cast<char*> (str2.c_str()));
 
     // Perform assertions of decoded fields

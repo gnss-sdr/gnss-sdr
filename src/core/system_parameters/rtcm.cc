@@ -316,6 +316,41 @@ long int Rtcm::bin_to_int(const std::string& s) const
 }
 
 
+long int Rtcm::bin_to_sint(const std::string& s) const
+{
+    if(s.length() > 32)
+        {
+            LOG(WARNING) << "Cannot convert to a long int";
+            return 0;
+        }
+    long int reading;
+    long int sign;
+
+    // Check for sign bit as defined RTCM doc
+    if(s.substr(0,1).compare("0") == 0)
+        {
+            sign = 1;
+            // Get the magnitude of the value
+            reading = strtol((s.substr (1)).c_str(), NULL, 2);
+        }
+    else
+        {
+            sign = -1;
+            // Get the magnitude of the value
+            reading = strtol((s.substr (1)).c_str(), NULL, 2);
+        }
+    return sign*reading;
+}
+
+// Find the sign for glonass data fields (neg = 1, pos = 0)
+static inline unsigned long glo_sgn(double val)
+{
+    if (val < 0) return 1;  // If value is negative return 1
+    if (val==0) return 0;   // Positive or equal to zero return 0
+    return 0;
+}
+
+
 double Rtcm::bin_to_double(const std::string& s) const
 {
     double reading;
@@ -1791,7 +1826,7 @@ std::string Rtcm::print_MT1020(const Glonass_Gnav_Ephemeris & glonass_gnav_eph, 
             DF134.to_string() +
             DF135.to_string() +
             DF136.to_string() +
-            DF137.to_string();
+            std::bitset<7>().to_string(); // Reserved bits
 
     if (data.length() != 360)
         {
@@ -1828,7 +1863,7 @@ int Rtcm::read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glon
     unsigned int read_message_length = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
     index += 10;
 
-    if (read_message_length != 61)
+    if (read_message_length != 45) // 360 bits = 45 bytes
         {
             LOG(WARNING) << " Message MT1020 seems too long (61 bytes expected, " << read_message_length << " received)";
             return 1;
@@ -1859,7 +1894,8 @@ int Rtcm::read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glon
     index += 1;
     if(glonass_gnav_alm_health_ind){} //Avoid comiler warning
 
-    glonass_gnav_eph.d_P_1 = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
+    glonass_gnav_eph.d_P_1 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
+    glonass_gnav_eph.d_P_1 = (glonass_gnav_eph.d_P_1+1)*15;
     index += 2;
 
     glonass_gnav_eph.d_t_k += static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 5)))*3600;
@@ -1875,41 +1911,41 @@ int Rtcm::read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glon
     glonass_gnav_eph.d_P_2 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
-    glonass_gnav_eph.d_t_b = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 7)))*15.0*60.0;
+    glonass_gnav_eph.d_t_b = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 7)))*glonass_gnav_eph.d_P_1*60.0;
     index += 7;
 
     // TODO Check for type spec for intS24
-    glonass_gnav_eph.d_VXn = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 24)))*TWO_N20;
+    glonass_gnav_eph.d_VXn = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 24)))*TWO_N20;
     index += 24;
 
-    glonass_gnav_eph.d_Xn = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 27)))*TWO_N11;
+    glonass_gnav_eph.d_Xn = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 27)))*TWO_N11;
     index += 27;
 
-    glonass_gnav_eph.d_AXn = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 5)))*TWO_N30;
+    glonass_gnav_eph.d_AXn = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 5)))*TWO_N30;
     index += 5;
 
-    glonass_gnav_eph.d_VYn = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 24)))*TWO_N20;
+    glonass_gnav_eph.d_VYn = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 24)))*TWO_N20;
     index += 24;
 
-    glonass_gnav_eph.d_Yn = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 27)))*TWO_N11;
+    glonass_gnav_eph.d_Yn = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 27)))*TWO_N11;
     index += 27;
 
-    glonass_gnav_eph.d_AYn = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 5)))*TWO_N30;
+    glonass_gnav_eph.d_AYn = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 5)))*TWO_N30;
     index += 5;
 
-    glonass_gnav_eph.d_VZn = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 24)))*TWO_N20;
+    glonass_gnav_eph.d_VZn = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 24)))*TWO_N20;
     index += 24;
 
-    glonass_gnav_eph.d_Zn = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 27)))*TWO_N11;
+    glonass_gnav_eph.d_Zn = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 27)))*TWO_N11;
     index += 27;
 
-    glonass_gnav_eph.d_AZn = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 5)))*TWO_N30;
+    glonass_gnav_eph.d_AZn = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 5)))*TWO_N30;
     index += 5;
 
     glonass_gnav_eph.d_P_3 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
-    glonass_gnav_eph.d_gamma_n = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 11)))*TWO_N30;
+    glonass_gnav_eph.d_gamma_n = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 11)))*TWO_N30;
     index += 11;
 
     glonass_gnav_eph.d_P = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
@@ -1918,10 +1954,10 @@ int Rtcm::read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glon
     glonass_gnav_eph.d_l3rd_n = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
-    glonass_gnav_eph.d_tau_n = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 22)))* TWO_N30;
+    glonass_gnav_eph.d_tau_n = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 22)))* TWO_N30;
     index += 22;
 
-    glonass_gnav_eph.d_Delta_tau_n = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 5)))* TWO_N30;
+    glonass_gnav_eph.d_Delta_tau_n = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 5)))* TWO_N30;
     index += 5;
 
     glonass_gnav_eph.d_E_n = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 5)));
@@ -1947,13 +1983,13 @@ int Rtcm::read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glon
             glonass_gnav_utc_model.d_N_A = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 11)));
             index += 11;
 
-            glonass_gnav_utc_model.d_tau_c = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32)))* TWO_N31;
+            glonass_gnav_utc_model.d_tau_c = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 32)))* TWO_N31;
             index += 32;
 
             glonass_gnav_utc_model.d_N_4 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 5)));
             index += 5;
 
-            glonass_gnav_utc_model.d_tau_gps = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 22)))* TWO_N30;
+            glonass_gnav_utc_model.d_tau_gps = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 22)))* TWO_N30;
             index += 22;
 
             glonass_gnav_eph.d_l5th_n = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
@@ -2306,11 +2342,12 @@ std::string Rtcm::get_MSM_header(unsigned int msg_number,
         bool divergence_free,
         bool more_messages)
 {
-    std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    std::string sys(gnss_synchro_iter->second.System, 1);
+	// Find first element in observables block and define type of message
+	std::map<int, Gnss_Synchro>::const_iterator observables_iter = observables.begin();
+    std::string sys(observables_iter->second.System, 1);
+
     Rtcm::set_DF002(msg_number);
     Rtcm::set_DF003(ref_id);
-
     Rtcm::set_DF393(more_messages);
     Rtcm::set_DF409(0); // Issue of Data Station. 0: not utilized
     std::bitset<7> DF001_ = std::bitset<7>("0000000");
@@ -4303,7 +4340,8 @@ int Rtcm::set_DF105(unsigned int glonass_gnav_alm_health_ind)
 
 int Rtcm::set_DF106(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    unsigned int P_1 = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_P_1));
+    // Convert the value from (15, 30, 45, 60) to (00, 01, 10, 11)
+    unsigned int P_1 = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_P_1/15.0 -1.0));
     DF106 = std::bitset<2>(P_1);
     return 0;
 }
@@ -4312,7 +4350,22 @@ int Rtcm::set_DF106(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 int Rtcm::set_DF107(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
     // TODO Need to fix this here, bit position has a given order
-    DF107 = std::bitset<12>(glonass_gnav_eph.d_t_k);
+	unsigned int hrs = 0;
+	unsigned int min = 0;
+	unsigned int sec = 0;
+	unsigned int tk = 0;
+	tk = static_cast<int>(glonass_gnav_eph.d_t_k);
+	hrs = tk/3600;
+	min = (tk - hrs*3600)/60;
+	sec = (tk - hrs*3600 -min*60)/60;
+
+	std::string _hrs = std::bitset< 5 >( hrs ).to_string(); // string conversion
+	std::string _min = std::bitset< 6 >( min ).to_string(); // string conversion
+	std::string _sec = std::bitset< 1 >( sec ).to_string(); // string conversion
+
+	// Set hrs, min, sec in designed bit positions
+	DF107 = std::bitset<12>(_hrs + _min + _sec);
+
     return 0;
 }
 
@@ -4333,7 +4386,7 @@ int Rtcm::set_DF109(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 
 int Rtcm::set_DF110(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    unsigned int t_b = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_t_b));
+    unsigned int t_b = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_t_b/(glonass_gnav_eph.d_P_1*60)));
     DF110 = std::bitset<7>(t_b);
     return 0;
 }
@@ -4341,79 +4394,109 @@ int Rtcm::set_DF110(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 
 int Rtcm::set_DF111(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int VXn = static_cast<int>(std::round(glonass_gnav_eph.d_VXn/TWO_N20));
-    DF111 = std::bitset<24>(VXn);
+    int VXn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_VXn/TWO_N20)));
+    unsigned int VXn_sgn = glo_sgn(glonass_gnav_eph.d_VXn);
+
+    DF111 = std::bitset<24>(VXn_mag);
+    DF111.set(23,VXn_sgn);
     return 0;
 }
 
 
 int Rtcm::set_DF112(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int Xn = static_cast<int>(std::round(glonass_gnav_eph.d_Xn/TWO_N11));
-    DF112 = std::bitset<27>(Xn);
+    int Xn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_Xn/TWO_N11)));
+    unsigned int Xn_sgn = glo_sgn(glonass_gnav_eph.d_Xn);
+
+    DF112 = std::bitset<27>(Xn_mag);
+    DF112.set(26,Xn_sgn);
     return 0;
 }
 
 
 int Rtcm::set_DF113(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int AXn = static_cast<int>(std::round(glonass_gnav_eph.d_AXn/TWO_N11));
-    DF113 = std::bitset<5>(AXn);
+    int AXn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_AXn/TWO_N30)));
+    unsigned int AXn_sgn = glo_sgn(glonass_gnav_eph.d_AXn);
+
+    DF113 = std::bitset<5>(AXn_mag);
+    DF113.set(4,AXn_sgn);
     return 0;
 }
 
 
 int Rtcm::set_DF114(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int VYn = static_cast<int>(std::round(glonass_gnav_eph.d_VYn/TWO_N20));
-    DF114 = std::bitset<24>(VYn);
+    int VYn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_VYn/TWO_N20)));
+    unsigned int VYn_sgn = glo_sgn(glonass_gnav_eph.d_VYn);
+
+    DF114 = std::bitset<24>(VYn_mag);
+    DF114.set(23,VYn_sgn);
     return 0;
 }
 
 
 int Rtcm::set_DF115(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int Yn = static_cast<int>(std::round(glonass_gnav_eph.d_Yn/TWO_N11));
-    DF115 = std::bitset<27>(Yn);
+    int Yn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_Yn/TWO_N11)));
+    unsigned int Yn_sgn = glo_sgn(glonass_gnav_eph.d_Yn);
+
+    DF115 = std::bitset<27>(Yn_mag);
+    DF115.set(26,Yn_sgn);
     return 0;
 }
 
 
 int Rtcm::set_DF116(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int AYn = static_cast<int>(std::round(glonass_gnav_eph.d_AYn/TWO_N11));
-    DF116 = std::bitset<5>(AYn);
+    int AYn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_AYn/TWO_N30)));
+    unsigned int AYn_sgn = glo_sgn(glonass_gnav_eph.d_AYn);
+
+    DF116 = std::bitset<5>(AYn_mag);
+    DF116.set(4,AYn_sgn);
     return 0;
 }
+
 
 
 int Rtcm::set_DF117(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int VZn = static_cast<int>(std::round(glonass_gnav_eph.d_VZn/TWO_N20));
-    DF117 = std::bitset<24>(VZn);
+    int VZn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_VZn/TWO_N20)));
+    unsigned int VZn_sgn = glo_sgn(glonass_gnav_eph.d_VZn);
+
+    DF117 = std::bitset<24>(VZn_mag);
+    DF117.set(23,VZn_sgn);
     return 0;
 }
+
 
 
 int Rtcm::set_DF118(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int Zn = static_cast<int>(std::round(glonass_gnav_eph.d_Zn/TWO_N11));
-    DF118 = std::bitset<27>(Zn);
+    int Zn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_Zn/TWO_N11)));
+    unsigned int Zn_sgn = glo_sgn(glonass_gnav_eph.d_Zn);
+
+    DF118 = std::bitset<27>(Zn_mag);
+    DF118.set(26,Zn_sgn);
     return 0;
 }
 
 
+
 int Rtcm::set_DF119(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int AZn = static_cast<int>(std::round(glonass_gnav_eph.d_AZn/TWO_N11));
-    DF119 = std::bitset<5>(AZn);
+    int AZn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_AZn/TWO_N30)));
+    unsigned int AZn_sgn = glo_sgn(glonass_gnav_eph.d_AZn);
+
+    DF119 = std::bitset<5>(AZn_mag);
+    DF119.set(4,AZn_sgn);
     return 0;
 }
 
 
 int Rtcm::set_DF120(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    unsigned int P3 = static_cast<int>(std::round(glonass_gnav_eph.d_P_3/TWO_N11));
+    unsigned int P3 = static_cast<int>(std::round(glonass_gnav_eph.d_P_3));
     DF120 = std::bitset<1>(P3);
     return 0;
 }
@@ -4421,8 +4504,11 @@ int Rtcm::set_DF120(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 
 int Rtcm::set_DF121(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int gamma_n = static_cast<int>(std::round(glonass_gnav_eph.d_gamma_n/TWO_N40));
-    DF121 = std::bitset<11>(gamma_n);
+    int gamma_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_gamma_n/TWO_N40)));
+    unsigned int gamma_sgn = glo_sgn(glonass_gnav_eph.d_gamma_n);
+
+    DF121 = std::bitset<11>(gamma_mag);
+    DF121.set(10,gamma_sgn);
     return 0;
 }
 
@@ -4445,16 +4531,22 @@ int Rtcm::set_DF123(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 
 int Rtcm::set_DF124(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int tau_n = static_cast<int>(std::round(glonass_gnav_eph.d_tau_n/TWO_N30));
-    DF124 = std::bitset<22>(tau_n);
+    int tau_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_tau_n/TWO_N30)));
+    unsigned int tau_sgn = glo_sgn(glonass_gnav_eph.d_tau_n);
+
+    DF124 = std::bitset<22>(tau_mag);
+    DF124.set(21,tau_sgn);
     return 0;
 }
 
 
 int Rtcm::set_DF125(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    int delta_tau_n = static_cast<int>(std::round(glonass_gnav_eph.d_Delta_tau_n));
-    DF125 = std::bitset<5>(delta_tau_n);
+    int delta_tau_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_Delta_tau_n/TWO_N30)));
+    unsigned int delta_tau_sgn = glo_sgn(glonass_gnav_eph.d_Delta_tau_n);
+
+    DF125 = std::bitset<5>(delta_tau_mag);
+    DF125.set(4,delta_tau_sgn);
     return 0;
 }
 

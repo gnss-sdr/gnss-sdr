@@ -348,9 +348,16 @@ public:
 
     unsigned long int bin_to_uint(const std::string & s) const; //<! Returns an unsigned long int from a string of binary symbols
     long int bin_to_int(const std::string & s) const;
-    long int bin_to_sint(const std::string & s) const;         //<! Returns a long int from a string of binary symbols
     double bin_to_double(const std::string & s) const;          //<! Returns double from a string of binary symbols
-
+    /*!
+     * \brief Locks time period in which GLONASS signals have been continually tracked.
+     * \note Code added as part of GSoC 2017 program
+     * \param eph GLONASS GNAV Broadcast Ephemeris
+     * \param obs_time Time of observation at the moment of printing
+     * \param observables Set of observables as defined by the platform
+     * \return //<! Returns a long int from a string of binary symbols
+     */
+    long int bin_to_sint(const std::string & s) const;
     unsigned long int hex_to_uint(const std::string & s) const; //<! Returns an unsigned long int from a string of hexadecimal symbols
     long int hex_to_int(const std::string & s) const;           //<! Returns a long int from a string of hexadecimal symbols
 

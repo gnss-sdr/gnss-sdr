@@ -1,1 +1,1 @@
-This is a readme file.
+# GNSS-SDR GUI for generating Configuration files for Receivers

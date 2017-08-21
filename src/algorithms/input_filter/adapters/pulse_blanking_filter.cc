@@ -52,13 +52,13 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
     output_item_type_ = config_->property(role_ + ".output_item_type", default_output_item_type);
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
-    float default_pfa_ = 0.01;
+    float default_pfa_ = 0.04;
     float pfa = config_->property(role_ + ".pfa", default_pfa_);
-    int default_length_ = 16;
+    int default_length_ = 32;
     int length_ = config_->property(role_ + ".length", default_length_);
-    int default_n_segments_est = 25000;
+    int default_n_segments_est = 12500;
     int n_segments_est = config_->property(role_ + ".segments_estimation", default_n_segments_est);
-    int default_n_segments_reset = 500000;
+    int default_n_segments_reset = 5000000;
     int n_segments_reset = config_->property(role_ + ".segments_reset", default_n_segments_reset);
     if (input_item_type_.compare("gr_complex") == 0)
         {

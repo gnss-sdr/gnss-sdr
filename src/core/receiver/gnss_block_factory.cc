@@ -66,6 +66,7 @@
 #include "beamformer_filter.h"
 #include "pulse_blanking_filter.h"
 #include "notch_filter.h"
+#include "notch_filter_lite.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_multithread_acquisition.h"
@@ -886,6 +887,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Notch_Filter") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new NotchFilter(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Notch_Filter_Lite") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new NotchFilterLite(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

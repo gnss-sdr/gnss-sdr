@@ -44,8 +44,6 @@ pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int length_,
     return pulse_blanking_cc_sptr(new pulse_blanking_cc(pfa, length_, n_segments_est, n_segments_reset));
 }
 
-
-
 pulse_blanking_cc::pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset) : gr::block("pulse_blanking_cc",
                         gr::io_signature::make (1, 1, sizeof(gr_complex)),
                         gr::io_signature::make (1, 1, sizeof(gr_complex)))
@@ -64,7 +62,6 @@ pulse_blanking_cc::pulse_blanking_cc(float pfa, int length_, int n_segments_est,
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa));
     zeros_ = static_cast<gr_complex *>(volk_malloc(length_ * sizeof(gr_complex), volk_get_alignment()));
-    magnitude = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
     for (int aux = 0; aux < length_; aux++)
     {
         zeros_[aux] = gr_complex(0, 0);
@@ -73,8 +70,7 @@ pulse_blanking_cc::pulse_blanking_cc(float pfa, int length_, int n_segments_est,
 
 pulse_blanking_cc::~pulse_blanking_cc()
 {
-    volk_free(zeros_);
-    volk_free(magnitude);    
+    volk_free(zeros_);    
 }
 
 int pulse_blanking_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
@@ -82,12 +78,13 @@ int pulse_blanking_cc::general_work (int noutput_items __attribute__((unused)), 
 {
     gr_complex *in = (gr_complex *) input_items[0];
     gr_complex *out = (gr_complex *) output_items[0];
+    float* magnitude = static_cast<float *>(volk_malloc(noutput_items * sizeof(float), volk_get_alignment()));
+    volk_32fc_magnitude_squared_32f(magnitude, in, noutput_items);
     int sample_index = 0;
     float segment_energy;
     while((sample_index + length_) < noutput_items)
     {
-        volk_32fc_magnitude_squared_32f(magnitude, in, length_);
-        volk_32f_accumulator_s32f(&segment_energy, magnitude, length_);            
+        volk_32f_accumulator_s32f(&segment_energy, (magnitude + sample_index), length_);            
         if((n_segments < n_segments_est) && (last_filtered == false))
         {
             noise_power_estimation = (((float) n_segments) * noise_power_estimation + segment_energy / ((float)n_deg_fred)) / ((float)(n_segments + 1));
@@ -115,6 +112,7 @@ int pulse_blanking_cc::general_work (int noutput_items __attribute__((unused)), 
         sample_index+=length_;
         n_segments++;
     }
+    volk_free(magnitude);
     consume_each(sample_index);
     return sample_index;    
 }

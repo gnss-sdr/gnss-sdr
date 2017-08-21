@@ -84,74 +84,60 @@ Notch::~Notch()
 int Notch::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    
-    int index_in = 1;
     int index_out = 0;
-    int aux = 0;
     float sig2dB = 0.0;
     float sig2lin = 0.0;
     lv_32fc_t dot_prod_;
     gr_complex* in = (gr_complex *) input_items[0];
     gr_complex* out = (gr_complex *) output_items[0];
-    gr_complex* paux;
     in++;
     arma::cx_fvec signal_segment;
     arma::cx_fvec signal_segment_fft;
-    while(((index_out + length_) < noutput_items) && (n_segments < n_segments_est) && (filter_state_ == false))
-    {
-        signal_segment = arma::cx_fvec(in, length_, false, false);
-        signal_segment_fft = arma::fft(signal_segment);
-        volk_32fc_s32f_power_spectrum_32f(power_spect, signal_segment_fft.memptr(), 1.0, length_);
-        volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect, 15.0, length_);
-        sig2lin = std::pow(10.0, (sig2dB / 10.0)) / ((float) n_deg_fred);
-        noise_pow_est = (((float) n_segments) * noise_pow_est + sig2lin) / ((float)(n_segments + 1));
-        memcpy(out, in, sizeof(gr_complex) * length_);
-        index_out += length_;
-        index_in += length_;
-        n_segments++;
-        in += length_;
-        out += length_;
-    }
     while((index_out + length_) < noutput_items)
     {
-        n_segments++;
-        volk_32fc_x2_conjugate_dot_prod_32fc(&dot_prod_, in, in, length_);
-        if( (lv_creal(dot_prod_) / noise_pow_est) > thres_)
+        if((n_segments < n_segments_est) && (filter_state_ == false))
         {
-            if(filter_state_ == false)
-            {
-                filter_state_ = true;
-                last_out = gr_complex(0,0);
-            }
-            paux = in - 1;
-            volk_32fc_x2_multiply_conjugate_32fc(c_samples, in, paux, length_);
-            volk_32fc_s32f_atan2_32f(angle_, c_samples, ((float)1.0), length_);
-            for(aux = 0; aux < length_; aux++)
-            {
-                z_0 = std::exp(gr_complex(0,1) * (*(angle_ + aux)));
-                *out = (*in) - z_0 * (*(in - 1))
-                                 + p_c_factor * z_0 * last_out;
-                last_out = *out;
-                index_out++;
-                index_in++;
-                in ++;
-                out ++;
-            }
-            
+            signal_segment = arma::cx_fvec(in, length_, false, false);
+            signal_segment_fft = arma::fft(signal_segment);
+            volk_32fc_s32f_power_spectrum_32f(power_spect, signal_segment_fft.memptr(), 1.0, length_);
+            volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect, 15.0, length_);
+            sig2lin = std::pow(10.0, (sig2dB / 10.0)) / ((float) n_deg_fred);
+            noise_pow_est = (((float) n_segments) * noise_pow_est + sig2lin) / ((float)(n_segments + 1));
+            memcpy(out, in, sizeof(gr_complex) * length_);
         }
         else
         {
-            if (n_segments > n_segments_reset)
+            volk_32fc_x2_conjugate_dot_prod_32fc(&dot_prod_, in, in, length_);
+            if( (lv_creal(dot_prod_) / noise_pow_est) > thres_)
             {
-                n_segments = 0;
+                if(filter_state_ == false)
+                {
+                    filter_state_ = true;
+                    last_out = gr_complex(0,0);
+                }
+                volk_32fc_x2_multiply_conjugate_32fc(c_samples, in, (in - 1), length_);
+                volk_32fc_s32f_atan2_32f(angle_, c_samples, ((float)1.0), length_);
+                for(int aux = 0; aux < length_; aux++)
+                {
+                    z_0 = std::exp(gr_complex(0,1) * (*(angle_ + aux)));
+                    *(out + aux) = *(in + aux) - z_0 * (*(in + aux - 1)) + p_c_factor * z_0 * last_out;
+                    last_out = *(out + aux);
+                }
             }
-            filter_state_ = false;
-            memcpy(out, in, sizeof(gr_complex) * length_);
-            index_out += length_;
-            index_in += length_;
-            in += length_;
-            out += length_;
+            else
+            {
+                if (n_segments > n_segments_reset)
+                {
+                    n_segments = 0;
+                }
+                filter_state_ = false;
+                memcpy(out, in, sizeof(gr_complex) * length_);
+            }
         }
+        index_out += length_;
+        n_segments++;
+        in += length_;
+        out += length_;
     }
     consume_each(index_out);
     return index_out;

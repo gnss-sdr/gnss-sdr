@@ -54,7 +54,6 @@ private:
     float noise_power_estimation;
     float thres_;
     float pfa;
-    float* magnitude;
     gr_complex* zeros_;
     
 public:

@@ -160,7 +160,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_sse3(lv_32fc_t** res
         }
 }
 
-#endif 
+#endif
 
 
 #ifdef LV_HAVE_SSE3
@@ -295,7 +295,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_sse4_1(lv_32fc_t** r
         }
 }
 
-#endif 
+#endif
 
 
 #ifdef LV_HAVE_SSE4_1
@@ -518,6 +518,162 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_u_avx(lv_32fc_t** resu
 #endif
 
 
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_u_avx2(lv_32fc_t** result, const lv_32fc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+{
+    lv_32fc_t** _result = result;
+    const unsigned int avx_iters = num_points / 8;
+    int current_correlator_tap;
+    unsigned int n;
+    unsigned int k;
+    const __m256 eights = _mm256_set1_ps(8.0f);
+    const __m256 rem_code_phase_chips_reg = _mm256_set1_ps(rem_code_phase_chips);
+    const __m256 code_phase_step_chips_reg = _mm256_set1_ps(code_phase_step_chips);
+
+    __VOLK_ATTR_ALIGNED(32) int local_code_chip_index[8];
+    int local_code_chip_index_;
+
+    const __m256 zeros = _mm256_setzero_ps();
+    const __m256 code_length_chips_reg_f = _mm256_set1_ps((float)code_length_chips);
+    const __m256 n0 = _mm256_set_ps(7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f);
+
+    __m256i local_code_chip_index_reg, i;
+    __m256 aux, aux2, aux3, shifts_chips_reg, c, cTrunc, base, negatives, indexn;
+
+    for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
+        {
+            shifts_chips_reg = _mm256_set1_ps((float)shifts_chips[current_correlator_tap]);
+            aux2 = _mm256_sub_ps(shifts_chips_reg, rem_code_phase_chips_reg);
+            indexn = n0;
+            for(n = 0; n < avx_iters; n++)
+                {
+                    __VOLK_GNSSSDR_PREFETCH_LOCALITY(&_result[current_correlator_tap][8 * n + 7], 1, 0);
+                    __VOLK_GNSSSDR_PREFETCH_LOCALITY(&local_code_chip_index[8], 1, 3);
+                    aux = _mm256_fmadd_ps(code_phase_step_chips_reg, indexn, aux2);
+                    //aux = _mm256_add_ps(aux, aux2);
+                    // floor
+                    aux = _mm256_floor_ps(aux);
+
+                    // fmod
+                    c = _mm256_div_ps(aux, code_length_chips_reg_f);
+                    //_mm_fmsub_ps(c, code_length_chips_reg_f, aux)
+                    i = _mm256_cvttps_epi32(c);
+                    cTrunc = _mm256_cvtepi32_ps(i);
+                    base = _mm256_fnmadd_ps(cTrunc, code_length_chips_reg_f, aux);
+                    local_code_chip_index_reg = _mm256_cvttps_epi32(base);
+
+                    // no negatives
+                    c = _mm256_cvtepi32_ps(local_code_chip_index_reg);
+                    negatives = _mm256_cmp_ps(c, zeros, 0x01 );
+                    aux3 = _mm256_and_ps(code_length_chips_reg_f, negatives);
+                    aux = _mm256_add_ps(c, aux3);
+                    local_code_chip_index_reg = _mm256_cvttps_epi32(aux);
+
+                    _mm256_store_si256((__m256i*)local_code_chip_index, local_code_chip_index_reg);
+                    for(k = 0; k < 8; ++k)
+                        {
+                            _result[current_correlator_tap][n * 8 + k] = local_code[local_code_chip_index[k]];
+                        }
+                    indexn = _mm256_add_ps(indexn, eights);
+                }
+        }
+    _mm256_zeroupper();
+    for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
+        {
+            for(n = avx_iters * 8; n < num_points; n++)
+                {
+                    // resample code for current tap
+                    local_code_chip_index_ = (int)floor(code_phase_step_chips * (float)n + shifts_chips[current_correlator_tap] - rem_code_phase_chips);
+                    //Take into account that in multitap correlators, the shifts can be negative!
+                    if (local_code_chip_index_ < 0) local_code_chip_index_ += (int)code_length_chips * (abs(local_code_chip_index_) / code_length_chips + 1) ;
+                    local_code_chip_index_ = local_code_chip_index_ % code_length_chips;
+                    _result[current_correlator_tap][n] = local_code[local_code_chip_index_];
+                }
+        }
+}
+
+#endif
+
+
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_avx2(lv_32fc_t** result, const lv_32fc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+{
+    lv_32fc_t** _result = result;
+    const unsigned int avx_iters = num_points / 8;
+    int current_correlator_tap;
+    unsigned int n;
+    unsigned int k;
+    const __m256 eights = _mm256_set1_ps(8.0f);
+    const __m256 rem_code_phase_chips_reg = _mm256_set1_ps(rem_code_phase_chips);
+    const __m256 code_phase_step_chips_reg = _mm256_set1_ps(code_phase_step_chips);
+
+    __VOLK_ATTR_ALIGNED(32) int local_code_chip_index[8];
+    int local_code_chip_index_;
+
+    const __m256 zeros = _mm256_setzero_ps();
+    const __m256 code_length_chips_reg_f = _mm256_set1_ps((float)code_length_chips);
+    const __m256 n0 = _mm256_set_ps(7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f);
+
+    __m256i local_code_chip_index_reg, i;
+    __m256 aux, aux2, aux3, shifts_chips_reg, c, cTrunc, base, negatives, indexn;
+
+    for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
+        {
+            shifts_chips_reg = _mm256_set1_ps((float)shifts_chips[current_correlator_tap]);
+            aux2 = _mm256_sub_ps(shifts_chips_reg, rem_code_phase_chips_reg);
+            indexn = n0;
+            for(n = 0; n < avx_iters; n++)
+                {
+                    __VOLK_GNSSSDR_PREFETCH_LOCALITY(&_result[current_correlator_tap][8 * n + 7], 1, 0);
+                    __VOLK_GNSSSDR_PREFETCH_LOCALITY(&local_code_chip_index[8], 1, 3);
+                    aux = _mm256_fmadd_ps(code_phase_step_chips_reg, indexn, aux2);
+                    //aux = _mm256_mul_ps(code_phase_step_chips_reg, indexn);
+                    //aux = _mm256_add_ps(aux, aux2);
+                    // floor
+                    aux = _mm256_floor_ps(aux);
+
+                    // fmod
+                    c = _mm256_div_ps(aux, code_length_chips_reg_f);
+                    i = _mm256_cvttps_epi32(c);
+                    cTrunc = _mm256_cvtepi32_ps(i);
+                    base = _mm256_fnmadd_ps(cTrunc, code_length_chips_reg_f, aux);
+                    local_code_chip_index_reg = _mm256_cvttps_epi32(base);
+
+                    // no negatives
+                    c = _mm256_cvtepi32_ps(local_code_chip_index_reg);
+                    negatives = _mm256_cmp_ps(c, zeros, 0x01 );
+                    aux3 = _mm256_and_ps(code_length_chips_reg_f, negatives);
+                    aux = _mm256_add_ps(c, aux3);
+                    local_code_chip_index_reg = _mm256_cvttps_epi32(aux);
+
+                    _mm256_store_si256((__m256i*)local_code_chip_index, local_code_chip_index_reg);
+                    for(k = 0; k < 8; ++k)
+                        {
+                            _result[current_correlator_tap][n * 8 + k] = local_code[local_code_chip_index[k]];
+                        }
+                    indexn = _mm256_add_ps(indexn, eights);
+                }
+        }
+    _mm256_zeroupper();
+    for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
+        {
+            for(n = avx_iters * 8; n < num_points; n++)
+                {
+                    // resample code for current tap
+                    local_code_chip_index_ = (int)floor(code_phase_step_chips * (float)n + shifts_chips[current_correlator_tap] - rem_code_phase_chips);
+                    //Take into account that in multitap correlators, the shifts can be negative!
+                    if (local_code_chip_index_ < 0) local_code_chip_index_ += (int)code_length_chips * (abs(local_code_chip_index_) / code_length_chips + 1) ;
+                    local_code_chip_index_ = local_code_chip_index_ % code_length_chips;
+                    _result[current_correlator_tap][n] = local_code[local_code_chip_index_];
+                }
+        }
+}
+
+#endif
+
+
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
@@ -604,4 +760,3 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_neon(lv_32fc_t** resul
 
 
 #endif /*INCLUDED_volk_gnsssdr_32fc_xn_resampler_32fc_xn_H*/
-

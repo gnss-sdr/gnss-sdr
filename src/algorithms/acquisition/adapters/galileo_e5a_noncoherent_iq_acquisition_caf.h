@@ -55,7 +55,7 @@ public:
 
     virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
@@ -63,12 +63,12 @@ public:
     /*!
      * \brief Returns "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF"
      */
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

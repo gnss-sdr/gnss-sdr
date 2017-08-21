@@ -58,7 +58,7 @@ public:
 
     virtual ~GalileoE1PcpsAmbiguousAcquisition();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
@@ -66,7 +66,7 @@ public:
     /*!
      * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition"
      */
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Galileo_E1_PCPS_Ambiguous_Acquisition";
     }

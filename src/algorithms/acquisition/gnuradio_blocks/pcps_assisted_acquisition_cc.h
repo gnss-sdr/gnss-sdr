@@ -14,7 +14,7 @@
  *
  * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * "A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach", Birkha user, 2007. pp 81-84
+ * Approach", Birkhauser, 2007. pp 81-84
  *
  * \authors <ul>
  *          <li> Javier Arribas, 2013. jarribas(at)cttc.es
@@ -148,7 +148,7 @@ public:
      * to exchange synchronization data between acquisition and tracking blocks.
      * \param p_gnss_synchro Satellite information shared by the processing blocks.
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
     {
         d_gnss_synchro = p_gnss_synchro;
     }
@@ -156,7 +156,7 @@ public:
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    unsigned int mag()
+    inline unsigned int mag() const
     {
         return d_test_statistics;
     }
@@ -177,7 +177,7 @@ public:
      * active mode
      * \param active - bool that activates/deactivates the block.
      */
-    void set_active(bool active)
+    inline void set_active(bool active)
     {
         d_active = active;
     }
@@ -186,7 +186,7 @@ public:
      * \brief Set acquisition channel unique ID
      * \param channel - receiver channel.
      */
-    void set_channel(unsigned int channel)
+    inline void set_channel(unsigned int channel)
     {
         d_channel = channel;
     }
@@ -196,7 +196,7 @@ public:
      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
      * Algorithm 1, for a definition of this threshold).
      */
-    void set_threshold(float threshold)
+    inline void set_threshold(float threshold)
     {
         d_threshold = threshold;
     }
@@ -205,7 +205,7 @@ public:
      * \brief Set maximum Doppler grid search
      * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
      */
-    void set_doppler_max(unsigned int doppler_max)
+    inline void set_doppler_max(unsigned int doppler_max)
     {
         d_doppler_max = doppler_max;
     }
@@ -215,7 +215,6 @@ public:
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */
     void set_doppler_step(unsigned int doppler_step);
-
 
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.

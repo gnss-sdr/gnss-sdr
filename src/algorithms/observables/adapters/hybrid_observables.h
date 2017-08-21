@@ -54,13 +54,13 @@ public:
 
     virtual ~HybridObservables();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //!  Returns "Hybrid_Observables"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Hybrid_Observables";
     }
@@ -70,13 +70,13 @@ public:
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_right_block() override;
 
-    void reset() override
+    inline void reset() override
     {
         return;
     }
 
     //! All blocks must have an item_size() function implementation
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return sizeof(gr_complex);
     }

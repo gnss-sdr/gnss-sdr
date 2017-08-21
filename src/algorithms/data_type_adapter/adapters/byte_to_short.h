@@ -52,18 +52,18 @@ public:
 
     virtual ~ByteToShort();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Byte_To_Short"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Byte_To_Short";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return 0;
     }
@@ -87,4 +87,3 @@ private:
 };
 
 #endif
-

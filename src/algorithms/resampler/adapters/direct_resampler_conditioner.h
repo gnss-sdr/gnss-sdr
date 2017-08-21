@@ -52,18 +52,18 @@ public:
 
     virtual ~DirectResamplerConditioner();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Direct_Resampler"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Direct_Resampler";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

@@ -8,7 +8,7 @@
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkha user, 2007
+ * Approach, Birkhauser, 2007
  *
  * -------------------------------------------------------------------------
  *
@@ -58,18 +58,18 @@ public:
 
     virtual ~GpsL2MDllPllTracking();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "GPS_L2_M_DLL_PLL_Tracking"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "GPS_L2_M_DLL_PLL_Tracking";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

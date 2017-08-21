@@ -368,7 +368,7 @@ private:
             return data_;
         }
 
-        std::size_t length() const
+        inline std::size_t length() const
         {
             return header_length + body_length_;
         }
@@ -395,7 +395,7 @@ private:
                 body_length_ = max_body_length;
         }
 
-        bool decode_header()
+        inline bool decode_header()
         {
             char header[header_length + 1] = "";
             std::strncat(header, data_, header_length);
@@ -420,7 +420,7 @@ private:
             return true;
         }
 
-        void encode_header()
+        inline void encode_header()
         {
             char header[header_length + 1] = "";
             std::sprintf(header, "GS%4d", static_cast<int>(body_length_));
@@ -444,19 +444,19 @@ private:
     class Rtcm_Listener_Room
     {
     public:
-        void join(std::shared_ptr<Rtcm_Listener> participant)
+        inline void join(std::shared_ptr<Rtcm_Listener> participant)
         {
             participants_.insert(participant);
             for (auto msg: recent_msgs_)
                 participant->deliver(msg);
         }
 
-        void leave(std::shared_ptr<Rtcm_Listener> participant)
+        inline void leave(std::shared_ptr<Rtcm_Listener> participant)
         {
             participants_.erase(participant);
         }
 
-        void deliver(const Rtcm_Message & msg)
+        inline void deliver(const Rtcm_Message & msg)
         {
             recent_msgs_.push_back(msg);
             while (recent_msgs_.size() > max_recent_msgs)
@@ -480,13 +480,13 @@ private:
     public:
         Rtcm_Session(boost::asio::ip::tcp::socket socket, Rtcm_Listener_Room & room) : socket_(std::move(socket)), room_(room)   { }
 
-        void start()
+        inline void start()
         {
             room_.join(shared_from_this());
             do_read_message_header();
         }
 
-        void deliver(const Rtcm_Message & msg)
+        inline void deliver(const Rtcm_Message & msg)
         {
             bool write_in_progress = !write_msgs_.empty();
             write_msgs_.push_back(msg);
@@ -497,7 +497,7 @@ private:
         }
 
     private:
-        void do_read_message_header()
+        inline void do_read_message_header()
         {
             auto self(shared_from_this());
             boost::asio::async_read(socket_,
@@ -532,7 +532,7 @@ private:
                     });
         }
 
-        void do_read_message_body()
+        inline void do_read_message_body()
         {
             auto self(shared_from_this());
             boost::asio::async_read(socket_,
@@ -555,7 +555,7 @@ private:
                     });
         }
 
-        void do_write()
+        inline void do_write()
         {
             auto self(shared_from_this());
             boost::asio::async_write(socket_,
@@ -597,12 +597,12 @@ private:
             do_connect(endpoint_iterator);
     }
 
-        void close()
+        inline void close()
         {
             io_service_.post([this]() { socket_.close(); });
         }
 
-        void write(const Rtcm_Message & msg)
+        inline void write(const Rtcm_Message & msg)
         {
             io_service_.post(
                     [this, msg]()
@@ -617,7 +617,7 @@ private:
         }
 
     private:
-        void do_connect(boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+        inline void do_connect(boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
         {
             boost::asio::async_connect(socket_, endpoint_iterator,
                     [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator)
@@ -633,7 +633,7 @@ private:
                     });
         }
 
-        void do_read_message()
+        inline void do_read_message()
         {
             boost::asio::async_read(socket_,
                     boost::asio::buffer(read_msg_.data(), 1029),
@@ -651,9 +651,8 @@ private:
                     });
         }
 
-        void do_write()
+        inline void do_write()
         {
-
             boost::asio::async_write(socket_,
                     boost::asio::buffer(write_msgs_.front().data(), write_msgs_.front().length()),
                     [this](boost::system::error_code ec, std::size_t /*length*/)
@@ -692,7 +691,7 @@ private:
             c = std::make_shared<Tcp_Internal_Client>(io_service, queue_endpoint_iterator);
     }
 
-        void do_read_queue()
+        inline void do_read_queue()
         {
             for(;;)
                 {
@@ -726,14 +725,14 @@ private:
             do_accept();
     }
 
-        void close_server()
+        inline void close_server()
         {
             socket_.close();
             acceptor_.close();
         }
 
     private:
-        void do_accept()
+        inline void do_accept()
         {
             acceptor_.async_accept(socket_, [this](boost::system::error_code ec)
                     {
@@ -765,7 +764,6 @@ private:
         Rtcm_Listener_Room room_;
         bool first_client = true;
     };
-
 
     boost::asio::io_service io_service;
     std::shared_ptr< concurrent_queue<std::string> > rtcm_message_queue;

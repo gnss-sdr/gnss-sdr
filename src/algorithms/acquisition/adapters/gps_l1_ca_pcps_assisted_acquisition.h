@@ -56,7 +56,7 @@ public:
 
     virtual ~GpsL1CaPcpsAssistedAcquisition();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
@@ -64,12 +64,12 @@ public:
     /*!
      * \brief Returns "GPS_L1_CA_PCPS_Assisted_Acquisition"
      */
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "GPS_L1_CA_PCPS_Assisted_Acquisition";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

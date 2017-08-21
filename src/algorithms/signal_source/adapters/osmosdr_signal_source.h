@@ -56,7 +56,7 @@ public:
 
     virtual ~OsmosdrSignalSource();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
@@ -64,12 +64,12 @@ public:
     /*!
      * \brief Returns "Osmosdr_Signal_Source"
      */
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Osmosdr_Signal_Source";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

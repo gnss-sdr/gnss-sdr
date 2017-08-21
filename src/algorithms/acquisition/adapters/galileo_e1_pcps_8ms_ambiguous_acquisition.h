@@ -54,7 +54,7 @@ public:
 
     virtual ~GalileoE1Pcps8msAmbiguousAcquisition();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
@@ -62,12 +62,12 @@ public:
     /*!
      * \brief Returns "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition"
      */
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

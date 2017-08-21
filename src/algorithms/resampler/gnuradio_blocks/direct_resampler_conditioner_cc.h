@@ -70,15 +70,18 @@ private:
 
 public:
     ~direct_resampler_conditioner_cc();
-    unsigned int sample_freq_in() const
+    inline unsigned int sample_freq_in() const
     {
         return d_sample_freq_in;
     }
-    unsigned int sample_freq_out() const
+
+    inline unsigned int sample_freq_out() const
     {
         return d_sample_freq_out;
     }
+
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+    
     int general_work(int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items,
             gr_vector_void_star &output_items);

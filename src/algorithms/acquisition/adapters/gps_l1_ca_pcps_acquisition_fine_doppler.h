@@ -56,7 +56,7 @@ public:
 
     virtual ~GpsL1CaPcpsAcquisitionFineDoppler();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
@@ -64,12 +64,12 @@ public:
     /*!
      * \brief Returns "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler"
      */
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

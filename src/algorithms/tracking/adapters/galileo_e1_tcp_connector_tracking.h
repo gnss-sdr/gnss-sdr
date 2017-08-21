@@ -59,18 +59,18 @@ public:
 
     virtual ~GalileoE1TcpConnectorTracking();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Galileo_E1_TCP_CONNECTOR_Tracking"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Galileo_E1_TCP_CONNECTOR_Tracking";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

@@ -7,7 +7,7 @@
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkha user, 2007
+ * Approach, Birkhauser, 2007
  *
  * -------------------------------------------------------------------------
  *
@@ -59,18 +59,18 @@ public:
 
     virtual ~GalileoE1DllPllVemlTracking();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Galileo_E1_DLL_PLL_VEML_Tracking"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Galileo_E1_DLL_PLL_VEML_Tracking";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

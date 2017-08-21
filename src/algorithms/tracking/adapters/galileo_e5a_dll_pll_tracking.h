@@ -59,18 +59,18 @@ public:
 
     virtual ~GalileoE5aDllPllTracking();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Galileo_E5a_DLL_PLL_Tracking"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Galileo_E5a_DLL_PLL_Tracking";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

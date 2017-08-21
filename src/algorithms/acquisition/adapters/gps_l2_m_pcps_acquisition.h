@@ -61,7 +61,7 @@ public:
 
     virtual ~GpsL2MPcpsAcquisition();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
@@ -69,12 +69,12 @@ public:
     /*!
      * \brief Returns "GPS_L2_M_PCPS_Acquisition"
      */
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "GPS_L2_M_PCPS_Acquisition";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

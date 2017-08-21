@@ -53,18 +53,18 @@ public:
 
     virtual ~IbyteToCbyte();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Ibyte_To_Cbyte"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Ibyte_To_Cbyte";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return 0;
     }

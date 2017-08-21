@@ -73,20 +73,20 @@ public:
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_right_block() override;
 
-    std::string role() override { return role_; }
+    inline std::string role() override { return role_; }
 
     //! Returns "Channel"
-    std::string implementation() override { return implementation_; }
+    inline std::string implementation() override { return implementation_; }
 
-    size_t item_size() override { return 0; }
-    Gnss_Signal get_signal() const override { return gnss_signal_; }
+    inline size_t item_size() override { return 0; }
+    inline Gnss_Signal get_signal() const override { return gnss_signal_; }
 
     void start_acquisition() override;   //!< Start the State Machine
     void set_signal(const Gnss_Signal& gnss_signal_) override;  //!< Sets the channel GNSS signal
 
-    std::shared_ptr<AcquisitionInterface> acquisition(){ return acq_; }
-    std::shared_ptr<TrackingInterface> tracking(){ return trk_; }
-    std::shared_ptr<TelemetryDecoderInterface> telemetry(){ return nav_; }
+    inline std::shared_ptr<AcquisitionInterface> acquisition(){ return acq_; }
+    inline std::shared_ptr<TrackingInterface> tracking(){ return trk_; }
+    inline std::shared_ptr<TelemetryDecoderInterface> telemetry(){ return nav_; }
 
     void msg_handler_events(pmt::pmt_t msg);
 

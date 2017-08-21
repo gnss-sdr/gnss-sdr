@@ -51,18 +51,18 @@ public:
 
     virtual ~PulseBlankingFilter();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Pulse_Blanking_Filter"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Pulse_Blanking_Filter";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return 0;
     }

@@ -53,7 +53,7 @@ public:
 
     virtual ~Gn3sSignalSource();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
@@ -61,12 +61,12 @@ public:
     /*!
      * \brief Returns "Gn3sSignalSource".
      */
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Gn3sSignalSource";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

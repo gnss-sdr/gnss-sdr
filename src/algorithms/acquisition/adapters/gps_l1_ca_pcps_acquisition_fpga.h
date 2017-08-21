@@ -58,7 +58,7 @@ public:
 
     virtual ~GpsL1CaPcpsAcquisitionFpga();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
@@ -66,12 +66,12 @@ public:
     /*!
      * \brief Returns "GPS_L1_CA_PCPS_Acquisition"
      */
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "GPS_L1_CA_PCPS_Acquisition_Fpga";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }

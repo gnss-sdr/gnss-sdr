@@ -69,18 +69,18 @@ public:
 
     virtual ~FreqXlatingFirFilter();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Freq_Xlating_Fir_Filter"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Freq_Xlating_Fir_Filter";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return 0;
     }

@@ -63,14 +63,14 @@ public:
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_right_block() override;
 
-    std::string role() override { return role_; }
+    inline std::string role() override { return role_; }
     //! Returns "Array_Signal_Conditioner"
-    std::string implementation() override { return "Array_Signal_Conditioner"; }
-    size_t item_size() override { return 0; }
+    inline std::string implementation() override { return "Array_Signal_Conditioner"; }
+    inline size_t item_size() override { return 0; }
 
-    std::shared_ptr<GNSSBlockInterface> data_type_adapter(){ return data_type_adapt_; }
-    std::shared_ptr<GNSSBlockInterface> input_filter(){ return in_filt_; }
-    std::shared_ptr<GNSSBlockInterface> resampler(){ return res_; }
+    inline std::shared_ptr<GNSSBlockInterface> data_type_adapter(){ return data_type_adapt_; }
+    inline std::shared_ptr<GNSSBlockInterface> input_filter(){ return in_filt_; }
+    inline std::shared_ptr<GNSSBlockInterface> resampler(){ return res_; }
 
 private:
     std::shared_ptr<GNSSBlockInterface> data_type_adapt_;

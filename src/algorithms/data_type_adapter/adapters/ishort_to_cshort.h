@@ -53,18 +53,18 @@ public:
 
     virtual ~IshortToCshort();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Ishort_To_Cshort"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Ishort_To_Cshort";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return 0;
     }
@@ -88,4 +88,3 @@ private:
 };
 
 #endif
-

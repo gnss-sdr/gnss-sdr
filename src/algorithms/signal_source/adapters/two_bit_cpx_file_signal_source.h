@@ -60,7 +60,7 @@ public:
             boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~TwoBitCpxFileSignalSource();
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
@@ -68,12 +68,12 @@ public:
     /*!
      * \brief Returns "Two_Bit_Cpx_File_Signal_Source".
      */
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Two_Bit_Cpx_File_Signal_Source";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return item_size_;
     }
@@ -83,27 +83,27 @@ public:
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_right_block() override;
 
-    std::string filename()
+    inline std::string filename() const
     {
         return filename_;
     }
 
-    std::string item_type()
+    inline std::string item_type() const
     {
         return item_type_;
     }
 
-    bool repeat()
+    inline bool repeat() const
     {
         return repeat_;
     }
 
-    long sampling_frequency()
+    inline long sampling_frequency() const
     {
         return sampling_frequency_;
     }
 
-    long samples()
+    inline long samples() const
     {
         return samples_;
     }

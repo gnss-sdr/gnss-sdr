@@ -53,18 +53,18 @@ public:
 
     virtual ~IbyteToComplex();
 
-    std::string role() override
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Ibyte_To_Complex"
-    std::string implementation() override
+    inline std::string implementation() override
     {
         return "Ibyte_To_Complex";
     }
 
-    size_t item_size() override
+    inline size_t item_size() override
     {
         return 0;
     }
@@ -88,5 +88,3 @@ private:
 };
 
 #endif
-
-

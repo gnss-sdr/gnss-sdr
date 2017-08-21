@@ -1,6 +1,8 @@
 /*!
  * \file glonass_l1_ca_telemetry_decoder_cc.h
- * \brief Interface of a GLONASS GNAV message demodulator block
+ * \brief Implementation of an adapter of a GLONASS L1 C/A NAV data decoder block
+ * to a TelemetryDecoderInterface
+ * \note Code added as part of GSoC 2017 program
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
  *
  * -------------------------------------------------------------------------
@@ -40,7 +42,6 @@
 #include "glonass_gnav_navigation_message.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
-#include "glonass_gnav_iono.h"
 #include "glonass_gnav_utc_model.h"
 #include "gnss_synchro.h"
 
@@ -53,15 +54,17 @@ typedef boost::shared_ptr<glonass_l1_ca_telemetry_decoder_cc> glonass_l1_ca_tele
 glonass_l1_ca_telemetry_decoder_cc_sptr glonass_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
 /*!
- * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD
+ * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
+ * \note Code added as part of GSoC 2017 program
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  */
 class glonass_l1_ca_telemetry_decoder_cc : public gr::block
 {
 public:
-    ~glonass_l1_ca_telemetry_decoder_cc();
-    void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                 //!< Set receiver's channel
+    ~glonass_l1_ca_telemetry_decoder_cc();          //!< Class destructor
+    void set_satellite(Gnss_Satellite satellite);   //!< Set satellite PRN
+    void set_channel(int channel);                  //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
@@ -74,7 +77,7 @@ private:
     glonass_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
     glonass_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
-    void decode_word(double *symbols,int frame_length);
+    void decode_word(double *symbols);
 
     //!< Preamble decoding
     unsigned short int d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS];
@@ -91,11 +94,11 @@ private:
     unsigned int d_stat;                    //!< Status of decoder
     bool d_flag_frame_sync;                 //!< Indicate when a frame sync is achieved
     bool d_flag_parity;                     //!< Flag indicating when parity check was achieved (crc check)
-    bool d_flag_preamble;
-    int d_CRC_error_counter;
-    bool flag_TOW_set;      //!<
-    double delta_t;         //!< GPS-GLONASS time offset
-    
+    bool d_flag_preamble;                   //!< Flag indicating when preamble was found
+    int d_CRC_error_counter;                //!< Number of failed CRC operations
+    bool flag_TOW_set;                      //!< Indicates when time of week is set
+    double delta_t;                         //!< GPS-GLONASS time offset
+
     //!< Navigation Message variable
     Glonass_Gnav_Navigation_Message d_nav;
 

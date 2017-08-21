@@ -2,6 +2,7 @@
  * \file glonass_l1_ca_telemetry_decoder.cc
  * \brief Implementation of an adapter of a GLONASS L1 C/A NAV data decoder block
  * to a TelemetryDecoderInterface
+ * \note Code added as part of GSoC 2017 program
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
  *
  * -------------------------------------------------------------------------
@@ -36,7 +37,6 @@
 #include "concurrent_queue.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
-#include "glonass_gnav_iono.h"
 #include "glonass_gnav_utc_model.h"
 #include "configuration_interface.h"
 
@@ -55,7 +55,7 @@ GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface*
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = glonass_l1_ca_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
+    telemetry_decoder_ = glonass_l1_ca_make_telemetry_decoder_cc(satellite_, dump_);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
 
     DLOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")";

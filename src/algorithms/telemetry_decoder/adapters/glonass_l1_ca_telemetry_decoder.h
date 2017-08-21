@@ -2,6 +2,7 @@
  * \file glonass_l1_ca_telemetry_decoder.h
  * \brief Interface of an adapter of a GLONASS L1 C/A NAV data decoder block
  * to a TelemetryDecoderInterface
+ * \note Code added as part of GSoC 2017 program
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
  *
  * -------------------------------------------------------------------------

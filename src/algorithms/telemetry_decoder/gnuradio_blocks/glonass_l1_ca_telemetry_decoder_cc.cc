@@ -1,8 +1,9 @@
 /*!
- * \file galileo_e1b_telemetry_decoder_cc.cc
- * \brief Implementation of a Galileo INAV message demodulator block
- * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
- * \author Javier Arribas 2013. jarribas(at)cttc.es
+ * \file glonass_l1_ca_telemetry_decoder_cc.cc
+ * \brief Implementation of an adapter of a GLONASS L1 C/A NAV data decoder block
+ * to a TelemetryDecoderInterface
+ * \note Code added as part of GSoC 2017 program
+ * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -30,7 +31,7 @@
  */
 
 
-#include "galileo_e1b_telemetry_decoder_cc.h"
+#include "glonass_l1_ca_telemetry_decoder_cc.h"
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -67,7 +68,7 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG(INFO) << "Initializing GLONASS L1CA TELEMETRY PROCESSING";
+    LOG(INFO) << "Initializing GLONASS L1 CA TELEMETRY PROCESSING";
     // TODO. WHAT IS THIS?
     d_samples_per_symbol = ( GLONASS_L1_CODE_CHIP_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS ) / GLONASS_L1_CA_SYMBOL_RATE_BPS;
 
@@ -115,7 +116,17 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
 glonass_l1_ca_telemetry_decoder_cc::~glonass_l1_ca_telemetry_decoder_cc()
 {
     delete d_preambles_symbols;
-    d_dump_file.close();
+    if(d_dump_file.is_open() == true)
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+            }
+        }
 }
 
 

@@ -1,7 +1,7 @@
 /*!
- * \file pulse_blanking_cc.h
- * \brief Implements a simple pulse blanking algorithm
- * \author Javier Arribas (jarribas(at)cttc.es)
+ * \file notch_cc.h
+ * \brief Implements a notch filter algorithm
+ * \author Antonio Ramos (antonio.ramosdet(at)gmail.com)
  *
  * -------------------------------------------------------------------------
  *
@@ -28,43 +28,52 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PULSE_BLANKING_H_
-#define GNSS_SDR_PULSE_BLANKING_H_
+#ifndef GNSS_SDR_NOTCH_H_
+#define GNSS_SDR_NOTCH_H_
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
 
-class pulse_blanking_cc;
+class Notch;
 
-typedef boost::shared_ptr<pulse_blanking_cc> pulse_blanking_cc_sptr;
+typedef boost::shared_ptr<Notch> notch_sptr;
 
-pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset);
+notch_sptr make_notch_filter(float pfa, float p_c_factor, 
+                             int length_);
 
+/*!
+ * \brief This class implements a real-time software-defined multi state notch filter
+ */
 
-class pulse_blanking_cc : public gr::block
+class Notch : public gr::block
 {
 private:
     
-    int length_;
-    int n_segments;
-    int n_segments_est;
-    int n_segments_reset;
-    int n_deg_fred;
-    bool last_filtered;
-    float noise_power_estimation;
-    float thres_;
     float pfa;
-    gr_complex* zeros_;
+    float noise_pow_est;
+    float thres_;
+    int length_;
+    int n_deg_fred;
+    unsigned int n_segments;
+    unsigned int n_segments_est;
+    unsigned int n_segments_reset;
+    bool filter_state_;
+    gr_complex last_out;
+    gr_complex z_0;
+    gr_complex p_c_factor;
+    gr_complex* c_samples;
+    float* angle_;
+    float* power_spect;
     
 public:
+        
+    Notch(float pfa, float p_c_factor, int length_);
     
-    pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset);
+    ~Notch();
     
-    ~pulse_blanking_cc();
-
-    int general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-    
+    int general_work (int noutput_items, gr_vector_int &ninput_items, 
+                      gr_vector_const_void_star &input_items,
+                      gr_vector_void_star &output_items);
 };
 
-#endif
+#endif //GNSS_SDR_NOTCH_H_

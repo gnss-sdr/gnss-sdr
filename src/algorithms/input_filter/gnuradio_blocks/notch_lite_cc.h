@@ -38,7 +38,7 @@ class NotchLite;
 
 typedef boost::shared_ptr<NotchLite> notch_lite_sptr;
 
-notch_lite_sptr make_notch_filter_lite(float p_c_factor);
+notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int length_, int n_segments_est, int n_segments_reset, int n_segments_coeff);
 
 /*!
  * \brief This class implements a real-time software-defined single state notch filter
@@ -48,15 +48,29 @@ class NotchLite : public gr::block
 {
 private:
     
+    int length_;
+    int n_segments;
+    int n_segments_est;
+    int n_segments_reset;
+    int n_segments_coeff_reset;
+    int n_segments_coeff;
+    int n_deg_fred;
+    float pfa;
+    float thres_;
+    float noise_pow_est;
+    bool filter_state_;
     gr_complex last_out;
     gr_complex z_0;
     gr_complex p_c_factor;
-    gr_complex* c_samples;
-    float* angle_;
-        
+    gr_complex c_samples;
+    float angle_;
+    float* power_spect;
+    
 public:
         
-    NotchLite(float p_c_factor);
+    NotchLite(float p_c_factor, float pfa, int length_, int n_segments_est, int n_segments_reset, int n_segments_coeff);
+    
+    ~NotchLite();
     
     int general_work (int noutput_items, gr_vector_int &ninput_items, 
                       gr_vector_const_void_star &input_items,

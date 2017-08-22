@@ -39,7 +39,7 @@ class Notch;
 typedef boost::shared_ptr<Notch> notch_sptr;
 
 notch_sptr make_notch_filter(float pfa, float p_c_factor, 
-                             int length_);
+                             int length_, int n_segments_est, int n_segments_reset);
 
 /*!
  * \brief This class implements a real-time software-defined multi state notch filter
@@ -67,7 +67,7 @@ private:
     
 public:
         
-    Notch(float pfa, float p_c_factor, int length_);
+    Notch(float pfa, float p_c_factor, int length_, int n_segments_est, int n_segments_reset);
     
     ~Notch();
     

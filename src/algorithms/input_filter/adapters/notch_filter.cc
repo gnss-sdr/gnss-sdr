@@ -53,6 +53,10 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
     float default_p_c_factor = 0.9;
     int length_;
     int default_length_ = 32;
+    int n_segments_est;
+    int default_n_segments_est = 12500;
+    int n_segments_reset;
+    int default_n_segments_reset = 5000000;
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/input_filter.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
@@ -62,10 +66,12 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
     pfa = configuration->property(role + ".pfa", default_pfa);
     p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
     length_ = configuration->property(role + ".length", default_length_);
+    n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
+    n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            notch_filter_ = make_notch_filter(pfa, p_c_factor, length_);
+            notch_filter_ = make_notch_filter(pfa, p_c_factor, length_, n_segments_est, n_segments_reset);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "input filter(" << notch_filter_->unique_id() << ")";
 

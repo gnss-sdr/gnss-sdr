@@ -3,7 +3,7 @@
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for Glonass L1 C/A to a TrackingInterface
  * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
- *         Luis Esteve, 2017. luis(at)epsilon-formacion.com
+ * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
  *
  *
  * Code DLL + carrier PLL according to the algorithms described in:

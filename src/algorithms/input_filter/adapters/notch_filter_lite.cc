@@ -31,6 +31,7 @@
 
 #include "notch_filter_lite.h"
 #include <string>
+#include <cmath>
 #include <memory>
 #include <vector>
 #include <boost/lexical_cast.hpp>
@@ -49,6 +50,18 @@ NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, std::str
     size_t item_size_;
     float p_c_factor;
     float default_p_c_factor = 0.9;
+    float pfa;
+    float default_pfa = 0.001;
+    int length_;
+    int default_length_ = 32;
+    int n_segments_est;
+    int default_n_segments_est = 12500;
+    int n_segments_reset;
+    int default_n_segments_reset = 5000000;
+    float default_samp_freq = 4000000;
+    float samp_freq = configuration->property("SignalSource.sampling_frequency", default_samp_freq);
+    float default_coeff_rate = samp_freq * 0.1; 
+    float coeff_rate;
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/input_filter.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
@@ -56,13 +69,19 @@ NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, std::str
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
     p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
+    pfa = configuration->property(role + ".pfa", default_pfa);
+    coeff_rate = configuration->property(role + ".coeff_rate", default_coeff_rate);
+    length_ = configuration->property(role + ".length", default_length_);
+    n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
+    n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
+    int n_segments_coeff = (int) ((samp_freq / coeff_rate) / ((float) length_));
+    n_segments_coeff = std::max(1, n_segments_coeff);
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            notch_filter_lite_ = make_notch_filter_lite(p_c_factor);
+            notch_filter_lite_ = make_notch_filter_lite(p_c_factor, pfa, length_, n_segments_est, n_segments_reset, n_segments_coeff);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "input filter(" << notch_filter_lite_->unique_id() << ")";
-
         }
     else
         {

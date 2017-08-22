@@ -43,12 +43,12 @@
 using google::LogMessage;
 
 notch_sptr make_notch_filter(float pfa, float p_c_factor, 
-                             int length_)
+                             int length_, int n_segments_est, int n_segments_reset)
 {
-    return notch_sptr(new Notch(pfa, p_c_factor, length_));
+    return notch_sptr(new Notch(pfa, p_c_factor, length_, n_segments_est, n_segments_reset));
 }
 
-Notch::Notch(float pfa, float p_c_factor, int length_) : gr::block("Notch",
+Notch::Notch(float pfa, float p_c_factor, int length_, int n_segments_est, int n_segments_reset) : gr::block("Notch",
                                                gr::io_signature::make (1, 1, sizeof(gr_complex)),
                                                gr::io_signature::make (1, 1, sizeof(gr_complex)))
 {
@@ -63,8 +63,8 @@ Notch::Notch(float pfa, float p_c_factor, int length_) : gr::block("Notch",
     filter_state_ = false; //Initial state of the filter
     n_deg_fred = 2 * length_; //Number of dregrees of freedom
     n_segments = 0; 
-    n_segments_est = 8; // Set the number of segments for noise power estimation
-    n_segments_reset = 10000; // Set the period (in segments) when the noise power is estimated
+    this->n_segments_est = n_segments_est; // Set the number of segments for noise power estimation
+    this->n_segments_reset = n_segments_reset; // Set the period (in segments) when the noise power is estimated
     z_0 = gr_complex(0 , 0);
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa));

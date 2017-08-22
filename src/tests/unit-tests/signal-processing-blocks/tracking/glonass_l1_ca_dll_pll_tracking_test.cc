@@ -145,8 +145,8 @@ void GlonassL1CaDllPllTrackingTest::init()
     config->set_property("Tracking_1G.implementation", "GLONASS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_1G.early_late_space_chips", "0.5");
     config->set_property("Tracking_1G.order", "2");
-    config->set_property("Tracking_1G.pll_bw_hz", "20");
-    config->set_property("Tracking_1G.dll_bw_hz", "4");
+    config->set_property("Tracking_1G.pll_bw_hz", "2");
+    config->set_property("Tracking_1G.dll_bw_hz", "0.5");
 }
 
 TEST_F(GlonassL1CaDllPllTrackingTest, ValidationOfResults)

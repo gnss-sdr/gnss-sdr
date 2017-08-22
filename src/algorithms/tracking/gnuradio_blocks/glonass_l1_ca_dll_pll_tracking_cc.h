@@ -73,6 +73,7 @@ private:
 
     long d_if_freq;
     long d_fs_in;
+    long d_glonass_freq_ch;
 
     double d_early_late_spc_chips;
 

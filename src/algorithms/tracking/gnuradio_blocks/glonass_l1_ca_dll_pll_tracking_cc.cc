@@ -161,8 +161,8 @@ void Glonass_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
     // Doppler effect
     // Fd=(C/(C+Vr))*F
-    long glonass_freq_ch = GLONASS_L1_FREQ_HZ + (GLONASS_L1_FREQ_HZ *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
-    double radial_velocity = (glonass_freq_ch + d_acq_carrier_doppler_hz) / glonass_freq_ch;
+    d_glonass_freq_ch = GLONASS_L1_FREQ_HZ + (GLONASS_L1_FREQ_HZ *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    double radial_velocity = (d_glonass_freq_ch + d_acq_carrier_doppler_hz) / d_glonass_freq_ch;
     // new chip and prn sequence periods based on acq Doppler
     double T_chip_mod_seconds;
     double T_prn_mod_seconds;
@@ -319,9 +319,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
         carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
         // New carrier Doppler frequency estimation
         d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
-        // New code Doppler frequency estimation
-        long glonass_freq_ch = GLONASS_L1_FREQ_HZ + (GLONASS_L1_FREQ_HZ *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
-        d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GLONASS_L1_CA_CODE_RATE_HZ) / glonass_freq_ch);
+        d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GLONASS_L1_CA_CODE_RATE_HZ) / d_glonass_freq_ch);
 
         // ################## DLL ##########################################################
         // DLL discriminator

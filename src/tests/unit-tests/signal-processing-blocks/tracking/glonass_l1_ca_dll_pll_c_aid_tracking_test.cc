@@ -47,7 +47,6 @@
 #include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
-// #include "signal_conditioner.h"
 #include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
 
 
@@ -139,35 +138,15 @@ void GlonassL1CaDllPllCAidTrackingTest::init()
     gnss_synchro.PRN = 11;
 
     config->set_property("GNSS-SDR.internal_fs_hz", "6625000");
-
-
-    std::string path = std::string(TEST_PATH);
-    std::string file =  path + "signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_schar_10s.bin";
-    const char * file_name = file.c_str();
-
-    config->set_property("SignalSource.implementation","File_Signal_Source");
-    config->set_property("SignalSource.filename",file_name);
-    config->set_property("SignalSource.item_type","ibyte");
-    config->set_property("SignalSource.sampling_frequency","6625000");
-
-    config->set_property("SignalConditioner.implementation","Signal_Conditioner");
-    config->set_property("DataTypeAdapter.implementation","Ibyte_To_Complex");
-    config->set_property("InputFilter.implementation","Pass_Through");
-    config->set_property("InputFilter.item_type","gr_complex");
-    config->set_property("Resampler.implementation","Direct_Resampler");
-    config->set_property("Resampler.sample_freq_in","6625000");
-    config->set_property("Resampler.sample_freq_out","2000000");
-    config->set_property("Resampler.item_type","gr_complex");
-
     config->set_property("Tracking_1G.item_type", "gr_complex");
-    config->set_property("Tracking_1G.dump", "true");
+    config->set_property("Tracking_1G.dump", "false");
     config->set_property("Tracking_1G.if", "0.0");
     config->set_property("Tracking_1G.dump_filename", "./tracking_ch_");
     config->set_property("Tracking_1G.implementation", "GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking");
     config->set_property("Tracking_1G.early_late_space_chips", "0.5");
     config->set_property("Tracking_1G.order", "2");
-    config->set_property("Tracking_1G.pll_bw_hz", "20");
-    config->set_property("Tracking_1G.dll_bw_hz", "4");
+    config->set_property("Tracking_1G.pll_bw_hz", "2");
+    config->set_property("Tracking_1G.dll_bw_hz", "0.5");
 }
 
 TEST_F(GlonassL1CaDllPllCAidTrackingTest, ValidationOfResults)

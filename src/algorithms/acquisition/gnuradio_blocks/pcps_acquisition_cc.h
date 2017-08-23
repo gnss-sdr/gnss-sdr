@@ -56,6 +56,7 @@
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
 #include "gnss_synchro.h"
+#include "Glonass_L1_CA.h" //GLONASS_TWO_PI
 
 class pcps_acquisition_cc;
 
@@ -94,11 +95,14 @@ private:
             std::string dump_filename);
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
+    void update_grid_doppler_wipeoffs();
+    bool is_fdma();
 
     void send_negative_acquisition();
     void send_positive_acquisition();
     long d_fs_in;
     long d_freq;
+    long d_old_freq;
     int d_samples_per_ms;
     int d_samples_per_code;
     //unsigned int d_doppler_resolution;

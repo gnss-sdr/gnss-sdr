@@ -34,7 +34,10 @@ set(TRACKING_GR_BLOCKS_SOURCES
      galileo_e5a_dll_pll_tracking_cc.cc
      gps_l2_m_dll_pll_tracking_cc.cc
      gps_l1_ca_dll_pll_c_aid_tracking_cc.cc
-     gps_l1_ca_dll_pll_c_aid_tracking_sc.cc     
+     gps_l1_ca_dll_pll_c_aid_tracking_sc.cc
+     glonass_l1_ca_dll_pll_tracking_cc.cc
+     glonass_l1_ca_dll_pll_c_aid_tracking_cc.cc
+     glonass_l1_ca_dll_pll_c_aid_tracking_sc.cc
      ${OPT_TRACKING_BLOCKS}   
 )
 

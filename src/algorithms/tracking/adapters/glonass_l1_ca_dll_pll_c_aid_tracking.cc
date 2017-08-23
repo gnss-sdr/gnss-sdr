@@ -107,6 +107,7 @@ void GlonassL1CaDllPllCAidTracking::start_tracking()
         }
 }
 
+
 /*
  * Set tracking channel unique ID
  */
@@ -128,6 +129,7 @@ void GlonassL1CaDllPllCAidTracking::set_channel(unsigned int channel)
         }
 }
 
+
 void GlonassL1CaDllPllCAidTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     if (item_type_.compare("gr_complex") == 0)
@@ -144,17 +146,20 @@ void GlonassL1CaDllPllCAidTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchr
         }
 }
 
+
 void GlonassL1CaDllPllCAidTracking::connect(gr::top_block_sptr top_block)
 {
     if(top_block) { /* top_block is not null */};
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
+
 void GlonassL1CaDllPllCAidTracking::disconnect(gr::top_block_sptr top_block)
 {
     if(top_block) { /* top_block is not null */};
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
+
 
 gr::basic_block_sptr GlonassL1CaDllPllCAidTracking::get_left_block()
 {
@@ -172,6 +177,7 @@ gr::basic_block_sptr GlonassL1CaDllPllCAidTracking::get_left_block()
             return nullptr;
         }
 }
+
 
 gr::basic_block_sptr GlonassL1CaDllPllCAidTracking::get_right_block()
 {

@@ -582,34 +582,6 @@ if(NOT VOLK_GNSSSDR_FOUND)
         endif(CMAKE_GENERATOR STREQUAL Xcode)
     endif(OS_IS_MACOSX)
 
-    set(C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-    set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-    if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-            set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-            set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-    endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        if(OS_IS_LINUX)
-            if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-                set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-            else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-                set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-            endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-        endif(OS_IS_LINUX)
-        if(OS_IS_MACOSX)
-            if(CLANG_VERSION VERSION_LESS "600")
-                set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-            else(CLANG_VERSION VERSION_LESS "600")
-                set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-            endif(CLANG_VERSION VERSION_LESS "600")
-        endif(OS_IS_MACOSX)
-    endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
     if(CMAKE_CROSSCOMPILING)
         set(VOLK_GNSSSDR_COMPILER "")
     else(CMAKE_CROSSCOMPILING)
@@ -619,8 +591,6 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
                                 -DENABLE_STATIC_LIBS=ON
                                 -DENABLE_PROFILING=${ENABLE_PROFILING}
-                                -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
-                                -DCMAKE_C_FLAGS=${C_FLAGS}
                                 -DCMAKE_INCLUDE_PATH=${Boost_INCLUDE_DIR}
                                 -DENABLE_ORC=OFF
                                 ${STRIP_VOLK_GNSSSDR_PROFILE}

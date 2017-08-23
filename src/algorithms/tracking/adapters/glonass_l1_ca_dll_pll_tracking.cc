@@ -136,8 +136,6 @@ void GlonassL1CaDllPllTracking::disconnect(gr::top_block_sptr top_block)
 }
 
 
-{
-
 gr::basic_block_sptr GlonassL1CaDllPllTracking::get_right_block()
 {
     return tracking_;

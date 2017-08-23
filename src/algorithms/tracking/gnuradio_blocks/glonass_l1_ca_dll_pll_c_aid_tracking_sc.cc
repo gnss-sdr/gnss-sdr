@@ -289,8 +289,8 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items __a
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // Block input data and block output stream pointers
-    const lv_16sc_t* in = (lv_16sc_t*) input_items[0]; //PRN start block alignment
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    const lv_16sc_t* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]); // PRN start block alignment
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();

@@ -60,16 +60,6 @@ private:
      */
     double check_t(double time);
 
-    void gravitational_perturbations();
-
-    double d_Jx_moon;         //!< Moon gravitational perturbation
-    double d_Jy_moon;         //!< Moon gravitational perturbation
-    double d_Jz_moon;         //!< Moon gravitational perturbation
-
-    double d_Jx_sun;          //!< Sun gravitational perturbation
-    double d_Jy_sun;          //!< Sun gravitational perturbation
-    double d_Jz_sun;          //!< Sun gravitational perturbation
-
 public:
     double d_m;             //!< String number within frame [dimensionless]
     double d_t_k;           //!< GLONASS Time (UTC(SU) + 3 h) referenced to the beginning of the frame within the current day [s]
@@ -115,19 +105,6 @@ public:
     double d_TOW; // tow of the start of frame
     double d_WN; //  week number of the start of frame
 
-    // satellite positions after RK4 Integration
-    double d_satpos_X;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
-    double d_satpos_Y;        //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
-    double d_satpos_Z;        //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
-    // Satellite velocity after RK4 Integration
-    double d_satvel_X;        //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_satvel_Y;        //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_satvel_Z;        //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
-    // Satellite acceleration after RK4 Integration
-    double d_satacc_X;        //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
-    double d_satacc_Y;        //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
-    double d_satacc_Z;        //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
-
     template<class Archive>
 
     /*!
@@ -172,35 +149,10 @@ public:
     }
 
     /*!
-     * \brief Compute the ECEF SV coordinates and ECEF velocity
-     * Implementation of Algorithm A.3.1.2 in GLONASS ICD v5.1
-     * and compute the clock bias term including relativistic effect (return value)
-     * \param transmitTime Time of ephemeris transmission
-     * \return clock bias of satellite
-     */
-    double simplified_satellite_position(double transmitTime);
-
-    /*!
-     * \brief Compute the ECEF SV coordinates and ECEF velocity
-     * Implementation of Algorithm A.3.1.1 in GLONASS ICD v5.1
-     * and compute the clock bias term including relativistic effect (return value)
-     * \param transmitTime Time of ephemeris transmission
-     * \return clock bias of satellite
-     */
-    double satellite_position(double transmitTime);
-
-    /*!
      * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
      *  (IS-GPS-200E,  20.3.3.3.3.1)
      */
     double sv_clock_drift(double transmitTime, double timeCorrUTC);
-
-    /*!
-     * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200E,  20.3.3.3.3.1)
-     */
-    double sv_clock_relativistic_term(double transmitTime);
-
 
     /*!
      *  \brief Computes the GLONASS System Time and returns a boost::posix_time::ptime object

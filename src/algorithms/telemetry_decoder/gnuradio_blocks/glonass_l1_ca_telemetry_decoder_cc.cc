@@ -69,19 +69,21 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing GLONASS L1 CA TELEMETRY PROCESSING";
-    // TODO. WHAT IS THIS?
+    // Define the number of sampes per symbol. Notice that GLONASS has to rates,
+    //one for the navigation data and the other for the preamble information
     d_samples_per_symbol = ( GLONASS_L1_CODE_CHIP_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS ) / GLONASS_L1_CA_SYMBOL_RATE_BPS;
 
-    // set the preamble
+    // Set the preamble information
     unsigned short int preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS] = GLONASS_GNAV_PREAMBLE;
-    d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_BITS * d_samples_per_symbol;
+    // Since preamble rate is different than navigation data rate we use a constant
+    d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
 
     memcpy((unsigned short int*)this->d_preambles_bits, (unsigned short int*)preambles_bits, GLONASS_GNAV_PREAMBLE_LENGTH_BITS*sizeof(unsigned short int));
 
     // preamble bits to sampled symbols
     d_preambles_symbols = (signed int*)malloc(sizeof(signed int) * d_symbols_per_preamble);
     int n = 0;
-    for (int i = 0; i < GLONASS_GNAV_PREAMBLE_LENGTH_BITS; i++)
+    for (int i = 0; i < GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT; i++)
         {
             for (unsigned int j = 0; j < d_samples_per_symbol; j++)
                 {
@@ -130,40 +132,26 @@ glonass_l1_ca_telemetry_decoder_cc::~glonass_l1_ca_telemetry_decoder_cc()
 }
 
 
-void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *page_part_symbols,int frame_length)
+void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int frame_length)
 {
-    double page_part_symbols_deint[frame_length];
-
-    // 2. Viterbi decoder
-    // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
-    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180�
-    for (int i = 0; i < frame_length; i++)
+    // 1. Transform from symbols to bits
+    std::string frame_string;
+    for(int i = 0; i < (frame_length); i++)
         {
-            if ((i + 1) % 2 == 0)
+            if (frame_symbols[i] > 0)
                 {
-                    page_part_symbols_deint[i] = -page_part_symbols_deint[i];
-                }
-        }
-
-    int page_part_bits[frame_length/2];
-    viterbi_decoder(page_part_symbols_deint, page_part_bits);
-
-    // 3. Call the Galileo page decoder
-    std::string page_String;
-    for(int i = 0; i < (frame_length/2); i++)
-        {
-            if (page_part_bits[i] > 0)
-                {
-                    page_String.push_back('1');
+                    frame_string.push_back('1');
                 }
             else
                 {
-                    page_String.push_back('0');
+                    frame_string.push_back('0');
                 }
         }
 
+    // 2. Call the GLONASS GNAV string decoder
     d_nav.decode_string(page_String);
 
+    // 3. Check operation executed correctly
     if(d_nav.flag_CRC_test == true)
         {
             LOG(INFO) << "GLONASS GNAV CRC correct on channel " << d_channel << " from satellite " << d_satellite;
@@ -175,14 +163,11 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *page_part_symbols
             LOG(INFO) << "GLONASS GNAV CRC error on channel " << d_channel <<  " from satellite " << d_satellite;
         }
 
-
-
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
             std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
-
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
 
         }
@@ -196,17 +181,8 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *page_part_symbols
         {
             std::shared_ptr<Glonass_Gnav_Almanac> tmp_obj= std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            //debug
-            std::cout << "GLONASS GNAV almanac received!" << std::endl;
-            DLOG(INFO) << "Current parameters:";
-            DLOG(INFO) << "d_TOW_at_current_symbol=" << d_TOW_at_current_symbol;
-            DLOG(INFO) << "d_nav.WN_0=" << d_nav.WN_0;
-            delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (d_TOW_at_current_symbol - tmp_obj->t_0G_10 + 604800 * (fmod((d_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
-            DLOG(INFO) << "delta_t=" << delta_t << "[s]";
         }
 }
-
-
 
 
 int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
@@ -226,7 +202,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
     consume_each(1);
 
     d_flag_preamble = false;
-    unsigned int required_symbols=GLONASS_GNAV_PAGE_SYMBOLS+d_symbols_per_preamble;
+    unsigned int required_symbols=GLONASS_GNAV_FRAME_BITS+d_symbols_per_preamble;
 
     if (d_symbol_history.size()>required_symbols)
     {
@@ -283,7 +259,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
                     // NEW GLONASS string received
                     // 0. fetch the symbols into an array
                     int frame_length = GLONASS_GNAV_STRING_SYMBOLS - d_symbols_per_preamble;
-                    double page_part_symbols[frame_length];
+                    double frame_symbols[frame_length];
 
                     //******* SYMBOL TO BIT *******
                     if (d_symbol_history.at(0).Flag_valid_symbol_output == true)
@@ -342,36 +318,20 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
     if (this->d_flag_preamble == true and d_nav.flag_TOW_set == true)
         //update TOW at the preamble instant
         {
-            if(d_nav.flag_TOW_5 == true) //page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
-                {
-                //TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_5  + GALILEO_INAV_PAGE_PART_SECONDS+((double)required_symbols)*GALILEO_E1_CODE_PERIOD; //-GALILEO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
-                    d_nav.flag_TOW_5 = false;
-                }
+            d_TOW_at_current_symbol = floor((d_nav.d_TOW + 2*GLONASS_L1_CA_CODE_PERIOD + GLONASS_CA_PREAMBLE_DURATION_S)*1000.0)/1000.0;
 
-            else if(d_nav.flag_TOW_6 == true) //page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
-                {
-                    //TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_6 + GALILEO_INAV_PAGE_PART_SECONDS+((double)required_symbols)*GALILEO_E1_CODE_PERIOD;//-GALILEO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
-                    d_nav.flag_TOW_6 = false;
-                }
-            else
-                {
-                    //this page has no timing information
-                    d_TOW_at_current_symbol = d_TOW_at_current_symbol + GALILEO_E1_CODE_PERIOD;// + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
-                }
         }
     else //if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GALILEO_E1_CODE_PERIOD;
+            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GLONASS_L1_CA_CODE_PERIOD;
         }
 
     //if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
 
-    if(d_nav.flag_GGTO_1 == true  and  d_nav.flag_GGTO_2 == true and  d_nav.flag_GGTO_3 == true and  d_nav.flag_GGTO_4 == true) //all GGTO parameters arrived
-        {
-            delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64)));
-        }
+    // if(d_nav.flag_GGTO_1 == true  and  d_nav.flag_GGTO_2 == true and  d_nav.flag_GGTO_3 == true and  d_nav.flag_GGTO_4 == true) //all GGTO parameters arrived
+    //     {
+    //         delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64)));
+    //     }
 
     if (d_flag_frame_sync == true and d_nav.flag_TOW_set == true)
         {

@@ -77,12 +77,13 @@ private:
     glonass_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
     glonass_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
-    void decode_word(double *symbols);
+    void decode_string(double *symbols, int frame_length);
 
     //!< Preamble decoding
     unsigned short int d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS];
     int *d_preambles_symbols;
     unsigned int d_samples_per_symbol;
+    unsigned int d_samples_per_preamble_symbol;
     int d_symbols_per_preamble;
 
     //!< Storage for incoming data

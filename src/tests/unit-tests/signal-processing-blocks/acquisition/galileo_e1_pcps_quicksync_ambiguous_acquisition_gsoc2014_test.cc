@@ -109,6 +109,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx::GalileoE1PcpsQuic
     rx_message = 0;
 }
 
+
 GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx::~GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx()
 {}
 
@@ -127,7 +128,6 @@ protected:
         gnss_synchro = Gnss_Synchro();
         init();
 }
-
     ~GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test()
     {
     }
@@ -201,6 +201,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::init()
     Pmd = 0;
 }
 
+
 void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_1()
 {
     gnss_synchro.Channel_ID = 0;
@@ -272,6 +273,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_1()
     config->set_property("Acquisition.folding_factor", "2");
     config->set_property("Acquisition.dump", "false");
 }
+
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_2()
 {
@@ -458,11 +460,13 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_3()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::start_queue()
 {
     stop = false;
     ch_thread = boost::thread(&GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::wait_message, this);
 }
+
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::wait_message()
 {
@@ -478,7 +482,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::wait_message()
             channel_internal_queue.wait_and_pop(message);
 
             end = std::chrono::system_clock::now();
-            std::chrono::duration<double> elapsed_seconds = end - begin;
+            elapsed_seconds = end - begin;
 
             mean_acq_time_us += elapsed_seconds.count() * 1e6;
 
@@ -582,7 +586,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ConnectAndRun)
         begin = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsed_seconds = end - begin;
+        elapsed_seconds = end - begin;
     }) << "Failure running the top_block."<< std::endl;
 
     std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;

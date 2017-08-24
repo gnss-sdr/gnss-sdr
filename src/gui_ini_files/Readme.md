@@ -71,5 +71,4 @@ Please see following link for license
 
 * Luis Esteve Elfau 
 * Carlos Fernández
-ing
 

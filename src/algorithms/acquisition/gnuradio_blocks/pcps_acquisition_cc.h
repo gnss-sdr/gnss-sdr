@@ -52,6 +52,9 @@
 
 #include <fstream>
 #include <string>
+#include <mutex>
+#include <thread>
+#include <condition_variable>
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
@@ -66,7 +69,7 @@ pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-                         bool dump,
+                         bool dump, bool blocking,
                          std::string dump_filename);
 
 /*!
@@ -83,17 +86,19 @@ private:
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-            bool dump,
+            bool dump, bool blocking,
             std::string dump_filename);
 
     pcps_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-            bool dump,
+            bool dump, bool blocking, 
             std::string dump_filename);
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
+
+    void acquisition_core( void );
 
     void send_negative_acquisition();
     void send_positive_acquisition();
@@ -131,6 +136,17 @@ private:
     bool d_dump;
     unsigned int d_channel;
     std::string d_dump_filename;
+
+    std::thread d_worker_thread;
+    std::mutex  d_mutex;
+
+    std::condition_variable d_cond;
+    bool d_done;
+    bool d_new_data_available;
+    bool d_worker_active;
+    bool d_blocking;
+
+    gr_complex *d_data_buffer;
 
 public:
     /*!

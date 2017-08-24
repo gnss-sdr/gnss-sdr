@@ -56,6 +56,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
+    blocking_ = configuration_->property(role + ".blocking", true);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
 
@@ -91,7 +92,8 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
             item_size_ = sizeof(lv_16sc_t);
             acquisition_sc_ = pcps_make_acquisition_sc(sampled_ms_, max_dwells_,
                     doppler_max_, if_, fs_in_, samples_per_ms, code_length_,
-                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_,
+                    dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
 
         }
@@ -100,7 +102,8 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
                     doppler_max_, if_, fs_in_, samples_per_ms, code_length_,
-                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_,
+                    dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 

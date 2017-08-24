@@ -155,6 +155,7 @@ private:
     long fs_in_;
     long if_;
     bool dump_;
+    bool blocking_;
     std::string dump_filename_;
     std::complex<float> * code_;
     Gnss_Synchro * gnss_synchro_;

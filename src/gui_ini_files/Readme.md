@@ -19,7 +19,7 @@ $ qmake gnss_sdr_gui.pro DESTDIR=/path/to/executable/ GUI_FILES_LOCATION="/path/
 $ make
 ```
 
-If you want to place the executable in /home/username/ and you have placed "gui_ini_files" folder in /home/username/Documents/. Use following qmake command 
+For example If you want to place the executable in /home/username/ and you have placed "gui_ini_files" folder in /home/username/Documents/. Use following qmake command 
 
 ```
 $ qmake gnss_sdr_gui.pro DESTDIR=/home/username/ GUI_FILES_LOCATION="/home/username/Documents/"
@@ -28,7 +28,7 @@ $ make
 
 ### Running on Linux with Qt Creator 4.2.1 (Community):
 
-Install Qt Qt Creator 4.2.1 community edition. Available free [here](https://info.qt.io/download-qt-for-application-development)
+Install Qt Creator 4.2.1 community edition. Available free [here](https://info.qt.io/download-qt-for-application-development)
 
 *	Just open the project (.pro) file in Qt creator.
 *	Click configure project.
@@ -38,7 +38,7 @@ Install Qt Qt Creator 4.2.1 community edition. Available free [here](https://inf
 
 ### Running on Windows with Qt Creator 4.2.1 (Community):
 
-Install Qt Qt Creator 4.2.1 community edition. Available free [here](https://info.qt.io/download-qt-for-application-development)
+Install Qt Creator 4.2.1 community edition. Available free [here](https://info.qt.io/download-qt-for-application-development)
 
 *	Just open the project (.pro) file in Qt creator.
 *	Click configure project.

@@ -1,6 +1,6 @@
 /*!
  * \file notch_filter.h
- * \brief 
+ * \brief Adapter of a multistate Notch filter
  * \author Antonio Ramos, 2017. antonio.ramosdet(at)gmail.com
  *
  * Detailed description of the file here if needed.

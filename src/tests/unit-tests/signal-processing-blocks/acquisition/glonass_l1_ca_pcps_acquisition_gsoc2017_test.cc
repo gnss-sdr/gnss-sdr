@@ -1,4 +1,4 @@
-#include <ctime>
+#include <chrono>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -72,6 +72,7 @@ GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::GlonassL1CaPcpsAcquisitionGSoC201
     rx_message = 0;
 }
 
+
 GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::~GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx()
 {}
 
@@ -138,6 +139,7 @@ protected:
     double Pfa_a;
 };
 
+
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::init()
 {
     message = 0;
@@ -152,6 +154,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::init()
     Pfa_p = 0;
     Pfa_a = 0;
 }
+
 
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
 {
@@ -221,6 +224,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
     config->set_property("Acquisition.bit_transition_flag", "false");
     config->set_property("Acquisition.dump", "false");
 }
+
 
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
 {
@@ -309,11 +313,13 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::start_queue()
 {
     stop = false;
     ch_thread = boost::thread(&GlonassL1CaPcpsAcquisitionGSoC2017Test::wait_message, this);
 }
+
 
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::wait_message()
 {
@@ -339,6 +345,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::wait_message()
         }
 }
 
+
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::process_message()
 {
     if (message == 1)
@@ -347,7 +354,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::process_message()
 
             // The term -5 is here to correct the additional delay introduced by the FIR filter
             // The value 511.0 must be a variable, chips/length
-            double delay_error_chips = std::abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*511.0/((double)fs_in*1e-3));
+            double delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - (static_cast<double>(gnss_synchro.Acq_delay_samples) - 5.0 ) * 511.0 / (static_cast<double>(fs_in) * 1e-3));
             double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
             mse_delay += std::pow(delay_error_chips, 2);
@@ -361,16 +368,16 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::process_message()
 
     realization_counter++;
 
-    std::cout << "Progress: " << round((float)realization_counter/num_of_realizations*100) << "% \r" << std::flush;
+    std::cout << "Progress: " << round(static_cast<float>(realization_counter) / static_cast<float>(num_of_realizations) * 100.0) << "% \r" << std::flush;
 
     if (realization_counter == num_of_realizations)
         {
             mse_delay /= num_of_realizations;
             mse_doppler /= num_of_realizations;
 
-            Pd = (double)correct_estimation_counter / (double)num_of_realizations;
-            Pfa_a = (double)detection_counter / (double)num_of_realizations;
-            Pfa_p = (double)(detection_counter - correct_estimation_counter) / (double)num_of_realizations;
+            Pd = static_cast<double>(correct_estimation_counter) / static_cast<double>(num_of_realizations);
+            Pfa_a = static_cast<double>(detection_counter) / static_cast<double>(num_of_realizations);
+            Pfa_p = (static_cast<double>(detection_counter) - static_cast<double>( correct_estimation_counter)) / static_cast<double>(num_of_realizations);
 
             mean_acq_time_us /= num_of_realizations;
 
@@ -379,10 +386,12 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::process_message()
         }
 }
 
+
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::stop_queue()
 {
     stop = true;
 }
+
 
 TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, Instantiate)
 {
@@ -391,12 +400,12 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, Instantiate)
     delete acquisition;
 }
 
+
 TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ConnectAndRun)
 {
-    int nsamples = floor(fs_in*integration_time_ms*1e-3);
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    int nsamples = floor(fs_in * integration_time_ms * 1e-3);
+    std::chrono::time_point<std::chrono::system_clock> begin, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
@@ -414,17 +423,17 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test."<< std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1e6 + tv.tv_usec;
+        begin = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1e6 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - begin;
     }) << "Failure running the top_block."<< std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     delete acquisition;
 }
+
 
 TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
 {
@@ -495,18 +504,18 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
             }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
-            {
-                EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                if (message == 1)
-                    {
-                        EXPECT_EQ((unsigned int) 1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                    }
+                {
+                    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+                    if (message == 1)
+                        {
+                            EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                        }
 
-            }
+                }
             else if (i == 1)
-            {
-                EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
-            }
+                {
+                    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                }
 #ifdef OLD_BOOST
             ASSERT_NO_THROW( {
                 ch_thread.timed_join(boost::posix_time::seconds(1));
@@ -521,6 +530,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
 
     delete acquisition;
 }
+
 
 TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
 {
@@ -592,15 +602,15 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
             }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
-            {
-                std::cout << "Estimated probability of detection = " << Pd << std::endl;
-                std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;           }
+                {
+                    std::cout << "Estimated probability of detection = " << Pd << std::endl;
+                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;           }
             else if (i == 1)
-            {
-                std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
-            }
+                {
+                    std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                }
 #ifdef OLD_BOOST
             ASSERT_NO_THROW( {
                 ch_thread.timed_join(boost::posix_time::seconds(1));

@@ -2,7 +2,7 @@
  * \file pulse_blanking_filter.cc
  * \brief Instantiates the GNSS-SDR pulse blanking filter
  * \author Javier Arribas 2017
- *
+ *         Antonio Ramos  2017
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
@@ -57,7 +57,7 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
     int default_length_ = 32;
     int length_ = config_->property(role_ + ".length", default_length_);
     int default_n_segments_est = 12500;
-    int n_segments_est = config_->property(role_ + ".segments_estimation", default_n_segments_est);
+    int n_segments_est = config_->property(role_ + ".segments_est", default_n_segments_est);
     int default_n_segments_reset = 5000000;
     int n_segments_reset = config_->property(role_ + ".segments_reset", default_n_segments_reset);
     if (input_item_type_.compare("gr_complex") == 0)

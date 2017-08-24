@@ -1,4 +1,4 @@
-#include <ctime>
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <boost/chrono.hpp>
@@ -119,20 +119,19 @@ void GlonassL1CaPcpsAcquisitionTest::init()
 }
 
 
-
 TEST_F(GlonassL1CaPcpsAcquisitionTest, Instantiate)
 {
     init();
     boost::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
+
 TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
 {
     int fs_in = 62314000;
     int nsamples = 62314;
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> begin, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     top_block = gr::make_top_block("Acquisition test");
@@ -151,21 +150,20 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        begin = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - begin;
     }) << "Failure running the top_block." << std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
+
 
 TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> begin, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
 
     double expected_delay_samples = 31874;
@@ -213,21 +211,20 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     acquisition->init();
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        begin = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - begin;
     }) << "Failure running the top_block." << std::endl;
 
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = (float)(delay_error_samples * 511 / 62316);
+    float delay_error_chips = static_cast<float>(delay_error_samples) * 511.0 / 62316.0;
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";

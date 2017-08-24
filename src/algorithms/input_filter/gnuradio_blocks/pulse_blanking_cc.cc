@@ -1,8 +1,8 @@
 /*!
  * \file pulse_blanking_cc.cc
- * \brief Implements a simple pulse blanking algorithm
+ * \brief Implements a pulse blanking algorithm
  * \author Javier Arribas (jarribas(at)cttc.es)
- *
+ *         Antonio Ramos  (antonio.ramosdet(at)gmail.com)
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)

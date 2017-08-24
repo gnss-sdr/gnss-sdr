@@ -70,8 +70,10 @@ NotchLite::NotchLite(float p_c_factor, float pfa, int length_, int n_segments_es
     last_out = gr_complex(0, 0);
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa));
-    c_samples = gr_complex(0, 0);
-    angle_ = 0.0;
+    c_samples1 = gr_complex(0, 0);
+    c_samples2 = gr_complex(0, 0);
+    angle1 = 0.0;
+    angle2 = 0.0;
     power_spect = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
     
 }
@@ -119,8 +121,11 @@ int NotchLite::general_work(int noutput_items __attribute__((unused)), gr_vector
                 }
                 if(n_segments_coeff == 0)
                 {
-                    volk_32fc_x2_multiply_conjugate_32fc(&c_samples, in, (in - 1), 1);
-                    volk_32fc_s32f_atan2_32f(&angle_, &c_samples, ((float)1.0), 1);
+                    volk_32fc_x2_multiply_conjugate_32fc(&c_samples1, (in + 1), in, 1);
+                    volk_32fc_s32f_atan2_32f(&angle1, &c_samples1, ((float)1.0), 1);
+                    volk_32fc_x2_multiply_conjugate_32fc(&c_samples2, (in + length_ - 1), (in + length_ - 2), 1);
+                    volk_32fc_s32f_atan2_32f(&angle2, &c_samples2, ((float)1.0), 1);
+                    float angle_ = (angle1 + angle2) / 2.0;
                     z_0 = std::exp(gr_complex(0,1) * angle_);
                 }
                 for(int aux = 0; aux < length_; aux++)

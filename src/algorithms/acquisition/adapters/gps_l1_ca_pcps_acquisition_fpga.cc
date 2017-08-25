@@ -32,6 +32,7 @@
  */
 
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
+#include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include "GPS_L1_CA.h"
@@ -63,29 +64,24 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     DLOG(INFO) << "role " << role;
 
-    item_type_ = configuration_->property(role + ".item_type",
-            default_item_type);
+    item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
     fs_in = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     ifreq = configuration_->property(role + ".if", 0);
     dump = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    sampled_ms = configuration_->property(
-            role + ".coherent_integration_time_ms", 1);
+    sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     // note : the FPGA is implemented according to bit transition flag = 0. Setting bit transition flag to 1 has no effect.
-    bit_transition_flag = configuration_->property(
-            role + ".bit_transition_flag", false);
+    bit_transition_flag = configuration_->property(role + ".bit_transition_flag", false);
 
     // note : the FPGA is implemented according to use_CFAR_algorithm = 0. Setting use_CFAR_algorithm to 1 has no effect.
-    use_CFAR_algorithm_flag = configuration_->property(
-            role + ".use_CFAR_algorithm", false);
+    use_CFAR_algorithm_flag = configuration_->property(role + ".use_CFAR_algorithm", false);
 
     // note : the FPGA does not use the max_dwells variable.
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
 
-    dump_filename = configuration_->property(role + ".dump_filename",
-            default_dump_filename);
+    dump_filename = configuration_->property(role + ".dump_filename", default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
     code_length = round(
@@ -104,12 +100,10 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     //            vector_length_ *= 2;
     //        }
 
-    select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga",
-            0);
+    select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
 
     std::string default_device_name = "/dev/uio0";
-    device_name = configuration_->property(role + ".devicename",
-            default_device_name);
+    device_name = configuration_->property(role + ".devicename", default_device_name);
 
     if (item_type_.compare("cshort") == 0)
         {
@@ -124,7 +118,8 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
         }
     else
         {
-            LOG(FATAL) << item_type_ << " FPGA only accepts chsort";
+            LOG(WARNING) << "item_type configured to " << item_type_ << "but FPGA implementation only accepts cshort";
+            throw std::invalid_argument( "Wrong input_type configuration. Should be cshort" );
         }
 
     channel_ = 0;

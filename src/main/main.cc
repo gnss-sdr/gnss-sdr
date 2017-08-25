@@ -39,6 +39,7 @@
 #endif
 
 #include <chrono>
+#include <iostream>
 #include <memory>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
@@ -140,15 +141,42 @@ int main(int argc, char** argv)
     }
     catch(const boost::exception & e)
     {
-            LOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+            if(GOOGLE_STRIP_LOG == 0)
+                {
+                    LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+                }
+            else
+                {
+                    std::cerr << "Boost exception: " << boost::diagnostic_information(e) << std::endl;
+                }
+            google::ShutDownCommandLineFlags();
+            return 1;
     }
     catch(const std::exception & ex)
     {
-            LOG(FATAL) << "STD exception: " << ex.what();
+            if(GOOGLE_STRIP_LOG == 0)
+                {
+                    LOG(WARNING) << "C++ Standard Library exception: " << ex.what();
+                }
+            else
+                {
+                    std::cerr << "C++ Standard Library exception: " << ex.what() << std::endl;
+                }
+            google::ShutDownCommandLineFlags();
+            return 1;
     }
     catch(...)
     {
-            LOG(INFO) << "Unexpected catch";
+            if(GOOGLE_STRIP_LOG == 0)
+                {
+                    LOG(WARNING) << "Unexpected catch. This should not happen.";
+                }
+            else
+                {
+                    std::cerr << "Unexpected catch. This should not happen." << std::endl;
+                }
+            google::ShutDownCommandLineFlags();
+            return 1;
     }
 
     // report the elapsed time

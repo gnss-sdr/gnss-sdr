@@ -32,6 +32,7 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 
+#include <stdexcept>
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
@@ -81,6 +82,7 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
+    void MakeBlock();
     std::string role_;
 
     // rtl_tcp settings

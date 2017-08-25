@@ -359,7 +359,7 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::wait_message()
             }
             catch( const boost::exception & e )
             {
-                    DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+                    LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
             }
 
             end = std::chrono::system_clock::now();

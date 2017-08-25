@@ -384,7 +384,7 @@ buffer_dump() {
 			(long)DynamicBuffer.length - 1,
 			(long)8 - DynamicBuffer.unbits);
 	} else {
-		fprintf(stderr, " %d\n", DynamicBuffer.length);
+		fprintf(stderr, " %ld\n", DynamicBuffer.length);
 	}
 }
 

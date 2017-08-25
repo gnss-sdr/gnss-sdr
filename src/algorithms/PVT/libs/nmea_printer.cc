@@ -236,9 +236,10 @@ std::string Nmea_Printer::latitude_to_hm(double lat)
     out_string.fill('0');
     out_string.width(2);
     out_string << deg;
-    out_string.width(6);
-    out_string.precision(4);
-    out_string << mins;
+    out_string.width(2);
+    out_string << static_cast<int>(mins) << ".";
+    out_string.width(4);
+    out_string << static_cast<int>((mins - static_cast<double>(static_cast<int>(mins))) * 1e4);
 
     if (north == true)
         {
@@ -273,9 +274,10 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
     out_string.width(3);
     out_string.fill('0');
     out_string << deg;
-    out_string.width(6);
-    out_string.precision(4);
-    out_string << mins;
+    out_string.width(2);
+    out_string << static_cast<int>(mins) << ".";
+    out_string.width(4);
+    out_string << static_cast<int>((mins - static_cast<double>(static_cast<int>(mins))) * 1e4);
 
     if (east == true)
         {

@@ -78,16 +78,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the gr block
-            try
-            {
-                    std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
-                    LOG (INFO) << "Connecting to " << address_ << ":" << port_;
-                    signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
-            }
-            catch( const boost::exception & e )
-            {
-                    DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
-            }
+            MakeBlock();
 
             // 2 set sampling rate
             signal_source_->set_sample_rate(sample_rate_);
@@ -143,6 +134,22 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
 
 RtlTcpSignalSource::~RtlTcpSignalSource()
 {}
+
+
+void RtlTcpSignalSource::MakeBlock()
+{
+    try
+    {
+            std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
+            LOG (INFO) << "Connecting to " << address_ << ":" << port_;
+            signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
+    }
+    catch( const boost::exception & e )
+    {
+            LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+            throw std::runtime_error( "Failure connecting to the device" );
+    }
+}
 
 
 void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)

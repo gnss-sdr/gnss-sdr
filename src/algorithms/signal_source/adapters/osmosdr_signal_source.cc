@@ -75,19 +75,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the driver instance
-            try
-            {
-                    if (!osmosdr_args_.empty())
-                        {
-                            std::cout << "OsmoSdr arguments: " << osmosdr_args_ << std::endl;
-                            LOG(INFO) << "OsmoSdr arguments: " << osmosdr_args_;
-                        }
-                    osmosdr_source_ = osmosdr::source::make(osmosdr_args_);
-            }
-            catch( const boost::exception & e )
-            {
-                    DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
-            }
+            OsmosdrSignalSource::driver_instance();
 
             // 2 set sampling rate
             osmosdr_source_->set_sample_rate(sample_rate_);
@@ -146,6 +134,24 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
 OsmosdrSignalSource::~OsmosdrSignalSource()
 {}
 
+
+void OsmosdrSignalSource::driver_instance()
+{
+    try
+    {
+            if (!osmosdr_args_.empty())
+                {
+                    std::cout << "OsmoSdr arguments: " << osmosdr_args_ << std::endl;
+                    LOG(INFO) << "OsmoSdr arguments: " << osmosdr_args_;
+                }
+            osmosdr_source_ = osmosdr::source::make(osmosdr_args_);
+    }
+    catch( const boost::exception & e )
+    {
+            LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+            throw std::invalid_argument( "Wrong OsmoSdr arguments" );
+    }
+}
 
 
 void OsmosdrSignalSource::connect(gr::top_block_sptr top_block)

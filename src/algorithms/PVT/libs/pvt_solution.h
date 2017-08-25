@@ -77,7 +77,7 @@ private:
     double d_VDOP;
     double d_TDOP;
 
-    int d_visible_satellites_IDs[PVT_MAX_CHANNELS] = {};        // Array with the IDs of the valid satellites
+    int d_visible_satellites_IDs[PVT_MAX_CHANNELS] = {};         // Array with the IDs of the valid satellites
     double d_visible_satellites_El[PVT_MAX_CHANNELS] = {};       // Array with the LOS Elevation of the valid satellites
     double d_visible_satellites_Az[PVT_MAX_CHANNELS] = {};       // Array with the LOS Azimuth of the valid satellites
     double d_visible_satellites_Distance[PVT_MAX_CHANNELS] = {}; // Array with the LOS Distance of the valid satellites
@@ -86,18 +86,18 @@ private:
 public:
     Pvt_Solution();
 
-    double get_time_offset_s() const;      //!< Get RX time offset [s]
-    void set_time_offset_s(double offset); //!< Set RX time offset [s]
+    double get_time_offset_s() const;       //!< Get RX time offset [s]
+    void set_time_offset_s(double offset);  //!< Set RX time offset [s]
 
-    double get_latitude() const;           //!< Get RX position Latitude WGS84 [deg]
-    double get_longitude() const;          //!< Get RX position Longitude WGS84 [deg]
-    double get_height() const;             //!< Get RX position height WGS84 [m]
+    double get_latitude() const;            //!< Get RX position Latitude WGS84 [deg]
+    double get_longitude() const;           //!< Get RX position Longitude WGS84 [deg]
+    double get_height() const;              //!< Get RX position height WGS84 [m]
 
-    double get_avg_latitude() const;       //!< Get RX position averaged Latitude WGS84 [deg]
-    double get_avg_longitude() const;      //!< Get RX position averaged Longitude WGS84 [deg]
-    double get_avg_height() const;         //!< Get RX position averaged height WGS84 [m]
+    double get_avg_latitude() const;        //!< Get RX position averaged Latitude WGS84 [deg]
+    double get_avg_longitude() const;       //!< Get RX position averaged Longitude WGS84 [deg]
+    double get_avg_height() const;          //!< Get RX position averaged height WGS84 [m]
 
-    void set_rx_pos(const arma::vec & pos);
+    void set_rx_pos(const arma::vec & pos); //!< Set position: Latitude [deg], longitude [deg], height [m]
     arma::vec get_rx_pos() const;
 
     bool is_valid_position() const;

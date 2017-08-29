@@ -717,7 +717,7 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
                                     std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
                                     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
-									std::map<int, Glonass_Gnav_Ephemeris>::iterator glonass_gnav_ephemeris_iter;
+									std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
                                     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
 
                                     if (!b_rinex_header_written) //  & we have utc data in nav message!

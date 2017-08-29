@@ -103,14 +103,6 @@ public:
     Glonass_Gnav_Almanac glonass_gnav_almanac;        //!< Map storing GLONASS GNAV Almanac Model
 
     int count_valid_position;
-
-    bool d_flag_dump_enabled;
-
-    sol_t pvt_sol;
-    rtk_t rtk_;
-
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
 };
 
 #endif

@@ -81,7 +81,7 @@ TEST(GlonassGnavNavigationMessageTest, String1Decoder)
     gnav_ephemeris.d_Xn     = -11025.6669921875;
 
     // Call target test method
-    gnav_nav_message.string_decoder(const_cast<char*> (str1.c_str()));
+    gnav_nav_message.string_decoder(str1);
 
     // Perform assertions of decoded fields
     ASSERT_TRUE(gnav_ephemeris.d_P_1 - gnav_nav_message.gnav_ephemeris.d_P_1 < FLT_EPSILON );
@@ -116,7 +116,7 @@ TEST(GlonassGnavNavigationMessageTest, String2Decoder)
     // Call target test method
     gnav_nav_message.flag_ephemeris_str_1 = true;
     gnav_nav_message.gnav_ephemeris.d_P_1 = 15;
-    gnav_nav_message.string_decoder(const_cast<char*> (str2.c_str()));
+    gnav_nav_message.string_decoder(str2);
 
     // Perform assertions of decoded fields
     ASSERT_TRUE(gnav_ephemeris.d_B_n - gnav_nav_message.gnav_ephemeris.d_B_n < FLT_EPSILON );
@@ -151,7 +151,7 @@ TEST(GlonassGnavNavigationMessageTest, String3Decoder)
     gnav_ephemeris.d_Zn         = 19929.2377929688;
 
     // Call target test method
-    gnav_nav_message.string_decoder(const_cast<char*> (str3.c_str()));
+    gnav_nav_message.string_decoder(str3);
 
     // Perform assertions of decoded fields
     ASSERT_TRUE(gnav_ephemeris.d_P_3 - gnav_nav_message.gnav_ephemeris.d_P_3 < FLT_EPSILON );
@@ -188,7 +188,7 @@ TEST(GlonassGnavNavigationMessageTest, String4Decoder)
     gnav_ephemeris.d_M = 1;
 
     // Call target test method
-    gnav_nav_message.string_decoder(const_cast<char*> (str4.c_str()));
+    gnav_nav_message.string_decoder(str4);
 
     // Perform assertions of decoded fields
     ASSERT_TRUE(gnav_ephemeris.d_tau_n - gnav_nav_message.gnav_ephemeris.d_tau_n < FLT_EPSILON );
@@ -222,7 +222,7 @@ TEST(GlonassGnavNavigationMessageTest, String5Decoder)
     gnav_utc_model.d_tau_gps    = 9.313225746154785e-08;
 
     // Call target test method
-    gnav_nav_message.string_decoder(const_cast<char*> (str5.c_str()));
+    gnav_nav_message.string_decoder(str5);
 
     // Perform assertions of decoded fields
     ASSERT_TRUE(gnav_utc_model.d_N_A - gnav_nav_message.gnav_utc_model.d_N_A < FLT_EPSILON );

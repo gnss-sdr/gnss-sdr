@@ -80,8 +80,8 @@ const double GLONASS_SUN_ECCENTRICITY       = 0.016719;             //!< Eccentr
 // carrier and code frequencies
 const double GLONASS_L2_FREQ_HZ              = FREQ2_GLO;     //!< L1 [Hz]
 
-const double GLONASS_L1_FREQ_HZ              = FREQ1_GLO;     //!< L1 [Hz]
-const double GLONASS_L1_DFREQ_HZ             = DFRQ1_GLO;     //!< Freq Bias for GLONASS L1 [Hz]
+const double GLONASS_L1_CA_FREQ_HZ           = FREQ1_GLO;     //!< L1 [Hz]
+const double GLONASS_L1_CA_DFREQ_HZ          = DFRQ1_GLO;     //!< Freq Bias for GLONASS L1 [Hz]
 const double GLONASS_L1_CA_CODE_RATE_HZ      = 0.511e6;       //!< GLONASS L1 C/A code rate [chips/s]
 const double GLONASS_L1_CA_CODE_LENGTH_CHIPS = 511.0;         //!< GLONASS L1 C/A code length [chips]
 const double GLONASS_L1_CA_CODE_PERIOD       = 0.001;         //!< GLONASS L1 C/A code period [seconds]
@@ -116,10 +116,6 @@ const std::map<unsigned int, int> GLONASS_PRN =
                                                 {23, 3,},  //Plane 3
                                                 {24, 2}};  //Plane 3
 
-
-const int GLONASS_CA_TELEMETRY_RATE_BITS_SECOND = 50;   //!< NAV message bit rate [bits/s]
-
-
 const double GLONASS_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
@@ -127,19 +123,17 @@ const int GLONASS_L1_CA_HISTORY_DEEP = 100;
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
 #define GLONASS_GNAV_PREAMBLE {1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0}
+const double GLONASS_GNAV_PREAMBLE_DURATION_S = 0.3;
 const int GLONASS_GNAV_PREAMBLE_LENGTH_BITS = 30;
 const int GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS = 300;
-const double GLONASS_GNAV_PREAMBLE_DURATION_S = 0.3;
+const int GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS = 1700;
 const int GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND = 50;   //!< NAV message bit rate [bits/s]
 const int GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT = 10;
 const int GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT = 10;
 const int GLONASS_GNAV_TELEMETRY_RATE_SYMBOLS_SECOND = GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND*GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;   //!< NAV message bit rate [symbols/s]
-const int GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS = 1700;
-const int GLONASS_GNAV_FRAME_BITS = 1725;       //!< Number of chips per frame in the GNAV message  15 strings*(85 data bits + 30 time mark bits)[bits]
-const int GLONASS_GNAV_FRAME_SECONDS = 30;      //!< Subframe duration [seconds]
-const int GLONASS_GNAV_FRAME_MS = 30000;        //!< Subframe duration [seconds]
-const int GLONASS_GNAV_STRING_BITS = 85;       //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
-const int GLONASS_GNAV_HAMMING_CODE_BITS = 8; //!< Number of bits in hamming code sequence of GNAV message
+const int GLONASS_GNAV_STRING_SYMBOLS = 2000;       //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
+const int GLONASS_GNAV_STRING_BITS = 85;            //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
+const int GLONASS_GNAV_HAMMING_CODE_BITS = 8;       //!< Number of bits in hamming code sequence of GNAV message
 
 const std::vector<int> GLONASS_GNAV_CRC_I_INDEX {9, 10, 12, 13, 15, 17, 19, 20, 22, 24, 26, 28, 30, 32, 34, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84};
 const std::vector<int> GLONASS_GNAV_CRC_J_INDEX {9, 11, 12, 14, 15, 18, 19, 21, 22, 25, 26, 29, 30, 33, 34, 36, 37, 40, 41, 44, 45, 48, 49, 52, 53, 56, 57, 60, 61, 64, 65, 67, 68, 71, 72, 75, 76, 79, 80, 83, 84};

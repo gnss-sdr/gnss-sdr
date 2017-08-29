@@ -63,17 +63,17 @@ public:
     bool flag_CRC_test;
     unsigned int frame_ID;
 
-    Glonass_Gnav_Ephemeris gnav_ephemeris;      //!< Ephemeris information decoded
-    Glonass_Gnav_Utc_Model gnav_utc_model;      //!< UTC model information
-    Glonass_Gnav_Almanac gnav_almanac[24];      //!< Almanac information for all 24 satellites
+    Glonass_Gnav_Ephemeris gnav_ephemeris;    //!< Ephemeris information decoded
+    Glonass_Gnav_Utc_Model gnav_utc_model;    //!< UTC model information
+    Glonass_Gnav_Almanac gnav_almanac[24];    //!< Almanac information for all 24 satellites
 
     //!< Satellite Identification
-    int i_channel_ID;               //!< Channel ID assigned by the receiver
-    unsigned int i_satellite_freq_channel;   //!< SV Frequency Slot Number
-    unsigned int i_satellite_slot_number;    //!< SV Orbit Slot Number
+    int i_channel_ID;                         //!< Channel ID assigned by the receiver
+    unsigned int i_satellite_freq_channel;    //!< SV Frequency Slot Number
+    unsigned int i_satellite_slot_number;     //!< SV Orbit Slot Number
 
     //!< Ephmeris Flags
-    bool flag_all_ephemeris;  //!< Flag indicating that all strings containing ephemeris have been received
+    bool flag_all_ephemeris;      //!< Flag indicating that all strings containing ephemeris have been received
     bool flag_ephemeris_str_1;    //!< Flag indicating that ephemeris 1/4 (string 1) have been received
     bool flag_ephemeris_str_2;    //!< Flag indicating that ephemeris 2/4 (string 2) have been received
     bool flag_ephemeris_str_3;    //!< Flag indicating that ephemeris 3/4 (string 3) have been received
@@ -96,12 +96,10 @@ public:
     bool flag_utc_model_valid;      //!< If set, it indicates that the UTC model parameters are filled
     bool flag_utc_model_str_5;      //!< Clock info send in string 5 of navigation data
     bool flag_utc_model_str_15;     //!< Clock info send in string 15 of frame 5 of navigation data
-    bool flag_TOW_5;
-    bool flag_TOW_6;
-    bool flag_TOW_set;              //!< it is true when page 5 or page 6 arrives
 
     //broadcast orbit 1
     //TODO Need to send the information regarding the frame number
+    bool flag_TOW_set;
     double d_TOW;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
     double d_TOW_F1;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
     double d_TOW_F2;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
@@ -136,7 +134,7 @@ public:
     /*
      * \brief Returns a Galileo_Almanac object filled with the latest navigation data received
      */
-    Glonass_Gnav_Almanac get_almanac(int satellite_slot_number);
+    Glonass_Gnav_Almanac get_almanac(unsigned int satellite_slot_number);
 
     /*
      * \brief Returns true if new Ephemeris has arrived. The flag is set to false when the function is executed
@@ -156,7 +154,7 @@ public:
     /*!
      * \brief Decodes the GLONASS GNAV string
      */
-    int string_decoder(char *string);
+    int string_decoder(std::string frame_string);
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and returns it in [s]

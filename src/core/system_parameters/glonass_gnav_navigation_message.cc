@@ -37,6 +37,7 @@
 #include <iostream>
 #include <sstream>
 #include <gnss_satellite.h>
+#include <glog/logging.h>
 
 
 void Glonass_Gnav_Navigation_Message::reset()
@@ -70,12 +71,9 @@ void Glonass_Gnav_Navigation_Message::reset()
     flag_utc_model_valid  = false;      //!< If set, it indicates that the UTC model parameters are filled
     flag_utc_model_str_5 = false;      //!< Clock info send in string 5 of navigation data
     flag_utc_model_str_15 = false;     //!< Clock info send in string 15 of frame 5 of navigation data
-    flag_TOW_5 = false;
-    flag_TOW_6 = false;
-    flag_TOW_set = false;              //!< it is true when page 5 or page 6 arrives
 
     //broadcast orbit 1
-    //TODO Need to send the information regarding the frame number
+    flag_TOW_set = false;
     d_TOW = false;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
     d_TOW_F1 = false;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
     d_TOW_F2 = false;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
@@ -313,14 +311,14 @@ unsigned int Glonass_Gnav_Navigation_Message::get_frame_number(unsigned int sate
 }
 
 
-int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
+int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 {
     int string_ID = 0;
     int J = 0;
     frame_ID = 0;
 
     // UNPACK BYTES TO BITS AND REMOVE THE CRC REDUNDANCE
-    std::bitset<GLONASS_GNAV_STRING_BITS> string_bits = std::bitset<GLONASS_GNAV_STRING_BITS>(std::string(frame_string));
+    std::bitset<GLONASS_GNAV_STRING_BITS> string_bits = std::bitset<GLONASS_GNAV_STRING_BITS>((frame_string));
     string_ID = static_cast<int>(read_navigation_unsigned(string_bits, STRING_ID));
 
     CRC_test(string_bits);
@@ -401,6 +399,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
             gnav_utc_model.d_tau_gps = static_cast<double>(read_navigation_signed(string_bits, TAU_GPS)) * TWO_N30;
             gnav_ephemeris.d_l5th_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
 
+            flag_utc_model_str_5 = true;
             // Compute Year and DoY based on Algorithm A3.11 of GLONASS ICD
             if(flag_ephemeris_str_4 == true)
                 {
@@ -487,7 +486,6 @@ int Glonass_Gnav_Navigation_Message::string_decoder(char * frame_string)
             flag_almanac_str_8 = true;
 
             break;
-
         case 9:
             // --- It is string 9 ----------------------------------------------
             if (flag_almanac_str_8 == true)
@@ -666,7 +664,7 @@ Glonass_Gnav_Utc_Model Glonass_Gnav_Navigation_Message::get_utc_model()
 }
 
 
-Glonass_Gnav_Almanac Glonass_Gnav_Navigation_Message::get_almanac( int satellite_slot_number)
+Glonass_Gnav_Almanac Glonass_Gnav_Navigation_Message::get_almanac(unsigned int satellite_slot_number)
 {
     return gnav_almanac[satellite_slot_number - 1];
 }
@@ -674,21 +672,17 @@ Glonass_Gnav_Almanac Glonass_Gnav_Navigation_Message::get_almanac( int satellite
 
 bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a new ephemeris stored in the galileo navigation class
 {
-    bool flag_data_valid = false;
-    bool b_valid_ephemeris_set_flag = false;
-
     if ((flag_ephemeris_str_1 == true) and (flag_ephemeris_str_2 == true) and (flag_ephemeris_str_3 == true) and (flag_ephemeris_str_4 == true))
         {
-            //if all ephemeris pages have the same IOD, then they belong to the same block
-            if ((gnav_ephemeris.d_t_b == 0) )
+            if ((gnav_ephemeris.d_P_4 == 1) )
                 {
                     flag_ephemeris_str_1 = false;// clear the flag
                     flag_ephemeris_str_2 = false;// clear the flag
                     flag_ephemeris_str_3 = false;// clear the flag
                     flag_ephemeris_str_4 = false;// clear the flag
                     flag_all_ephemeris = true;
-                    // std::cout << "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
-                    // std::cout << "Batch number: "<< IOD_ephemeris << std::endl;
+                    DLOG(INFO) << "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
+
                     return true;
                 }
             else
@@ -703,10 +697,9 @@ bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a 
 
 bool Glonass_Gnav_Navigation_Message::have_new_utc_model() // Check if we have a new utc data set stored in the galileo navigation class
 {
-    bool flag_utc_model = true;
-    if (flag_utc_model == true)
+    if (flag_utc_model_valid == true)
         {
-            flag_utc_model = false; // clear the flag
+            flag_utc_model_valid = false; // clear the flag
             return true;
         }
     else

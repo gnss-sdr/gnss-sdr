@@ -115,7 +115,7 @@ void signal_generator_c::init()
                             / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS)));
 
                     num_of_codes_per_vector_.push_back(galileo_signal ? 4 * static_cast<int>(Galileo_E1_C_SECONDARY_CODE_LENGTH) : 1);
-                    data_bit_duration_ms_.push_back(1e3 / GLONASS_CA_TELEMETRY_RATE_BITS_SECOND);
+                    data_bit_duration_ms_.push_back(1e3 / GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND);
                 }
             else if (system_[sat] == "E")
                 {

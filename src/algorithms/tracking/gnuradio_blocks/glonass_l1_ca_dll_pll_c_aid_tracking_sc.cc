@@ -197,7 +197,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / static_cast<double>(d_fs_in);
     // Doppler effect
     // Fd=(C/(C+Vr))*F
-    d_glonass_freq_ch = GLONASS_L1_FREQ_HZ + (GLONASS_L1_FREQ_HZ *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    d_glonass_freq_ch = GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
     double radial_velocity = (d_glonass_freq_ch + d_acq_carrier_doppler_hz) / d_glonass_freq_ch;
     // new chip and prn sequence periods based on acq Doppler
     double T_chip_mod_seconds;

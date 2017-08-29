@@ -1,0 +1,46 @@
+#-------------------------------------------------
+#
+# Project created by QtCreator 2017-06-25T16:11:17
+#
+#-------------------------------------------------
+
+QT       += core gui
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+TARGET = gnss-sdr-gui
+TEMPLATE = app
+
+# The following define makes your compiler emit warnings if you use
+# any feature of Qt which as been marked as deprecated (the exact warnings
+# depend on your compiler). Please consult the documentation of the
+# deprecated API in order to know how to port your code away from it.
+DEFINES += QT_DEPRECATED_WARNINGS
+
+# You can also make your code fail to compile if you use deprecated APIs.
+# In order to do so, uncomment the following line.
+# You can also select to disable deprecated APIs only up to a certain version of Qt.
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+
+SOURCES +=\
+    global_options.cc \
+    channels.cc \
+    gnssgui.cc \
+    main.cc \
+    observables.cc \
+    pvt.cc \
+    signal_conditioner.cc \
+    signal_source.cc \
+    supl.cc
+
+HEADERS  += gnssgui.h \
+    signal_source.h \
+    signal_conditioner.h \
+    channels.h \
+    observables.h \
+    pvt.h \
+    supl.h \
+    global_options.h
+
+GUI_FILES_LOCATION_STR = '\\"$${GUI_FILES_LOCATION}\\"'
+DEFINES += GUI_FILES_DIR=\"$${GUI_FILES_LOCATION_STR}\"

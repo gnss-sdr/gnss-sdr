@@ -316,6 +316,16 @@ void Pvt_Solution::set_time_offset_s(double offset)
     d_rx_dt_s = offset;
 }
 
+double Pvt_Solution::get_clock_drift_ppm() const
+{
+    return d_rx_clock_drift_ppm;
+}
+
+
+void Pvt_Solution::set_clock_drift_ppm(double clock_drift_ppm)
+{
+    d_rx_clock_drift_ppm = clock_drift_ppm;
+}
 
 double Pvt_Solution::get_latitude() const
 {
@@ -404,9 +414,20 @@ void Pvt_Solution::set_rx_pos(const arma::vec &pos)
 }
 
 
-arma::vec Pvt_Solution::get_rx_pos() const
+const arma::vec& Pvt_Solution::get_rx_pos() const
 {
     return d_rx_pos;
+}
+
+void Pvt_Solution::set_rx_vel(arma::vec vel)
+{
+    d_rx_vel = vel;
+}
+
+
+const arma::vec& Pvt_Solution::get_rx_vel() const
+{
+    return d_rx_vel;
 }
 
 

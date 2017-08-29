@@ -53,6 +53,8 @@ public:
     double get_time_offset_s() const;            //!< Get RX time offset [s]
     void set_time_offset_s(double offset);       //!< Set RX time offset [s]
 
+    double get_clock_drift_ppm() const;    //!< Get the Rx clock drift [ppm]
+    void set_clock_drift_ppm(double clock_drift_ppm ); //!< Set the Rx clock drift [ppm]
     double get_latitude() const;   //!< Get RX position Latitude WGS84 [deg]
     double get_longitude() const;  //!< Get RX position Longitude WGS84 [deg]
     double get_height() const;     //!< Get RX position height WGS84 [m]
@@ -133,6 +135,7 @@ protected:
     bool d_pre_2009_file;  // Flag to correct week rollover in post processing mode for signals older than 2009
 private:
     double d_rx_dt_s;  // RX time offset [s]
+    double d_rx_clock_drift_ppm; // RX clock drift [ppm]
 
     double d_latitude_d;             // RX position Latitude WGS84 [deg]
     double d_longitude_d;            // RX position Longitude WGS84 [deg]
@@ -154,6 +157,7 @@ private:
     int d_averaging_depth;  // Length of averaging window
 
     arma::vec d_rx_pos;
+    arma::vec d_rx_vel;
     boost::posix_time::ptime d_position_UTC_time;
     int d_valid_observations;
 };

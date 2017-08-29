@@ -1,4 +1,6 @@
+if(NOT (CMAKE_VERSION VERSION_LESS "2.8.10"))
 cmake_policy(SET CMP0043 NEW)
+endif(NOT (CMAKE_VERSION VERSION_LESS "2.8.10"))
 
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 

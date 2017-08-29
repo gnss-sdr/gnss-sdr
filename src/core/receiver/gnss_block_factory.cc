@@ -529,7 +529,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
     stream << channel;
     std::string id = stream.str();
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
-              << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
+              << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder Implementation: " << tlm;
 
     std::string aux = configuration->property("Acquisition_1G" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
     std::string appendix1;
@@ -1354,12 +1354,6 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                     out_streams));
             block = std::move(block_);
         }
-    else if (implementation.compare("GLONASS_L1_CA_Telemetry_Decoder") == 0)
-        {
-            std::unique_ptr<TelemetryDecoderInterface> block_(new GlonassL1CaTelemetryDecoder(configuration.get(), role, in_streams,
-                    out_streams));
-            block = std::move(block_);
-        }
     else
         {
             // Log fatal. This causes execution to stop.
@@ -1493,6 +1487,12 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
     else if (implementation.compare("GPS_L2C_Telemetry_Decoder") == 0)
         {
             std::unique_ptr<TelemetryDecoderInterface> block_(new GpsL2CTelemetryDecoder(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GLONASS_L1_CA_Telemetry_Decoder") == 0)
+        {
+            std::unique_ptr<TelemetryDecoderInterface> block_(new GlonassL1CaTelemetryDecoder(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

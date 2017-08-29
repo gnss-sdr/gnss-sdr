@@ -88,6 +88,38 @@ const double GLONASS_L1_CA_CODE_PERIOD       = 0.001;         //!< GLONASS L1 C/
 const double GLONASS_L1_CA_CHIP_PERIOD       = 1.9569e-06;    //!< GLONASS L1 C/A chip period [seconds]
 const double GLONASS_L1_CA_SYMBOL_RATE_BPS   = 1000;
 
+// GLONASS SV's orbital slots PRN = (orbital_slot - 1)
+const std::map<unsigned int, int> GLONASS_PRN =
+                                               {{ 0, 8,},  //For test
+                                                { 1, 1,},  //Plane 1
+                                                { 2,-4,},  //Plane 1
+                                                { 3, 5,},  //Plane 1
+                                                { 4, 6,},  //Plane 1
+                                                { 5, 1,},  //Plane 1
+                                                { 6,-4,},  //Plane 1
+                                                { 7, 5,},  //Plane 1
+                                                { 8, 6,},  //Plane 1
+                                                { 9,-2,},  //Plane 2
+                                                {10,-7,},  //Plane 2
+                                                {11, 0,},  //Plane 2
+                                                {12,-1,},  //Plane 2
+                                                {13,-2,},  //Plane 2
+                                                {14,-7,},  //Plane 2
+                                                {15, 0,},  //Plane 2
+                                                {16,-1,},  //Plane 2
+                                                {17, 4,},  //Plane 3
+                                                {18,-3,},  //Plane 3
+                                                {19, 3,},  //Plane 3
+                                                {20, 2,},  //Plane 3
+                                                {21, 4,},  //Plane 3
+                                                {22,-3,},  //Plane 3
+                                                {23, 3,},  //Plane 3
+                                                {24, 2}};  //Plane 3
+
+
+const int GLONASS_CA_TELEMETRY_RATE_BITS_SECOND = 50;   //!< NAV message bit rate [bits/s]
+
+
 const double GLONASS_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION

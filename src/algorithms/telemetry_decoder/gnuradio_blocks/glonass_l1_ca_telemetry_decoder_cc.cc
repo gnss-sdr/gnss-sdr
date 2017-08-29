@@ -71,7 +71,7 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     LOG(INFO) << "Initializing GLONASS L1 CA TELEMETRY PROCESSING";
     // Define the number of sampes per symbol. Notice that GLONASS has to rates,
     //one for the navigation data and the other for the preamble information
-    d_samples_per_symbol = ( GLONASS_L1_CODE_CHIP_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS ) / GLONASS_L1_CA_SYMBOL_RATE_BPS;
+    d_samples_per_symbol = ( GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS ) / GLONASS_L1_CA_SYMBOL_RATE_BPS;
 
     // Set the preamble information
     unsigned short int preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS] = GLONASS_GNAV_PREAMBLE;
@@ -108,7 +108,6 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     d_TOW_at_current_symbol = 0;
     delta_t = 0;
     d_CRC_error_counter = 0;
-    flag_even_word_arrived = 0;
     d_flag_preamble = false;
     d_channel = 0;
     flag_TOW_set = false;
@@ -149,7 +148,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
         }
 
     // 2. Call the GLONASS GNAV string decoder
-    d_nav.decode_string(page_String);
+    d_nav.string_decoder(frame_string);
 
     // 3. Check operation executed correctly
     if(d_nav.flag_CRC_test == true)

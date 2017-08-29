@@ -12,7 +12,7 @@
 #include "glonass_l1_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
-#include "Glonass_L1_CA.h"
+#include "GLONASS_L1_CA.h"
 #include "control_message_factory.h"
 
 

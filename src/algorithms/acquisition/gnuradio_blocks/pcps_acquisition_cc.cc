@@ -42,7 +42,7 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "control_message_factory.h"
 #include "GPS_L1_CA.h" //GPS_TWO_PI
-#include "Glonass_L1_CA.h" //GLONASS_TWO_PI
+#include "GLONASS_L1_CA.h" //GLONASS_TWO_PI
 
 
 using google::LogMessage;
@@ -178,12 +178,12 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
             int offset = d_fft_size/2;
             std::fill_n( d_fft_if->get_inbuf(), offset, gr_complex( 0.0, 0.0 ) );
             memcpy(d_fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * offset);
-        } 
-    else 
+        }
+    else
         {
             memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
         }
-    
+
     d_fft_if->execute(); // We need the FFT of local code
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }

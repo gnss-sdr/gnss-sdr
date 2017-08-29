@@ -38,7 +38,7 @@
 
 #include "glonass_l1_ca_dll_pll_tracking.h"
 #include <glog/logging.h>
-#include "Glonass_L1_CA.h"
+#include "GLONASS_L1_CA.h"
 #include "configuration_interface.h"
 
 

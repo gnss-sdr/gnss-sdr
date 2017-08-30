@@ -97,8 +97,6 @@ public:
     bool flag_utc_model_str_5;      //!< Clock info send in string 5 of navigation data
     bool flag_utc_model_str_15;     //!< Clock info send in string 15 of frame 5 of navigation data
 
-    //broadcast orbit 1
-    //TODO Need to send the information regarding the frame number
     bool flag_TOW_set;
     double d_TOW;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
     double d_TOW_F1;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
@@ -156,6 +154,11 @@ public:
      */
     int string_decoder(std::string frame_string);
 
+    /*
+    * \brief Gets the time of week in GPS Time
+    */
+    double get_TOW();
+    
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and returns it in [s]
      */

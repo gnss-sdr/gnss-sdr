@@ -3957,10 +3957,10 @@ int Rtcm::set_DF041(const Gnss_Synchro & gnss_synchro)
     return 0;
 }
 
-//TODO Need to fix the lambda value since it needs to include frequency channel
+
 int Rtcm::set_DF042(const Gnss_Synchro & gnss_synchro)
 {
-    const double lambda = GLONASS_C_m_s / GLONASS_L1_CA_FREQ_HZ;
+    const double lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN)));
     double ambiguity = std::floor( gnss_synchro.Pseudorange_m / 599584.92 );
     double glonass_L1_pseudorange = std::round(( gnss_synchro.Pseudorange_m - ambiguity * 599584.92) / 0.02 );
     double glonass_L1_pseudorange_c = glonass_L1_pseudorange * 0.02 + ambiguity * 299792.458;
@@ -4349,8 +4349,7 @@ int Rtcm::set_DF106(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 
 int Rtcm::set_DF107(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    // TODO Need to fix this here, bit position has a given order
-	unsigned int hrs = 0;
+  unsigned int hrs = 0;
 	unsigned int min = 0;
 	unsigned int sec = 0;
 	unsigned int tk = 0;
@@ -5271,8 +5270,7 @@ int Rtcm::set_DF401(const Gnss_Synchro & gnss_synchro)
         }
       if ((sig.compare("1C") == 0) && (sys.compare("R") == 0 ))
           {
-              // TODO Need to add slot number and freq number to gnss_syncro
-              lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ);
+              lambda = GLONASS_C_m_s / ((GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN))));
           }
       if ((sig.compare("2C") == 0) && (sys.compare("R") == 0 ))
           {
@@ -5381,8 +5379,7 @@ int Rtcm::set_DF404(const Gnss_Synchro & gnss_synchro)
         }
     if ((sig_.compare("1C") == 0) && (sys_.compare("R") == 0 ))
         {
-            //TODO Need to add slot number and freq number to gnss syncro
-            lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ);
+            lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN)));
         }
     if ((sig_.compare("2C") == 0) && (sys_.compare("R") == 0 ))
         {
@@ -5470,8 +5467,7 @@ int Rtcm::set_DF406(const Gnss_Synchro & gnss_synchro)
         }
     if ((sig_.compare("1C") == 0) && (sys_.compare("R") == 0 ))
         {
-            //TODO Need to add slot number and freq number to gnss syncro
-            lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ);
+            lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN)));
         }
     if ((sig_.compare("2C") == 0) && (sys_.compare("R") == 0 ))
         {

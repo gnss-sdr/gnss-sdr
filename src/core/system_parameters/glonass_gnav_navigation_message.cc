@@ -74,12 +74,12 @@ void Glonass_Gnav_Navigation_Message::reset()
 
     //broadcast orbit 1
     flag_TOW_set = false;
-    d_TOW = false;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-    d_TOW_F1 = false;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
-    d_TOW_F2 = false;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
-    d_TOW_F3 = false;        //!< Time of GPS Week from HOW word of Subframe 3 [s]
-    d_TOW_F4 = false;        //!< Time of GPS Week from HOW word of Subframe 4 [s]
-    d_TOW_F5 = false;        //!< Time of GPS Week from HOW word of Subframe 5 [s]
+    d_TOW = 0.0;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
+    d_TOW_F1 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
+    d_TOW_F2 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
+    d_TOW_F3 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 3 [s]
+    d_TOW_F4 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 4 [s]
+    d_TOW_F5 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 5 [s]
 
     // Clock terms
     d_satClkCorr = 0.0;
@@ -310,6 +310,23 @@ unsigned int Glonass_Gnav_Navigation_Message::get_frame_number(unsigned int sate
     return frame_ID;
 }
 
+double Glonass_Gnav_Navigation_Message::get_TOW()
+{
+    double TOW = 0.0;
+    double utcsu2utc = 3*3600;
+    double glot2utcsu = 3*3600;
+    int i = 0;
+
+    TOW = gnav_ephemeris.d_t_k + glot2utcsu + utcsu2utc + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
+
+    for (i = 0; leaps[i][0]>0; i++)
+        {
+            if (leaps[i][0] == gnav_ephemeris.d_yr)
+            {
+                TOW -= leaps[i][6];
+        }
+    return TOW;
+}
 
 int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 {
@@ -337,6 +354,8 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             gnav_ephemeris.d_Xn = static_cast<double>(read_navigation_signed(string_bits, X_N)) * TWO_N11;
 
             flag_ephemeris_str_1 = true;
+            d_TOW = get_TOW();
+            flag_TOW_set = true;
 
             break;
 
@@ -345,7 +364,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             if (flag_ephemeris_str_1 == true)
                 {
                     gnav_ephemeris.d_B_n = static_cast<double>(read_navigation_unsigned(string_bits, B_N));
-                    gnav_ephemeris.d_P_2 = static_cast<double>(read_navigation_unsigned(string_bits, P2));
+                    gnav_ephemeris.d_P_2 = static_cast<bool>(read_navigation_bool(string_bits, P2));
                     gnav_ephemeris.d_t_b = static_cast<double>(read_navigation_unsigned(string_bits, T_B))*gnav_ephemeris.d_P_1*60;
                     gnav_ephemeris.d_VYn = static_cast<double>(read_navigation_signed(string_bits, Y_N_DOT))* TWO_N20;
                     gnav_ephemeris.d_AYn = static_cast<double>(read_navigation_signed(string_bits, Y_N_DOT_DOT)) * TWO_N30;
@@ -359,10 +378,10 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 
         case 3:
             // --- It is string 3 ----------------------------------------------
-            gnav_ephemeris.d_P_3 = static_cast<double>(read_navigation_unsigned(string_bits, P3));
+            gnav_ephemeris.d_P_3 = static_cast<bool>(read_navigation_bool(string_bits, P3));
             gnav_ephemeris.d_gamma_n = static_cast<double>(read_navigation_signed(string_bits, GAMMA_N)) * TWO_N40;
             gnav_ephemeris.d_P = static_cast<double>(read_navigation_unsigned(string_bits, P));
-            gnav_ephemeris.d_l3rd_n = static_cast<double>(read_navigation_unsigned(string_bits, EPH_L_N));
+            gnav_ephemeris.d_l3rd_n = static_cast<bool>(read_navigation_bool(string_bits, EPH_L_N));
             gnav_ephemeris.d_VZn = static_cast<double>(read_navigation_signed(string_bits, Z_N_DOT)) * TWO_N20;
             gnav_ephemeris.d_AZn = static_cast<double>(read_navigation_signed(string_bits, Z_N_DOT_DOT)) * TWO_N30;
             gnav_ephemeris.d_Zn = static_cast<double>(read_navigation_signed(string_bits, Z_N)) * TWO_N11;
@@ -376,7 +395,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             gnav_ephemeris.d_tau_n = static_cast<double>(read_navigation_signed(string_bits, TAU_N)) * TWO_N30;
             gnav_ephemeris.d_Delta_tau_n = static_cast<double>(read_navigation_signed(string_bits, DELTA_TAU_N)) * TWO_N30;
             gnav_ephemeris.d_E_n = static_cast<double>(read_navigation_unsigned(string_bits, E_N));
-            gnav_ephemeris.d_P_4 = static_cast<double>(read_navigation_unsigned(string_bits, P4));
+            gnav_ephemeris.d_P_4 = static_cast<bool>(read_navigation_bool(string_bits, P4));
             gnav_ephemeris.d_F_T = static_cast<double>(read_navigation_unsigned(string_bits, F_T));
             gnav_ephemeris.d_N_T = static_cast<double>(read_navigation_unsigned(string_bits, N_T));
             gnav_ephemeris.d_n = static_cast<double>(read_navigation_unsigned(string_bits, N));
@@ -385,7 +404,6 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             // Fill in ephemeris deliverables in the code
             gnav_ephemeris.i_satellite_slot_number = gnav_ephemeris.d_n;
             gnav_ephemeris.i_satellite_PRN = gnav_ephemeris.d_n;
-            gnav_ephemeris.d_D4Y = gnav_ephemeris.d_N_T;
 
             flag_ephemeris_str_4 = true;
 
@@ -397,7 +415,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             gnav_utc_model.d_tau_c = static_cast<double>(read_navigation_signed(string_bits, TAU_C)) * TWO_N31;
             gnav_utc_model.d_N_4 = static_cast<double>(read_navigation_unsigned(string_bits, N_4));
             gnav_utc_model.d_tau_gps = static_cast<double>(read_navigation_signed(string_bits, TAU_GPS)) * TWO_N30;
-            gnav_ephemeris.d_l5th_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+            gnav_ephemeris.d_l5th_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
             flag_utc_model_str_5 = true;
             // Compute Year and DoY based on Algorithm A3.11 of GLONASS ICD
@@ -422,6 +440,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                         }
                     // 2). Current year in common form is calculated by the following formula:
                     gnav_ephemeris.d_yr = 1996 + 4.0*(gnav_utc_model.d_N_4  - 1.0) + (J - 1.0);
+                    gnav_ephemeris.d_tau_c = gnav_utc_model.d_tau_c;
                 }
             break;
 
@@ -430,7 +449,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
             frame_ID = get_frame_number(i_satellite_slot_number);
 
-            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<double>(read_navigation_unsigned(string_bits, C_N));
+            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
             gnav_almanac[i_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
             gnav_almanac[i_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
@@ -451,7 +470,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
                 gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
                 // Set satellite information for redundancy purposes
                 if(gnav_almanac[i_satellite_slot_number - 1].d_H_n_A > 24)
@@ -475,7 +494,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
             frame_ID = get_frame_number(i_satellite_slot_number);
 
-            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<double>(read_navigation_unsigned(string_bits, C_N));
+            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
             gnav_almanac[i_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
             gnav_almanac[i_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
@@ -496,7 +515,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
                 gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A)) -32.0;
-                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
                 // Set satellite information for redundancy purposes
                 if(gnav_almanac[i_satellite_slot_number - 1].d_H_n_A > 24)
@@ -514,7 +533,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
             frame_ID = get_frame_number(i_satellite_slot_number);
 
-            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<double>(read_navigation_unsigned(string_bits, C_N));
+            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
             gnav_almanac[i_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
             gnav_almanac[i_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
@@ -535,7 +554,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
                 gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A)) - 32.0;
-                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
                 // Set satellite information for redundancy purposes
                 if(gnav_almanac[i_satellite_slot_number - 1].d_H_n_A > 24)
@@ -553,7 +572,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
             frame_ID = get_frame_number(i_satellite_slot_number);
 
-            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<double>(read_navigation_unsigned(string_bits, C_N));
+            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
             gnav_almanac[i_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
             gnav_almanac[i_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
@@ -574,7 +593,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
                 gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A)) - 32.0;
-                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
                 // Set satellite information for redundancy purposes
                 if(gnav_almanac[i_satellite_slot_number - 1].d_H_n_A > 24)
@@ -599,7 +618,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
                 frame_ID = get_frame_number(i_satellite_slot_number);
 
-                gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<double>(read_navigation_unsigned(string_bits, C_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
                 gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
                 gnav_almanac[i_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
@@ -622,7 +641,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
                 gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
                 gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A)) - 32.0;
-                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<double>(read_navigation_unsigned(string_bits, ALM_L_N));
+                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
                 // Set satellite information for redundancy purposes
                 if(gnav_almanac[i_satellite_slot_number - 1].d_H_n_A > 24)

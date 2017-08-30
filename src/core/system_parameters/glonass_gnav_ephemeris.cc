@@ -62,18 +62,16 @@ Glonass_Gnav_Ephemeris::Glonass_Gnav_Ephemeris()
 	d_Delta_tau_n = 0.0;   //!< Time difference between navigation RF signal transmitted in L2 sub- band and aviation RF signal transmitted in L1 sub-band by nth satellite. [dimensionless]
 	d_E_n = 0.0;           //!< Characterises "age" of a current information [days]
 	d_P_1 = 0.0;           //!< Flag of the immediate data updating [minutes]
-	d_P_2 = 0.0;           //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
-	d_P_3 = 0.0;           //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
-	d_P_4 = 0.0;           //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
-	d_l3rd_n = 0.0;        //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
-	d_l5th_n = 0.0;        //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+	d_P_2 = false;           //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
+	d_P_3 = false;           //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
+	d_P_4 = false;           //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
+	d_l3rd_n = false;        //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+	d_l5th_n = false;        //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
 
 	// Satellite Identification Information
 	i_satellite_freq_channel = 0;  			//!< SV Frequency Channel Number
 	i_satellite_PRN = 0;           			//!< SV PRN Number, equivalent to slot number for compatibility with GPS
 	i_satellite_slot_number = 0;			//!< SV Slot Number
-	d_TOD = 0.0;                           //!< Time of Day of the ephemeris set based in start of frame [s]
-	d_D4Y = 0.0;                           //!< Day of Year after latest leap year (4 year interval)
 	d_yr = 1972;                           //!< Current year, defaults to 1972 (UTC Epoch with leap seconds)
 	d_satClkDrift = 0.0;                   //!< GLONASS clock error
 	d_dtr = 0.0;                           //!< relativistic clock correction term
@@ -86,7 +84,7 @@ Glonass_Gnav_Ephemeris::Glonass_Gnav_Ephemeris()
 
 boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(const double offset_time) const
 {
-    boost::posix_time::time_duration t(0, 0, offset_time);
+    boost::posix_time::time_duration t(0, 0, offset_time + d_tau_c);
     boost::gregorian::date d1(d_yr, 1, 1);
     boost::gregorian::days d2(d_N_T);
     boost::posix_time::ptime glonass_time(d1+d2, t);

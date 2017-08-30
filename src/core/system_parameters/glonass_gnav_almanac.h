@@ -59,8 +59,8 @@ public:
     double d_M_n_A;             //!< Type of satellite n_A [dimensionless]
     double d_KP;                //!< Notification on forthcoming leap second correction of UTC [dimensionless]
     double d_tau_n_A;           //!< Coarse value of d_n_A satellite time correction to GLONASS time at instant  t_lambdan_A[s]
-    double d_C_n;               //!< Generalized “unhealthy flag” of n_A satellite at instant of almanac upload [dimensionless]
-    double d_l_n;               //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+    bool d_C_n;	                //!< Generalized “unhealthy flag” of n_A satellite at instant of almanac upload [dimensionless]
+    bool d_l_n;		              //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
 
     // Satellite Identification Information
     int i_satellite_freq_channel;           //!< SV Frequency Channel Number

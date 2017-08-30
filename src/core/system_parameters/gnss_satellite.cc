@@ -157,7 +157,7 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
                     PRN = PRN_;
                 }
         }
-    else if (system.compare("GLONASS") == 0)
+    else if (system.compare("Glonass") == 0)
            {
                if (PRN_ < 1 or PRN_ > 24)
                    {

@@ -225,7 +225,8 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
 
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
-    d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
+    d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    // d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
 
     d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 

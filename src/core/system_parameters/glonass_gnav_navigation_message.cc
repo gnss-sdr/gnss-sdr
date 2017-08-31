@@ -81,6 +81,10 @@ void Glonass_Gnav_Navigation_Message::reset()
     d_TOW_F4 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 4 [s]
     d_TOW_F5 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 5 [s]
 
+    flag_CRC_test = false;
+    d_frame_ID = 0;
+    d_string_ID = 0;
+
     // Clock terms
     d_satClkCorr = 0.0;
     d_dtr = 0.0;
@@ -310,6 +314,7 @@ unsigned int Glonass_Gnav_Navigation_Message::get_frame_number(unsigned int sate
     return frame_ID;
 }
 
+
 double Glonass_Gnav_Navigation_Message::get_TOW()
 {
     double TOW = 0.0;
@@ -329,20 +334,21 @@ double Glonass_Gnav_Navigation_Message::get_TOW()
     return TOW;
 }
 
+
 int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 {
-    int string_ID = 0;
     int J = 0;
-    frame_ID = 0;
+    d_string_ID = 0;
+    d_frame_ID = 0;
 
     // UNPACK BYTES TO BITS AND REMOVE THE CRC REDUNDANCE
     std::bitset<GLONASS_GNAV_STRING_BITS> string_bits = std::bitset<GLONASS_GNAV_STRING_BITS>((frame_string));
-    string_ID = static_cast<int>(read_navigation_unsigned(string_bits, STRING_ID));
+    d_string_ID = static_cast<unsigned int>(read_navigation_unsigned(string_bits, STRING_ID));
 
-    CRC_test(string_bits);
+    flag_CRC_test = CRC_test(string_bits);
 
     // Decode all 15 string messages
-    switch (string_ID)
+    switch (d_string_ID)
         {
         case 1:
             //--- It is string 1 -----------------------------------------------
@@ -454,7 +460,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
         case 6:
             // --- It is string 6 ----------------------------------------------
             i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
-            frame_ID = get_frame_number(i_satellite_slot_number);
+            d_frame_ID = get_frame_number(i_satellite_slot_number);
 
             gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
@@ -499,7 +505,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
         case 8:
             // --- It is string 8 ----------------------------------------------
             i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
-            frame_ID = get_frame_number(i_satellite_slot_number);
+            d_frame_ID = get_frame_number(i_satellite_slot_number);
 
             gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
@@ -538,7 +544,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
         case 10:
             // --- It is string 10 ---------------------------------------------
             i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
-            frame_ID = get_frame_number(i_satellite_slot_number);
+            d_frame_ID = get_frame_number(i_satellite_slot_number);
 
             gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
@@ -577,7 +583,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
         case 12:
             // --- It is string 12 ---------------------------------------------
             i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
-            frame_ID = get_frame_number(i_satellite_slot_number);
+            d_frame_ID = get_frame_number(i_satellite_slot_number);
 
             gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
@@ -615,7 +621,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             break;
         case 14:
             // --- It is string 14 ---------------------------------------------
-            if( frame_ID == 5)
+            if( d_frame_ID == 5)
               {
                 gnav_utc_model.d_B1 = static_cast<double>(read_navigation_unsigned(string_bits, B1));
                 gnav_utc_model.d_B2 = static_cast<double>(read_navigation_unsigned(string_bits, B2));
@@ -623,7 +629,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             else
               {
                 i_satellite_slot_number = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
-                frame_ID = get_frame_number(i_satellite_slot_number);
+                d_frame_ID = get_frame_number(i_satellite_slot_number);
 
                 gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
                 gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
@@ -641,7 +647,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 
         case 15:
             // --- It is string 9 ----------------------------------------------
-            if (frame_ID != 5 and flag_almanac_str_14 == true )
+            if (d_frame_ID != 5 and flag_almanac_str_14 == true )
               {
                 gnav_almanac[i_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
                 gnav_almanac[i_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
@@ -662,10 +668,13 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
               }
             break;
         default:
-            break;
-        } // switch subframeID ...
+        		LOG(INFO) << "GLONASS GNAV: Invalid String ID of received. Received " << d_string_ID << ", but acceptable range is from 1-15";
 
-    return frame_ID;
+
+            break;
+        } // switch string ID ...
+
+    return d_string_ID;
 }
 
 

@@ -356,7 +356,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
         }
 
 
-    if (system_.compare("GLONASS") == 0)
+    if (system_.compare("Glonass") == 0)
         {
             switch ( PRN_ )
             {

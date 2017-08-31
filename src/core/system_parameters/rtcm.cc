@@ -3960,7 +3960,7 @@ int Rtcm::set_DF041(const Gnss_Synchro & gnss_synchro)
 
 int Rtcm::set_DF042(const Gnss_Synchro & gnss_synchro)
 {
-    const double lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN)));
+    const double lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN)));
     double ambiguity = std::floor( gnss_synchro.Pseudorange_m / 599584.92 );
     double glonass_L1_pseudorange = std::round(( gnss_synchro.Pseudorange_m - ambiguity * 599584.92) / 0.02 );
     double glonass_L1_pseudorange_c = glonass_L1_pseudorange * 0.02 + ambiguity * 299792.458;
@@ -5270,7 +5270,7 @@ int Rtcm::set_DF401(const Gnss_Synchro & gnss_synchro)
         }
       if ((sig.compare("1C") == 0) && (sys.compare("R") == 0 ))
           {
-              lambda = GLONASS_C_m_s / ((GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN))));
+              lambda = GLONASS_C_m_s / ((GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN))));
           }
       if ((sig.compare("2C") == 0) && (sys.compare("R") == 0 ))
           {
@@ -5379,7 +5379,7 @@ int Rtcm::set_DF404(const Gnss_Synchro & gnss_synchro)
         }
     if ((sig_.compare("1C") == 0) && (sys_.compare("R") == 0 ))
         {
-            lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN)));
+            lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN)));
         }
     if ((sig_.compare("2C") == 0) && (sys_.compare("R") == 0 ))
         {
@@ -5467,7 +5467,7 @@ int Rtcm::set_DF406(const Gnss_Synchro & gnss_synchro)
         }
     if ((sig_.compare("1C") == 0) && (sys_.compare("R") == 0 ))
         {
-            lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN)));
+            lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ *  GLONASS_PRN.at(gnss_synchro.PRN)));
         }
     if ((sig_.compare("2C") == 0) && (sys_.compare("R") == 0 ))
         {

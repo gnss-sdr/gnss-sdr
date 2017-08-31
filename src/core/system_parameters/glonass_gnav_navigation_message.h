@@ -61,7 +61,8 @@ private:
 
 public:
     bool flag_CRC_test;
-    unsigned int frame_ID;
+    unsigned int d_frame_ID;
+    unsigned int d_string_ID;
 
     Glonass_Gnav_Ephemeris gnav_ephemeris;    //!< Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model;    //!< UTC model information

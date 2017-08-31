@@ -145,15 +145,19 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
             chip_acc += frame_symbols[i];
             chip_acc_counter += 1;
 
-            if(chip_acc_counter == (GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT - 1))
+            if(chip_acc_counter == (GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT))
               {
                 if (chip_acc > 0)
                     {
                         bi_binary_code.push_back('1');
+                        chip_acc_counter = 0;
+                        chip_acc = 0;
                     }
                 else
                     {
                         bi_binary_code.push_back('0');
+                        chip_acc_counter = 0;
+                        chip_acc = 0;
                     }
               }
         }
@@ -171,18 +175,16 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
         }
 
     // 2. Call the GLONASS GNAV string decoder
-    d_nav.string_decoder(relative_code.c_str());
+    d_nav.string_decoder(relative_code);
 
     // 3. Check operation executed correctly
     if(d_nav.flag_CRC_test == true)
         {
-            LOG(INFO) << "GLONASS GNAV CRC correct on channel " << d_channel << " from satellite " << d_satellite;
-            std::cout << "GLONASS GNAV CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
+            LOG(INFO) << "GLONASS GNAV CRC correct on channel " << d_channel << " from satellite ";// << d_satellite;
         }
     else
         {
-            std::cout << "GLONASS GNAV CRC error on channel " << d_channel <<  " from satellite " << d_satellite << std::endl;
-            LOG(INFO) << "GLONASS GNAV CRC error on channel " << d_channel <<  " from satellite " << d_satellite;
+            LOG(INFO) << "GLONASS GNAV CRC error on channel " << d_channel <<  " from satellite " ;//<< d_satellite;
         }
 
     // 4. Push the new navigation data to the queues
@@ -225,7 +227,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
     consume_each(1);
 
     d_flag_preamble = false;
-    unsigned int required_symbols=GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
+    unsigned int required_symbols=GLONASS_GNAV_STRING_SYMBOLS;
 
     if (d_symbol_history.size()>required_symbols)
     {
@@ -264,7 +266,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
                     if (abs(preamble_diff - GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
                             //try to decode frame
-                            LOG(INFO) << "Starting page decoder for GLONASS L1 C/A SAT " << this->d_satellite;
+                            LOG(INFO) << "Starting string decoder for GLONASS L1 C/A SAT " << this->d_satellite;
                             d_preamble_index = d_sample_counter; //record the preamble sample stamp
                             d_stat = 2;
                         }
@@ -274,17 +276,19 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
                                 {
                                     d_stat = 0; // start again
                                 }
+                            DLOG(INFO) << "Failed string decoder for GLONASS L1 C/A SAT " << this->d_satellite;
                         }
                 }
         }
     else if (d_stat == 2)
         {
-            if (d_sample_counter == d_preamble_index + GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS)
+    				// FIXME: The preamble index marks the first symbol of the string count. Here I just wait for another full string to be received before processing
+            if (d_sample_counter == d_preamble_index + GLONASS_GNAV_STRING_SYMBOLS)
                 {
                     // NEW GLONASS string received
                     // 0. fetch the symbols into an array
                     int string_length = GLONASS_GNAV_STRING_SYMBOLS - d_symbols_per_preamble;
-                    double string_symbols[string_length];
+                    double string_symbols[string_length] = {0};
 
                     //******* SYMBOL TO BIT *******
                     for (int i = 0; i < string_length; i++)

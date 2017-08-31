@@ -156,9 +156,11 @@ public:
 
     /*
     * \brief Gets the time of week in GPS Time
+    * \details This converts from GLONASS Time to GPS Time of Week based on the
+    * start of frame
     */
     double get_TOW();
-    
+
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and returns it in [s]
      */

@@ -319,11 +319,12 @@ double Glonass_Gnav_Navigation_Message::get_TOW()
 
     TOW = gnav_ephemeris.d_t_k + glot2utcsu + utcsu2utc + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
 
-    for (i = 0; leaps[i][0]>0; i++)
+    for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
         {
-            if (leaps[i][0] == gnav_ephemeris.d_yr)
+            if (GLONASS_LEAP_SECONDS[i][0] == gnav_ephemeris.d_yr)
             {
-                TOW -= leaps[i][6];
+                TOW -= GLONASS_LEAP_SECONDS[i][6];
+            }
         }
     return TOW;
 }
@@ -354,8 +355,6 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             gnav_ephemeris.d_Xn = static_cast<double>(read_navigation_signed(string_bits, X_N)) * TWO_N11;
 
             flag_ephemeris_str_1 = true;
-            d_TOW = get_TOW();
-            flag_TOW_set = true;
 
             break;
 
@@ -441,6 +440,14 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     // 2). Current year in common form is calculated by the following formula:
                     gnav_ephemeris.d_yr = 1996 + 4.0*(gnav_utc_model.d_N_4  - 1.0) + (J - 1.0);
                     gnav_ephemeris.d_tau_c = gnav_utc_model.d_tau_c;
+
+                    // 3). Set TOW once the year has been defined, it helps with leap second determination
+                    if(flag_ephemeris_str_1 == true)
+                        {
+                            d_TOW = get_TOW();
+                            flag_TOW_set = true;
+                        }
+
                 }
             break;
 

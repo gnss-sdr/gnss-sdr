@@ -155,7 +155,7 @@ public:
      */
     int string_decoder(std::string frame_string);
 
-    /*
+    /*!
     * \brief Gets the time of week in GPS Time
     * \details This converts from GLONASS Time to GPS Time of Week based on the
     * start of frame

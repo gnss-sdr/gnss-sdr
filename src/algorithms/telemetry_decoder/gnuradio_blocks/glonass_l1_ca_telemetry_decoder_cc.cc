@@ -180,11 +180,11 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
     // 3. Check operation executed correctly
     if(d_nav.flag_CRC_test == true)
         {
-            LOG(INFO) << "GLONASS GNAV CRC correct on channel " << d_channel << " from satellite ";// << d_satellite;
+            LOG(INFO) << "GLONASS GNAV CRC correct on channel " << d_channel << " from satellite "<< d_satellite;
         }
     else
         {
-            LOG(INFO) << "GLONASS GNAV CRC error on channel " << d_channel <<  " from satellite " ;//<< d_satellite;
+            LOG(INFO) << "GLONASS GNAV CRC error on channel " << d_channel <<  " from satellite " << d_satellite;
         }
 
     // 4. Push the new navigation data to the queues
@@ -399,7 +399,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
 void glonass_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
+    DLOG(INFO) << "Setting decoder Finite State Machine to satellite "<< d_satellite;
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
 

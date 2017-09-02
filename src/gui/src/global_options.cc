@@ -107,10 +107,10 @@ QGroupBox* Global_Options::box_implementation(QString box_name, QStringList curr
     foreach(QString key,current_group_keys)
         {
             //Insert Items in main map
-            if (key == "GNSS-SDR.internal_fs_hz")
+            if (key == "GNSS-SDR.internal_fs_sps")
                 {
                     map_implementation->insert(key,new QLineEdit("2000000"));
-                    map_implementation->value(key)->setToolTip("After Conditioner Internal Frequency in [Hz]");
+                    map_implementation->value(key)->setToolTip("After Conditioner Internal Frequency in [sps]");
                 }
             else
                 {

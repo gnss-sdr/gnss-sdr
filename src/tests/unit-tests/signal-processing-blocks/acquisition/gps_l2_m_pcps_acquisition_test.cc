@@ -147,7 +147,7 @@ void GpsL2MPcpsAcquisitionTest::init()
 
     sampling_freqeuncy_hz  = 5000000;
     nsamples = round(static_cast<double>(sampling_freqeuncy_hz) * GPS_L2_M_PERIOD) * 2;
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_freqeuncy_hz));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_freqeuncy_hz));
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.dump", "false");

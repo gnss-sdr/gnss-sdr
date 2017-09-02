@@ -51,7 +51,8 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    long fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     if_ = configuration->property(role + ".if", 0);
     dump_ = configuration->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
@@ -72,7 +73,6 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
             acquisition_cc_ = pcps_make_assisted_acquisition_cc(max_dwells_, sampled_ms_,
                     doppler_max_, doppler_min_, if_, fs_in_, vector_length_,
                     dump_, dump_filename_);
-
         }
     else
         {

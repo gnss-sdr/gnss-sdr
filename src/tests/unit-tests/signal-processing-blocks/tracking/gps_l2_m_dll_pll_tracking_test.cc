@@ -140,7 +140,7 @@ void GpsL2MDllPllTrackingTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 7;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "5000000");
+    config->set_property("GNSS-SDR.internal_fs_sps", "5000000");
     config->set_property("Tracking_2S.item_type", "gr_complex");
     config->set_property("Tracking_2S.dump", "false");
     config->set_property("Tracking_2S.dump_filename", "../data/L2m_tracking_ch_");

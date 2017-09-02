@@ -51,7 +51,8 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    long fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     if_ = configuration->property(role + ".if", 0);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);

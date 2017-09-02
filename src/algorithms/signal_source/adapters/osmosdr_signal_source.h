@@ -33,6 +33,7 @@
 #ifndef GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_
 #define GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_
 
+#include <stdexcept>
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
@@ -80,6 +81,7 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
+    void driver_instance();
     std::string role_;
 
     // Front-end settings

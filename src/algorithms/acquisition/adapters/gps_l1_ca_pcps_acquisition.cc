@@ -55,8 +55,8 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
-
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
@@ -88,7 +88,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
                     doppler_max_, if_, fs_in_, code_length_, code_length_,
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
-
         }
     else
         {

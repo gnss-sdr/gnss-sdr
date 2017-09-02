@@ -619,6 +619,9 @@ void Pvt_Solution::set_valid_position(bool is_valid)
 void Pvt_Solution::set_rx_pos(const arma::vec & pos)
 {
     d_rx_pos = pos;
+    d_latitude_d = d_rx_pos(0);
+    d_longitude_d = d_rx_pos(1);
+    d_height_m = d_rx_pos(2);
 }
 
 

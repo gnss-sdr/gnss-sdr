@@ -1452,6 +1452,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         else(CLANG_VERSION VERSION_LESS "600")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
         endif(CLANG_VERSION VERSION_LESS "600")
+        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wno-deprecated-declarations")
     endif(OS_IS_MACOSX)
 
     if(CMAKE_BUILD_TYPE MATCHES "Release")

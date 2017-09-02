@@ -64,31 +64,25 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
     std::string device_name;
     unsigned int device_base;
 
-    item_type_ = configuration->property(role + ".item_type",
-            default_item_type);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
-    pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz",
-            20.0);
+    pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 20.0);
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
     int extend_correlation_ms;
-    extend_correlation_ms = configuration->property(
-            role + ".extend_correlation_ms", 1);
+    extend_correlation_ms = configuration->property(role + ".extend_correlation_ms", 1);
 
-    early_late_space_chips = configuration->property(
-            role + ".early_late_space_chips", 0.5);
+    early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename",
-            default_dump_filename);
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     std::string default_device_name = "/dev/uio";
-    device_name = configuration->property(role + ".devicename",
-            default_device_name);
+    device_name = configuration->property(role + ".devicename", default_device_name);
     device_base = configuration->property(role + ".device_base", 1);
-    vector_length = std::round(
-            fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
 
@@ -100,8 +94,7 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
                     dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz,
                     extend_correlation_ms, early_late_space_chips, device_name,
                     device_base);
-            DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id()
-                    << ")";
+            DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
         }
     else
         {
@@ -115,14 +108,15 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
     channel_ = 0;
 }
 
+
 GpsL1CaDllPllCAidTrackingFpga::~GpsL1CaDllPllCAidTrackingFpga()
 {
     LOG(INFO) << "gspl1cadllpllcaidtrackingfpga destructor called";
 }
 
+
 void GpsL1CaDllPllCAidTrackingFpga::start_tracking()
 {
-
     if (item_type_.compare("cshort") == 0)
         {
             tracking_fpga_sc->start_tracking();
@@ -134,6 +128,7 @@ void GpsL1CaDllPllCAidTrackingFpga::start_tracking()
                     << " the tracking item type for the FPGA tracking test has to be cshort";
         }
 }
+
 
 /*
  * Set tracking channel unique ID
@@ -154,6 +149,7 @@ void GpsL1CaDllPllCAidTrackingFpga::set_channel(unsigned int channel)
         }
 }
 
+
 void GpsL1CaDllPllCAidTrackingFpga::set_gnss_synchro(
         Gnss_Synchro* p_gnss_synchro)
 {
@@ -169,6 +165,7 @@ void GpsL1CaDllPllCAidTrackingFpga::set_gnss_synchro(
         }
 }
 
+
 void GpsL1CaDllPllCAidTrackingFpga::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
@@ -177,6 +174,7 @@ void GpsL1CaDllPllCAidTrackingFpga::connect(gr::top_block_sptr top_block)
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
+
 void GpsL1CaDllPllCAidTrackingFpga::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
@@ -184,6 +182,7 @@ void GpsL1CaDllPllCAidTrackingFpga::disconnect(gr::top_block_sptr top_block)
         };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
+
 
 // CONVERT TO SOURCE
 gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_left_block()
@@ -201,6 +200,7 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_left_block()
         }
 }
 
+
 gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_right_block()
 {
     if (item_type_.compare("cshort") == 0)
@@ -216,10 +216,9 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_right_block()
         }
 }
 
+
 void GpsL1CaDllPllCAidTrackingFpga::reset(void)
 {
-
     tracking_fpga_sc->reset();
-
 }
 

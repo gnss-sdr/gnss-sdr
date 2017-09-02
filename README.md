@@ -584,11 +584,10 @@ We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, 
     1. The default configuration file resides at [/usr/local/share/gnss-sdr/conf/default.conf](./conf/gnss-sdr.conf).
     2. You need to review/modify at least the following settings:
         * ```SignalSource.filename=``` (absolute or relative route to your GNSS signal captured file)
-        * ```GNSS-SDR.internal_fs_hz=``` (captured file sampling rate in Hz)
-        * ```SignalSource.sampling_frequency=``` (captured file sampling rate in Hz)
-        * ```SignalConditioner.sample_freq_in=``` (captured file sampling rate in Hz)
-        * ```SignalConditioner.sample_freq_out=``` (captured file sampling rate in Hz)
-        * ```TelemetryDecoder.fs_in=``` (captured file sampling rate in Hz)
+        * ```GNSS-SDR.internal_fs_sps=``` (captured file sampling rate in samples per second)
+        * ```SignalSource.sampling_frequency=``` (captured file sampling rate in samples per second)
+        * ```SignalConditioner.sample_freq_in=``` (captured file sampling rate in samples per second)
+        * ```SignalConditioner.sample_freq_out=``` (captured file sampling rate in samples per second)
     3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters. Store your .conf file in some working directory of your choice.
 4. Run the receiver invoking the configuration by
 ```$ gnss-sdr --config_file=/path/to/my_receiver.conf```

@@ -206,7 +206,7 @@ int ObsGpsL1SystemTest::configure_receiver()
     const int display_rate_ms = 500;
     const int output_rate_ms =  100;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
 
     // Set the assistance system parameters
     config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");

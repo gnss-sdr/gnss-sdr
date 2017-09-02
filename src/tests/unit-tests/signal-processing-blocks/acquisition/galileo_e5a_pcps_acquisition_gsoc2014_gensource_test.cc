@@ -219,7 +219,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("Channel.signal",signal);
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.num_satellites", "1");
@@ -296,7 +296,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_2()
 
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
 
     config->set_property("Acquisition_5X.item_type", "gr_complex");
     config->set_property("Acquisition_5X.if", "0");
@@ -344,7 +344,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
 
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
 
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
 

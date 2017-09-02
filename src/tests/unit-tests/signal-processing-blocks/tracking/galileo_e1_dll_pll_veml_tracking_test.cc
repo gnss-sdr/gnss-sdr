@@ -86,7 +86,7 @@ void GalileoE1DllPllVemlTrackingInternalTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 11;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "8000000");
+    config->set_property("GNSS-SDR.internal_fs_sps", "8000000");
     config->set_property("Tracking_Galileo.item_type", "gr_complex");
     config->set_property("Tracking_Galileo.dump", "false");
     config->set_property("Tracking_Galileo.dump_filename", "../data/veml_tracking_ch_");

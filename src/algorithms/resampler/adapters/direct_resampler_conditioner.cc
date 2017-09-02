@@ -49,13 +49,14 @@ DirectResamplerConditioner::DirectResamplerConditioner(
 {
     std::string default_item_type = "short";
     std::string default_dump_file = "./data/signal_conditioner.dat";
-    double fs_in;
-    fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000.0);
+    double fs_in_deprecated, fs_in;
+    fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000.0);
+    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     sample_freq_in_ = configuration->property(role_ + ".sample_freq_in", 4000000.0);
     sample_freq_out_ = configuration->property(role_ + ".sample_freq_out", fs_in);
     if(std::fabs(fs_in - sample_freq_out_) > std::numeric_limits<double>::epsilon())
         {
-            std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_hz and "
+            std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_sps and "
                     + role_ + ".sample_freq_out are not set to the same value!" ;
             LOG(WARNING) << aux_warn;
             std::cout << aux_warn << std::endl;

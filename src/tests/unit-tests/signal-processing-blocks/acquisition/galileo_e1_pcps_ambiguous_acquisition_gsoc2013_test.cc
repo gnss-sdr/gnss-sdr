@@ -202,7 +202,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
 
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
 
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
 
@@ -274,7 +274,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
 
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
 
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
 

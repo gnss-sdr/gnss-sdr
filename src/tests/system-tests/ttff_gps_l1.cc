@@ -127,7 +127,7 @@ void TfttGpsL1CATest::config_1()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(FLAGS_fs_in));
 
     // Set the assistance system parameters
     config->set_property("GNSS-SDR.SUPL_gps_ephemeris_server", "supl.google.com");
@@ -248,7 +248,7 @@ void TfttGpsL1CATest::config_2()
         }
 
     int d_sampling_rate;
-    d_sampling_rate = config2->property("GNSS-SDR.internal_fs_hz", FLAGS_fs_in);
+    d_sampling_rate = config2->property("GNSS-SDR.internal_fs_sps", FLAGS_fs_in);
     config2->set_property("SignalSource.samples", std::to_string(d_sampling_rate * FLAGS_max_measurement_duration));
 }
 

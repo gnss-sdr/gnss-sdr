@@ -62,7 +62,7 @@ public:
     std::string p4;
     std::string p5;
 
-    const double baseband_sampling_freq = static_cast<double>(FLAGS_fs_gen_hz);
+    const double baseband_sampling_freq = static_cast<double>(FLAGS_fs_gen_sps);
 
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
@@ -77,7 +77,6 @@ public:
     double compute_stdev_precision(const std::vector<double> & vec);
     double compute_stdev_accuracy(const std::vector<double> & vec, double ref);
 
-
     void geodetic2Enu(const double latitude, const double longitude, const double altitude,
                         double* east, double* north, double* up);
 
@@ -88,7 +87,6 @@ public:
 private:
     void geodetic2Ecef(const double latitude, const double longitude, const double altitude,
                             double* x, double* y, double* z);
-
 };
 
 
@@ -276,7 +274,7 @@ int StaticPositionSystemTest::configure_receiver()
             const int display_rate_ms = 1000;
             const int output_rate_ms = 1000;
 
-            config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
+            config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
 
             // Set the assistance system parameters
             config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");

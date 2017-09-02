@@ -216,7 +216,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
 
     //--- Find number of samples per spreading code ---
-    long fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    long fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
     int samples_per_code = round(fs_in_
             / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     int nsamples = samples_per_code * 50;
@@ -361,7 +361,7 @@ int main(int argc, char** argv)
     signal.copy(gnss_synchro->Signal, 2, 0);
     gnss_synchro->PRN = 1;
 
-    long fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    long fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
 
     GNSSBlockFactory block_factory;
     acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1);

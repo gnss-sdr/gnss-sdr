@@ -182,7 +182,7 @@ public:
     std::string p4;
     std::string p5;
 
-    const int baseband_sampling_freq = FLAGS_fs_gen_hz;
+    const int baseband_sampling_freq = FLAGS_fs_gen_sps;
 
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
@@ -283,7 +283,7 @@ void HybridObservablesTest::configure_receiver()
     gnss_synchro_ch1.PRN = FLAGS_test_satellite_PRN2;
 
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(baseband_sampling_freq));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
 
     // Set Tracking
     config->set_property("Tracking_1C.item_type", "gr_complex");

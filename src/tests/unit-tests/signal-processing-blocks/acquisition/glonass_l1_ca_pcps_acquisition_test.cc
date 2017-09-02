@@ -104,7 +104,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     std::string signal = "1G";
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
-    config->set_property("GNSS-SDR.internal_fs_hz", "62314000");
+    config->set_property("GNSS-SDR.internal_fs_sps", "62314000");
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "9540000");
     config->set_property("Acquisition.coherent_integration_time_ms", "1");

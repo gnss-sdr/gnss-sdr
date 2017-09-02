@@ -137,7 +137,7 @@ void GlonassL1CaDllPllCAidTrackingTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 11;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "6625000");
+    config->set_property("GNSS-SDR.internal_fs_sps", "6625000");
     config->set_property("Tracking_1G.item_type", "gr_complex");
     config->set_property("Tracking_1G.dump", "false");
     config->set_property("Tracking_1G.if", "0.0");

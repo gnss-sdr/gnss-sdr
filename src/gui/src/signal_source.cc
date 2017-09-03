@@ -176,7 +176,7 @@ void Signal_Source::update_source_pages()
                 {
                     block_tab_widget->widget(sourceind)->setLayout(new QVBoxLayout());
                     QComboBox * source_combobox;
-                    source_combobox= new QComboBox();
+                    source_combobox = new QComboBox();
                     source_combobox->setObjectName("sourceComboBox");
                     source_combobox->addItem("Select");
                     foreach (QString implentation, block_implementation_list)
@@ -302,7 +302,6 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
     QComboBox * dumpComboBox;
     uint row = 0;
     uint col = 0;
-    bool has_dump = false;
     int current_source = block_tab_widget->currentIndex();
     QRegularExpression key_dump( "dump(?!(_filename))" );
     foreach(QString key,group_keys)
@@ -315,6 +314,7 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                     dumpComboBox->setObjectName("dumpComboBox");
                     dumpComboBox->addItem(tr("false"));
                     dumpComboBox->addItem(tr("true"));
+                    dumpComboBox->setCurrentIndex(0);
                     list_map_dump->at(current_source)->insert(key, dumpComboBox);
                 }
             else
@@ -342,7 +342,6 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
             if (match4.hasMatch())
                 {
                     layout->addWidget(list_map_dump->at(current_source)->value(key), row, col++);
-                    has_dump = true;
                 }
             else
                 {
@@ -359,10 +358,6 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
     layout->addWidget(update_button, row, max_col-1, 1, 1, Qt::AlignRight);
     grid_groupbox->setLayout(layout);
     connect(update_button, SIGNAL(clicked()), this, SLOT(add_sub_blocks()));
-    if( has_dump )
-        {
-            connect(dumpComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(add_sub_blocks()));
-        }
     grid_groupbox->setObjectName("MainGroupBox");
     return grid_groupbox;
 }

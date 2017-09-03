@@ -319,7 +319,7 @@ void Signal_Conditioner::populate_page(int index)
     QGroupBox * pass_groupbox = box_pass_through("Pass_Through", index);
     //Add a combobox
     QComboBox * select_combobox;
-    select_combobox= new QComboBox();
+    select_combobox = new QComboBox();
     select_combobox->setObjectName("selectComboBox");
     select_combobox->addItem("Signal_Conditioner");
     select_combobox->addItem("Pass_Through");

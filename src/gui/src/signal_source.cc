@@ -315,7 +315,6 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                     dumpComboBox->setObjectName("dumpComboBox");
                     dumpComboBox->addItem(tr("false"));
                     dumpComboBox->addItem(tr("true"));
-                    dumpComboBox->setCurrentIndex(0);
                     list_map_dump->at(current_source)->insert(key, dumpComboBox);
                 }
             else

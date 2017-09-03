@@ -34,7 +34,7 @@
 Signal_Source::Signal_Source(QWidget * parent, QString block_name_, QString dir_path_) : QWidget(parent), block_name(block_name_), dir_path(dir_path_)
 {
     map_generic = new QMap<QString, QLineEdit *>;
-    map_subgroup_list =  new QMap<int, QStringList*>;
+    map_subgroup_list = new QMap<int, QStringList*>;
     list_map_implementation = new QList < QMap<QString, QLineEdit *> *>;
     list_map_sub = new QList < QMap<QString, QLineEdit *> *>;
     list_map_subgroup_keys = new QList < QMap<QString, QString > *>;
@@ -50,8 +50,8 @@ Signal_Source::Signal_Source(QWidget * parent, QString block_name_, QString dir_
         {
             if (item.isFile() && (item.fileName() != "generic.ini") )
                 {
-                    block_implentation_list.append(item.baseName());
-                    block_implentation_list_path.append(item.filePath());
+                    block_implementation_list.append(item.baseName());
+                    block_implementation_list_path.append(item.filePath());
                 }
         }
     generic_settings = new QSettings(dir_path + "/generic.ini", QSettings::IniFormat);
@@ -179,7 +179,7 @@ void Signal_Source::update_source_pages()
                     source_combobox= new QComboBox();
                     source_combobox->setObjectName("sourceComboBox");
                     source_combobox->addItem("Select");
-                    foreach (QString implentation, block_implentation_list)
+                    foreach (QString implentation, block_implementation_list)
                         {
                             source_combobox->addItem(implentation);
                         }
@@ -200,7 +200,7 @@ void Signal_Source::update_implementation(QString sourceImpl)
     emit share_rf_channels(share_key, 1);
     QString source_settings;
     source_settings = block_dir->path() + "/" + sourceImpl + ".ini";
-    if (!block_implentation_list_path.contains(source_settings))
+    if (!block_implementation_list_path.contains(source_settings))
         {
             return;
         }

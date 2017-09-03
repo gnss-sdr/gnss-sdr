@@ -29,8 +29,8 @@
  * -----------------------------------------------------------------------
  */
 
-#ifndef GLOBAL_OPTIONS_H
-#define GLOBAL_OPTIONS_H
+#ifndef GNSS_SDR_GUI_GLOBAL_OPTIONS_H
+#define GNSS_SDR_GUI_GLOBAL_OPTIONS_H
 
 #include <QWidget>
 #include <QtWidgets/QGroupBox>
@@ -58,14 +58,14 @@ private:
     void setup_page();
     QGroupBox * box_generic(QString box_name, QSettings *ini_settings);
     QGroupBox * box_implementation(QString box_name, QStringList current_group_keys);
-    void update_implementaion();
+    void update_implementation();
     QDir * block_dir;
     QString dir_path;
     QTabWidget * block_tab_widget;
     QScrollArea * block_scroll_area;
     QWidget * block_scroll_area_widget;
     QVBoxLayout * block_scroll_area_widget_layout;
-    QList<QString> block_implentation_list_path;
+    QList<QString> block_implementation_list_path;
     QMap <QString, QLineEdit *> * map_implementation;
 
 signals:
@@ -74,4 +74,4 @@ public slots:
 
 };
 
-#endif // GLOBAL_OPTIONS_H
+#endif // GNSS_SDR_GUI_GLOBAL_OPTIONS_H

@@ -29,8 +29,8 @@
  * -----------------------------------------------------------------------
  */
 
-#ifndef SIGNAL_SOURCE_H
-#define SIGNAL_SOURCE_H
+#ifndef GNSS_SDR_GUI_SIGNAL_SOURCE_H
+#define GNSS_SDR_GUI_SIGNAL_SOURCE_H
 
 #include <QWidget>
 #include <QtWidgets/QGroupBox>
@@ -51,7 +51,7 @@ class Signal_Source : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Signal_Source(QWidget * parent = 0, QString block_name_="Signal_Source", QString dir_path_="");
+    explicit Signal_Source(QWidget * parent = 0, QString block_name_ = "Signal_Source", QString dir_path_ = "");
     QMap<QString, QString> * get_options();
     QString block_name;
 private:
@@ -75,8 +75,8 @@ private:
     QList < QMap<QString, QStringList> *> * list_map_subgroup_child_keys;
 
     int sources_count;
-    QList<QString> block_implentation_list;
-    QList<QString> block_implentation_list_path;
+    QList<QString> block_implementation_list;
+    QList<QString> block_implementation_list_path;
     QList<QGroupBox *> block_box_list;
     QTabWidget * block_tab_widget;
     QScrollArea * block_scroll_area;
@@ -84,7 +84,6 @@ private:
     QVBoxLayout * block_scroll_area_widget_layout;
 
 signals:
-
     void share_source_count_value(QString,int);
     void share_rf_channels(QString,int);
 
@@ -95,4 +94,4 @@ public slots:
     void add_sub_blocks();
 };
 
-#endif // SIGNAL_SOURCE_H
+#endif // GNSS_SDR_GUI_SIGNAL_SOURCE_H

@@ -29,8 +29,8 @@
  * -----------------------------------------------------------------------
  */
 
-#ifndef SUPL_H
-#define SUPL_H
+#ifndef GNSS_SDR_GUI_SUPL_H
+#define GNSS_SDR_GUI_SUPL_H
 
 #include <QWidget>
 #include <QtWidgets/QGroupBox>
@@ -51,7 +51,7 @@ class Supl : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Supl(QWidget *parent = 0, QString block_name_="Supl", QString dir_path_="");
+    explicit Supl(QWidget *parent = 0, QString block_name_ = "Supl", QString dir_path_ = "");
     QMap<QString, QString> * get_options();
     QString block_name;
 
@@ -65,15 +65,15 @@ private:
     QScrollArea * block_scroll_area;
     QWidget * block_scroll_area_widget;
     QVBoxLayout * block_scroll_area_widget_layout;
-    QList<QString> block_implentation_list;
-    QList<QString> block_implentation_list_path;
+    QList<QString> block_implementation_list;
+    QList<QString> block_implementation_list_path;
     QMap <QString, QLineEdit *> * map_implementation;
     QList <QSpacerItem *> * list_spacer;
 
 signals:
 
 public slots:
-    void update_implementaion(QString);
+    void update_implementation(QString);
 };
 
-#endif // SUPL_H
+#endif //GNSS_SDR_GUI_SUPL_H

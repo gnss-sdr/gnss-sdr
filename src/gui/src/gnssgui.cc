@@ -45,7 +45,7 @@ Gnss_GUI::Gnss_GUI(QWidget *parent): QDialog(parent)
                 {
                     if (!QDir(dir_path+"gui_ini_files").exists())
                         {
-                            dir_path="";
+                            dir_path = "";
                         }
                     else
                         {
@@ -54,21 +54,20 @@ Gnss_GUI::Gnss_GUI(QWidget *parent): QDialog(parent)
                 }
         }
     #else
-    {
-        dir_path.append(QStandardPaths::locate(QStandardPaths::HomeLocation, QString("gui_ini_files"), QStandardPaths::LocateDirectory));
-
-    }
+        {
+            dir_path.append(QStandardPaths::locate(QStandardPaths::HomeLocation, QString("gui_ini_files"), QStandardPaths::LocateDirectory));
+        }
     #endif
     if (dir_path.isEmpty())
-    {
-        QString home_location = QStandardPaths::locate(QStandardPaths::HomeLocation,"",QStandardPaths::LocateDirectory);
-        QMessageBox::information(this,tr("Error"),
-                              "<qt>Folder <b>gui_ini_files</b> cannot be located.<br>"
-                                 "Please make sure it is located in the location "
-                                 "specified by qmake <b>GUI_FILES_LOCATION</b> variable if you set it. Else it should be"
-                                 "present in your <b>"+ home_location+"</b>.<br> GUI will not be populated.</qt>");
-        return;
-    }
+        {
+            QString home_location = QStandardPaths::locate(QStandardPaths::HomeLocation, "", QStandardPaths::LocateDirectory);
+            QMessageBox::information(this, tr("Error"),
+                    "<qt>Folder <b>gui_ini_files</b> cannot be located.<br>"
+                    "Please make sure it is located in the location "
+                    "specified by qmake <b>GUI_FILES_LOCATION</b> variable if you set it. Else it should be"
+                    "present in your <b>"+ home_location+"</b>.<br> GUI will not be populated.</qt>");
+            return;
+        }
     map_options = new QMap <QString, QString>;
     base_dir = new QDir(dir_path);
     base_dir->setFilter(QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Dirs);
@@ -84,24 +83,24 @@ Gnss_GUI::Gnss_GUI(QWidget *parent): QDialog(parent)
     create_generate_box();
     //Create a tab_widget
     tab_widget = new QTabWidget;
-    page_global_options = new Global_Options(this,"Global",dir_path+"/Global");
-    tab_widget->addTab(page_global_options,"Global");
-    page_supl = new Supl(this,"Supl",dir_path+"/Supl");
-    tab_widget->addTab(page_supl,"Supl");
-    page_signal_source = new Signal_Source(this,"SignalSource",dir_path+"/SignalSource");
-    tab_widget->addTab(page_signal_source,"SignalSource");
-    page_signal_conditioner = new Signal_Conditioner(this,"SignalConditioner",dir_path+"/SignalConditioner");
-    tab_widget->addTab(page_signal_conditioner,"SignalConditioner");
-    page_channels = new Channels(this,"Channels",dir_path+"/Channels");
-    tab_widget->addTab(page_channels,"Channels");
-    page_observables = new Observables(this,"Observables",dir_path+"/Observables");
-    tab_widget->addTab(page_observables,"Observables");
-    page_pvt = new Pvt(this,"Pvt",dir_path+"/Pvt");
-    tab_widget->addTab(page_pvt,"Pvt");
-    connect(page_signal_source,SIGNAL(share_source_count_value(QString,int)),page_signal_conditioner,SLOT(listener_source_count(QString,int)));
-    connect(page_signal_source,SIGNAL(share_rf_channels(QString,int)),page_signal_conditioner,SLOT(listener_rf_channel(QString,int)));
-    connect(page_signal_source,SIGNAL(share_source_count_value(QString,int)),page_channels,SLOT(listener_source_count(QString,int)));
-    connect(page_signal_source,SIGNAL(share_rf_channels(QString,int)),page_channels,SLOT(listener_rf_channel(QString,int)));
+    page_global_options = new Global_Options(this, "Global", dir_path + "/Global");
+    tab_widget->addTab(page_global_options, "Global");
+    page_supl = new Supl(this, "Supl", dir_path + "/Supl");
+    tab_widget->addTab(page_supl, "Supl");
+    page_signal_source = new Signal_Source(this, "SignalSource", dir_path + "/SignalSource");
+    tab_widget->addTab(page_signal_source, "SignalSource");
+    page_signal_conditioner = new Signal_Conditioner(this, "SignalConditioner", dir_path + "/SignalConditioner");
+    tab_widget->addTab(page_signal_conditioner, "SignalConditioner");
+    page_channels = new Channels(this, "Channels", dir_path + "/Channels");
+    tab_widget->addTab(page_channels, "Channels");
+    page_observables = new Observables(this, "Observables", dir_path + "/Observables");
+    tab_widget->addTab(page_observables, "Observables");
+    page_pvt = new Pvt(this, "Pvt", dir_path + "/Pvt");
+    tab_widget->addTab(page_pvt, "Pvt");
+    connect(page_signal_source, SIGNAL(share_source_count_value(QString,int)), page_signal_conditioner, SLOT(listener_source_count(QString,int)));
+    connect(page_signal_source, SIGNAL(share_rf_channels(QString,int)), page_signal_conditioner, SLOT(listener_rf_channel(QString,int)));
+    connect(page_signal_source, SIGNAL(share_source_count_value(QString,int)), page_channels, SLOT(listener_source_count(QString,int)));
+    connect(page_signal_source, SIGNAL(share_rf_channels(QString,int)), page_channels, SLOT(listener_rf_channel(QString,int)));
 
     //Vertical Layout is the main Layout
     QVBoxLayout *main_layout = new QVBoxLayout;
@@ -111,8 +110,8 @@ Gnss_GUI::Gnss_GUI(QWidget *parent): QDialog(parent)
     main_layout->addWidget(generate_box);
     setLayout(main_layout);
     load_style1();
-
 }
+
 
 void Gnss_GUI::create_menu()
 {
@@ -144,12 +143,13 @@ void Gnss_GUI::create_menu()
     connect(help_action, SIGNAL(triggered()), this, SLOT(help_slot()));
 }
 
+
 void Gnss_GUI::create_generate_box()
 {
     generate_box = new QGroupBox("Generate");
     QHBoxLayout * generate_layout = new QHBoxLayout();
     generate_button = new QPushButton("Generate");
-    connect(generate_button,SIGNAL(clicked()),this,SLOT(generate_configuration_file()));
+    connect(generate_button, SIGNAL(clicked()), this, SLOT(generate_configuration_file()));
     output_filename_editor = new QLineEdit("default_conf");
     output_filename_editor->setMaximumWidth(200);
     //output_filename_editor->setFixedWidth(30);
@@ -160,10 +160,11 @@ void Gnss_GUI::create_generate_box()
     generate_box->setLayout(generate_layout);
 }
 
+
 void Gnss_GUI::generate_configuration_file()
 {
     QString file_name = output_filename_editor->text().split(".").at(0);
-    QFile conf_file(file_name+".conf");
+    QFile conf_file(file_name + ".conf");
     QList <QMap <QString, QString> *> * list_map_options;
     list_map_options = new QList <QMap <QString, QString> *>;
     QMap <QString, QString> * map_temp;
@@ -175,7 +176,7 @@ void Gnss_GUI::generate_configuration_file()
     list_map_options->append(page_channels->get_options());
     list_map_options->append(page_observables->get_options());
     list_map_options->append(page_pvt->get_options());
-    for (int i=0;i<list_map_options->count();i++)
+    for (int i = 0; i <list_map_options->count(); i++)
         {
             map_temp = list_map_options->at(i);
             if (!conf_file.isOpen())
@@ -190,7 +191,7 @@ void Gnss_GUI::generate_configuration_file()
                                         {
                                             if (!map_temp->value(key).isEmpty())
                                                 {
-                                                    out << key << "="<< map_temp->value(key) <<endl;
+                                                    out << key << "=" << map_temp->value(key) <<endl;
                                                 }
                                          }
                                 }
@@ -203,7 +204,7 @@ void Gnss_GUI::generate_configuration_file()
                         {
                             if (!map_temp->value(key).isEmpty())
                                 {
-                                    out << key << "="<< map_temp->value(key) <<endl;
+                                    out << key << "=" << map_temp->value(key) << endl;
                                 }
                         }
                 }
@@ -215,15 +216,16 @@ void Gnss_GUI::generate_configuration_file()
 
 }
 
+
 void Gnss_GUI::create_styles_list()
 {
     if (list_blocks.contains("Styles"))
         {
             QDir *styles_dir;
-            styles_dir = new QDir(dir_path+"/Styles");
+            styles_dir = new QDir(dir_path + "/Styles");
             styles_dir->setFilter(QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Files);
             QStringList name_filters;
-            name_filters<<"*.qss";
+            name_filters << "*.qss";
             styles_dir->setNameFilters(name_filters);
             foreach (QFileInfo item, styles_dir->entryInfoList())
                 {
@@ -236,49 +238,54 @@ void Gnss_GUI::create_styles_list()
         }
 }
 
+
 QByteArray Gnss_GUI::read_stylesheets(const QString file_path)
 {
-  QFile input_file(file_path);
-  QByteArray input_data;
-  if (input_file.open(QIODevice::Text | QIODevice::Unbuffered | QIODevice::ReadOnly))
-    {
-        input_data = input_file.readAll();
-        input_file.close();
-        return input_data;
-    }
-  else
-    {
-        return QByteArray();
-    }
+    QFile input_file(file_path);
+    QByteArray input_data;
+    if (input_file.open(QIODevice::Text | QIODevice::Unbuffered | QIODevice::ReadOnly))
+        {
+            input_data = input_file.readAll();
+            input_file.close();
+            return input_data;
+        }
+    else
+        {
+            return QByteArray();
+        }
 }
+
 
 void Gnss_GUI::load_style1()
 {
-    QString custom_style_sheet = read_stylesheets(dir_path+"/Styles/Style1.qss");
+    QString custom_style_sheet = read_stylesheets(dir_path + "/Styles/Style1.qss");
     this->setStyleSheet(custom_style_sheet);
 }
+
+
 void Gnss_GUI::load_custom()
 {
-    QString custom_style_sheet = read_stylesheets(dir_path+"/Styles/Custom.qss");
+    QString custom_style_sheet = read_stylesheets(dir_path + "/Styles/Custom.qss");
     this->setStyleSheet(custom_style_sheet);
 }
+
+
 void Gnss_GUI::load_none()
 {
     this->setStyleSheet("");
 }
 
+
 void Gnss_GUI::help_slot()
 {
-
     QMessageBox::about(this, tr("About Menu"),
-             tr("This is the <b>GUI</b> for generating the configuration files for <b>GNSS-SDR</b>. <br>"
-                "Please visit <b>GNSS-SDR</b> website by clicking <a href='http://gnss-sdr.org'>GNSS-SDR.</a><br>"
-                "Please see <b>GNSS-SDR</b> Dcoumentation by clicking <a href='http://gnss-sdr.org/docs/'>Docs.</a><br>"
-                "Please see <b>GNSS-SDR-GUI</b> Dcoumentation by clicking <a href='https://github.com/UHaider/gnss_sdr_gui'>GUI-Docs.</a><br>"));
-
+            tr("This is the <b>GUI</b> for generating the configuration files for <b>GNSS-SDR</b>. <br>"
+                    "Please visit <b>GNSS-SDR</b> website by clicking <a href='http://gnss-sdr.org'>GNSS-SDR.</a><br>"
+                    "Please see <b>GNSS-SDR</b> Dcoumentation by clicking <a href='http://gnss-sdr.org/docs/'>Docs.</a><br>"
+                    "Please see <b>GNSS-SDR-GUI</b> Dcoumentation by clicking <a href='https://github.com/UHaider/gnss_sdr_gui'>GUI-Docs.</a><br>"));
 }
+
 
 Gnss_GUI::~Gnss_GUI()
 {
-
 }

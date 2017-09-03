@@ -30,8 +30,8 @@
  * -----------------------------------------------------------------------
  */
 
-#ifndef CHANNELS_H
-#define CHANNELS_H
+#ifndef GNSS_SDR_GUI_CHANNELS_H
+#define GNSS_SDR_GUI_CHANNELS_H
 
 #include <QWidget>
 #include <QtWidgets/QGroupBox>
@@ -51,7 +51,7 @@ class Channels : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Channels(QWidget * parent = 0, QString block_name_="Channels", QString dir_path_="");
+    explicit Channels(QWidget * parent = 0, QString block_name_ = "Channels", QString dir_path_ = "");
     QMap<QString, QString> * get_options();
     QString block_name;
 
@@ -88,8 +88,8 @@ private:
 
     QDir * block_directory;
     QList <QTabWidget*> * list_sub_tabwidget;
-    QList <QStringList*> * block_implentation_list;
-    QList <QStringList*> * block_implentation_list_path;
+    QList <QStringList*> * block_implementation_list;
+    QList <QStringList*> * block_implementation_list_path;
     QMap<QString, QLineEdit *> * map_implementation;
     QList < QMap<QString, QLineEdit *> *> * list_map_generic;
     QList < QMap<QString, QLineEdit *> *> * list_map_subdirectory;
@@ -105,7 +105,6 @@ private:
     QVBoxLayout * block_scroll_area_widget_layout;
     QScrollArea * block_scroll_area;
 
-
 signals:
     void fire_update_channels();
 
@@ -118,4 +117,4 @@ public slots:
     void channel_page_slot(QString imp);
 };
 
-#endif // CHANNELS_H
+#endif // GNSS_SDR_GUI_CHANNELS_H

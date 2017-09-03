@@ -29,8 +29,8 @@
  * -----------------------------------------------------------------------
  */
 
-#ifndef GNSSGUI_H
-#define GNSSGUI_H
+#ifndef GNSS_SDR_GUI_GNSSGUI_H
+#define GNSS_SDR_GUI_GNSSGUI_H
 
 #include <QDialog>
 #include <QDir>
@@ -103,4 +103,4 @@ public slots:
     void help_slot();
 };
 
-#endif // GNSSGUI_H
+#endif // GNSS_SDR_GUI_GNSSGUI_H

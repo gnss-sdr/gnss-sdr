@@ -30,8 +30,8 @@
  */
 
 
-#ifndef PVT_H
-#define PVT_H
+#ifndef GNSS_SDR_GUI_PVT_H
+#define GNSS_SDR_GUI_PVT_H
 
 #include <QWidget>
 #include <QtWidgets/QGroupBox>
@@ -65,15 +65,15 @@ private:
     QScrollArea * block_scroll_area;
     QWidget * block_scroll_area_widget;
     QVBoxLayout * block_scroll_area_widget_layout;
-    QList<QString> block_implentation_list;
-    QList<QString> block_implentation_list_path;
+    QList<QString> block_implementation_list;
+    QList<QString> block_implementation_list_path;
     QMap <QString, QLineEdit *> * map_implementation;
     QList <QSpacerItem *> * list_spacer;
 
 signals:
 
 public slots:
-    void update_implementaion(QString);
+    void update_implementation(QString);
 };
 
-#endif // PVT_H
+#endif // GNSS_SDR_GUI_PVT_H

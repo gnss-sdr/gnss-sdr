@@ -31,8 +31,8 @@
  */
 
 
-#ifndef SIGNAL_CONDITIONER_H
-#define SIGNAL_CONDITIONER_H
+#ifndef GNSS_SDR_GUI_SIGNAL_CONDITIONER_H
+#define GNSS_SDR_GUI_SIGNAL_CONDITIONER_H
 
 #include <QWidget>
 #include <QtWidgets/QGroupBox>
@@ -53,7 +53,7 @@ class Signal_Conditioner : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Signal_Conditioner(QWidget * parent = 0, QString block_name_="Signal_Source", QString dir_path_="");
+    explicit Signal_Conditioner(QWidget * parent = 0, QString block_name_ = "Signal_Source", QString dir_path_ = "");
     QMap<QString, QString> * get_options();
     QString block_name;
 
@@ -71,8 +71,8 @@ private:
     QStringList * subdirectories_paths;
     QStringList * subdirectories_names;
     QDir * block_directory;
-    QList <QStringList*> * blockImplentationList;
-    QList <QStringList*> * block_implentation_list_path;
+    QList <QStringList*> * blockImplementationList;
+    QList <QStringList*> * block_implementation_list_path;
     QList < QMap<QString, QLineEdit *> *> * list_map_implementation;
     QList < QMap<QString, QLineEdit *> *> * list_map_sub;
     QList < QMap<QString, QLineEdit *> *> * list_map_pass;
@@ -100,4 +100,4 @@ public slots:
     void enable_disable(int);
 };
 
-#endif // SIGNAL_CONDITIONER_H
+#endif // GNSS_SDR_GUI_SIGNAL_CONDITIONER_H

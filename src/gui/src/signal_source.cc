@@ -96,7 +96,7 @@ QGroupBox* Signal_Source::box_generic(QString boxname, QSettings *ini_settings)
             //    }
             //else
             //    {
-                    map_generic->insert(key,new QLineEdit());
+                    map_generic->insert(key, new QLineEdit());
             //    }
         }
     foreach (const QString &key, map_generic->keys())
@@ -468,7 +468,7 @@ QGroupBox* Signal_Source::sub_box_implementation(QString boxname, QStringList gr
             QRegularExpressionMatch match = key_re1.match(key);
             if (match.hasMatch())
                 {
-                    list_map_sub->at(current_source)->value(key)->setToolTip("RF front-end center frequency in [sps]");
+                    list_map_sub->at(current_source)->value(key)->setToolTip("RF front-end center frequency in [Hz]");
                 }
         }
     foreach (const QString key, group_keys)

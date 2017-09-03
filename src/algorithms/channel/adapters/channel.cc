@@ -28,16 +28,11 @@
  *
  * -------------------------------------------------------------------------
  */
+
 #include "channel.h"
-//#include <memory>
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
-//#include "channel_interface.h"
-//#include "acquisition_interface.h"
-//#include "tracking_interface.h"
-//#include "telemetry_decoder_interface.h"
 #include "configuration_interface.h"
-//#include "channel_msg_receiver_cc.h"
 
 using google::LogMessage;
 
@@ -56,7 +51,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     channel_ = channel;
     queue_ = queue;
 
-    flag_enable_fpga=configuration->property("Channel.enable_FPGA", false);
+    flag_enable_fpga = configuration->property("Channel.enable_FPGA", false);
     acq_->set_channel(channel_);
     trk_->set_channel(channel_);
     nav_->set_channel(channel_);
@@ -64,6 +59,17 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     gnss_synchro_.Channel_ID = channel_;
     acq_->set_gnss_synchro(&gnss_synchro_);
     trk_->set_gnss_synchro(&gnss_synchro_);
+
+    // Provide a warning to the user about the change of parameter name
+    if(channel_ == 0)
+        {
+            long int deprecation_warning = configuration->property("GNSS-SDR.internal_fs_hz", 0);
+            if(deprecation_warning != 0)
+                {
+                    std::cout << "WARNING: The global parameter name GNSS-SDR.internal_fs_hz has been DEPRECATED." << std::endl;
+                    std::cout << "WARNING: Please replace it by GNSS-SDR.internal_fs_sps in your configuration file." << std::endl;
+                }
+        }
 
     // IMPORTANT: Do not change the order between set_doppler_step and set_threshold
 

@@ -66,6 +66,7 @@ private:
 
     QList < QMap<QString, QLineEdit *> *> * list_map_implementation;
     QList < QMap<QString, QLineEdit *> *> * list_map_sub;
+    QList < QMap<QString, QComboBox *> *> * list_map_dump;
     QList < QSpacerItem *> * list_spacer;
 
     //List of sbgroups for each source implmentation
@@ -82,16 +83,15 @@ private:
     QWidget * block_scroll_area_widget;
     QVBoxLayout * block_scroll_area_widget_layout;
 
-
-
 signals:
 
     void share_source_count_value(QString,int);
     void share_rf_channels(QString,int);
+
 public slots:
-    void update_soruces();
+    void update_sources();
     void update_source_pages();
-    void update_implementaion(QString);
+    void update_implementation(QString);
     void add_sub_blocks();
 };
 

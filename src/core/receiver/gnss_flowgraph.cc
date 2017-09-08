@@ -735,19 +735,19 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
-        if (configuration_->property("Channels_1G.count", 0) > 0 )
-        {
-            /*
-             * Loop to create the list of GLONASS L1 C/A signals
-             */
-            for (available_gnss_prn_iter = available_glonass_prn.begin();
-                    available_gnss_prn_iter != available_glonass_prn.end();
-                    available_gnss_prn_iter++)
-                {
-                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Glonass"),
-                            *available_gnss_prn_iter), std::string("1G")));
-                }
-        }
+    if (configuration_->property("Channels_1G.count", 0) > 0 )
+    {
+        /*
+         * Loop to create the list of GLONASS L1 C/A signals
+         */
+        for (available_gnss_prn_iter = available_glonass_prn.begin();
+                available_gnss_prn_iter != available_glonass_prn.end();
+                available_gnss_prn_iter++)
+            {
+                available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Glonass"),
+                        *available_gnss_prn_iter), std::string("1G")));
+            }
+    }
     /*
      * Ordering the list of signals from configuration file
      */

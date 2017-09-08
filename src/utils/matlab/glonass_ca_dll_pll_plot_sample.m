@@ -1,5 +1,5 @@
 % /*!
-%  * \file glonass_l1_ca_dll_pll_plot_sample.m
+%  * \file glonass_ca_dll_pll_plot_sample.m
 %  * \brief Read GNSS-SDR Tracking dump binary file using the provided
 %  function and plot some internal variables
 %  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
@@ -30,7 +30,7 @@
 close all;
 clear all;
 
-if ~exist('glonass_l1_ca_dll_pll_read_tracking_dump.m','file')
+if ~exist('glonass_ca_dll_pll_read_tracking_dump.m','file')
     addpath('./libs')
 end
 
@@ -43,7 +43,7 @@ path = '/archive/';  %% CHANGE THIS PATH
 
 for N=1:1:channels
     tracking_log_path = [path 'glo_tracking_ch_' num2str(N+first_channel-1) '.dat']; %% CHANGE epl_tracking_ch_ BY YOUR dump_filename
-    GNSS_tracking(N)= gps_l1_ca_dll_pll_read_tracking_dump(tracking_log_path);
+    GNSS_tracking(N)= glonass_ca_dll_pll_read_tracking_dump(tracking_log_path);
 end
 
 % GNSS-SDR format conversion to MATLAB GPS receiver
@@ -69,5 +69,5 @@ for N=1:1:channels
         % Use original MATLAB tracking plot function
         settings.numberOfChannels = channels;
         settings.msToProcess = length(GNSS_tracking(N).E);
-        plotTracking(N,trackResults,settings)
+        plotTracking(N,trackResults,settings);
 end

@@ -9,5 +9,7 @@ thirdparty/
 .settings
 .project
 .cproject
+.idea
+cmake-build-debug/
 /install
 .DS_Store

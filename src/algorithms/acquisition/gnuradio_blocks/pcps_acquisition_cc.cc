@@ -194,8 +194,8 @@ bool pcps_acquisition_cc::is_fdma()
     // Dealing with FDMA system
     if( strcmp(d_gnss_synchro->Signal,"1G") == 0 )
         {
-            d_freq += DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
-            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN) << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
+            d_freq += d_old_freq * GLONASS_PRN.at(d_gnss_synchro->PRN);
+            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_old_freq * GLONASS_PRN.at(d_gnss_synchro->PRN) << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
             return true;
         }
     else

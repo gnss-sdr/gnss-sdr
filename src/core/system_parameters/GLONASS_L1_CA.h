@@ -159,6 +159,7 @@ const int GLONASS_GNAV_TELEMETRY_RATE_SYMBOLS_SECOND = GLONASS_GNAV_TELEMETRY_RA
 const int GLONASS_GNAV_STRING_SYMBOLS = 2000;       //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
 const int GLONASS_GNAV_STRING_BITS = 85;            //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
 const int GLONASS_GNAV_HAMMING_CODE_BITS = 8;       //!< Number of bits in hamming code sequence of GNAV message
+const int GLONASS_GNAV_DATA_SYMBOLS = 1700; // STRING DATA WITHOUT PREAMBLE
 
 const std::vector<int> GLONASS_GNAV_CRC_I_INDEX {9, 10, 12, 13, 15, 17, 19, 20, 22, 24, 26, 28, 30, 32, 34, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84};
 const std::vector<int> GLONASS_GNAV_CRC_J_INDEX {9, 11, 12, 14, 15, 18, 19, 21, 22, 25, 26, 29, 30, 33, 34, 36, 37, 40, 41, 44, 45, 48, 49, 52, 53, 56, 57, 60, 61, 64, 65, 67, 68, 71, 72, 75, 76, 79, 80, 83, 84};

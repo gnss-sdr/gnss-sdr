@@ -51,7 +51,7 @@ end
 for N=1:1:channels
         trackResults(N).status = 'T'; %fake track
         trackResults(N).codeFreq       = GNSS_tracking(N).code_freq_hz.';
-        trackResults(N).carrFreq       = GNSS_tracking(N).carrier_doppler_hz.';
+        trackResults(N).carrFreq       = GNSS_tracking(N).carrier_freq_hz.';
         trackResults(N).dllDiscr       = GNSS_tracking(N).code_error.';
         trackResults(N).dllDiscrFilt   = GNSS_tracking(N).code_nco.';
         trackResults(N).pllDiscr       = GNSS_tracking(N).carr_error.';
@@ -64,6 +64,7 @@ for N=1:1:channels
         trackResults(N).I_L = GNSS_tracking(N).L.';
         trackResults(N).Q_E = zeros(1,length(GNSS_tracking(N).E));
         trackResults(N).Q_L = zeros(1,length(GNSS_tracking(N).E));
+        trackResults(N).CNo = GNSS_tracking(N).CN0_SNV_dB_Hz.';
         trackResults(N).PRN = ones(1,length(GNSS_tracking(N).E));
 
         % Use original MATLAB tracking plot function

@@ -65,6 +65,7 @@ for N=1:1:channels
         trackResults(N).Q_E = zeros(1,length(GNSS_tracking(N).E));
         trackResults(N).Q_L = zeros(1,length(GNSS_tracking(N).E));
         trackResults(N).PRN = ones(1,length(GNSS_tracking(N).E));
+        trackResults(N).CNo = GNSS_tracking(N).CN0_SNV_dB_Hz.';
         
         % Use original MATLAB tracking plot function
         settings.numberOfChannels = channels;

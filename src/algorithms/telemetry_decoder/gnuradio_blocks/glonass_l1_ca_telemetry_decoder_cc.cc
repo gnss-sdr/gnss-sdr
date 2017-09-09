@@ -288,7 +288,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
                     // NEW GLONASS string received
                     // 0. fetch the symbols into an array
                     int string_length = GLONASS_GNAV_STRING_SYMBOLS - d_symbols_per_preamble;
-                    double string_symbols[string_length] = {0};
+                    double string_symbols[GLONASS_GNAV_DATA_SYMBOLS] = {0};
 
                     //******* SYMBOL TO BIT *******
                     for (int i = 0; i < string_length; i++)

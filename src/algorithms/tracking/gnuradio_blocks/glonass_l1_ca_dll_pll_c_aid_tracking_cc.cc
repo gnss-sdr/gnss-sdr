@@ -196,7 +196,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / static_cast<double>(d_fs_in);
     // Doppler effect
     // Fd=(C/(C+Vr))*F
-    d_glonass_freq_ch = GLONASS_L1_CA_FREQ_HZ + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    d_glonass_freq_ch = GLONASS_L1_CA_FREQ_HZ + (DFRQ1_GLO * static_cast<double>(GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN)));
     double radial_velocity = (d_glonass_freq_ch + d_acq_carrier_doppler_hz) / d_glonass_freq_ch;
     // new chip and prn sequence periods based on acq Doppler
     double T_chip_mod_seconds;
@@ -576,7 +576,8 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __a
                     d_dump_file.write(reinterpret_cast<char*>(&d_acc_carrier_phase_cycles), sizeof(double));
 
                     // carrier and code frequency
-                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(double));
+                    double if_freq_carrier = d_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  static_cast<double>(GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN)));
+                    d_dump_file.write(reinterpret_cast<char*>(&if_freq_carrier), sizeof(double));
                     d_dump_file.write(reinterpret_cast<char*>(&d_code_freq_chips), sizeof(double));
 
                     //PLL commands

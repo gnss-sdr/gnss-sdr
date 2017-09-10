@@ -557,6 +557,3 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_)
 {
     block = what_block(system_, PRN_);
 }
-
-
-

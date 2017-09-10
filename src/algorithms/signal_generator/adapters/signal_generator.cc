@@ -36,7 +36,7 @@
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E5a.h"
-#include "Glonass_L1_CA.h"
+#include "GLONASS_L1_CA.h"
 
 
 using google::LogMessage;

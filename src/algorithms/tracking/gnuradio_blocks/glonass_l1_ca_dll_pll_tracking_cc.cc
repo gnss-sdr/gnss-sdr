@@ -10,7 +10,7 @@
 #include "glonass_l1_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
-#include "Glonass_L1_CA.h"
+#include "GLONASS_L1_CA.h"
 #include "control_message_factory.h"
 
 
@@ -161,7 +161,7 @@ void Glonass_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
     // Doppler effect
     // Fd=(C/(C+Vr))*F
-    d_glonass_freq_ch = GLONASS_L1_FREQ_HZ + (GLONASS_L1_FREQ_HZ *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    d_glonass_freq_ch = GLONASS_L1_CA_FREQ_HZ + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
     double radial_velocity = (d_glonass_freq_ch + d_acq_carrier_doppler_hz) / d_glonass_freq_ch;
     // new chip and prn sequence periods based on acq Doppler
     double T_chip_mod_seconds;
@@ -189,7 +189,8 @@ void Glonass_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
 
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
-    d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
+    d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    // d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization

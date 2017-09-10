@@ -2,7 +2,7 @@
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include "glonass_l1_signal_processing.h"
-#include "Glonass_L1_CA.h"
+#include "GLONASS_L1_CA.h"
 #include "configuration_interface.h"
 
 
@@ -64,7 +64,7 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
     DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-    
+
     if (item_type_.compare("cbyte") == 0)
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
@@ -358,4 +358,3 @@ gr::basic_block_sptr GlonassL1CaPcpsAcquisition::get_right_block()
             return acquisition_cc_;
         }
 }
-

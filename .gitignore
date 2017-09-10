@@ -6,7 +6,10 @@ docs/latex
 docs/GNSS-SDR_manual.pdf
 src/tests/data/output.dat
 thirdparty/
+.settings
 .project
 .cproject
+.idea
+cmake-build-debug/
 /install
 .DS_Store

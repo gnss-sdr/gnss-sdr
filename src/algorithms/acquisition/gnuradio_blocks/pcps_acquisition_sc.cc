@@ -41,7 +41,7 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "control_message_factory.h"
 #include "GPS_L1_CA.h" //GPS_TWO_PI
-#include "Glonass_L1_CA.h" //GLONASS_TWO_PI
+#include "GLONASS_L1_CA.h" //GLONASS_TWO_PI
 
 
 using google::LogMessage;

@@ -597,8 +597,8 @@ void GNSSFlowgraph::set_signals_list()
             11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
             29, 30, 31, 32, 33, 34, 35, 36};
 
-    std::set<unsigned int> available_glonass_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
+    // Removing satellites sharing same frequency number(1 and 5, 2 and 6, 3 and 7, 4 and 6, 11 and 15, 12 and 16, 14 and 18, 17 and 21
+    std::set<unsigned int> available_glonass_prn = { 1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21 };
 
     std::string sv_list = configuration_->property("Galileo.prns", std::string("") );
 
@@ -735,19 +735,19 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
-        if (configuration_->property("Channels_1G.count", 0) > 0 )
-        {
-            /*
-             * Loop to create the list of GLONASS L1 C/A signals
-             */
-            for (available_gnss_prn_iter = available_glonass_prn.begin();
-                    available_gnss_prn_iter != available_glonass_prn.end();
-                    available_gnss_prn_iter++)
-                {
-                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Glonass"),
-                            *available_gnss_prn_iter), std::string("1G")));
-                }
-        }
+    if (configuration_->property("Channels_1G.count", 0) > 0 )
+    {
+        /*
+         * Loop to create the list of GLONASS L1 C/A signals
+         */
+        for (available_gnss_prn_iter = available_glonass_prn.begin();
+                available_gnss_prn_iter != available_glonass_prn.end();
+                available_gnss_prn_iter++)
+            {
+                available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Glonass"),
+                        *available_gnss_prn_iter), std::string("1G")));
+            }
+    }
     /*
      * Ordering the list of signals from configuration file
      */

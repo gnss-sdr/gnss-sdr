@@ -176,7 +176,7 @@ void Gnss_GUI::generate_configuration_file()
     list_map_options->append(page_channels->get_options());
     list_map_options->append(page_observables->get_options());
     list_map_options->append(page_pvt->get_options());
-    for (int i = 0; i <list_map_options->count(); i++)
+    for (int i = 0; i < list_map_options->count(); i++)
         {
             map_temp = list_map_options->at(i);
             if (!conf_file.isOpen())
@@ -191,7 +191,7 @@ void Gnss_GUI::generate_configuration_file()
                                         {
                                             if (!map_temp->value(key).isEmpty())
                                                 {
-                                                    out << key << "=" << map_temp->value(key) <<endl;
+                                                    out << key << "=" << map_temp->value(key) << endl;
                                                 }
                                          }
                                 }

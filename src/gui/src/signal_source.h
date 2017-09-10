@@ -66,10 +66,10 @@ private:
 
     QList < QMap<QString, QLineEdit *> *> * list_map_implementation;
     QList < QMap<QString, QLineEdit *> *> * list_map_sub;
-    QList < QMap<QString, QComboBox *> *> * list_map_dump;
+    QList < QMap<QString, QComboBox *> *> * list_map_comboboxes;
     QList < QSpacerItem *> * list_spacer;
 
-    //List of sbgroups for each source implmentation
+    // List of subgroups for each source implementation
     QMap <int, QStringList*> * map_subgroup_list;
     QList < QMap<QString, QString> *> * list_map_subgroup_keys;
     QList < QMap<QString, QStringList> *> * list_map_subgroup_child_keys;

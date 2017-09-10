@@ -30,7 +30,7 @@
  */
 
 #include "signal_source.h"
-
+#include <iostream>
 Signal_Source::Signal_Source(QWidget * parent, QString block_name_, QString dir_path_) : QWidget(parent), block_name(block_name_), dir_path(dir_path_)
 {
     map_generic = new QMap<QString, QLineEdit *>;
@@ -39,7 +39,7 @@ Signal_Source::Signal_Source(QWidget * parent, QString block_name_, QString dir_
     list_map_sub = new QList < QMap<QString, QLineEdit *> *>;
     list_map_subgroup_keys = new QList < QMap<QString, QString > *>;
     list_map_subgroup_child_keys = new QList < QMap<QString, QStringList> *>;
-    list_map_dump = new QList < QMap<QString, QComboBox *> *>;
+    list_map_comboboxes = new QList < QMap<QString, QComboBox *> *>;
     list_spacer = new QList <QSpacerItem *>;
     block_dir = new QDir(dir_path);
     block_dir->setFilter(QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Files);
@@ -141,7 +141,7 @@ void Signal_Source::update_sources()
                 {
                     list_map_implementation->clear();
                     list_map_sub->clear();
-                    list_map_dump->clear();
+                    list_map_comboboxes->clear();
                     map_subgroup_list->clear();
                     list_map_subgroup_keys->clear();
                     list_map_subgroup_child_keys->clear();
@@ -156,7 +156,7 @@ void Signal_Source::update_sources()
                     list_map_implementation->append(new QMap<QString, QLineEdit *>);
                     //create a sub map for each source
                     list_map_sub->append(new QMap<QString, QLineEdit *>);
-                    list_map_dump->append(new QMap<QString, QComboBox *>);
+                    list_map_comboboxes->append(new QMap<QString, QComboBox *>);
                     //insert a QStringList in map for each source for keeping the subgrouplist
                     map_subgroup_list->insert(i, new QStringList);
                     list_map_subgroup_keys->append(new QMap<QString, QString>);
@@ -179,9 +179,9 @@ void Signal_Source::update_source_pages()
                     source_combobox = new QComboBox();
                     source_combobox->setObjectName("sourceComboBox");
                     source_combobox->addItem("Select");
-                    foreach (QString implentation, block_implementation_list)
+                    foreach (QString implementation, block_implementation_list)
                         {
-                            source_combobox->addItem(implentation);
+                            source_combobox->addItem(implementation);
                         }
                     connect(source_combobox, SIGNAL(currentIndexChanged(QString)), this, SLOT(update_implementation(QString)));
                     block_tab_widget->widget(sourceind)->layout()->addWidget(source_combobox);
@@ -300,60 +300,264 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
     QGridLayout * layout = new QGridLayout;
     uint max_col = 4;
     QComboBox * dumpComboBox;
+    QComboBox * repeatComboBox;
+    QComboBox * enable_throttle_controlComboBox;
+    QComboBox * item_typeComboBox;
+    QComboBox * subdeviceComboBox;
+    QComboBox * clock_sourceComboBox;
+
     uint row = 0;
     uint col = 0;
     int current_source = block_tab_widget->currentIndex();
+
+    QStringList group_main_pars;
+    QStringList group_pars;
+    QStringList group_dump;
+
     QRegularExpression key_dump( "dump(?!(_filename))" );
-    foreach(QString key,group_keys)
+    QRegularExpression key_dump_filename( "dump_filename" );
+    QRegularExpression key_filename( "\\.filename" );
+    QRegularExpression key_sampling_frequency( "sampling_frequency" );
+    QRegularExpression key_device_address( "device_address" );
+    QRegularExpression key_subdevice( "\\.subdevice" );
+    QRegularExpression key_samples( "\\.samples" );
+    QRegularExpression key_item_type( "\\.item_type" );
+    QRegularExpression key_repeat( "\\.repeat" );
+    QRegularExpression key_enable_throttle_control( "\\.enable_throttle_control" );
+    QRegularExpression key_implementation( "\\.implementation" );
+    QRegularExpression key_clock_source( "\\.clock_source" );
+    QRegularExpression key_freq( "^(SignalSource)[0-9]{0,}.(freq)$" );
+
+    QString current_implementation;
+    for (int i = 0; i < list_map_implementation->count(); i++)
+        {
+            foreach (QString key, list_map_implementation->at(i)->keys())
+                {
+                     QRegularExpressionMatch match_implementation = key_implementation.match(key);
+                     if (match_implementation.hasMatch())
+                         {
+                             current_implementation = list_map_implementation->at(i)->value(key)->text();
+                         }
+                }
+        }
+
+    foreach(QString key, group_keys)
         {
             //Insert Items in main map for this source
             QRegularExpressionMatch match_dump = key_dump.match(key);
-            if (match_dump.hasMatch())
+            QRegularExpressionMatch match_dump_filename = key_dump_filename.match(key);
+            QRegularExpressionMatch match_filename = key_filename.match(key);
+            QRegularExpressionMatch match_sampling_frequency = key_sampling_frequency.match(key);
+            QRegularExpressionMatch match_device_address = key_device_address.match(key);
+            QRegularExpressionMatch match_samples = key_samples.match(key);
+            QRegularExpressionMatch match_item_type = key_item_type.match(key);
+            QRegularExpressionMatch match_repeat = key_repeat.match(key);
+            QRegularExpressionMatch match_enable_throttle_control = key_enable_throttle_control.match(key);
+            QRegularExpressionMatch match_subdevice = key_subdevice.match(key);
+            QRegularExpressionMatch match_clock_source = key_clock_source.match(key);
+            QRegularExpressionMatch match_freq = key_freq.match(key);
+
+            if (match_dump_filename.hasMatch())
+                {
+                    group_dump << key;
+                }
+            if (match_filename.hasMatch())
+                {
+                    group_main_pars << key;
+                }
+            if (match_sampling_frequency.hasMatch())
+                {
+                    group_main_pars << key;
+                }
+            if (match_device_address.hasMatch())
+                {
+                    group_main_pars << key;
+                }
+            if (match_freq.hasMatch())
+                {
+                    group_main_pars << key;
+                }
+
+            if (match_subdevice.hasMatch())
+                {
+                    subdeviceComboBox = new QComboBox();
+                    subdeviceComboBox->setObjectName("subdeviceComboBox");
+                    subdeviceComboBox->addItem(tr("A:0"));
+                    subdeviceComboBox->addItem(tr("B:0"));
+                    subdeviceComboBox->setCurrentIndex(0);
+                    list_map_comboboxes->at(current_source)->insert(key, subdeviceComboBox);
+                }
+            if (match_clock_source.hasMatch())
+                {
+                    clock_sourceComboBox = new QComboBox();
+                    clock_sourceComboBox->setObjectName("clock_sourceComboBox");
+                    clock_sourceComboBox->addItem(tr("internal"));
+                    clock_sourceComboBox->addItem(tr("external"));
+                    clock_sourceComboBox->addItem(tr("MIMO"));
+                    clock_sourceComboBox->setCurrentIndex(0);
+                    list_map_comboboxes->at(current_source)->insert(key, clock_sourceComboBox);
+                }
+            else if (match_dump.hasMatch())
                 {
                     dumpComboBox = new QComboBox();
                     dumpComboBox->setObjectName("dumpComboBox");
                     dumpComboBox->addItem(tr("false"));
                     dumpComboBox->addItem(tr("true"));
                     dumpComboBox->setCurrentIndex(0);
-                    list_map_dump->at(current_source)->insert(key, dumpComboBox);
+                    list_map_comboboxes->at(current_source)->insert(key, dumpComboBox);
+                    group_dump << key;
+                }
+            else if (match_repeat.hasMatch())
+                {
+                    repeatComboBox = new QComboBox();
+                    repeatComboBox->setObjectName("repeatComboBox");
+                    repeatComboBox->addItem(tr("false"));
+                    repeatComboBox->addItem(tr("true"));
+                    repeatComboBox->setCurrentIndex(0);
+                    list_map_comboboxes->at(current_source)->insert(key, repeatComboBox);
+                }
+            else if (match_enable_throttle_control.hasMatch())
+                {
+                    enable_throttle_controlComboBox = new QComboBox();
+                    enable_throttle_controlComboBox->setObjectName("enable_throttle_controlComboBox");
+                    enable_throttle_controlComboBox->addItem(tr("false"));
+                    enable_throttle_controlComboBox->addItem(tr("true"));
+                    enable_throttle_controlComboBox->setCurrentIndex(0);
+                    list_map_comboboxes->at(current_source)->insert(key, enable_throttle_controlComboBox);
+                }
+            else if (match_item_type.hasMatch())
+                {
+                    QRegularExpression key_File_Signal_Source( "File_Signal_Source" );
+                    QRegularExpression key_UHD_Signal_Source( "UHD_Signal_Source" );
+                    QRegularExpressionMatch match_File_Signal_Source = key_File_Signal_Source.match(current_implementation);
+                    QRegularExpressionMatch match_UHD_Signal_Source = key_UHD_Signal_Source.match(current_implementation);
+                    if(match_File_Signal_Source.hasMatch())
+                        {
+                            item_typeComboBox = new QComboBox();
+                            item_typeComboBox->setObjectName("item_typeComboBox");
+                            item_typeComboBox->addItem(tr("byte"));
+                            item_typeComboBox->addItem(tr("ibyte"));
+                            item_typeComboBox->addItem(tr("short"));
+                            item_typeComboBox->addItem(tr("cshort"));
+                            item_typeComboBox->addItem(tr("float"));
+                            item_typeComboBox->addItem(tr("gr_complex"));
+                            item_typeComboBox->setCurrentIndex(5);
+                            list_map_comboboxes->at(current_source)->insert(key, item_typeComboBox);
+                        }
+                    else if(match_UHD_Signal_Source.hasMatch())
+                        {
+                            item_typeComboBox = new QComboBox();
+                            item_typeComboBox->setObjectName("item_typeComboBox");
+                            item_typeComboBox->addItem(tr("cbyte"));
+                            item_typeComboBox->addItem(tr("cshort"));
+                            item_typeComboBox->addItem(tr("gr_complex"));
+                            item_typeComboBox->setCurrentIndex(1);
+                            list_map_comboboxes->at(current_source)->insert(key, item_typeComboBox);
+                        }
+                    else
+                        {
+                            item_typeComboBox = new QComboBox();
+                            item_typeComboBox->setObjectName("item_typeComboBox");
+                            item_typeComboBox->addItem(tr("byte"));
+                            item_typeComboBox->addItem(tr("ibyte"));
+                            item_typeComboBox->addItem(tr("short"));
+                            item_typeComboBox->addItem(tr("cshort"));
+                            item_typeComboBox->addItem(tr("float"));
+                            item_typeComboBox->addItem(tr("gr_complex"));
+                            item_typeComboBox->setCurrentIndex(5);
+                            list_map_comboboxes->at(current_source)->insert(key, item_typeComboBox);
+                        }
                 }
             else
                 {
-                    list_map_implementation->at(current_source)->insert(key, new QLineEdit());
-                    QRegularExpression key_re1( "^(SignalSource)[0-9]{0,}.(freq)$" );
-                    QRegularExpressionMatch match1 = key_re1.match(key);
-                    if (match1.hasMatch())
+                    if(match_dump_filename.hasMatch())
                         {
-                            list_map_implementation->at(current_source)->value(key)->setToolTip("RF front-end center frequency in [sps]");
+                            list_map_implementation->at(current_source)->insert(key, new QLineEdit("./my_capture.dat"));
                         }
-                    QRegularExpression key_re2( "^(SignalSource)[0-9]{0,}.(sampling_frequency)$" );
-                    QRegularExpressionMatch match2 = key_re2.match(key);
-                    if (match2.hasMatch())
+                    else if(match_samples.hasMatch())
+                        {
+                            list_map_implementation->at(current_source)->insert(key, new QLineEdit("0"));
+                        }
+                    else
+                        {
+                            list_map_implementation->at(current_source)->insert(key, new QLineEdit());
+                        }
+
+                    if (match_freq.hasMatch())
+                        {
+                            list_map_implementation->at(current_source)->value(key)->setToolTip("RF front-end center frequency in [Hz]");
+                        }
+                    QRegularExpressionMatch match_sampling_frequency2 = key_sampling_frequency.match(key);
+                    if (match_sampling_frequency2.hasMatch())
                         {
                             list_map_implementation->at(current_source)->value(key)->setToolTip("Original Signal sampling frequency in [sps]");
                         }
                 }
+
+            if (!match_dump_filename.hasMatch() && !match_filename.hasMatch() && !match_dump.hasMatch() && !match_sampling_frequency.hasMatch()
+                    && !match_device_address.hasMatch() && !match_freq.hasMatch() )
+                {
+                    group_pars << key;
+                }
         }
-    foreach (const QString key, group_keys)
+
+    foreach (const QString key, group_main_pars)
         {
             layout->addWidget(new QLabel(key), row, col++);
-
-            QRegularExpressionMatch match4 = key_dump.match(key);
-            if (match4.hasMatch())
-                {
-                    layout->addWidget(list_map_dump->at(current_source)->value(key), row, col++);
-                }
-            else
-                {
-                    layout->addWidget(list_map_implementation->at(current_source)->value(key), row, col++);
-                }
-
-            //layout->addWidget(mapImp->value(mapKey),row,col++);
+            layout->addWidget(list_map_implementation->at(current_source)->value(key), row, col++);
             if ((col % max_col) == 0)
                 {
                     col = 0;
                     row++;
                 }
+        }
+
+    foreach (const QString key, group_pars)
+        {
+            QRegularExpressionMatch match_repeat2 = key_repeat.match(key);
+            QRegularExpressionMatch match_enable_throttle_control2 = key_enable_throttle_control.match(key);
+            QRegularExpressionMatch match_item_type2 = key_item_type.match(key);
+            QRegularExpressionMatch match_subdevice2 = key_subdevice.match(key);
+            QRegularExpressionMatch match_clock_source2 = key_clock_source.match(key);
+
+            if( match_repeat2.hasMatch() || match_enable_throttle_control2.hasMatch() || match_item_type2.hasMatch()
+                    || match_subdevice2.hasMatch() || match_clock_source2.hasMatch())
+                {
+                    layout->addWidget(new QLabel(key), row, col++);
+                    layout->addWidget(list_map_comboboxes->at(current_source)->value(key), row, col++);
+                }
+            else
+                {
+                    layout->addWidget(new QLabel(key), row, col++);
+                    layout->addWidget(list_map_implementation->at(current_source)->value(key), row, col++);
+                }
+
+            if ((col % max_col) == 0)
+                {
+                    col = 0;
+                    row++;
+                }
+        }
+
+    foreach (const QString key, group_dump)
+        {
+            QRegularExpressionMatch match4 = key_dump.match(key);
+            if (!match4.hasMatch())
+                {
+                    layout->addWidget(new QLabel(key), row, col++);
+                    layout->addWidget(list_map_implementation->at(current_source)->value(key), row, col++);
+                }
+            else
+                {
+                    layout->addWidget(new QLabel(key), row, col++);
+                    layout->addWidget(list_map_comboboxes->at(current_source)->value(key), row, col++);
+                }
+
+        if ((col % max_col) == 0)
+            {
+                col = 0;
+                row++;
+            }
         }
     layout->addWidget(update_button, row, max_col-1, 1, 1, Qt::AlignRight);
     grid_groupbox->setLayout(layout);
@@ -484,7 +688,7 @@ QGroupBox* Signal_Source::sub_box_implementation(QString boxname, QStringList gr
 QMap<QString, QString >* Signal_Source::get_options()
 {
     QMap<QString, QString > * map_options;
-    map_options  = new QMap<QString, QString >;
+    map_options = new QMap<QString, QString >;
     foreach (QString key, map_generic->keys())
         {
             map_options->insert(key, map_generic->value(key)->text());
@@ -503,11 +707,11 @@ QMap<QString, QString >* Signal_Source::get_options()
                     map_options->insert(key, list_map_sub->at(i)->value(key)->text());
                 }
         }
-    for (int i = 0; i < list_map_dump->count(); i++)
+    for (int i = 0; i < list_map_comboboxes->count(); i++)
         {
-            foreach (QString key, list_map_dump->at(i)->keys())
+            foreach (QString key, list_map_comboboxes->at(i)->keys())
                 {
-                    map_options->insert(key, list_map_dump->at(i)->value(key)->currentText());
+                    map_options->insert(key, list_map_comboboxes->at(i)->value(key)->currentText());
                 }
         }
     return map_options;

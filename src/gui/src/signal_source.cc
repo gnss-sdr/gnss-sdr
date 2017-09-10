@@ -305,6 +305,7 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
     QComboBox * item_typeComboBox;
     QComboBox * subdeviceComboBox;
     QComboBox * clock_sourceComboBox;
+    QComboBox * AGCComboBox;
 
     uint row = 0;
     uint col = 0;
@@ -314,10 +315,15 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
     QStringList group_pars;
     QStringList group_dump;
 
+    QRegularExpression key_File_Signal_Source( "File_Signal_Source" );
+    QRegularExpression key_UHD_Signal_Source( "UHD_Signal_Source" );
+    QRegularExpression key_Osmosdr_Signal_Source( "Osmosdr_Signal_Source" );
+    QRegularExpression key_RtlTcp_Signal_Source( "RtlTcp_Signal_Source" );
+
     QRegularExpression key_dump( "dump(?!(_filename))" );
     QRegularExpression key_dump_filename( "dump_filename" );
     QRegularExpression key_filename( "\\.filename" );
-    QRegularExpression key_sampling_frequency( "sampling_frequency" );
+    QRegularExpression key_sampling_frequency( "sampling_freq" );
     QRegularExpression key_device_address( "device_address" );
     QRegularExpression key_subdevice( "\\.subdevice" );
     QRegularExpression key_samples( "\\.samples" );
@@ -327,6 +333,10 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
     QRegularExpression key_implementation( "\\.implementation" );
     QRegularExpression key_clock_source( "\\.clock_source" );
     QRegularExpression key_freq( "^(SignalSource)[0-9]{0,}.(freq)$" );
+    QRegularExpression key_gain( "\\.gain$" );
+    QRegularExpression key_rf_gain( "\\.rf_gain$" );
+    QRegularExpression key_if_gain( "\\.if_gain$" );
+    QRegularExpression key_AGC_enabled( "\\.AGC_enabled" );
 
     QString current_implementation;
     for (int i = 0; i < list_map_implementation->count(); i++)
@@ -340,6 +350,10 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                          }
                 }
         }
+    QRegularExpressionMatch match_File_Signal_Source = key_File_Signal_Source.match(current_implementation);
+    QRegularExpressionMatch match_UHD_Signal_Source = key_UHD_Signal_Source.match(current_implementation);
+    QRegularExpressionMatch match_Osmosdr_Signal_Source = key_Osmosdr_Signal_Source.match(current_implementation);
+    QRegularExpressionMatch match_RtlTcp_Signal_Source = key_RtlTcp_Signal_Source.match(current_implementation);
 
     foreach(QString key, group_keys)
         {
@@ -356,6 +370,10 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
             QRegularExpressionMatch match_subdevice = key_subdevice.match(key);
             QRegularExpressionMatch match_clock_source = key_clock_source.match(key);
             QRegularExpressionMatch match_freq = key_freq.match(key);
+            QRegularExpressionMatch match_gain = key_gain.match(key);
+            QRegularExpressionMatch match_rf_gain = key_rf_gain.match(key);
+            QRegularExpressionMatch match_if_gain = key_if_gain.match(key);
+            QRegularExpressionMatch match_AGC_enabled = key_AGC_enabled.match(key);
 
             if (match_dump_filename.hasMatch())
                 {
@@ -387,7 +405,7 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                     subdeviceComboBox->setCurrentIndex(0);
                     list_map_comboboxes->at(current_source)->insert(key, subdeviceComboBox);
                 }
-            if (match_clock_source.hasMatch())
+            else if (match_clock_source.hasMatch())
                 {
                     clock_sourceComboBox = new QComboBox();
                     clock_sourceComboBox->setObjectName("clock_sourceComboBox");
@@ -425,12 +443,17 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                     enable_throttle_controlComboBox->setCurrentIndex(0);
                     list_map_comboboxes->at(current_source)->insert(key, enable_throttle_controlComboBox);
                 }
+            else if (match_AGC_enabled.hasMatch())
+                {
+                    AGCComboBox = new QComboBox();
+                    AGCComboBox->setObjectName("AGC_enabledComboBox");
+                    AGCComboBox->addItem(tr("false"));
+                    AGCComboBox->addItem(tr("true"));
+                    AGCComboBox->setCurrentIndex(0);
+                    list_map_comboboxes->at(current_source)->insert(key, AGCComboBox);
+                }
             else if (match_item_type.hasMatch())
                 {
-                    QRegularExpression key_File_Signal_Source( "File_Signal_Source" );
-                    QRegularExpression key_UHD_Signal_Source( "UHD_Signal_Source" );
-                    QRegularExpressionMatch match_File_Signal_Source = key_File_Signal_Source.match(current_implementation);
-                    QRegularExpressionMatch match_UHD_Signal_Source = key_UHD_Signal_Source.match(current_implementation);
                     if(match_File_Signal_Source.hasMatch())
                         {
                             item_typeComboBox = new QComboBox();
@@ -478,6 +501,25 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                         {
                             list_map_implementation->at(current_source)->insert(key, new QLineEdit("0"));
                         }
+                    else if(match_gain.hasMatch())
+                        {
+                            if(match_UHD_Signal_Source.hasMatch())
+                                {
+                                    list_map_implementation->at(current_source)->insert(key, new QLineEdit("50"));
+                                }
+                            if(match_Osmosdr_Signal_Source.hasMatch() || match_RtlTcp_Signal_Source.hasMatch())
+                                {
+                                    list_map_implementation->at(current_source)->insert(key, new QLineEdit("40"));
+                                }
+                        }
+                    else if(match_rf_gain.hasMatch())
+                        {
+                            list_map_implementation->at(current_source)->insert(key, new QLineEdit("40"));
+                        }
+                    else if(match_if_gain.hasMatch())
+                        {
+                            list_map_implementation->at(current_source)->insert(key, new QLineEdit("40"));
+                        }
                     else
                         {
                             list_map_implementation->at(current_source)->insert(key, new QLineEdit());
@@ -519,9 +561,10 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
             QRegularExpressionMatch match_item_type2 = key_item_type.match(key);
             QRegularExpressionMatch match_subdevice2 = key_subdevice.match(key);
             QRegularExpressionMatch match_clock_source2 = key_clock_source.match(key);
+            QRegularExpressionMatch match_AGC_enabled2 = key_AGC_enabled.match(key);
 
             if( match_repeat2.hasMatch() || match_enable_throttle_control2.hasMatch() || match_item_type2.hasMatch()
-                    || match_subdevice2.hasMatch() || match_clock_source2.hasMatch())
+                    || match_subdevice2.hasMatch() || match_clock_source2.hasMatch() || match_AGC_enabled2.hasMatch())
                 {
                     layout->addWidget(new QLabel(key), row, col++);
                     layout->addWidget(list_map_comboboxes->at(current_source)->value(key), row, col++);

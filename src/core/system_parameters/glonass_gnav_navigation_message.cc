@@ -709,7 +709,7 @@ bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a 
 {
     if ((flag_ephemeris_str_1 == true) and (flag_ephemeris_str_2 == true) and (flag_ephemeris_str_3 == true) and (flag_ephemeris_str_4 == true))
         {
-            if ((gnav_ephemeris.d_P_4 == 1) )
+            if (gnav_ephemeris.d_P_4 == 1)
                 {
                     flag_ephemeris_str_1 = false;// clear the flag
                     flag_ephemeris_str_2 = false;// clear the flag

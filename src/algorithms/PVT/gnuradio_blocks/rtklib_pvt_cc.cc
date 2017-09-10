@@ -920,11 +920,11 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                         {
                                                             rp->log_rinex_nav(rp->navGloFile, d_ls_pvt->glonass_gnav_ephemeris_map);
                                                         }
-                                                    if((type_of_rx == 26)) //  GPS L1 C/A + GLONASS L1 C/A
+                                                    if(type_of_rx == 26) //  GPS L1 C/A + GLONASS L1 C/A
                                                         {
                                                             rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
                                                         }
-                                                    if((type_of_rx == 27)) //  Galileo E1B + GLONASS L1 C/A
+                                                    if(type_of_rx == 27) //  Galileo E1B + GLONASS L1 C/A
                                                         {
                                                             rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->galileo_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
                                                         }

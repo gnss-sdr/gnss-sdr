@@ -34,7 +34,7 @@
 
 auto auxCeil = [](float x){ return static_cast<int>(static_cast<long>((x)+1)); };
 
-void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
+void gps_l1_ca_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift)
 {
     const unsigned int _code_length = 1023;
     bool G1[_code_length];
@@ -102,17 +102,44 @@ void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, uns
             aux = G1[(lcv + _chip_shift) % _code_length]^G2[delay];
             if(aux == true)
                 {
-                    _dest[lcv] = std::complex<float>(1, 0);
+                    _dest[lcv] = 1;
                 }
             else
                 {
-                    _dest[lcv] = std::complex<float>(-1, 0);
+                    _dest[lcv] = -1;
                 }
             delay++;
             delay %= _code_length;
         }
 }
 
+void gps_l1_ca_code_gen_float(float* _dest, signed int _prn, unsigned int _chip_shift)
+{
+    unsigned int _code_length = 1023;
+    int ca_code_int[ _code_length ];
+
+    gps_l1_ca_code_gen_int( ca_code_int, _prn, _chip_shift );
+
+    for( unsigned int ii = 0; ii < _code_length; ++ii )
+    {
+        _dest[ii] = static_cast<float>( ca_code_int[ii] );
+    }
+
+}
+
+void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
+{
+    unsigned int _code_length = 1023;
+    int ca_code_int[ _code_length ];
+
+    gps_l1_ca_code_gen_int( ca_code_int, _prn, _chip_shift );
+
+    for( unsigned int ii = 0; ii < _code_length; ++ii )
+    {
+        _dest[ii] = std::complex< float >( static_cast<float>(ca_code_int[ii]), 0.0f );
+    }
+
+}
 
 
 /*

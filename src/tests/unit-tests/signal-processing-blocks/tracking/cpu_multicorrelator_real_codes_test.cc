@@ -1,5 +1,5 @@
 /*!
- * \file fft_length_test.cc
+ * \file cpu_multicorrelator_real_codes_test.cc
  * \brief  This file implements timing tests for the FFT.
  * \author Carles Fernandez-Prades, 2016. cfernandez(at)cttc.es
  *
@@ -37,22 +37,22 @@
 #include <gflags/gflags.h>
 #include <gnuradio/gr_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "cpu_multicorrelator.h"
+#include "cpu_multicorrelator_real_codes.h"
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 
 
-DEFINE_int32(cpu_multicorrelator_iterations_test, 1000, "Number of averaged iterations in CPU multicorrelator test timing test");
-DEFINE_int32(cpu_multicorrelator_max_threads_test, 12, "Number of maximum concurrent correlators in CPU multicorrelator test timing test");
+DEFINE_int32(cpu_multicorrelator_real_codes_iterations_test, 1000, "Number of averaged iterations in CPU multicorrelator test timing test");
+DEFINE_int32(cpu_multicorrelator_real_codes_max_threads_test, 12, "Number of maximum concurrent correlators in CPU multicorrelator test timing test");
 
-void run_correlator_cpu(cpu_multicorrelator* correlator,
+void run_correlator_cpu(cpu_multicorrelator_real_codes* correlator,
                     float d_rem_carrier_phase_rad,
                     float d_carrier_phase_step_rad,
                     float d_code_phase_step_chips,
                     float d_rem_code_phase_chips,
                     int correlation_size)
 {
-    for(int k = 0; k < FLAGS_cpu_multicorrelator_iterations_test; k++)
+    for(int k = 0; k < FLAGS_cpu_multicorrelator_real_codes_iterations_test; k++)
         {
             correlator->Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
                     d_carrier_phase_step_rad,
@@ -63,17 +63,17 @@ void run_correlator_cpu(cpu_multicorrelator* correlator,
 }
 
 
-TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
+TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    int max_threads = FLAGS_cpu_multicorrelator_max_threads_test;
+    int max_threads = FLAGS_cpu_multicorrelator_real_codes_max_threads_test;
     std::vector<std::thread> thread_pool;
-    cpu_multicorrelator* correlator_pool[max_threads];
+    cpu_multicorrelator_real_codes* correlator_pool[max_threads];
     unsigned int correlation_sizes [3] = { 2048, 4096, 8192};
     double execution_times [3];
 
-    gr_complex* d_ca_code;
+    float* d_ca_code;
     gr_complex* in_cpu;
     gr_complex* d_correlator_outs;
 
@@ -83,7 +83,7 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
 
     //allocate host memory
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_ca_code = static_cast<float*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
     in_cpu = static_cast<gr_complex*>(volk_gnsssdr_malloc(2 * d_vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // correlator outputs (scalar)
@@ -104,7 +104,7 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
 
     //local code resampler on GPU
     // generate local reference (1 sample per chip)
-    gps_l1_ca_code_gen_complex(d_ca_code, 1, 0);
+    gps_l1_ca_code_gen_float(d_ca_code, 1, 0);
     // generate inut signal
     std::random_device r;
     std::default_random_engine e1(r());
@@ -116,7 +116,7 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
 
     for (int n = 0; n < max_threads; n++)
         {
-            correlator_pool[n] = new cpu_multicorrelator();
+            correlator_pool[n] = new cpu_multicorrelator_real_codes();
             correlator_pool[n]->init(d_vector_length, d_n_correlator_taps);
             correlator_pool[n]->set_input_output_vectors(d_correlator_outs, in_cpu);
             correlator_pool[n]->set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
@@ -153,8 +153,8 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
                             thread_pool.clear();
                             end = std::chrono::system_clock::now();
                             elapsed_seconds = end - start;
-                            execution_times[correlation_sizes_idx] = elapsed_seconds.count() / static_cast<double>(FLAGS_cpu_multicorrelator_iterations_test);
-                            std::cout << "CPU Multicorrelator execution time for length=" << correlation_sizes[correlation_sizes_idx]
+                            execution_times[correlation_sizes_idx] = elapsed_seconds.count() / static_cast<double>(FLAGS_cpu_multicorrelator_real_codes_iterations_test);
+                            std::cout << "CPU Multicorrelator (real codes) execution time for length=" << correlation_sizes[correlation_sizes_idx]
                                       << " : " << execution_times[correlation_sizes_idx] << " [s]" << std::endl;
 
                         }
@@ -171,3 +171,4 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
             correlator_pool[n]->free();
         }
 }
+

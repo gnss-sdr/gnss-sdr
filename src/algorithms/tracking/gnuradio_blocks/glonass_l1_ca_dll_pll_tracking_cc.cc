@@ -174,6 +174,7 @@ Glonass_L1_Ca_Dll_Pll_Tracking_cc::Glonass_L1_Ca_Dll_Pll_Tracking_cc(
     d_acq_code_phase_samples = 0.0;
     d_acq_carrier_doppler_hz = 0.0;
     d_carrier_doppler_hz = 0.0;
+    d_carrier_frequency_hz = 0.0;
     d_acc_carrier_phase_rad = 0.0;
     d_code_phase_samples = 0.0;
     d_rem_code_phase_chips = 0.0;
@@ -228,9 +229,9 @@ void Glonass_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
 
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
-    d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
-    // d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
-    d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+    d_carrier_frequency_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
+    d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_frequency_hz / static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(); // initialize the carrier filter
@@ -264,7 +265,7 @@ void Glonass_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_pull_in = true;
     d_enable_tracking = true;
 
-    LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
+    LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_frequency_hz
             << " Code Phase correction [samples]=" << delay_correction_samples
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
@@ -334,7 +335,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
             // take into account the carrier cycles accumulated in the pull in signal alignment
             d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * samples_offset;
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
-            current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+            current_synchro_data.Carrier_Doppler_hz = d_carrier_frequency_hz;
             current_synchro_data.fs = d_fs_in;
             current_synchro_data.correlation_length_ms = 1;
             *out[0] = current_synchro_data;
@@ -358,6 +359,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
         // Carrier discriminator filter
         carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
         // New carrier Doppler frequency estimation
+        d_carrier_frequency_hz += carr_error_filt_hz;
         d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
         d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GLONASS_L1_CA_CODE_RATE_HZ) / d_glonass_freq_ch);
 
@@ -382,7 +384,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
 
         //################### PLL COMMANDS #################################################
         // carrier phase step (NCO phase increment per sample) [rads/sample]
-        d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+        d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_frequency_hz / static_cast<double>(d_fs_in);
         // remnant carrier phase to prevent overflow in the code NCO
         d_rem_carr_phase_rad = d_rem_carr_phase_rad + d_carrier_phase_step_rad * d_current_prn_length_samples;
         d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GLONASS_TWO_PI);
@@ -434,7 +436,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
         current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
         current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
         current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
-        current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+        current_synchro_data.Carrier_Doppler_hz = d_carrier_frequency_hz;
         current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
         current_synchro_data.Flag_valid_symbol_output = true;
         current_synchro_data.correlation_length_ms = 1;
@@ -483,7 +485,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
             d_dump_file.write(reinterpret_cast<char*>(&d_acc_carrier_phase_rad), sizeof(double));
 
             // carrier and code frequency
-            d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(double));
+            d_dump_file.write(reinterpret_cast<char*>(&d_carrier_frequency_hz), sizeof(double));
             d_dump_file.write(reinterpret_cast<char*>(&d_code_freq_chips), sizeof(double));
 
             // PLL commands

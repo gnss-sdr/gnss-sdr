@@ -36,30 +36,22 @@
 
 
 /*!
- * \brief This function generates Galileo E1 code (one sample per chip).
+ * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
+ * and the sample frequency _fs).
  *
  */
-void galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn);
+void galileo_e1_code_gen_float_sampled(float* _dest, char _Signal[3],
+        bool _cboc, unsigned int _prn, signed int _fs, unsigned int _chip_shift,
+        bool _secondary_flag);
 
 /*!
- * \brief This function generates Galileo E1 sinboc(1,1) code (minimum 2 samples per chip),
- * the _codeLength variable must be a multiple of 2*4092.
+ * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
+ * and the sample frequency _fs).
  *
  */
-void galileo_e1_sinboc_11_gen(std::complex<float>* _dest, int* _prn,
-        unsigned int _codeLength);
-/*!
- * \brief This function generates Galileo E1 sinboc(6,1) code (minimum 12 samples per chip),
- * the _codeLength variable must be a multiple of 12*4092.
- *
- */
-void galileo_e1_sinboc_61_gen(std::complex<float>* _dest, int* _prn,
-        unsigned int _codeLength);
-/*!
- * \brief This function generates Galileo E1 cboc code (12 samples per chip).
- *
- */
-void galileo_e1_cboc_gen(std::complex<float>* _dest, int* _prn, char _Signal[3]);
+void galileo_e1_code_gen_float_sampled(float* _dest, char _Signal[3],
+        bool _cboc, unsigned int _prn, signed int _fs, unsigned int _chip_shift);
+
 /*!
  * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
  * and the sample frequency _fs).

@@ -61,6 +61,14 @@ _mm256_magnitudesquared_ps(__m256 cplxValue1, __m256 cplxValue2){
   return _mm256_hadd_ps(complex1, complex2); // Add the I2 and Q2 values
 }
 
+static inline __m256 _mm256_complexnormalise_ps( __m256 z ){
+    __m256 tmp1 = _mm256_mul_ps(z, z);
+    __m256 tmp2 = _mm256_hadd_ps(tmp1, tmp1);
+    tmp1 = _mm256_shuffle_ps(tmp2, tmp2, 0xD8);
+    tmp2 = _mm256_sqrt_ps(tmp1);
+    return _mm256_div_ps(z, tmp2);
+}
+
 static inline __m256
 _mm256_magnitude_ps(__m256 cplxValue1, __m256 cplxValue2){
   return _mm256_sqrt_ps(_mm256_magnitudesquared_ps(cplxValue1, cplxValue2));

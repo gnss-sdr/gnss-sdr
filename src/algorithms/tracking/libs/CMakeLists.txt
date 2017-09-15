@@ -33,6 +33,7 @@ endif(ENABLE_CUDA)
 
 set(TRACKING_LIB_SOURCES   
      cpu_multicorrelator.cc
+     cpu_multicorrelator_real_codes.cc
      cpu_multicorrelator_16sc.cc     
      lock_detectors.cc
      tcp_communication.cc

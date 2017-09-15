@@ -401,10 +401,9 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     d_new_data_available = true;
                     d_cond.notify_one();
                 }
-
-                consume_each(1);
+                consume_each(ninput_items[0]);
             } // if worker_active (else)
-
+            break;
         } // case 1, switch d_state
 
     } // switch d_state
@@ -442,13 +441,12 @@ void pcps_acquisition_cc::acquisition_core( void )
         unsigned long int sample_counter = d_sample_counter; // sample counter
         d_well_count++;
 
-        DLOG(INFO)<< "Channel: " << d_channel
+        DLOG(INFO) << "Channel: " << d_channel
             << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
             << " ,sample stamp: " << sample_counter << ", threshold: "
             << d_threshold << ", doppler_max: " << d_doppler_max
             << ", doppler_step: " << d_doppler_step
-            << ", use_CFAR_algorithm_flag: " << ( d_use_CFAR_algorithm_flag ? "true" : "false" )
-            <<std::endl;
+            << ", use_CFAR_algorithm_flag: " << ( d_use_CFAR_algorithm_flag ? "true" : "false" );
 
         if (d_use_CFAR_algorithm_flag == true)
         {
@@ -541,7 +539,7 @@ void pcps_acquisition_cc::acquisition_core( void )
                 DLOG(INFO) << "Writing ACQ out to " << filename.str();
 
                 d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
+                d_dump_file.write(reinterpret_cast<char*>(d_ifft->get_outbuf()), n); //write directly |abs(x)|^2 in this Doppler bin?
                 d_dump_file.close();
             }
         }

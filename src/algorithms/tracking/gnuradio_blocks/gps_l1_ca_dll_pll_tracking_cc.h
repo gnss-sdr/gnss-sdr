@@ -132,7 +132,6 @@ private:
     gr_complex* d_correlator_outs;
     cpu_multicorrelator_real_codes multicorrelator_cpu;
 
-
     // tracking vars
     double d_code_freq_chips;
     double d_code_phase_step_chips;

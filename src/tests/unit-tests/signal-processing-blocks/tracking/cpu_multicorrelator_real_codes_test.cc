@@ -45,7 +45,7 @@
 DEFINE_int32(cpu_multicorrelator_real_codes_iterations_test, 1000, "Number of averaged iterations in CPU multicorrelator test timing test");
 DEFINE_int32(cpu_multicorrelator_real_codes_max_threads_test, 12, "Number of maximum concurrent correlators in CPU multicorrelator test timing test");
 
-void run_correlator_cpu(cpu_multicorrelator_real_codes* correlator,
+void run_correlator_cpu_real_codes(cpu_multicorrelator_real_codes* correlator,
                     float d_rem_carrier_phase_rad,
                     float d_carrier_phase_step_rad,
                     float d_code_phase_step_chips,
@@ -137,7 +137,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
                             //create the concurrent correlator threads
                             for (int current_thread = 0; current_thread < current_max_threads; current_thread++)
                                 {
-                                    thread_pool.push_back(std::thread(run_correlator_cpu,
+                                    thread_pool.push_back(std::thread(run_correlator_cpu_real_codes,
                                             correlator_pool[current_thread],
                                             d_rem_carrier_phase_rad,
                                             d_carrier_phase_step_rad,
@@ -156,7 +156,6 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
                             execution_times[correlation_sizes_idx] = elapsed_seconds.count() / static_cast<double>(FLAGS_cpu_multicorrelator_real_codes_iterations_test);
                             std::cout << "CPU Multicorrelator (real codes) execution time for length=" << correlation_sizes[correlation_sizes_idx]
                                       << " : " << execution_times[correlation_sizes_idx] << " [s]" << std::endl;
-
                         }
                 }
     );
@@ -166,7 +165,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
     volk_gnsssdr_free(d_ca_code);
     volk_gnsssdr_free(in_cpu);
 
-    for (int n = 0; n< max_threads; n++)
+    for (int n = 0; n < max_threads; n++)
         {
             correlator_pool[n]->free();
         }

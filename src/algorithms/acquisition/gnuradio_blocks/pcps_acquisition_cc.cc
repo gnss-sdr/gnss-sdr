@@ -268,14 +268,14 @@ void pcps_acquisition_cc::send_positive_acquisition()
     // 6.1- Declare positive acquisition using a message port
     //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "positive acquisition"
-    << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-    << "sample_stamp " << d_sample_counter
-    << "test statistics value " << d_test_statistics
-    << "test statistics threshold " << d_threshold
-    << "code phase " << d_gnss_synchro->Acq_delay_samples
-    << "doppler " << d_gnss_synchro->Acq_doppler_hz
-    << "magnitude " << d_mag
-    << "input signal power " << d_input_power;
+    << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+    << ", sample_stamp " << d_sample_counter
+    << ", test statistics value " << d_test_statistics
+    << ", test statistics threshold " << d_threshold
+    << ", code phase " << d_gnss_synchro->Acq_delay_samples
+    << ", doppler " << d_gnss_synchro->Acq_doppler_hz
+    << ", magnitude " << d_mag
+    << ", input signal power " << d_input_power;
 
     this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
 
@@ -287,14 +287,14 @@ void pcps_acquisition_cc::send_negative_acquisition()
     // 6.2- Declare negative acquisition using a message port
     //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "negative acquisition"
-    << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-    << "sample_stamp " << d_sample_counter
-    << "test statistics value " << d_test_statistics
-    << "test statistics threshold " << d_threshold
-    << "code phase " << d_gnss_synchro->Acq_delay_samples
-    << "doppler " << d_gnss_synchro->Acq_doppler_hz
-    << "magnitude " << d_mag
-    << "input signal power " << d_input_power;
+    << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+    << ", sample_stamp " << d_sample_counter
+    << ", test statistics value " << d_test_statistics
+    << ", test statistics threshold " << d_threshold
+    << ", code phase " << d_gnss_synchro->Acq_delay_samples
+    << ", doppler " << d_gnss_synchro->Acq_doppler_hz
+    << ", magnitude " << d_mag
+    << ", input signal power " << d_input_power;
 
     this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
 
@@ -343,68 +343,39 @@ int pcps_acquisition_cc::general_work(int noutput_items,
         {
             std::unique_lock<std::mutex> lk( d_mutex );
 
-            if( d_worker_active && !d_blocking )
+            int num_items_consumed = 1;
+
+            if( d_worker_active )
             {
-                d_sample_counter += d_fft_size * ninput_items[0];
-                consume_each( ninput_items[0] );
+                if( d_blocking )
+                {
+                    // Should never get here:
+                    std::string msg = "pcps_acquisition_cc: Entered general work with worker active in blocking mode, should never happen";
+                    LOG(WARNING) << msg;
+                    std::cout << msg << std::endl;
+                    d_cond.wait( lk, [&]{ return !this->d_worker_active; } );
+                }
+                else
+                {
+                    num_items_consumed = ninput_items[0];
+                    d_sample_counter += d_fft_size * num_items_consumed;
+                }
             }
             else
             {
-                if( d_worker_active && d_blocking )
+                // Copy the data to the core and let it know that new data is available
+                memcpy( d_data_buffer, input_items[0], d_fft_size * sizeof( gr_complex ) );
+                d_new_data_available = true;
+                d_cond.notify_one();
+
+                if( d_blocking )
                 {
-                    d_cond.wait( lk, [&]{ return !this->d_worker_active; } );
+                    d_cond.wait( lk, [&]{ return !this->d_new_data_available; } );
+
                 }
+            }
 
-                d_sample_counter += d_fft_size;
-
-
-                if( d_well_count > 0 )
-                {
-
-                    if (!d_bit_transition_flag)
-                    {
-                        if (d_test_statistics > d_threshold)
-                        {
-                            d_state = 0; // Positive acquisition
-                            d_active = false;
-                            send_positive_acquisition();
-                        }
-                        else if (d_well_count == d_max_dwells)
-                        {
-                            d_state = 0;
-                            d_active = false;
-                            send_negative_acquisition();
-                        }
-                    }
-                    else
-                    {
-                        if (d_well_count == d_max_dwells) // d_max_dwells = 2
-                        {
-                            if (d_test_statistics > d_threshold)
-                            {
-                                d_state = 0; // Positive acquisition
-                                d_active = false;
-                                send_positive_acquisition();
-                            }
-                            else
-                            {
-                                d_state = 0; // Negative acquisition
-                                d_active = false;
-                                send_negative_acquisition();
-                            }
-                        }
-                    }
-                }
-
-                if( d_active )
-                {
-                    memcpy( d_data_buffer, input_items[0], d_fft_size * sizeof( gr_complex ) );
-                    d_new_data_available = true;
-                    d_cond.notify_one();
-                }
-
-                consume_each(1);
-            } // if worker_active (else)
+            consume_each(num_items_consumed);
 
         } // case 1, switch d_state
 
@@ -421,6 +392,7 @@ void pcps_acquisition_cc::acquisition_core( void )
         std::unique_lock<std::mutex> lk( d_mutex );
         d_cond.wait( lk, [&]{ return this->d_new_data_available or this->d_done; } );
         d_worker_active = !d_done;
+        unsigned long int sample_counter = d_sample_counter; // sample counter
         lk.unlock();
 
         if( d_done )
@@ -440,7 +412,6 @@ void pcps_acquisition_cc::acquisition_core( void )
 
         d_input_power = 0.0;
         d_mag = 0.0;
-        unsigned long int sample_counter = d_sample_counter; // sample counter
         d_well_count++;
 
         DLOG(INFO)<< "Channel: " << d_channel
@@ -544,6 +515,40 @@ void pcps_acquisition_cc::acquisition_core( void )
                 d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
                 d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
                 d_dump_file.close();
+            }
+        }
+
+        if (!d_bit_transition_flag)
+        {
+            if (d_test_statistics > d_threshold)
+            {
+                d_state = 0; // Positive acquisition
+                d_active = false;
+                send_positive_acquisition();
+            }
+            else if (d_well_count == d_max_dwells)
+            {
+                d_state = 0;
+                d_active = false;
+                send_negative_acquisition();
+            }
+        }
+        else
+        {
+            if (d_well_count == d_max_dwells) // d_max_dwells = 2
+            {
+                if (d_test_statistics > d_threshold)
+                {
+                    d_state = 0; // Positive acquisition
+                    d_active = false;
+                    send_positive_acquisition();
+                }
+                else
+                {
+                    d_state = 0; // Negative acquisition
+                    d_active = false;
+                    send_negative_acquisition();
+                }
             }
         }
 

@@ -139,6 +139,8 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
     // 1. Transform from symbols to bits
     std::string bi_binary_code;
     std::string relative_code;
+    std::string data_bits;
+
     // Group samples into bi-binary code
     for(int i = 0; i < (frame_length); i++)
         {
@@ -173,9 +175,15 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
                 relative_code.push_back('0');
               }
         }
+    // Convert from relative code to data bits
+    data_bits.push_back('0');
+    for(int i = 1; i < (GLONASS_GNAV_STRING_BITS); i++)
+    {
+        data_bits.push_back(((relative_code[i-1]-'0') ^ (relative_code[i]-'0')) + '0');
+    }
 
     // 2. Call the GLONASS GNAV string decoder
-    d_nav.string_decoder(relative_code);
+    d_nav.string_decoder(data_bits);
 
     // 3. Check operation executed correctly
     if(d_nav.flag_CRC_test == true)

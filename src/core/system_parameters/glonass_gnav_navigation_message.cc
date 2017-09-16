@@ -43,9 +43,8 @@
 void Glonass_Gnav_Navigation_Message::reset()
 {
     //!< Satellite Identification
-    i_channel_ID = 0;               //!< Channel ID assigned by the receiver
-    i_satellite_freq_channel = 0;   //!< SV Frequency Slot Number
-    i_satellite_slot_number = 0;    //!< SV Orbit Slot Number
+    i_alm_satellite_slot_number = 0;    //!< SV Orbit Slot Number
+    flag_update_slot_number = false;
 
     //!< Ephmeris Flags
     flag_all_ephemeris = false;
@@ -410,8 +409,9 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             gnav_ephemeris.d_M = static_cast<double>(read_navigation_unsigned(string_bits, M));
 
             // Fill in ephemeris deliverables in the code
-            gnav_ephemeris.i_satellite_slot_number = gnav_ephemeris.d_n;
-            gnav_ephemeris.i_satellite_PRN = gnav_ephemeris.d_n;
+            flag_update_slot_number = true;
+            gnav_ephemeris.i_satellite_slot_number = static_cast<unsigned int>(gnav_ephemeris.d_n);
+            gnav_ephemeris.i_satellite_PRN = static_cast<unsigned int>(gnav_ephemeris.d_n);
 
             flag_ephemeris_str_4 = true;
 
@@ -455,6 +455,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                         {
                             d_TOW = get_TOW();
                             flag_TOW_set = true;
+
                         }
 
                 }
@@ -462,16 +463,16 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 
         case 6:
             // --- It is string 6 ----------------------------------------------
-            i_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
-            d_frame_ID = get_frame_number(i_satellite_slot_number);
+            i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
+            d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
 
-            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
-            gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
-            gnav_almanac[i_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
-            gnav_almanac[i_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
-            gnav_almanac[i_satellite_slot_number - 1].d_lambda_n_A = static_cast<double>(read_navigation_signed(string_bits, LAMBDA_N_A)) * TWO_N20;
-            gnav_almanac[i_satellite_slot_number - 1].d_Delta_i_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_I_N_A)) * TWO_N20;
-            gnav_almanac[i_satellite_slot_number - 1].d_epsilon_n_A = static_cast<double>(read_navigation_unsigned(string_bits, EPSILON_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_lambda_n_A = static_cast<double>(read_navigation_signed(string_bits, LAMBDA_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_i_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_I_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_epsilon_n_A = static_cast<double>(read_navigation_unsigned(string_bits, EPSILON_N_A)) * TWO_N20;
 
             flag_almanac_str_6 = true;
 
@@ -481,24 +482,24 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             // --- It is string 7 ----------------------------------------------
             if (flag_almanac_str_6 == true)
                 {
-                    gnav_almanac[i_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
-                    gnav_almanac[i_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
-                    gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
-                    gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
-                    gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                    gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
                     // Set satellite information for redundancy purposes
-                    if (gnav_almanac[i_satellite_slot_number - 1].d_H_n_A > 24)
+                    if (gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A > 24)
                         {
-                            gnav_almanac[i_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_satellite_slot_number - 1].d_H_n_A - 32.0;
+                            gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A - 32.0;
                         }
-                    gnav_almanac[i_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_satellite_slot_number - 1].d_n_A;
-                    gnav_almanac[i_satellite_slot_number - 1].i_satellite_PRN = gnav_almanac[i_satellite_slot_number - 1].d_n_A;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_PRN = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
 
-                    if (i_satellite_slot_number == gnav_ephemeris.i_satellite_slot_number)
+                    if (i_alm_satellite_slot_number == gnav_ephemeris.i_satellite_slot_number)
                         {
-                            gnav_ephemeris.i_satellite_freq_channel = gnav_almanac[i_satellite_slot_number - 1].i_satellite_freq_channel;
+                            gnav_ephemeris.i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel;
                         }
                     flag_almanac_str_7 = true;
                 }
@@ -507,16 +508,16 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             break;
         case 8:
             // --- It is string 8 ----------------------------------------------
-            i_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
-            d_frame_ID = get_frame_number(i_satellite_slot_number);
+            i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
+            d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
 
-            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
-            gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
-            gnav_almanac[i_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
-            gnav_almanac[i_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
-            gnav_almanac[i_satellite_slot_number - 1].d_lambda_n_A = static_cast<double>(read_navigation_signed(string_bits, LAMBDA_N_A)) * TWO_N20;
-            gnav_almanac[i_satellite_slot_number - 1].d_Delta_i_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_I_N_A)) * TWO_N20;
-            gnav_almanac[i_satellite_slot_number - 1].d_epsilon_n_A = static_cast<double>(read_navigation_unsigned(string_bits, EPSILON_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_lambda_n_A = static_cast<double>(read_navigation_signed(string_bits, LAMBDA_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_i_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_I_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_epsilon_n_A = static_cast<double>(read_navigation_unsigned(string_bits, EPSILON_N_A)) * TWO_N20;
 
             flag_almanac_str_8 = true;
 
@@ -525,36 +526,36 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             // --- It is string 9 ----------------------------------------------
             if (flag_almanac_str_8 == true)
                 {
-                    gnav_almanac[i_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
-                    gnav_almanac[i_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
-                    gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
-                    gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
-                    gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                    gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
                     // Set satellite information for redundancy purposes
-                    if (gnav_almanac[i_satellite_slot_number - 1].d_H_n_A > 24)
+                    if (gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A > 24)
                         {
-                            gnav_almanac[i_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_satellite_slot_number - 1].d_H_n_A - 32.0;
+                            gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A - 32.0;
                         }
-                    gnav_almanac[i_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_satellite_slot_number - 1].d_n_A;
-                    gnav_almanac[i_satellite_slot_number - 1].i_satellite_PRN = gnav_almanac[i_satellite_slot_number - 1].d_n_A;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_PRN = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
 
                     flag_almanac_str_9 = true;
                 }
             break;
         case 10:
             // --- It is string 10 ---------------------------------------------
-            i_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
-            d_frame_ID = get_frame_number(i_satellite_slot_number);
+            i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
+            d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
 
-            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
-            gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
-            gnav_almanac[i_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
-            gnav_almanac[i_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
-            gnav_almanac[i_satellite_slot_number - 1].d_lambda_n_A = static_cast<double>(read_navigation_signed(string_bits, LAMBDA_N_A)) * TWO_N20;
-            gnav_almanac[i_satellite_slot_number - 1].d_Delta_i_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_I_N_A)) * TWO_N20;
-            gnav_almanac[i_satellite_slot_number - 1].d_epsilon_n_A = static_cast<double>(read_navigation_unsigned(string_bits, EPSILON_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_lambda_n_A = static_cast<double>(read_navigation_signed(string_bits, LAMBDA_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_i_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_I_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_epsilon_n_A = static_cast<double>(read_navigation_unsigned(string_bits, EPSILON_N_A)) * TWO_N20;
 
             flag_almanac_str_10 = true;
 
@@ -564,36 +565,36 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             // --- It is string 11 ---------------------------------------------
             if (flag_almanac_str_10 == true)
                 {
-                    gnav_almanac[i_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
-                    gnav_almanac[i_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
-                    gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
-                    gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
-                    gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                    gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
                     // Set satellite information for redundancy purposes
-                    if (gnav_almanac[i_satellite_slot_number - 1].d_H_n_A > 24)
+                    if (gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A > 24)
                         {
-                            gnav_almanac[i_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_satellite_slot_number - 1].d_H_n_A - 32.0;
+                            gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A - 32.0;
                         }
-                    gnav_almanac[i_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_satellite_slot_number - 1].d_n_A;
-                    gnav_almanac[i_satellite_slot_number - 1].i_satellite_PRN = gnav_almanac[i_satellite_slot_number - 1].d_n_A;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_PRN = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
 
                     flag_almanac_str_11 = true;
                 }
             break;
         case 12:
             // --- It is string 12 ---------------------------------------------
-            i_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
-            d_frame_ID = get_frame_number(i_satellite_slot_number);
+            i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
+            d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
 
-            gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
-            gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
-            gnav_almanac[i_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
-            gnav_almanac[i_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
-            gnav_almanac[i_satellite_slot_number - 1].d_lambda_n_A = static_cast<double>(read_navigation_signed(string_bits, LAMBDA_N_A)) * TWO_N20;
-            gnav_almanac[i_satellite_slot_number - 1].d_Delta_i_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_I_N_A)) * TWO_N20;
-            gnav_almanac[i_satellite_slot_number - 1].d_epsilon_n_A = static_cast<double>(read_navigation_unsigned(string_bits, EPSILON_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_lambda_n_A = static_cast<double>(read_navigation_signed(string_bits, LAMBDA_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_i_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_I_N_A)) * TWO_N20;
+            gnav_almanac[i_alm_satellite_slot_number - 1].d_epsilon_n_A = static_cast<double>(read_navigation_unsigned(string_bits, EPSILON_N_A)) * TWO_N20;
 
             flag_almanac_str_12 = true;
 
@@ -603,20 +604,20 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             // --- It is string 13 ---------------------------------------------
             if (flag_almanac_str_12 == true)
                 {
-                    gnav_almanac[i_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
-                    gnav_almanac[i_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
-                    gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
-                    gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
-                    gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                    gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
                     // Set satellite information for redundancy purposes
-                    if (gnav_almanac[i_satellite_slot_number - 1].d_H_n_A > 24)
+                    if (gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A > 24)
                         {
-                            gnav_almanac[i_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_satellite_slot_number - 1].d_H_n_A - 32.0;
+                            gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A - 32.0;
                         }
-                    gnav_almanac[i_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_satellite_slot_number - 1].d_n_A;
-                    gnav_almanac[i_satellite_slot_number - 1].i_satellite_PRN = gnav_almanac[i_satellite_slot_number - 1].d_n_A;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_PRN = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
 
                     flag_almanac_str_13 = true;
                 }
@@ -630,16 +631,16 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 }
             else
                 {
-                    i_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
-                    d_frame_ID = get_frame_number(i_satellite_slot_number);
+                    i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
+                    d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
 
-                    gnav_almanac[i_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
-                    gnav_almanac[i_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
-                    gnav_almanac[i_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
-                    gnav_almanac[i_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
-                    gnav_almanac[i_satellite_slot_number - 1].d_lambda_n_A = static_cast<double>(read_navigation_signed(string_bits, LAMBDA_N_A)) * TWO_N20;
-                    gnav_almanac[i_satellite_slot_number - 1].d_Delta_i_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_I_N_A)) * TWO_N20;
-                    gnav_almanac[i_satellite_slot_number - 1].d_epsilon_n_A = static_cast<double>(read_navigation_unsigned(string_bits, EPSILON_N_A)) * TWO_N20;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_tau_n_A = static_cast<double>(read_navigation_unsigned(string_bits, TAU_N_A)) * TWO_N18;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_lambda_n_A = static_cast<double>(read_navigation_signed(string_bits, LAMBDA_N_A)) * TWO_N20;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_i_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_I_N_A)) * TWO_N20;
+                    gnav_almanac[i_alm_satellite_slot_number - 1].d_epsilon_n_A = static_cast<double>(read_navigation_unsigned(string_bits, EPSILON_N_A)) * TWO_N20;
 
                     flag_almanac_str_14 = true;
                 }
@@ -650,20 +651,20 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
         case 15:
             // --- It is string 9 ----------------------------------------------
             if (d_frame_ID != 5 and flag_almanac_str_14 == true) {
-                gnav_almanac[i_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
-                gnav_almanac[i_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
-                gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
-                gnav_almanac[i_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
-                gnav_almanac[i_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
-                gnav_almanac[i_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
+                gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
+                gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
+                gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_T_n_A = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_N_A)) * TWO_N9;
+                gnav_almanac[i_alm_satellite_slot_number - 1].d_Delta_T_n_A_dot = static_cast<double>(read_navigation_signed(string_bits, DELTA_T_DOT_N_A)) * TWO_N14;
+                gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A = static_cast<double>(read_navigation_unsigned(string_bits, H_N_A));
+                gnav_almanac[i_alm_satellite_slot_number - 1].d_l_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
 
                 // Set satellite information for redundancy purposes
-                if (gnav_almanac[i_satellite_slot_number - 1].d_H_n_A > 24)
+                if (gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A > 24)
                     {
-                        gnav_almanac[i_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_satellite_slot_number - 1].d_H_n_A - 32.0;
+                        gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_freq_channel = gnav_almanac[i_alm_satellite_slot_number - 1].d_H_n_A - 32.0;
                     }
-                gnav_almanac[i_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_satellite_slot_number - 1].d_n_A;
-                gnav_almanac[i_satellite_slot_number - 1].i_satellite_PRN = gnav_almanac[i_satellite_slot_number - 1].d_n_A;
+                gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_slot_number = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
+                gnav_almanac[i_alm_satellite_slot_number - 1].i_satellite_PRN = gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A;
 
                 flag_almanac_str_15 = true;
             }
@@ -747,26 +748,38 @@ bool Glonass_Gnav_Navigation_Message::have_new_utc_model() // Check if we have a
 
 bool Glonass_Gnav_Navigation_Message::have_new_almanac() //Check if we have a new almanac data set stored in the galileo navigation class
 {
-    if ((flag_almanac_str_6 == true) and (flag_almanac_str_7 == true) and
-        (flag_almanac_str_8 == true) and (flag_almanac_str_9 == true) and
-        (flag_almanac_str_10 == true) and (flag_almanac_str_11 == true) and
-        (flag_almanac_str_12 == true) and (flag_almanac_str_13 == true) and
-        (flag_almanac_str_14 == true) and (flag_almanac_str_15 == true))
+    bool new_alm = false;
+    if ((flag_almanac_str_6 == true) and (flag_almanac_str_7 == true))
         {
-            //All almanac have been received
+            //All almanac have been received for this satellite
             flag_almanac_str_6 = false;
             flag_almanac_str_7 = false;
+            new_alm = true;
+        }
+    if ((flag_almanac_str_8 == true) and (flag_almanac_str_9 == true))
+        {
             flag_almanac_str_8 = false;
             flag_almanac_str_9 = false;
+            new_alm = true;
+        }
+    if((flag_almanac_str_10 == true) and (flag_almanac_str_11 == true))
+        {
             flag_almanac_str_10 = false;
             flag_almanac_str_11 = false;
+            new_alm = true;
+        }
+    if((flag_almanac_str_12 == true) and (flag_almanac_str_13 == true))
+        {
             flag_almanac_str_12 = false;
             flag_almanac_str_13 = false;
+            new_alm = true;
+        }
+    if((flag_almanac_str_14 == true) and (flag_almanac_str_15 == true))
+        {
             flag_almanac_str_14 = false;
             flag_almanac_str_15 = false;
-            flag_all_almanac = true;
-            return true;
+            new_alm = true;
         }
-    else
-        return false;
+
+    return new_alm;
 }

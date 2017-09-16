@@ -194,7 +194,6 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
         {
             LOG(INFO) << "GLONASS GNAV CRC error on channel " << d_channel <<  " from satellite " << d_satellite;
         }
-
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
         {
@@ -211,9 +210,16 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
         }
     if (d_nav.have_new_almanac() == true)
         {
-            unsigned int slot_nbr = d_nav.get_ephemeris().i_satellite_slot_number;
+            unsigned int slot_nbr = d_nav.i_alm_satellite_slot_number;
             std::shared_ptr<Glonass_Gnav_Almanac> tmp_obj= std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+        }
+    // 5. Update satellite information on system
+    if(d_nav.flag_update_slot_number == true)
+        {
+            LOG(INFO) << "GLONASS GNAV Slot Number Identified on channel " << d_channel;
+            d_satellite.what_block(d_satellite.get_system(), d_nav.get_ephemeris().d_n);
+            d_nav.flag_update_slot_number = false;
         }
 }
 

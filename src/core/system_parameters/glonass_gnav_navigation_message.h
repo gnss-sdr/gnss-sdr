@@ -63,15 +63,11 @@ public:
     bool flag_CRC_test;
     unsigned int d_frame_ID;
     unsigned int d_string_ID;
+    bool flag_update_slot_number;
 
     Glonass_Gnav_Ephemeris gnav_ephemeris;    //!< Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model;    //!< UTC model information
     Glonass_Gnav_Almanac gnav_almanac[24];    //!< Almanac information for all 24 satellites
-
-    //!< Satellite Identification
-    int i_channel_ID;                         //!< Channel ID assigned by the receiver
-    unsigned int i_satellite_freq_channel;    //!< SV Frequency Slot Number
-    unsigned int i_satellite_slot_number;     //!< SV Orbit Slot Number
 
     //!< Ephmeris Flags
     bool flag_all_ephemeris;      //!< Flag indicating that all strings containing ephemeris have been received
@@ -92,6 +88,7 @@ public:
     bool flag_almanac_str_13;     //!< Flag indicating that almanac of string 13 have been received
     bool flag_almanac_str_14;     //!< Flag indicating that almanac of string 14 have been received
     bool flag_almanac_str_15;     //!< Flag indicating that almanac of string 15 have been received
+    unsigned int i_alm_satellite_slot_number;     //!< SV Orbit Slot Number
 
     //!< UTC and System Clocks Flags
     bool flag_utc_model_valid;      //!< If set, it indicates that the UTC model parameters are filled

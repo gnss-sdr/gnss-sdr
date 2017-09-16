@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -129,7 +129,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_gnsssdr_malloc((2 * Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_ca_code = static_cast<float*>(volk_gnsssdr_malloc((2 * Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 5; // Very-Early, Early, Prompt, Late, Very-Late
@@ -211,7 +211,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
     d_code_loop_filter.initialize();    // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (2 samples per chip)
-    galileo_e1_code_gen_complex_sampled(d_ca_code,
+    galileo_e1_code_gen_float_sampled(d_ca_code,
                                         d_acquisition_gnss_synchro->Signal,
                                         false,
                                         d_acquisition_gnss_synchro->PRN,

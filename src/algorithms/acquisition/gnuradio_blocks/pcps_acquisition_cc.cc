@@ -136,9 +136,6 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_worker_active = false;
     d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
-    // Start the worker thread and wait for it to acknowledge:
-    std::thread t1( &pcps_acquisition_cc::acquisition_core, this );
-    std::swap( d_worker_thread, t1 );
 }
 
 
@@ -165,13 +162,17 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
         }
 
     // Let the worker thread know that we are done and then wait to join
+    if( d_worker_thread.joinable() )
     {
-        std::lock_guard<std::mutex> lk( d_mutex );
-        d_done = true;
-        d_cond.notify_one();
+        {
+            std::lock_guard<std::mutex> lk( d_mutex );
+            d_done = true;
+            d_cond.notify_one();
+        }
+        
+        d_worker_thread.join();
     }
-    
-    d_worker_thread.join();
+
     volk_gnsssdr_free( d_data_buffer );
 }
 
@@ -554,3 +555,31 @@ void pcps_acquisition_cc::acquisition_core( void )
 
     }
 }
+
+bool pcps_acquisition_cc::start( void )
+{
+    d_worker_active = false;
+    d_done = false;
+
+    // Start the worker thread and wait for it to acknowledge:
+    d_worker_thread = std::move( std::thread( &pcps_acquisition_cc::acquisition_core, this ) );
+
+    return gr::block::start();
+}
+
+bool pcps_acquisition_cc::stop( void )
+{
+    // Let the worker thread know that we are done and then wait to join
+    if( d_worker_thread.joinable() )
+    {
+        {
+            std::lock_guard<std::mutex> lk( d_mutex );
+            d_done = true;
+            d_cond.notify_one();
+        }
+        
+        d_worker_thread.join();
+    }
+    return gr::block::stop();
+}
+

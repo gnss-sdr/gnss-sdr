@@ -3,6 +3,7 @@
  * \brief Interface of a code DLL + carrier PLL tracking block
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
+ *         Cillian O'Driscoll, 2017. cillian.odriscoll(at)gmail.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -44,7 +45,7 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include "cpu_multicorrelator.h"
+#include "cpu_multicorrelator_real_codes.h"
 
 class Gps_L1_Ca_Dll_Pll_Tracking_cc;
 
@@ -126,11 +127,10 @@ private:
     double d_acq_carrier_doppler_hz;
     // correlator
     int d_n_correlator_taps;
-    gr_complex* d_ca_code;
+    float* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
-    cpu_multicorrelator multicorrelator_cpu;
-
+    cpu_multicorrelator_real_codes multicorrelator_cpu;
 
     // tracking vars
     double d_code_freq_chips;

@@ -156,6 +156,28 @@ void hex_to_binary_converter(int * _dest, char _from)
     }
 }
 
+void resampler(float* _from, float* _dest, float _fs_in,
+        float _fs_out, unsigned int _length_in, unsigned int _length_out)
+{
+    unsigned int _codeValueIndex;
+    float aux;
+    //--- Find time constants --------------------------------------------------
+    const float _t_in = 1 / _fs_in;  // Incoming sampling  period in sec
+    const float _t_out = 1 / _fs_out;   // Out sampling period in sec
+    for (unsigned int i = 0; i < _length_out - 1; i++)
+        {
+            //=== Digitizing =======================================================
+            //--- compute index array to read sampled values -------------------------
+            //_codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
+            aux = (_t_out * (i + 1)) / _t_in;
+            _codeValueIndex = auxCeil2(aux) - 1;
+
+            //if repeat the chip -> upsample by nearest neighborhood interpolation
+            _dest[i] = _from[_codeValueIndex];
+        }
+    //--- Correct the last index (due to number rounding issues) -----------
+    _dest[_length_out - 1] = _from[_length_in - 1];
+}
 
 void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs_in,
         float _fs_out, unsigned int _length_in, unsigned int _length_out)

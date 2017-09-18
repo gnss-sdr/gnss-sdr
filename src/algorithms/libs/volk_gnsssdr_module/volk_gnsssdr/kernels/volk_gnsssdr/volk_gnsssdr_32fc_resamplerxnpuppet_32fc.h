@@ -46,8 +46,8 @@
 #ifdef LV_HAVE_GENERIC
 static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_generic(lv_32fc_t* result, const lv_32fc_t* local_code, unsigned int num_points)
 {
-    float code_phase_step_chips = -0.6;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
+    float code_phase_step_chips = ((float)(code_length_chips) + 0.1 )/( (float) num_points );
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
     unsigned int n;
@@ -70,14 +70,15 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_generic(lv_32fc_t* r
     volk_gnsssdr_free(result_aux);
 }
 
+
 #endif /* LV_HAVE_GENERIC */
 
 
 #ifdef LV_HAVE_SSE3
 static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_a_sse3(lv_32fc_t* result, const lv_32fc_t* local_code, unsigned int num_points)
 {
-    float code_phase_step_chips = -0.6;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
+    float code_phase_step_chips = ((float)(code_length_chips) + 0.1 )/( (float) num_points );
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
     unsigned int n;
@@ -105,8 +106,8 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_a_sse3(lv_32fc_t* re
 #ifdef LV_HAVE_SSE3
 static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_sse3(lv_32fc_t* result, const lv_32fc_t* local_code, unsigned int num_points)
 {
-    float code_phase_step_chips = -0.6;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
+    float code_phase_step_chips = ((float)(code_length_chips) + 0.1 )/( (float) num_points );
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
     unsigned int n;
@@ -135,8 +136,8 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_sse3(lv_32fc_t* re
 #ifdef LV_HAVE_SSE4_1
 static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_sse4_1(lv_32fc_t* result, const lv_32fc_t* local_code, unsigned int num_points)
 {
-    float code_phase_step_chips = -0.6;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
+    float code_phase_step_chips = ((float)(code_length_chips) + 0.1 )/( (float) num_points );
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
     unsigned int n;
@@ -164,8 +165,8 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_sse4_1(lv_32fc_t* 
 #ifdef LV_HAVE_SSE4_1
 static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_a_sse4_1(lv_32fc_t* result, const lv_32fc_t* local_code, unsigned int num_points)
 {
-    float code_phase_step_chips = -0.6;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
+    float code_phase_step_chips = ((float)(code_length_chips) + 0.1 )/( (float) num_points );
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
     unsigned int n;
@@ -193,8 +194,8 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_a_sse4_1(lv_32fc_t* 
 #ifdef LV_HAVE_AVX
 static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_a_avx(lv_32fc_t* result, const lv_32fc_t* local_code, unsigned int num_points)
 {
-    float code_phase_step_chips = -0.6;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
+    float code_phase_step_chips = ((float)(code_length_chips) + 0.1 )/( (float) num_points );
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
     unsigned int n;
@@ -222,8 +223,8 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_a_avx(lv_32fc_t* res
 #ifdef LV_HAVE_AVX
 static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_avx(lv_32fc_t* result, const lv_32fc_t* local_code, unsigned int num_points)
 {
-    float code_phase_step_chips = -0.6;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
+    float code_phase_step_chips = ((float)(code_length_chips) + 0.1 )/( (float) num_points );
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
     unsigned int n;
@@ -251,8 +252,8 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_avx(lv_32fc_t* res
 #ifdef LV_HAVE_AVX2
 static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_a_avx2(lv_32fc_t* result, const lv_32fc_t* local_code, unsigned int num_points)
 {
-    float code_phase_step_chips = -0.6;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
+    float code_phase_step_chips = ((float)(code_length_chips) + 0.1 )/( (float) num_points );
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
     unsigned int n;
@@ -280,8 +281,8 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_a_avx2(lv_32fc_t* re
 #ifdef LV_HAVE_AVX2
 static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_avx2(lv_32fc_t* result, const lv_32fc_t* local_code, unsigned int num_points)
 {
-    float code_phase_step_chips = -0.6;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
+    float code_phase_step_chips = ((float)(code_length_chips) + 0.1 )/( (float) num_points );
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
     unsigned int n;
@@ -309,8 +310,8 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_avx2(lv_32fc_t* re
 #ifdef LV_HAVE_NEON
 static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_neon(lv_32fc_t* result, const lv_32fc_t* local_code, unsigned int num_points)
 {
-    float code_phase_step_chips = -0.6;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
+    float code_phase_step_chips = ((float)(code_length_chips) + 0.1 )/( (float) num_points );
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
     unsigned int n;

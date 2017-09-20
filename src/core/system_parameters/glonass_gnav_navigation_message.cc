@@ -385,86 +385,97 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 
         case 3:
             // --- It is string 3 ----------------------------------------------
-            gnav_ephemeris.d_P_3 = static_cast<bool>(read_navigation_bool(string_bits, P3));
-            gnav_ephemeris.d_gamma_n = static_cast<double>(read_navigation_signed(string_bits, GAMMA_N)) * TWO_N40;
-            gnav_ephemeris.d_P = static_cast<double>(read_navigation_unsigned(string_bits, P));
-            gnav_ephemeris.d_l3rd_n = static_cast<bool>(read_navigation_bool(string_bits, EPH_L_N));
-            gnav_ephemeris.d_VZn = static_cast<double>(read_navigation_signed(string_bits, Z_N_DOT)) * TWO_N20;
-            gnav_ephemeris.d_AZn = static_cast<double>(read_navigation_signed(string_bits, Z_N_DOT_DOT)) * TWO_N30;
-            gnav_ephemeris.d_Zn = static_cast<double>(read_navigation_signed(string_bits, Z_N)) * TWO_N11;
+            if (flag_ephemeris_str_2 == true)
+                {
+                    gnav_ephemeris.d_P_3 = static_cast<bool>(read_navigation_bool(string_bits, P3));
+                    gnav_ephemeris.d_gamma_n = static_cast<double>(read_navigation_signed(string_bits, GAMMA_N)) * TWO_N40;
+                    gnav_ephemeris.d_P = static_cast<double>(read_navigation_unsigned(string_bits, P));
+                    gnav_ephemeris.d_l3rd_n = static_cast<bool>(read_navigation_bool(string_bits, EPH_L_N));
+                    gnav_ephemeris.d_VZn = static_cast<double>(read_navigation_signed(string_bits, Z_N_DOT)) * TWO_N20;
+                    gnav_ephemeris.d_AZn = static_cast<double>(read_navigation_signed(string_bits, Z_N_DOT_DOT)) * TWO_N30;
+                    gnav_ephemeris.d_Zn = static_cast<double>(read_navigation_signed(string_bits, Z_N)) * TWO_N11;
 
-            flag_ephemeris_str_3 = true;
+                    flag_ephemeris_str_3 = true;
+                }
 
             break;
 
         case 4:
             // --- It is string 4 ----------------------------------------------
-            gnav_ephemeris.d_tau_n = static_cast<double>(read_navigation_signed(string_bits, TAU_N)) * TWO_N30;
-            gnav_ephemeris.d_Delta_tau_n = static_cast<double>(read_navigation_signed(string_bits, DELTA_TAU_N)) * TWO_N30;
-            gnav_ephemeris.d_E_n = static_cast<double>(read_navigation_unsigned(string_bits, E_N));
-            gnav_ephemeris.d_P_4 = static_cast<bool>(read_navigation_bool(string_bits, P4));
-            gnav_ephemeris.d_F_T = static_cast<double>(read_navigation_unsigned(string_bits, F_T));
-            gnav_ephemeris.d_N_T = static_cast<double>(read_navigation_unsigned(string_bits, N_T));
-            gnav_ephemeris.d_n = static_cast<double>(read_navigation_unsigned(string_bits, N));
-            gnav_ephemeris.d_M = static_cast<double>(read_navigation_unsigned(string_bits, M));
+            if (flag_ephemeris_str_3 == true)
+                {
+                    gnav_ephemeris.d_tau_n = static_cast<double>(read_navigation_signed(string_bits, TAU_N)) * TWO_N30;
+                    gnav_ephemeris.d_Delta_tau_n = static_cast<double>(read_navigation_signed(string_bits, DELTA_TAU_N)) * TWO_N30;
+                    gnav_ephemeris.d_E_n = static_cast<double>(read_navigation_unsigned(string_bits, E_N));
+                    gnav_ephemeris.d_P_4 = static_cast<bool>(read_navigation_bool(string_bits, P4));
+                    gnav_ephemeris.d_F_T = static_cast<double>(read_navigation_unsigned(string_bits, F_T));
+                    gnav_ephemeris.d_N_T = static_cast<double>(read_navigation_unsigned(string_bits, N_T));
+                    gnav_ephemeris.d_n = static_cast<double>(read_navigation_unsigned(string_bits, N));
+                    gnav_ephemeris.d_M = static_cast<double>(read_navigation_unsigned(string_bits, M));
 
-            // Fill in ephemeris deliverables in the code
-            flag_update_slot_number = true;
-            gnav_ephemeris.i_satellite_slot_number = static_cast<unsigned int>(gnav_ephemeris.d_n);
-            gnav_ephemeris.i_satellite_PRN = static_cast<unsigned int>(gnav_ephemeris.d_n);
+                    // Fill in ephemeris deliverables in the code
+                    flag_update_slot_number = true;
+                    gnav_ephemeris.i_satellite_slot_number = static_cast<unsigned int>(gnav_ephemeris.d_n);
+                    gnav_ephemeris.i_satellite_PRN = static_cast<unsigned int>(gnav_ephemeris.d_n);
 
-            flag_ephemeris_str_4 = true;
+                    flag_ephemeris_str_4 = true;
+                }
 
             break;
 
         case 5:
             // --- It is string 5 ----------------------------------------------
-            gnav_utc_model.d_N_A = static_cast<double>(read_navigation_unsigned(string_bits, N_A));
-            gnav_utc_model.d_tau_c = static_cast<double>(read_navigation_signed(string_bits, TAU_C)) * TWO_N31;
-            gnav_utc_model.d_N_4 = static_cast<double>(read_navigation_unsigned(string_bits, N_4));
-            gnav_utc_model.d_tau_gps = static_cast<double>(read_navigation_signed(string_bits, TAU_GPS)) * TWO_N30;
-            gnav_ephemeris.d_l5th_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
-
-            flag_utc_model_str_5 = true;
-            // Compute Year and DoY based on Algorithm A3.11 of GLONASS ICD
             if (flag_ephemeris_str_4 == true)
                 {
-                    //Current year number J in the four-year interval is calculated:
+                    gnav_utc_model.d_N_A = static_cast<double>(read_navigation_unsigned(string_bits, N_A));
+                    gnav_utc_model.d_tau_c = static_cast<double>(read_navigation_signed(string_bits, TAU_C)) * TWO_N31;
+                    gnav_utc_model.d_N_4 = static_cast<double>(read_navigation_unsigned(string_bits, N_4));
+                    gnav_utc_model.d_tau_gps = static_cast<double>(read_navigation_signed(string_bits, TAU_GPS)) * TWO_N30;
+                    gnav_ephemeris.d_l5th_n = static_cast<bool>(read_navigation_bool(string_bits, ALM_L_N));
+
+                    flag_utc_model_str_5 = true;
+
+                    // Compute Year and DoY based on Algorithm A3.11 of GLONASS ICD
+                    // 1). Current year number J in the four-year interval is calculated
                     if (gnav_ephemeris.d_N_T >= 1 && gnav_ephemeris.d_N_T <= 366)
-                        {
-                            J = 1;
-                        }
+                    {
+                        J = 1;
+                    }
                     else if (gnav_ephemeris.d_N_T >= 367 && gnav_ephemeris.d_N_T <= 731)
-                        {
-                            J = 2;
-                        }
+                    {
+                        J = 2;
+                    }
                     else if (gnav_ephemeris.d_N_T >= 732 && gnav_ephemeris.d_N_T <= 1096)
-                        {
-                            J = 3;
-                        }
+                    {
+                        J = 3;
+                    }
                     else if (gnav_ephemeris.d_N_T >= 1097 && gnav_ephemeris.d_N_T <= 1461)
-                        {
-                            J = 4;
-                        }
+                    {
+                        J = 4;
+                    }
                     // 2). Current year in common form is calculated by the following formula:
                     gnav_ephemeris.d_yr = 1996 + 4.0 * (gnav_utc_model.d_N_4 - 1.0) + (J - 1.0);
                     gnav_ephemeris.d_tau_c = gnav_utc_model.d_tau_c;
 
                     // 3). Set TOW once the year has been defined, it helps with leap second determination
                     if (flag_ephemeris_str_1 == true)
-                        {
-                            d_TOW = get_TOW();
-                            flag_TOW_set = true;
-
-                        }
+                    {
+                        d_TOW = get_TOW();
+                        flag_TOW_set = true;
+                    }
 
                 }
+
+
             break;
 
         case 6:
             // --- It is string 6 ----------------------------------------------
             i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
             d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
+            // Make sure a valid frame_ID or satellite slot number is returned
+            if(d_frame_ID == 0)
+                return 0;
 
             gnav_almanac[i_alm_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_alm_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
@@ -510,6 +521,9 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             // --- It is string 8 ----------------------------------------------
             i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
             d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
+            // Make sure a valid frame_ID or satellite slot number is returned
+            if(d_frame_ID == 0)
+                return 0;
 
             gnav_almanac[i_alm_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_alm_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
@@ -548,6 +562,9 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             // --- It is string 10 ---------------------------------------------
             i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
             d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
+            // Make sure a valid frame_ID or satellite slot number is returned
+            if(d_frame_ID == 0)
+                return 0;
 
             gnav_almanac[i_alm_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_alm_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
@@ -587,7 +604,9 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             // --- It is string 12 ---------------------------------------------
             i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
             d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
-
+            // Make sure a valid frame_ID or satellite slot number is returned
+            if(d_frame_ID == 0)
+                return 0;
             gnav_almanac[i_alm_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
             gnav_almanac[i_alm_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
             gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
@@ -633,7 +652,9 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 {
                     i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
                     d_frame_ID = get_frame_number(i_alm_satellite_slot_number);
-
+                    // Make sure a valid frame_ID or satellite slot number is returned
+                    if(d_frame_ID == 0)
+                        return 0;
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_C_n = static_cast<bool>(read_navigation_bool(string_bits, C_N));
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_M_n_A = static_cast<double>(read_navigation_unsigned(string_bits, M_N_A));
                     gnav_almanac[i_alm_satellite_slot_number - 1].d_n_A = static_cast<double>(read_navigation_unsigned(string_bits, n_A));
@@ -644,12 +665,10 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 
                     flag_almanac_str_14 = true;
                 }
-
-
             break;
 
         case 15:
-            // --- It is string 9 ----------------------------------------------
+            // --- It is string 15 ----------------------------------------------
             if (d_frame_ID != 5 and flag_almanac_str_14 == true) {
                 gnav_almanac[i_alm_satellite_slot_number - 1].d_omega_n_A = static_cast<double>(read_navigation_signed(string_bits, OMEGA_N_A)) * TWO_N15;
                 gnav_almanac[i_alm_satellite_slot_number - 1].d_t_lambda_n_A = static_cast<double>(read_navigation_unsigned(string_bits, T_LAMBDA_N_A)) * TWO_N5;
@@ -711,23 +730,17 @@ Glonass_Gnav_Almanac Glonass_Gnav_Navigation_Message::get_almanac(unsigned int s
 
 bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a new ephemeris stored in the galileo navigation class
 {
-    if ((flag_ephemeris_str_1 == true) and (flag_ephemeris_str_2 == true) and (flag_ephemeris_str_3 == true) and (flag_ephemeris_str_4 == true))
+    // We need to make sure we have received the ephemeris info plus the time info
+    if ((flag_ephemeris_str_1 == true) and (flag_ephemeris_str_2 == true) and
+        (flag_ephemeris_str_3 == true) and (flag_ephemeris_str_4 == true) and
+        (flag_utc_model_str_5 == true))
         {
-            if (gnav_ephemeris.d_P_4 == 1)
-                {
-                    flag_ephemeris_str_1 = false;// clear the flag
-                    flag_ephemeris_str_2 = false;// clear the flag
-                    flag_ephemeris_str_3 = false;// clear the flag
-                    flag_ephemeris_str_4 = false;// clear the flag
-                    flag_all_ephemeris = true;
-                    DLOG(INFO) << "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
-
-                    return true;
-                }
-            else
-                {
-                    return false;
-                }
+            flag_ephemeris_str_1 = false;// clear the flag
+            flag_ephemeris_str_2 = false;// clear the flag
+            flag_ephemeris_str_3 = false;// clear the flag
+            flag_ephemeris_str_4 = false;// clear the flag
+            flag_all_ephemeris = true;
+            DLOG(INFO) << "GLONASS GNAV Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
         }
     else
         return false;

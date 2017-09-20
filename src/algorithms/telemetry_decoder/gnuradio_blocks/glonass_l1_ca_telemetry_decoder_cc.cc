@@ -200,6 +200,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
             // get object for this SV (mandatory)
             std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            LOG(INFO) << "GLONASS GNAV Ephemeris have been received on channel" << d_channel << " from satellite " << d_satellite;
 
         }
     if (d_nav.have_new_utc_model() == true)
@@ -207,12 +208,14 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
             // get object for this SV (mandatory)
             std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            LOG(INFO) << "GLONASS GNAV UTC Model have been received on channel" << d_channel << " from satellite " << d_satellite;
         }
     if (d_nav.have_new_almanac() == true)
         {
             unsigned int slot_nbr = d_nav.i_alm_satellite_slot_number;
             std::shared_ptr<Glonass_Gnav_Almanac> tmp_obj= std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            LOG(INFO) << "GLONASS GNAV Almanac have been received on channel" << d_channel << " in slot number " << slot_nbr;
         }
     // 5. Update satellite information on system
     if(d_nav.flag_update_slot_number == true)

@@ -38,10 +38,11 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
     ${GLOG_INCLUDE_DIRS}
     ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
 )
 
 file(GLOB CORE_LIBS_HEADERS "*.h")
 add_library(rx_core_lib ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
 source_group(Headers FILES ${CORE_LIBS_HEADERS})
-target_link_libraries(rx_core_lib supl_library) 
+target_link_libraries(rx_core_lib supl_library ${GNURADIO_PMT_LIBRARIES})

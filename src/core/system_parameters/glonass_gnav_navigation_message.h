@@ -67,9 +67,9 @@ public:
 
     Glonass_Gnav_Ephemeris gnav_ephemeris;    //!< Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model;    //!< UTC model information
-    Glonass_Gnav_Almanac gnav_almanac[24];    //!< Almanac information for all 24 satellites
+    Glonass_Gnav_Almanac gnav_almanac[GLONASS_L1_CA_NBR_SATS];    //!< Almanac information for all 24 satellites
 
-    //!< Ephmeris Flags
+    //!< Ephmeris Flags and control variables
     bool flag_all_ephemeris;      //!< Flag indicating that all strings containing ephemeris have been received
     bool flag_ephemeris_str_1;    //!< Flag indicating that ephemeris 1/4 (string 1) have been received
     bool flag_ephemeris_str_2;    //!< Flag indicating that ephemeris 2/4 (string 2) have been received
@@ -107,6 +107,10 @@ public:
     double d_satClkCorr;     // Satellite clock error
     double d_dtr;            // Relativistic clock correction term
     double d_satClkDrift;    // Satellite clock drift
+
+    // Data update parameters
+    double d_previous_tb;
+    double d_previous_Na[GLONASS_L1_CA_NBR_SATS];
 
     bool CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits);
 
@@ -158,6 +162,8 @@ public:
     * start of frame
     */
     double get_TOW();
+
+    double get_WN();
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and returns it in [s]

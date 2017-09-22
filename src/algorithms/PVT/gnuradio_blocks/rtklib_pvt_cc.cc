@@ -191,7 +191,8 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     // insert new ephemeris record
                     DLOG(INFO) << "GLONASS GNAV New Ephemeris record inserted in global map with TOW =" << glonass_gnav_eph->d_TOW
                                << ", GLONASS GNAV Week Number =" << glonass_gnav_eph->d_WN
-                               << " and Ephemeris IOD = " << glonass_gnav_eph->compute_GLONASS_time(glonass_gnav_eph->d_t_b);
+                               << " and Ephemeris IOD = " << glonass_gnav_eph->compute_GLONASS_time(glonass_gnav_eph->d_t_b)
+                               << " from SV = " << glonass_gnav_eph->i_satellite_slot_number;
                     // update/insert new ephemeris record to the global ephemeris map
                     d_ls_pvt->glonass_gnav_ephemeris_map[glonass_gnav_eph->i_satellite_PRN] = *glonass_gnav_eph;
                 }
@@ -209,7 +210,8 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     std::shared_ptr<Glonass_Gnav_Almanac> glonass_gnav_almanac;
                     glonass_gnav_almanac = boost::any_cast<std::shared_ptr<Glonass_Gnav_Almanac>>(pmt::any_ref(msg));
                     d_ls_pvt->glonass_gnav_almanac = *glonass_gnav_almanac;
-                    DLOG(INFO) << "New GLONASS GNAV Almanac has arrived ";
+                    DLOG(INFO) << "New GLONASS GNAV Almanac has arrived "
+                    << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
                 }
             else
                 {

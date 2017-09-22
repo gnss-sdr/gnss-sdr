@@ -89,6 +89,11 @@ void Glonass_Gnav_Navigation_Message::reset()
     d_dtr = 0.0;
     d_satClkDrift = 0.0;
 
+    // Data update information
+    d_previous_tb = 0.0;
+    for(unsigned int i = 0; i < GLONASS_L1_CA_NBR_SATS; i++)
+        d_previous_Na[i] = 0.0;
+
 
     std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 
@@ -314,23 +319,74 @@ unsigned int Glonass_Gnav_Navigation_Message::get_frame_number(unsigned int sate
     return frame_ID;
 }
 
+double Glonass_Gnav_Navigation_Message::get_WN()
+{
+    double WN = 0.0;
+    double days = 0.0;
+    double total_sec = 0.0;
+    int i = 0;
+
+    boost::gregorian::date gps_epoch { 1980, 1, 6 };
+    // Map to UTC
+    boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
+    boost::gregorian::days d2(gnav_ephemeris.d_N_T);
+    glo_date = glo_date + d2;
+
+
+    boost::posix_time::time_duration t(-6, 0, 0);
+    boost::posix_time::ptime glo_time(glo_date, t);
+    boost::gregorian::date utc_date = glo_time.date();
+
+    days =  static_cast<double>((utc_date - gps_epoch).days());
+    total_sec = days*86400;
+
+    for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
+    {
+        if (GLONASS_LEAP_SECONDS[i][0] == gnav_ephemeris.d_yr)
+        {
+            // We add the leap second when going from utc to gpst
+            total_sec += GLONASS_LEAP_SECONDS[i][6];
+        }
+    }
+
+
+    WN = floor(total_sec/604800);
+
+    return WN;
+}
+
 
 double Glonass_Gnav_Navigation_Message::get_TOW()
 {
+    double TOD = 0.0;
     double TOW = 0.0;
+    double dayofweek = 0.0;
     double utcsu2utc = 3*3600;
     double glot2utcsu = 3*3600;
     int i = 0;
 
-    TOW = gnav_ephemeris.d_t_k + glot2utcsu + utcsu2utc + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
+    // tk is relative to UTC(SU) + 3.00 hrs, so we need to convert to utc and add corrections
+    TOD = gnav_ephemeris.d_t_k - glot2utcsu - utcsu2utc + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
+
+
+    boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
+    boost::gregorian::days d2(gnav_ephemeris.d_N_T);
+    glo_date = glo_date + d2;
+
+    dayofweek = static_cast<double>(glo_date.day_of_week());
+    TOW = TOD + dayofweek*86400;
 
     for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
         {
             if (GLONASS_LEAP_SECONDS[i][0] == gnav_ephemeris.d_yr)
             {
-                TOW -= GLONASS_LEAP_SECONDS[i][6];
+                // We add the leap second when going from utc to gpst
+                TOW += GLONASS_LEAP_SECONDS[i][6];
             }
         }
+    // Compute the arithmetic modules to wrap around range
+    TOW = TOW - 604800*floor(TOW/604800);
+
     return TOW;
 }
 
@@ -342,12 +398,13 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
     d_frame_ID = 0;
 
     // Unpack bytes to bits
-    std::bitset<GLONASS_GNAV_STRING_BITS> string_bits = std::bitset<GLONASS_GNAV_STRING_BITS>((frame_string));
+    std::bitset<GLONASS_GNAV_STRING_BITS> string_bits (frame_string);
 
     // Perform data verification and exit code if error in bit sequence
     flag_CRC_test = CRC_test(string_bits);
     if(flag_CRC_test == false)
         return 0;
+
 
     // Decode all 15 string messages
     d_string_ID = static_cast<unsigned int>(read_navigation_unsigned(string_bits, STRING_ID));
@@ -461,6 +518,8 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     if (flag_ephemeris_str_1 == true)
                     {
                         d_TOW = get_TOW();
+                        gnav_ephemeris.d_TOW = d_TOW;
+                        gnav_ephemeris.d_WN = get_WN();
                         flag_TOW_set = true;
                     }
 
@@ -730,20 +789,29 @@ Glonass_Gnav_Almanac Glonass_Gnav_Navigation_Message::get_almanac(unsigned int s
 
 bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a new ephemeris stored in the galileo navigation class
 {
+    bool new_eph = false;
     // We need to make sure we have received the ephemeris info plus the time info
     if ((flag_ephemeris_str_1 == true) and (flag_ephemeris_str_2 == true) and
         (flag_ephemeris_str_3 == true) and (flag_ephemeris_str_4 == true) and
         (flag_utc_model_str_5 == true))
         {
-            flag_ephemeris_str_1 = false;// clear the flag
-            flag_ephemeris_str_2 = false;// clear the flag
-            flag_ephemeris_str_3 = false;// clear the flag
-            flag_ephemeris_str_4 = false;// clear the flag
-            flag_all_ephemeris = true;
-            DLOG(INFO) << "GLONASS GNAV Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
+            if(d_previous_tb != gnav_ephemeris.d_t_b)
+                {
+                    flag_ephemeris_str_1 = false;// clear the flag
+                    flag_ephemeris_str_2 = false;// clear the flag
+                    flag_ephemeris_str_3 = false;// clear the flag
+                    flag_ephemeris_str_4 = false;// clear the flag
+                    flag_all_ephemeris = true;
+                    // Update the time of ephemeris information
+                    d_previous_tb = gnav_ephemeris.d_t_b;
+                    DLOG(INFO) << "GLONASS GNAV Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
+                    new_eph = true;
+                }
+
         }
-    else
-        return false;
+
+
+    return new_eph;
 }
 
 
@@ -764,34 +832,50 @@ bool Glonass_Gnav_Navigation_Message::have_new_almanac() //Check if we have a ne
     bool new_alm = false;
     if ((flag_almanac_str_6 == true) and (flag_almanac_str_7 == true))
         {
-            //All almanac have been received for this satellite
-            flag_almanac_str_6 = false;
-            flag_almanac_str_7 = false;
-            new_alm = true;
+            if (d_previous_Na[i_alm_satellite_slot_number] != gnav_utc_model.d_N_A)
+                {
+                    //All almanac have been received for this satellite
+                    flag_almanac_str_6 = false;
+                    flag_almanac_str_7 = false;
+                    new_alm = true;
+                }
+
         }
     if ((flag_almanac_str_8 == true) and (flag_almanac_str_9 == true))
         {
-            flag_almanac_str_8 = false;
-            flag_almanac_str_9 = false;
-            new_alm = true;
+            if (d_previous_Na[i_alm_satellite_slot_number] != gnav_utc_model.d_N_A)
+                {
+                    flag_almanac_str_8 = false;
+                    flag_almanac_str_9 = false;
+                    new_alm = true;
+                }
         }
     if((flag_almanac_str_10 == true) and (flag_almanac_str_11 == true))
         {
-            flag_almanac_str_10 = false;
-            flag_almanac_str_11 = false;
-            new_alm = true;
+            if (d_previous_Na[i_alm_satellite_slot_number] != gnav_utc_model.d_N_A)
+                {
+                    flag_almanac_str_10 = false;
+                    flag_almanac_str_11 = false;
+                    new_alm = true;
+                }
         }
     if((flag_almanac_str_12 == true) and (flag_almanac_str_13 == true))
         {
-            flag_almanac_str_12 = false;
-            flag_almanac_str_13 = false;
-            new_alm = true;
+            if (d_previous_Na[i_alm_satellite_slot_number] != gnav_utc_model.d_N_A)
+                {
+                    flag_almanac_str_12 = false;
+                    flag_almanac_str_13 = false;
+                    new_alm = true;
+                }
         }
     if((flag_almanac_str_14 == true) and (flag_almanac_str_15 == true))
         {
-            flag_almanac_str_14 = false;
-            flag_almanac_str_15 = false;
-            new_alm = true;
+            if (d_previous_Na[i_alm_satellite_slot_number] != gnav_utc_model.d_N_A)
+                {
+                    flag_almanac_str_14 = false;
+                    flag_almanac_str_15 = false;
+                    new_alm = true;
+                }
         }
 
     return new_alm;

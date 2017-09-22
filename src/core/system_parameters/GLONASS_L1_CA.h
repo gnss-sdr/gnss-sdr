@@ -87,6 +87,7 @@ const double GLONASS_L1_CA_CODE_LENGTH_CHIPS = 511.0;         //!< GLONASS L1 C/
 const double GLONASS_L1_CA_CODE_PERIOD       = 0.001;         //!< GLONASS L1 C/A code period [seconds]
 const double GLONASS_L1_CA_CHIP_PERIOD       = 1.9569e-06;    //!< GLONASS L1 C/A chip period [seconds]
 const double GLONASS_L1_CA_SYMBOL_RATE_BPS   = 1000;
+const int GLONASS_L1_CA_NBR_SATS             = 24; // STRING DATA WITHOUT PREAMBLE
 
 //FIXME Probably should use leap seconds definitions of rtklib
 const double GLONASS_LEAP_SECONDS[21][7] = { /* leap seconds (y,m,d,h,m,s,utc-gpst) */
@@ -135,7 +136,7 @@ const std::map<unsigned int, int> GLONASS_PRN =
                                                 {17, 4,},  //Plane 3
                                                 {18,-3,},  //Plane 3
                                                 {19, 3,},  //Plane 3
-                                                {20, 2,},  //Plane 3
+                                                {20, -5,},  //Plane 3
                                                 {21, 4,},  //Plane 3
                                                 {22,-3,},  //Plane 3
                                                 {23, 3,},  //Plane 3

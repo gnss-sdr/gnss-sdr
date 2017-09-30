@@ -166,18 +166,19 @@ for channelNr = channelList
         title (handles(4, 1), 'Carrier to Noise Ratio');
 
         %----- Carrier Frequency --------------------------------
-        plot  (handles(4, 2), timeAxisInSeconds, ...
-            trackResults(channelNr).carrFreq(1:settings.msToProcess), 'Color',[0.42 0.25 0.39]);    
+        plot  (handles(4, 2), timeAxisInSeconds(2:end), ...
+            trackResults(channelNr).carrFreq(2:settings.msToProcess), 'Color',[0.42 0.25 0.39]);    
 
         grid  (handles(4, 2));
-        axis  (handles(4, 2), 'tight');
+        axis  (handles(4, 2));
         xlabel(handles(4, 2), 'Time (s)');
         ylabel(handles(4, 2), 'Freq (hz)');
         title (handles(4, 2), 'Carrier Freq');
 
         %----- Code Frequency----------------------------------
-        plot  (handles(4, 3), timeAxisInSeconds, ...
-             trackResults(channelNr).codeFreq(1:settings.msToProcess), 'Color',[0.2 0.3 0.49]);      
+        %--- Skip sample 0 to help with results display
+        plot  (handles(4, 3), timeAxisInSeconds(2:end), ...
+             trackResults(channelNr).codeFreq(2:settings.msToProcess), 'Color',[0.2 0.3 0.49]);      
 
         grid  (handles(4, 3));
         axis  (handles(4, 3), 'tight');

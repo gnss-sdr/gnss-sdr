@@ -139,6 +139,8 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
     // 1. Transform from symbols to bits
     std::string bi_binary_code;
     std::string relative_code;
+    std::string data_bits;
+
     // Group samples into bi-binary code
     for(int i = 0; i < (frame_length); i++)
         {
@@ -173,9 +175,15 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
                 relative_code.push_back('0');
               }
         }
+    // Convert from relative code to data bits
+    data_bits.push_back('0');
+    for(int i = 1; i < (GLONASS_GNAV_STRING_BITS); i++)
+    {
+        data_bits.push_back(((relative_code[i-1]-'0') ^ (relative_code[i]-'0')) + '0');
+    }
 
     // 2. Call the GLONASS GNAV string decoder
-    d_nav.string_decoder(relative_code);
+    d_nav.string_decoder(data_bits);
 
     // 3. Check operation executed correctly
     if(d_nav.flag_CRC_test == true)
@@ -186,13 +194,13 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
         {
             LOG(INFO) << "GLONASS GNAV CRC error on channel " << d_channel <<  " from satellite " << d_satellite;
         }
-
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
             std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            LOG(INFO) << "GLONASS GNAV Ephemeris have been received on channel" << d_channel << " from satellite " << d_satellite;
 
         }
     if (d_nav.have_new_utc_model() == true)
@@ -200,12 +208,21 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
             // get object for this SV (mandatory)
             std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            LOG(INFO) << "GLONASS GNAV UTC Model have been received on channel" << d_channel << " from satellite " << d_satellite;
         }
     if (d_nav.have_new_almanac() == true)
         {
-            unsigned int slot_nbr = d_nav.get_ephemeris().i_satellite_slot_number;
+            unsigned int slot_nbr = d_nav.i_alm_satellite_slot_number;
             std::shared_ptr<Glonass_Gnav_Almanac> tmp_obj= std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            LOG(INFO) << "GLONASS GNAV Almanac have been received on channel" << d_channel << " in slot number " << slot_nbr;
+        }
+    // 5. Update satellite information on system
+    if(d_nav.flag_update_slot_number == true)
+        {
+            LOG(INFO) << "GLONASS GNAV Slot Number Identified on channel " << d_channel;
+            d_satellite.what_block(d_satellite.get_system(), d_nav.get_ephemeris().d_n);
+            d_nav.flag_update_slot_number = false;
         }
 }
 
@@ -334,10 +351,11 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
 
     // UPDATE GNSS SYNCHRO DATA
     //2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true and d_nav.flag_TOW_set == true)
+    if (this->d_flag_preamble == true and d_nav.flag_TOW_new == true)
         //update TOW at the preamble instant
         {
-            d_TOW_at_current_symbol = floor((d_nav.d_TOW + 2*GLONASS_L1_CA_CODE_PERIOD + GLONASS_GNAV_PREAMBLE_DURATION_S)*1000.0)/1000.0;
+            d_TOW_at_current_symbol = floor((d_nav.d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S)*1000.0)/1000.0;
+            d_nav.flag_TOW_new = false;
 
         }
     else //if there is not a new preamble, we define the TOW of the current symbol

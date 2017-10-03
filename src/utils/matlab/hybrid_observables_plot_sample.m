@@ -4,19 +4,20 @@
 clearvars;
 close all;
 addpath('./libs');
-samplingFreq       = 2600000;     %[Hz]
-channels=2;
-path='/home/javier/git/gnss-sdr/build/';
-observables_log_path=[path 'observables.dat'];
+samplingFreq       = 6625000;     %[Hz]
+channels=5;
+path='/archive/';
+observables_log_path=[path 'glo_observables.dat'];
 GNSS_observables= read_hybrid_observables_dump(channels,observables_log_path);
 
+%%
 %optional:
 %search all channels having good satellite simultaneously
 min_idx=1;
 for n=1:1:channels
     idx=find(GNSS_observables.valid(n,:)>0,1,'first');
     if min_idx<idx
-        min_idx=idx;
+        min_idx=idx
     end
 end
 

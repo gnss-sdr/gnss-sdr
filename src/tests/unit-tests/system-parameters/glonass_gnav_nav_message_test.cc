@@ -44,7 +44,7 @@
  * \test The provided string was generated with a version of MATLAB GNSS-SDR that
  * the author coded to perform proper decoding of GLONASS GNAV signals.
  */
-TEST(GlonassGnavNavigationMessageTest, CRCTest)
+TEST(GlonassGnavNavigationMessageTest, CRCTestSuccess)
 {
     // Variables declarations in code
     bool test_result;
@@ -57,6 +57,27 @@ TEST(GlonassGnavNavigationMessageTest, CRCTest)
 
     // Check results in unit test assetions
     ASSERT_TRUE(test_result);
+}
+
+/*!
+ * \brief Testing CRC computation for GLONASS GNAV data bits of a string
+ * \test The provided string was generated with a version of MATLAB GNSS-SDR that
+ * the author coded to perform proper decoding of GLONASS GNAV signals.
+ */
+TEST(GlonassGnavNavigationMessageTest, CRCTestFailure)
+{
+    // Variables declarations in code
+    bool test_result;
+    // Constructor of string to bitset will flip the order of the bits. Needed for CRC computation
+    std::bitset<GLONASS_GNAV_STRING_BITS> string_bits (std::string ("0111100100001100000000000000000000000000110011110001100000000000000001100100011000000"));
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+    gnav_nav_message.reset();
+
+    // Call function to test
+    test_result = gnav_nav_message.CRC_test(string_bits);
+
+    // Check results in unit test assetions
+    ASSERT_FALSE(test_result);
 }
 
 /*!

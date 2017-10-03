@@ -63,17 +63,13 @@ public:
     bool flag_CRC_test;
     unsigned int d_frame_ID;
     unsigned int d_string_ID;
+    bool flag_update_slot_number;
 
     Glonass_Gnav_Ephemeris gnav_ephemeris;    //!< Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model;    //!< UTC model information
-    Glonass_Gnav_Almanac gnav_almanac[24];    //!< Almanac information for all 24 satellites
+    Glonass_Gnav_Almanac gnav_almanac[GLONASS_L1_CA_NBR_SATS];    //!< Almanac information for all 24 satellites
 
-    //!< Satellite Identification
-    int i_channel_ID;                         //!< Channel ID assigned by the receiver
-    unsigned int i_satellite_freq_channel;    //!< SV Frequency Slot Number
-    unsigned int i_satellite_slot_number;     //!< SV Orbit Slot Number
-
-    //!< Ephmeris Flags
+    //!< Ephmeris Flags and control variables
     bool flag_all_ephemeris;      //!< Flag indicating that all strings containing ephemeris have been received
     bool flag_ephemeris_str_1;    //!< Flag indicating that ephemeris 1/4 (string 1) have been received
     bool flag_ephemeris_str_2;    //!< Flag indicating that ephemeris 2/4 (string 2) have been received
@@ -92,24 +88,25 @@ public:
     bool flag_almanac_str_13;     //!< Flag indicating that almanac of string 13 have been received
     bool flag_almanac_str_14;     //!< Flag indicating that almanac of string 14 have been received
     bool flag_almanac_str_15;     //!< Flag indicating that almanac of string 15 have been received
+    unsigned int i_alm_satellite_slot_number;     //!< SV Orbit Slot Number
 
     //!< UTC and System Clocks Flags
     bool flag_utc_model_valid;      //!< If set, it indicates that the UTC model parameters are filled
     bool flag_utc_model_str_5;      //!< Clock info send in string 5 of navigation data
     bool flag_utc_model_str_15;     //!< Clock info send in string 15 of frame 5 of navigation data
 
-    bool flag_TOW_set;
+    bool flag_TOW_set;      //!< Flag indicating when the TOW has been set
+    bool flag_TOW_new;      //!< Flag indicating when a new TOW has been computed
     double d_TOW;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-    double d_TOW_F1;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
-    double d_TOW_F2;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
-    double d_TOW_F3;        //!< Time of GPS Week from HOW word of Subframe 3 [s]
-    double d_TOW_F4;        //!< Time of GPS Week from HOW word of Subframe 4 [s]
-    double d_TOW_F5;        //!< Time of GPS Week from HOW word of Subframe 5 [s]
 
     // Clock terms
     double d_satClkCorr;     // Satellite clock error
     double d_dtr;            // Relativistic clock correction term
     double d_satClkDrift;    // Satellite clock drift
+
+    // Data update parameters
+    double d_previous_tb;
+    double d_previous_Na[GLONASS_L1_CA_NBR_SATS];
 
     bool CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits);
 
@@ -161,6 +158,8 @@ public:
     * start of frame
     */
     double get_TOW();
+
+    double get_WN();
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and returns it in [s]

@@ -598,7 +598,7 @@ void GNSSFlowgraph::set_signals_list()
             29, 30, 31, 32, 33, 34, 35, 36};
 
     // Removing satellites sharing same frequency number(1 and 5, 2 and 6, 3 and 7, 4 and 6, 11 and 15, 12 and 16, 14 and 18, 17 and 21
-    std::set<unsigned int> available_glonass_prn = { 1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21 };
+    std::set<unsigned int> available_glonass_prn = { 1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21, 24 };
 
     std::string sv_list = configuration_->property("Galileo.prns", std::string("") );
 

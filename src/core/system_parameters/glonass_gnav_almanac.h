@@ -49,13 +49,13 @@ class Glonass_Gnav_Almanac
 public:
     double d_n_A;               //!< Conventional number of satellite within GLONASS space segment [dimensionless]
     double d_H_n_A;             //!< Carrier frequency number of navigation RF signal transmitted by d_nA satellite as table 4.10 (0-31) [dimensionless]
-    double d_lambda_n_A;        //!< Longitude of the first (within the d_NA day) ascending node of d_nA  [semi-circles]
+    double d_lambda_n_A;        //!< Longitude of the first (within the d_NA day) ascending node of d_nA [radians]
     double d_t_lambda_n_A;      //!< Time of first ascending node passage [s]
-    double d_Delta_i_n_A;       //!< Correction of the mean value of inclination of d_n_A satellite at instant t_lambda_n_A [semi-circles]
-    double d_Delta_T_n_A;       //!< Correction to the mean value of Draconian period of d_n_A satellite at instant t_lambda_n_A[s / orbital period]
+    double d_Delta_i_n_A;       //!< Correction of the mean value of inclination of d_n_A satellite at instant t_lambda_n_A [radians]
+    double d_Delta_T_n_A;       //!< Correction to the mean value of Draconian period of d_n_A satellite at instant t_lambda_n_A [s / orbital period]
     double d_Delta_T_n_A_dot;   //!< Rate of change of Draconian period of d_n_A satellite at instant t_lambda_n_A [s / orbital period^2]
     double d_epsilon_n_A;       //!< Eccentricity of d_n_A satellite at instant t_lambda_n_A [dimensionless]
-    double d_omega_n_A;         //!< Argument of preigree of d_n_A satellite at instant t_lambdan_A [semi-circles]
+    double d_omega_n_A;         //!< Argument of perigee of d_n_A satellite at instant t_lambdan_A [radians]
     double d_M_n_A;             //!< Type of satellite n_A [dimensionless]
     double d_KP;                //!< Notification on forthcoming leap second correction of UTC [dimensionless]
     double d_tau_n_A;           //!< Coarse value of d_n_A satellite time correction to GLONASS time at instant  t_lambdan_A[s]
@@ -66,24 +66,6 @@ public:
     int i_satellite_freq_channel;           //!< SV Frequency Channel Number
     unsigned int i_satellite_PRN;           //!< SV PRN Number, equivalent to slot number for compatibility with GPS
     unsigned int i_satellite_slot_number;   //!< SV Slot Number
-
-    // satellite positions
-    double d_satpos_Xo;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
-    double d_satpos_Yo;        //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
-    double d_satpos_Zo;        //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
-    // Satellite velocity
-    double d_satvel_Xo;        //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_satvel_Yo;        //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_satvel_Zo;        //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
-
-    // satellite positions
-    double d_satpos_X;        //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
-    double d_satpos_Y;        //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
-    double d_satpos_Z;        //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
-    // Satellite velocity
-    double d_satvel_X;        //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_satvel_Y;        //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
-    double d_satvel_Z;        //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
 
     template<class Archive>
     /*!
@@ -113,7 +95,6 @@ public:
         archive & make_nvp("d_l_n", d_l_n);
     }
 
-    void satellite_position(double N_A, double N_i, double t_i);
     /*!
      * Default constructor
      */

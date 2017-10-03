@@ -351,10 +351,11 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
 
     // UPDATE GNSS SYNCHRO DATA
     //2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true and d_nav.flag_TOW_set == true)
+    if (this->d_flag_preamble == true and d_nav.flag_TOW_new == true)
         //update TOW at the preamble instant
         {
-            d_TOW_at_current_symbol = floor((d_nav.d_TOW + 2*GLONASS_L1_CA_CODE_PERIOD + GLONASS_GNAV_PREAMBLE_DURATION_S)*1000.0)/1000.0;
+            d_TOW_at_current_symbol = floor((d_nav.d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S)*1000.0)/1000.0;
+            d_nav.flag_TOW_new = false;
 
         }
     else //if there is not a new preamble, we define the TOW of the current symbol

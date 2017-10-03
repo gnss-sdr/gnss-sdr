@@ -95,13 +95,9 @@ public:
     bool flag_utc_model_str_5;      //!< Clock info send in string 5 of navigation data
     bool flag_utc_model_str_15;     //!< Clock info send in string 15 of frame 5 of navigation data
 
-    bool flag_TOW_set;
+    bool flag_TOW_set;      //!< Flag indicating when the TOW has been set
+    bool flag_TOW_new;      //!< Flag indicating when a new TOW has been computed
     double d_TOW;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-    double d_TOW_F1;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
-    double d_TOW_F2;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
-    double d_TOW_F3;        //!< Time of GPS Week from HOW word of Subframe 3 [s]
-    double d_TOW_F4;        //!< Time of GPS Week from HOW word of Subframe 4 [s]
-    double d_TOW_F5;        //!< Time of GPS Week from HOW word of Subframe 5 [s]
 
     // Clock terms
     double d_satClkCorr;     // Satellite clock error

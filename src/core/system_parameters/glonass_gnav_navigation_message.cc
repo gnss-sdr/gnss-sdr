@@ -73,12 +73,8 @@ void Glonass_Gnav_Navigation_Message::reset()
 
     //broadcast orbit 1
     flag_TOW_set = false;
+    flag_TOW_new = false;
     d_TOW = 0.0;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-    d_TOW_F1 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 1 [s]
-    d_TOW_F2 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 2 [s]
-    d_TOW_F3 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 3 [s]
-    d_TOW_F4 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 4 [s]
-    d_TOW_F5 = 0.0;        //!< Time of GPS Week from HOW word of Subframe 5 [s]
 
     flag_CRC_test = false;
     d_frame_ID = 0;
@@ -366,7 +362,8 @@ double Glonass_Gnav_Navigation_Message::get_TOW()
     int i = 0;
 
     // tk is relative to UTC(SU) + 3.00 hrs, so we need to convert to utc and add corrections
-    TOD = gnav_ephemeris.d_t_k - glot2utcsu - utcsu2utc + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
+    // tk plus 10 sec is the true tod since get_TOW is called when in str5
+    TOD = (gnav_ephemeris.d_t_k + 10) - glot2utcsu - utcsu2utc + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
 
 
     boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
@@ -521,6 +518,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                         gnav_ephemeris.d_TOW = d_TOW;
                         gnav_ephemeris.d_WN = get_WN();
                         flag_TOW_set = true;
+                        flag_TOW_new = true;
                     }
 
                 }

@@ -5,11 +5,12 @@
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
+ *          <li> Cillian O'Driscoll, 2017. cillian(at)ieee.org
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -135,7 +136,6 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_new_data_available = false;
     d_worker_active = false;
     d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-
 }
 
 
@@ -163,15 +163,15 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 
     // Let the worker thread know that we are done and then wait to join
     if( d_worker_thread.joinable() )
-    {
         {
-            std::lock_guard<std::mutex> lk( d_mutex );
-            d_done = true;
-            d_cond.notify_one();
+            {
+                std::lock_guard<std::mutex> lk( d_mutex );
+                d_done = true;
+                d_cond.notify_one();
+            }
+
+            d_worker_thread.join();
         }
-        
-        d_worker_thread.join();
-    }
 
     volk_gnsssdr_free( d_data_buffer );
 }
@@ -186,7 +186,7 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
     gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
     if( d_bit_transition_flag )
         {
-            int offset = d_fft_size/2;
+            int offset = d_fft_size / 2;
             std::fill_n( d_fft_if->get_inbuf(), offset, gr_complex( 0.0, 0.0 ) );
             memcpy(d_fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * offset);
         } 
@@ -194,7 +194,7 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
         {
             memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
         }
-    
+
     d_fft_if->execute(); // We need the FFT of local code
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
@@ -268,17 +268,16 @@ void pcps_acquisition_cc::send_positive_acquisition()
     // 6.1- Declare positive acquisition using a message port
     //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "positive acquisition"
-    << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-    << ", sample_stamp " << d_sample_counter
-    << ", test statistics value " << d_test_statistics
-    << ", test statistics threshold " << d_threshold
-    << ", code phase " << d_gnss_synchro->Acq_delay_samples
-    << ", doppler " << d_gnss_synchro->Acq_doppler_hz
-    << ", magnitude " << d_mag
-    << ", input signal power " << d_input_power;
+               << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+               << ", sample_stamp " << d_sample_counter
+               << ", test statistics value " << d_test_statistics
+               << ", test statistics threshold " << d_threshold
+               << ", code phase " << d_gnss_synchro->Acq_delay_samples
+               << ", doppler " << d_gnss_synchro->Acq_doppler_hz
+               << ", magnitude " << d_mag
+               << ", input signal power " << d_input_power;
 
     this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
-
 }
 
 
@@ -287,17 +286,16 @@ void pcps_acquisition_cc::send_negative_acquisition()
     // 6.2- Declare negative acquisition using a message port
     //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "negative acquisition"
-    << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-    << ", sample_stamp " << d_sample_counter
-    << ", test statistics value " << d_test_statistics
-    << ", test statistics threshold " << d_threshold
-    << ", code phase " << d_gnss_synchro->Acq_delay_samples
-    << ", doppler " << d_gnss_synchro->Acq_doppler_hz
-    << ", magnitude " << d_mag
-    << ", input signal power " << d_input_power;
+               << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+               << ", sample_stamp " << d_sample_counter
+               << ", test statistics value " << d_test_statistics
+               << ", test statistics threshold " << d_threshold
+               << ", code phase " << d_gnss_synchro->Acq_delay_samples
+               << ", doppler " << d_gnss_synchro->Acq_doppler_hz
+               << ", magnitude " << d_mag
+               << ", input signal power " << d_input_power;
 
     this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
-
 }
 
 
@@ -346,34 +344,34 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             int num_items_consumed = 1;
 
             if( d_worker_active )
-            {
-                if( d_blocking )
                 {
-                    // Should never get here:
-                    std::string msg = "pcps_acquisition_cc: Entered general work with worker active in blocking mode, should never happen";
-                    LOG(WARNING) << msg;
-                    std::cout << msg << std::endl;
-                    d_cond.wait( lk, [&]{ return !this->d_worker_active; } );
+                    if( d_blocking )
+                        {
+                            // Should never get here:
+                            std::string msg = "pcps_acquisition_cc: Entered general work with worker active in blocking mode, should never happen";
+                            LOG(WARNING) << msg;
+                            std::cout << msg << std::endl;
+                            d_cond.wait( lk, [&]{ return !this->d_worker_active; } );
+                        }
+                    else
+                        {
+                            num_items_consumed = ninput_items[0];
+                            d_sample_counter += d_fft_size * num_items_consumed;
+                        }
                 }
-                else
-                {
-                    num_items_consumed = ninput_items[0];
-                    d_sample_counter += d_fft_size * num_items_consumed;
-                }
-            }
             else
-            {
-                // Copy the data to the core and let it know that new data is available
-                memcpy( d_data_buffer, input_items[0], d_fft_size * sizeof( gr_complex ) );
-                d_new_data_available = true;
-                d_cond.notify_one();
-
-                if( d_blocking )
                 {
-                    d_cond.wait( lk, [&]{ return !this->d_new_data_available; } );
+                    // Copy the data to the core and let it know that new data is available
+                    memcpy( d_data_buffer, input_items[0], d_fft_size * sizeof( gr_complex ) );
+                    d_new_data_available = true;
+                    d_cond.notify_one();
 
+                    if( d_blocking )
+                        {
+                            d_cond.wait( lk, [&]{ return !this->d_new_data_available; } );
+
+                        }
                 }
-            }
 
             consume_each(num_items_consumed);
 
@@ -385,181 +383,182 @@ int pcps_acquisition_cc::general_work(int noutput_items,
     return noutput_items;
 }
 
+
 void pcps_acquisition_cc::acquisition_core( void )
 {
     d_worker_active = false;
     while( 1 )
-    {
-        std::unique_lock<std::mutex> lk( d_mutex );
-        d_cond.wait( lk, [&]{ return this->d_new_data_available or this->d_done; } );
-        d_worker_active = !d_done;
-        unsigned long int sample_counter = d_sample_counter; // sample counter
-        lk.unlock();
-
-        if( d_done )
         {
-            break;
-        }
+            std::unique_lock<std::mutex> lk( d_mutex );
+            d_cond.wait( lk, [&]{ return this->d_new_data_available or this->d_done; } );
+            d_worker_active = !d_done;
+            unsigned long int sample_counter = d_sample_counter; // sample counter
+            lk.unlock();
 
-        // initialize acquisition algorithm
-        int doppler;
-        uint32_t indext = 0;
-        float magt = 0.0;
-        const gr_complex *in = d_data_buffer; //Get the input samples pointer
+            if( d_done )
+                {
+                    break;
+                }
 
-        int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
+            // initialize acquisition algorithm
+            int doppler;
+            uint32_t indext = 0;
+            float magt = 0.0;
+            const gr_complex *in = d_data_buffer; //Get the input samples pointer
 
-        float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
+            int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
 
-        d_input_power = 0.0;
-        d_mag = 0.0;
-        d_well_count++;
+            float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
-        DLOG(INFO) << "Channel: " << d_channel
-            << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-            << " ,sample stamp: " << sample_counter << ", threshold: "
-            << d_threshold << ", doppler_max: " << d_doppler_max
-            << ", doppler_step: " << d_doppler_step
-            << ", use_CFAR_algorithm_flag: " << ( d_use_CFAR_algorithm_flag ? "true" : "false" );
+            d_input_power = 0.0;
+            d_mag = 0.0;
+            d_well_count++;
 
-        if (d_use_CFAR_algorithm_flag == true)
-        {
-            // 1- (optional) Compute the input signal power estimation
-            volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
-            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
-            d_input_power /= static_cast<float>(d_fft_size);
-        }
-        // 2- Doppler frequency search loop
-        for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            // doppler search steps
-            doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-
-            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
-                    d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
-
-            // 3- Perform the FFT-based convolution  (parallel time search)
-            // Compute the FFT of the carrier wiped--off incoming signal
-            d_fft_if->execute();
-
-            // Multiply carrier wiped--off, Fourier transformed incoming signal
-            // with the local FFT'd code reference using SIMD operations with VOLK library
-            volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
-                    d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
-
-            // compute the inverse FFT
-            d_ifft->execute();
-
-            // Search maximum
-            size_t offset = ( d_bit_transition_flag ? effective_fft_size : 0 );
-            volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
-            volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude, effective_fft_size);
-            magt = d_magnitude[indext];
+            DLOG(INFO) << "Channel: " << d_channel
+                       << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
+                       << " ,sample stamp: " << sample_counter << ", threshold: "
+                       << d_threshold << ", doppler_max: " << d_doppler_max
+                       << ", doppler_step: " << d_doppler_step
+                       << ", use_CFAR_algorithm_flag: " << ( d_use_CFAR_algorithm_flag ? "true" : "false" );
 
             if (d_use_CFAR_algorithm_flag == true)
-            {
-                // Normalize the maximum value to correct the scale factor introduced by FFTW
-                magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
-            }
-            // 4- record the maximum peak and the associated synchronization parameters
-            if (d_mag < magt)
-            {
-                d_mag = magt;
-
-                if (d_use_CFAR_algorithm_flag == false)
                 {
-                    // Search grid noise floor approximation for this doppler line
-                    volk_32f_accumulator_s32f(&d_input_power, d_magnitude, effective_fft_size);
-                    d_input_power = (d_input_power - d_mag) / (effective_fft_size - 1);
+                    // 1- (optional) Compute the input signal power estimation
+                    volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
+                    volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
+                    d_input_power /= static_cast<float>(d_fft_size);
+                }
+            // 2- Doppler frequency search loop
+            for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+                {
+                    // doppler search steps
+                    doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+
+                    volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
+                            d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
+
+                    // 3- Perform the FFT-based convolution  (parallel time search)
+                    // Compute the FFT of the carrier wiped--off incoming signal
+                    d_fft_if->execute();
+
+                    // Multiply carrier wiped--off, Fourier transformed incoming signal
+                    // with the local FFT'd code reference using SIMD operations with VOLK library
+                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
+                            d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
+
+                    // compute the inverse FFT
+                    d_ifft->execute();
+
+                    // Search maximum
+                    size_t offset = ( d_bit_transition_flag ? effective_fft_size : 0 );
+                    volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
+                    volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude, effective_fft_size);
+                    magt = d_magnitude[indext];
+
+                    if (d_use_CFAR_algorithm_flag == true)
+                        {
+                            // Normalize the maximum value to correct the scale factor introduced by FFTW
+                            magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
+                        }
+                    // 4- record the maximum peak and the associated synchronization parameters
+                    if (d_mag < magt)
+                        {
+                            d_mag = magt;
+
+                            if (d_use_CFAR_algorithm_flag == false)
+                                {
+                                    // Search grid noise floor approximation for this doppler line
+                                    volk_32f_accumulator_s32f(&d_input_power, d_magnitude, effective_fft_size);
+                                    d_input_power = (d_input_power - d_mag) / (effective_fft_size - 1);
+                                }
+
+                            // In case that d_bit_transition_flag = true, we compare the potentially
+                            // new maximum test statistics (d_mag/d_input_power) with the value in
+                            // d_test_statistics. When the second dwell is being processed, the value
+                            // of d_mag/d_input_power could be lower than d_test_statistics (i.e,
+                            // the maximum test statistics in the previous dwell is greater than
+                            // current d_mag/d_input_power). Note that d_test_statistics is not
+                            // restarted between consecutive dwells in multidwell operation.
+
+                            if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
+                                {
+                                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                                    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
+                                    d_gnss_synchro->Acq_samplestamp_samples = sample_counter;
+
+                                    // 5- Compute the test statistics and compare to the threshold
+                                    //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+                                    d_test_statistics = d_mag / d_input_power;
+                                }
+                        }
+
+                    // Record results to file if required
+                    if (d_dump)
+                        {
+                            std::stringstream filename;
+                            std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
+                            filename.str("");
+
+                            boost::filesystem::path p = d_dump_filename;
+                            filename << p.parent_path().string()
+                            << boost::filesystem::path::preferred_separator
+                            << p.stem().string()
+                            << "_" << d_gnss_synchro->System
+                            <<"_" << d_gnss_synchro->Signal << "_sat_"
+                            << d_gnss_synchro->PRN << "_doppler_"
+                            <<  doppler
+                            << p.extension().string();
+
+                            DLOG(INFO) << "Writing ACQ out to " << filename.str();
+
+                            d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
+                            d_dump_file.write(reinterpret_cast<char*>(d_ifft->get_outbuf()), n); //write directly |abs(x)|^2 in this Doppler bin?
+                            d_dump_file.close();
+                        }
                 }
 
-                // In case that d_bit_transition_flag = true, we compare the potentially
-                // new maximum test statistics (d_mag/d_input_power) with the value in
-                // d_test_statistics. When the second dwell is being processed, the value
-                // of d_mag/d_input_power could be lower than d_test_statistics (i.e,
-                // the maximum test statistics in the previous dwell is greater than
-                // current d_mag/d_input_power). Note that d_test_statistics is not
-                // restarted between consecutive dwells in multidwell operation.
-
-                if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
+            if (!d_bit_transition_flag)
                 {
-                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
-                    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-                    d_gnss_synchro->Acq_samplestamp_samples = sample_counter;
-
-                    // 5- Compute the test statistics and compare to the threshold
-                    //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
-                    d_test_statistics = d_mag / d_input_power;
+                    if (d_test_statistics > d_threshold)
+                        {
+                            d_state = 0; // Positive acquisition
+                            d_active = false;
+                            send_positive_acquisition();
+                        }
+                    else if (d_well_count == d_max_dwells)
+                        {
+                            d_state = 0;
+                            d_active = false;
+                            send_negative_acquisition();
+                        }
                 }
-            }
+            else
+                {
+                    if (d_well_count == d_max_dwells) // d_max_dwells = 2
+                        {
+                            if (d_test_statistics > d_threshold)
+                                {
+                                    d_state = 0; // Positive acquisition
+                                    d_active = false;
+                                    send_positive_acquisition();
+                                }
+                            else
+                                {
+                                    d_state = 0; // Negative acquisition
+                                    d_active = false;
+                                    send_negative_acquisition();
+                                }
+                        }
+                }
 
-            // Record results to file if required
-            if (d_dump)
-            {
-                std::stringstream filename;
-                std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
-                filename.str("");
-
-                boost::filesystem::path p = d_dump_filename;
-                filename << p.parent_path().string()
-                    << boost::filesystem::path::preferred_separator
-                    << p.stem().string()
-                    << "_" << d_gnss_synchro->System
-                    <<"_" << d_gnss_synchro->Signal << "_sat_"
-                    << d_gnss_synchro->PRN << "_doppler_"
-                    <<  doppler
-                    << p.extension().string();
-
-                DLOG(INFO) << "Writing ACQ out to " << filename.str();
-
-                d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                d_dump_file.write(reinterpret_cast<char*>(d_ifft->get_outbuf()), n); //write directly |abs(x)|^2 in this Doppler bin?
-                d_dump_file.close();
-            }
+            lk.lock();
+            d_worker_active = false;
+            d_new_data_available = false;
+            lk.unlock();
+            d_cond.notify_one();
         }
-
-        if (!d_bit_transition_flag)
-        {
-            if (d_test_statistics > d_threshold)
-            {
-                d_state = 0; // Positive acquisition
-                d_active = false;
-                send_positive_acquisition();
-            }
-            else if (d_well_count == d_max_dwells)
-            {
-                d_state = 0;
-                d_active = false;
-                send_negative_acquisition();
-            }
-        }
-        else
-        {
-            if (d_well_count == d_max_dwells) // d_max_dwells = 2
-            {
-                if (d_test_statistics > d_threshold)
-                {
-                    d_state = 0; // Positive acquisition
-                    d_active = false;
-                    send_positive_acquisition();
-                }
-                else
-                {
-                    d_state = 0; // Negative acquisition
-                    d_active = false;
-                    send_negative_acquisition();
-                }
-            }
-        }
-
-        lk.lock();
-        d_worker_active = false;
-        d_new_data_available = false;
-        lk.unlock();
-        d_cond.notify_one();
-
-    }
 }
+
 
 bool pcps_acquisition_cc::start( void )
 {
@@ -572,19 +571,20 @@ bool pcps_acquisition_cc::start( void )
     return gr::block::start();
 }
 
+
 bool pcps_acquisition_cc::stop( void )
 {
     // Let the worker thread know that we are done and then wait to join
     if( d_worker_thread.joinable() )
-    {
         {
-            std::lock_guard<std::mutex> lk( d_mutex );
-            d_done = true;
-            d_cond.notify_one();
+            {
+                std::lock_guard<std::mutex> lk( d_mutex );
+                d_done = true;
+                d_cond.notify_one();
+            }
+
+            d_worker_thread.join();
         }
-        
-        d_worker_thread.join();
-    }
     return gr::block::stop();
 }
 

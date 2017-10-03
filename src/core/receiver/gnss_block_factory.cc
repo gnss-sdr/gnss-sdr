@@ -67,7 +67,6 @@
 #include "pulse_blanking_filter.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l2_m_pcps_acquisition.h"
-#include "gps_l1_ca_pcps_multithread_acquisition.h"
 #include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
@@ -920,12 +919,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
-    else if (implementation.compare("GPS_L1_CA_PCPS_Multithread_Acquisition") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaPcpsMultithreadAcquisition(configuration.get(), role, in_streams,
-                    out_streams));
-            block = std::move(block_);
-        }
 
 #if OPENCL_BLOCKS
     else if (implementation.compare("GPS_L1_CA_PCPS_OpenCl_Acquisition") == 0)
@@ -1143,12 +1136,6 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     else if (implementation.compare("GPS_L1_CA_PCPS_Tong_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GpsL1CaPcpsTongAcquisition(configuration.get(), role, in_streams,
-                    out_streams));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("GPS_L1_CA_PCPS_Multithread_Acquisition") == 0)
-        {
-            std::unique_ptr<AcquisitionInterface> block_(new GpsL1CaPcpsMultithreadAcquisition(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

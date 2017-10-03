@@ -59,6 +59,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
+    blocking_ = configuration_->property(role + ".blocking", true);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
@@ -86,7 +87,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
             item_size_ = sizeof(lv_16sc_t);
             acquisition_sc_ = pcps_make_acquisition_sc(1, max_dwells_,
                     doppler_max_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
 
         }
@@ -95,7 +96,8 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
                     doppler_max_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_,
+                    dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 

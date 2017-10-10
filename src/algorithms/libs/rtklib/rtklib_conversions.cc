@@ -71,24 +71,24 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
     gtime_t t_utc;
     struct tm utcinfo;
 
-    rtklib_sat.sat    = glonass_gnav_eph.i_satellite_slot_number;       /* satellite number */
-    rtklib_sat.iode   = glonass_gnav_eph.d_iode;                        /* IODE (0-6 bit of tb field) */
-    rtklib_sat.frq    = glonass_gnav_eph.i_satellite_freq_channel;      /* satellite frequency number */
-    rtklib_sat.svh    = glonass_gnav_eph.d_l3rd_n;                      /* satellite health*/
-    rtklib_sat.sva    = glonass_gnav_eph.d_F_T;                         /* satellite accuracy*/
-    rtklib_sat.age    = glonass_gnav_eph.d_E_n;                         /* satellite age*/
-    rtklib_sat.pos[0] = glonass_gnav_eph.d_Xn*1000;                     /* satellite position (ecef) (m) */
-    rtklib_sat.pos[1] = glonass_gnav_eph.d_Yn*1000;                     /* satellite position (ecef) (m) */
-    rtklib_sat.pos[2] = glonass_gnav_eph.d_Zn*1000;                     /* satellite position (ecef) (m) */
-    rtklib_sat.vel[0] = glonass_gnav_eph.d_VXn*1000;                    /* satellite velocity (ecef) (m/s) */
-    rtklib_sat.vel[1] = glonass_gnav_eph.d_VYn*1000;                    /* satellite velocity (ecef) (m/s) */
-    rtklib_sat.vel[2] = glonass_gnav_eph.d_VZn*1000;                    /* satellite velocity (ecef) (m/s) */
-    rtklib_sat.acc[0] = glonass_gnav_eph.d_AXn*1000;                    /* satellite acceleration (ecef) (m/s^2) */
-    rtklib_sat.acc[1] = glonass_gnav_eph.d_AYn*1000;                    /* satellite acceleration (ecef) (m/s^2) */
-    rtklib_sat.acc[2] = glonass_gnav_eph.d_AZn*1000;                    /* satellite acceleration (ecef) (m/s^2) */
-    rtklib_sat.taun   = glonass_gnav_eph.d_tau_n;                       /* SV clock bias (s) */
-    rtklib_sat.gamn   = glonass_gnav_eph.d_gamma_n;                     /* SV relative freq bias */
-    rtklib_sat.age    = glonass_gnav_eph.d_Delta_tau_n;                 /* delay between L1 and L2 (s) */
+    rtklib_sat.sat    = glonass_gnav_eph.i_satellite_slot_number;           /* satellite number */
+    rtklib_sat.iode   = static_cast<int>(glonass_gnav_eph.d_t_b);           /* IODE (0-6 bit of tb field) */
+    rtklib_sat.frq    = glonass_gnav_eph.i_satellite_freq_channel;          /* satellite frequency number */
+    rtklib_sat.svh    = glonass_gnav_eph.d_l3rd_n;                          /* satellite health*/
+    rtklib_sat.sva    = static_cast<int>(glonass_gnav_eph.d_F_T);           /* satellite accuracy*/
+    rtklib_sat.age    = static_cast<int>(glonass_gnav_eph.d_E_n);           /* satellite age*/
+    rtklib_sat.pos[0] = glonass_gnav_eph.d_Xn*1000;                         /* satellite position (ecef) (m) */
+    rtklib_sat.pos[1] = glonass_gnav_eph.d_Yn*1000;                         /* satellite position (ecef) (m) */
+    rtklib_sat.pos[2] = glonass_gnav_eph.d_Zn*1000;                         /* satellite position (ecef) (m) */
+    rtklib_sat.vel[0] = glonass_gnav_eph.d_VXn*1000;                        /* satellite velocity (ecef) (m/s) */
+    rtklib_sat.vel[1] = glonass_gnav_eph.d_VYn*1000;                        /* satellite velocity (ecef) (m/s) */
+    rtklib_sat.vel[2] = glonass_gnav_eph.d_VZn*1000;                        /* satellite velocity (ecef) (m/s) */
+    rtklib_sat.acc[0] = glonass_gnav_eph.d_AXn*1000;                        /* satellite acceleration (ecef) (m/s^2) */
+    rtklib_sat.acc[1] = glonass_gnav_eph.d_AYn*1000;                        /* satellite acceleration (ecef) (m/s^2) */
+    rtklib_sat.acc[2] = glonass_gnav_eph.d_AZn*1000;                        /* satellite acceleration (ecef) (m/s^2) */
+    rtklib_sat.taun   = glonass_gnav_eph.d_tau_n;                           /* SV clock bias (s) */
+    rtklib_sat.gamn   = glonass_gnav_eph.d_gamma_n;                         /* SV relative freq bias */
+    rtklib_sat.age    = static_cast<int>(glonass_gnav_eph.d_Delta_tau_n);   /* delay between L1 and L2 (s) */
 
     utcinfo.tm_mon  = 0;
     utcinfo.tm_mday = glonass_gnav_eph.d_N_T;

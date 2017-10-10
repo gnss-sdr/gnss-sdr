@@ -282,7 +282,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
     			{
     				std::string sig_(gnss_observables_iter->second.Signal);
     				// GLONASS GNAV L1
-    				if(sig_.compare("1C") == 0)
+    				if(sig_.compare("1G") == 0)
     				{
     				    // 1 Glo - find the ephemeris for the current GLONASS SV observation. The SV Slot Number (PRN ID) is the map key
     				    glonass_gnav_ephemeris_iter = glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -305,7 +305,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
 
     				}
     				// GLONASS GNAV L2
-    				if(sig_.compare("2C") == 0)
+    				if(sig_.compare("2G") == 0)
     				{
     				    // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
     				    glonass_gnav_ephemeris_iter = glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -364,6 +364,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
             int result = 0;
             nav_t nav_data;
             nav_data.eph = eph_data;
+            nav_data.geph = geph_data;
             nav_data.n = valid_obs;
             for (int i = 0; i < MAXSAT; i++)
                 {

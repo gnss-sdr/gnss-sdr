@@ -521,6 +521,9 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                         flag_TOW_new = true;
                     }
 
+                    // 4) Set time of day (tod) when ephemeris data is complety decoded
+                    gnav_ephemeris.d_tod = gnav_ephemeris.d_t_k + 2*d_string_ID;
+
                 }
 
 

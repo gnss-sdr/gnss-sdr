@@ -3208,9 +3208,9 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
             strm << numberTypesObservations;
             line += Rinex_Printer::rightJustify(strm.str(), 3);
 
-            std::string signal_ = "1C";
+            std::string signal_ = "1G";
             std::size_t found_1C = glonass_bands.find(signal_);
-            signal_ = "2C";
+            signal_ = "2G";
             std::size_t found_2C = glonass_bands.find(signal_);
 
             if(found_1C != std::string::npos)
@@ -3535,13 +3535,13 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
     // Find GLONASS Signal in Mixed file
     unsigned int number_of_observations_glo = 0;
-    std::string signal_("1C");
+    std::string signal_("1G");
     std::size_t found_1C = glonass_bands.find(signal_);
     if(found_1C != std::string::npos)
         {
             number_of_observations_glo = number_of_observations_glo + 4;
         }
-    signal_ = "2C";
+    signal_ = "2G";
     std::size_t found_2C = glonass_bands.find(signal_);
     if(found_2C != std::string::npos)
         {
@@ -3851,13 +3851,13 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 
     line.clear();
     unsigned int number_of_observations_glo = 0;
-    signal_ = "1C";
+    signal_ = "1G";
     std::size_t found_1C = glonass_bands.find(signal_);
     if(found_1C != std::string::npos)
         {
             number_of_observations_glo = number_of_observations_glo + 4;
         }
-    signal_ = "2C";
+    signal_ = "2G";
     std::size_t found_2C = glonass_bands.find(signal_);
     if(found_2C != std::string::npos)
         {

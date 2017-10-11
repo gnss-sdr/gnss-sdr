@@ -492,37 +492,38 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     // Compute Year and DoY based on Algorithm A3.11 of GLONASS ICD
                     // 1). Current year number J in the four-year interval is calculated
                     if (gnav_ephemeris.d_N_T >= 1 && gnav_ephemeris.d_N_T <= 366)
-                    {
-                        J = 1;
-                    }
+                        {
+                            J = 1;
+                        }
                     else if (gnav_ephemeris.d_N_T >= 367 && gnav_ephemeris.d_N_T <= 731)
-                    {
-                        J = 2;
-                    }
+                        {
+                            J = 2;
+                        }
                     else if (gnav_ephemeris.d_N_T >= 732 && gnav_ephemeris.d_N_T <= 1096)
-                    {
-                        J = 3;
-                    }
+                        {
+                            J = 3;
+                        }
                     else if (gnav_ephemeris.d_N_T >= 1097 && gnav_ephemeris.d_N_T <= 1461)
-                    {
-                        J = 4;
-                    }
+                        {
+                            J = 4;
+                        }
                     // 2). Current year in common form is calculated by the following formula:
                     gnav_ephemeris.d_yr = 1996 + 4.0 * (gnav_utc_model.d_N_4 - 1.0) + (J - 1.0);
                     gnav_ephemeris.d_tau_c = gnav_utc_model.d_tau_c;
 
                     // 3). Set TOW once the year has been defined, it helps with leap second determination
                     if (flag_ephemeris_str_1 == true)
-                    {
-                        d_TOW = get_TOW();
-                        gnav_ephemeris.d_TOW = d_TOW;
-                        gnav_ephemeris.d_WN = get_WN();
-                        flag_TOW_set = true;
-                        flag_TOW_new = true;
-                    }
+                        {
+                            d_TOW = get_TOW();
+                            gnav_ephemeris.d_TOW = d_TOW;
+                            gnav_ephemeris.d_WN = get_WN();
+                            flag_TOW_set = true;
+                            flag_TOW_new = true;
+                        }
 
+                    // 4) Set time of day (tod) when ephemeris data is complety decoded
+                    gnav_ephemeris.d_tod = gnav_ephemeris.d_t_k + 2*d_string_ID;
                 }
-
 
             break;
 
@@ -572,8 +573,8 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     flag_almanac_str_7 = true;
                 }
 
-
             break;
+
         case 8:
             // --- It is string 8 ----------------------------------------------
             i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
@@ -593,6 +594,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             flag_almanac_str_8 = true;
 
             break;
+
         case 9:
             // --- It is string 9 ----------------------------------------------
             if (flag_almanac_str_8 == true)
@@ -615,6 +617,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     flag_almanac_str_9 = true;
                 }
             break;
+
         case 10:
             // --- It is string 10 ---------------------------------------------
             i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
@@ -657,6 +660,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     flag_almanac_str_11 = true;
                 }
             break;
+
         case 12:
             // --- It is string 12 ---------------------------------------------
             i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
@@ -698,6 +702,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     flag_almanac_str_13 = true;
                 }
             break;
+
         case 14:
             // --- It is string 14 ---------------------------------------------
             if (d_frame_ID == 5)
@@ -745,14 +750,13 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 flag_almanac_str_15 = true;
             }
             break;
+
         default:
             LOG(INFO) << "GLONASS GNAV: Invalid String ID of received. Received " << d_string_ID
                       << ", but acceptable range is from 1-15";
 
-
             break;
     } // switch string ID ...
-
 
     return d_string_ID;
 }
@@ -805,9 +809,7 @@ bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a 
                     DLOG(INFO) << "GLONASS GNAV Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
                     new_eph = true;
                 }
-
         }
-
 
     return new_eph;
 }

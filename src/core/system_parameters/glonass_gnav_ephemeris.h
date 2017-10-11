@@ -102,6 +102,7 @@ public:
     double d_tau_c;
     double d_TOW; // tow of the start of frame
     double d_WN; //  week number of the start of frame
+    double d_tod;
 
     template<class Archive>
 

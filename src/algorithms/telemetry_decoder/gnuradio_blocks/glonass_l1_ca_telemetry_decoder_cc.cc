@@ -379,6 +379,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
             current_symbol.Flag_valid_word = false;
         }
 
+    current_symbol.PRN = this->d_satellite.get_PRN();
     current_symbol.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol*1000.0)/1000.0;
     current_symbol.TOW_at_current_symbol_s -=delta_t; //Galileo to GPS TOW
 

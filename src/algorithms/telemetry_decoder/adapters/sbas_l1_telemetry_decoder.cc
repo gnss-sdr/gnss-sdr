@@ -63,7 +63,7 @@ SbasL1TelemetryDecoder::~SbasL1TelemetryDecoder()
 {}
 
 
-void SbasL1TelemetryDecoder::set_satellite(Gnss_Satellite satellite)
+void SbasL1TelemetryDecoder::set_satellite(const Gnss_Satellite & satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     telemetry_decoder_->set_satellite(satellite_);

@@ -51,7 +51,7 @@ class galileo_e1b_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<galileo_e1b_telemetry_decoder_cc> galileo_e1b_telemetry_decoder_cc_sptr;
 
-galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the INAV data defined in Galileo ICD
@@ -61,7 +61,7 @@ class galileo_e1b_telemetry_decoder_cc : public gr::block
 {
 public:
     ~galileo_e1b_telemetry_decoder_cc();
-    void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
+    void set_satellite(const Gnss_Satellite & satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
     int flag_even_word_arrived;
 
@@ -73,8 +73,8 @@ public:
 
 private:
     friend galileo_e1b_telemetry_decoder_cc_sptr
-    galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-    galileo_e1b_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    galileo_e1b_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    galileo_e1b_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
 

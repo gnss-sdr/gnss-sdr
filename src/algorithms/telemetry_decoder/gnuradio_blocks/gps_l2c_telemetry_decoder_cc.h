@@ -57,7 +57,7 @@ class gps_l2c_telemetry_decoder_cc;
 typedef boost::shared_ptr<gps_l2c_telemetry_decoder_cc> gps_l2c_telemetry_decoder_cc_sptr;
 
 gps_l2c_telemetry_decoder_cc_sptr
-gps_l2c_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
@@ -67,8 +67,8 @@ class gps_l2c_telemetry_decoder_cc : public gr::block
 {
 public:
     ~gps_l2c_telemetry_decoder_cc();
-    void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                 //!< Set receiver's channel
+    void set_satellite(const Gnss_Satellite & satellite);  //!< Set satellite PRN
+    void set_channel(int channel);                         //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
@@ -79,8 +79,8 @@ public:
 
 private:
     friend gps_l2c_telemetry_decoder_cc_sptr
-    gps_l2c_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-    gps_l2c_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    gps_l2c_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
     bool d_dump;
     Gnss_Satellite d_satellite;

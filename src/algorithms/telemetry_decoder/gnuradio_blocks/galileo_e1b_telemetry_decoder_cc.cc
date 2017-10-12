@@ -46,7 +46,7 @@ using google::LogMessage;
 
 
 galileo_e1b_telemetry_decoder_cc_sptr
-galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
+galileo_e1b_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump)
 {
     return galileo_e1b_telemetry_decoder_cc_sptr(new galileo_e1b_telemetry_decoder_cc(satellite, dump));
 }
@@ -102,7 +102,7 @@ void galileo_e1b_telemetry_decoder_cc::deinterleaver(int rows, int cols, double 
 
 
 galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
-        Gnss_Satellite satellite,
+        const Gnss_Satellite & satellite,
         bool dump) :
                    gr::block("galileo_e1b_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                            gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -476,7 +476,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
 }
 
 
-void galileo_e1b_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
+void galileo_e1b_telemetry_decoder_cc::set_satellite(const Gnss_Satellite & satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;

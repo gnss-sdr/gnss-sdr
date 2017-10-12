@@ -47,7 +47,7 @@ class sbas_l1_telemetry_decoder_cc;
 typedef boost::shared_ptr<sbas_l1_telemetry_decoder_cc> sbas_l1_telemetry_decoder_cc_sptr;
 
 sbas_l1_telemetry_decoder_cc_sptr
-sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
@@ -57,8 +57,8 @@ class sbas_l1_telemetry_decoder_cc : public gr::block
 {
 public:
     ~sbas_l1_telemetry_decoder_cc();
-    void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                 //!< Set receiver's channel
+    void set_satellite(const Gnss_Satellite & satellite);  //!< Set satellite PRN
+    void set_channel(int channel);                         //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
@@ -68,8 +68,8 @@ public:
 
 private:
     friend sbas_l1_telemetry_decoder_cc_sptr
-    sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-    sbas_l1_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    sbas_l1_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
     void align_samples();

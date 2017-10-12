@@ -55,7 +55,7 @@ class galileo_e5a_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<galileo_e5a_telemetry_decoder_cc> galileo_e5a_telemetry_decoder_cc_sptr;
 
-galileo_e5a_telemetry_decoder_cc_sptr galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+galileo_e5a_telemetry_decoder_cc_sptr galileo_e5a_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
 
 /*!
@@ -76,8 +76,8 @@ public:
 
 private:
     friend galileo_e5a_telemetry_decoder_cc_sptr
-    galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-    galileo_e5a_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    galileo_e5a_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    galileo_e5a_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
 

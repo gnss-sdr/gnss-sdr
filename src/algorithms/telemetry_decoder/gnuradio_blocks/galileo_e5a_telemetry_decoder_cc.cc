@@ -109,7 +109,7 @@ void galileo_e5a_telemetry_decoder_cc::deinterleaver(int rows, int cols, double 
 }
 
 
-void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int frame_length)
+void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int frame_length)
 {
     double page_symbols_deint[frame_length];
     // 1. De-interleave
@@ -530,7 +530,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
 }
 
 
-void galileo_e5a_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
+void galileo_e5a_telemetry_decoder_cc::set_satellite(const Gnss_Satellite & satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;

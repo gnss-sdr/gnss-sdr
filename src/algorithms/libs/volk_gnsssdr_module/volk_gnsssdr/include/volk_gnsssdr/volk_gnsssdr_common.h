@@ -49,6 +49,8 @@
 #  define __VOLK_ATTR_UNUSED     __attribute__((unused))
 #  define __VOLK_ATTR_INLINE     __attribute__((always_inline))
 #  define __VOLK_ATTR_DEPRECATED __attribute__((deprecated))
+#  define __VOLK_ASM             __asm__
+#  define __VOLK_VOLATILE        __volatile__
 #  if __GNUC__ >= 4
 #    define __VOLK_ATTR_EXPORT   __attribute__((visibility("default")))
 #    define __VOLK_ATTR_IMPORT   __attribute__((visibility("default")))
@@ -63,6 +65,8 @@
 #  define __VOLK_ATTR_DEPRECATED __declspec(deprecated)
 #  define __VOLK_ATTR_EXPORT     __declspec(dllexport)
 #  define __VOLK_ATTR_IMPORT     __declspec(dllimport)
+#  define __VOLK_ASM             __asm
+#  define __VOLK_VOLATILE
 #else
 #  define __VOLK_ATTR_ALIGNED(x)
 #  define __VOLK_ATTR_UNUSED
@@ -70,6 +74,8 @@
 #  define __VOLK_ATTR_DEPRECATED
 #  define __VOLK_ATTR_EXPORT
 #  define __VOLK_ATTR_IMPORT
+#  define __VOLK_ASM             __asm__
+#  define __VOLK_VOLATILE        __volatile__
 #endif
 
 ////////////////////////////////////////////////////////////////////////

@@ -156,7 +156,8 @@ int rtkopenstat(const char *file, int level)
             trace(1, "rtkopenstat: file open error path=%s\n", path);
             return 0;
         }
-    strcpy(file_stat, file);
+    if(strlen(file) < 1025) strcpy(file_stat, file);
+    else trace(1, "File name is too long");
     time_stat = time;
     statlevel = level;
     return 1;
@@ -584,7 +585,11 @@ void udpos(rtk_t *rtk, double tt)
             return;
         }
     /* check variance of estimated postion */
-    for (i = 0;i<3;i++) var += rtk->P[i+i*rtk->nx]; var/=3.0;
+    for (i = 0;i<3;i++)
+        {
+            var += rtk->P[i+i*rtk->nx];
+        }
+    var /= 3.0;
 
     if (var>VAR_POS)
         {
@@ -1177,8 +1182,11 @@ int constbl(rtk_t *rtk, const double *x, const double *P, double *v,
     /* approximate variance of solution */
     if (P)
         {
-            for (i = 0;i<3;i++) var+=P[i+i*rtk->nx];
-            var/=3.0;
+            for (i = 0;i<3;i++)
+                {
+                    var += P[i+i*rtk->nx];
+                }
+            var /= 3.0;
         }
     /* check nonlinearity */
     if (var>thres*thres*bb*bb)
@@ -1536,49 +1544,46 @@ int ddmat(rtk_t *rtk, double *D)
 
             for (f = 0, k = na;f<nf;f++, k+=MAXSAT)
                 {
-                    for (i = k;i<k+MAXSAT;i++)
+                    if(i < k + MAXSAT)
                         {
-#if 0
-                            if (rtk->x[i] == 0.0||!test_sys(rtk->ssat[i-k].sys,m)||
-                                    !rtk->ssat[i-k].vsat[f])
+                            for (i = k;i<k+MAXSAT;i++)
                                 {
-#else
-                            if (rtk->x[i] == 0.0 || !test_sys(rtk->ssat[i-k].sys, m) ||
+                                    if (rtk->x[i] == 0.0 || !test_sys(rtk->ssat[i-k].sys, m) ||
                                             !rtk->ssat[i-k].vsat[f] || !rtk->ssat[i-k].half[f])
-                                {
-#endif
-                                    continue;
+                                        {
+                                            continue;
+                                        }
+                                    if (rtk->ssat[i-k].lock[f]>0 && !(rtk->ssat[i-k].slip[f]&2) &&
+                                            rtk->ssat[i-k].azel[1] >= rtk->opt.elmaskar && !nofix)
+                                        {
+                                            rtk->ssat[i-k].fix[f] = 2; /* fix */
+                                            break;
+                                        }
+                                    else rtk->ssat[i-k].fix[f] = 1;
                                 }
-                            if (rtk->ssat[i-k].lock[f]>0 && !(rtk->ssat[i-k].slip[f]&2) &&
-                                    rtk->ssat[i-k].azel[1] >= rtk->opt.elmaskar && !nofix)
+                            for (j = k;j<k+MAXSAT;j++)
                                 {
-                                    rtk->ssat[i-k].fix[f] = 2; /* fix */
-                                    break;
+                                    if (i == j || rtk->x[j] == 0.0 || !test_sys(rtk->ssat[j-k].sys, m) ||
+                                            !rtk->ssat[j-k].vsat[f])
+                                        {
+                                            continue;
+                                        }
+                                    if (rtk->ssat[j-k].lock[f]>0 && !(rtk->ssat[j-k].slip[f]&2) &&
+                                            rtk->ssat[i-k].vsat[f] &&
+                                            rtk->ssat[j-k].azel[1] >= rtk->opt.elmaskar && !nofix)
+                                        {
+                                            D[i+(na+nb)*nx] =  1.0;
+                                            D[j+(na+nb)*nx] = -1.0;
+                                            nb++;
+                                            rtk->ssat[j-k].fix[f] = 2; /* fix */
+                                        }
+                                    else rtk->ssat[j-k].fix[f] = 1;
                                 }
-                            else rtk->ssat[i-k].fix[f] = 1;
-                       }
-                   for (j = k;j<k+MAXSAT;j++)
-                        {
-                            if (i == j || rtk->x[j] == 0.0 || !test_sys(rtk->ssat[j-k].sys, m) ||
-                                    !rtk->ssat[j-k].vsat[f])
-                                {
-                                    continue;
-                                }
-                            if (rtk->ssat[j-k].lock[f]>0 && !(rtk->ssat[j-k].slip[f]&2) &&
-                                        rtk->ssat[i-k].vsat[f] &&
-                                        rtk->ssat[j-k].azel[1] >= rtk->opt.elmaskar && !nofix)
-                                {
-                                    D[i+(na+nb)*nx] =  1.0;
-                                    D[j+(na+nb)*nx] = -1.0;
-                                    nb++;
-                                    rtk->ssat[j-k].fix[f] = 2; /* fix */
-                                }
-                                else rtk->ssat[j-k].fix[f] = 1;
                         }
                 }
         }
-     trace(5, "D=\n"); tracemat(5, D, nx, na+nb, 2, 0);
-     return nb;
+    trace(5, "D=\n"); tracemat(5, D, nx, na+nb, 2, 0);
+    return nb;
 }
 
 

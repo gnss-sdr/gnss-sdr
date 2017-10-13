@@ -36,19 +36,17 @@
  * -------------------------------------------------------------------------
  */
 
-
 #include "gps_l1_ca_dll_pll_c_aid_tracking_fpga.h"
 #include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
-
 
 using google::LogMessage;
 
 GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams) :
-                        role_(role), in_streams_(in_streams), out_streams_(out_streams)
+        role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -63,8 +61,12 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
     float dll_bw_hz;
     float dll_bw_narrow_hz;
     float early_late_space_chips;
+    std::string device_name;
+    unsigned int device_base;
+
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
@@ -76,27 +78,22 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
 
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename",
-            default_dump_filename); //unused!
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    std::string default_device_name = "/dev/uio";
+    device_name = configuration->property(role + ".devicename", default_device_name);
+    device_base = configuration->property(role + ".device_base", 1);
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
 
-    if(item_type_.compare("cshort") == 0)
+    if (item_type_.compare("cshort") == 0)
         {
             item_size_ = sizeof(lv_16sc_t);
             tracking_fpga_sc = gps_l1_ca_dll_pll_c_aid_make_tracking_fpga_sc(
-                    f_if,
-                    fs_in,
-                    vector_length,
-                    dump,
-                    dump_filename,
-                    pll_bw_hz,
-                    dll_bw_hz,
-                    pll_bw_narrow_hz,
-                    dll_bw_narrow_hz,
-                    extend_correlation_ms,
-                    early_late_space_chips);
+                    f_if, fs_in, vector_length, dump, dump_filename, pll_bw_hz,
+                    dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz,
+                    extend_correlation_ms, early_late_space_chips, device_name,
+                    device_base);
             DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
         }
     else
@@ -104,8 +101,10 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
 
             item_size_ = sizeof(lv_16sc_t);
             //  LOG(WARNING) << item_type_ << " unknown tracking item type";
-            LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
+            LOG(WARNING) << item_type_
+                    << " the tracking item type for the FPGA tracking test has to be cshort";
         }
+
     channel_ = 0;
 }
 
@@ -118,7 +117,6 @@ GpsL1CaDllPllCAidTrackingFpga::~GpsL1CaDllPllCAidTrackingFpga()
 
 void GpsL1CaDllPllCAidTrackingFpga::start_tracking()
 {
-
     if (item_type_.compare("cshort") == 0)
         {
             tracking_fpga_sc->start_tracking();
@@ -126,7 +124,8 @@ void GpsL1CaDllPllCAidTrackingFpga::start_tracking()
     else
         {
             // LOG(WARNING) << item_type_ << " unknown tracking item type";
-            LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
+            LOG(WARNING) << item_type_
+                    << " the tracking item type for the FPGA tracking test has to be cshort";
         }
 }
 
@@ -145,12 +144,14 @@ void GpsL1CaDllPllCAidTrackingFpga::set_channel(unsigned int channel)
     else
         {
             // LOG(WARNING) << item_type_ << " unknown tracking item type";
-            LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
+            LOG(WARNING) << item_type_
+                    << " the tracking item type for the FPGA tracking test has to be cshort";
         }
 }
 
 
-void GpsL1CaDllPllCAidTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void GpsL1CaDllPllCAidTrackingFpga::set_gnss_synchro(
+        Gnss_Synchro* p_gnss_synchro)
 {
     if (item_type_.compare("cshort") == 0)
         {
@@ -159,21 +160,26 @@ void GpsL1CaDllPllCAidTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchr
     else
         {
             // LOG(WARNING) << item_type_ << " unknown tracking item type";
-            LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
+            LOG(WARNING) << item_type_
+                    << " the tracking item type for the FPGA tracking test has to be cshort";
         }
 }
 
 
 void GpsL1CaDllPllCAidTrackingFpga::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
 void GpsL1CaDllPllCAidTrackingFpga::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
@@ -188,7 +194,8 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_left_block()
     else
         {
             //LOG(WARNING) << item_type_ << " unknown tracking item type";
-            LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
+            LOG(WARNING) << item_type_
+                    << " the tracking item type for the FPGA tracking test has to be cshort";
             return nullptr;
         }
 }
@@ -203,7 +210,15 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_right_block()
     else
         {
             //LOG(WARNING) << item_type_ << " unknown tracking item type";
-            LOG(WARNING) << item_type_ << " the tracking item type for the FPGA tracking test has to be cshort";
+            LOG(WARNING) << item_type_
+                    << " the tracking item type for the FPGA tracking test has to be cshort";
             return nullptr;
         }
 }
+
+
+void GpsL1CaDllPllCAidTrackingFpga::reset(void)
+{
+    tracking_fpga_sc->reset();
+}
+

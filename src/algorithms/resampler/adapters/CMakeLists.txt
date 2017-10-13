@@ -19,7 +19,7 @@
 set(RESAMPLER_ADAPTER_SOURCES direct_resampler_conditioner.cc )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
      ${GLOG_INCLUDE_DIRS}

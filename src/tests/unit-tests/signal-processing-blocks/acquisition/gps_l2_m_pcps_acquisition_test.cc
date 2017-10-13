@@ -32,11 +32,8 @@
 
 
 
-#include <ctime>
-#include <cstdlib>
-#include <cstring>
+#include <chrono>
 #include <iostream>
-#include <boost/chrono.hpp>
 #include <boost/make_shared.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -144,13 +141,13 @@ void GpsL2MPcpsAcquisitionTest::init()
     gnss_synchro.System = 'G';
     std::string signal = "2S";
     //strncpy(gnss_synchro.Signal, signal.c_str(), 3);
-    std::memcpy((void*)gnss_synchro.Signal, signal.c_str(), 3); // copy string into synchro char array: 2 char + null
+    std::memcpy(static_cast<void*>(gnss_synchro.Signal), signal.c_str(), 3); // copy string into synchro char array: 2 char + null
     gnss_synchro.Signal[2] = 0; // make sure that string length is only two characters
     gnss_synchro.PRN = 7;
 
     sampling_freqeuncy_hz  = 5000000;
-    nsamples = round((double)sampling_freqeuncy_hz*GPS_L2_M_PERIOD)*2;
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_freqeuncy_hz));
+    nsamples = round(static_cast<double>(sampling_freqeuncy_hz) * GPS_L2_M_PERIOD) * 2;
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_freqeuncy_hz));
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.dump", "false");
@@ -169,11 +166,11 @@ TEST_F(GpsL2MPcpsAcquisitionTest, Instantiate)
     std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
+
 TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
@@ -191,21 +188,20 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
+
 
 TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     double expected_delay_samples = 1;//2004;
@@ -255,22 +251,21 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
-
     ASSERT_NO_THROW( {
+        acquisition->set_local_code();
         acquisition->set_state(1); // Ensure that acquisition starts at the first sample
         acquisition->init();
     }) << "Failure set_state and init acquisition test" << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
     //unsigned long int Acq_samplestamp_samples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout <<  "Acquisition process runtime duration: " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Acquisition process runtime duration: " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     std::cout <<  "gnss_synchro.Acq_doppler_hz = " << gnss_synchro.Acq_doppler_hz << " Hz" << std::endl;
     std::cout <<  "gnss_synchro.Acq_delay_samples = " << gnss_synchro.Acq_delay_samples << " Samples" << std::endl;
@@ -278,10 +273,9 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = (float)(delay_error_samples * 1023 / 4000);
+    float delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 200) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
-
 }

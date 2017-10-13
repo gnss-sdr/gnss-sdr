@@ -55,6 +55,7 @@ public:
     double* Acc_carrier_phase_hz;
     double* Pseudorange_m;
     double* PRN;
+    double* valid;
 
 private:
     int n_channels;

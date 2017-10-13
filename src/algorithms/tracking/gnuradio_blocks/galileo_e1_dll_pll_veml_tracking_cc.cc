@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -129,7 +129,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_gnsssdr_malloc((2 * Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_ca_code = static_cast<float*>(volk_gnsssdr_malloc((2 * Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 5; // Very-Early, Early, Prompt, Late, Very-Late
@@ -199,6 +199,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_acc_code_phase_secs = 0.0;
 }
 
+
 void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
 {
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
@@ -210,7 +211,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
     d_code_loop_filter.initialize();    // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (2 samples per chip)
-    galileo_e1_code_gen_complex_sampled(d_ca_code,
+    galileo_e1_code_gen_float_sampled(d_ca_code,
                                         d_acquisition_gnss_synchro->Signal,
                                         false,
                                         d_acquisition_gnss_synchro->PRN,
@@ -236,7 +237,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
     sys = sys_.substr(0, 1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of Galileo E1 signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
@@ -247,18 +248,33 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
 
+
 galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
 {
-    d_dump_file.close();
-
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_correlator_outs);
-    volk_gnsssdr_free(d_ca_code);
-
-    delete[] d_Prompt_buffer;
-    multicorrelator_cpu.free();
+    if (d_dump_file.is_open())
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor " << ex.what();
+            }
+        }
+    try
+    {
+            volk_gnsssdr_free(d_local_code_shift_chips);
+            volk_gnsssdr_free(d_correlator_outs);
+            volk_gnsssdr_free(d_ca_code);
+            delete[] d_Prompt_buffer;
+            multicorrelator_cpu.free();
+    }
+    catch(const std::exception & ex)
+    {
+            LOG(WARNING) << "Exception in destructor " << ex.what();
+    }
 }
-
 
 
 int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
@@ -270,8 +286,8 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
     double code_error_filt_chips = 0.0;
 
     // Block input data and block output stream pointers
-    const gr_complex* in = (gr_complex*) input_items[0];
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
@@ -291,7 +307,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
                     acq_trk_shif_correction_samples = d_current_prn_length_samples - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
-                    current_synchro_data.fs=d_fs_in;
+                    current_synchro_data.fs = d_fs_in;
                     *out[0] = current_synchro_data;
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
@@ -415,9 +431,9 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
     current_synchro_data.System = {'E'};
     std::string str_aux = "1B";
     const char * str = str_aux.c_str(); // get a C style null terminated string
-    std::memcpy((void*)current_synchro_data.Signal, str, 3);
+    std::memcpy(static_cast<void*>(current_synchro_data.Signal), str, 3);
 
-    current_synchro_data.fs=d_fs_in;
+    current_synchro_data.fs = d_fs_in;
     *out[0] = current_synchro_data;
 
     if(d_dump)
@@ -477,10 +493,13 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
                     tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                    // PRN
+                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char*>(&prn_), sizeof(unsigned int));
             }
             catch (const std::ifstream::failure &e)
             {
-                    LOG(WARNING) << "Exception writing trk dump file " << e.what() << std::endl;
+                    LOG(WARNING) << "Exception writing trk dump file " << e.what();
             }
         }
     consume_each(d_current_prn_length_samples); // this is required for gr_block derivates
@@ -510,7 +529,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::set_channel(unsigned int channel)
                     }
                     catch (const std::ifstream::failure &e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                     }
                 }
         }

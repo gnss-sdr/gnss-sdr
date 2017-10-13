@@ -61,7 +61,8 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     size_t port_ch0;
     item_type = configuration->property(role + ".item_type",default_item_type);
     //vector_length = configuration->property(role + ".vector_length", 2048);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);

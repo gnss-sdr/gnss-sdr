@@ -58,10 +58,10 @@ class volk_gnsssdr_modtool:
         else:
             name = self.get_basename(base);
         if name == '':
-            hdr_files = glob.glob(os.path.join(base, "kernels/volk_gnsssdr/*.h"));
+            hdr_files = sorted(glob.glob(os.path.join(base, "kernels/volk_gnsssdr/*.h")));
             begins = re.compile("(?<=volk_gnsssdr_).*")
         else:
-            hdr_files = glob.glob(os.path.join(base, "kernels/volk_gnsssdr_" + name + "/*.h"));
+            hdr_files = sorted(glob.glob(os.path.join(base, "kernels/volk_gnsssdr_" + name + "/*.h")));
             begins = re.compile("(?<=volk_gnsssdr_" + name + "_).*")
 
         datatypes = [];
@@ -166,7 +166,7 @@ class volk_gnsssdr_modtool:
         open(dest, 'w+').write(outstring);
 
         # copy orc proto-kernels if they exist
-        for orcfile in glob.glob(inpath + '/orc/' + top + name + '*.orc'):
+        for orcfile in sorted(glob.glob(inpath + '/kernels/volk_gnsssdr/asm/orc/' + top + name + '*.orc')):
             if os.path.isfile(orcfile):
                 instring = open(orcfile, 'r').read();
                 outstring = re.sub(oldvolk_gnsssdr, 'volk_gnsssdr_' + self.my_dict['name'], instring);
@@ -333,8 +333,3 @@ class volk_gnsssdr_modtool:
                     write_okay = False
             if write_okay:
                 open(dest, 'a').write(otherline);
-
-
-
-
-

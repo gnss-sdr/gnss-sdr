@@ -36,7 +36,7 @@
 
 
 
-TEST(File_Configuration_Test, OverridedProperties)
+TEST(FileConfigurationTest, OverridedProperties)
 {
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "data/config_file_sample.txt";
@@ -52,7 +52,7 @@ TEST(File_Configuration_Test, OverridedProperties)
 
 
 
-TEST(File_Configuration_Test, LoadFromNonExistentFile)
+TEST(FileConfigurationTest, LoadFromNonExistentFile)
 {
     std::unique_ptr<ConfigurationInterface> configuration(new FileConfiguration("./i_dont_exist.conf"));
     std::string default_value = "default_value";
@@ -62,7 +62,7 @@ TEST(File_Configuration_Test, LoadFromNonExistentFile)
 
 
 
-TEST(File_Configuration_Test, PropertyDoesNotExist)
+TEST(FileConfigurationTest, PropertyDoesNotExist)
 {
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "data/config_file_sample.txt";

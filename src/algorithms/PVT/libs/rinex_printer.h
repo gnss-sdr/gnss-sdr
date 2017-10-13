@@ -483,7 +483,7 @@ inline std::string & Rinex_Printer::rightJustify(std::string & s,
         }
     else
         {
-            s.insert((std::string::size_type)0, length-s.length(), pad);
+            s.insert(static_cast<std::string::size_type>(0), length - s.length(), pad);
         }
     return s;
 }
@@ -614,13 +614,13 @@ inline std::string & Rinex_Printer::sci2for(std::string & aStr,
     // (if it's negative, there's a leading '-'
     if (aStr[0] == '.')
         {
-            aStr.insert((std::string::size_type)0, 1, ' ');
+            aStr.insert(static_cast<std::string::size_type>(0), 1, ' ');
         }
 
     //If checkSwitch is false, add on one leading zero to the string
     if (!checkSwitch)
         {
-            aStr.insert((std::string::size_type)1, 1, '0');
+            aStr.insert(static_cast<std::string::size_type>(1), 1, '0');
         }
 
     return aStr;

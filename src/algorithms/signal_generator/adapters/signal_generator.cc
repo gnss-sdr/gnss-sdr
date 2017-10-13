@@ -87,19 +87,19 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         {
             if (signal1[0].at(0)=='5')
                 {
-                    vector_length = round((float) fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ
+                    vector_length = round(static_cast<float>(fs_in) / (Galileo_E5a_CODE_CHIP_RATE_HZ
                             / Galileo_E5a_CODE_LENGTH_CHIPS));
                 }
             else
                 {
-                    vector_length = round((float)fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ
+                    vector_length = round(static_cast<float>(fs_in) / (Galileo_E1_CODE_CHIP_RATE_HZ
                             / Galileo_E1_B_CODE_LENGTH_CHIPS))
                                               * Galileo_E1_C_SECONDARY_CODE_LENGTH;
                 }
         }
     else if (std::find(system.begin(), system.end(), "G") != system.end())
         {
-            vector_length = round((float)fs_in
+            vector_length = round(static_cast<float>(fs_in)
                     / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
         }
 

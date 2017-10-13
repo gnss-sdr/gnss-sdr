@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include <ctime>
+#include <chrono>
 #include <complex>
 #include <thread>
 #include <cuda.h>
@@ -52,20 +52,22 @@ void run_correlator_gpu(cuda_multicorrelator* correlator,
                     int d_n_correlator_taps)
 {
     for(int k = 0; k < FLAGS_cpu_multicorrelator_iterations_test; k++)
-    {
-        correlator->Carrier_wipeoff_multicorrelator_resampler_cuda(d_rem_carrier_phase_rad,
-                                                                            d_carrier_phase_step_rad,
-                                                                            d_code_phase_step_chips,
-                                                                            d_rem_code_phase_chips,
-                                                                            correlation_size,
-                                                                            d_n_correlator_taps);
-    }
+        {
+            correlator->Carrier_wipeoff_multicorrelator_resampler_cuda(d_rem_carrier_phase_rad,
+                    d_carrier_phase_step_rad,
+                    d_code_phase_step_chips,
+                    d_rem_code_phase_chips,
+                    correlation_size,
+                    d_n_correlator_taps);
+        }
 }
 
-TEST(GPU_multicorrelator_test, MeasureExecutionTime)
+
+TEST(GpuMulticorrelatorTest, MeasureExecutionTime)
 {
-    struct timeval tv;
-    int max_threads=FLAGS_gpu_multicorrelator_max_threads_test;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
+    int max_threads = FLAGS_gpu_multicorrelator_max_threads_test;
     std::vector<std::thread> thread_pool;
     cuda_multicorrelator* correlator_pool[max_threads];
     unsigned int correlation_sizes [3] = { 2048, 4096, 8192};
@@ -75,8 +77,8 @@ TEST(GPU_multicorrelator_test, MeasureExecutionTime)
     gr_complex* in_gpu;
     gr_complex* d_correlator_outs;
 
-    int d_n_correlator_taps=3;
-    int d_vector_length=correlation_sizes[2]; //max correlation size to allocate all the necessary memory
+    int d_n_correlator_taps = 3;
+    int d_vector_length = correlation_sizes[2]; //max correlation size to allocate all the necessary memory
     float* d_local_code_shift_chips;
     // Set GPU flags
     cudaSetDeviceFlags(cudaDeviceMapHost);
@@ -96,61 +98,60 @@ TEST(GPU_multicorrelator_test, MeasureExecutionTime)
     // generate local reference (1 sample per chip)
     gps_l1_ca_code_gen_complex(d_ca_code, 1, 0);
     // generate inut signal
-    for (int n=0;n<2*d_vector_length;n++)
-    {
-        in_gpu[n]=std::complex<float>(static_cast <float> (rand())/static_cast<float>(RAND_MAX),static_cast <float> (rand())/static_cast<float>(RAND_MAX));
-    }
+    for (int n = 0; n < 2 * d_vector_length; n++)
+        {
+            in_gpu[n] = std::complex<float>(static_cast<float>(rand()) / static_cast<float>(RAND_MAX), static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+        }
     // Set TAPs delay values [chips]
-    float d_early_late_spc_chips=0.5;
+    float d_early_late_spc_chips = 0.5;
     d_local_code_shift_chips[0] = - d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
-    for (int n=0;n<max_threads;n++)
-    {
-        correlator_pool[n] = new cuda_multicorrelator();
-        correlator_pool[n]->init_cuda_integrated_resampler(d_vector_length, GPS_L1_CA_CODE_LENGTH_CHIPS, d_n_correlator_taps);
-        correlator_pool[n]->set_input_output_vectors(d_correlator_outs, in_gpu);
-    }
+    for (int n = 0; n < max_threads; n++)
+        {
+            correlator_pool[n] = new cuda_multicorrelator();
+            correlator_pool[n]->init_cuda_integrated_resampler(d_vector_length, GPS_L1_CA_CODE_LENGTH_CHIPS, d_n_correlator_taps);
+            correlator_pool[n]->set_input_output_vectors(d_correlator_outs, in_gpu);
+        }
 
-    float d_rem_carrier_phase_rad=0.0;
-    float d_carrier_phase_step_rad=0.1;
-    float d_code_phase_step_chips=0.3;
-    float d_rem_code_phase_chips=0.4;
+    float d_rem_carrier_phase_rad = 0.0;
+    float d_carrier_phase_step_rad = 0.1;
+    float d_code_phase_step_chips = 0.3;
+    float d_rem_code_phase_chips = 0.4;
 
     EXPECT_NO_THROW(
-        for(int correlation_sizes_idx = 0; correlation_sizes_idx < 3; correlation_sizes_idx++)
-            {
-                for(int current_max_threads=1; current_max_threads<(max_threads+1); current_max_threads++)
+            for(int correlation_sizes_idx = 0; correlation_sizes_idx < 3; correlation_sizes_idx++)
                 {
-                    std::cout<<"Running "<<current_max_threads<<" concurrent correlators"<<std::endl;
-                    gettimeofday(&tv, NULL);
-                    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
-                    //create the concurrent correlator threads
-                    for (int current_thread=0;current_thread<current_max_threads;current_thread++)
-                    {
-                        //cudaProfilerStart();
-                        thread_pool.push_back(std::thread(run_correlator_gpu,
-                                correlator_pool[current_thread],
-                                d_rem_carrier_phase_rad,
-                                d_carrier_phase_step_rad,
-                                d_code_phase_step_chips,
-                                d_rem_code_phase_chips,
-                                correlation_sizes[correlation_sizes_idx],
-                                d_n_correlator_taps));
-                        //cudaProfilerStop();
-                    }
-                    //wait the threads to finish they work and destroy the thread objects
-                    for(auto &t : thread_pool){
-                         t.join();
-                     }
-                    thread_pool.clear();
-                    gettimeofday(&tv, NULL);
-                    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-                    execution_times[correlation_sizes_idx] = static_cast<double>(end - begin) / (1000000.0 * static_cast<double>(FLAGS_gpu_multicorrelator_iterations_test));
-                    std::cout << "GPU Multicorrelator execution time for length=" << correlation_sizes[correlation_sizes_idx] << " : " << execution_times[correlation_sizes_idx] << " [s]" << std::endl;
-
+                    for(int current_max_threads = 1; current_max_threads < (max_threads+1); current_max_threads++)
+                        {
+                            std::cout << "Running " << current_max_threads << " concurrent correlators" << std::endl;
+                            start = std::chrono::system_clock::now();
+                            //create the concurrent correlator threads
+                            for (int current_thread = 0; current_thread < current_max_threads; current_thread++)
+                                {
+                                    //cudaProfilerStart();
+                                    thread_pool.push_back(std::thread(run_correlator_gpu,
+                                            correlator_pool[current_thread],
+                                            d_rem_carrier_phase_rad,
+                                            d_carrier_phase_step_rad,
+                                            d_code_phase_step_chips,
+                                            d_rem_code_phase_chips,
+                                            correlation_sizes[correlation_sizes_idx],
+                                            d_n_correlator_taps));
+                                    //cudaProfilerStop();
+                                }
+                            //wait the threads to finish they work and destroy the thread objects
+                            for(auto &t : thread_pool)
+                                {
+                                    t.join();
+                                }
+                            thread_pool.clear();
+                            end = std::chrono::system_clock::now();
+                            elapsed_seconds = end - start;
+                            execution_times[correlation_sizes_idx] = elapsed_seconds.count() / static_cast<double>(FLAGS_gpu_multicorrelator_iterations_test);
+                            std::cout << "GPU Multicorrelator execution time for length=" << correlation_sizes[correlation_sizes_idx] << " : " << execution_times[correlation_sizes_idx] << " [s]" << std::endl;
+                        }
                 }
-    		}
     );
 
     cudaFreeHost(in_gpu);
@@ -158,11 +159,8 @@ TEST(GPU_multicorrelator_test, MeasureExecutionTime)
     cudaFreeHost(d_local_code_shift_chips);
     cudaFreeHost(d_ca_code);
 
-    for (int n=0;n<max_threads;n++)
-    {
-        correlator_pool[n]->free_cuda();
-    }
-
-
-
+    for (int n = 0; n < max_threads; n++)
+        {
+            correlator_pool[n]->free_cuda();
+        }
 }

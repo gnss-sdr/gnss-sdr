@@ -102,7 +102,7 @@ bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
     lv_32fc_t phase_offset_as_complex[1];
     phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
     // call VOLK_GNSSSDR kernel
-    volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0, -phase_step_rad)), phase_offset_as_complex, (const lv_16sc_t**)d_local_codes_resampled, d_n_correlators, signal_length_samples);
+    volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0, -phase_step_rad)), phase_offset_as_complex, const_cast<const lv_16sc_t**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
     return true;
 }
 

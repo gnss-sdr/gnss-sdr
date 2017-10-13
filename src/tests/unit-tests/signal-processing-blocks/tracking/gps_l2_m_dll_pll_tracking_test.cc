@@ -31,7 +31,7 @@
  */
 
 
-#include <ctime>
+#include <chrono>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -70,10 +70,12 @@ public:
 
 };
 
+
 GpsL2MDllPllTrackingTest_msg_rx_sptr GpsL2MDllPllTrackingTest_msg_rx_make()
 {
     return GpsL2MDllPllTrackingTest_msg_rx_sptr(new GpsL2MDllPllTrackingTest_msg_rx());
 }
+
 
 void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
@@ -89,6 +91,7 @@ void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
     }
 }
 
+
 GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() :
             gr::block("GpsL2MDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
@@ -97,12 +100,12 @@ GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() :
     rx_message = 0;
 }
 
+
 GpsL2MDllPllTrackingTest_msg_rx::~GpsL2MDllPllTrackingTest_msg_rx()
 {}
 
 
 // ###########################################################
-
 
 class GpsL2MDllPllTrackingTest: public ::testing::Test
 {
@@ -137,7 +140,7 @@ void GpsL2MDllPllTrackingTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 7;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "5000000");
+    config->set_property("GNSS-SDR.internal_fs_sps", "5000000");
     config->set_property("Tracking_2S.item_type", "gr_complex");
     config->set_property("Tracking_2S.dump", "false");
     config->set_property("Tracking_2S.dump_filename", "../data/L2m_tracking_ch_");
@@ -148,11 +151,11 @@ void GpsL2MDllPllTrackingTest::init()
     config->set_property("Tracking_2S.dll_bw_hz", "0.5");
 }
 
+
 TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     int fs_in = 5000000;
     int nsamples = fs_in*9;
 
@@ -195,14 +198,13 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     tracking->start_tracking();
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
     // TODO: Verify tracking results
-    std::cout <<  "Tracked " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Tracked " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 

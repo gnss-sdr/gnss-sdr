@@ -21,7 +21,7 @@ set(OBS_GR_BLOCKS_SOURCES
 )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver

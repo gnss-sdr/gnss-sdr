@@ -33,8 +33,6 @@
  */
 
 #include "gnss_flowgraph.h"
-#include "unistd.h"
-
 #include <memory>
 #include <algorithm>
 #include <exception>
@@ -80,7 +78,7 @@ void GNSSFlowgraph::start()
     {
             top_block_->start();
     }
-    catch (std::exception& e)
+    catch (const std::exception & e)
     {
             LOG(WARNING) << "Unable to start flowgraph";
             LOG(ERROR) << e.what();
@@ -123,7 +121,7 @@ void GNSSFlowgraph::connect()
             {
                     sig_source_.at(i)->connect(top_block_);
             }
-            catch (std::exception& e)
+            catch (const std::exception & e)
             {
                     LOG(INFO) << "Can't connect signal source block " << i << " internally";
                     LOG(ERROR) << e.what();
@@ -139,7 +137,7 @@ void GNSSFlowgraph::connect()
             {
                     sig_conditioner_.at(i)->connect(top_block_);
             }
-            catch (std::exception& e)
+            catch (const std::exception & e)
             {
                     LOG(INFO) << "Can't connect signal conditioner block " << i << " internally";
                     LOG(ERROR) << e.what();
@@ -154,7 +152,7 @@ void GNSSFlowgraph::connect()
             {
                     channels_.at(i)->connect(top_block_);
             }
-            catch (std::exception& e)
+            catch (const std::exception & e)
             {
                     LOG(WARNING) << "Can't connect channel " << i << " internally";
                     LOG(ERROR) << e.what();
@@ -167,7 +165,7 @@ void GNSSFlowgraph::connect()
     {
             observables_->connect(top_block_);
     }
-    catch (std::exception& e)
+    catch (const std::exception & e)
     {
             LOG(WARNING) << "Can't connect observables block internally";
             LOG(ERROR) << e.what();
@@ -180,7 +178,7 @@ void GNSSFlowgraph::connect()
     {
             pvt_->connect(top_block_);
     }
-    catch (std::exception& e)
+    catch (const std::exception & e)
     {
             LOG(WARNING) << "Can't connect PVT block internally";
             LOG(ERROR) << e.what();
@@ -248,7 +246,7 @@ void GNSSFlowgraph::connect()
                                 }
                         }
             }
-            catch (std::exception& e)
+            catch (const std::exception & e)
             {
                     LOG(WARNING)  <<  "Can't connect signal source "  <<  i << " to signal conditioner " << i;
                     LOG(ERROR) << e.what();
@@ -268,7 +266,7 @@ void GNSSFlowgraph::connect()
                     top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
                             channels_.at(i)->get_left_block(), 0);
             }
-            catch (std::exception& e)
+            catch (const std::exception & e)
             {
                     LOG(WARNING) << "Can't connect signal conditioner " << selected_signal_conditioner_ID << " to channel " << i;
                     LOG(ERROR) << e.what();
@@ -284,7 +282,7 @@ void GNSSFlowgraph::connect()
                     top_block_->connect(channels_.at(i)->get_right_block(), 0,
                             observables_->get_left_block(), i);
             }
-            catch (std::exception& e)
+            catch (const std::exception & e)
             {
                     LOG(WARNING) << "Can't connect channel " << i << " to observables";
                     LOG(ERROR) << e.what();
@@ -331,7 +329,7 @@ void GNSSFlowgraph::connect()
                     top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
                 }
     }
-    catch (std::exception& e)
+    catch (const std::exception & e)
     {
             LOG(WARNING) << "Can't connect observables to PVT";
             LOG(ERROR) << e.what();
@@ -567,7 +565,7 @@ void GNSSFlowgraph::set_signals_list()
     /*
      * Sets a sequential list of GNSS satellites
      */
-    std::set<unsigned int>::iterator available_gnss_prn_iter;
+    std::set<unsigned int>::const_iterator available_gnss_prn_iter;
 
     /*
      * \TODO Describe GNSS satellites more nicely, with RINEX notation
@@ -651,8 +649,8 @@ void GNSSFlowgraph::set_signals_list()
             /*
              * Loop to create GPS L1 C/A signals
              */
-            for (available_gnss_prn_iter = available_gps_prn.begin();
-                    available_gnss_prn_iter != available_gps_prn.end();
+            for (available_gnss_prn_iter = available_gps_prn.cbegin();
+                    available_gnss_prn_iter != available_gps_prn.cend();
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
@@ -665,8 +663,8 @@ void GNSSFlowgraph::set_signals_list()
             /*
              * Loop to create GPS L2C M signals
              */
-            for (available_gnss_prn_iter = available_gps_prn.begin();
-                    available_gnss_prn_iter != available_gps_prn.end();
+            for (available_gnss_prn_iter = available_gps_prn.cbegin();
+                    available_gnss_prn_iter != available_gps_prn.cend();
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
@@ -679,8 +677,8 @@ void GNSSFlowgraph::set_signals_list()
             /*
              * Loop to create SBAS L1 C/A signals
              */
-            for (available_gnss_prn_iter = available_sbas_prn.begin();
-                    available_gnss_prn_iter != available_sbas_prn.end();
+            for (available_gnss_prn_iter = available_sbas_prn.cbegin();
+                    available_gnss_prn_iter != available_sbas_prn.cend();
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("SBAS"),
@@ -694,8 +692,8 @@ void GNSSFlowgraph::set_signals_list()
             /*
              * Loop to create the list of Galileo E1 B signals
              */
-            for (available_gnss_prn_iter = available_galileo_prn.begin();
-                    available_gnss_prn_iter != available_galileo_prn.end();
+            for (available_gnss_prn_iter = available_galileo_prn.cbegin();
+                    available_gnss_prn_iter != available_galileo_prn.cend();
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
@@ -708,8 +706,8 @@ void GNSSFlowgraph::set_signals_list()
             /*
              * Loop to create the list of Galileo E1 B signals
              */
-            for (available_gnss_prn_iter = available_galileo_prn.begin();
-                    available_gnss_prn_iter != available_galileo_prn.end();
+            for (available_gnss_prn_iter = available_galileo_prn.cbegin();
+                    available_gnss_prn_iter != available_galileo_prn.cend();
                     available_gnss_prn_iter++)
                 {
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
@@ -739,14 +737,14 @@ void GNSSFlowgraph::set_signals_list()
                 {
                     Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
                     available_GNSS_signals_.remove(signal_value);
-                    available_GNSS_signals_.insert(gnss_it, signal_value);
+                    gnss_it = available_GNSS_signals_.insert(gnss_it, signal_value);
                 }
         }
 
     //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
-    //    std::list<Gnss_Signal>::iterator available_gnss_list_iter;
-    //    for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
-    //    != available_GNSS_signals_.end(); available_gnss_list_iter++)
+    //    std::list<Gnss_Signal>::const_iterator available_gnss_list_iter;
+    //    for (available_gnss_list_iter = available_GNSS_signals_.cbegin(); available_gnss_list_iter
+    //    != available_GNSS_signals_.cend(); available_gnss_list_iter++)
     //        {
     //            std::cout << *available_gnss_list_iter << std::endl;
     //        }

@@ -132,7 +132,7 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
+    inline void serialize(Archive& archive, const unsigned int version)
     {
         using boost::serialization::make_nvp;
         if(version){};
@@ -198,7 +198,6 @@ public:
      *  (IS-GPS-200E,  20.3.3.3.3.1)
      */
     double sv_clock_relativistic_term(double transmitTime);
-
 
     /*!
      * Default constructor

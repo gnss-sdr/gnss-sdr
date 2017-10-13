@@ -52,26 +52,26 @@ hybrid_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_
 class hybrid_observables_cc : public gr::block
 {
 public:
-    ~hybrid_observables_cc ();
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+  ~hybrid_observables_cc ();
+  int general_work (int noutput_items, gr_vector_int &ninput_items,
+					gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend hybrid_observables_cc_sptr
-    hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
-    hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
+  friend hybrid_observables_cc_sptr
+  hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
+  hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
 
-    //Tracking observable history
-    std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history_queue;
+  //Tracking observable history
+  std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history_queue;
 
-    double T_rx_s;
-    double T_rx_step_s;
-    int d_max_noutputs;
-    bool d_dump;
-    unsigned int d_nchannels;
-    unsigned int history_deep;
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
+  double T_rx_s;
+  double T_rx_step_s;
+  int d_max_noutputs;
+  bool d_dump;
+  unsigned int d_nchannels;
+  unsigned int history_deep;
+  std::string d_dump_filename;
+  std::ofstream d_dump_file;
 };
 
 #endif

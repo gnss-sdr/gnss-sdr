@@ -285,7 +285,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     sys = sys_.substr(0,1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
@@ -302,15 +302,31 @@ void gps_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
 
 gps_l1_ca_dll_pll_c_aid_tracking_sc::~gps_l1_ca_dll_pll_c_aid_tracking_sc()
 {
-    d_dump_file.close();
+    if (d_dump_file.is_open())
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor " << ex.what();
+            }
+        }
+    try
+    {
+            volk_gnsssdr_free(d_local_code_shift_chips);
+            volk_gnsssdr_free(d_ca_code);
+            volk_gnsssdr_free(d_ca_code_16sc);
+            volk_gnsssdr_free(d_correlator_outs_16sc);
+            delete[] d_Prompt_buffer;
+            multicorrelator_cpu_16sc.free();
+    }
+    catch(const std::exception & ex)
+    {
+            LOG(WARNING) << "Exception in destructor " << ex.what();
+    }
 
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_ca_code);
-    volk_gnsssdr_free(d_ca_code_16sc);
-    volk_gnsssdr_free(d_correlator_outs_16sc);
-
-    delete[] d_Prompt_buffer;
-    multicorrelator_cpu_16sc.free();
 }
 
 
@@ -319,8 +335,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items __attri
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // Block input data and block output stream pointers
-    const lv_16sc_t* in = (lv_16sc_t*) input_items[0]; //PRN start block alignment
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    const lv_16sc_t* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]); //PRN start block alignment
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
@@ -349,7 +365,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items __attri
                     d_acc_carrier_phase_cycles -= d_carrier_phase_step_rad * samples_offset / GPS_TWO_PI;
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_cycles * GPS_TWO_PI;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
-                    current_synchro_data.fs=d_fs_in;
+                    current_synchro_data.fs = d_fs_in;
                     *out[0] = current_synchro_data;
                     consume_each(samples_offset); // shift input to perform alignment with local replica
                     return 1;
@@ -578,7 +594,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items __attri
             current_synchro_data.System = {'G'};
             current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
         }
-    current_synchro_data.fs=d_fs_in;
+    current_synchro_data.fs = d_fs_in;
     *out[0] = current_synchro_data;
     if(d_dump)
         {
@@ -628,6 +644,10 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items __attri
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                     tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+
+                    // PRN
+                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char*>(&prn_), sizeof(unsigned int));
             }
             catch (const std::ifstream::failure* e)
             {
@@ -657,11 +677,11 @@ void gps_l1_ca_dll_pll_c_aid_tracking_sc::set_channel(unsigned int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (const std::ifstream::failure* e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e->what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e->what();
                     }
                 }
         }

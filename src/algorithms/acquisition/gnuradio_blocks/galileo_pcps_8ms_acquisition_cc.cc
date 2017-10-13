@@ -163,11 +163,11 @@ void galileo_pcps_8ms_acquisition_cc::init()
     // Count the number of bins
     d_num_doppler_bins = 0;
     for (int doppler = static_cast<int>(-d_doppler_max);
-         doppler <= static_cast<int>(d_doppler_max);
-         doppler += d_doppler_step)
-    {
-        d_num_doppler_bins++;
-    }
+            doppler <= static_cast<int>(d_doppler_max);
+            doppler += d_doppler_step)
+        {
+            d_num_doppler_bins++;
+        }
 
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
@@ -210,7 +210,6 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items __attribute__((unused)))
 {
-
     int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
     switch (d_state)
@@ -247,7 +246,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
             float magt = 0.0;
             float magt_A = 0.0;
             float magt_B = 0.0;
-            const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+            const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
             float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
             d_input_power = 0.0;
             d_mag = 0.0;
@@ -271,7 +270,6 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
             for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {
                     // doppler search steps
-
                     doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
                     volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
@@ -315,15 +313,15 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
 
                     // Take the greater magnitude
                     if (magt_A >= magt_B)
-                    {
-                        magt = magt_A;
-                        indext = indext_A;
-                    }
+                        {
+                            magt = magt_A;
+                            indext = indext_A;
+                        }
                     else
-                    {
-                        magt = magt_B;
-                        indext = indext_B;
-                    }
+                        {
+                            magt = magt_B;
+                            indext = indext_B;
+                        }
 
                     // 4- record the maximum peak and the associated synchronization parameters
                     if (d_mag < magt)
@@ -344,7 +342,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                                      <<"_" << d_gnss_synchro->Signal << "_sat_"
                                      << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                            d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
+                            d_dump_file.write(reinterpret_cast<char*>(d_ifft->get_outbuf()), n); //write directly |abs(x)|^2 in this Doppler bin?
                             d_dump_file.close();
                         }
                 }

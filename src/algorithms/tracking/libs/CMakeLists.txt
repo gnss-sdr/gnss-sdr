@@ -33,6 +33,7 @@ endif(ENABLE_CUDA)
 
 set(TRACKING_LIB_SOURCES   
      cpu_multicorrelator.cc
+     cpu_multicorrelator_real_codes.cc
      cpu_multicorrelator_16sc.cc     
      lock_detectors.cc
      tcp_communication.cc
@@ -49,7 +50,7 @@ if(ENABLE_FPGA)
 endif(ENABLE_FPGA)
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver

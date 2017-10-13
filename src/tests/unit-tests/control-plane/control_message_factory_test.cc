@@ -38,7 +38,7 @@
 
 
 
-TEST(Control_Message_Factory_Test, GetQueueMessage)
+TEST(ControlMessageFactoryTest, GetQueueMessage)
 {
     std::shared_ptr<ControlMessageFactory> factory = std::make_shared<ControlMessageFactory>();
     gr::message::sptr queue_message = factory->GetQueueMessage(0, 2);
@@ -53,7 +53,7 @@ TEST(Control_Message_Factory_Test, GetQueueMessage)
 
 
 
-TEST(Control_Message_Factory_Test, GetControlMessages)
+TEST(ControlMessageFactoryTest, GetControlMessages)
 {
     std::shared_ptr<ControlMessageFactory> factory = std::make_shared<ControlMessageFactory>();
     gr::message::sptr queue_message = gr::message::make(0, 0, 0, sizeof(ControlMessage));
@@ -74,7 +74,7 @@ TEST(Control_Message_Factory_Test, GetControlMessages)
 
 /*
 
-TEST(Control_Message_Factory_Test, GetControlMessagesWrongSize)
+TEST(ControlMessageFactoryTest, GetControlMessagesWrongSize)
 {
 
     std::shared_ptr<ControlMessageFactory> factory = std::make_shared<ControlMessageFactory>();

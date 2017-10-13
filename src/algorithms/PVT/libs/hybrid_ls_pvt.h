@@ -49,13 +49,17 @@
 class hybrid_ls_pvt : public Ls_Pvt
 {
 private:
-
+    int count_valid_position;
+    bool d_flag_dump_enabled;
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+    int d_nchannels; // Number of available channels for positioning
+    double d_galileo_current_time;
 public:
     hybrid_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file);
     ~hybrid_ls_pvt();
 
     bool get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, double Rx_time, bool flag_averaging);
-    int d_nchannels;                                        //!< Number of available channels for positioning
 
     std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
     std::map<int,Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new GPS_Ephemeris
@@ -70,16 +74,6 @@ public:
 
     Gps_CNAV_Iono gps_cnav_iono;
     Gps_CNAV_Utc_Model gps_cnav_utc_model;
-
-    double d_galileo_current_time;
-
-    int count_valid_position;
-
-    bool d_flag_dump_enabled;
-    bool d_flag_averaging;
-
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
 };
 
 #endif

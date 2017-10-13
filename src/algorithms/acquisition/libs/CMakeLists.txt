@@ -51,10 +51,11 @@ set(ACQUISITION_LIB_SOURCES
 #endif(ENABLE_FPGA)
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${VOLK_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}

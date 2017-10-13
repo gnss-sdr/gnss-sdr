@@ -152,6 +152,83 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_a_sse3(char* result, const ch
 #endif /* LV_HAVE_SSE3 */
 
 
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_8i_accumulator_s8i_a_avx2(char* result, const char* inputBuffer, unsigned int num_points)
+{
+    char returnValue = 0;
+    const unsigned int sse_iters = num_points / 32;
+    unsigned int number;
+    unsigned int i;
+
+    const char* aPtr = inputBuffer;
+
+    __VOLK_ATTR_ALIGNED(32) char tempBuffer[32];
+    __m256i accumulator = _mm256_setzero_si256();
+    __m256i aVal = _mm256_setzero_si256();
+
+    for(number = 0; number < sse_iters; number++)
+        {
+            aVal = _mm256_load_si256((__m256i*)aPtr);
+            accumulator = _mm256_add_epi8(accumulator, aVal);
+            aPtr += 32;
+        }
+    _mm256_store_si256((__m256i*)tempBuffer,accumulator);
+
+    for(i = 0; i < 32; ++i)
+        {
+            returnValue += tempBuffer[i];
+        }
+
+    for(i = 0; i < (num_points % 32); ++i)
+        {
+            returnValue += (*aPtr++);
+        }
+
+    *result = returnValue;
+}
+#endif /* LV_HAVE_SSE3 */
+
+
+#ifdef LV_HAVE_AVX2
+#include <pmmintrin.h>
+
+static inline void volk_gnsssdr_8i_accumulator_s8i_u_avx2(char* result, const char* inputBuffer, unsigned int num_points)
+{
+    char returnValue = 0;
+    const unsigned int sse_iters = num_points / 32;
+    unsigned int number;
+    unsigned int i;
+    const char* aPtr = inputBuffer;
+
+    __VOLK_ATTR_ALIGNED(32) char tempBuffer[32];
+    __m256i accumulator = _mm256_setzero_si256();
+    __m256i aVal = _mm256_setzero_si256();
+
+    for(number = 0; number < sse_iters; number++)
+        {
+            aVal = _mm256_lddqu_si256((__m256i*)aPtr);
+            accumulator = _mm256_add_epi8(accumulator, aVal);
+            aPtr += 32;
+        }
+    _mm256_storeu_si256((__m256i*)tempBuffer, accumulator);
+
+    for(i = 0; i < 32; ++i)
+        {
+            returnValue += tempBuffer[i];
+        }
+
+    for(i = 0; i < (num_points % 32); ++i)
+        {
+            returnValue += (*aPtr++);
+        }
+
+    *result = returnValue;
+}
+#endif /* LV_HAVE_SSE3 */
+
+
 #ifdef LV_HAVE_ORC
 
 extern void volk_gnsssdr_8i_accumulator_s8i_a_orc_impl(short* result, const char* inputBuffer, unsigned int num_points);
@@ -169,4 +246,3 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_u_orc(char* result, const cha
 #endif /* LV_HAVE_ORC */
 
 #endif /* INCLUDED_volk_gnsssdr_8i_accumulator_s8i_H */
-

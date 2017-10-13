@@ -37,7 +37,7 @@
 
 
 
-TEST(Pass_Through_Test, Instantiate)
+TEST(PassThroughTest, Instantiate)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Test.item_type", "gr_complex");

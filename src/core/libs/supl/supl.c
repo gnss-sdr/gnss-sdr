@@ -217,7 +217,7 @@ int EXPORT supl_decode_rrlp(supl_ulp_t *ulp_pdu, PDU_t **ret_rrlp) {
   
 int EXPORT supl_server_connect(supl_ctx_t *ctx, char *server) {
   int err;
-  const SSL_METHOD *meth;
+  SSL_METHOD *meth;
 
   SSLeay_add_ssl_algorithms();
   // meth = TLSv1_client_method();

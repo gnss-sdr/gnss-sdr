@@ -33,7 +33,6 @@
 #ifndef GNSS_SDR_GNSS_SDR_VALVE_H_
 #define GNSS_SDR_GNSS_SDR_VALVE_H_
 
-#include <cstring>
 #include <gnuradio/sync_block.h>
 #include <gnuradio/msg_queue.h>
 #include <boost/shared_ptr.hpp>
@@ -54,8 +53,8 @@ class gnss_sdr_valve : public gr::sync_block
     gnss_sdr_valve (size_t sizeof_stream_item,
             unsigned long long nitems,
             gr::msg_queue::sptr queue);
-    unsigned long long    d_nitems;
-    unsigned long long    d_ncopied_items;
+    unsigned long long d_nitems;
+    unsigned long long d_ncopied_items;
     gr::msg_queue::sptr d_queue;
 
 public:

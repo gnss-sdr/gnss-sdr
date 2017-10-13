@@ -271,7 +271,7 @@ int decode_nmeagga(char **val, int n, sol_t *sol)
 /* decode nmea ---------------------------------------------------------------*/
 int decode_nmea(char *buff, sol_t *sol)
 {
-    char *p,*q,*val[MAXFIELD];
+    char *p, *q, *val[MAXFIELD] = {0};
     int n = 0;
 
     trace(4,"decode_nmea: buff=%s\n",buff);
@@ -1119,7 +1119,7 @@ int outecef(unsigned char *buff, const char *s, const sol_t *sol,
 
     trace(3,"outecef:\n");
 
-    p += sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+    p += snprintf(p,255,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
             s,sep,sol->rr[0],sep,sol->rr[1],sep,sol->rr[2],sep,sol->stat,sep,
             sol->ns,sep,SQRT_SOL(sol->qr[0]),sep,SQRT_SOL(sol->qr[1]),sep,SQRT_SOL(sol->qr[2]),
             sep,sqvar(sol->qr[3]),sep,sqvar(sol->qr[4]),sep,sqvar(sol->qr[5]),
@@ -1627,46 +1627,46 @@ int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
     double gpst;
     int week,timeu;
     const char *sep = opt2sep(opt);
-    char s[64];
+    char s[255];
     unsigned char *p = buff;
 
     trace(3,"outsols :\n");
 
     if (opt->posf == SOLF_NMEA)
         {
-            if (opt->nmeaintv[0]<0.0) return 0;
-            if (!screent(sol->time,ts,ts,opt->nmeaintv[0])) return 0;
+            if (opt->nmeaintv[0] < 0.0) return 0;
+            if (!screent(sol->time, ts, ts, opt->nmeaintv[0])) return 0;
         }
     if (sol->stat <= SOLQ_NONE || (opt->posf == SOLF_ENU && norm_rtk(rb,3) <= 0.0))
         {
             return 0;
         }
-    timeu = opt->timeu<0?0:(opt->timeu>20?20:opt->timeu);
+    timeu = opt->timeu < 0 ? 0 : (opt->timeu > 20 ? 20 : opt->timeu);
 
     time = sol->time;
     if (opt->times >= TIMES_UTC) time = gpst2utc(time);
-    if (opt->times == TIMES_JST) time = timeadd(time,9*3600.0);
+    if (opt->times == TIMES_JST) time = timeadd(time, 9*3600.0);
 
-    if (opt->timef) time2str(time,s,timeu);
+    if (opt->timef) time2str(time, s, timeu);
     else
         {
-            gpst = time2gpst(time,&week);
-            if (86400*7-gpst<0.5/pow(10.0,timeu))
+            gpst = time2gpst(time, &week);
+            if (86400 * 7 - gpst < 0.5 / pow(10.0, timeu))
                 {
                     week++;
                     gpst = 0.0;
                 }
-            sprintf(s,"%4d%s%*.*f",week,sep,6+(timeu <= 0?0:timeu+1),timeu,gpst);
+            snprintf(s, 255, "%4d%s%*.*f", week, sep, 6 + (timeu <= 0 ? 0 : timeu+1), timeu, gpst);
         }
     switch (opt->posf)
     {
-    case SOLF_LLH:  p += outpos (p,s,sol,opt);   break;
-    case SOLF_XYZ:  p += outecef(p,s,sol,opt);   break;
-    case SOLF_ENU:  p += outenu(p,s,sol,rb,opt); break;
-    case SOLF_NMEA: p += outnmea_rmc(p,sol);
-    p += outnmea_gga(p,sol); break;
+    case SOLF_LLH:  p += outpos(p, s, sol, opt); break;
+    case SOLF_XYZ:  p += outecef(p, s, sol, opt); break;
+    case SOLF_ENU:  p += outenu(p, s, sol, rb, opt); break;
+    case SOLF_NMEA: p += outnmea_rmc(p, sol);
+    p += outnmea_gga(p, sol); break;
     }
-    return p-buff;
+    return p - buff;
 }
 
 

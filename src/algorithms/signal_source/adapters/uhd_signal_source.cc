@@ -62,11 +62,16 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
         {
             dev_addr["addr"] = device_address_;
         }
-
+    //filter the device by serial number if required (useful for USB devices)
+    std::string device_serial = configuration->property(role + ".device_serial", empty);
+    if (empty.compare(device_serial) != 0) // if not empty
+        {
+            dev_addr["serial"] = device_serial;
+        }
     subdevice_ = configuration->property(role + ".subdevice", empty);
     clock_source_ = configuration->property(role + ".clock_source", std::string("internal"));
     RF_channels_ = configuration->property(role + ".RF_channels", 1);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", (double)4.0e6);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 4.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
 
     if (RF_channels_ == 1)
@@ -77,7 +82,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             dump_filename_.push_back(configuration->property(role + ".dump_filename", default_dump_file));
 
             freq_.push_back(configuration->property(role + ".freq", GPS_L1_FREQ_HZ));
-            gain_.push_back(configuration->property(role + ".gain", (double)50.0));
+            gain_.push_back(configuration->property(role + ".gain", 50.0));
 
             IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz", sample_rate_/2));
 
@@ -93,7 +98,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
                     dump_filename_.push_back(configuration->property(role + ".dump_filename" + boost::lexical_cast<std::string>(i), default_dump_file));
 
                     freq_.push_back(configuration->property(role + ".freq" + boost::lexical_cast<std::string>(i), GPS_L1_FREQ_HZ));
-                    gain_.push_back(configuration->property(role + ".gain" + boost::lexical_cast<std::string>(i), (double)50.0));
+                    gain_.push_back(configuration->property(role + ".gain" + boost::lexical_cast<std::string>(i), 50.0));
 
                     IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz" + boost::lexical_cast<std::string>(i), sample_rate_/2));
                 }

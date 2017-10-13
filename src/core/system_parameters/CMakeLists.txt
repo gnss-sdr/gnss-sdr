@@ -43,7 +43,7 @@ set(SYSTEM_PARAMETERS_SOURCES
 
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib

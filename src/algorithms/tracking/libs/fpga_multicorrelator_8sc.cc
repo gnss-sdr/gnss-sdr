@@ -60,6 +60,9 @@
 // logging
 #include <glog/logging.h>
 
+// string manipulation
+#include <string>
+
 #define PAGE_SIZE 0x10000
 #define MAX_LENGTH_DEVICEIO_NAME 50
 #define CODE_RESAMPLER_NUM_BITS_PRECISION 20
@@ -69,20 +72,10 @@
 #define PHASE_CARR_NBITS 32
 #define PHASE_CARR_NBITS_INT 1
 #define PHASE_CARR_NBITS_FRAC PHASE_CARR_NBITS - PHASE_CARR_NBITS_INT
-
-
-
-bool fpga_multicorrelator_8sc::init(int n_correlators)
-{
-    d_n_correlators = n_correlators;
-
-    // instantiate variable length vectors
-    d_initial_index = static_cast<unsigned*>(volk_gnsssdr_malloc(n_correlators * sizeof(unsigned), volk_gnsssdr_get_alignment()));
-    d_initial_interp_counter = static_cast<unsigned*>(volk_gnsssdr_malloc(n_correlators * sizeof(unsigned), volk_gnsssdr_get_alignment()));
-
-    return true;
-}
-
+#define LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT 0x20000000
+#define LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER 0x10000000
+#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000
+#define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
 
 void fpga_multicorrelator_8sc::set_initial_sample(int samples_offset)
 {
@@ -90,10 +83,8 @@ void fpga_multicorrelator_8sc::set_initial_sample(int samples_offset)
 }
 
 
-bool fpga_multicorrelator_8sc::set_local_code_and_taps(
-        int code_length_chips,
-        const lv_16sc_t* local_code_in,
-        float *shifts_chips)
+bool fpga_multicorrelator_8sc::set_local_code_and_taps(int code_length_chips,
+        const lv_16sc_t* local_code_in, float *shifts_chips)
 {
     d_local_code_in = local_code_in;
     d_shifts_chips = shifts_chips;
@@ -124,10 +115,8 @@ void fpga_multicorrelator_8sc::update_local_code(float rem_code_phase_chips)
 
 
 bool fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
-        float rem_carrier_phase_in_rad,
-        float phase_step_rad,
-        float rem_code_phase_chips,
-        float code_phase_step_chips,
+        float rem_carrier_phase_in_rad, float phase_step_rad,
+        float rem_code_phase_chips, float code_phase_step_chips,
         int signal_length_samples)
 {
     update_local_code(rem_code_phase_chips);
@@ -144,7 +133,7 @@ bool fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
     int irq_count;
     ssize_t nb;
     // wait for interrupt
-    nb=read(d_fd, &irq_count, sizeof(irq_count));
+    nb = read(d_device_descriptor, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
             printf("Tracking_module Read failed to retrive 4 bytes!\n");
@@ -157,19 +146,41 @@ bool fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
 }
 
 
-fpga_multicorrelator_8sc::fpga_multicorrelator_8sc()
+fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
+        std::string device_name, unsigned int device_base)
 {
+    d_n_correlators = n_correlators;
+    d_device_name = device_name;
+    d_device_base = device_base;
+    d_device_descriptor = 0;
+    d_map_base = nullptr;
+
+    // instantiate variable length vectors
+    d_initial_index = static_cast<unsigned*>(volk_gnsssdr_malloc(
+            n_correlators * sizeof(unsigned), volk_gnsssdr_get_alignment()));
+    d_initial_interp_counter = static_cast<unsigned*>(volk_gnsssdr_malloc(
+            n_correlators * sizeof(unsigned), volk_gnsssdr_get_alignment()));
+
     d_local_code_in = nullptr;
     d_shifts_chips = nullptr;
     d_corr_out = nullptr;
     d_code_length_chips = 0;
-    d_n_correlators = 0;
+    d_rem_code_phase_chips = 0;
+    d_code_phase_step_chips = 0;
+    d_rem_carrier_phase_in_rad = 0;
+    d_phase_step_rad = 0;
+    d_rem_carr_phase_rad_int = 0;
+    d_phase_step_rad_int = 0;
+    d_initial_sample_counter = 0;
+
+    d_channel = 0;
+    d_correlator_length_samples = 0;
 }
 
 
 fpga_multicorrelator_8sc::~fpga_multicorrelator_8sc()
 {
-    close(d_fd);
+    close(d_device_descriptor);
 }
 
 
@@ -197,24 +208,35 @@ bool fpga_multicorrelator_8sc::free()
 
 void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
 {
+    char device_io_name[MAX_LENGTH_DEVICEIO_NAME]; // driver io name
+
     d_channel = channel;
 
-    snprintf(d_device_io_name, MAX_LENGTH_DEVICEIO_NAME, "/dev/uio%d",d_channel);
-    printf("Opening Device Name : %s\n", d_device_io_name);
+    // open the device corresponding to the assigned channel
+    std::string mergedname;
+    std::stringstream devicebasetemp;
 
-    if ((d_fd = open(d_device_io_name, O_RDWR | O_SYNC )) == -1)
+    int numdevice = d_device_base + d_channel;
+    devicebasetemp << numdevice;
+    mergedname = d_device_name + devicebasetemp.str();
+    strcpy(device_io_name, mergedname.c_str());
+    printf("Opening Device Name : %s\n", device_io_name);
+    if ((d_device_descriptor = open(device_io_name, O_RDWR | O_SYNC)) == -1)
         {
-            LOG(WARNING) << "Cannot open deviceio" << d_device_io_name;
+            LOG(WARNING) << "Cannot open deviceio" << device_io_name;
         }
-    d_map_base = (volatile unsigned *)mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, d_fd,0);
 
-    if (d_map_base == (void *) -1)
+    d_map_base = reinterpret_cast<volatile unsigned *>(mmap(NULL, PAGE_SIZE,
+            PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));
+
+    if (d_map_base == reinterpret_cast<void*>(-1))
         {
-            LOG(WARNING) << "Cannot map the FPGA tracking module " << d_channel << "into user memory";
+            LOG(WARNING) << "Cannot map the FPGA tracking module "
+                    << d_channel << "into user memory";
         }
 
     // sanity check : check test register
-    unsigned writeval = 0x55AA;
+    unsigned writeval = TEST_REGISTER_TRACK_WRITEVAL;
     unsigned readval;
     readval = fpga_multicorrelator_8sc::fpga_acquisition_test_register(writeval);
     if (writeval != readval)
@@ -225,11 +247,11 @@ void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
         {
             LOG(INFO) << "Test register sanity check success !";
         }
-
 }
 
 
-unsigned fpga_multicorrelator_8sc::fpga_acquisition_test_register(unsigned writeval)
+unsigned fpga_multicorrelator_8sc::fpga_acquisition_test_register(
+        unsigned writeval)
 {
     unsigned readval;
     // write value to test register
@@ -243,68 +265,59 @@ unsigned fpga_multicorrelator_8sc::fpga_acquisition_test_register(unsigned write
 
 void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(void)
 {
-    int k,s;
-    unsigned temp;
-    unsigned *ena_write_signals;
-    ena_write_signals = new unsigned[d_n_correlators];
-    ena_write_signals[0] = 0x00000000;
-    ena_write_signals[1] = 0x20000000;
-    for (s = 2; s < d_n_correlators; s++)
-        {
-            ena_write_signals[s]= ena_write_signals[s-1]*2; //0x40000000;
-        }
+    int k, s;
+    unsigned code_chip;
+    unsigned select_fpga_correlator;
+
+    select_fpga_correlator = 0;
 
     for (s = 0; s < d_n_correlators; s++)
         {
-            // clear memory address counter
-            d_map_base[11] = 0x10000000;
-            // write correlator 0
+            d_map_base[11] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
             for (k = 0; k < d_code_length_chips; k++)
                 {
                     if (lv_creal(d_local_code_in[k]) == 1)
                         {
-                            temp = 1;
+                            code_chip = 1;
                         }
                     else
                         {
-                            temp = 0;
+                            code_chip = 0;
                         }
-                    d_map_base[11] = 0x0C000000 | (temp & 0xFFFF) | ena_write_signals[s];
+                    // copy the local code to the FPGA memory one by one
+                    d_map_base[11] = LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY
+                            | code_chip | select_fpga_correlator;
                 }
+            select_fpga_correlator = select_fpga_correlator
+                    + LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT;
         }
-
-    delete [] ena_write_signals;
 }
 
 
 void fpga_multicorrelator_8sc::fpga_compute_code_shift_parameters(void)
 {
-    float tempvalues[3];
-    float tempvalues2[3];
-    float tempvalues3[3];
+    float temp_calculation;
     int i;
 
     for (i = 0; i < d_n_correlators; i++)
         {
             // initial index calculation
-            tempvalues[i] = floor(d_shifts_chips[i] + d_rem_code_phase_chips);
-            if (tempvalues[i] < 0)
+            temp_calculation = floor(
+                    d_shifts_chips[i] + d_rem_code_phase_chips);
+            if (temp_calculation < 0)
                 {
-                    tempvalues2[i] = tempvalues[i] + d_code_length_chips; // % operator does not work as in Matlab with negative numbers
+                    temp_calculation = temp_calculation + d_code_length_chips; // % operator does not work as in Matlab with negative numbers
                 }
-            else
-                {
-                    tempvalues2[i] = tempvalues[i];
-                }
-            d_initial_index[i] = (unsigned) ((int) tempvalues2[i]) % d_code_length_chips;
+            d_initial_index[i] = static_cast<unsigned>( (static_cast<int>(temp_calculation)) % d_code_length_chips);
 
             // initial interpolator counter calculation
-            tempvalues3[i] = fmod(d_shifts_chips[i]+ d_rem_code_phase_chips,1.0);
-            if (tempvalues3[i] < 0)
+            temp_calculation = fmod(d_shifts_chips[i] + d_rem_code_phase_chips,
+                    1.0);
+            if (temp_calculation < 0)
                 {
-                    tempvalues3[i] = tempvalues3[i] + 1.0; // fmod operator does not work as in Matlab with negative numbers
+                    temp_calculation = temp_calculation + 1.0; // fmod operator does not work as in Matlab with negative numbers
                 }
-            d_initial_interp_counter[i] = (unsigned) floor(MAX_CODE_RESAMPLER_COUNTER * tempvalues3[i]);
+            d_initial_interp_counter[i] = static_cast<unsigned>( floor( MAX_CODE_RESAMPLER_COUNTER * temp_calculation));
         }
 }
 
@@ -314,7 +327,7 @@ void fpga_multicorrelator_8sc::fpga_configure_code_parameters_in_fpga(void)
     int i;
     for (i = 0; i < d_n_correlators; i++)
         {
-            d_map_base[1+i] = d_initial_index[i];
+            d_map_base[1 + i] = d_initial_index[i];
             d_map_base[1 + d_n_correlators + i] = d_initial_interp_counter[i];
         }
     d_map_base[8] = d_code_length_chips - 1; // number of samples - 1
@@ -325,28 +338,33 @@ void fpga_multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
 {
     float d_rem_carrier_phase_in_rad_temp;
 
-    d_code_phase_step_chips_num = (unsigned) roundf(MAX_CODE_RESAMPLER_COUNTER * d_code_phase_step_chips);
+    d_code_phase_step_chips_num = static_cast<unsigned>( roundf(MAX_CODE_RESAMPLER_COUNTER * d_code_phase_step_chips));
 
     if (d_rem_carrier_phase_in_rad > M_PI)
         {
-            d_rem_carrier_phase_in_rad_temp = -2*M_PI + d_rem_carrier_phase_in_rad;
+            d_rem_carrier_phase_in_rad_temp = -2 * M_PI
+                    + d_rem_carrier_phase_in_rad;
         }
-    else if (d_rem_carrier_phase_in_rad < - M_PI)
+    else if (d_rem_carrier_phase_in_rad < -M_PI)
         {
-            d_rem_carrier_phase_in_rad_temp = 2*M_PI + d_rem_carrier_phase_in_rad;
+            d_rem_carrier_phase_in_rad_temp = 2 * M_PI
+                    + d_rem_carrier_phase_in_rad;
         }
     else
         {
             d_rem_carrier_phase_in_rad_temp = d_rem_carrier_phase_in_rad;
         }
 
-    d_rem_carr_phase_rad_int = (int) roundf((fabs(d_rem_carrier_phase_in_rad_temp)/M_PI)*pow(2, PHASE_CARR_NBITS_FRAC));
+    d_rem_carr_phase_rad_int = static_cast<int>( roundf(
+            (fabs(d_rem_carrier_phase_in_rad_temp) / M_PI)
+                    * pow(2, PHASE_CARR_NBITS_FRAC)));
 
     if (d_rem_carrier_phase_in_rad_temp < 0)
         {
             d_rem_carr_phase_rad_int = -d_rem_carr_phase_rad_int;
         }
-    d_phase_step_rad_int = (int) roundf((fabs(d_phase_step_rad)/M_PI)*pow(2, PHASE_CARR_NBITS_FRAC)); // the FPGA accepts a range for the phase step between -pi and +pi
+    d_phase_step_rad_int = static_cast<int>( roundf(
+            (fabs(d_phase_step_rad) / M_PI) * pow(2, PHASE_CARR_NBITS_FRAC))); // the FPGA accepts a range for the phase step between -pi and +pi
 
     if (d_phase_step_rad < 0)
         {
@@ -361,7 +379,6 @@ void fpga_multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga(void)
     d_map_base[7] = d_correlator_length_samples - 1;
     d_map_base[9] = d_rem_carr_phase_rad_int;
     d_map_base[10] = d_phase_step_rad_int;
-    d_map_base[12] = 0; // lock the channel
     d_map_base[13] = d_initial_sample_counter;
 }
 
@@ -370,7 +387,7 @@ void fpga_multicorrelator_8sc::fpga_launch_multicorrelator_fpga(void)
 {
     // enable interrupts
     int reenable = 1;
-    write(d_fd, (void *)&reenable, sizeof(int));
+    write(d_device_descriptor, reinterpret_cast<void*>(&reenable), sizeof(int));
 
     d_map_base[14] = 0; // writing anything to reg 14 launches the tracking
 }
@@ -378,39 +395,28 @@ void fpga_multicorrelator_8sc::fpga_launch_multicorrelator_fpga(void)
 
 void fpga_multicorrelator_8sc::read_tracking_gps_results(void)
 {
-    int *readval_real;
-    int *readval_imag;
+    int readval_real;
+    int readval_imag;
     int k;
-    readval_real = new int[d_n_correlators];
-    readval_imag = new int[d_n_correlators];
-
-    for (k =0 ; k < d_n_correlators; k++)
-        {
-            readval_real[k] = d_map_base[1 + k];
-            if (readval_real[k] >= 1048576)  // 0x100000 (21 bits two's complement)
-                {
-                    readval_real[k] = -2097152 + readval_real[k];
-                }
-            readval_real[k] = readval_real[k] * 2; // the results are shifted two bits to the left due to the complex multiplier in the FPGA
-
-        }
-    for (k = 0; k < d_n_correlators; k++)
-        {
-            readval_imag[k] = d_map_base[1 + d_n_correlators + k];
-            if (readval_imag[k] >= 1048576) // 0x100000 (21 bits two's complement)
-                {
-                    readval_imag[k] = -2097152 + readval_imag[k];
-                }
-            readval_imag[k] = readval_imag[k] * 2; // the results are shifted two bits to the left due to the complex multiplier in the FPGA
-        }
 
     for (k = 0; k < d_n_correlators; k++)
         {
-            d_corr_out[k] = lv_cmake(readval_real[k], readval_imag[k]);
-        }
+            readval_real = d_map_base[1 + k];
+            if (readval_real >= 1048576) // 0x100000 (21 bits two's complement)
+                {
+                    readval_real = -2097152 + readval_real;
+                }
+            readval_real = readval_real * 2; // the results are shifted two bits to the left due to the complex multiplier in the FPGA
 
-    delete[] readval_real;
-    delete[] readval_imag;
+            readval_imag = d_map_base[1 + d_n_correlators + k];
+            if (readval_imag >= 1048576) // 0x100000 (21 bits two's complement)
+                {
+                    readval_imag = -2097152 + readval_imag;
+                }
+            readval_imag = readval_imag * 2; // the results are shifted two bits to the left due to the complex multiplier in the FPGA
+
+            d_corr_out[k] = lv_cmake(readval_real, readval_imag);
+        }
 }
 
 
@@ -419,3 +425,11 @@ void fpga_multicorrelator_8sc::unlock_channel(void)
     // unlock the channel to let the next samples go through
     d_map_base[12] = 1; // unlock the channel
 }
+
+
+void fpga_multicorrelator_8sc::lock_channel(void)
+{
+    // lock the channel for processing
+    d_map_base[12] = 0; // lock the channel
+}
+

@@ -64,7 +64,11 @@ DECLARE_string(log_dir);
 int main(int argc, char **argv)
 {
     google::ParseCommandLineFlags(&argc, &argv, true);
-    testing::InitGoogleTest(&argc, argv);
+    try
+    {
+            testing::InitGoogleTest(&argc, argv);
+    }
+    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
     google::InitGoogleLogging(argv[0]);
     int res = 0;
     try

@@ -87,7 +87,7 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::forecast (int noutput_items,
 {
     if (noutput_items != 0)
         {
-            ninput_items_required[0] = (int)d_vector_length*2; // set the required available samples in each call
+            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; // set the required available samples in each call
         }
 }
 
@@ -155,7 +155,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_local_code_shift_chips[4] = d_very_early_late_spc_chips;
 
     d_correlation_length_samples = d_vector_length;
- 
+
     multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
 
     //--- Perform initializations ------------------------------
@@ -173,7 +173,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_enable_tracking = false;
     d_pull_in = false;
 
-    d_current_prn_length_samples = (int)d_vector_length;
+    d_current_prn_length_samples = static_cast<int>(d_vector_length);
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
@@ -231,7 +231,7 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
     sys = sys_.substr(0,1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of Galileo E1 signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
@@ -244,15 +244,30 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
 
 Galileo_E1_Tcp_Connector_Tracking_cc::~Galileo_E1_Tcp_Connector_Tracking_cc()
 {
-    d_dump_file.close();
-
-    delete[] d_Prompt_buffer;
-    volk_gnsssdr_free(d_ca_code);
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_correlator_outs);
-
-    d_tcp_com.close_tcp_connection(d_port);
-    multicorrelator_cpu.free();
+    if (d_dump_file.is_open())
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor " << ex.what();
+            }
+        }
+    try
+    {
+            volk_gnsssdr_free(d_local_code_shift_chips);
+            volk_gnsssdr_free(d_correlator_outs);
+            volk_gnsssdr_free(d_ca_code);
+            delete[] d_Prompt_buffer;
+            d_tcp_com.close_tcp_connection(d_port);
+            multicorrelator_cpu.free();
+    }
+    catch(const std::exception & ex)
+    {
+            LOG(WARNING) << "Exception in destructor " << ex.what();
+    }
 }
 
 
@@ -267,8 +282,8 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     // Block input data and block output stream pointers
-    const gr_complex* in = (gr_complex*) input_items[0];
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     if (d_enable_tracking == true)
         {
             // Fill the acquisition data
@@ -282,10 +297,10 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
                     float acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_current_prn_length_samples);
+                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
-                    current_synchro_data.fs=d_fs_in;
+                    current_synchro_data.fs = d_fs_in;
                     *out[0] = current_synchro_data;
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
@@ -355,10 +370,10 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             double T_prn_samples;
             double K_blk_samples;
             // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
-            T_chip_seconds = 1 / (double)d_code_freq_chips;
+            T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips);
             T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
-            T_prn_samples = T_prn_seconds * (double)d_fs_in;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * (double)d_fs_in;
+            T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
             //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
@@ -400,15 +415,15 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
                 }
 
             // ########### Output the tracking data to navigation and PVT ##########
-            current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
-            current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
+            current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
+            current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
             // Tracking_timestamp_secs is aligned with the PRN start sample
             current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
             current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
-            current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
-            current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
-            current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
+            current_synchro_data.Carrier_phase_rads = static_cast<double>(d_acc_carrier_phase_rad);
+            current_synchro_data.Carrier_Doppler_hz = static_cast<double>(d_carrier_doppler_hz);
+            current_synchro_data.CN0_dB_hz = static_cast<double>(d_CN0_SNV_dB_Hz);
             current_synchro_data.Flag_valid_symbol_output = true;
             current_synchro_data.correlation_length_ms = 4;
         }
@@ -426,9 +441,9 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
     current_synchro_data.System = {'E'};
     std::string str_aux = "1B";
     const char * str = str_aux.c_str(); // get a C style null terminated string
-    std::memcpy((void*)current_synchro_data.Signal, str, 3);
+    std::memcpy(static_cast<void*>(current_synchro_data.Signal), str, 3);
 
-    current_synchro_data.fs=d_fs_in;
+    current_synchro_data.fs = d_fs_in;
     *out[0] = current_synchro_data;
 
     if(d_dump)
@@ -451,40 +466,44 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             try
             {
                     // EPR
-                    d_dump_file.write((char*)&tmp_VE, sizeof(float));
-                    d_dump_file.write((char*)&tmp_E, sizeof(float));
-                    d_dump_file.write((char*)&tmp_P, sizeof(float));
-                    d_dump_file.write((char*)&tmp_L, sizeof(float));
-                    d_dump_file.write((char*)&tmp_VL, sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_VE), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_E), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_P), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_L), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_VL), sizeof(float));
                     // PROMPT I and Q (to analyze navigation symbols)
-                    d_dump_file.write((char*)&prompt_I, sizeof(float));
-                    d_dump_file.write((char*)&prompt_Q, sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&prompt_I), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    d_dump_file.write((char*)&d_sample_counter, sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_sample_counter), sizeof(unsigned long int));
                     // accumulated carrier phase
-                    d_dump_file.write((char*)&d_acc_carrier_phase_rad, sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_acc_carrier_phase_rad), sizeof(float));
 
                     // carrier and code frequency
-                    d_dump_file.write((char*)&d_carrier_doppler_hz, sizeof(float));
-                    d_dump_file.write((char*)&d_code_freq_chips, sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_code_freq_chips), sizeof(float));
 
                     //PLL commands
-                    d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    d_dump_file.write((char*)&carr_error_filt_hz, sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&carr_error_filt_hz), sizeof(float));
 
                     //DLL commands
-                    d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    d_dump_file.write((char*)&code_error_filt_chips, sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&code_error_filt_chips), sizeof(float));
 
                     // CN0 and carrier lock test
-                    d_dump_file.write((char*)&d_CN0_SNV_dB_Hz, sizeof(float));
-                    d_dump_file.write((char*)&d_carrier_lock_test, sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_CN0_SNV_dB_Hz), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_lock_test), sizeof(float));
 
                     // AUX vars (for debug purposes)
                     tmp_float = d_rem_code_phase_samples;
-                    d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    tmp_double = (double)(d_sample_counter+d_current_prn_length_samples);
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
+                    tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+
+                    // PRN
+                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char*>(&prn_), sizeof(unsigned int));
             }
             catch (const std::ifstream::failure &e)
             {

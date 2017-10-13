@@ -31,8 +31,7 @@
  */
 
 
-#include <cstdlib>
-#include <ctime>
+#include <chrono>
 #include <iostream>
 #include <boost/make_shared.hpp>
 #include <gnuradio/top_block.h>
@@ -139,7 +138,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.coherent_integration_time_ms", "4");
@@ -151,6 +150,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
     config->set_property("Acquisition.repeat_satellite", "false");
     config->set_property("Acquisition1.cboc", "true");
 }
+
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, Instantiate)
 {
@@ -164,9 +164,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
 {
     int fs_in = 4000000;
     int nsamples = 4*fs_in;
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     init();
@@ -184,21 +183,19 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec*1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec*1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Processed " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     double expected_delay_samples = 2920; //18250;
     double expected_doppler_hz = -632;
@@ -241,27 +238,27 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
+    acquisition->set_local_code();
     acquisition->init();
     acquisition->reset();
     acquisition->set_state(1);
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << std::endl;
     std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = (float)(delay_error_samples * 1023 / 4000000);
+    float delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 166) << "Doppler error exceeds the expected value: 166 Hz = 2/(3*integration period)";

@@ -31,7 +31,6 @@
  */
 
 #include "nsr_file_signal_source.h"
-#include <cstdlib>
 #include <exception>
 #include <fstream>
 #include <iomanip>
@@ -123,7 +122,7 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
             if (file.is_open())
                 {
                     size = file.tellg();
-                    LOG(INFO) << "Total samples in the file= " << floor((double)size / (double)item_size());
+                    LOG(INFO) << "Total samples in the file= " << floor(static_cast<double>(size) / static_cast<double>(item_size()));
                 }
             else
                 {
@@ -132,20 +131,20 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
                 }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
-            std::cout << "Processing file " << filename_ << ", which contains " << (double)size << " [bytes]" << std::endl;
+            std::cout << "Processing file " << filename_ << ", which contains " << size << " [bytes]" << std::endl;
             std::cout.precision (ss);
 
             if (size > 0)
                 {
                     int sample_packet_factor = 4; // 1 byte -> 4 samples
-                    samples_ = floor((double)size / (double)item_size())*sample_packet_factor;
-                    samples_ = samples_- ceil(0.002 * (double)sampling_frequency_); //process all the samples available in the file excluding the last 2 ms
+                    samples_ = floor(static_cast<double>(size) / static_cast<double>(item_size())) * sample_packet_factor;
+                    samples_ = samples_- ceil(0.002 * static_cast<double>(sampling_frequency_)); //process all the samples available in the file excluding the last 2 ms
                 }
         }
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
-    signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
+    signal_duration_s = static_cast<double>(samples_) * ( 1 /static_cast<double>(sampling_frequency_));
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 

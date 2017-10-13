@@ -29,14 +29,11 @@
  * -------------------------------------------------------------------------
  */
 
-
-
-
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <boost/make_shared.hpp>
 #include <boost/thread.hpp>
-#include <boost/chrono.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -54,21 +51,20 @@
 
 #include <unistd.h>
 
-#define DMA_ACQ_TRANSFER_SIZE 4000
-#define RX_SIGNAL_MAX_VALUE 127					// 2^7 - 1 for 8-bit signed values
-#define NTIMES_CYCLE_THROUGH_RX_SAMPLES_FILE 50	// number of times we cycle through the file containing the received samples
-#define ONE_SECOND 1000000						// one second in microseconds
-#define FLOAT_SIZE (sizeof(float))				// size of the float variable in characters
-
+#define DMA_ACQ_TRANSFER_SIZE 2046  // DMA transfer size for the acquisition
+#define RX_SIGNAL_MAX_VALUE 127     // 2^7 - 1 for 8-bit signed values
+#define NTIMES_CYCLE_THROUGH_RX_SAMPLES_FILE 50 // number of times we cycle through the file containing the received samples
+#define ONE_SECOND 1000000          // one second in microseconds
+#define FLOAT_SIZE (sizeof(float))  // size of the float variable in characters
 
 // thread that reads the file containing the received samples, scales the samples to the dynamic range of the fixed point values, sends
 // the samples to the DMA and finally it stops the top block
-void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block, const char * file_name)
+void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
+        const char * file_name)
 {
-
-    FILE *ptr_myfile; 	// file descriptor
-    int fileLen;		// length of the file containing the received samples
-    int tx_fd;			// DMA descriptor
+    FILE *rx_signal_file; // file descriptor
+    int file_length; // length of the file containing the received samples
+    int dma_descr; // DMA descriptor
 
     // sleep for 1 second to give some time to GNSS-SDR to activate the acquisition module.
     // the acquisition module does not block the RX buffer before activation.
@@ -77,114 +73,102 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block, const char
     // we want for the test
     usleep(ONE_SECOND);
 
-    char *buffer_temp;					// temporary buffer to convert from binary char to float and from float to char
-    signed char *buffer_char;			// temporary buffer to store the samples to be sent to the DMA
-	buffer_temp = (char *)malloc(FLOAT_SIZE);	// allocate space for the temporary buffer
-	if (!buffer_temp)
-		{
-			fprintf(stderr, "Memory error!");
-		}
+    char *buffer_float; // temporary buffer to convert from binary char to float and from float to char
+    signed char *buffer_DMA; // temporary buffer to store the samples to be sent to the DMA
+    buffer_float = (char *) malloc(FLOAT_SIZE); // allocate space for the temporary buffer
+    if (!buffer_float)
+        {
+            fprintf(stderr, "Memory error!");
+        }
 
-    ptr_myfile = fopen(file_name,"rb");	// file containing the received signal
-	if (!ptr_myfile)
-		{
-			printf("Unable to open file!");
-		}
+    rx_signal_file = fopen(file_name, "rb"); // file containing the received signal
+    if (!rx_signal_file)
+        {
+            printf("Unable to open file!");
+        }
 
-	// determine the length of the file that contains the received signal
-	fseek(ptr_myfile, 0, SEEK_END);
-	fileLen = ftell(ptr_myfile);
-	fseek(ptr_myfile, 0, SEEK_SET);
+    // determine the length of the file that contains the received signal
+    fseek(rx_signal_file, 0, SEEK_END);
+    file_length = ftell(rx_signal_file);
+    fseek(rx_signal_file, 0, SEEK_SET);
 
     // first step: check for the maximum value of the received signal
 
-	float max = 0;
-	float *pointer_float;
-	pointer_float = (float *) &buffer_temp[0];
-	for (int k=0;k<fileLen;k=k+FLOAT_SIZE)
-	{
-		fread(buffer_temp, FLOAT_SIZE, 1, ptr_myfile);
+    float max = 0;
+    float *pointer_float;
+    pointer_float = (float *) &buffer_float[0];
+    for (int k = 0; k < file_length; k = k + FLOAT_SIZE)
+        {
+            fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
 
-		if (fabs(pointer_float[0]) > max)
-		{
-			max = (pointer_float[0]);
-		}
+            if (fabs(pointer_float[0]) > max)
+                {
+                    max = (pointer_float[0]);
+                }
+        }
 
-	}
+    // go back to the beginning of the file containing the received samples
+    fseek(rx_signal_file, 0, SEEK_SET);
 
-	// go back to the beginning of the file containing the received samples
-	fseek(ptr_myfile, 0, SEEK_SET);
+    // allocate memory for the samples to be transferred to the DMA
 
-	// allocate memory for the samples to be transferred to the DMA
+    buffer_DMA = (signed char *) malloc(DMA_ACQ_TRANSFER_SIZE);
+    if (!buffer_DMA)
+        {
+            fprintf(stderr, "Memory error!");
+        }
 
-	buffer_char = (signed char *)malloc(DMA_ACQ_TRANSFER_SIZE);
-	if (!buffer_char)
-		{
-			fprintf(stderr, "Memory error!");
-		}
+    // open the DMA descriptor
+    dma_descr = open("/dev/loop_tx", O_WRONLY);
+    if (dma_descr < 0)
+        {
+            printf("can't open loop device\n");
+            exit(1);
+        }
 
-	// open the DMA descriptor
-	tx_fd = open("/dev/loop_tx", O_WRONLY);
-	if ( tx_fd < 0 )
-		{
-			printf("can't open loop device\n");
-			exit(1);
-		}
+    // cycle through the file containing the received samples
 
+    for (int k = 0; k < NTIMES_CYCLE_THROUGH_RX_SAMPLES_FILE; k++)
+        {
+            fseek(rx_signal_file, 0, SEEK_SET);
 
-	// cycle through the file containing the received samples
+            int transfer_size;
+            int num_transferred_samples = 0;
+            while (num_transferred_samples < static_cast<int>((file_length / FLOAT_SIZE)))
+                {
+                    if (((file_length / FLOAT_SIZE) - num_transferred_samples) > DMA_ACQ_TRANSFER_SIZE)
+                        {
+                            transfer_size = DMA_ACQ_TRANSFER_SIZE;
+                            num_transferred_samples = num_transferred_samples + DMA_ACQ_TRANSFER_SIZE;
+                        }
+                    else
+                        {
+                            transfer_size = file_length / FLOAT_SIZE - num_transferred_samples;
+                            num_transferred_samples = file_length / FLOAT_SIZE;
+                        }
 
-	for (int k=0;k<NTIMES_CYCLE_THROUGH_RX_SAMPLES_FILE;k++)
-	{
+                    for (int t = 0; t < transfer_size; t++)
+                        {
+                            fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
 
+                            // specify (float) (int) for a quantization maximizing the dynamic range
+                            buffer_DMA[t] = static_cast<signed char>((pointer_float[0] * (RX_SIGNAL_MAX_VALUE - 1) / max));
+                        }
 
-		fseek(ptr_myfile, 0, SEEK_SET);
+                    //send_acquisition_gps_input_samples(buffer_DMA, transfer_size, dma_descr);
+                    assert(transfer_size == write(dma_descr, &buffer_DMA[0], transfer_size));
+                }
+        }
+    fclose(rx_signal_file);
+    free(buffer_float);
+    free(buffer_DMA);
+    close(dma_descr);
 
-		int transfer_size;
-		int num_transferred_samples = 0;
-		while (num_transferred_samples < (int) (fileLen/FLOAT_SIZE))
-		{
-			if (((fileLen/FLOAT_SIZE) - num_transferred_samples) > DMA_ACQ_TRANSFER_SIZE)
-			{
-
-
-				transfer_size = DMA_ACQ_TRANSFER_SIZE;
-				num_transferred_samples = num_transferred_samples + DMA_ACQ_TRANSFER_SIZE;
-
-			}
-			else
-			{
-				transfer_size = fileLen/FLOAT_SIZE - num_transferred_samples;
-				num_transferred_samples = fileLen/FLOAT_SIZE;
-			}
-
-
-			for (int t=0;t<transfer_size;t++)
-			{
-				fread(buffer_temp, FLOAT_SIZE, 1, ptr_myfile);
-
-				// specify (float) (int) for a quantization maximizing the dynamic range
-				buffer_char[t] = (signed char) ((pointer_float[0]*(RX_SIGNAL_MAX_VALUE - 1))/max);
-
-			}
-
-			//send_acquisition_gps_input_samples(buffer_char, transfer_size, tx_fd);
-			assert( transfer_size == write(tx_fd, &buffer_char[0], transfer_size) );
-		}
-
-	}
-	fclose(ptr_myfile);
-	free(buffer_temp);
-	free(buffer_char);
-	close(tx_fd);
-
-	// when all the samples are sent stop the top block
+    // when all the samples are sent stop the top block
 
     top_block->stop();
-
-
-
 }
+
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTestFpga_msg_rx;
@@ -207,30 +191,34 @@ public:
 
 GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr GpsL1CaPcpsAcquisitionTestFpga_msg_rx_make()
 {
-    return GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr(new GpsL1CaPcpsAcquisitionTestFpga_msg_rx());
+    return GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr(
+            new GpsL1CaPcpsAcquisitionTestFpga_msg_rx());
 }
 
 
 void GpsL1CaPcpsAcquisitionTestFpga_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
-    {
+        {
             long int message = pmt::to_long(msg);
             rx_message = message;
-    }
-    catch(boost::bad_any_cast& e)
-    {
+        }
+    catch (boost::bad_any_cast& e)
+        {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
-    }
+        }
 }
 
 
 GpsL1CaPcpsAcquisitionTestFpga_msg_rx::GpsL1CaPcpsAcquisitionTestFpga_msg_rx() :
-    gr::block("GpsL1CaPcpsAcquisitionTestFpga_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+        gr::block("GpsL1CaPcpsAcquisitionTestFpga_msg_rx",
+                gr::io_signature::make(0, 0, 0),
+                gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CaPcpsAcquisitionTestFpga_msg_rx::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"),
+            boost::bind( &GpsL1CaPcpsAcquisitionTestFpga_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
 
@@ -239,9 +227,7 @@ GpsL1CaPcpsAcquisitionTestFpga_msg_rx::~GpsL1CaPcpsAcquisitionTestFpga_msg_rx()
 {}
 
 
-// ###########################################################
-
-class GpsL1CaPcpsAcquisitionTestFpga: public ::testing::Test
+class GpsL1CaPcpsAcquisitionTestFpga : public ::testing::Test
 {
 protected:
     GpsL1CaPcpsAcquisitionTestFpga()
@@ -272,117 +258,128 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
     std::string signal = "1C";
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
-    config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("Acquisition.item_type", "cshort");
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.coherent_integration_time_ms", "1");
     config->set_property("Acquisition.dump", "false");
-    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition.implementation",
+            "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.001");
     config->set_property("Acquisition.doppler_max", "5000");
     config->set_property("Acquisition.doppler_step", "500");
     config->set_property("Acquisition.repeat_satellite", "false");
     config->set_property("Acquisition.pfa", "0.0");
     config->set_property("Acquisition.select_queue_Fpga", "0");
+    config->set_property("Acquisition.devicename", "/dev/uio0");
 }
-
 
 
 TEST_F(GpsL1CaPcpsAcquisitionTestFpga, Instantiate)
 {
     init();
-    boost::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition = boost::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 1);
+    boost::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition =
+            boost::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 1);
 }
+
 
 TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
 
     double expected_delay_samples = 524;
     double expected_doppler_hz = 1680;
     init();
 
-    std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 1);
+    std::shared_ptr < GpsL1CaPcpsAcquisitionFpga > acquisition =
+            std::make_shared < GpsL1CaPcpsAcquisitionFpga > (config.get(), "Acquisition", 0, 1);
 
     boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTestFpga_msg_rx_make();
 
-    ASSERT_NO_THROW( {
-        acquisition->set_channel(1);
-    }) << "Failure setting channel." << std::endl;
+    ASSERT_NO_THROW(
+                {
+                    acquisition->set_channel(1);
+                })<< "Failure setting channel." << std::endl;
 
-    ASSERT_NO_THROW( {
-        acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro." << std::endl;
+    ASSERT_NO_THROW(
+                {
+                    acquisition->set_gnss_synchro(&gnss_synchro);
+                })<< "Failure setting gnss_synchro." << std::endl;
 
-    ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.1);
-    }) << "Failure setting threshold." << std::endl;
+    ASSERT_NO_THROW(
+                {
+                    acquisition->set_threshold(0.1);
+                })<< "Failure setting threshold." << std::endl;
 
-    ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(10000);
-    }) << "Failure setting doppler_max." << std::endl;
+    ASSERT_NO_THROW(
+                {
+                    acquisition->set_doppler_max(10000);
+                })<< "Failure setting doppler_max." << std::endl;
 
-    ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(250);
-    }) << "Failure setting doppler_step." << std::endl;
+    ASSERT_NO_THROW(
+                {
+                    acquisition->set_doppler_step(250);
+                })<< "Failure setting doppler_step." << std::endl;
 
-    ASSERT_NO_THROW( {
-        acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block." << std::endl;
+    ASSERT_NO_THROW(
+                {
+                    acquisition->connect(top_block);
+                })<< "Failure connecting acquisition to the top_block." << std::endl;
 
     // uncomment the next line to load the file from the current directory
     std::string file = "./GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
 
-	// uncomment the next two lines to load the file from the signal samples subdirectory
+    // uncomment the next two lines to load the file from the signal samples subdirectory
     //std::string path = std::string(TEST_PATH);
     //std::string file = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
 
     const char * file_name = file.c_str();
 
-    ASSERT_NO_THROW( {
-       // for the unit test use dummy blocks to make the flowgraph work and allow the acquisition message to be sent.
-        // in the actual system there is a flowchart running in parallel so this is not needed
+    ASSERT_NO_THROW(
+                {
+                    // for the unit test use dummy blocks to make the flowgraph work and allow the acquisition message to be sent.
+                    // in the actual system there is a flowchart running in parallel so this is not needed
 
-        gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
-        gr::blocks::null_sink::sptr null_sink = gr::blocks::null_sink::make(sizeof(gr_complex));
-        gr::blocks::throttle::sptr throttle_block = gr::blocks::throttle::make(sizeof(gr_complex),1000);
+                    gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
+                    gr::blocks::null_sink::sptr null_sink = gr::blocks::null_sink::make(sizeof(gr_complex));
+                    gr::blocks::throttle::sptr throttle_block = gr::blocks::throttle::make(sizeof(gr_complex),1000);
 
-        top_block->connect(file_source, 0, throttle_block, 0);
-        top_block->connect(throttle_block, 0, null_sink, 0);
-        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+                    top_block->connect(file_source, 0, throttle_block, 0);
+                    top_block->connect(throttle_block, 0, null_sink, 0);
+                    top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+                })<< "Failure connecting the blocks of acquisition test." << std::endl;
 
-    acquisition->set_state(1); 	// Ensure that acquisition starts at the first state
+    acquisition->set_state(1); // Ensure that acquisition starts at the first state
     acquisition->init();
-    top_block->start(); 		// Start the top block
+    top_block->start(); // Start the top block
 
     // start thread that sends the DMA samples to the FPGA
-    boost::thread t3{thread_acquisition_send_rx_samples, top_block, file_name};
+    boost::thread t3
+        { thread_acquisition_send_rx_samples, top_block, file_name };
 
-    EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
-        acquisition->reset();	// launch the tracking process
-        top_block->wait();
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
-    }) << "Failure running the top_block." << std::endl;
+    EXPECT_NO_THROW(
+                {
+                    start = std::chrono::system_clock::now();
+                    acquisition->reset(); // launch the tracking process
+                    top_block->wait();
+                    end = std::chrono::system_clock::now();
+                    elapsed_seconds = end - start;
+                })<< "Failure running the top_block." << std::endl;
 
     t3.join();
 
-    std::cout <<  "Ran GpsL1CaPcpsAcquisitionTestFpga in " << (end - begin) << " microseconds" << std::endl;
+    std::cout << "Ran GpsL1CaPcpsAcquisitionTestFpga in " << elapsed_seconds.count() * 1e6
+              << " microseconds" << std::endl;
 
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = (float)(delay_error_samples * 1023 / 4000);
+    float delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
-
 }
 

@@ -35,8 +35,6 @@
  */
 
 #include "galileo_e5a_telemetry_decoder_cc.h"
-#include <cstdio>
-#include <cstdlib>
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
@@ -52,7 +50,7 @@ using google::LogMessage;
 
 
 galileo_e5a_telemetry_decoder_cc_sptr
-galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
+galileo_e5a_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump)
 {
     return galileo_e5a_telemetry_decoder_cc_sptr(new galileo_e5a_telemetry_decoder_cc(satellite, dump));
 }
@@ -80,10 +78,10 @@ void galileo_e5a_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols
     //create appropriate transition matrices
 
     int *out0, *out1, *state0, *state1;
-    out0 = (int*)calloc( max_states, sizeof(int) );
-    out1 = (int*)calloc( max_states, sizeof(int) );
-    state0 = (int*)calloc( max_states, sizeof(int) );
-    state1 = (int*)calloc( max_states, sizeof(int) );
+    out0 = static_cast<int*>(calloc( max_states, sizeof(int) ));
+    out1 = static_cast<int*>(calloc( max_states, sizeof(int) ));
+    state0 = static_cast<int*>(calloc( max_states, sizeof(int) ));
+    state1 = static_cast<int*>(calloc( max_states, sizeof(int) ));
 
     nsc_transit( out0, state0, 0, g_encoder, KK, nn );
     nsc_transit( out1, state1, 1, g_encoder, KK, nn );
@@ -111,7 +109,7 @@ void galileo_e5a_telemetry_decoder_cc::deinterleaver(int rows, int cols, double 
 }
 
 
-void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int frame_length)
+void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int frame_length)
 {
     double page_symbols_deint[frame_length];
     // 1. De-interleave
@@ -149,36 +147,39 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
     d_nav.split_page(page_String);
     if(d_nav.flag_CRC_test == true)
         {
-            LOG(INFO) << "Galileo CRC correct on channel " << d_channel << " from satellite " << d_satellite;
-            std::cout << "Galileo CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
+            LOG(INFO) << "Galileo E5a CRC correct on channel " << d_channel << " from satellite " << d_satellite;
+            //std::cout << "Galileo E5a CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
         }
     else
         {
-            std::cout << "Galileo CRC error on channel " << d_channel << " from satellite " << d_satellite << std::endl;
-            LOG(INFO)<< "Galileo CRC error on channel " << d_channel << " from satellite " << d_satellite;
+            std::cout << "Galileo E5a CRC error on channel " << d_channel << " from satellite " << d_satellite << std::endl;
+            LOG(INFO)<< "Galileo E5a CRC error on channel " << d_channel << " from satellite " << d_satellite;
         }
 
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
         {
-            std::shared_ptr<Galileo_Ephemeris> tmp_obj= std::make_shared<Galileo_Ephemeris>(d_nav.get_ephemeris());
+            std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_nav.get_ephemeris());
+            std::cout << "New Galileo E5a F/NAV message received: ephemeris from satellite " << d_satellite << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_iono_and_GST() == true)
         {
-            std::shared_ptr<Galileo_Iono> tmp_obj= std::make_shared<Galileo_Iono>(d_nav.get_iono());
+            std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_nav.get_iono());
+            std::cout << "New Galileo E5a F/NAV message received: iono/GST model parameters from satellite " << d_satellite << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_utc_model() == true)
         {
-            std::shared_ptr<Galileo_Utc_Model> tmp_obj= std::make_shared<Galileo_Utc_Model>(d_nav.get_utc_model());
+            std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_nav.get_utc_model());
+            std::cout << "New Galileo E5a F/NAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
-
 }
 
+
 galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
-        Gnss_Satellite satellite, bool dump) : gr::block("galileo_e5a_telemetry_decoder_cc",
+        const Gnss_Satellite & satellite, bool dump) : gr::block("galileo_e5a_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
@@ -227,15 +228,26 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
 
 galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
 {
-    d_dump_file.close();
+    if(d_dump_file.is_open() == true)
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+            }
+        }
 }
 
 
 int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-        gr_vector_const_void_star &input_items,    gr_vector_void_star &output_items)
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    const Gnss_Synchro *in = (const Gnss_Synchro *)  input_items[0]; // input
-    Gnss_Synchro *out = (Gnss_Synchro *) output_items[0];            // output
+    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);           // Get the output buffer pointer
+    const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]); // Get the input buffer pointer
+
     /* Terminology:     Prompt: output from tracking Prompt correlator (Prompt samples)
      *             Symbol: encoded navigation bits. 1 symbol = 20 samples in E5a
      *             Bit: decoded navigation bits forming words as described in Galileo ICD
@@ -293,16 +305,16 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                     d_symbol_counter++;
                     d_prompt_counter = 0;
                     // **** Attempt Preamble correlation ****
-                    bool corr_flag=true;
+                    bool corr_flag = true;
                     int corr_sign = 0; // sequence can be found inverted
                     // check if the preamble starts positive correlated or negative correlated
                     if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS] < 0)    // symbols clipping
                         {
-                            corr_sign=-d_preamble_bits[0];
+                            corr_sign = -d_preamble_bits[0];
                         }
                     else
                         {
-                            corr_sign=d_preamble_bits[0];
+                            corr_sign = d_preamble_bits[0];
                         }
                     // the preamble is fully correlated only if maintains corr_sign along the whole sequence
                     for (int i = 1; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
@@ -310,21 +322,21 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                             if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS + i] < 0 && d_preamble_bits[i]+corr_sign != 0)
                                 {
                                     //exit for
-                                    corr_flag=false;
+                                    corr_flag = false;
                                     break;
                                 }
                             if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS + i] > 0 && d_preamble_bits[i]+corr_sign == 0)
                                 {
                                     //exit for
-                                    corr_flag=false;
+                                    corr_flag = false;
                                     break;
                                 }
                         }
                     //
-                    if (corr_flag==true) // preamble fully correlates
+                    if (corr_flag == true) // preamble fully correlates
                         {
                             d_preamble_index = d_sample_counter - GALILEO_FNAV_CODES_PER_PREAMBLE;//record the preamble sample stamp. Remember correlation appears at the end of the preamble in this design
-                            LOG(INFO) << "Preamble detection for Galileo SAT " << this->d_satellite << std::endl;
+                            LOG(INFO) << "Preamble detection in E5a for Galileo satellite " << this->d_satellite << std::endl;
                             d_symbol_counter = 0; // d_page_symbols start right after preamble and finish at the end of next preamble.
                             d_state = 2; // preamble lock
                         }
@@ -365,11 +377,11 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                             // check if the preamble starts positive correlated or negative correlated
                             if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS] < 0)    // symbols clipping
                                 {
-                                    corr_sign=-d_preamble_bits[0];
+                                    corr_sign = -d_preamble_bits[0];
                                 }
                             else
                                 {
-                                    corr_sign=d_preamble_bits[0];
+                                    corr_sign = d_preamble_bits[0];
                                 }
                             // the preamble is fully correlated only if maintains corr_sign along the whole sequence
                             for (int i = 1; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
@@ -377,18 +389,18 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                                     if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS + i] < 0 && d_preamble_bits[i]+corr_sign != 0)
                                         {
                                             //exit for
-                                            corr_flag=false;
+                                            corr_flag = false;
                                             break;
                                         }
                                     if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS + i] > 0 && d_preamble_bits[i]+corr_sign == 0)
                                         {
                                             //exit for
-                                            corr_flag=false;
+                                            corr_flag = false;
                                             break;
                                         }
                                 }
 
-                            if (corr_flag==true) // NEW PREAMBLE RECEIVED. DECODE PAGE
+                            if (corr_flag == true) // NEW PREAMBLE RECEIVED. DECODE PAGE
                                 {
                                     d_preamble_index = d_sample_counter - GALILEO_FNAV_CODES_PER_PREAMBLE;//record the preamble sample stamp
                                     // DECODE WORD
@@ -402,7 +414,8 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                                                 {
                                                     d_flag_frame_sync = true;
                                                     DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
-                                                            << in[0].Tracking_sample_counter << " [samples]";                                                }
+                                                               << in[0].Tracking_sample_counter << " [samples]";
+                                                }
                                             d_symbol_counter = 0; // d_page_symbols start right after preamble and finish at the end of next preamble.
                                         }
                                     else
@@ -495,14 +508,14 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
             {
-                double tmp_double;
-                unsigned long int tmp_ulong_int;
-                tmp_double = d_TOW_at_current_symbol;
-                d_dump_file.write((char*)&tmp_double, sizeof(double));
-                tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
-                d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
-                tmp_double = d_TOW_at_Preamble;
-                d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    double tmp_double;
+                    unsigned long int tmp_ulong_int;
+                    tmp_double = d_TOW_at_current_symbol;
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                    tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_ulong_int), sizeof(unsigned long int));
+                    tmp_double = d_TOW_at_Preamble;
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }
             catch (const std::ifstream::failure & e)
             {
@@ -517,7 +530,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
 }
 
 
-void galileo_e5a_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
+void galileo_e5a_telemetry_decoder_cc::set_satellite(const Gnss_Satellite & satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;

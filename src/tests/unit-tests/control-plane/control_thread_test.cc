@@ -40,7 +40,6 @@
 #include <sys/msg.h>
 #include <thread>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
 #include <gtest/gtest.h>
@@ -53,7 +52,7 @@
 #include "control_message_factory.h"
 
 
-class Control_Thread_Test: public ::testing::Test
+class ControlThreadTest: public ::testing::Test
 {
 public:
     static int stop_receiver();
@@ -64,7 +63,7 @@ public:
 };
 
 
-int Control_Thread_Test::stop_receiver()
+int ControlThreadTest::stop_receiver()
 {
     message_buffer msg_stop;
     msg_stop.mtype = 1;
@@ -77,7 +76,7 @@ int Control_Thread_Test::stop_receiver()
     while(((msqid_stop = msgget(key_stop, 0644))) == -1){ }
 
     // wait for a couple of seconds
-    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(2));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     // Stop the receiver
     msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
@@ -86,7 +85,7 @@ int Control_Thread_Test::stop_receiver()
 }
 
 
-TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
+TEST_F(ControlThreadTest, InstantiateRunControlMessages)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
@@ -113,7 +112,7 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
     config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.item_type", "gr_complex");
-    config->set_property("PVT.implementation", "Hybrid_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.item_type", "gr_complex");
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
@@ -131,11 +130,11 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
     {
             control_thread->run();
     }
-    catch( boost::exception & e )
+    catch(const boost::exception & e)
     {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
+    catch(const std::exception & ex)
     {
             std::cout  << "STD exception: " << ex.what();
     }
@@ -147,7 +146,7 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
 }
 
 
-TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
+TEST_F(ControlThreadTest, InstantiateRunControlMessages2)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
@@ -173,7 +172,7 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
     config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.item_type", "gr_complex");
-    config->set_property("PVT.implementation", "Hybrid_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.item_type", "gr_complex");
 
     std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
@@ -194,11 +193,11 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
     {
             control_thread2->run();
     }
-    catch( boost::exception & e )
+    catch(const boost::exception & e)
     {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
+    catch(const std::exception & ex)
     {
             std::cout  << "STD exception: " << ex.what();
     }
@@ -211,7 +210,7 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
 
 
 
-TEST_F(Control_Thread_Test, StopReceiverProgrammatically)
+TEST_F(ControlThreadTest, StopReceiverProgrammatically)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
@@ -237,10 +236,10 @@ TEST_F(Control_Thread_Test, StopReceiverProgrammatically)
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
     config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.item_type", "gr_complex");
-    config->set_property("PVT.implementation", "Hybrid_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.item_type", "gr_complex");
 
-    std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
+    std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
     gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
     control_thread->set_control_queue(control_queue);
 
@@ -250,11 +249,11 @@ TEST_F(Control_Thread_Test, StopReceiverProgrammatically)
     {
             control_thread->run();
     }
-    catch( boost::exception & e )
+    catch(const boost::exception & e)
     {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
+    catch(const std::exception & ex)
     {
             std::cout  << "STD exception: " << ex.what();
     }

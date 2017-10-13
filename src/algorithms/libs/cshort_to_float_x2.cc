@@ -54,9 +54,9 @@ int cshort_to_float_x2::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    const lv_16sc_t *in = (const lv_16sc_t *) input_items[0];
-    float *out0 = (float*) output_items[0];
-    float *out1 = (float*) output_items[1];
+    const lv_16sc_t *in = reinterpret_cast<const lv_16sc_t *>(input_items[0]);
+    float *out0 = reinterpret_cast<float *>(output_items[0]);
+    float *out1 = reinterpret_cast<float *>(output_items[1]);
     const float scalar = 1;
     volk_16ic_s32f_deinterleave_32f_x2(out0, out1, in, scalar, noutput_items);
     return noutput_items;

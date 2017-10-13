@@ -469,7 +469,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
                              <<"_" << d_gnss_synchro->Signal << "_sat_"
                              << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                     d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                    d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
+                    d_dump_file.write(reinterpret_cast<char*>(d_ifft->get_outbuf()), n); //write directly |abs(x)|^2 in this Doppler bin?
                     d_dump_file.close();
                 }
         }
@@ -631,7 +631,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
                              << "_" << d_gnss_synchro->Signal << "_sat_"
                              << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                     d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                    d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
+                    d_dump_file.write(reinterpret_cast<char*>(d_ifft->get_outbuf()), n); //write directly |abs(x)|^2 in this Doppler bin?
                     d_dump_file.close();
                 }
         }
@@ -730,10 +730,10 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                     // Fill internal buffer with d_max_dwells signal blocks. This step ensures that
                     // consecutive signal blocks will be processed in multi-dwell operation. This is
                     // essential when d_bit_transition_flag = true.
-                    unsigned int num_dwells = std::min(static_cast<int>(d_max_dwells-d_in_dwell_count), ninput_items[0]);
+                    unsigned int num_dwells = std::min(static_cast<int>(d_max_dwells - d_in_dwell_count), ninput_items[0]);
                     for (unsigned int i = 0; i < num_dwells; i++)
                         {
-                            memcpy(d_in_buffer[d_in_dwell_count++], (gr_complex*)input_items[i],
+                            memcpy(d_in_buffer[d_in_dwell_count++], static_cast<const gr_complex*>(input_items[i]),
                                     sizeof(gr_complex)*d_fft_size);
                             d_sample_counter += d_fft_size;
                             d_sample_counter_buffer.push_back(d_sample_counter);

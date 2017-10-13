@@ -49,6 +49,7 @@ public:
     double doppler_l1_hz[12];
     double acc_carrier_phase_l1_cycles[12];
     double dist_m[12];
+    double true_dist_m[12];
     double carrier_phase_l1_cycles[12];
     double prn[12];
 

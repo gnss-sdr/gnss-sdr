@@ -33,7 +33,7 @@
 #include "rinex_printer.h"
 
 
-TEST(Rinex_Printer_Test, GalileoObsHeader)
+TEST(RinexPrinterTest, GalileoObsHeader)
 {
     std::string line_aux;
     std::string line_str;
@@ -89,7 +89,7 @@ TEST(Rinex_Printer_Test, GalileoObsHeader)
 
 
 
-TEST(Rinex_Printer_Test, MixedObsHeader)
+TEST(RinexPrinterTest, MixedObsHeader)
 {
     std::string line_aux;
     std::string line_aux2;
@@ -133,7 +133,7 @@ TEST(Rinex_Printer_Test, MixedObsHeader)
 }
 
 
-TEST(Rinex_Printer_Test, GalileoObsLog)
+TEST(RinexPrinterTest, GalileoObsLog)
 {
     std::string line_aux;
     std::string line_str;
@@ -158,10 +158,10 @@ TEST(Rinex_Printer_Test, GalileoObsLog)
     gs4.System = *sys.c_str();
 
     std::string sig = "1B";
-    std::memcpy((void*)gs1.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs2.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs3.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs4.Signal, sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs2.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs4.Signal), sig.c_str(), 3);
 
     gs1.PRN = 3;
     gs2.PRN = 8;
@@ -201,7 +201,7 @@ TEST(Rinex_Printer_Test, GalileoObsLog)
 }
 
 
-TEST(Rinex_Printer_Test, GpsObsLogDualBand)
+TEST(RinexPrinterTest, GpsObsLogDualBand)
 {
     std::string line_aux;
     std::string line_str;
@@ -227,12 +227,12 @@ TEST(Rinex_Printer_Test, GpsObsLogDualBand)
     gs4.System = *sys.c_str();
 
     std::string sig = "1C";
-    std::memcpy((void*)gs1.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs2.Signal, sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs2.Signal), sig.c_str(), 3);
 
     sig = "2S";
-    std::memcpy((void*)gs3.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs4.Signal, sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs4.Signal), sig.c_str(), 3);
 
     gs1.PRN = 3;
     gs2.PRN = 8;
@@ -283,7 +283,7 @@ TEST(Rinex_Printer_Test, GpsObsLogDualBand)
 }
 
 
-TEST(Rinex_Printer_Test, GalileoObsLogDualBand)
+TEST(RinexPrinterTest, GalileoObsLogDualBand)
 {
     std::string line_aux;
     std::string line_str;
@@ -309,12 +309,12 @@ TEST(Rinex_Printer_Test, GalileoObsLogDualBand)
     gs4.System = *sys.c_str();
 
     std::string sig = "1B";
-    std::memcpy((void*)gs1.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs2.Signal, sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs2.Signal), sig.c_str(), 3);
 
     sig = "5X";
-    std::memcpy((void*)gs3.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs4.Signal, sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs4.Signal), sig.c_str(), 3);
 
     gs1.PRN = 3;
     gs2.PRN = 8;
@@ -365,7 +365,7 @@ TEST(Rinex_Printer_Test, GalileoObsLogDualBand)
 
 
 
-TEST(Rinex_Printer_Test, MixedObsLog)
+TEST(RinexPrinterTest, MixedObsLog)
 {
     std::string line_aux;
     std::string line_str;
@@ -401,18 +401,18 @@ TEST(Rinex_Printer_Test, MixedObsLog)
     gs8.System = *sys.c_str();
 
     std::string sig = "1C";
-    std::memcpy((void*)gs1.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs2.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs3.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs4.Signal, sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs2.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs4.Signal), sig.c_str(), 3);
 
     sig = "5X";
-    std::memcpy((void*)gs5.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs6.Signal, sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs5.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs6.Signal), sig.c_str(), 3);
 
     sig = "1B";
-    std::memcpy((void*)gs7.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gs8.Signal, sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs7.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs8.Signal), sig.c_str(), 3);
 
     gs1.PRN = 3;
     gs2.PRN = 8;

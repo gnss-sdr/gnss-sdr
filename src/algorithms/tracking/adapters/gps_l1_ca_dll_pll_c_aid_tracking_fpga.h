@@ -9,7 +9,7 @@
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkha user, 2007
+ * Approach, Birkhauser, 2007
  *
  * -------------------------------------------------------------------------
  *
@@ -43,7 +43,6 @@
 #include "tracking_interface.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc.h"
 
-
 class ConfigurationInterface;
 
 /*!
@@ -53,47 +52,47 @@ class GpsL1CaDllPllCAidTrackingFpga : public TrackingInterface
 {
 public:
     GpsL1CaDllPllCAidTrackingFpga(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
+            std::string role, unsigned int in_streams,
             unsigned int out_streams);
 
     virtual ~GpsL1CaDllPllCAidTrackingFpga();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
     // CONVERT TO SOURCE
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
-
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set tracking channel unique ID
      */
-    void set_channel(unsigned int channel);
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
+    void start_tracking() override;
 
-    void start_tracking();
+    void reset(void);
 
 private:
     gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr tracking_fpga_sc;

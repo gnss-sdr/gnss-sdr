@@ -28,16 +28,11 @@
  *
  * -------------------------------------------------------------------------
  */
+
 #include "channel.h"
-//#include <memory>
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
-//#include "channel_interface.h"
-//#include "acquisition_interface.h"
-//#include "tracking_interface.h"
-//#include "telemetry_decoder_interface.h"
 #include "configuration_interface.h"
-//#include "channel_msg_receiver_cc.h"
 
 using google::LogMessage;
 
@@ -56,7 +51,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     channel_ = channel;
     queue_ = queue;
 
-    flag_enable_fpga=configuration->property("Channel.enable_FPGA", false);
+    flag_enable_fpga = configuration->property("Channel.enable_FPGA", false);
     acq_->set_channel(channel_);
     trk_->set_channel(channel_);
     nav_->set_channel(channel_);
@@ -64,6 +59,17 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     gnss_synchro_.Channel_ID = channel_;
     acq_->set_gnss_synchro(&gnss_synchro_);
     trk_->set_gnss_synchro(&gnss_synchro_);
+
+    // Provide a warning to the user about the change of parameter name
+    if(channel_ == 0)
+        {
+            long int deprecation_warning = configuration->property("GNSS-SDR.internal_fs_hz", 0);
+            if(deprecation_warning != 0)
+                {
+                    std::cout << "WARNING: The global parameter name GNSS-SDR.internal_fs_hz has been DEPRECATED." << std::endl;
+                    std::cout << "WARNING: Please replace it by GNSS-SDR.internal_fs_sps in your configuration file." << std::endl;
+                }
+        }
 
     // IMPORTANT: Do not change the order between set_doppler_step and set_threshold
 
@@ -93,14 +99,15 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     gnss_signal_ = Gnss_Signal(implementation_);
 
     channel_msg_rx = channel_msg_receiver_make_cc(&channel_fsm_, repeat_);
-
 }
+
 
 // Destructor
 Channel::~Channel()
 {
     channel_fsm_.terminate();
 }
+
 
 void Channel::connect(gr::top_block_sptr top_block)
 {
@@ -109,22 +116,22 @@ void Channel::connect(gr::top_block_sptr top_block)
             LOG(WARNING) << "channel already connected internally";
             return;
         }
-    if (flag_enable_fpga==false)
-    {
-    	pass_through_->connect(top_block);
-    }
+    if (flag_enable_fpga == false)
+        {
+            pass_through_->connect(top_block);
+        }
     acq_->connect(top_block);
     trk_->connect(top_block);
     nav_->connect(top_block);
 
     //Synchronous ports
-    if (flag_enable_fpga==false)
-    {
-		top_block->connect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
-		DLOG(INFO) << "pass_through_ -> acquisition";
-		top_block->connect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
-		DLOG(INFO) << "pass_through_ -> tracking";
-    }
+    if (flag_enable_fpga == false)
+        {
+            top_block->connect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
+            DLOG(INFO) << "pass_through_ -> acquisition";
+            top_block->connect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
+            DLOG(INFO) << "pass_through_ -> tracking";
+        }
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
@@ -148,17 +155,17 @@ void Channel::disconnect(gr::top_block_sptr top_block)
             return;
         }
 
-    if (flag_enable_fpga==false)
-    {
-		top_block->disconnect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
-		top_block->disconnect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
-    }
+    if (flag_enable_fpga == false)
+        {
+            top_block->disconnect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
+            top_block->disconnect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
+        }
     top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
 
-    if (flag_enable_fpga==false)
-    {
-    	pass_through_->disconnect(top_block);
-    }
+    if (flag_enable_fpga == false)
+        {
+            pass_through_->disconnect(top_block);
+        }
     acq_->disconnect(top_block);
     trk_->disconnect(top_block);
     nav_->disconnect(top_block);
@@ -183,7 +190,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
     gnss_signal_ = gnss_signal;
     std::string str_aux = gnss_signal_.get_signal_str();
     const char * str = str_aux.c_str(); // get a C style null terminated string
-    std::memcpy((void*)gnss_synchro_.Signal, str, 3); // copy string into synchro char array: 2 char + null
+    std::memcpy(static_cast<void*>(gnss_synchro_.Signal), str, 3); // copy string into synchro char array: 2 char + null
     gnss_synchro_.Signal[2] = 0; // make sure that string length is only two characters
     gnss_synchro_.PRN = gnss_signal_.get_satellite().get_PRN();
     gnss_synchro_.System = gnss_signal_.get_satellite().get_system_short().c_str()[0];

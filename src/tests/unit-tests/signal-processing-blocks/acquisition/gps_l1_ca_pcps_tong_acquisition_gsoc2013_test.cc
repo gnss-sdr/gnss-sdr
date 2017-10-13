@@ -32,7 +32,7 @@
 
 
 
-#include <ctime>
+#include <chrono>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/top_block.h>
@@ -167,6 +167,7 @@ protected:
     double Pfa_a = 0.0;
 };
 
+
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::init()
 {
     message = 0;
@@ -181,6 +182,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::init()
     Pfa_p = 0;
     Pfa_a = 0;
 }
+
 
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_1()
 {
@@ -201,7 +203,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_1()
 
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
 
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
 
@@ -251,6 +253,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_1()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_2()
 {
     gnss_synchro.Channel_ID = 0;
@@ -270,7 +273,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_2()
 
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
 
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
 
@@ -338,35 +341,35 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_2()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
     ch_thread = boost::thread(&GpsL1CaPcpsTongAcquisitionGSoC2013Test::wait_message, this);
 }
 
+
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::wait_message()
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     while (!stop)
         {
             acquisition->reset();
 
-            gettimeofday(&tv, NULL);
-            begin = tv.tv_sec *1e6 + tv.tv_usec;
+            start = std::chrono::system_clock::now();
 
             channel_internal_queue.wait_and_pop(message);
 
-            gettimeofday(&tv, NULL);
-            end = tv.tv_sec*1e6 + tv.tv_usec;
+            end = std::chrono::system_clock::now();
+            elapsed_seconds = end - start;
 
-            mean_acq_time_us += (end - begin);
-
+            mean_acq_time_us += elapsed_seconds.count() * 1e6;
             process_message();
         }
 }
+
 
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::process_message()
 {
@@ -375,7 +378,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::process_message()
             detection_counter++;
 
             // The term -5 is here to correct the additional delay introduced by the FIR filter
-            double delay_error_chips = std::abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*1023.0/((double)fs_in*1e-3));
+            double delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 1023.0 / (static_cast<double>(fs_in) * 1e-3));
             double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
             mse_delay += std::pow(delay_error_chips, 2);
@@ -389,16 +392,16 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::process_message()
 
     realization_counter++;
 
-    std::cout << "Progress: " << round((float)realization_counter/num_of_realizations*100) << "% \r" << std::flush;
+    std::cout << "Progress: " << round(static_cast<float>(realization_counter) / static_cast<float>(num_of_realizations) * 100.0) << "% \r" << std::flush;
 
     if (realization_counter == num_of_realizations)
         {
             mse_delay /= num_of_realizations;
             mse_doppler /= num_of_realizations;
 
-            Pd = (double)correct_estimation_counter / (double)num_of_realizations;
-            Pfa_a = (double)detection_counter / (double)num_of_realizations;
-            Pfa_p = (double)(detection_counter-correct_estimation_counter) / (double)num_of_realizations;
+            Pd = static_cast<double>(correct_estimation_counter) / static_cast<double>(num_of_realizations);
+            Pfa_a = static_cast<double>(detection_counter) / static_cast<double>(num_of_realizations);
+            Pfa_p = static_cast<double>(detection_counter - correct_estimation_counter) / static_cast<double>(num_of_realizations);
 
             mean_acq_time_us /= num_of_realizations;
 
@@ -409,10 +412,12 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::process_message()
         }
 }
 
+
 void GpsL1CaPcpsTongAcquisitionGSoC2013Test::stop_queue()
 {
     stop = true;
 }
+
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, Instantiate)
 {
@@ -420,12 +425,12 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, Instantiate)
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
+
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
 {
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
@@ -443,15 +448,15 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1e6 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1e6 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
+
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 {
@@ -529,9 +534,8 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
                 EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
                 if (message == 1)
                     {
-                        EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                        EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                     }
-
             }
             else if (i == 1)
             {
@@ -541,6 +545,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
             ch_thread.join();
         }
 }
+
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {

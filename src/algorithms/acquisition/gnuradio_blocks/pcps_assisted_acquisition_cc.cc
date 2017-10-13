@@ -303,7 +303,7 @@ double pcps_assisted_acquisition_cc::search_maximum()
                      << "_" << d_gnss_synchro->Signal << "_sat_"
                      << d_gnss_synchro->PRN << "_doppler_" <<  d_gnss_synchro->Acq_doppler_hz << ".dat";
             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-            d_dump_file.write((char*)d_grid_data[index_doppler], n); //write directly |abs(x)|^2 in this Doppler bin?
+            d_dump_file.write(reinterpret_cast<char*>(d_grid_data[index_doppler]), n); //write directly |abs(x)|^2 in this Doppler bin?
             d_dump_file.close();
         }
 
@@ -314,7 +314,7 @@ double pcps_assisted_acquisition_cc::search_maximum()
 
 float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items)
 {
-    const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
     // 1- Compute the input signal power estimation
     float* p_tmp_vector = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
@@ -332,7 +332,7 @@ float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_st
 int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
 {
     // initialize acquisition algorithm
-    const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "

@@ -67,7 +67,7 @@ beamformer::~beamformer()
 int beamformer::work(int noutput_items,gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    gr_complex *out = (gr_complex *) output_items[0];
+    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
     // channel output buffers
     //  gr_complex *ch1 = (gr_complex *) input_items[0];
     //  gr_complex *ch2 = (gr_complex *) input_items[1];
@@ -86,7 +86,7 @@ int beamformer::work(int noutput_items,gr_vector_const_void_star &input_items,
             sum = gr_complex(0,0);
             for (int i = 0; i < GNSS_SDR_BEAMFORMER_CHANNELS; i++)
                 {
-                    sum = sum + ((gr_complex*)input_items[i])[n] * weight_vector[i];
+                    sum = sum + (reinterpret_cast<const gr_complex *>(input_items[i]))[n] * weight_vector[i];
                 }
             out[n] = sum;
         }

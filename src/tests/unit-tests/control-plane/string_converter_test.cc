@@ -34,7 +34,7 @@
 
 
 
-TEST(String_Converter_Test, StringToBool)
+TEST(StringConverterTest, StringToBool)
 {
     std::unique_ptr<StringConverter> converter(new StringConverter());
     bool conversion_result = converter->convert("false", true);
@@ -43,7 +43,7 @@ TEST(String_Converter_Test, StringToBool)
 }
 
 
-TEST(String_Converter_Test, StringToSizeT)
+TEST(StringConverterTest, StringToSizeT)
 {
     // Example using a raw pointer
     StringConverter* converter;
@@ -55,9 +55,7 @@ TEST(String_Converter_Test, StringToSizeT)
 }
 
 
-
-
-TEST(String_Converter_Test, StringToBoolFail)
+TEST(StringConverterTest, StringToBoolFail)
 {
     std::unique_ptr<StringConverter> converter(new StringConverter());
     bool conversion_result = converter->convert("lse", true);
@@ -66,9 +64,7 @@ TEST(String_Converter_Test, StringToBoolFail)
 }
 
 
-
-
-TEST(String_Converter_Test, StringToSizeTFail)
+TEST(StringConverterTest, StringToSizeTFail)
 {
     std::unique_ptr<StringConverter> converter(new StringConverter());
     size_t conversion_result = converter->convert("false", 1);

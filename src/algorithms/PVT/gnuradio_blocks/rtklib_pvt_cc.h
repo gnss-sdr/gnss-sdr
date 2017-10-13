@@ -31,7 +31,7 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_CC_H
 #define GNSS_SDR_RTKLIB_PVT_CC_H
 
-#include <ctime>
+#include <chrono>
 #include <fstream>
 #include <utility>
 #include <string>
@@ -143,8 +143,7 @@ private:
         double ttff;
     } ttff_msgbuf;
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
-    struct timeval tv;
-    long long int begin;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
 
 public:
     rtklib_pvt_cc(unsigned int nchannels,

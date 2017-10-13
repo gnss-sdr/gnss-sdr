@@ -38,8 +38,8 @@
 #define GOOGLE_STRIP_LOG 0
 #endif
 
-#include <ctime>
-#include <cstdlib>
+#include <chrono>
+#include <iostream>
 #include <memory>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
             google::InitGoogleLogging(argv[0]);
             if (FLAGS_log_dir.empty())
                 {
-                    std::cout << "Logging will be done at "
+                    std::cout << "Logging will be written at "
                               << boost::filesystem::temp_directory_path()
                               << std::endl
                               << "Use gnss-sdr --log_dir=/path/to/log to change that."
@@ -118,46 +118,73 @@ int main(int argc, char** argv)
                                       << " does not exist, attempting to create it."
                                       << std::endl;
                             boost::system::error_code ec;
-                            boost::filesystem::create_directory(p, ec);
-                            if(ec != 0)
+                            if(!boost::filesystem::create_directory(p, ec))
                                 {
                                     std::cout << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended." << std::endl;
                                     google::ShutDownCommandLineFlags();
-                                    std::exit(0);
+                                    return 1;
                                 }
                         }
-                    std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
+                    std::cout << "Logging will be written at " << FLAGS_log_dir << std::endl;
                 }
         }
 
     std::unique_ptr<ControlThread> control_thread(new ControlThread());
 
     // record startup time
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
     try
     {
             control_thread->run();
     }
-    catch( boost::exception & e )
+    catch(const boost::exception & e)
     {
-            LOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+            if(GOOGLE_STRIP_LOG == 0)
+                {
+                    LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+                }
+            else
+                {
+                    std::cerr << "Boost exception: " << boost::diagnostic_information(e) << std::endl;
+                }
+            google::ShutDownCommandLineFlags();
+            return 1;
     }
-    catch(std::exception const&  ex)
+    catch(const std::exception & ex)
     {
-            LOG(FATAL) << "STD exception: " << ex.what();
+            if(GOOGLE_STRIP_LOG == 0)
+                {
+                    LOG(WARNING) << "C++ Standard Library exception: " << ex.what();
+                }
+            else
+                {
+                    std::cerr << "C++ Standard Library exception: " << ex.what() << std::endl;
+                }
+            google::ShutDownCommandLineFlags();
+            return 1;
     }
     catch(...)
     {
-            LOG(INFO) << "Unexpected catch";
+            if(GOOGLE_STRIP_LOG == 0)
+                {
+                    LOG(WARNING) << "Unexpected catch. This should not happen.";
+                }
+            else
+                {
+                    std::cerr << "Unexpected catch. This should not happen." << std::endl;
+                }
+            google::ShutDownCommandLineFlags();
+            return 1;
     }
+
     // report the elapsed time
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout << "Total GNSS-SDR run time "
-              << (static_cast<double>(end - begin)) / 1000000.0
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+
+    std::cout << "Total GNSS-SDR run time: "
+              << elapsed_seconds.count()
               << " [seconds]" << std::endl;
 
     google::ShutDownCommandLineFlags();

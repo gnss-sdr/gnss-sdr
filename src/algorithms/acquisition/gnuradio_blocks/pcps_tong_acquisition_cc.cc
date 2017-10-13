@@ -280,7 +280,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
             int doppler;
             uint32_t indext = 0;
             float magt = 0.0;
-            const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+            const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
             float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
             d_input_power = 0.0;
             d_mag = 0.0;
@@ -357,7 +357,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                                      <<"_" << d_gnss_synchro->Signal << "_sat_"
                                      << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                            d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
+                            d_dump_file.write(reinterpret_cast<char*>(d_ifft->get_outbuf()), n); //write directly |abs(x)|^2 in this Doppler bin?
                             d_dump_file.close();
                         }
                 }

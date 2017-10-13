@@ -41,9 +41,8 @@
  */
 
 
-#include <ctime>
+#include <chrono>
 #include <iostream>
-#include <boost/chrono.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -150,6 +149,7 @@ protected:
     boost::thread ch_thread;
 };
 
+
 void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
 {
     gnss_synchro.Channel_ID = 0;
@@ -158,7 +158,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 11;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.coherent_integration_time_ms", "4");
@@ -170,6 +170,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
     config->set_property("Acquisition.repeat_satellite", "false");
     config->set_property("Acquisition0.cboc", "true");
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::start_queue()
 {
@@ -186,7 +187,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::wait_message()
                     channel_internal_queue.wait_and_pop(message);
                     stop_queue();
             }
-            catch( boost::exception & e )
+            catch( const boost::exception & e )
             {
                     DLOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
             }
@@ -194,11 +195,11 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::wait_message()
         }
 }
 
+
 void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::stop_queue()
 {
     stop = true;
 }
-
 
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, Instantiate)
@@ -209,13 +210,13 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, Instantiate)
     EXPECT_STREQ("Galileo_E1_PCPS_Ambiguous_Acquisition", acquisition->implementation().c_str());
 }
 
+
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
 {
     int fs_in = 4000000;
     int nsamples = 4*fs_in;
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
@@ -234,20 +235,19 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
+
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
@@ -292,23 +292,23 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         start_queue();
+        acquisition->set_local_code();
         acquisition->init();
         acquisition->reset();
         acquisition->set_state(1);
     }) << "Failure starting acquisition" << std::endl;
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
     stop_queue();
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";
 

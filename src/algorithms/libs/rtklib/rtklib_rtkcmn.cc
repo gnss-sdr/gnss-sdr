@@ -51,12 +51,9 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_rtkcmn.h"
-//#include <stdarg.h>
-//#include <ctype.h>
-#include <cstdio>
+//#include <cstdio>
 #include <dirent.h>
 #include <iostream>
-//#include <time.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -567,13 +564,20 @@ void setcodepri(int sys, int freq, const char *pri)
     trace(3, "setcodepri : sys=%d freq=%d pri=%s\n", sys, freq, pri);
 
     if (freq <= 0 || MAXFREQ<freq) return;
-    if (sys&SYS_GPS) strcpy(codepris[0][freq-1], pri);
-    if (sys&SYS_GLO) strcpy(codepris[1][freq-1], pri);
-    if (sys&SYS_GAL) strcpy(codepris[2][freq-1], pri);
-    if (sys&SYS_QZS) strcpy(codepris[3][freq-1], pri);
-    if (sys&SYS_SBS) strcpy(codepris[4][freq-1], pri);
-    if (sys&SYS_BDS) strcpy(codepris[5][freq-1], pri);
-    if (sys&SYS_IRN) strcpy(codepris[6][freq-1], pri);
+    if(strlen(pri) < 17)
+        {
+            if (sys&SYS_GPS) strcpy(codepris[0][freq-1], pri);
+            if (sys&SYS_GLO) strcpy(codepris[1][freq-1], pri);
+            if (sys&SYS_GAL) strcpy(codepris[2][freq-1], pri);
+            if (sys&SYS_QZS) strcpy(codepris[3][freq-1], pri);
+            if (sys&SYS_SBS) strcpy(codepris[4][freq-1], pri);
+            if (sys&SYS_BDS) strcpy(codepris[5][freq-1], pri);
+            if (sys&SYS_IRN) strcpy(codepris[6][freq-1], pri);
+        }
+    else
+        {
+                trace(1, "pri array is too long");
+        }
 }
 
 
@@ -1163,7 +1167,11 @@ double str2num(const char *s, int i, int n)
     char str[256], *p = str;
 
     if (i<0 || (int)strlen(s)<i || (int)sizeof(str)-1<n) return 0.0;
-    for (s += i; *s && --n >= 0; s++) *p++=*s == 'd' || *s == 'D' ? 'E' : *s; *p = '\0';
+    for (s += i; *s && --n >= 0; s++)
+        {
+            *p++=*s == 'd' || *s == 'D' ? 'E' : *s;
+        }
+    *p = '\0';
     return sscanf(str, "%lf", &value) == 1 ? value : 0.0;
 }
 
@@ -1181,7 +1189,11 @@ int str2time(const char *s, int i, int n, gtime_t *t)
     char str[256], *p = str;
 
     if (i<0 || (int)strlen(s)<i || (int)sizeof(str)-1<i) return -1;
-    for (s += i; *s && --n >= 0;) *p++=*s++; *p = '\0';
+    for (s += i; *s && --n >= 0;)
+        {
+            *p++=*s++;
+        }
+    *p = '\0';
     if (sscanf(str, "%lf %lf %lf %lf %lf %lf", ep, ep+1, ep+2, ep+3, ep+4, ep+5)<6)
         return -1;
     if (ep[0]<100.0) ep[0] += ep[0]<80.0 ? 2000.0 : 1900.0;
@@ -2133,7 +2145,7 @@ int readngspcv(const char *file, pcvs_t *pcvs)
 {
     FILE *fp;
     static const pcv_t pcv0 = {0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} };
-    pcv_t pcv;
+    pcv_t pcv = {0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} };
     double neu[3];
     int n = 0;
     char buff[256];
@@ -2187,7 +2199,7 @@ int readantex(const char *file, pcvs_t *pcvs)
 {
     FILE *fp;
     static const pcv_t pcv0 = {0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} };
-    pcv_t pcv;
+    pcv_t pcv = {0, {}, {}, {0,0}, {0,0}, {{},{}}, {{},{}} };
     double neu[3];
     int i, f, freq = 0, state = 0, freqs[] = {1, 2, 5, 6, 7, 8, 0};
     char buff[256];
@@ -2317,12 +2329,13 @@ pcv_t *searchpcv(int sat, const char *type, gtime_t time,
         const pcvs_t *pcvs)
 {
     pcv_t *pcv;
-    char buff[MAXANT], *types[2], *p;
+    char buff[MAXANT] = "", *types[2], *p;
     int i, j, n = 0;
 
     trace(3, "searchpcv: sat=%2d type=%s\n", sat, type);
 
-    if (sat) { /* search satellite antenna */
+    if (sat)
+        { /* search satellite antenna */
             for (i = 0; i<pcvs->n; i++)
                 {
                     pcv = pcvs->pcv+i;
@@ -2331,10 +2344,14 @@ pcv_t *searchpcv(int sat, const char *type, gtime_t time,
                     if (pcv->te.time != 0 && timediff(pcv->te, time)<0.0) continue;
                     return pcv;
                 }
-    }
+        }
     else
         {
-            strcpy(buff, type);
+            if(strlen(type) < MAXANT +1 ) strcpy(buff, type);
+            else
+                {
+                    trace(1, "type array is too long");
+                }
             for (p = strtok(buff, " "); p && n<2; p = strtok(NULL, " ")) types[n++] = p;
             if (n <= 0) return NULL;
 
@@ -3013,7 +3030,8 @@ void traceopen(const char *file)
 
     reppath(file, path, time, "", "");
     if (!*path || !(fp_trace = fopen(path, "w"))) fp_trace = stderr;
-    strcpy(file_trace, file);
+    if (strlen(file) < 1025) strcpy(file_trace, file);
+    else trace(1, "file array is too long");
     tick_trace = tickget();
     time_trace = time;
     initlock(&lock_trace);
@@ -3224,11 +3242,12 @@ void createdir(const char *path)
     char buff[1024], *p;
     //tracet(3, "createdir: path=%s\n", path);
 
-    strcpy(buff, path);
+    if(strlen(path) < 1025) strcpy(buff, path);
+    else trace(1, "path is too long");
     if (!(p = strrchr(buff, FILEPATHSEP))) return;
     *p = '\0';
 
-    mkdir(buff, 0777);
+    if(mkdir(buff, 0777) != 0) trace(1, "Error creating folder");
 }
 
 
@@ -3246,7 +3265,9 @@ int repstr(char *str, const char *pat, const char *rep)
             r += sprintf(r, "%s", rep);
         }
     if (p <= str) return 0;
-    strcpy(r, p);
+
+    if(strlen(p) < 1025 ) strcpy(r, p);
+    else trace(1, "pat array is too long");
     strcpy(str, buff);
     return 1;
 }
@@ -3934,7 +3955,8 @@ int rtk_uncompress(const char *file, char *uncfile)
 
     trace(3, "rtk_uncompress: file=%s\n", file);
 
-    strcpy(tmpfile, file);
+    if(strlen(file) < 1025) strcpy(tmpfile, file);
+    else trace(1, "file array is too long");
     if (!(p = strrchr(tmpfile, '.'))) return 0;
 
     /* uncompress by gzip */
@@ -3947,10 +3969,10 @@ int rtk_uncompress(const char *file, char *uncfile)
 
             if (execcmd(cmd))
                 {
-                    remove(uncfile);
+                    if(remove(uncfile) != 0) trace(1, "Error removing file");
                     return -1;
                 }
-            strcpy(tmpfile, uncfile);
+            if(strlen(uncfile) < 1025) strcpy(tmpfile, uncfile);
             stat = 1;
         }
     /* extract tar file */
@@ -3966,10 +3988,10 @@ int rtk_uncompress(const char *file, char *uncfile)
             sprintf(cmd, "tar -C \"%s\" -xf \"%s\"", dir, tmpfile);
             if (execcmd(cmd))
                 {
-                    if (stat) remove(tmpfile);
+                    if (stat) if(remove(tmpfile) != 0) trace(1, "Error removing file");
                     return -1;
                 }
-            if (stat) remove(tmpfile);
+            if (stat) if(remove(tmpfile) != 0) trace(1, "Error removing file");
             stat = 1;
         }
     /* extract hatanaka-compressed file by cnx2rnx */
@@ -3982,11 +4004,11 @@ int rtk_uncompress(const char *file, char *uncfile)
 
             if (execcmd(cmd))
                 {
-                    remove(uncfile);
-                    if (stat) remove(tmpfile);
+                    if(remove(uncfile) != 0) trace(1, "Error removing file");
+                    if (stat) if(remove(tmpfile) != 0) trace(1, "Error removing file");
                     return -1;
                 }
-            if (stat) remove(tmpfile);
+            if (stat) if(remove(tmpfile) != 0) trace(1, "Error removing file");
             stat = 1;
         }
     trace(3, "rtk_uncompress: stat=%d\n", stat);
@@ -4005,7 +4027,7 @@ int rtk_uncompress(const char *file, char *uncfile)
 int expath(const char *path, char *paths[], int nmax)
 {
     int i, j, n = 0;
-    char tmp[1024];
+    char tmp[1024] = "";
     struct dirent *d;
     DIR *dp;
     const char *file = path;
@@ -4040,7 +4062,11 @@ int expath(const char *path, char *paths[], int nmax)
                 {
                     if (strcmp(paths[i], paths[j])>0)
                         {
-                            strcpy(tmp, paths[i]);
+                            if(strlen(paths[i]) < 1025) strcpy(tmp, paths[i]);
+                            else
+                                {
+                                    trace(1, "Path is too long");
+                                }
                             strcpy(paths[i], paths[j]);
                             strcpy(paths[j], tmp);
                         }

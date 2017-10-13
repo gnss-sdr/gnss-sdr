@@ -61,7 +61,8 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     float dll_bw_hz;
     float early_late_space_chips;
     item_type = configuration->property(role + ".item_type", default_item_type);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
@@ -70,7 +71,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
-    vector_length = std::round((double)fs_in / ((double)GPS_L2_M_CODE_RATE_HZ / (double)GPS_L2_M_CODE_LENGTH_CHIPS));
+    vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_HZ) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
 
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)

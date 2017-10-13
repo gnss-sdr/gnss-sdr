@@ -16,7 +16,7 @@
 * GNSS-SDR is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+* (at your option) any later version.
 *
 * GNSS-SDR is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -80,8 +80,10 @@ DECLARE_string(log_dir);
 
 #include "unit-tests/signal-processing-blocks/sources/file_signal_source_test.cc"
 #include "unit-tests/signal-processing-blocks/sources/gnss_sdr_valve_test.cc"
+#include "unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc"
 
 #include "unit-tests/signal-processing-blocks/adapter/pass_through_test.cc"
+#include "unit-tests/signal-processing-blocks/adapter/adapter_test.cc"
 
 #include "unit-tests/signal-processing-blocks/filter/fir_filter_test.cc"
 
@@ -99,7 +101,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
-//#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
+
 #if OPENCL_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
 #endif
@@ -108,6 +110,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e5a_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc"
 
 #if CUDA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/tracking/gpu_multicorrelator_test.cc"
@@ -121,6 +124,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rinex_printer_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/nmea_printer_test.cc"
 
 #if EXTRA_TESTS
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l2_m_pcps_acquisition_test.cc"

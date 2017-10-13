@@ -53,11 +53,11 @@
  * -------------------------------------------------------------------------
  */
 
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-
 #include "ini.h"
+#include <cctype>
+#include <fstream>
+#include <string>
+
 
 #define MAX_LINE 200
 #define MAX_SECTION 50
@@ -66,33 +66,36 @@
 /* Strip whitespace chars off end of given string, in place. Return s. */
 static char* rstrip(char* s)
 {
-    char* p = s + strlen(s);
+    char* p = s + std::char_traits<char>::length(s);
     while (p > s && isspace(*--p))
         *p = '\0';
     return s;
 }
 
 /* Return pointer to first non-whitespace char in given string. */
-static char* lskip(const char* s)
+static char* lskip(char* s)
 {
     while (*s && isspace(*s))
         s++;
-    return (char*)s;
+    return static_cast<char*>(s);
 }
 
 /* Return pointer to first char c or ';' in given string, or pointer to
    null at end of string if neither found. */
-static char* find_char_or_comment(const char* s, char c)
+static char* find_char_or_comment(char* s, char c)
 {
     while (*s && *s != c && *s != ';')
         s++;
-    return (char*)s;
+    return static_cast<char*>(s);
 }
 
 /* Version of strncpy that ensures dest (size bytes) is null-terminated. */
 static char* strncpy0(char* dest, const char* src, size_t size)
 {
-    strncpy(dest, src, size);
+    for(unsigned int i = 0; i < size - 1; i++)
+        {
+            dest[i] = src[i];
+        }
     dest[size - 1] = '\0';
     return dest;
 }
@@ -107,70 +110,88 @@ int ini_parse(const char* filename,
     char section[MAX_SECTION] = "";
     char prev_name[MAX_NAME] = "";
 
-    FILE* file;
+    std::ifstream file;
     char* start;
     char* end;
     char* name;
     char* value;
     int lineno = 0;
     int error = 0;
+    std::string line_str;
 
-    file = fopen(filename, "r");
-    if (!file)
+    file.open(filename, std::fstream::in);
+    if (!file.is_open())
         return -1;
 
     /* Scan through file line by line */
-    while (fgets(line, sizeof(line), file) != NULL) {
-        lineno++;
-        start = lskip(rstrip(line));
+    while (std::getline(file, line_str))
+        {
+            lineno++;
+            int len_str = line_str.length();
+            const char * read_line = line_str.data();
+            if (len_str > (MAX_LINE - 1)) len_str = MAX_LINE - 1;
+            int i;
+            for(i = 0; i < len_str; i++)
+                {
+                    line[i] = read_line[i];
+                }
+            line[len_str] = '\0';
+            start = lskip(rstrip(line));
 
 #if INI_ALLOW_MULTILINE
-        if (*prev_name && *start && start > line) {
-            /* Non-black line with leading whitespace, treat as continuation
-               of previous name's value (as per Python ConfigParser). */
-            if (!handler(user, section, prev_name, start) && !error)
-                error = lineno;
-        }
-        else
-#endif
-        if (*start == '[') {
-            /* A "[section]" line */
-            end = find_char_or_comment(start + 1, ']');
-            if (*end == ']') {
-                *end = '\0';
-                strncpy0(section, start + 1, sizeof(section));
-                *prev_name = '\0';
-            }
-            else if (!error) {
-                /* No ']' found on section line */
-                error = lineno;
-            }
-        }
-        else if (*start && *start != ';') {
-            /* Not a comment, must be a name=value pair */
-            end = find_char_or_comment(start, '=');
-            if (*end == '=') {
-                *end = '\0';
-                name = rstrip(start);
-                value = lskip(end + 1);
-                end = find_char_or_comment(value, ';');
-                if (*end == ';')
-                    *end = '\0';
-                rstrip(value);
-
-                /* Valid name=value pair found, call handler */
-                strncpy0(prev_name, name, sizeof(prev_name));
-                if (!handler(user, section, name, value) && !error)
+        if (*prev_name && *start && start > line)
+            {
+                /* Non-black line with leading whitespace, treat as continuation
+                of previous name's value (as per Python ConfigParser). */
+                if (!handler(user, section, prev_name, start) && !error)
                     error = lineno;
             }
-            else if (!error) {
-                /* No '=' found on name=value line */
-                error = lineno;
-            }
-        }
-    }
+        else
+#endif
+            if (*start == '[')
+                {
+                    /* A "[section]" line */
+                    end = find_char_or_comment(start + 1, ']');
+                    if (*end == ']')
+                        {
+                            *end = '\0';
+                            strncpy0(section, start + 1, sizeof(section));
+                            *prev_name = '\0';
+                        }
+                    else if (!error)
+                        {
+                            /* No ']' found on section line */
+                            error = lineno;
+                        }
+                }
+            else if (*start && *start != ';')
+                {
+                    /* Not a comment, must be a name=value pair */
+                    end = find_char_or_comment(start, '=');
+                    if (*end == '=')
+                        {
+                            *end = '\0';
+                            name = rstrip(start);
+                            value = lskip(end + 1);
+                            end = find_char_or_comment(value, ';');
+                            if (*end == ';')
+                                *end = '\0';
+                            rstrip(value);
 
-    fclose(file);
+                            /* Valid name=value pair found, call handler */
+                            strncpy0(prev_name, name, sizeof(prev_name));
+                            if (!handler(user, section, name, value) && !error)
+                                error = lineno;
+                        }
+                    else if (!error)
+                        {
+                            /* No '=' found on name=value line */
+                            error = lineno;
+                        }
+                }
+        }
+
+    file.close();
 
     return error;
 }

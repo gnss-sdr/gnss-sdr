@@ -364,6 +364,7 @@ int Pvt_Solution::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb
     return 0;
 }
 
+
 int Pvt_Solution::topocent(double *Az, double *El, double *D, const arma::vec & x, const arma::vec & dx)
 {
     /*  Transformation of vector dx into topocentric coordinate
@@ -474,7 +475,7 @@ int Pvt_Solution::compute_DOP()
             d_VDOP = sqrt(DOP_ENU(2, 2));                                // VDOP
             d_TDOP = sqrt(d_Q(3, 3));                                    // TDOP
     }
-    catch(std::exception& ex)
+    catch(const std::exception & ex)
     {
             d_GDOP = -1; // Geometric DOP
             d_PDOP = -1; // PDOP
@@ -483,26 +484,28 @@ int Pvt_Solution::compute_DOP()
             d_TDOP = -1; // TDOP
     }
     return 0;
-
 }
 
 
-
-
-int Pvt_Solution::set_averaging_depth(int depth)
+void Pvt_Solution::set_averaging_depth(int depth)
 {
     d_averaging_depth = depth;
-    return 0;
 }
 
 
-int Pvt_Solution::pos_averaging(bool flag_averaring)
+void Pvt_Solution::set_averaging_flag(bool flag)
+{
+    d_flag_averaging = flag;
+}
+
+
+void Pvt_Solution::perform_pos_averaging()
 {
     // MOVING AVERAGE PVT
-    bool avg = flag_averaring;
+    bool avg = d_flag_averaging;
     if (avg == true)
         {
-            if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
+            if (d_hist_longitude_d.size() == static_cast<unsigned int>(d_averaging_depth))
                 {
                     // Pop oldest value
                     d_hist_longitude_d.pop_back();
@@ -545,6 +548,313 @@ int Pvt_Solution::pos_averaging(bool flag_averaring)
         {
             b_valid_position = true;
         }
-    return 0;
 }
 
+
+double Pvt_Solution::get_time_offset_s() const
+{
+    return d_rx_dt_s;
+}
+
+
+void Pvt_Solution::set_time_offset_s(double offset)
+{
+    d_rx_dt_s = offset;
+}
+
+
+double Pvt_Solution::get_latitude() const
+{
+    return d_latitude_d;
+}
+
+
+double Pvt_Solution::get_longitude() const
+{
+    return d_longitude_d;
+}
+
+
+double Pvt_Solution::get_height() const
+{
+    return d_height_m;
+}
+
+
+double Pvt_Solution::get_avg_latitude() const
+{
+    return d_avg_latitude_d;
+}
+
+
+double Pvt_Solution::get_avg_longitude() const
+{
+    return d_avg_longitude_d;
+}
+
+
+double Pvt_Solution::get_avg_height() const
+{
+    return d_avg_height_m;
+}
+
+
+bool Pvt_Solution::is_averaging() const
+{
+    return d_flag_averaging;
+}
+
+bool Pvt_Solution::is_valid_position() const
+{
+    return b_valid_position;
+}
+
+
+void Pvt_Solution::set_valid_position(bool is_valid)
+{
+    b_valid_position = is_valid;
+}
+
+
+void Pvt_Solution::set_rx_pos(const arma::vec & pos)
+{
+    d_rx_pos = pos;
+    d_latitude_d = d_rx_pos(0);
+    d_longitude_d = d_rx_pos(1);
+    d_height_m = d_rx_pos(2);
+}
+
+
+arma::vec Pvt_Solution::get_rx_pos() const
+{
+    return d_rx_pos;
+}
+
+
+boost::posix_time::ptime Pvt_Solution::get_position_UTC_time() const
+{
+    return d_position_UTC_time;
+}
+
+
+void Pvt_Solution::set_position_UTC_time(const boost::posix_time::ptime & pt)
+{
+    d_position_UTC_time = pt;
+}
+
+
+int Pvt_Solution::get_num_valid_observations() const
+{
+    return d_valid_observations;
+}
+
+
+void Pvt_Solution::set_num_valid_observations(int num)
+{
+    d_valid_observations = num;
+}
+
+
+bool Pvt_Solution::set_visible_satellites_ID(size_t index, unsigned int prn)
+{
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Setting sat ID to channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return false;
+        }
+    else
+        {
+            if(prn >= PVT_MAX_PRN)
+                {
+                    LOG(WARNING) << "Setting to channel " << index << " a PRN of " << prn << " (the maximum is " << PVT_MAX_PRN << ")";
+                    return false;
+                }
+            else
+                {
+                    d_visible_satellites_IDs[index] = prn;
+                    return true;
+                }
+        }
+}
+
+
+unsigned int Pvt_Solution::get_visible_satellites_ID(size_t index) const
+{
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting sat ID for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return 0;
+        }
+    else
+        {
+            return d_visible_satellites_IDs[index];
+        }
+}
+
+
+bool Pvt_Solution::set_visible_satellites_El(size_t index, double el)
+{
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Setting sat elevation for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return false;
+        }
+    else
+        {
+            if(el > 90.0)
+                {
+                    LOG(WARNING) << "Setting a sat elevation > 90 [degrees]. Saturating to 90";
+                    d_visible_satellites_El[index] = 90.0;
+                }
+            else
+                {
+                    if(el < -90.0)
+                        {
+                            LOG(WARNING) << "Setting a sat elevation < -90 [degrees]. Saturating to -90";
+                            d_visible_satellites_El[index] = -90.0;
+                        }
+                    else
+                        {
+                            d_visible_satellites_El[index] = el;
+                        }
+                }
+            return true;
+        }
+}
+
+
+double Pvt_Solution::get_visible_satellites_El(size_t index) const
+{
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting sat elevation for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return 0.0;
+        }
+    else
+        {
+            return d_visible_satellites_El[index];
+        }
+}
+
+
+bool Pvt_Solution::set_visible_satellites_Az(size_t index, double az)
+{
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting sat azimuth for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return false;
+        }
+    else
+        {
+            d_visible_satellites_Az[index] = az;
+            return true;
+        }
+}
+
+
+double Pvt_Solution::get_visible_satellites_Az(size_t index) const
+{
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting sat azimuth for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return 0.0;
+        }
+    else
+        {
+            return d_visible_satellites_Az[index];
+        }
+}
+
+
+bool Pvt_Solution::set_visible_satellites_Distance(size_t index, double dist)
+{
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Setting sat distance for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return false;
+        }
+    else
+        {
+            d_visible_satellites_Distance[index] = dist;
+            return true;
+        }
+}
+
+
+double Pvt_Solution::get_visible_satellites_Distance(size_t index) const
+{
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting sat distance for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return 0.0;
+        }
+    else
+        {
+            return d_visible_satellites_Distance[index];
+        }
+}
+
+
+bool Pvt_Solution::set_visible_satellites_CN0_dB(size_t index, double cn0)
+{
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Setting sat Cn0 for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return false;
+        }
+    else
+        {
+            d_visible_satellites_CN0_dB[index] = cn0;
+            return true;
+        }
+}
+
+
+double Pvt_Solution::get_visible_satellites_CN0_dB(size_t index) const
+{
+    if(index >= PVT_MAX_CHANNELS)
+        {
+            LOG(WARNING) << "Getting received CN0 for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
+            return 0.0;
+        }
+    else
+        {
+            return d_visible_satellites_CN0_dB[index];
+        }
+}
+
+
+void Pvt_Solution::set_Q(const arma::mat & Q)
+{
+    d_Q = Q;
+}
+
+
+double Pvt_Solution::get_GDOP() const
+{
+    return d_GDOP;
+}
+
+
+double Pvt_Solution::get_PDOP() const
+{
+    return d_PDOP;
+}
+
+
+double Pvt_Solution::get_HDOP() const
+{
+    return d_HDOP;
+}
+
+
+double Pvt_Solution::get_VDOP() const
+{
+    return d_VDOP;
+}
+
+
+double Pvt_Solution::get_TDOP() const
+{
+    return d_TDOP;
+}

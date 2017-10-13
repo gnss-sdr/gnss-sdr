@@ -89,10 +89,14 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_resamplerfastpuppet_16ic, volk_gnsssdr_16ic_resampler_fast_16ic, test_params))
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_resamplerfastxnpuppet_16ic, volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn, test_params))
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_resamplerxnpuppet_16ic, volk_gnsssdr_16ic_xn_resampler_16ic_xn, test_params))
+        (VOLK_INIT_PUPP(volk_gnsssdr_16i_resamplerxnpuppet_16i, volk_gnsssdr_16i_xn_resampler_16i_xn, test_params))
         (VOLK_INIT_PUPP(volk_gnsssdr_32fc_resamplerxnpuppet_32fc, volk_gnsssdr_32fc_xn_resampler_32fc_xn, test_params))
+        (VOLK_INIT_PUPP(volk_gnsssdr_32f_resamplerxnpuppet_32f, volk_gnsssdr_32f_xn_resampler_32f_xn, test_params))
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic, volk_gnsssdr_16ic_x2_dot_prod_16ic_xn, test_params))
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic, volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn, test_params_int16))
+        (VOLK_INIT_PUPP(volk_gnsssdr_16ic_16i_rotator_dotprodxnpuppet_16ic, volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn, test_params_int16))
         (VOLK_INIT_PUPP(volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc, volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn, test_params_int1))
+        (VOLK_INIT_PUPP(volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc, volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn, test_params_int1))
         ;
 
     return test_cases;

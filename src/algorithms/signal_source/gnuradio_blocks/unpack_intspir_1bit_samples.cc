@@ -55,8 +55,8 @@ int unpack_intspir_1bit_samples::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    const signed int *in = (const signed int *)input_items[0];
-    float *out = (float*)output_items[0];
+    const signed int *in = reinterpret_cast<const signed int *>(input_items[0]);
+    float *out = reinterpret_cast<float*>(output_items[0]);
 
     int n = 0;
     int channel = 1;

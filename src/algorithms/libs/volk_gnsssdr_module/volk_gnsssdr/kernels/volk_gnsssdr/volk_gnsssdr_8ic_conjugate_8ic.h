@@ -59,6 +59,37 @@
 
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_8ic_conjugate_8ic_u_avx2(lv_8sc_t* cVector, const lv_8sc_t* aVector, unsigned int num_points)
+{
+    const unsigned int avx2_iters = num_points / 16;
+    unsigned int i;
+    lv_8sc_t* c = cVector;
+    const lv_8sc_t* a = aVector;
+
+    __m256i tmp;
+    __m256i conjugator = _mm256_setr_epi8(1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1);
+
+    for (i = 0; i < avx2_iters; ++i)
+        {
+            tmp = _mm256_loadu_si256((__m256i*)a);
+            tmp = _mm256_sign_epi8(tmp, conjugator);
+            _mm256_storeu_si256((__m256i*)c, tmp);
+
+            a += 16;
+            c += 16;
+        }
+
+    for (i = avx2_iters * 16; i < num_points; ++i)
+        {
+            *c++ = lv_conj(*a++);
+        }
+}
+#endif /* LV_HAVE_AVX2 */
+
+
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
 
@@ -215,6 +246,37 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_avx(lv_8sc_t* cVector, const
         }
 }
 #endif /* LV_HAVE_AVX */
+
+
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_8ic_conjugate_8ic_a_avx2(lv_8sc_t* cVector, const lv_8sc_t* aVector, unsigned int num_points)
+{
+    const unsigned int avx2_iters = num_points / 16;
+    unsigned int i;
+    lv_8sc_t* c = cVector;
+    const lv_8sc_t* a = aVector;
+
+    __m256i tmp;
+    __m256i conjugator = _mm256_setr_epi8(1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1);
+
+    for (i = 0; i < avx2_iters; ++i)
+        {
+            tmp = _mm256_load_si256((__m256i*)a);
+            tmp = _mm256_sign_epi8(tmp, conjugator);
+            _mm256_store_si256((__m256i*)c, tmp);
+
+            a += 16;
+            c += 16;
+        }
+
+    for (i = avx2_iters * 16; i < num_points; ++i)
+        {
+            *c++ = lv_conj(*a++);
+        }
+}
+#endif /* LV_HAVE_AVX2 */
 
 
 #ifdef LV_HAVE_SSSE3

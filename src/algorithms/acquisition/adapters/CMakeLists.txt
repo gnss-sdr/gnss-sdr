@@ -19,7 +19,6 @@
 
 set(ACQ_ADAPTER_SOURCES
     gps_l1_ca_pcps_acquisition.cc
-    gps_l1_ca_pcps_multithread_acquisition.cc
     gps_l1_ca_pcps_assisted_acquisition.cc
     gps_l1_ca_pcps_acquisition_fine_doppler.cc
     gps_l1_ca_pcps_tong_acquisition.cc
@@ -42,7 +41,7 @@ if(OPENCL_FOUND)
 endif(OPENCL_FOUND)
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver

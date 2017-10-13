@@ -30,15 +30,11 @@
  * -------------------------------------------------------------------------
  */
 
-
-#include <exception>
-#include <cstring>
-#include <ctime>
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/wait.h>
 #include <unistd.h>
+#include <chrono>
+#include <exception>
+#include <iostream>
+#include <string>
 #include <armadillo>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -183,17 +179,17 @@ public:
     std::string p4;
     std::string p5;
 
-    const int baseband_sampling_freq = FLAGS_fs_gen_hz;
+    const int baseband_sampling_freq = FLAGS_fs_gen_sps;
 
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
 
     int configure_generator();
     int generate_signal();
-    void check_results(arma::vec true_time_s,
-            arma::vec true_value,
-            arma::vec meas_time_s,
-            arma::vec meas_value);
+    void check_results(arma::vec & true_time_s,
+            arma::vec & true_value,
+            arma::vec & meas_time_s,
+            arma::vec & meas_value);
 
     GpsL1CATelemetryDecoderTest()
     {
@@ -214,6 +210,7 @@ public:
     Gnss_Synchro gnss_synchro;
     size_t item_size;
 };
+
 
 int GpsL1CATelemetryDecoderTest::configure_generator()
 {
@@ -267,7 +264,7 @@ void GpsL1CATelemetryDecoderTest::configure_receiver()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = FLAGS_test_satellite_PRN;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(baseband_sampling_freq));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
 
     // Set Tracking
     config->set_property("Tracking_1C.item_type", "gr_complex");
@@ -279,24 +276,29 @@ void GpsL1CATelemetryDecoderTest::configure_receiver()
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
 
     config->set_property("TelemetryDecoder_1C.dump","true");
-    config->set_property("TelemetryDecoder_1C.decimation_factor","1");
-
 }
 
-void GpsL1CATelemetryDecoderTest::check_results(arma::vec true_time_s,
-        arma::vec true_value,
-        arma::vec meas_time_s,
-        arma::vec meas_value)
+
+void GpsL1CATelemetryDecoderTest::check_results(arma::vec & true_time_s,
+        arma::vec & true_value,
+        arma::vec & meas_time_s,
+        arma::vec & meas_value)
 {
     //1. True value interpolation to match the measurement times
-
     arma::vec true_value_interp;
+    arma::uvec true_time_s_valid = find(true_time_s > 0);
+    true_time_s = true_time_s(true_time_s_valid);
+    true_value = true_value(true_time_s_valid);
+    arma::uvec meas_time_s_valid = find(meas_time_s > 0);
+    meas_time_s = meas_time_s(meas_time_s_valid);
+    meas_value = meas_value(meas_time_s_valid);
+
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
     arma::vec err;
 
-    err = meas_value - true_value_interp;
+    err = meas_value - true_value_interp + 0.001;
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
@@ -309,13 +311,14 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec true_time_s,
     double min_error = arma::min(err);
 
     //5. report
-
+    std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TLM TOW RMSE="
               << rmse << ", mean=" << error_mean
               << ", stdev=" << sqrt(error_var)
               << " (max,min)=" << max_error
               << "," << min_error
               << " [Seconds]" << std::endl;
+    std::cout.precision (ss);
 
     ASSERT_LT(rmse, 0.2E-6);
     ASSERT_LT(error_mean, 0.2E-6);
@@ -325,20 +328,20 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec true_time_s,
     ASSERT_GT(min_error, -0.5E-6);
 }
 
+
 TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 {
     // Configure the signal generator
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    if (FLAGS_disable_generator==false)
-    {
-        generate_signal();
-    }
+    if (FLAGS_disable_generator == false)
+        {
+            generate_signal();
+        }
 
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     configure_receiver();
 
@@ -411,11 +414,10 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     tracking->start_tracking();
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
     }) << "Failure running the top_block." << std::endl;
 
     //check results
@@ -459,7 +461,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     epoch_counter = 0;
     while(tlm_dump.read_binary_obs())
     {
-        tlm_timestamp_s(epoch_counter) = (double)tlm_dump.Tracking_sample_counter/(double)baseband_sampling_freq;
+        tlm_timestamp_s(epoch_counter) = static_cast<double>(tlm_dump.Tracking_sample_counter) / static_cast<double>(baseband_sampling_freq);
         tlm_TOW_at_Preamble(epoch_counter) = tlm_dump.d_TOW_at_Preamble;
         tlm_tow_s(epoch_counter) = tlm_dump.TOW_at_current_symbol;
         epoch_counter++;
@@ -467,12 +469,12 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     //Cut measurement initial transitory of the measurements
     arma::uvec initial_meas_point = arma::find(tlm_tow_s >= true_tow_s(0), 1, "first");
-
+    ASSERT_EQ(initial_meas_point.is_empty(), false);
     tlm_timestamp_s = tlm_timestamp_s.subvec(initial_meas_point(0), tlm_timestamp_s.size() - 1);
     tlm_tow_s = tlm_tow_s.subvec(initial_meas_point(0), tlm_tow_s.size() - 1);
 
     check_results(true_timestamp_s, true_tow_s, tlm_timestamp_s, tlm_tow_s);
 
-    std::cout <<  "Test completed in " << (end - begin) << " microseconds" << std::endl;
+    std::cout <<  "Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 

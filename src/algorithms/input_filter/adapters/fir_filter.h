@@ -70,24 +70,27 @@ public:
 
     //! Destructor
     virtual ~FirFilter();
-    std::string role()
+
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Fir_Filter"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Fir_Filter";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return 0;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     gr::filter::fir_filter_ccf::sptr fir_filter_ccf_;
@@ -114,7 +117,6 @@ private:
     gr::blocks::float_to_short::sptr float_to_short_1_;
     gr::blocks::float_to_short::sptr float_to_short_2_;
     short_x2_to_cshort_sptr short_x2_to_cshort_;
-
 };
 
 #endif

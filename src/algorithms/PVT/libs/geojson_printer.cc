@@ -31,16 +31,15 @@
 
 
 #include "geojson_printer.h"
-#include <ctime>
 #include <iomanip>
 #include <sstream>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 
 GeoJSON_Printer::GeoJSON_Printer()
 {
     first_pos = true;
 }
-
 
 
 GeoJSON_Printer::~GeoJSON_Printer ()
@@ -51,41 +50,39 @@ GeoJSON_Printer::~GeoJSON_Printer ()
 
 bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
 {
-    time_t rawtime;
-    struct tm * timeinfo;
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
+    boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
+    tm timeinfo = boost::posix_time::to_tm(pt);
 
     if (time_tag_name)
         {
             std::stringstream strm0;
-            const int year = timeinfo->tm_year - 100;
+            const int year = timeinfo.tm_year - 100;
             strm0 << year;
-            const int month = timeinfo->tm_mon + 1;
+            const int month = timeinfo.tm_mon + 1;
             if(month < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << month;
-            const int day = timeinfo->tm_mday;
+            const int day = timeinfo.tm_mday;
             if(day < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << day << "_";
-            const int hour = timeinfo->tm_hour;
+            const int hour = timeinfo.tm_hour;
             if(hour < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << hour;
-            const int min = timeinfo->tm_min;
+            const int min = timeinfo.tm_min;
             if(min < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << min;
-            const int sec = timeinfo->tm_sec;
+            const int sec = timeinfo.tm_sec;
             if(sec < 10)
                 {
                     strm0 << "0";
@@ -131,7 +128,6 @@ bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
 }
 
 
-
 bool GeoJSON_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values)
 {
     double latitude;
@@ -142,15 +138,15 @@ bool GeoJSON_Printer::print_position(const std::shared_ptr<Pvt_Solution>& positi
 
     if (print_average_values == false)
         {
-            latitude = position_->d_latitude_d;
-            longitude = position_->d_longitude_d;
-            height = position_->d_height_m;
+            latitude = position_->get_latitude();
+            longitude = position_->get_longitude();
+            height = position_->get_height();
         }
     else
         {
-            latitude = position_->d_avg_latitude_d;
-            longitude = position_->d_avg_longitude_d;
-            height = position_->d_avg_height_m;
+            latitude = position_->get_avg_latitude();
+            longitude = position_->get_avg_longitude();
+            height = position_->get_avg_height();
         }
 
     if (geojson_file.is_open())
@@ -172,7 +168,6 @@ bool GeoJSON_Printer::print_position(const std::shared_ptr<Pvt_Solution>& positi
             return false;
         }
 }
-
 
 
 bool GeoJSON_Printer::close_file()

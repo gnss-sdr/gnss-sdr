@@ -34,7 +34,7 @@
 #include "rtcm.h"
 #include "Galileo_E1.h"
 
-TEST(Rtcm_Test, Hex_to_bin)
+TEST(RtcmTest, HexToBin)
 {
     auto rtcm = std::make_shared<Rtcm>();
 
@@ -64,7 +64,7 @@ TEST(Rtcm_Test, Hex_to_bin)
 }
 
 
-TEST(Rtcm_Test, Bin_to_hex)
+TEST(RtcmTest, BinToHex)
 {
     auto rtcm = std::make_shared<Rtcm>();
 
@@ -99,7 +99,7 @@ TEST(Rtcm_Test, Bin_to_hex)
 
 
 
-TEST(Rtcm_Test, Hex_to_int)
+TEST(RtcmTest, HexToInt)
 {
     auto rtcm = std::make_shared<Rtcm>();
 
@@ -110,7 +110,7 @@ TEST(Rtcm_Test, Hex_to_int)
 }
 
 
-TEST(Rtcm_Test, Hex_to_uint)
+TEST(RtcmTest, HexToUint)
 {
     auto rtcm = std::make_shared<Rtcm>();
     long unsigned int expected1 = 42;
@@ -118,7 +118,7 @@ TEST(Rtcm_Test, Hex_to_uint)
 }
 
 
-TEST(Rtcm_Test, Bin_to_double)
+TEST(RtcmTest, BinToDouble)
 {
     auto rtcm = std::make_shared<Rtcm>();
 
@@ -135,7 +135,7 @@ TEST(Rtcm_Test, Bin_to_double)
 }
 
 
-TEST(Rtcm_Test, Bin_to_uint)
+TEST(RtcmTest, BinToUint)
 {
     auto rtcm = std::make_shared<Rtcm>();
     long unsigned int expected1 = 42;
@@ -145,17 +145,17 @@ TEST(Rtcm_Test, Bin_to_uint)
 }
 
 
-TEST(Rtcm_Test, Bin_to_int)
+TEST(RtcmTest, BinToInt)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    long unsigned int expected1 = 42;
+    long int expected1 = 42;
     EXPECT_EQ(expected1, rtcm->bin_to_int("00101010"));
-    long unsigned int expected2 = -42;
+    long int expected2 = -42;
     EXPECT_EQ(expected2, rtcm->bin_to_int("11010110"));
 }
 
 
-TEST(Rtcm_Test, Bin_to_binary_data)
+TEST(RtcmTest, BinToBinaryData)
 {
     auto rtcm = std::make_shared<Rtcm>();
     std::string bin_str("1101101011010110");
@@ -171,7 +171,7 @@ TEST(Rtcm_Test, Bin_to_binary_data)
 }
 
 
-TEST(Rtcm_Test, Check_CRC)
+TEST(RtcmTest, CheckCRC)
 {
     auto rtcm = std::make_shared<Rtcm>();
     bool expected_true = true;
@@ -186,7 +186,7 @@ TEST(Rtcm_Test, Check_CRC)
 }
 
 
-TEST(Rtcm_Test, MT1001)
+TEST(RtcmTest, MT1001)
 {
     auto rtcm = std::make_shared<Rtcm>();
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
@@ -198,7 +198,7 @@ TEST(Rtcm_Test, MT1001)
 
     std::string sig = "1C";
     gnss_synchro.System = *sys.c_str();
-    std::memcpy((void*)gnss_synchro.Signal, sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro.Signal), sig.c_str(), 3);
     gnss_synchro.Pseudorange_m = 20000000.0;
     double obs_time = 25.0;
     std::map<int, Gnss_Synchro> pseudoranges;
@@ -209,7 +209,7 @@ TEST(Rtcm_Test, MT1001)
 }
 
 
-TEST(Rtcm_Test, MT1005)
+TEST(RtcmTest, MT1005)
 {
     auto rtcm = std::make_shared<Rtcm>();
     std::string reference_msg = rtcm->print_MT1005_test();
@@ -232,7 +232,7 @@ TEST(Rtcm_Test, MT1005)
     EXPECT_EQ(expected_false, glonass);
     EXPECT_EQ(expected_false, galileo);
 
-    EXPECT_EQ(2003, ref_id);
+    EXPECT_EQ(static_cast<unsigned int>(2003), ref_id);
     EXPECT_DOUBLE_EQ(1114104.5999, ecef_x);
     EXPECT_DOUBLE_EQ(-4850729.7108, ecef_y);
     EXPECT_DOUBLE_EQ(3975521.4643, ecef_z);
@@ -246,15 +246,14 @@ TEST(Rtcm_Test, MT1005)
     EXPECT_EQ(expected_false, glonass);
     EXPECT_EQ(expected_false, galileo);
 
-    EXPECT_EQ(2003, ref_id);
+    EXPECT_EQ(static_cast<unsigned int>(2003), ref_id);
     EXPECT_DOUBLE_EQ(1114104.5999, ecef_x);
     EXPECT_DOUBLE_EQ(-4850729.7108, ecef_y);
     EXPECT_DOUBLE_EQ(3975521.4643, ecef_z);
 }
 
 
-
-TEST(Rtcm_Test, MT1019)
+TEST(RtcmTest, MT1019)
 {
     auto rtcm = std::make_shared<Rtcm>();
     bool expected_true = true;
@@ -269,7 +268,7 @@ TEST(Rtcm_Test, MT1019)
     std::string tx_msg = rtcm->print_MT1019(gps_eph);
 
     EXPECT_EQ(0, rtcm->read_MT1019(tx_msg, gps_eph_read));
-    EXPECT_EQ(3, gps_eph_read.i_satellite_PRN);
+    EXPECT_EQ(static_cast<unsigned int>(3), gps_eph_read.i_satellite_PRN);
     EXPECT_DOUBLE_EQ(4, gps_eph_read.d_IODC);
     EXPECT_DOUBLE_EQ( 2.0 * E_LSB, gps_eph_read.d_e_eccentricity);
     EXPECT_EQ(expected_true, gps_eph_read.b_fit_interval_flag);
@@ -277,7 +276,7 @@ TEST(Rtcm_Test, MT1019)
 }
 
 
-TEST(Rtcm_Test, MT1029)
+TEST(RtcmTest, MT1029)
 {
     auto rtcm = std::make_shared<Rtcm>();
     std::string s_test("UTF-8 проверка wörter");
@@ -295,7 +294,7 @@ TEST(Rtcm_Test, MT1029)
 }
 
 
-TEST(Rtcm_Test, MT1045)
+TEST(RtcmTest, MT1045)
 {
     auto rtcm = std::make_shared<Rtcm>();
     bool expected_true = true;
@@ -312,12 +311,12 @@ TEST(Rtcm_Test, MT1045)
     EXPECT_EQ(0, rtcm->read_MT1045(tx_msg, gal_eph_read));
     EXPECT_EQ(expected_true, gal_eph_read.E5a_DVS);
     EXPECT_DOUBLE_EQ( 53.0 * OMEGA_dot_3_LSB, gal_eph_read.OMEGA_dot_3);
-    EXPECT_EQ(5, gal_eph_read.i_satellite_PRN);
+    EXPECT_EQ(static_cast<unsigned int>(5), gal_eph_read.i_satellite_PRN);
     EXPECT_EQ(1, rtcm->read_MT1045(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gal_eph_read));
 }
 
 
-TEST(Rtcm_Test, MSMCell)
+TEST(RtcmTest, MSMCell)
 {
     auto rtcm = std::make_shared<Rtcm>();
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
@@ -349,11 +348,11 @@ TEST(Rtcm_Test, MSMCell)
     gnss_synchro4.System = *gal.c_str();
     gnss_synchro5.System = *gps.c_str();
 
-    std::memcpy((void*)gnss_synchro.Signal, x5.c_str(), 3);
-    std::memcpy((void*)gnss_synchro2.Signal, s2.c_str(), 3);
-    std::memcpy((void*)gnss_synchro3.Signal, c1.c_str(), 3);
-    std::memcpy((void*)gnss_synchro4.Signal, x5.c_str(), 3);
-    std::memcpy((void*)gnss_synchro5.Signal, c1.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro.Signal), x5.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro2.Signal), s2.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro3.Signal), c1.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro4.Signal), x5.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro5.Signal), c1.c_str(), 3);
 
     gnss_synchro.Pseudorange_m = 20000000.0;
     gnss_synchro2.Pseudorange_m = 20001010.0;
@@ -420,7 +419,7 @@ TEST(Rtcm_Test, MSMCell)
     Gnss_Synchro gnss_synchro6;
     gnss_synchro6.PRN = 10;
     gnss_synchro6.System = *gps.c_str();
-    std::memcpy((void*)gnss_synchro6.Signal, s2.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro6.Signal), s2.c_str(), 3);
     gnss_synchro6.Pseudorange_m = 24000000.0;
 
     std::map<int, Gnss_Synchro> pseudoranges3;
@@ -446,7 +445,7 @@ TEST(Rtcm_Test, MSMCell)
 }
 
 
-TEST(Rtcm_Test, MSM1)
+TEST(RtcmTest, MSM1)
 {
     auto rtcm = std::make_shared<Rtcm>();
     bool expected_true = true;
@@ -473,10 +472,10 @@ TEST(Rtcm_Test, MSM1)
     gnss_synchro3.System = *sys.c_str();
     gnss_synchro4.System = *sys.c_str();
 
-    std::memcpy((void*)gnss_synchro.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gnss_synchro2.Signal, sig.c_str(), 3);
-    std::memcpy((void*)gnss_synchro3.Signal, sig2.c_str(), 3);
-    std::memcpy((void*)gnss_synchro4.Signal, sig2.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro2.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro3.Signal), sig2.c_str(), 3);
+    std::memcpy(static_cast<void*>(gnss_synchro4.Signal), sig2.c_str(), 3);
 
     gnss_synchro.Pseudorange_m = 20000000.0;
     gnss_synchro2.Pseudorange_m = 20001010.0;
@@ -561,7 +560,7 @@ TEST(Rtcm_Test, MSM1)
 }
 
 
-TEST(Rtcm_Test, InstantiateServer)
+TEST(RtcmTest, InstantiateServer)
 {
     auto rtcm = std::make_shared<Rtcm>();
     rtcm->run_server();
@@ -585,7 +584,7 @@ TEST(Rtcm_Test, InstantiateServer)
 }
 
 
-TEST(Rtcm_Test, InstantiateServerWithoutClosing)
+TEST(RtcmTest, InstantiateServerWithoutClosing)
 {
     auto rtcm = std::make_shared<Rtcm>();
     rtcm->run_server();

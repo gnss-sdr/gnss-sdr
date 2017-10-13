@@ -752,8 +752,8 @@ int rtksvrstart(rtksvr_t *svr, int cycle, int buffsize, int *strs,
             init_rtcm(svr->rtcm+i);
 
             /* set receiver and rtcm option */
-            strcpy(svr->raw [i].opt, rcvopts[i]);
-            strcpy(svr->rtcm[i].opt, rcvopts[i]);
+            if(strlen(rcvopts[i]) < 256 ) strcpy(svr->raw [i].opt, rcvopts[i]);
+            if(strlen(rcvopts[i]) < 256 ) strcpy(svr->rtcm[i].opt, rcvopts[i]);
 
             /* connect dgps corrections */
             svr->rtcm[i].dgps = svr->nav.dgps;

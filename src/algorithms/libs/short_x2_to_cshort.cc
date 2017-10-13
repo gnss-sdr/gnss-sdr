@@ -54,9 +54,9 @@ int short_x2_to_cshort::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    const short *in0 = (const short *) input_items[0];
-    const short *in1 = (const short *) input_items[1];
-    lv_16sc_t *out = (lv_16sc_t *) output_items[0];
+    const short *in0 = reinterpret_cast<const short *>(input_items[0]);
+    const short *in1 = reinterpret_cast<const short *>(input_items[1]);
+    lv_16sc_t *out = reinterpret_cast<lv_16sc_t *>(output_items[0]);
     // This could be put into a volk kernel
     short real_part;
     short imag_part;

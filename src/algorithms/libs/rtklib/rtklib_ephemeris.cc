@@ -92,7 +92,7 @@ double var_uraeph(int ura)
             2.4, 3.4, 4.85, 6.85, 9.65, 13.65, 24.0, 48.0, 96.0, 192.0, 384.0, 768.0, 1536.0,
             3072.0, 6144.0
     };
-    return ura < 0 || 15 < ura ? std::pow(6144.0, 2.0) : std::pow(ura_value[ura], 2.0);
+    return ura < 0 || 14 < ura ? std::pow(6144.0, 2.0) : std::pow(ura_value[ura], 2.0);
 }
 
 

@@ -20,7 +20,6 @@
 set(ACQ_GR_BLOCKS_SOURCES
     pcps_acquisition_cc.cc
     pcps_acquisition_sc.cc
-    pcps_multithread_acquisition_cc.cc
     pcps_assisted_acquisition_cc.cc
     pcps_acquisition_fine_doppler_cc.cc
     pcps_tong_acquisition_cc.cc
@@ -39,7 +38,7 @@ if(OPENCL_FOUND)
 endif(OPENCL_FOUND)
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
@@ -67,7 +66,11 @@ add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS}) 
 #target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES}
 #target_link_libraries(acq_gr_blocks acquisition_lib gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES})
-target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES})
+if(ENABLE_FPGA)
+	target_link_libraries(acq_gr_blocks acquisition_lib gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES})
+else(ENABLE_FPGA)
+	target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES})
+endif(ENABLE_FPGA)
 if(NOT VOLK_GNSSSDR_FOUND)
     add_dependencies(acq_gr_blocks volk_gnsssdr_module)
 endif(NOT VOLK_GNSSSDR_FOUND)

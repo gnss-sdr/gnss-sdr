@@ -194,7 +194,8 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     int num_bands = 0;
     if ((gps_1C_count > 0) || (gal_1B_count > 0)) num_bands = 1;
     if (((gps_1C_count > 0) || (gal_1B_count > 0)) && (gps_2S_count > 0) ) num_bands = 2;
-    if (((gps_1C_count > 0) || (gal_1B_count > 0)) && (gps_2S_count > 0) && ((gal_E5a_count > 0) || (gal_E5a_count > 0))) num_bands = 3;
+    if (((gps_1C_count > 0) || (gal_1B_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0)) ) num_bands = 2;
+    if (((gps_1C_count > 0) || (gal_1B_count > 0)) && (gps_2S_count > 0) && ((gal_E5a_count > 0) || (gal_E5b_count > 0))) num_bands = 3;
     int number_of_frequencies = configuration->property(role + ".num_bands", num_bands); /* (1:L1, 2:L1+L2, 3:L1+L2+L5) */
     if( (number_of_frequencies < 1) || (number_of_frequencies > 3) )
         {
@@ -382,7 +383,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             iono_model,      /* ionosphere option (IONOOPT_XXX) */
             trop_model,      /* troposphere option (TROPOPT_XXX) */
             dynamics_model,  /* dynamics model (0:none, 1:velocity, 2:accel) */
-            earth_tide,   /* earth tide correction (0:off,1:solid,2:solid+otl+pole) */
+            earth_tide,      /* earth tide correction (0:off,1:solid,2:solid+otl+pole) */
             number_filter_iter,   /* number of filter iteration */
             0,   /* code smoothing window size (0:none) */
             0,   /* interpolate reference obs (for post mission) */
@@ -446,7 +447,7 @@ bool RtklibPvt::save_assistance_to_XML()
                     ofs.close();
                     LOG(INFO) << "Saved GPS L1 Ephemeris map data";
                 }
-            catch (std::exception& e)
+            catch (const std::exception & e)
                 {
                     LOG(WARNING) << e.what();
                     return false;

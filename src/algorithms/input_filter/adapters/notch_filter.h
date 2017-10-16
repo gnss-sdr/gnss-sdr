@@ -1,8 +1,9 @@
 /*!
- * \file pulse_blanking_filter.h
- * \brief Instantiates the GNSS-SDR pulse blanking filter
- * \author Javier Arribas 2017
- *         Antonio Ramos  2017
+ * \file notch_filter.h
+ * \brief Adapter of a multistate Notch filter
+ * \author Antonio Ramos, 2017. antonio.ramosdet(at)gmail.com
+ *
+ * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -29,59 +30,55 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PULSE_BLANKING_FILTER_H_
-#define GNSS_SDR_PULSE_BLANKING_FILTER_H_
+#ifndef GNSS_SDR_NOTCH_FILTER_H_
+#define GNSS_SDR_NOTCH_FILTER_H_
 
 #include <string>
 #include <vector>
 #include <gnuradio/blocks/file_sink.h>
 #include "gnss_block_interface.h"
-#include "pulse_blanking_cc.h"
+#include "notch_cc.h"
+
 
 class ConfigurationInterface;
 
-class PulseBlankingFilter: public GNSSBlockInterface
+class NotchFilter: public GNSSBlockInterface
 {
 public:
-    PulseBlankingFilter(ConfigurationInterface* configuration,
+    NotchFilter(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams);
 
-    virtual ~PulseBlankingFilter();
-
-    inline std::string role() override
+    virtual ~NotchFilter();
+    std::string role()
     {
         return role_;
     }
 
-    //! Returns "Pulse_Blanking_Filter"
-    inline std::string implementation() override
+    //! Returns "Notch_Filter"
+    std::string implementation()
     {
-        return "Pulse_Blanking_Filter";
+        return "Notch_Filter";
     }
-
-    inline size_t item_size() override
+    size_t item_size()
     {
         return 0;
     }
-
-    void connect(gr::top_block_sptr top_block) override;
-    void disconnect(gr::top_block_sptr top_block) override;
-    gr::basic_block_sptr get_left_block() override;
-    gr::basic_block_sptr get_right_block() override;
-
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
+    
 private:
-    ConfigurationInterface* config_;
+    
     bool dump_;
     std::string dump_filename_;
-    std::string input_item_type_;
-    size_t input_size_;
-    std::string output_item_type_;
     std::string role_;
+    std::string item_type_;
     unsigned int in_streams_;
     unsigned int out_streams_;
     gr::blocks::file_sink::sptr file_sink_;
-    pulse_blanking_cc_sptr pulse_blanking_cc_;
+    notch_sptr notch_filter_;
 };
 
-#endif // GNSS_SDR_PULSE_BLANKING_FILTER_H_
+#endif //GNSS_SDR_NOTCH_FILTER_H_

@@ -1,8 +1,8 @@
 /*!
  * \file pulse_blanking_cc.h
- * \brief Implements a simple pulse blanking algorithm
+ * \brief Implements a pulse blanking algorithm
  * \author Javier Arribas (jarribas(at)cttc.es)
- *
+ *         Antonio Ramos  (antonio.ramosdet(at)gmail.com)
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
@@ -38,22 +38,33 @@ class pulse_blanking_cc;
 
 typedef boost::shared_ptr<pulse_blanking_cc> pulse_blanking_cc_sptr;
 
-pulse_blanking_cc_sptr make_pulse_blanking_cc(double Pfa);
+pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset);
 
-/*!
- * \brief This class adapts a short (16-bits) interleaved sample stream
- * into a std::complex<short> stream
- */
+
 class pulse_blanking_cc : public gr::block
 {
 private:
-    friend pulse_blanking_cc_sptr make_pulse_blanking_cc(double Pfa);
-    double d_Pfa;
+    
+    int length_;
+    int n_segments;
+    int n_segments_est;
+    int n_segments_reset;
+    int n_deg_fred;
+    bool last_filtered;
+    float noise_power_estimation;
+    float thres_;
+    float pfa;
+    gr_complex* zeros_;
+    
 public:
-    pulse_blanking_cc(double Pfa);
+    
+    pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset);
+    
+    ~pulse_blanking_cc();
 
     int general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    
 };
 
 #endif

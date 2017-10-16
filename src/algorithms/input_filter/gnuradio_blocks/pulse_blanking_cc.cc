@@ -59,7 +59,7 @@ pulse_blanking_cc::pulse_blanking_cc(float pfa, int length_, int n_segments_est,
     this->n_segments_est = n_segments_est;
     this->n_segments_reset = n_segments_reset;
     noise_power_estimation = 0.0;
-    n_deg_fred = 2*length_;
+    n_deg_fred = 2 * length_;
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa));
     zeros_ = static_cast<gr_complex *>(volk_malloc(length_ * sizeof(gr_complex), volk_get_alignment()));
@@ -90,19 +90,19 @@ int pulse_blanking_cc::general_work (int noutput_items __attribute__((unused)), 
             volk_32f_accumulator_s32f(&segment_energy, (magnitude + sample_index), length_);
             if((n_segments < n_segments_est) && (last_filtered == false))
                 {
-                    noise_power_estimation = (((float) n_segments) * noise_power_estimation + segment_energy / ((float)n_deg_fred)) / ((float)(n_segments + 1));
-                    memcpy(out, in, sizeof(gr_complex)*length_);
+                    noise_power_estimation = ( static_cast<float>(n_segments) * noise_power_estimation + segment_energy / static_cast<float>(n_deg_fred) ) / static_cast<float>(n_segments + 1);
+                    memcpy(out, in, sizeof(gr_complex) * length_);
                 }
             else
                 {
-                    if((segment_energy/noise_power_estimation) > thres_)
+                    if((segment_energy / noise_power_estimation) > thres_)
                         {
-                            memcpy(out, zeros_, sizeof(gr_complex)*length_);
+                            memcpy(out, zeros_, sizeof(gr_complex) * length_);
                             last_filtered = true;
                         }
                     else
                         {
-                            memcpy(out, in, sizeof(gr_complex)*length_);
+                            memcpy(out, in, sizeof(gr_complex) * length_);
                             last_filtered = false;
                             if (n_segments > n_segments_reset)
                                 {
@@ -110,9 +110,9 @@ int pulse_blanking_cc::general_work (int noutput_items __attribute__((unused)), 
                                 }
                         }
                 }
-            in+=length_;
-            out+=length_;
-            sample_index+=length_;
+            in += length_;
+            out += length_;
+            sample_index += length_;
             n_segments++;
         }
     volk_free(magnitude);

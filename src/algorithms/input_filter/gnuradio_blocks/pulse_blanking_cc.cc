@@ -52,7 +52,6 @@ pulse_blanking_cc::pulse_blanking_cc(float pfa, int length_, int n_segments_est,
     set_alignment(std::max(1, alignment_multiple));
     this->pfa = pfa;
     this->length_ = length_;
-    set_output_multiple(length_);
     last_filtered = false;
     n_segments = 0;
     this->n_segments_est = n_segments_est;
@@ -71,6 +70,14 @@ pulse_blanking_cc::pulse_blanking_cc(float pfa, int length_, int n_segments_est,
 pulse_blanking_cc::~pulse_blanking_cc()
 {
     volk_free(zeros_);    
+}
+
+void pulse_blanking_cc::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
+{
+    for(unsigned int aux=0; aux < ninput_items_required.size(); aux++)
+    {
+        ninput_items_required[aux] = length_;
+    }
 }
 
 int pulse_blanking_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),

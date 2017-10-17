@@ -88,6 +88,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/filter/fir_filter_test.cc"
 #include "unit-tests/signal-processing-blocks/filter/pulse_blanking_filter_test.cc"
 #include "unit-tests/signal-processing-blocks/filter/notch_filter_test.cc"
+#include "unit-tests/signal-processing-blocks/filter/notch_filter_lite_test.cc"
 
 #include "unit-tests/signal-processing-blocks/resampler/direct_resampler_conditioner_cc_test.cc"
 

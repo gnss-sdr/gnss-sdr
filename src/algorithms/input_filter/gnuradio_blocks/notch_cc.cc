@@ -84,7 +84,7 @@ Notch::~Notch()
 }
 
 
-int Notch::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
+int Notch::general_work(int noutput_items, gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     int index_out = 0;
@@ -94,9 +94,6 @@ int Notch::general_work(int noutput_items __attribute__((unused)), gr_vector_int
     const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]);
     gr_complex* out = reinterpret_cast<gr_complex *>(output_items[0]);
 
-    gr_complex* in_aux = static_cast<gr_complex *>(volk_malloc(ninput_items[0] * sizeof(gr_complex), volk_get_alignment()));
-    memcpy(in_aux, in, ninput_items[0] * sizeof(gr_complex));
-
     in++;
     arma::cx_fvec signal_segment;
     arma::cx_fvec signal_segment_fft;
@@ -104,7 +101,7 @@ int Notch::general_work(int noutput_items __attribute__((unused)), gr_vector_int
         {
             if((n_segments < n_segments_est) && (filter_state_ == false))
                 {
-                    signal_segment = arma::cx_fvec(in_aux, length_, false, false);
+                    signal_segment = arma::cx_fvec(in, length_);
                     signal_segment_fft = arma::fft(signal_segment);
                     volk_32fc_s32f_power_spectrum_32f(power_spect, signal_segment_fft.memptr(), 1.0, length_);
                     volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect, 15.0, length_);
@@ -146,7 +143,6 @@ int Notch::general_work(int noutput_items __attribute__((unused)), gr_vector_int
             in += length_;
             out += length_;
         }
-    volk_free(in_aux);
     consume_each(index_out);
     return index_out;
 }

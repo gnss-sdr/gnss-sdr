@@ -29,6 +29,7 @@
  *
  * -------------------------------------------------------------------------
  */
+
 #ifndef GNSS_SDR_RTL_TCP_DONGLE_INFO_H
 #define GNSS_SDR_RTL_TCP_DONGLE_INFO_H
 
@@ -38,9 +39,16 @@
  * \brief This class represents the dongle information
  * which is sent by rtl_tcp.
  */
-class rtl_tcp_dongle_info {
-  public:
-    enum {
+class rtl_tcp_dongle_info
+{
+private:
+    char magic_[4];
+    uint32_t tuner_type_;
+    uint32_t tuner_gain_count_;
+
+public:
+    enum
+    {
         TUNER_UNKNOWN = 0,
         TUNER_E4000,
         TUNER_FC0012,
@@ -50,28 +58,23 @@ class rtl_tcp_dongle_info {
         TUNER_R828D
     };
 
-  private:
-    char magic_[4];
-    uint32_t tuner_type_;
-    uint32_t tuner_gain_count_;
+    rtl_tcp_dongle_info();
 
-  public:
-    rtl_tcp_dongle_info ();
+    boost::system::error_code read(boost::asio::ip::tcp::socket &socket);
 
-    boost::system::error_code read (
-        boost::asio::ip::tcp::socket &socket);
+    bool is_valid() const;
 
-    bool is_valid () const;
+    const char *get_type_name() const;
 
-    const char *get_type_name () const;
+    double clip_gain(int gain) const;
 
-    double clip_gain (int gain) const;
-
-    inline uint32_t get_tuner_type () const {
+    inline uint32_t get_tuner_type() const
+    {
         return tuner_type_;
     }
 
-    inline uint32_t get_tuner_gain_count () const {
+    inline uint32_t get_tuner_gain_count() const
+    {
         return tuner_gain_count_;
     }
 };

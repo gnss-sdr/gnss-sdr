@@ -38,7 +38,6 @@
 #include <volk/volk.h>
 #include <iostream>
 #include <glog/logging.h>
-#include <armadillo>
 
 using google::LogMessage;
 
@@ -72,6 +71,7 @@ Notch::Notch(float pfa, float p_c_factor, int length_, int n_segments_est, int n
     angle_ = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
     power_spect = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
     last_out = gr_complex(0,0);
+    d_fft = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(length_, true));
 }
 
 
@@ -99,17 +99,14 @@ int Notch::general_work(int noutput_items, gr_vector_int &ninput_items __attribu
     lv_32fc_t dot_prod_;
     const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]);
     gr_complex* out = reinterpret_cast<gr_complex *>(output_items[0]);
-
     in++;
-    arma::cx_fvec signal_segment;
-    arma::cx_fvec signal_segment_fft;
     while((index_out + length_) < noutput_items)
         {
             if((n_segments < n_segments_est) && (filter_state_ == false))
                 {
-                    signal_segment = arma::cx_fvec(in, length_);
-                    signal_segment_fft = arma::fft(signal_segment);
-                    volk_32fc_s32f_power_spectrum_32f(power_spect, signal_segment_fft.memptr(), 1.0, length_);
+                    memcpy(d_fft->get_inbuf(), in, sizeof(gr_complex) * length_);
+                    d_fft->execute();
+                    volk_32fc_s32f_power_spectrum_32f(power_spect, d_fft->get_outbuf(), 1.0, length_);
                     volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect, 15.0, length_);
                     sig2lin = std::pow(10.0, (sig2dB / 10.0)) / (static_cast<float>(n_deg_fred) );
                     noise_pow_est = (static_cast<float>(n_segments) * noise_pow_est + sig2lin) / (static_cast<float>(n_segments + 1));

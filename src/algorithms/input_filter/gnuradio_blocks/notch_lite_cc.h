@@ -33,6 +33,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
+#include <gnuradio/fft/fft.h>
+#include <memory>
 
 class NotchLite;
 
@@ -67,6 +69,7 @@ private:
     float angle1;
     float angle2;
     float* power_spect;
+    std::unique_ptr<gr::fft::fft_complex> d_fft;
     
 public:
         

@@ -33,6 +33,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
+#include <gnuradio/fft/fft.h>
+#include <memory>
 
 class NotchLite;
 
@@ -67,12 +69,15 @@ private:
     float angle1;
     float angle2;
     float* power_spect;
+    std::unique_ptr<gr::fft::fft_complex> d_fft;
     
 public:
         
     NotchLite(float p_c_factor, float pfa, int length_, int n_segments_est, int n_segments_reset, int n_segments_coeff);
     
     ~NotchLite();
+    
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
     
     int general_work (int noutput_items, gr_vector_int &ninput_items, 
                       gr_vector_const_void_star &input_items,

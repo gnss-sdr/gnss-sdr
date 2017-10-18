@@ -60,7 +60,6 @@ Notch::Notch(float pfa, float p_c_factor, int length_, int n_segments_est, int n
     noise_pow_est = 0.0;
     this->p_c_factor = gr_complex(p_c_factor , 0);
     this->length_ = length_; //Set the number of samples per segment
-    set_output_multiple(length_);
     filter_state_ = false; //Initial state of the filter
     n_deg_fred = 2 * length_; //Number of dregrees of freedom
     n_segments = 0; 
@@ -83,6 +82,13 @@ Notch::~Notch()
     volk_free(power_spect);
 }
 
+void Notch::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
+{
+    for(unsigned int aux = 0; aux < ninput_items_required.size(); aux++)
+        {
+            ninput_items_required[aux] = length_;
+        }
+}
 
 int Notch::general_work(int noutput_items, gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)

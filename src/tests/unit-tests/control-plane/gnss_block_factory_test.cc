@@ -155,6 +155,45 @@ TEST(GNSSBlockFactoryTest, InstantiateFreqXlatingFIRFilter)
     EXPECT_STREQ("Freq_Xlating_Fir_Filter", input_filter->implementation().c_str());
 }
 
+TEST(GNSSBlockFactoryTest, InstantiatePulseBlankingFilter)
+{
+    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    configuration->set_property("InputFilter.implementation", "Pulse_Blanking_Filter");
+    
+    std::unique_ptr<GNSSBlockFactory> factory;
+    std::unique_ptr<GNSSBlockInterface> input_filter = factory->GetBlock(configuration, "InputFilter", "Pulse_Blanking_Filter", 1, 1);
+
+    EXPECT_STREQ("InputFilter", input_filter->role().c_str());
+    EXPECT_STREQ("Pulse_Blanking_Filter", input_filter->implementation().c_str());
+}
+
+TEST(GNSSBlockFactoryTest, InstantiateNotchFilter)
+{
+    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    configuration->set_property("InputFilter.implementation", "Notch_Filter");
+    
+    std::unique_ptr<GNSSBlockFactory> factory;
+    std::unique_ptr<GNSSBlockInterface> input_filter = factory->GetBlock(configuration, "InputFilter", "Notch_Filter", 1, 1);
+
+    EXPECT_STREQ("InputFilter", input_filter->role().c_str());
+    EXPECT_STREQ("Notch_Filter", input_filter->implementation().c_str());
+}
+
+TEST(GNSSBlockFactoryTest, InstantiateNotchFilterLite)
+{
+    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    configuration->set_property("InputFilter.implementation", "Notch_Filter_Lite");
+    
+    std::unique_ptr<GNSSBlockFactory> factory;
+    std::unique_ptr<GNSSBlockInterface> input_filter = factory->GetBlock(configuration, "InputFilter", "Notch_Filter_Lite", 1, 1);
+
+    EXPECT_STREQ("InputFilter", input_filter->role().c_str());
+    EXPECT_STREQ("Notch_Filter_Lite", input_filter->implementation().c_str());
+}
+
 TEST(GNSSBlockFactoryTest, InstantiateDirectResampler)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();

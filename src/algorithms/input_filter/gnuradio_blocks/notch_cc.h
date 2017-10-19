@@ -33,6 +33,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
+#include <gnuradio/fft/fft.h>
+#include <memory>
 
 class Notch;
 
@@ -64,12 +66,15 @@ private:
     gr_complex* c_samples;
     float* angle_;
     float* power_spect;
+    std::unique_ptr<gr::fft::fft_complex> d_fft;
     
 public:
         
     Notch(float pfa, float p_c_factor, int length_, int n_segments_est, int n_segments_reset);
     
     ~Notch();
+    
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
     
     int general_work (int noutput_items, gr_vector_int &ninput_items, 
                       gr_vector_const_void_star &input_items,

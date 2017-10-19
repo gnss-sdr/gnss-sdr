@@ -29,15 +29,13 @@
  */
 
 #include "notch_cc.h"
-#include <boost/math/distributions/chi_squared.hpp>
-#include <cmath>
-#include <complex>
-#include <cstdio>
 #include <cstring>
+#include <cmath>
+#include <boost/math/distributions/chi_squared.hpp>
+#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include <iostream>
-#include <glog/logging.h>
+
 
 using google::LogMessage;
 

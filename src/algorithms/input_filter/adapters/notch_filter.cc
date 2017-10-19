@@ -30,11 +30,7 @@
  */
 
 #include "notch_filter.h"
-#include <string>
-#include <memory>
-#include <vector>
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/blocks/file_sink.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
 #include "notch_cc.h"
@@ -78,8 +74,7 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
         }
     else
         {
-            LOG(WARNING) << item_type_
-                                  << " unrecognized item type for notch filter";
+            LOG(WARNING) << item_type_ << " unrecognized item type for notch filter";
             item_size_ = sizeof(gr_complex);
         }
     if (dump_)
@@ -90,8 +85,10 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
         }
 }
 
+
 NotchFilter::~NotchFilter()
 {}
+
 
 void NotchFilter::connect(gr::top_block_sptr top_block)
 {
@@ -106,6 +103,7 @@ void NotchFilter::connect(gr::top_block_sptr top_block)
         }   
 }
 
+
 void NotchFilter::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
@@ -119,6 +117,7 @@ gr::basic_block_sptr NotchFilter::get_left_block()
 {
     return notch_filter_;
 }
+
 
 gr::basic_block_sptr NotchFilter::get_right_block()
 {

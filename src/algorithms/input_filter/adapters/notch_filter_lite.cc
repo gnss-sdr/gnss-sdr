@@ -30,12 +30,8 @@
  */
 
 #include "notch_filter_lite.h"
-#include <string>
 #include <cmath>
-#include <memory>
-#include <vector>
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/blocks/file_sink.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
 #include "notch_lite_cc.h"
@@ -74,7 +70,7 @@ NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, std::str
     length_ = configuration->property(role + ".length", default_length_);
     n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
     n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
-    int n_segments_coeff = (int) ((samp_freq / coeff_rate) / ((float) length_));
+    int n_segments_coeff = static_cast<int>((samp_freq / coeff_rate) / static_cast<float>(length_));
     n_segments_coeff = std::max(1, n_segments_coeff);
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -85,8 +81,7 @@ NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, std::str
         }
     else
         {
-            LOG(WARNING) << item_type_
-                                  << " unrecognized item type for notch filter";
+            LOG(WARNING) << item_type_ << " unrecognized item type for notch filter";
             item_size_ = sizeof(gr_complex);
         }
     if (dump_)
@@ -97,8 +92,10 @@ NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, std::str
         }
 }
 
+
 NotchFilterLite::~NotchFilterLite()
 {}
+
 
 void NotchFilterLite::connect(gr::top_block_sptr top_block)
 {
@@ -113,6 +110,7 @@ void NotchFilterLite::connect(gr::top_block_sptr top_block)
         }   
 }
 
+
 void NotchFilterLite::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
@@ -126,6 +124,7 @@ gr::basic_block_sptr NotchFilterLite::get_left_block()
 {
     return notch_filter_lite_;
 }
+
 
 gr::basic_block_sptr NotchFilterLite::get_right_block()
 {

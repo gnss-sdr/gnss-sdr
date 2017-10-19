@@ -30,7 +30,6 @@
 
 #include "pulse_blanking_filter.h"
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/blocks/file_sink.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
 

@@ -43,6 +43,7 @@
 void Glonass_Gnav_Navigation_Message::reset()
 {
     //!< Satellite Identification
+		i_satellite_PRN = 0;
     i_alm_satellite_slot_number = 0;    //!< SV Orbit Slot Number
     flag_update_slot_number = false;
 
@@ -325,7 +326,7 @@ double Glonass_Gnav_Navigation_Message::get_WN()
     boost::gregorian::date gps_epoch { 1980, 1, 6 };
     // Map to UTC
     boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
-    boost::gregorian::days d2(gnav_ephemeris.d_N_T);
+    boost::gregorian::days d2(gnav_ephemeris.d_N_T-1);
     glo_date = glo_date + d2;
 
 
@@ -367,7 +368,7 @@ double Glonass_Gnav_Navigation_Message::get_TOW()
 
 
     boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
-    boost::gregorian::days d2(gnav_ephemeris.d_N_T);
+    boost::gregorian::days d2(gnav_ephemeris.d_N_T-1);
     glo_date = glo_date + d2;
 
     dayofweek = static_cast<double>(glo_date.day_of_week());
@@ -514,9 +515,10 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     // 3). Set TOW once the year has been defined, it helps with leap second determination
                     if (flag_ephemeris_str_1 == true)
                     {
-                        d_TOW = get_TOW();
-                        gnav_ephemeris.d_TOW = d_TOW;
-                        gnav_ephemeris.d_WN = get_WN();
+                        //d_TOW = get_TOW();
+                        gnav_ephemeris.glot_to_gpst(gnav_ephemeris.d_t_k+10, gnav_utc_model.d_tau_c, gnav_utc_model.d_tau_gps, &gnav_ephemeris.d_WN, &gnav_ephemeris.d_TOW);
+                        d_TOW = gnav_ephemeris.d_TOW;
+                        //gnav_ephemeris.d_WN = d_WN();
                         flag_TOW_set = true;
                         flag_TOW_new = true;
                     }

@@ -221,7 +221,8 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
     if(d_nav.flag_update_slot_number == true)
         {
             LOG(INFO) << "GLONASS GNAV Slot Number Identified on channel " << d_channel;
-            d_satellite.what_block(d_satellite.get_system(), d_nav.get_ephemeris().d_n);
+            d_satellite.update_PRN(d_nav.gnav_ephemeris.d_n);
+            d_satellite.what_block(d_satellite.get_system(), d_nav.gnav_ephemeris.d_n);
             d_nav.flag_update_slot_number = false;
         }
 }

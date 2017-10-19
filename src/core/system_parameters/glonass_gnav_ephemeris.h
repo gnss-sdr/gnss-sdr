@@ -160,6 +160,17 @@ public:
     boost::posix_time::ptime compute_GLONASS_time(const double offset_time) const;
 
     /*!
+     * \brief Converts from GLONASST to UTC
+     * \ param [I]
+     * \ param offset_time Is the start of day offset to compute the time
+     * \ returns UTC time as a boost::posix_time::ptime object
+     */
+    boost::posix_time::ptime glot_to_utc(const double offset_time, const double glot2utc_corr) const;
+
+
+    void glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, double * WN, double * TOW) const;
+
+    /*!
      * Default constructor
      */
     Glonass_Gnav_Ephemeris();

@@ -79,19 +79,86 @@ Glonass_Gnav_Ephemeris::Glonass_Gnav_Ephemeris()
 	d_tau_c = 0.0;
 	d_TOW = 0.0; // tow of the start of frame
 	d_WN = 0.0; //  week number of the start of frame
+	d_tod = 0.0;
 }
 
 
 boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(const double offset_time) const
 {
-    boost::posix_time::time_duration t(0, 0, offset_time + d_tau_c);
+    boost::posix_time::time_duration t(0, 0, offset_time + d_tau_c + d_tau_n);
     boost::gregorian::date d1(d_yr, 1, 1);
-    boost::gregorian::days d2(d_N_T);
+    boost::gregorian::days d2(d_N_T - 1);
     boost::posix_time::ptime glonass_time(d1+d2, t);
 
     return glonass_time;
 }
 
+
+boost::posix_time::ptime Glonass_Gnav_Ephemeris::glot_to_utc(const double offset_time, const double glot2utc_corr) const
+{
+		double tod = 0.0;
+		double utcsu2utc = 3*3600;
+		double glot2utcsu = 3*3600;
+
+		tod = offset_time - glot2utcsu - utcsu2utc + glot2utc_corr + d_tau_n;
+		boost::posix_time::time_duration t(0, 0, tod);
+		boost::gregorian::date d1(d_yr, 1, 1);
+		boost::gregorian::days d2(d_N_T - 1);
+		boost::posix_time::ptime utc_time(d1+d2, t);
+
+		return utc_time;
+}
+
+void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, double * wn, double * tow) const
+{
+			double tod = 0.0;
+	    double dayofweek = 0.0;
+	    double utcsu2utc = 3*3600;
+	    double glot2utcsu = 3*3600;
+	    double days = 0.0;
+	    double total_sec = 0.0, sec_of_day = 0.0;
+	    int i = 0;
+
+	    boost::gregorian::date gps_epoch { 1980, 1, 6 };
+
+	    // tk is relative to UTC(SU) + 3.00 hrs, so we need to convert to utc and add corrections
+	    // tk plus 10 sec is the true tod since get_TOW is called when in str5
+	    tod = tod_offset - glot2utcsu - utcsu2utc ;
+
+
+	    boost::posix_time::time_duration t(0, 0, tod);
+	    boost::gregorian::date d1(d_yr, 1, 1);
+	    boost::gregorian::days d2(d_N_T - 1);
+	    boost::posix_time::ptime glonass_time(d1+d2, t);
+	    boost::gregorian::date utc_date = glonass_time.date();
+
+	    // Total number of days
+	    days =  static_cast<double>((utc_date - gps_epoch).days());
+
+	    // Total number of seconds
+	    sec_of_day = static_cast<double>((glonass_time.time_of_day()).total_seconds());
+	    total_sec = days*86400 + sec_of_day;
+
+	    for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
+	    {
+	        if (GLONASS_LEAP_SECONDS[i][0] == d_yr)
+	        {
+	            // We add the leap second when going from utc to gpst
+	            total_sec += abs(GLONASS_LEAP_SECONDS[i][6]);
+	        }
+	    }
+
+	    // Compute Week number
+	    *wn = floor(total_sec/604800);
+
+	    // Compute day of week
+	    dayofweek = modf (total_sec/604800 , wn);
+	    dayofweek = round(7*dayofweek);
+	    // Compute the arithmetic modules to wrap around range
+	    *tow = total_sec - 604800*floor(total_sec/604800);
+	    *tow = dayofweek*86400 + tod_offset + glot2utc_corr + glot2gpst_corr + d_tau_n;
+
+}
 
 double Glonass_Gnav_Ephemeris::check_t(double time)
 {

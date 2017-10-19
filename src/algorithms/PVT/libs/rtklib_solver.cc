@@ -116,6 +116,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
     std::map<int,Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
     std::map<int,Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
     std::map<int,Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
+    const Glonass_Gnav_Utc_Model gnav_utc = this->glonass_gnav_utc_model;
 
     this->set_averaging_flag(flag_averaging);
 
@@ -290,7 +291,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
 											if (glonass_gnav_ephemeris_iter != glonass_gnav_ephemeris_map.cend())
 											{
 													//convert ephemeris from GNSS-SDR class to RTKLIB structure
-													geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second);
+													geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
 													//convert observation from GNSS-SDR class to RTKLIB structure
 													obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
 													obs_data[glo_valid_obs] = insert_obs_to_rtklib(newobs,
@@ -329,7 +330,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
 													{
 															//insert GLONASS GNAV L2 obs as new obs and also insert its ephemeris
 															//convert ephemeris from GNSS-SDR class to RTKLIB structure
-															geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second);
+															geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
 															//convert observation from GNSS-SDR class to RTKLIB structure
 															obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
 															obs_data[glo_valid_obs] = insert_obs_to_rtklib(newobs,

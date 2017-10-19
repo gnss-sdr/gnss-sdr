@@ -65,6 +65,10 @@ public:
     unsigned int d_string_ID;
     bool flag_update_slot_number;
 
+    // satellite identification info
+    int i_channel_ID;
+    unsigned int i_satellite_PRN;
+
     Glonass_Gnav_Ephemeris gnav_ephemeris;    //!< Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model;    //!< UTC model information
     Glonass_Gnav_Almanac gnav_almanac[GLONASS_L1_CA_NBR_SATS];    //!< Almanac information for all 24 satellites

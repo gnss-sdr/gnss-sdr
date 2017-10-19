@@ -87,6 +87,38 @@ TEST(GlonassGnavNavigationMessageTest, CRCTestFailure)
  * GNAV signals. The same assumption is to be applied for ephemeris and almanac
  * data provided.
  */
+TEST(GlonassGnavNavigationMessageTest, ComputeTOWandWN1)
+{
+    // Variable declarations
+		double tow, wn;
+    Glonass_Gnav_Navigation_Message gnav_nav_message;
+    Glonass_Gnav_Ephemeris gnav_ephemeris;
+
+    // Fill out ephemeris values for truth
+    gnav_nav_message.gnav_ephemeris.d_t_k    = 70200;
+    gnav_nav_message.gnav_ephemeris.d_tau_c  = 9.6391886472702e-08;
+    gnav_nav_message.gnav_ephemeris.d_yr     = 2005;
+    gnav_nav_message.gnav_ephemeris.d_N_T    = 28;
+
+    // Call target test method
+    tow = gnav_nav_message.get_TOW();
+    wn = gnav_nav_message.get_WN();
+
+    // Perform assertions of decoded fields
+    ASSERT_TRUE(gnav_ephemeris.d_P_1 - gnav_nav_message.gnav_ephemeris.d_P_1 < FLT_EPSILON );
+    ASSERT_TRUE(gnav_ephemeris.d_t_k - gnav_nav_message.gnav_ephemeris.d_t_k < FLT_EPSILON );
+    ASSERT_TRUE(gnav_ephemeris.d_VXn - gnav_nav_message.gnav_ephemeris.d_VXn < FLT_EPSILON );
+    ASSERT_TRUE(gnav_ephemeris.d_AXn - gnav_nav_message.gnav_ephemeris.d_AXn < FLT_EPSILON );
+    ASSERT_TRUE(gnav_ephemeris.d_Xn -  gnav_nav_message.gnav_ephemeris.d_Xn < FLT_EPSILON );
+}
+
+/*!
+ * \brief Testing string decoding for GLONASS GNAV messages
+ * \test The provided string (str1.....str15) was generated with a version of
+ * MATLAB GNSS-SDR that the author coded to perform proper decoding of GLONASS
+ * GNAV signals. The same assumption is to be applied for ephemeris and almanac
+ * data provided.
+ */
 TEST(GlonassGnavNavigationMessageTest, String1Decoder)
 {
     // Variable declarations

@@ -91,8 +91,6 @@ const int GLONASS_L1_CA_NBR_SATS             = 24; // STRING DATA WITHOUT PREAMB
 
 //FIXME Probably should use leap seconds definitions of rtklib
 const double GLONASS_LEAP_SECONDS[21][7] = { /* leap seconds (y,m,d,h,m,s,utc-gpst) */
-        {2019, 1, 1, 0, 0, 0, -20},
-        {2018, 1, 1, 0, 0, 0, -19},
         {2017, 1, 1, 0, 0, 0, -18},
         {2015, 7, 1, 0, 0, 0, -17},
         {2012, 7, 1, 0, 0, 0, -16},

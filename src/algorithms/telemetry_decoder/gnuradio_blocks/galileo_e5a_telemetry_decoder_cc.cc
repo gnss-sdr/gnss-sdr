@@ -50,7 +50,7 @@ using google::LogMessage;
 
 
 galileo_e5a_telemetry_decoder_cc_sptr
-galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
+galileo_e5a_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump)
 {
     return galileo_e5a_telemetry_decoder_cc_sptr(new galileo_e5a_telemetry_decoder_cc(satellite, dump));
 }
@@ -179,7 +179,7 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
 
 
 galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
-        Gnss_Satellite satellite, bool dump) : gr::block("galileo_e5a_telemetry_decoder_cc",
+        const Gnss_Satellite & satellite, bool dump) : gr::block("galileo_e5a_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {

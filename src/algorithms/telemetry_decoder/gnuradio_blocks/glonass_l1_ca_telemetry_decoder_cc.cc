@@ -49,14 +49,14 @@ using google::LogMessage;
 
 
 glonass_l1_ca_telemetry_decoder_cc_sptr
-glonass_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
+glonass_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump)
 {
     return glonass_l1_ca_telemetry_decoder_cc_sptr(new glonass_l1_ca_telemetry_decoder_cc(satellite, dump));
 }
 
 
 glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
-        Gnss_Satellite satellite,
+        const Gnss_Satellite & satellite,
         bool dump) :
         gr::block("glonass_l1_ca_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -415,7 +415,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
 }
 
 
-void glonass_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
+void glonass_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite & satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite "<< d_satellite;

@@ -68,7 +68,7 @@ GpsL2CTelemetryDecoder::~GpsL2CTelemetryDecoder()
 {}
 
 
-void GpsL2CTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
+void GpsL2CTelemetryDecoder::set_satellite(const Gnss_Satellite & satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     telemetry_decoder_->set_satellite(satellite_);

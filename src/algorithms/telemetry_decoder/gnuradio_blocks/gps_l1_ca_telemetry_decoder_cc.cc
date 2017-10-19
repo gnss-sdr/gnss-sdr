@@ -43,14 +43,14 @@
 using google::LogMessage;
 
 gps_l1_ca_telemetry_decoder_cc_sptr
-gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
+gps_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump)
 {
     return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, dump));
 }
 
 
 gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
-        Gnss_Satellite satellite,
+        const Gnss_Satellite & satellite,
         bool dump) :
         gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -401,7 +401,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
  }
 
 
- void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
+ void gps_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite & satellite)
  {
      d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
      LOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;

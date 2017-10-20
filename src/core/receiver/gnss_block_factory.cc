@@ -69,6 +69,7 @@
 #include "notch_filter_lite.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l2_m_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_zp_acquisition.h"
 #include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
@@ -912,6 +913,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("GPS_L1_CA_PCPS_ZP_Acquisition") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaPcpsZPAcquisition(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
 
 #if ENABLE_FPGA
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fpga") == 0)
@@ -1130,6 +1137,12 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GpsL1CaPcpsAcquisition(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GPS_L1_CA_PCPS_ZP_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GpsL1CaPcpsZPAcquisition(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

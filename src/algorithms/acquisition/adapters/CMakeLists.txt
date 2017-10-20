@@ -19,6 +19,7 @@
 
 set(ACQ_ADAPTER_SOURCES
     gps_l1_ca_pcps_acquisition.cc
+    gps_l1_ca_pcps_zp_acquisition.cc
     gps_l1_ca_pcps_assisted_acquisition.cc
     gps_l1_ca_pcps_acquisition_fine_doppler.cc
     gps_l1_ca_pcps_tong_acquisition.cc

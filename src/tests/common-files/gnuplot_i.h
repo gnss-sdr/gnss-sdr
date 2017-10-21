@@ -1065,7 +1065,9 @@ Gnuplot& Gnuplot::savetops(const std::string &filename)
     cmd("set terminal postscript color");
 
     std::ostringstream cmdstr;
-    cmdstr << "set output \"" << filename << ".ps\"";
+    cmdstr << "set term postscript\n";
+    cmdstr << "set output \"" << filename << ".ps\"\n";
+    cmdstr << "replot";
     cmd(cmdstr.str());
 
     return *this;

@@ -158,6 +158,11 @@ if(ENABLE_FPGA)
     add_definitions(-DFPGA_BLOCKS_TEST=1)
 endif(ENABLE_FPGA)
 
+find_package(Gnuplot)
+if(GNUPLOT_FOUND)
+    add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")
+endif(GNUPLOT_FOUND)
+
 ################################################################################
 # Optional generator
 ################################################################################

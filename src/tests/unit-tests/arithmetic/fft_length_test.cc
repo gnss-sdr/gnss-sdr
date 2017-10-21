@@ -48,7 +48,26 @@
 DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");
 DEFINE_bool(plot_fft_length_test, false, "Plots results of FFTLengthTest");
 
-TEST(FFTLengthTest, MeasureExecutionTime)
+
+class FFTLengthTest: public ::testing::Test
+{
+public:
+    void wait_for_key();
+};
+
+
+void FFTLengthTest::wait_for_key()
+{
+    std::cout << std::endl << "Press ENTER to continue..." << std::endl;
+
+    std::cin.clear();
+    std::cin.ignore(std::cin.rdbuf()->in_avail());
+    std::cin.get();
+    return;
+}
+
+
+TEST_F(FFTLengthTest, MeasureExecutionTime)
 {
     unsigned int fft_sizes [] = { 512, 1000, 1024, 1100, 1297, 1400, 1500, 1960, 2000, 2048, 2221, 2500, 3000, 3500, 4000,
             4096, 4200, 4500, 4725, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8192, 8500, 9000, 9500, 10000, 10368, 11000,
@@ -114,31 +133,41 @@ TEST(FFTLengthTest, MeasureExecutionTime)
             else
                 {
 #if defined GNUPLOT_EXECUTABLE
-                    std::string gnuplot_executable = std::string(GNUPLOT_EXECUTABLE);
-                    boost::filesystem::path p(gnuplot_executable);
-                    boost::filesystem::path dir = p.parent_path();
-                    std::string gnuplot_path = dir.native();
-                    Gnuplot::set_GNUPlotPath(gnuplot_path);
+                    try
+                    {
+                            std::string gnuplot_executable = std::string(GNUPLOT_EXECUTABLE);
+                            boost::filesystem::path p(gnuplot_executable);
+                            boost::filesystem::path dir = p.parent_path();
+                            std::string gnuplot_path = dir.native();
+                            Gnuplot::set_GNUPlotPath(gnuplot_path);
 
-                    Gnuplot g1("linespoints");
-                    g1.set_title("FFT execution times for different lengths");
-                    g1.set_grid();
-                    g1.set_xlabel("FFT length");
-                    g1.set_ylabel("Execution time [ms]");
-                    g1.plot_xy(fft_sizes_v, execution_times, "FFT execution time (averaged over " + std::to_string(FLAGS_fft_iterations_test) + " iterations)");
-                    g1.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
-                    g1.showonscreen(); // window output
+                            Gnuplot g1("linespoints");
+                            g1.set_title("FFT execution times for different lengths");
+                            g1.set_grid();
+                            g1.set_xlabel("FFT length");
+                            g1.set_ylabel("Execution time [ms]");
+                            g1.plot_xy(fft_sizes_v, execution_times, "FFT execution time (averaged over " + std::to_string(FLAGS_fft_iterations_test) + " iterations)");
+                            g1.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
+                            g1.showonscreen(); // window output
 
-                    Gnuplot g2("linespoints");
-                    g2.set_title("FFT execution times for different lengths (up to 2^{14}=16384)");
-                    g2.set_grid();
-                    g2.set_xlabel("FFT length");
-                    g2.set_ylabel("Execution time [ms]");
-                    g2.set_xrange(0, 16384);
-                    g2.plot_xy(fft_sizes_v, execution_times, "FFT execution time (averaged over " + std::to_string(FLAGS_fft_iterations_test) + " iterations)");
-                    g2.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
-                    g2.savetops("FFT_execution_times");
-                    g2.showonscreen(); // window output
+                            Gnuplot g2("linespoints");
+                            g2.set_title("FFT execution times for different lengths (up to 2^{14}=16384)");
+                            g2.set_grid();
+                            g2.set_xlabel("FFT length");
+                            g2.set_ylabel("Execution time [ms]");
+                            g2.set_xrange(0, 16384);
+                            g2.plot_xy(fft_sizes_v, execution_times, "FFT execution time (averaged over " + std::to_string(FLAGS_fft_iterations_test) + " iterations)");
+                            g2.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
+                            g2.savetops("FFT_execution_times");
+                            g2.showonscreen(); // window output
+#if !defined __APPLE__
+                            wait_for_key();
+#endif
+                    }
+                    catch (GnuplotException ge)
+                    {
+                            std::cout << ge.what() << std::endl;
+                    }
 #endif
                 }
         }

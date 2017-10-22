@@ -617,7 +617,7 @@ void StaticPositionSystemTest::print_results(const std::vector<double> & east,
                     g1.cmd("replot");
 
                     g1.savetops("Position_test_2D");
-                    g1.savetopdf("Position_test_2D");
+                    g1.savetopdf("Position_test_2D", 18);
                     g1.showonscreen(); // window output
 
                     Gnuplot g2("points");

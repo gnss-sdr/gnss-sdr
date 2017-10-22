@@ -247,7 +247,7 @@ public:
     Gnuplot& savetops(const std::string &filename = "gnuplot_output");
 
     /// saves a gnuplot session to a pdf file, filename without extension
-    Gnuplot& savetopdf(const std::string &filename = "gnuplot_output");
+    Gnuplot& savetopdf(const std::string &filename = "gnuplot_output", unsigned int font_size = 12);
 
     //----------------------------------------------------------------------------------
     // set and unset
@@ -1070,10 +1070,10 @@ Gnuplot& Gnuplot::showonscreen()
 //
 // saves a gnuplot session to a pdf file
 //
-Gnuplot& Gnuplot::savetopdf(const std::string &filename)
+Gnuplot& Gnuplot::savetopdf(const std::string &filename, unsigned int font_size)
 {
     std::ostringstream cmdstr;
-    cmdstr << "set term pdfcairo enhanced color font \"Times-New-Roman,18\"\n";
+    cmdstr << "set term pdfcairo enhanced color font \"Times-New-Roman," + std::to_string(font_size) + "\"\n";
     cmdstr << "set output \"" << filename << ".pdf\"\n";
     cmdstr << "replot";
     cmd(cmdstr.str());

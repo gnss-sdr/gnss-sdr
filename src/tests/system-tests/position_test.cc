@@ -582,13 +582,18 @@ void StaticPositionSystemTest::print_results(const std::vector<double> & east,
             auto it_min_east = std::min_element(std::begin(east), std::end(east));
             auto it_max_north = std::max_element(std::begin(north), std::end(north));
             auto it_min_north = std::min_element(std::begin(north), std::end(north));
+            auto it_max_up = std::max_element(std::begin(up), std::end(up));
+            auto it_min_up = std::min_element(std::begin(up), std::end(up));
 
             auto east_range = std::max(*it_max_east, std::abs(*it_min_east));
             auto north_range = std::max(*it_max_north, std::abs(*it_min_north));
+            auto up_range = std::max(*it_max_up, std::abs(*it_min_up));
 
             double range = std::max(east_range, north_range) * 1.1;
+            double range_3d = std::max(std::max(east_range, north_range), up_range) * 1.1;
 
             double two_drms = 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision);
+            double ninty_sas = 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
             try
             {
                     boost::filesystem::path p(gnuplot_executable);
@@ -613,6 +618,25 @@ void StaticPositionSystemTest::print_results(const std::vector<double> & east,
 
                     g1.savetops("Position_test_2D");
                     g1.showonscreen(); // window output
+
+                    Gnuplot g2("points");
+                    g2.set_title("3D precision");
+                    g2.set_xlabel("East [m]");
+                    g2.set_ylabel("North [m]");
+                    g2.set_zlabel("Up [m]");
+                    g2.cmd("set size ratio -1");
+                    g2.cmd("set xrange [-" + std::to_string(range_3d) + ":" + std::to_string(range_3d) + "]");
+                    g2.cmd("set yrange [-" + std::to_string(range_3d) + ":" + std::to_string(range_3d) + "]");
+                    g2.cmd("set zrange [-" + std::to_string(range_3d) + ":" + std::to_string(range_3d) + "]");
+                    g2.cmd("set view equal xyz");
+
+                    g2.cmd("set style fill transparent solid 0.30 border\n set parametric\n set urange [0:2.0*pi]\n set vrange [-pi/2:pi/2]\n r = " +
+                            std::to_string(ninty_sas) +
+                            "\n fx(v,u) = r*cos(v)*cos(u)\n fy(v,u) = r*cos(v)*sin(u)\n fz(v) = r*sin(v) \n splot fx(v,u),fy(v,u),fz(v) title \"90\%-SAS\" lt rgb \"gray\"\n");
+                    g2.plot_xyz(east, north, up, "3D Position Fixes");
+
+                    g2.savetops("Position_test_3D");
+                    g2.showonscreen(); // window output
             }
             catch (GnuplotException ge)
             {

@@ -246,6 +246,9 @@ public:
     /// saves a gnuplot session to a postscript file, filename without extension
     Gnuplot& savetops(const std::string &filename = "gnuplot_output");
 
+    /// saves a gnuplot session to a pdf file, filename without extension
+    Gnuplot& savetopdf(const std::string &filename = "gnuplot_output");
+
     //----------------------------------------------------------------------------------
     // set and unset
 
@@ -1058,6 +1061,22 @@ Gnuplot& Gnuplot::showonscreen()
 #endif
     cmd("set output");
     cmd("set terminal " + Gnuplot::terminal_std + persist);
+
+    return *this;
+}
+
+
+//------------------------------------------------------------------------------
+//
+// saves a gnuplot session to a pdf file
+//
+Gnuplot& Gnuplot::savetopdf(const std::string &filename)
+{
+    std::ostringstream cmdstr;
+    cmdstr << "set term pdfcairo enhanced color font \"Times-New-Roman,18\"\n";
+    cmdstr << "set output \"" << filename << ".pdf\"\n";
+    cmdstr << "replot";
+    cmd(cmdstr.str());
 
     return *this;
 }

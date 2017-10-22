@@ -51,7 +51,7 @@ DEFINE_bool(plot_fft_length_test, false, "Plots results of FFTLengthTest with gn
 // Note from FFTW documentation: the standard FFTW distribution works most efficiently for arrays whose
 // size can be factored into small primes (2, 3, 5, and 7), and otherwise it uses a slower general-purpose routine.
 
-TEST_F(FFTLengthTest, MeasureExecutionTime)
+TEST(FFTLengthTest, MeasureExecutionTime)
 {
     unsigned int fft_sizes [] = { 512, 1000, 1024, 1100, 1297, 1400, 1500, 1960, 2000, 2048, 2221, 2500, 3000, 3500, 4000,
             4096, 4200, 4500, 4725, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8192, 8500, 9000, 9500, 10000, 10368, 11000,

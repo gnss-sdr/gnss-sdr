@@ -35,14 +35,8 @@
 #include <random>
 #include <boost/filesystem.hpp>
 #include <gnuradio/fft/fft.h>
-
-
-#if defined GNUPLOT_EXECUTABLE
-  #include "gnuplot_i.h"
-  const bool exists_gnuplot_fft_test_length = true;
-#elif !defined GNUPLOT_EXECUTABLE
-  const bool exists_gnuplot_fft_test_length = false;
-#endif
+#include "gnuplot_i.h"
+#include "test_flags.h"
 
 
 DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");
@@ -108,7 +102,8 @@ TEST(FFTLengthTest, MeasureExecutionTime)
 
     if(FLAGS_plot_fft_length_test == true)
         {
-            if(!exists_gnuplot_fft_test_length)
+            const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+            if(gnuplot_executable.empty())
                 {
                     std::cout << "WARNING: Although the flag plot_fft_length_test has been set to TRUE," << std::endl;
                     std::cout << "gnuplot has not been found in your system." << std::endl;
@@ -116,10 +111,8 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                 }
             else
                 {
-#if defined GNUPLOT_EXECUTABLE
                     try
                     {
-                            std::string gnuplot_executable = std::string(GNUPLOT_EXECUTABLE);
                             boost::filesystem::path p(gnuplot_executable);
                             boost::filesystem::path dir = p.parent_path();
                             std::string gnuplot_path = dir.native();
@@ -150,7 +143,6 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                     {
                             std::cout << ge.what() << std::endl;
                     }
-#endif
                 }
         }
 }

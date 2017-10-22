@@ -132,6 +132,7 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g1.set_ylabel("Execution time [ms]");
                             g1.plot_xy(fft_sizes_v, execution_times, "FFT execution time (averaged over " + std::to_string(FLAGS_fft_iterations_test) + " iterations)");
                             g1.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
+                            g1.savetops("FFT_execution_times_extended");
                             g1.showonscreen(); // window output
 
                             Gnuplot g2("linespoints");

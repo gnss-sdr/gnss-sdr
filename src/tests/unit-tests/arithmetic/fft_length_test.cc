@@ -46,26 +46,10 @@
 
 
 DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");
-DEFINE_bool(plot_fft_length_test, false, "Plots results of FFTLengthTest");
+DEFINE_bool(plot_fft_length_test, false, "Plots results of FFTLengthTest with gnuplot");
 
-
-class FFTLengthTest: public ::testing::Test
-{
-public:
-    void wait_for_key();
-};
-
-
-void FFTLengthTest::wait_for_key()
-{
-    std::cout << std::endl << "Press ENTER to continue..." << std::endl;
-
-    std::cin.clear();
-    std::cin.ignore(std::cin.rdbuf()->in_avail());
-    std::cin.get();
-    return;
-}
-
+// Note from FFTW documentation: the standard FFTW distribution works most efficiently for arrays whose
+// size can be factored into small primes (2, 3, 5, and 7), and otherwise it uses a slower general-purpose routine.
 
 TEST_F(FFTLengthTest, MeasureExecutionTime)
 {
@@ -160,9 +144,6 @@ TEST_F(FFTLengthTest, MeasureExecutionTime)
                             g2.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
                             g2.savetops("FFT_execution_times");
                             g2.showonscreen(); // window output
-#if !defined __APPLE__
-                            wait_for_key();
-#endif
                     }
                     catch (GnuplotException ge)
                     {

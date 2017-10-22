@@ -1050,7 +1050,7 @@ Gnuplot& Gnuplot::set_smooth(const std::string &stylestr)
 Gnuplot& Gnuplot::showonscreen()
 {
     cmd("set output");
-    cmd("set terminal " + Gnuplot::terminal_std);
+    cmd("set terminal " + Gnuplot::terminal_std + " persist");
 
     return *this;
 }
@@ -1062,10 +1062,8 @@ Gnuplot& Gnuplot::showonscreen()
 //
 Gnuplot& Gnuplot::savetops(const std::string &filename)
 {
-    cmd("set terminal postscript color");
-
     std::ostringstream cmdstr;
-    cmdstr << "set term postscript\n";
+    cmdstr << "set term postscript landscape enhanced color dashed \"Times-Roman\" 18\n";
     cmdstr << "set output \"" << filename << ".ps\"\n";
     cmdstr << "replot";
     cmd(cmdstr.str());

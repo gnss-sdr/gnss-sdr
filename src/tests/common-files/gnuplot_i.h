@@ -545,6 +545,9 @@ public:
             const unsigned int iHeight,
             const std::string &title = "");
 
+    /// plot circle
+    Gnuplot& plot_circle(double east, double north, double radius, const std::string &label = "");
+
     //----------------------------------------------------------------------------------
     ///\brief replot repeats the last plot or splot command.
     ///  this can be useful for viewing a plot with different set options,
@@ -937,7 +940,8 @@ Gnuplot::~Gnuplot()
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
         if (pclose(gnucmd) == -1)
 #endif
-            throw GnuplotException("Problem closing communication to gnuplot");
+            // throw GnuplotException("Problem closing communication to gnuplot");
+            std::cout << "Gnuplot window left open." << std::endl;
 }
 
 
@@ -1624,6 +1628,36 @@ Gnuplot& Gnuplot::plot_image(const unsigned char * ucPicBuf,
         cmdstr << "\"" << name << "\" with image";
     else
         cmdstr << "\"" << name << "\" title \"" << title << "\" with image";
+
+    //
+    // Do the actual plot
+    //
+    cmd(cmdstr.str());
+
+    return *this;
+}
+
+
+Gnuplot& Gnuplot::plot_circle(double east, double north, double radius, const std::string &label)
+{
+    std::ostringstream cmdstr;
+    //
+    // command to be sent to gnuplot
+    //
+    cmdstr << "set object circle at " + std::to_string(east) + "," + std::to_string(north) + " size " +
+            std::to_string(radius) + " back\n";
+
+    if (label != "")
+        {
+            double east_label = (std::cos(M_PI / 3.0) * radius) * 1.1 + east;
+            double north_label = (std::sin(M_PI / 3.0) * radius) * 1.1 + north;
+            cmdstr << "set label \"" + label + "\" at first " + std::to_string(east_label) +
+                    ", " + std::to_string(north_label) + " norotate back nopoint offset 0,0\n";
+        }
+    if (nplots > 0)
+           cmdstr << "replot ";
+       else
+           cmdstr << "plot ";
 
     //
     // Do the actual plot

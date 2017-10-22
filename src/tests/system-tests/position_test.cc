@@ -29,11 +29,13 @@
  * -------------------------------------------------------------------------
  */
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <fstream>
 #include <numeric>
 #include <thread>
+#include <boost/filesystem.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
@@ -43,10 +45,13 @@
 #include "in_memory_configuration.h"
 #include "file_configuration.h"
 #include "MATH_CONSTANTS.h"
+#include "gnuplot_i.h"
+#include "test_flags.h"
 #include "signal_generator_flags.h"
 
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing the configuration parameters for the position test.");
+DEFINE_bool(plot_position_test, false, "Plots results of FFTLengthTest with gnuplot");
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -73,6 +78,9 @@ public:
     int configure_receiver();
     int run_receiver();
     void check_results();
+    void print_results(const std::vector<double> & east,
+                       const std::vector<double> & north,
+                       const std::vector<double> & up);
 
     double compute_stdev_precision(const std::vector<double> & vec);
     double compute_stdev_accuracy(const std::vector<double> & vec, double ref);
@@ -542,8 +550,77 @@ void StaticPositionSystemTest::check_results()
     // Sanity Check
     double precision_SEP =  0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
     ASSERT_LT(precision_SEP, 20.0);
+
+    if(FLAGS_plot_position_test == true)
+        {
+            print_results(pos_e, pos_n, pos_u);
+        }
 }
 
+
+void StaticPositionSystemTest::print_results(const std::vector<double> & east,
+        const std::vector<double> & north,
+        const std::vector<double> & up)
+{
+    const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+    if(gnuplot_executable.empty())
+        {
+            std::cout << "WARNING: Although the flag plot_position_test has been set to TRUE," << std::endl;
+            std::cout << "gnuplot has not been found in your system." << std::endl;
+            std::cout << "Test results will not be plotted." << std::endl;
+        }
+    else
+        {
+            double sigma_E_2_precision = std::pow(compute_stdev_precision(east), 2.0);
+            double sigma_N_2_precision = std::pow(compute_stdev_precision(north), 2.0);
+            double sigma_U_2_precision = std::pow(compute_stdev_precision(up), 2.0);
+
+            double mean_east = std::accumulate(east.begin(), east.end(), 0.0) / east.size();
+            double mean_north = std::accumulate(north.begin(), north.end(), 0.0) / north.size();
+
+            auto it_max_east = std::max_element(std::begin(east), std::end(east));
+            auto it_min_east = std::min_element(std::begin(east), std::end(east));
+            auto it_max_north = std::max_element(std::begin(north), std::end(north));
+            auto it_min_north = std::min_element(std::begin(north), std::end(north));
+
+            auto east_range = std::max(*it_max_east, std::abs(*it_min_east));
+            auto north_range = std::max(*it_max_north, std::abs(*it_min_north));
+
+            double range = std::max(east_range, north_range) * 1.1;
+
+            double two_drms = 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision);
+            try
+            {
+                    boost::filesystem::path p(gnuplot_executable);
+                    boost::filesystem::path dir = p.parent_path();
+                    std::string gnuplot_path = dir.native();
+                    Gnuplot::set_GNUPlotPath(gnuplot_path);
+
+                    Gnuplot g1("points");
+                    g1.set_title("2D precision");
+                    g1.set_xlabel("East [m]");
+                    g1.set_ylabel("North [m]");
+                    g1.cmd("set size ratio -1");
+                    g1.cmd("set xrange [-" + std::to_string(range) + ":" + std::to_string(range) + "]");
+                    g1.cmd("set yrange [-" + std::to_string(range) + ":" + std::to_string(range) + "]");
+
+                    g1.plot_xy(east, north, "2D Position Fixes");
+                    g1.set_style("lines").plot_circle(mean_east, mean_north, two_drms, "2DRMS");
+                    g1.set_style("lines").plot_circle(mean_east, mean_north, two_drms / 2.0, "DRMS");
+
+                    g1.cmd("set grid front");
+                    g1.cmd("replot");
+
+                    g1.savetops("Position_test_2D");
+                    g1.showonscreen(); // window output
+            }
+            catch (GnuplotException ge)
+            {
+                    std::cout << ge.what() << std::endl;
+            }
+        }
+
+}
 
 TEST_F(StaticPositionSystemTest, Position_system_test)
 {

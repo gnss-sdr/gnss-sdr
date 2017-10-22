@@ -1049,8 +1049,12 @@ Gnuplot& Gnuplot::set_smooth(const std::string &stylestr)
 //
 Gnuplot& Gnuplot::showonscreen()
 {
+    std::string persist(" persist");
+#ifdef __APPLE__
+    persist = "";
+#endif
     cmd("set output");
-    cmd("set terminal " + Gnuplot::terminal_std + " persist");
+    cmd("set terminal " + Gnuplot::terminal_std + persist);
 
     return *this;
 }

@@ -30,10 +30,12 @@
  * -------------------------------------------------------------------------
  */
 
-
+#include <chrono>
 #include <iostream>
 #include <unistd.h>
+#include <vector>
 #include <armadillo>
+#include <boost/filesystem.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -53,6 +55,10 @@
 #include "tracking_true_obs_reader.h"
 #include "tracking_dump_reader.h"
 #include "signal_generator_flags.h"
+#include "gnuplot_i.h"
+#include "test_flags.h"
+
+DEFINE_bool(plot_gps_l1_tracking_test, false, "Plots results of GpsL1CADllPllTrackingTest with gnuplot");
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
@@ -358,9 +364,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
             generate_signal();
         }
 
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
 
     configure_receiver();
 
@@ -427,11 +431,9 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     tracking->start_tracking();
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
     }) << "Failure running the top_block." << std::endl;
 
     //check results
@@ -461,7 +463,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     ASSERT_NO_THROW({
         if (trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")) == false)
             {
-					
+
                 throw std::exception();
             };
     }) << "Failure opening tracking dump file" << std::endl;
@@ -473,7 +475,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     arma::vec trk_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
     arma::vec trk_Doppler_Hz = arma::zeros(nepoch, 1);
     arma::vec trk_prn_delay_chips = arma::zeros(nepoch, 1);
-    
+
+    std::vector<double> prompt;
+    std::vector<double> early;
+    std::vector<double> late;
+
     epoch_counter = 0;
     while(trk_dump.read_binary_obs())
         {
@@ -486,6 +492,9 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
             trk_prn_delay_chips(epoch_counter) = delay_chips;
             epoch_counter++;
+            prompt.push_back(trk_dump.abs_P);
+            early.push_back(trk_dump.abs_E);
+            late.push_back(trk_dump.abs_L);
         }
 
     //Align initial measurements and cut the tracking pull-in transitory
@@ -501,6 +510,51 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips);
     check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles);
 
-    std::cout <<  "Signal tracking completed in " << (end - begin) << " microseconds" << std::endl;
-}
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::cout <<  "Signal tracking completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
+    if(FLAGS_plot_gps_l1_tracking_test == true)
+        {
+            const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+            if(gnuplot_executable.empty())
+                {
+                    std::cout << "WARNING: Although the flag plot_gps_l1_tracking_test has been set to TRUE," << std::endl;
+                    std::cout << "gnuplot has not been found in your system." << std::endl;
+                    std::cout << "Test results will not be plotted." << std::endl;
+                }
+            else
+                {
+                    try
+                    {
+                        boost::filesystem::path p(gnuplot_executable);
+                        boost::filesystem::path dir = p.parent_path();
+                        std::string gnuplot_path = dir.native();
+                        Gnuplot::set_GNUPlotPath(gnuplot_path);
+
+                        std::vector<double> timevec;
+                        //sample_interval = (1 / baseband_sampling_freq)
+                        double t = 0.0;
+                        for (auto it = prompt.begin(); it != prompt.end(); it++)
+                        {
+                            timevec.push_back(t);
+                            t = t + GPS_L1_CA_CODE_PERIOD;
+                        }
+                        Gnuplot g1("linespoints");
+                        g1.set_title("GPS L1 C/A signal tracking for satellite " + std::to_string(FLAGS_test_satellite_PRN));
+                        g1.set_grid();
+                        g1.set_xlabel("Time [s]");
+                        g1.set_ylabel("Correlators output");
+                        g1.plot_xy( timevec, prompt, "Prompt");
+                        g1.plot_xy( timevec, early, "Early");
+                        g1.plot_xy( timevec, late, "Late");
+                        g1.savetops("Correlators_outputs");
+                        g1.savetopdf("Correlators_outputs", 18);
+                        g1.showonscreen(); // window output
+                    }
+                    catch (GnuplotException ge)
+                    {
+                            std::cout << ge.what() << std::endl;
+                    }
+                }
+        }
+}

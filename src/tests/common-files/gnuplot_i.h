@@ -51,19 +51,19 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <fstream>  
+#include <fstream>
 #include <sstream>              // for std::ostringstream
-#include <stdexcept> 
-#include <cstdio>     
+#include <stdexcept>
+#include <cstdio>
 #include <cstdlib>              // for getenv()
 #include <list>                 // for std::list
 
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__) 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
 //defined for 32 and 64-bit environments
  #include <io.h>                // for _access(), _mktemp()
  #define GP_MAX_TMP_FILES  27   // 27 temporary files it's Microsoft restriction
-#elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__) 
+#elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
 //all UNIX-like OSs (Linux, *BSD, MacOSX, Solaris, ...)
  #include <unistd.h>            // for access(), mkstemp()
  #define GP_MAX_TMP_FILES  64
@@ -266,24 +266,24 @@ public:
     // ----------------------------------------------------------------------
     /// \brief unset smooth
     /// attention: smooth is not set by default
-    /// 
+    ///
     /// \param ---
-    /// 
+    ///
     /// \return <-- a reference to a gnuplot object
     // ----------------------------------------------------------------------
-    inline Gnuplot& unset_smooth(){ smooth = ""; return *this;}; 
+    inline Gnuplot& unset_smooth(){ smooth = ""; return *this;};
 
     /// scales the size of the points used in plots
     Gnuplot& set_pointsize(const double pointsize = 1.0);
 
     /// turns grid on/off
     inline Gnuplot& set_grid()	{cmd("set grid"); return *this;};
-    /// grid is not set by default	
+    /// grid is not set by default
     inline Gnuplot& unset_grid(){cmd("unset grid"); return *this;};
 
     // -----------------------------------------------
     /// set the mulitplot mode
-    /// 
+    ///
     /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
@@ -292,7 +292,7 @@ public:
 
     // -----------------------------------------------
     /// unsets the mulitplot mode
-    /// 
+    ///
     /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
@@ -320,7 +320,7 @@ public:
     ///
     /// \return <-- reference to the gnuplot object
     // ---------------------------------------------------------------------------
-    inline Gnuplot& unset_hidden3d(){cmd("unset hidden3d"); return *this;}; 
+    inline Gnuplot& unset_hidden3d(){cmd("unset hidden3d"); return *this;};
 
     /// enables/disables contour drawing for surfaces (for 3d plot)
     ///  base, surface, both
@@ -337,7 +337,7 @@ public:
     // ------------------------------------------------------------
     /// enables/disables the display of surfaces (for 3d plot)
     ///
-    /// \param ---	
+    /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
     // ------------------------------------------------------------------
@@ -347,7 +347,7 @@ public:
     /// surface is set by default,
     /// it disables the display of surfaces (for 3d plot)
     ///
-    /// \param ---	
+    /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
     // ------------------------------------------------------------------
@@ -356,25 +356,25 @@ public:
 
     /// switches legend on/off
     /// position: inside/outside, left/center/right, top/center/bottom, nobox/box
-    Gnuplot& set_legend(const std::string &position = "default"); 
+    Gnuplot& set_legend(const std::string &position = "default");
 
     // ------------------------------------------------------------------
     /// \brief  Switches legend off
     /// attention:legend is set by default
     ///
-    /// \param ---	
+    /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
     // ------------------------------------------------------------------
     inline Gnuplot& unset_legend(){cmd("unset key"); return *this;}
 
-    // ----------------------------------------------------------------------- 
+    // -----------------------------------------------------------------------
     /// \brief sets and clears the title of a gnuplot session
     ///
     /// \param title --> the title of the plot [optional, default == ""]
     ///
     /// \return <-- reference to the gnuplot object
-    // ----------------------------------------------------------------------- 
+    // -----------------------------------------------------------------------
     inline Gnuplot& set_title(const std::string &title = "")
     {
         std::string cmdstr;
@@ -410,7 +410,7 @@ public:
     Gnuplot& set_zrange(const double iFrom, const double iTo);
 
     /// autoscale axis (set by default) of xaxis
-    /// 
+    ///
     /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
@@ -419,7 +419,7 @@ public:
 
     // -----------------------------------------------
     /// autoscale axis (set by default) of yaxis
-    /// 
+    ///
     /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
@@ -428,7 +428,7 @@ public:
 
     // -----------------------------------------------
     /// autoscale axis (set by default) of zaxis
-    /// 
+    ///
     /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
@@ -442,31 +442,31 @@ public:
     /// turns on/off log scaling for the specified zaxis (logscale is not set by default)
     Gnuplot& set_zlogscale(const double base = 10);
 
-    // ----------------------------------------------- 
+    // -----------------------------------------------
     /// turns off log scaling for the x axis
-    /// 
+    ///
     /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
-    // -----------------------------------------------	
+    // -----------------------------------------------
     inline Gnuplot& unset_xlogscale(){cmd("unset logscale x"); return *this;};
 
-    // ----------------------------------------------- 
+    // -----------------------------------------------
     /// turns off log scaling for the y axis
-    /// 
+    ///
     /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
-    // -----------------------------------------------	
+    // -----------------------------------------------
     inline Gnuplot& unset_ylogscale(){cmd("unset logscale y"); return *this;};
 
-    // ----------------------------------------------- 
+    // -----------------------------------------------
     /// turns off log scaling for the z axis
-    /// 
+    ///
     /// \param ---
     ///
     /// \return <-- reference to the gnuplot object
-    // -----------------------------------------------		
+    // -----------------------------------------------
     inline Gnuplot& unset_zlogscale(){cmd("unset logscale z"); return *this;};
 
     /// set palette range (autoscale by default)
@@ -490,10 +490,13 @@ public:
     Gnuplot& plotfile_xy(const std::string &filename,
             const unsigned int column_x = 1,
             const unsigned int column_y = 2,
-            const std::string &title = "");
+            const std::string &title = "",
+            const unsigned int decimate = 1);
     ///   from data
     template<typename X, typename Y>
-    Gnuplot& plot_xy(const X& x, const Y& y, const std::string &title = "");
+    Gnuplot& plot_xy(const X& x, const Y& y,
+            const std::string &title = "",
+            const unsigned int decimate = 1);
 
     /// plot x,y pairs with dy errorbars: x y dy
     ///   from file
@@ -555,7 +558,7 @@ public:
     ///\brief replot repeats the last plot or splot command.
     ///  this can be useful for viewing a plot with different set options,
     ///  or when generating the same plot for several devices (showonscreen, savetops)
-    /// 
+    ///
     /// \param ---
     ///
     /// \return ---
@@ -573,12 +576,12 @@ public:
 
     // -------------------------------------------------------------------
     /// \brief Is the gnuplot session valid ??
-    /// 
+    ///
     ///
     /// \param ---
-    /// 
+    ///
     /// \return true if valid, false if not
-    // ------------------------------------------------------------------- 
+    // -------------------------------------------------------------------
     inline bool is_valid(){return(valid);};
 };
 
@@ -724,7 +727,7 @@ Gnuplot& Gnuplot::plot_x(const X& x, const std::string &title)
 /// Plots a 2d graph from a list of doubles: x y
 //
 template<typename X, typename Y>
-Gnuplot& Gnuplot::plot_xy(const X& x, const Y& y, const std::string &title)
+Gnuplot& Gnuplot::plot_xy(const X& x, const Y& y, const std::string &title, const unsigned int decimate)
 {
     if (x.size() == 0 || y.size() == 0)
         {
@@ -752,7 +755,7 @@ Gnuplot& Gnuplot::plot_xy(const X& x, const Y& y, const std::string &title)
     tmp.flush();
     tmp.close();
 
-    plotfile_xy(name, 1, 2, title);
+    plotfile_xy(name, 1, 2, title, decimate);
 
     return *this;
 }
@@ -1483,7 +1486,8 @@ Gnuplot& Gnuplot::plotfile_x(const std::string &filename,
 Gnuplot& Gnuplot::plotfile_xy(const std::string &filename,
         const unsigned int column_x,
         const unsigned int column_y,
-        const std::string &title)
+        const std::string &title,
+        const unsigned int decimate)
 {
     //
     // check if file exists
@@ -1499,7 +1503,7 @@ Gnuplot& Gnuplot::plotfile_xy(const std::string &filename,
     else
         cmdstr << "plot ";
 
-    cmdstr << "\"" << filename << "\" using " << column_x << ":" << column_y;
+    cmdstr << "\"" << filename << "\" using " << column_x << ":" << column_y << " every " << std::to_string(decimate);
 
     if (title == "")
         cmdstr << " notitle ";
@@ -1544,7 +1548,7 @@ Gnuplot& Gnuplot::plotfile_xy_err(const std::string &filename,
     else
         cmdstr << "plot ";
 
-    cmdstr << "\"" << filename << "\" using " 
+    cmdstr << "\"" << filename << "\" using "
             << column_x << ":" << column_y << ":" << column_dy
             << " with errorbars ";
 
@@ -1586,7 +1590,7 @@ Gnuplot& Gnuplot::plotfile_xyz(const std::string &filename,
     else
         cmdstr << "splot ";
 
-    cmdstr << "\"" << filename << "\" using " << column_x << ":" << column_y 
+    cmdstr << "\"" << filename << "\" using " << column_x << ":" << column_y
             << ":" << column_z;
 
     if (title == "")
@@ -1701,15 +1705,15 @@ Gnuplot& Gnuplot::cmd(const std::string &cmdstr)
 
     // int fputs ( const char * str, FILE * stream );
     // writes the string str to the stream.
-    // The function begins copying from the address specified (str) until it 
-    // reaches the terminating null character ('\0'). This final 
+    // The function begins copying from the address specified (str) until it
+    // reaches the terminating null character ('\0'). This final
     // null-character is not copied to the stream.
     fputs( (cmdstr+"\n").c_str(), gnucmd );
 
     // int fflush ( FILE * stream );
-    // If the given stream was open for writing and the last i/o operation was 
-    // an output operation, any unwritten data in the output buffer is written 
-    // to the file.  If the argument is a null pointer, all open files are 
+    // If the given stream was open for writing and the last i/o operation was
+    // an output operation, any unwritten data in the output buffer is written
+    // to the file.  If the argument is a null pointer, all open files are
     // flushed.  The stream remains open after this call.
     fflush(gnucmd);
 
@@ -1739,8 +1743,8 @@ Gnuplot& Gnuplot::cmd(const std::string &cmdstr)
 void Gnuplot::init()
 {
     // char * getenv ( const char * name );  get value of environment variable
-    // Retrieves a C string containing the value of the environment variable 
-    // whose name is specified as argument.  If the requested variable is not 
+    // Retrieves a C string containing the value of the environment variable
+    // whose name is specified as argument.  If the requested variable is not
     // part of the environment list, the function returns a NULL pointer.
 #if ( defined(unix) || defined(__unix) || defined(__unix__) ) && !defined(__APPLE__)
     if (getenv("DISPLAY") == NULL)
@@ -1760,12 +1764,12 @@ void Gnuplot::init()
     //
     // open pipe
     //
-    std::string tmp = Gnuplot::m_sGNUPlotPath + "/" + 
+    std::string tmp = Gnuplot::m_sGNUPlotPath + "/" +
             Gnuplot::m_sGNUPlotFileName;
 
     // FILE *popen(const char *command, const char *mode);
-    // The popen() function shall execute the command specified by the string 
-    // command, create a pipe between the calling program and the executed 
+    // The popen() function shall execute the command specified by the string
+    // command, create a pipe between the calling program and the executed
     // command, and return a pointer to a stream that can be used to either read
     // from or write to the pipe.
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
@@ -1775,7 +1779,7 @@ void Gnuplot::init()
 #endif
 
     // popen() shall return a pointer to an open stream that can be used to read
-    // or write to the pipe.  Otherwise, it shall return a null pointer and may 
+    // or write to the pipe.  Otherwise, it shall return a null pointer and may
     // set errno to indicate the error.
     if (!gnucmd)
         {
@@ -1803,7 +1807,7 @@ bool Gnuplot::get_program_path()
     //
     // first look in m_sGNUPlotPath for Gnuplot
     //
-    std::string tmp = Gnuplot::m_sGNUPlotPath + "/" + 
+    std::string tmp = Gnuplot::m_sGNUPlotPath + "/" +
             Gnuplot::m_sGNUPlotFileName;
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
@@ -1880,7 +1884,7 @@ bool Gnuplot::file_exists(const std::string &filename, int mode)
 
     // int _access(const char *path, int mode);
     //  returns 0 if the file has the given mode,
-    //  it returns -1 if the named file does not exist or is not accessible in 
+    //  it returns -1 if the named file does not exist or is not accessible in
     //  the given mode
     // mode = 0 (F_OK) (default): checks file for existence only
     // mode = 1 (X_OK): execution permission
@@ -1952,12 +1956,12 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
 
     // int mkstemp(char *name);
     // shall replace the contents of the string pointed to by "name" by a unique
-    // filename, and return a file descriptor for the file open for reading and 
-    // writing.  Otherwise, -1 shall be returned if no suitable file could be 
-    // created.  The string in template should look like a filename with six 
-    // trailing 'X' s; mkstemp() replaces each 'X' with a character from the 
+    // filename, and return a file descriptor for the file open for reading and
+    // writing.  Otherwise, -1 shall be returned if no suitable file could be
+    // created.  The string in template should look like a filename with six
+    // trailing 'X' s; mkstemp() replaces each 'X' with a character from the
     // portable filename character set.  The characters are chosen such that the
-    // resulting name does not duplicate the name of an existing file at the 
+    // resulting name does not duplicate the name of an existing file at the
     // time of a call to mkstemp()
 
     //

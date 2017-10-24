@@ -54,7 +54,7 @@ bool tracking_dump_reader::read_binary_obs()
             d_dump_file.read(reinterpret_cast<char *>(&aux2), sizeof(double));
             d_dump_file.read(reinterpret_cast<char *>(&PRN), sizeof(unsigned int));
     }
-    catch (const std::exception &e)
+    catch (const std::ifstream::failure &e)
     {
             return false;
     }

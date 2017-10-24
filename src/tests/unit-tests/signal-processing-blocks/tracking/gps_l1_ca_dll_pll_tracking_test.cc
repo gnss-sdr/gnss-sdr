@@ -32,6 +32,7 @@
 
 #include <chrono>
 #include <iostream>
+//#include <memory>
 #include <unistd.h>
 #include <vector>
 #include <armadillo>
@@ -50,8 +51,6 @@
 #include "tracking_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_synchro.h"
-//#include "gps_l1_ca_dll_pll_tracking.h"
-#include "gps_l1_ca_dll_pll_c_aid_tracking.h"
 #include "tracking_true_obs_reader.h"
 #include "tracking_dump_reader.h"
 #include "signal_generator_flags.h"
@@ -126,6 +125,8 @@ public:
     std::string p3;
     std::string p4;
     std::string p5;
+
+    std::string implementation = "GPS_L1_CA_DLL_PLL_Tracking"; //"GPS_L1_CA_DLL_PLL_C_Aid_Tracking";
 
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
 
@@ -222,14 +223,14 @@ void GpsL1CADllPllTrackingTest::configure_receiver()
 
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
     // Set Tracking
-    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
+    config->set_property("Tracking_1C.implementation", implementation);
     config->set_property("Tracking_1C.item_type", "gr_complex");
-    config->set_property("Tracking_1C.if", "0");
-    config->set_property("Tracking_1C.dump", "true");
-    config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
-    config->set_property("Tracking_1C.pll_bw_hz", "30.0");
+    config->set_property("Tracking_1C.pll_bw_hz", "20.0");
     config->set_property("Tracking_1C.dll_bw_hz", "2.0");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
+    config->set_property("Tracking_1C.extend_correlation_ms", "1");
+    config->set_property("Tracking_1C.dump", "true");
+    config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
 }
 
 
@@ -383,18 +384,17 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     }) << "Failure opening true observables file" << std::endl;
 
     top_block = gr::make_top_block("Tracking test");
-    //std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
-    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
+
+    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_1C", implementation, 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);//std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
     boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx> msg_rx = GpsL1CADllPllTrackingTest_msg_rx_make();
 
     // load acquisition data based on the first epoch of the true observations
-    ASSERT_NO_THROW({
-        if (true_obs_data.read_binary_obs() == false)
-            {
-                throw std::exception();
-            };
-    }) << "Failure reading true observables file" << std::endl;
+    ASSERT_EQ(true_obs_data.read_binary_obs(), true)
+        << "Failure reading true tracking dump file." << std::endl
+        << "Maybe sat PRN #" + std::to_string(FLAGS_test_satellite_PRN) +
+        " is not available?";
 
     //restart the epoch counter
     true_obs_data.restart();
@@ -479,6 +479,8 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     std::vector<double> prompt;
     std::vector<double> early;
     std::vector<double> late;
+    std::vector<double> promptI;
+    std::vector<double> promptQ;
 
     epoch_counter = 0;
     while(trk_dump.read_binary_obs())
@@ -495,6 +497,8 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
             prompt.push_back(trk_dump.abs_P);
             early.push_back(trk_dump.abs_E);
             late.push_back(trk_dump.abs_L);
+            promptI.push_back(trk_dump.prompt_I);
+            promptQ.push_back(trk_dump.prompt_Q);
         }
 
     //Align initial measurements and cut the tracking pull-in transitory
@@ -511,7 +515,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles);
 
     std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout <<  "Signal tracking completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Signal tracking completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     if(FLAGS_plot_gps_l1_tracking_test == true)
         {
@@ -544,12 +548,25 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             g1.set_xlabel("Time [s]");
                             g1.set_ylabel("Correlators' output");
                             g1.cmd("set key box opaque");
-                            g1.plot_xy( timevec, prompt, "Prompt");
-                            g1.plot_xy( timevec, early, "Early");
-                            g1.plot_xy( timevec, late, "Late");
+                            unsigned int decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
+                            g1.plot_xy( timevec, prompt, "Prompt", decimate);
+                            g1.plot_xy( timevec, early, "Early", decimate);
+                            g1.plot_xy( timevec, late, "Late", decimate);
                             g1.savetops("Correlators_outputs");
                             g1.savetopdf("Correlators_outputs", 18);
                             g1.showonscreen(); // window output
+
+                            Gnuplot g2("points");
+                            g2.set_title("Constellation diagram (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                            g2.set_grid();
+                            g2.set_xlabel("Inphase");
+                            g2.set_ylabel("Quadrature");
+                            g2.cmd("set size ratio -1");
+                            g2.plot_xy( promptI, promptQ);
+                            g2.savetops("Constellation");
+                            g2.savetopdf("Constellation", 18);
+                            g2.showonscreen(); // window output
+
                     }
                     catch (GnuplotException ge)
                     {

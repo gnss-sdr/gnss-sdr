@@ -39,4 +39,6 @@
   DEFINE_string(gnuplot_executable, "", "Gnuplot binary path");
 #endif
 
+DEFINE_int32(plot_decimate, 1, "Decimate plots");
+
 #endif

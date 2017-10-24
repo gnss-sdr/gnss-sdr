@@ -45,18 +45,18 @@ obsd_t insert_obs_to_rtklib(obsd_t & rtklib_obs, const Gnss_Synchro & gnss_synch
     //Galileo is the third satellite system for RTKLIB, so, add the required offset to discriminate Galileo ephemeris
     switch(gnss_synchro.System)
     {
-    case 'G':
-        rtklib_obs.sat = gnss_synchro.PRN;
-        break;
-    case 'E':
-        rtklib_obs.sat = gnss_synchro.PRN+NSATGPS+NSATGLO;
-        break;
-    case 'R':
-        rtklib_obs.sat = gnss_synchro.PRN+NSATGPS;
-        break;
+        case 'G':
+            rtklib_obs.sat = gnss_synchro.PRN;
+            break;
+        case 'E':
+            rtklib_obs.sat = gnss_synchro.PRN+NSATGPS+NSATGLO;
+            break;
+        case 'R':
+            rtklib_obs.sat = gnss_synchro.PRN+NSATGPS;
+            break;
 
-    default:
-        rtklib_obs.sat = gnss_synchro.PRN;
+        default:
+            rtklib_obs.sat = gnss_synchro.PRN;
     }
     rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
     rtklib_obs.rcv = 1;
@@ -64,14 +64,12 @@ obsd_t insert_obs_to_rtklib(obsd_t & rtklib_obs, const Gnss_Synchro & gnss_synch
     return rtklib_obs;
 }
 
-
-geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
+geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris & glonass_gnav_eph, const Glonass_Gnav_Utc_Model & gnav_clock_model)
 {
-    int week;
+	double week, sec;
+	int adj_week;
     geph_t rtklib_sat = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0.0, 0.0, 0.0}, {0.0, 0.0,
-            0.0}, {0.0, 0.0, 0.0}, 0.0, 0.0, 0.0};
-    gtime_t t_utc;
-    struct tm utcinfo;
+        0.0}, {0.0, 0.0, 0.0}, 0.0, 0.0, 0.0};
 
     rtklib_sat.sat    = glonass_gnav_eph.i_satellite_slot_number + NSATGPS; /* satellite number */
     rtklib_sat.iode   = static_cast<int>(glonass_gnav_eph.d_t_b);           /* IODE (0-6 bit of tb field) */
@@ -92,25 +90,15 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
     rtklib_sat.gamn   = glonass_gnav_eph.d_gamma_n;                         /* SV relative freq bias */
     rtklib_sat.age    = static_cast<int>(glonass_gnav_eph.d_Delta_tau_n);   /* delay between L1 and L2 (s) */
 
-    utcinfo.tm_mon  = 0;
-    utcinfo.tm_mday = glonass_gnav_eph.d_N_T;
-    utcinfo.tm_year = glonass_gnav_eph.d_yr - 1900;
-    utcinfo.tm_hour = -6;
-    utcinfo.tm_min  = 0;
-    utcinfo.tm_sec  = glonass_gnav_eph.d_tod;
-    t_utc.time = mktime(&utcinfo);
-    t_utc.sec = glonass_gnav_eph.d_tau_c;
-    rtklib_sat.toe    = utc2gpst(t_utc);      /* message frame time (gpst) */
+    // Time expressed in GPS Time but using RTKLib format
+    glonass_gnav_eph.glot_to_gpst(glonass_gnav_eph.d_tod, gnav_clock_model.d_tau_c, gnav_clock_model.d_tau_gps, &week, &sec);
+    adj_week = adjgpsweek(static_cast<int>(week));
+    rtklib_sat.toe = gpst2time(adj_week, sec);
 
-    utcinfo.tm_mon  = 0;
-    utcinfo.tm_mday = glonass_gnav_eph.d_N_T;
-    utcinfo.tm_year = glonass_gnav_eph.d_yr - 1900;
-    utcinfo.tm_hour = -6;
-    utcinfo.tm_min  = 0;
-    utcinfo.tm_sec  = glonass_gnav_eph.d_t_k;
-    t_utc.time = mktime(&utcinfo);
-    t_utc.sec = glonass_gnav_eph.d_tau_c;
-    rtklib_sat.tof = utc2gpst(t_utc);      /* message frame time (gpst) */
+    // Time expressed in GPS Time but using RTKLib format
+    glonass_gnav_eph.glot_to_gpst(glonass_gnav_eph.d_t_k, gnav_clock_model.d_tau_c, gnav_clock_model.d_tau_gps, &week, &sec);
+    adj_week = adjgpsweek(static_cast<int>(week));
+    rtklib_sat.tof = gpst2time(adj_week, sec);
 
     return rtklib_sat;
 }
@@ -119,7 +107,7 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 eph_t eph_to_rtklib(const Galileo_Ephemeris & gal_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
     //Galileo is the third satellite system for RTKLIB, so, add the required offset to discriminate Galileo ephemeris
     rtklib_sat.sat = gal_eph.i_satellite_PRN+NSATGPS+NSATGLO;
     rtklib_sat.A = gal_eph.A_1 * gal_eph.A_1;
@@ -169,7 +157,7 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris & gal_eph)
 eph_t eph_to_rtklib(const Gps_Ephemeris & gps_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
     rtklib_sat.sat = gps_eph.i_satellite_PRN;
     rtklib_sat.A = gps_eph.d_sqrt_A * gps_eph.d_sqrt_A;
     rtklib_sat.M0 = gps_eph.d_M_0;
@@ -220,7 +208,7 @@ eph_t eph_to_rtklib(const Gps_Ephemeris & gps_eph)
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris & gps_cnav_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0 };
     rtklib_sat.sat = gps_cnav_eph.i_satellite_PRN;
     const double A_REF = 26559710.0; // See IS-GPS-200H,  pp. 170
     rtklib_sat.A = A_REF + gps_cnav_eph.d_DELTA_A;

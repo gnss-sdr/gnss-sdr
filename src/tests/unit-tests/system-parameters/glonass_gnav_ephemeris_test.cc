@@ -63,3 +63,23 @@ TEST(GlonassGnavEphemerisTest, ComputeGlonassTime)
 	ASSERT_TRUE(expected_gtime.minutes() -  t.minutes() < FLT_EPSILON );
 	ASSERT_TRUE(expected_gtime.seconds() -  t.seconds() < FLT_EPSILON );
 }
+
+TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT)
+{
+    Glonass_Gnav_Ephemeris gnav_eph;
+    gnav_eph.d_yr = 2005;
+    gnav_eph.d_N_T = 32;
+
+    double tod = 70200;
+    double week = 0.0;
+    double tow = 0.0;
+    double true_leap_sec = 13;
+    double true_week = 1307;
+    double true_tow = 480600+true_leap_sec;
+
+	gnav_eph.glot_to_gpst(tod, 0.0, 0.0, &week, &tow);
+
+    // Perform assertions of decoded fields
+	ASSERT_TRUE(week - true_week < FLT_EPSILON );
+	ASSERT_TRUE(tow - true_week < FLT_EPSILON );
+}

@@ -103,7 +103,7 @@ void GpsL1CADllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 
 
 GpsL1CADllPllTrackingTest_msg_rx::GpsL1CADllPllTrackingTest_msg_rx() :
-            gr::block("GpsL1CADllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+        gr::block("GpsL1CADllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CADllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
@@ -268,8 +268,8 @@ void GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec & true_time_s,
     //5. report
     std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TRK Doppler RMSE=" << rmse
-              << ", mean=" << error_mean
-              << ", stdev="<< sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Hz]" << std::endl;
+            << ", mean=" << error_mean
+            << ", stdev="<< sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Hz]" << std::endl;
     std::cout.precision (ss);
 }
 
@@ -526,30 +526,30 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                 {
                     try
                     {
-                        boost::filesystem::path p(gnuplot_executable);
-                        boost::filesystem::path dir = p.parent_path();
-                        std::string gnuplot_path = dir.native();
-                        Gnuplot::set_GNUPlotPath(gnuplot_path);
+                            boost::filesystem::path p(gnuplot_executable);
+                            boost::filesystem::path dir = p.parent_path();
+                            std::string gnuplot_path = dir.native();
+                            Gnuplot::set_GNUPlotPath(gnuplot_path);
 
-                        std::vector<double> timevec;
-                        //sample_interval = (1 / baseband_sampling_freq)
-                        double t = 0.0;
-                        for (auto it = prompt.begin(); it != prompt.end(); it++)
-                        {
-                            timevec.push_back(t);
-                            t = t + GPS_L1_CA_CODE_PERIOD;
-                        }
-                        Gnuplot g1("linespoints");
-                        g1.set_title("GPS L1 C/A signal tracking for satellite " + std::to_string(FLAGS_test_satellite_PRN));
-                        g1.set_grid();
-                        g1.set_xlabel("Time [s]");
-                        g1.set_ylabel("Correlators output");
-                        g1.plot_xy( timevec, prompt, "Prompt");
-                        g1.plot_xy( timevec, early, "Early");
-                        g1.plot_xy( timevec, late, "Late");
-                        g1.savetops("Correlators_outputs");
-                        g1.savetopdf("Correlators_outputs", 18);
-                        g1.showonscreen(); // window output
+                            std::vector<double> timevec;
+                            double t = 0.0;
+                            for (auto it = prompt.begin(); it != prompt.end(); it++)
+                                {
+                                    timevec.push_back(t);
+                                    t = t + GPS_L1_CA_CODE_PERIOD;
+                                }
+                            Gnuplot g1("linespoints");
+                            g1.set_title("GPS L1 C/A signal tracking correlators' output (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                            g1.set_grid();
+                            g1.set_xlabel("Time [s]");
+                            g1.set_ylabel("Correlators' output");
+                            g1.cmd("set key box opaque");
+                            g1.plot_xy( timevec, prompt, "Prompt");
+                            g1.plot_xy( timevec, early, "Early");
+                            g1.plot_xy( timevec, late, "Late");
+                            g1.savetops("Correlators_outputs");
+                            g1.savetopdf("Correlators_outputs", 18);
+                            g1.showonscreen(); // window output
                     }
                     catch (GnuplotException ge)
                     {

@@ -38,6 +38,7 @@
 #include <cmath>
 #include <algorithm>
 #include <sstream>
+#include <iostream>
 #include <boost/filesystem.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
@@ -103,7 +104,7 @@ pcps_zp_acquisition_cc::pcps_zp_acquisition_cc(
         }
     d_fft_size = static_cast<unsigned int>(std::exp2(std::ceil(std::log2(d_segment_size))));
     d_fft_codes = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_magnitude = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+    d_magnitude = static_cast<float*>(volk_gnsssdr_malloc(d_segment_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -118,10 +119,8 @@ pcps_zp_acquisition_cc::pcps_zp_acquisition_cc(
     d_grid_doppler_wipeoffs = 0;
     d_blocking = blocking;
     d_active = false;
-    d_acq_res_ready = false;
-    d_acq_res = false;
-    d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    std::fill_n(d_data_buffer, d_fft_size, gr_complex(0, 0)); //Data buffer initialization
+    d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_segment_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    std::fill_n(d_fft_if->get_inbuf(), d_fft_size, gr_complex(0, 0));
 }
 
 
@@ -164,11 +163,6 @@ void pcps_zp_acquisition_cc::set_local_code(std::complex<float> * code)
         {
             memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_segment_size);
         }
-    if(d_fft_size > d_segment_size)
-        {
-    	    std::fill_n(d_fft_if->get_inbuf() + d_segment_size, d_fft_size - d_segment_size, gr_complex(0, 0));
-        }
-
     d_fft_if->execute(); // We need the FFT of local code
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
@@ -196,7 +190,6 @@ void pcps_zp_acquisition_cc::init()
     d_mag = 0.0;
     d_input_power = 0.0;
     d_state = 0;
-    d_acq_res_ready = false;
     d_num_doppler_bins = ceil( static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step));
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
@@ -275,47 +268,39 @@ int pcps_zp_acquisition_cc::general_work(int noutput_items __attribute__((unused
         gr_vector_void_star &output_items __attribute__((unused)))
 {
 	gr::thread::scoped_lock lset(d_setlock);
-	if(d_acq_res_ready)
+	if(!d_active)
 	    {
-	        if(d_acq_res)
-	            {
-	        	    send_positive_acquisition();
-	            }
-	        else
-	            {
-	        	    send_negative_acquisition();
-	            }
-	        d_acq_res_ready = false;
-	        d_state = 0;
-	        consume_each(0);
-	        return 0;
+		    d_sample_counter += d_segment_size * ninput_items[0];
+		    consume_each(ninput_items[0]);
+		    return 0;
 	    }
 	switch (d_state)
     {
     case 0:
         {
-            if(d_active)
+            //restart acquisition variables
+        	d_gnss_synchro->Acq_delay_samples = 0.0;
+            d_gnss_synchro->Acq_doppler_hz = 0.0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_well_count = 0;
+            d_mag = 0.0;
+            d_input_power = 0.0;
+            d_test_statistics = 0.0;
+            d_state = 1;
+            d_sample_counter += d_segment_size;
+            const gr_complex* in = reinterpret_cast<const gr_complex*>(input_items[0]);
+            lset.unlock();
+            if(d_blocking)
                 {
-        	        //restart acquisition variables
-        	        d_acq_res_ready = false;
-        	        d_gnss_synchro->Acq_delay_samples = 0.0;
-                    d_gnss_synchro->Acq_doppler_hz = 0.0;
-                    d_gnss_synchro->Acq_samplestamp_samples = 0;
-                    d_well_count = 0;
-                    d_mag = 0.0;
-                    d_input_power = 0.0;
-                    d_test_statistics = 0.0;
-                    d_state = 1;
-                    d_sample_counter += d_segment_size;
-                    memcpy(d_data_buffer, input_items[0], d_segment_size * sizeof(gr_complex));
-                    lset.unlock();
-                    gr::thread::thread d_worker(&pcps_zp_acquisition_cc::acquisition_core, this);
-                    if(d_blocking)
-                        {
-            	            d_worker.join();
-            	        }
-                    consume_each(1);
+            	    gr::thread::thread d_worker(&pcps_zp_acquisition_cc::acquisition_core, this, in);
+            	    d_worker.join();
                 }
+            else
+                {
+            	    memcpy(d_data_buffer, in, d_segment_size * sizeof(gr_complex));
+            	    gr::thread::thread d_worker(&pcps_zp_acquisition_cc::acquisition_core, this, d_data_buffer);
+            	}
+            consume_each(1);
             break;
         }
     case 1:
@@ -330,12 +315,17 @@ int pcps_zp_acquisition_cc::general_work(int noutput_items __attribute__((unused
         	//A new signal segment is processed
         	d_state = 1;
         	d_sample_counter += d_segment_size;
-        	memcpy(d_data_buffer, input_items[0], d_segment_size * sizeof(gr_complex));
+        	const gr_complex* in = reinterpret_cast<const gr_complex*>(input_items[0]);
         	lset.unlock();
-        	gr::thread::thread d_worker(&pcps_zp_acquisition_cc::acquisition_core, this);
         	if(d_blocking)
         	    {
+        	        gr::thread::thread d_worker(&pcps_zp_acquisition_cc::acquisition_core, this, in);
         	        d_worker.join();
+        	    }
+        	else
+        	    {
+        	        memcpy(d_data_buffer, in, d_segment_size * sizeof(gr_complex));
+        	        gr::thread::thread d_worker(&pcps_zp_acquisition_cc::acquisition_core, this, d_data_buffer);
         	    }
         	consume_each(1);
         	break;
@@ -344,12 +334,11 @@ int pcps_zp_acquisition_cc::general_work(int noutput_items __attribute__((unused
     return 0;
 }
 
-void pcps_zp_acquisition_cc::acquisition_core()
+void pcps_zp_acquisition_cc::acquisition_core(const gr_complex* data_in)
 {
 	gr::thread::scoped_lock lset(d_setlock);
 	// initialize acquisition algorithm
 	unsigned long int sample_counter = d_sample_counter; // sample counter
-    const gr_complex *in = d_data_buffer; //Get the input samples pointer
     int doppler;
     uint32_t indext = 0;
     float magt = 0.0;
@@ -368,8 +357,8 @@ void pcps_zp_acquisition_cc::acquisition_core()
     if (d_use_CFAR_algorithm_flag == true)
         {
             // 1- (optional) Compute the input signal power estimation
-            volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
-            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
+            volk_32fc_magnitude_squared_32f(d_magnitude, data_in, d_segment_size);
+            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_segment_size);
             d_input_power /= static_cast<float>(d_segment_size);
         }
     // 2- Doppler frequency search loop
@@ -377,7 +366,7 @@ void pcps_zp_acquisition_cc::acquisition_core()
         {
             // doppler search steps
             doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
+            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), data_in, d_grid_doppler_wipeoffs[doppler_index], d_segment_size);
             // 3- Perform the FFT-based convolution  (parallel time search)
             // Compute the FFT of the carrier wiped--off incoming signal
             d_fft_if->execute();
@@ -447,8 +436,8 @@ void pcps_zp_acquisition_cc::acquisition_core()
     if (d_test_statistics > d_threshold)
         {
             d_state = 0; // Positive acquisition
-            d_acq_res_ready = true;
-            d_acq_res = true;
+            d_active = false;
+            send_positive_acquisition();
         }
     else if (!d_bit_transition_flag && (d_well_count < d_max_dwells))
         {
@@ -457,7 +446,8 @@ void pcps_zp_acquisition_cc::acquisition_core()
     else
         {
             d_state = 0; // Negative acquisition
-            d_acq_res_ready = true;
-            d_acq_res = false;
+            d_active = false;
+            send_negative_acquisition();
         }
 }
+

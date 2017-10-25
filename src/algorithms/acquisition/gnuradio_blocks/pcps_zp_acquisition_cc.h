@@ -97,7 +97,7 @@ private:
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
 
-    void acquisition_core();
+    void acquisition_core(const gr_complex* data_in);
 
     void send_negative_acquisition();
 
@@ -128,8 +128,6 @@ private:
     bool d_use_CFAR_algorithm_flag;
     bool d_dump;
     bool d_blocking;
-    bool d_acq_res_ready;
-    bool d_acq_res;
     bool d_active;
     std::ofstream d_dump_file;
     std::string d_dump_filename;
@@ -235,7 +233,6 @@ public:
      int general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
              gr_vector_const_void_star &input_items,
              gr_vector_void_star &output_items);
-
 };
 
 #endif /* GNSS_SDR_PCPS_ZP_ACQUISITION_CC_H_*/

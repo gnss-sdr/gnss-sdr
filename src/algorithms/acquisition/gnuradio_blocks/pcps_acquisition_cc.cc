@@ -35,6 +35,7 @@
 
 #include "pcps_acquisition_cc.h"
 #include <sstream>
+#include <iostream>
 #include <boost/filesystem.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>

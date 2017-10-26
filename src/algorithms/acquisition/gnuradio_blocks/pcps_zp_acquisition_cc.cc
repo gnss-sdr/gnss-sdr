@@ -338,6 +338,7 @@ void pcps_zp_acquisition_cc::acquisition_core(const gr_complex* data_in)
 {
 	gr::thread::scoped_lock lset(d_setlock);
 	// initialize acquisition algorithm
+	d_active = true;
 	unsigned long int sample_counter = d_sample_counter; // sample counter
     int doppler;
     uint32_t indext = 0;

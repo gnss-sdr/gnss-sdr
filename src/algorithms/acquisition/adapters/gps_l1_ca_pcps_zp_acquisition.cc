@@ -37,6 +37,7 @@
 #include "gps_l1_ca_pcps_zp_acquisition.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <iostream>
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
@@ -90,6 +91,8 @@ GpsL1CaPcpsZPAcquisition::GpsL1CaPcpsZPAcquisition(
                     doppler_max_, if_, fs_in_, code_length_, code_length_,
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
+            LOG(INFO) << "ACQ: Zero padding is not available with this data item type, non padded acquisition has been activated";
+            std::cout << "ACQ: Zero padding is not available with this data item type, non padded acquisition has been activated" << std::endl;
         }
     else
         {

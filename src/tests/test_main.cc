@@ -72,6 +72,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/arithmetic/fft_speed_test.cc"
 #include "unit-tests/arithmetic/fft_buffer_test.cc"
 #include "unit-tests/arithmetic/volk_kernels_acq_speed_test.cc"
+#include "unit-tests/arithmetic/gr_thread_generation.cc"
 
 #include "unit-tests/control-plane/file_configuration_test.cc"
 #include "unit-tests/control-plane/in_memory_configuration_test.cc"

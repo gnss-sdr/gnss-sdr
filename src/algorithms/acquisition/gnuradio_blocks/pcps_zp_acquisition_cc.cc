@@ -119,6 +119,7 @@ pcps_zp_acquisition_cc::pcps_zp_acquisition_cc(
     d_grid_doppler_wipeoffs = 0;
     d_blocking = blocking;
     d_active = false;
+    d_testing = false;
     d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_segment_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     std::fill_n(d_fft_if->get_inbuf(), d_fft_size, gr_complex(0, 0));
 }
@@ -268,7 +269,7 @@ int pcps_zp_acquisition_cc::general_work(int noutput_items __attribute__((unused
         gr_vector_void_star &output_items __attribute__((unused)))
 {
 	gr::thread::scoped_lock lset(d_setlock);
-	if(!d_active)
+	if(!d_active && !d_testing)
 	    {
 		    d_sample_counter += d_segment_size * ninput_items[0];
 		    consume_each(ninput_items[0]);
@@ -287,14 +288,12 @@ int pcps_zp_acquisition_cc::general_work(int noutput_items __attribute__((unused
             d_input_power = 0.0;
             d_test_statistics = 0.0;
             d_state = 1;
-            d_sample_counter += d_segment_size;
             const gr_complex* in = reinterpret_cast<const gr_complex*>(input_items[0]);
             lset.unlock();
             if(d_blocking)
                 {
-            	    gr::thread::thread d_worker(&pcps_zp_acquisition_cc::acquisition_core, this, in);
-            	    d_worker.join();
-                }
+            	    acquisition_core(in);
+            	}
             else
                 {
             	    memcpy(d_data_buffer, in, d_segment_size * sizeof(gr_complex));
@@ -319,8 +318,7 @@ int pcps_zp_acquisition_cc::general_work(int noutput_items __attribute__((unused
         	lset.unlock();
         	if(d_blocking)
         	    {
-        	        gr::thread::thread d_worker(&pcps_zp_acquisition_cc::acquisition_core, this, in);
-        	        d_worker.join();
+        	        acquisition_core(in);
         	    }
         	else
         	    {
@@ -439,6 +437,7 @@ void pcps_zp_acquisition_cc::acquisition_core(const gr_complex* data_in)
             d_state = 0; // Positive acquisition
             d_active = false;
             send_positive_acquisition();
+            d_sample_counter += d_segment_size;
         }
     else if (!d_bit_transition_flag && (d_well_count < d_max_dwells))
         {
@@ -449,6 +448,7 @@ void pcps_zp_acquisition_cc::acquisition_core(const gr_complex* data_in)
             d_state = 0; // Negative acquisition
             d_active = false;
             send_negative_acquisition();
+            d_sample_counter += d_segment_size;
         }
 }
 

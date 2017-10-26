@@ -129,6 +129,7 @@ private:
     bool d_dump;
     bool d_blocking;
     bool d_active;
+    bool d_testing;
     std::ofstream d_dump_file;
     std::string d_dump_filename;
     std::string d_satellite_str;
@@ -184,6 +185,12 @@ public:
       * \brief Set acquisition channel unique ID
       * \param channel - receiver channel.
       */
+     inline void set_testing(bool testing)
+     {
+    	 gr::thread::scoped_lock lock(d_setlock);
+    	 d_testing = testing;
+     }
+
      inline void set_channel(unsigned int channel)
      {
          gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler

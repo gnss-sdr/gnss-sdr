@@ -136,6 +136,7 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_blocking = blocking;
     d_new_data_available = false;
     d_worker_active = false;
+    d_testing = false;
     d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 }
 
@@ -522,13 +523,13 @@ void pcps_acquisition_cc::acquisition_core( void )
                 {
                     if (d_test_statistics > d_threshold)
                         {
-                            d_state = 0; // Positive acquisition
+                            d_state = (d_testing ? 1 : 0); // Positive acquisition
                             d_active = false;
                             send_positive_acquisition();
                         }
                     else if (d_well_count == d_max_dwells)
                         {
-                            d_state = 0;
+                            d_state = (d_testing ? 1 : 0);
                             d_active = false;
                             send_negative_acquisition();
                         }
@@ -539,19 +540,18 @@ void pcps_acquisition_cc::acquisition_core( void )
                         {
                             if (d_test_statistics > d_threshold)
                                 {
-                                    d_state = 0; // Positive acquisition
+                                    d_state = (d_testing ? 1 : 0); // Positive acquisition
                                     d_active = false;
                                     send_positive_acquisition();
                                 }
                             else
                                 {
-                                    d_state = 0; // Negative acquisition
+                                    d_state = (d_testing ? 1 : 0); // Negative acquisition
                                     d_active = false;
                                     send_negative_acquisition();
                                 }
                         }
                 }
-
             lk.lock();
             d_worker_active = false;
             d_new_data_available = false;

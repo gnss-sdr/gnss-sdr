@@ -30,7 +30,9 @@
  * -------------------------------------------------------------------------
  */
 
-
+DEFINE_int32(doppler_max_pcps_zpa, 5000,"Max. Doppler frequency in the Acquisition block");
+DEFINE_int32(doppler_step_pcps_zpa, 250,"Doppler step in the Acquisition block");
+DEFINE_int32(ntests_pcps_zpa, 1000,"Number of averaged tests");
 
 #include <chrono>
 #include <iostream>
@@ -124,7 +126,7 @@ protected:
     {}
 
     void init();
-    void init_speed_test(int freq);
+    void init_speed_test(int freq, bool blocking);
 
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
@@ -155,7 +157,7 @@ void GpsL1CaPcpsZPAcquisitionTest::init()
     config->set_property("Acquisition.blocking", "true");
 }
 
-void GpsL1CaPcpsZPAcquisitionTest::init_speed_test(int freq)
+void GpsL1CaPcpsZPAcquisitionTest::init_speed_test(int freq, bool blocking)
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'G';
@@ -163,7 +165,14 @@ void GpsL1CaPcpsZPAcquisitionTest::init_speed_test(int freq)
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(freq));
-    config->set_property("Acquisition.blocking", "true");
+    if (blocking)
+    {
+        config->set_property("Acquisition.blocking", "true");
+    }
+    else
+    {
+    	config->set_property("Acquisition.blocking", "false");
+    }
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.coherent_integration_time_ms", "1");
@@ -215,7 +224,6 @@ TEST_F(GpsL1CaPcpsZPAcquisitionTest, ConnectAndRun)
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
-/*
 TEST_F(GpsL1CaPcpsZPAcquisitionTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -239,7 +247,7 @@ TEST_F(GpsL1CaPcpsZPAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(22);
+        acquisition->set_threshold(0.00001);
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -266,6 +274,7 @@ TEST_F(GpsL1CaPcpsZPAcquisitionTest, ValidationOfResults)
     acquisition->set_local_code();
     acquisition->set_state(0); // Ensure that acquisition starts at the first sample
     acquisition->init();
+    acquisition->reset();
 
     EXPECT_NO_THROW( {
         start = std::chrono::system_clock::now();
@@ -285,77 +294,147 @@ TEST_F(GpsL1CaPcpsZPAcquisitionTest, ValidationOfResults)
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 }
-*/
-TEST_F(GpsL1CaPcpsZPAcquisitionTest, SpeedTest)
+
+TEST_F(GpsL1CaPcpsZPAcquisitionTest, SpeedTestBlocking)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    int fs_in[14] = {1000000, 1024000, 2000000, 2048000, 4000000, 4096000, 8000000, 8192000, 16000000, 16384000, 30000000, 32768000, 40000000, 65536000};
-    int ntests = 5;
-    int nfreqtest = 14;
+    int fs_in[12] = {1000000, 1024000, 2000000, 2048000, 4000000, 4096000, 8000000, 8192000, 16000000, 16384000};
+    int ntests = FLAGS_ntests_pcps_zpa;
+    int nfreqtest = 10;
     double elapsed_times[nfreqtest];
 
     for (int nfreq = 0; nfreq < nfreqtest; nfreq++)
     {
     	std::chrono::duration<double> elapsed_seconds(0);
-    	for (int aux = 0; aux < ntests; aux++)
-        {
-    	    top_block = gr::make_top_block("Acquisition test");
-    	    config = std::make_shared<InMemoryConfiguration>();
-    	    init_speed_test(fs_in[nfreq]);
-    	    std::shared_ptr<GpsL1CaPcpsZPAcquisition> acquisition = std::make_shared<GpsL1CaPcpsZPAcquisition>(config.get(), "Acquisition", 1, 1);
-    	    boost::shared_ptr<GpsL1CaPcpsZPAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsZPAcquisitionTest_msg_rx_make();
-    	        ASSERT_NO_THROW( {
-    	            acquisition->set_channel(1);
-    	        }) << "Failure setting channel." << std::endl;
+    	top_block = gr::make_top_block("Acquisition test");
+   	    config = std::make_shared<InMemoryConfiguration>();
+   	    init_speed_test(fs_in[nfreq],true);
+   	    std::shared_ptr<GpsL1CaPcpsZPAcquisition> acquisition = std::make_shared<GpsL1CaPcpsZPAcquisition>(config.get(), "Acquisition", 1, 1);
+   	    boost::shared_ptr<GpsL1CaPcpsZPAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsZPAcquisitionTest_msg_rx_make();
+   	    ASSERT_NO_THROW( {
+   	        acquisition->set_channel(1);
+   	    }) << "Failure setting channel." << std::endl;
 
-    	        ASSERT_NO_THROW( {
-    	            acquisition->set_gnss_synchro(&gnss_synchro);
-    	        }) << "Failure setting gnss_synchro." << std::endl;
+   	    ASSERT_NO_THROW( {
+   	        acquisition->set_gnss_synchro(&gnss_synchro);
+   	    }) << "Failure setting gnss_synchro." << std::endl;
 
-    	        ASSERT_NO_THROW( {
-    	            acquisition->set_threshold(22);
-    	        }) << "Failure setting threshold." << std::endl;
+   	    ASSERT_NO_THROW( {
+   	        acquisition->set_threshold(22);
+   	    }) << "Failure setting threshold." << std::endl;
 
-    	        ASSERT_NO_THROW( {
-    	            acquisition->set_doppler_max(45000);
-    	        }) << "Failure setting doppler_max." << std::endl;
+   	    ASSERT_NO_THROW( {
+   	        acquisition->set_doppler_max(FLAGS_doppler_max_pcps_zpa);
+   	    }) << "Failure setting doppler_max." << std::endl;
 
-    	        ASSERT_NO_THROW( {
-    	            acquisition->set_doppler_step(250);
-    	        }) << "Failure setting doppler_step." << std::endl;
+   	    ASSERT_NO_THROW( {
+   	        acquisition->set_doppler_step(FLAGS_doppler_step_pcps_zpa);
+   	    }) << "Failure setting doppler_step." << std::endl;
 
-    	        ASSERT_NO_THROW( {
-    	            acquisition->connect(top_block);
-    	        }) << "Failure connecting acquisition to the top_block." << std::endl;
+   	    ASSERT_NO_THROW( {
+   	        acquisition->connect(top_block);
+   	    }) << "Failure connecting acquisition to the top_block." << std::endl;
 
-    	        ASSERT_NO_THROW( {
-    	            gr::analog::noise_source_c::sptr noise_source = gr::analog::noise_source_c::make(gr::analog::GR_GAUSSIAN, 1.0);
-    	            int nsamples = fs_in[nfreq] / 100;
-    	            gr::msg_queue::sptr queue = gr::msg_queue::make(0);
-    	            boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-    	            top_block->connect(noise_source, 0, valve, 0);
-    	            top_block->connect(valve, 0, acquisition->get_left_block(), 0);
-    	            top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    	        }) << "Failure connecting the blocks of acquisition test." << std::endl;
+   	    ASSERT_NO_THROW( {
+   	        gr::analog::noise_source_c::sptr noise_source = gr::analog::noise_source_c::make(gr::analog::GR_GAUSSIAN, 1.0);
+   	        unsigned int nsamples = static_cast<unsigned int>(fs_in[nfreq]) * static_cast<unsigned int>(ntests) / 1000;
+   	        gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+   	        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+   	        top_block->connect(noise_source, 0, valve, 0);
+   	        top_block->connect(valve, 0, acquisition->get_left_block(), 0);
+   	        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+   	    }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
-    	        acquisition->set_local_code();
-    	        acquisition->set_state(0); // Ensure that acquisition starts at the first sample
-    	        acquisition->init();
-    	        acquisition->reset();
+   	    acquisition->set_local_code();
+   	    acquisition->set_state(0); // Ensure that acquisition starts at the first sample
+   	    acquisition->init();
+   	    acquisition->reset();
+   	    acquisition->set_testing(true);
 
-    	        EXPECT_NO_THROW( {
-    	            start = std::chrono::system_clock::now();
-    	            top_block->run(); // Start threads and wait
-    	            end = std::chrono::system_clock::now();
-    	            elapsed_seconds += (end - start);
-    	        }) << "Failure running the top_block." << std::endl;
-    	        ASSERT_EQ(2, msg_rx->rx_message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
-    	}
-        elapsed_times[nfreq] = elapsed_seconds.count() / static_cast<double>(ntests);
+    	EXPECT_NO_THROW( {
+    	    start = std::chrono::system_clock::now();
+    	    top_block->run(); // Start threads and wait
+    	    end = std::chrono::system_clock::now();
+    	    elapsed_seconds = end - start;
+    	}) << "Failure running the top_block." << std::endl;
+    	ASSERT_EQ(2, msg_rx->rx_message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+    	elapsed_times[nfreq] = elapsed_seconds.count() / static_cast<double>(ntests);
     }
+    std::cout << "BLOCKING Acquisition" << std::endl;
     for (int aux = 0; aux < nfreqtest; aux++)
     {
     	std::cout << "Sampling frequency: " << static_cast<float>(fs_in[aux]) / 1e6 << "MHz. Averaged ACQ time: " << elapsed_times[aux] * 1e3 << " ms." << std::endl;
     }
 }
 
+TEST_F(GpsL1CaPcpsZPAcquisitionTest, SpeedTestNonBlocking)
+{
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    int fs_in[12] = {1000000, 1024000, 2000000, 2048000, 4000000, 4096000, 8000000, 8192000, 16000000, 16384000};
+    int ntests = FLAGS_ntests_pcps_zpa;
+    int nfreqtest = 10;
+    double elapsed_times[nfreqtest];
+
+    for (int nfreq = 0; nfreq < nfreqtest; nfreq++)
+    {
+    	std::chrono::duration<double> elapsed_seconds(0);
+    	top_block = gr::make_top_block("Acquisition test");
+   	    config = std::make_shared<InMemoryConfiguration>();
+   	    init_speed_test(fs_in[nfreq],false);
+   	    std::shared_ptr<GpsL1CaPcpsZPAcquisition> acquisition = std::make_shared<GpsL1CaPcpsZPAcquisition>(config.get(), "Acquisition", 1, 1);
+   	    boost::shared_ptr<GpsL1CaPcpsZPAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsZPAcquisitionTest_msg_rx_make();
+   	    ASSERT_NO_THROW( {
+   	        acquisition->set_channel(1);
+   	    }) << "Failure setting channel." << std::endl;
+
+   	    ASSERT_NO_THROW( {
+   	        acquisition->set_gnss_synchro(&gnss_synchro);
+   	    }) << "Failure setting gnss_synchro." << std::endl;
+
+   	    ASSERT_NO_THROW( {
+   	        acquisition->set_threshold(22);
+   	    }) << "Failure setting threshold." << std::endl;
+
+   	    ASSERT_NO_THROW( {
+   	        acquisition->set_doppler_max(FLAGS_doppler_max_pcps_zpa);
+   	    }) << "Failure setting doppler_max." << std::endl;
+
+   	    ASSERT_NO_THROW( {
+   	        acquisition->set_doppler_step(FLAGS_doppler_step_pcps_zpa);
+   	    }) << "Failure setting doppler_step." << std::endl;
+
+   	    ASSERT_NO_THROW( {
+   	        acquisition->connect(top_block);
+   	    }) << "Failure connecting acquisition to the top_block." << std::endl;
+
+   	    ASSERT_NO_THROW( {
+   	        gr::analog::noise_source_c::sptr noise_source = gr::analog::noise_source_c::make(gr::analog::GR_GAUSSIAN, 1.0);
+   	        unsigned int nsamples = static_cast<unsigned int>(fs_in[nfreq]) * static_cast<unsigned int>(ntests) / 1000;
+   	        gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+   	        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+   	        top_block->connect(noise_source, 0, valve, 0);
+   	        top_block->connect(valve, 0, acquisition->get_left_block(), 0);
+   	        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+   	    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+
+   	    acquisition->set_local_code();
+   	    acquisition->set_state(0); // Ensure that acquisition starts at the first sample
+   	    acquisition->init();
+   	    acquisition->reset();
+   	    acquisition->set_testing(true);
+
+    	EXPECT_NO_THROW( {
+    	    start = std::chrono::system_clock::now();
+    	    top_block->run(); // Start threads and wait
+    	    end = std::chrono::system_clock::now();
+    	    elapsed_seconds = end - start;
+    	}) << "Failure running the top_block." << std::endl;
+    	ASSERT_EQ(2, msg_rx->rx_message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+    	elapsed_times[nfreq] = elapsed_seconds.count() / static_cast<double>(ntests);
+    }
+    std::cout << "NON BLOCKING Acquisition" << std::endl;
+    for (int aux = 0; aux < nfreqtest; aux++)
+    {
+    	std::cout << "Sampling frequency: " << static_cast<float>(fs_in[aux]) / 1e6 << "MHz. Averaged ACQ time: " << elapsed_times[aux] * 1e3 << " ms." << std::endl;
+    }
+}

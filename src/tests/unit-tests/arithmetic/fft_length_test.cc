@@ -58,7 +58,7 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                     end = std::chrono::system_clock::now();
                     std::chrono::duration<double> elapsed_seconds = end - start;
                     execution_times[i] = elapsed_seconds.count() / static_cast<double>(FLAGS_fft_iterations_test);
-                    std::cout << "FFT execution time for length=" << d_fft_size << " : " << execution_times[i] << " [s]" << std::endl;
+                    std::cout << "FFT execution time for length=" << d_fft_size << " : " << execution_times[i] * 1e6 << " [us]" << std::endl;
                     delete d_fft;
                 }
     );

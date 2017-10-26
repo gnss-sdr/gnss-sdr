@@ -289,6 +289,16 @@ void GpsL1CaPcpsZPAcquisition::set_state(int state)
         }
 }
 
+void GpsL1CaPcpsZPAcquisition::set_testing(bool testing)
+{
+    if (item_type_.compare("cshort") == 0)
+	    {}
+	else
+	    {
+	        acquisition_cc_->set_testing(testing);
+	    }
+}
+
 
 
 float GpsL1CaPcpsZPAcquisition::calculate_threshold(float pfa)

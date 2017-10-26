@@ -135,6 +135,7 @@ private:
     bool d_active;
     int d_state;
     bool d_dump;
+    bool d_testing;
     unsigned int d_channel;
     std::string d_dump_filename;
 
@@ -194,6 +195,12 @@ public:
      {
          gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_active = active;
+     }
+
+     inline void set_testing(bool testing)
+     {
+    	 gr::thread::scoped_lock lock(d_setlock);
+    	 d_testing = testing;
      }
 
      /*!

@@ -138,6 +138,8 @@ public:
      */
     void set_state(int state);
 
+    void set_testing(bool testing);
+
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_cc_sptr acquisition_cc_;

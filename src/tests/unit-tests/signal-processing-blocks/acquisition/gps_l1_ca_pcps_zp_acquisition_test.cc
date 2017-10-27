@@ -1,13 +1,13 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition_test.cc
+ * \file gps_l1_ca_pcps_zp_acquisition_test.cc
  * \brief  This class implements an acquisition test for
- * GpsL1CaPcpsAcquisition class based on some input parameters.
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * GpsL1CaPcpsZPAcquisition class based on some input parameters.
+ * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,9 +30,9 @@
  * -------------------------------------------------------------------------
  */
 
-DEFINE_int32(doppler_max_pcps, 5000,"Max. Doppler frequency in the Acquisition block");
-DEFINE_int32(doppler_step_pcps, 250,"Doppler step in the Acquisition block");
-DEFINE_int32(ntests_pcps, 1000,"Number of averaged tests");
+DEFINE_int32(doppler_max_pcps_zpa, 5000,"Max. Doppler frequency in the Acquisition block");
+DEFINE_int32(doppler_step_pcps_zpa, 250,"Doppler step in the Acquisition block");
+DEFINE_int32(ntests_pcps_zpa, 1000,"Number of averaged tests");
 
 #include <chrono>
 #include <iostream>
@@ -53,35 +53,35 @@ DEFINE_int32(ntests_pcps, 1000,"Number of averaged tests");
 #include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_zp_acquisition.h"
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
-class GpsL1CaPcpsAcquisitionTest_msg_rx;
+class GpsL1CaPcpsZPAcquisitionTest_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> GpsL1CaPcpsAcquisitionTest_msg_rx_sptr;
+typedef boost::shared_ptr<GpsL1CaPcpsZPAcquisitionTest_msg_rx> GpsL1CaPcpsZPAcquisitionTest_msg_rx_sptr;
 
-GpsL1CaPcpsAcquisitionTest_msg_rx_sptr GpsL1CaPcpsAcquisitionTest_msg_rx_make();
+GpsL1CaPcpsZPAcquisitionTest_msg_rx_sptr GpsL1CaPcpsZPAcquisitionTest_msg_rx_make();
 
-class GpsL1CaPcpsAcquisitionTest_msg_rx : public gr::block
+class GpsL1CaPcpsZPAcquisitionTest_msg_rx : public gr::block
 {
 private:
-    friend GpsL1CaPcpsAcquisitionTest_msg_rx_sptr GpsL1CaPcpsAcquisitionTest_msg_rx_make();
+    friend GpsL1CaPcpsZPAcquisitionTest_msg_rx_sptr GpsL1CaPcpsZPAcquisitionTest_msg_rx_make();
     void msg_handler_events(pmt::pmt_t msg);
-    GpsL1CaPcpsAcquisitionTest_msg_rx();
+    GpsL1CaPcpsZPAcquisitionTest_msg_rx();
 public:
     int rx_message;
-    ~GpsL1CaPcpsAcquisitionTest_msg_rx(); //!< Default destructor
+    ~GpsL1CaPcpsZPAcquisitionTest_msg_rx(); //!< Default destructor
 };
 
 
-GpsL1CaPcpsAcquisitionTest_msg_rx_sptr GpsL1CaPcpsAcquisitionTest_msg_rx_make()
+GpsL1CaPcpsZPAcquisitionTest_msg_rx_sptr GpsL1CaPcpsZPAcquisitionTest_msg_rx_make()
 {
-    return GpsL1CaPcpsAcquisitionTest_msg_rx_sptr(new GpsL1CaPcpsAcquisitionTest_msg_rx());
+    return GpsL1CaPcpsZPAcquisitionTest_msg_rx_sptr(new GpsL1CaPcpsZPAcquisitionTest_msg_rx());
 }
 
 
-void GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
+void GpsL1CaPcpsZPAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
     {
@@ -96,25 +96,25 @@ void GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 }
 
 
-GpsL1CaPcpsAcquisitionTest_msg_rx::GpsL1CaPcpsAcquisitionTest_msg_rx() :
-    gr::block("GpsL1CaPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+GpsL1CaPcpsZPAcquisitionTest_msg_rx::GpsL1CaPcpsZPAcquisitionTest_msg_rx() :
+    gr::block("GpsL1CaPcpsZPAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CaPcpsZPAcquisitionTest_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
 
 
-GpsL1CaPcpsAcquisitionTest_msg_rx::~GpsL1CaPcpsAcquisitionTest_msg_rx()
+GpsL1CaPcpsZPAcquisitionTest_msg_rx::~GpsL1CaPcpsZPAcquisitionTest_msg_rx()
 {}
 
 
 // ###########################################################
 
-class GpsL1CaPcpsAcquisitionTest: public ::testing::Test
+class GpsL1CaPcpsZPAcquisitionTest: public ::testing::Test
 {
 protected:
-    GpsL1CaPcpsAcquisitionTest()
+    GpsL1CaPcpsZPAcquisitionTest()
     {
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
@@ -122,7 +122,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CaPcpsAcquisitionTest()
+    ~GpsL1CaPcpsZPAcquisitionTest()
     {}
 
     void init();
@@ -136,7 +136,7 @@ protected:
 };
 
 
-void GpsL1CaPcpsAcquisitionTest::init()
+void GpsL1CaPcpsZPAcquisitionTest::init()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'G';
@@ -148,14 +148,16 @@ void GpsL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.coherent_integration_time_ms", "1");
     config->set_property("Acquisition.dump", "false");
-    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_ZP_Acquisition");
     config->set_property("Acquisition.threshold", "0.00001");
     config->set_property("Acquisition.doppler_max", "5000");
     config->set_property("Acquisition.doppler_step", "500");
     config->set_property("Acquisition.repeat_satellite", "false");
+    config->set_property("Acquisition.use_CFAR_algorithm", "false");
+    config->set_property("Acquisition.blocking", "true");
 }
 
-void GpsL1CaPcpsAcquisitionTest::init_speed_test(int freq, bool blocking)
+void GpsL1CaPcpsZPAcquisitionTest::init_speed_test(int freq, bool blocking)
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'G';
@@ -182,14 +184,14 @@ void GpsL1CaPcpsAcquisitionTest::init_speed_test(int freq, bool blocking)
     config->set_property("Acquisition.repeat_satellite", "false");
 }
 
-TEST_F(GpsL1CaPcpsAcquisitionTest, Instantiate)
+TEST_F(GpsL1CaPcpsZPAcquisitionTest, Instantiate)
 {
     init();
-    boost::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
+    boost::shared_ptr<GpsL1CaPcpsZPAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsZPAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
 
-TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
+TEST_F(GpsL1CaPcpsZPAcquisitionTest, ConnectAndRun)
 {
     int fs_in = 4000000;
     int nsamples = 4000;
@@ -199,8 +201,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-    boost::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
-    boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
+    boost::shared_ptr<GpsL1CaPcpsZPAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsZPAcquisition>(config.get(), "Acquisition", 1, 1);
+    boost::shared_ptr<GpsL1CaPcpsZPAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsZPAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -222,8 +224,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
-
-TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
+TEST_F(GpsL1CaPcpsZPAcquisitionTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
@@ -234,8 +235,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 
     init();
 
-    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
-    boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
+    std::shared_ptr<GpsL1CaPcpsZPAcquisition> acquisition = std::make_shared<GpsL1CaPcpsZPAcquisition>(config.get(), "Acquisition", 1, 1);
+    boost::shared_ptr<GpsL1CaPcpsZPAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsZPAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -246,7 +247,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.001);
+        acquisition->set_threshold(0.00001);
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -271,8 +272,9 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     acquisition->set_local_code();
-    acquisition->set_state(1); // Ensure that acquisition starts at the first sample
+    acquisition->set_state(0); // Ensure that acquisition starts at the first sample
     acquisition->init();
+    acquisition->reset();
 
     EXPECT_NO_THROW( {
         start = std::chrono::system_clock::now();
@@ -292,11 +294,12 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 }
-TEST_F(GpsL1CaPcpsAcquisitionTest, SpeedTestBlocking)
+
+TEST_F(GpsL1CaPcpsZPAcquisitionTest, SpeedTestBlocking)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     int fs_in[12] = {1000000, 1024000, 2000000, 2048000, 4000000, 4096000, 8000000, 8192000, 16000000, 16384000};
-    int ntests = FLAGS_ntests_pcps;
+    int ntests = FLAGS_ntests_pcps_zpa;
     int nfreqtest = 10;
     double elapsed_times[nfreqtest];
 
@@ -306,8 +309,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, SpeedTestBlocking)
     	top_block = gr::make_top_block("Acquisition test");
    	    config = std::make_shared<InMemoryConfiguration>();
    	    init_speed_test(fs_in[nfreq],true);
-   	    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
-   	    boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
+   	    std::shared_ptr<GpsL1CaPcpsZPAcquisition> acquisition = std::make_shared<GpsL1CaPcpsZPAcquisition>(config.get(), "Acquisition", 1, 1);
+   	    boost::shared_ptr<GpsL1CaPcpsZPAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsZPAcquisitionTest_msg_rx_make();
    	    ASSERT_NO_THROW( {
    	        acquisition->set_channel(1);
    	    }) << "Failure setting channel." << std::endl;
@@ -321,11 +324,11 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, SpeedTestBlocking)
    	    }) << "Failure setting threshold." << std::endl;
 
    	    ASSERT_NO_THROW( {
-   	        acquisition->set_doppler_max(FLAGS_doppler_max_pcps);
+   	        acquisition->set_doppler_max(FLAGS_doppler_max_pcps_zpa);
    	    }) << "Failure setting doppler_max." << std::endl;
 
    	    ASSERT_NO_THROW( {
-   	        acquisition->set_doppler_step(FLAGS_doppler_step_pcps);
+   	        acquisition->set_doppler_step(FLAGS_doppler_step_pcps_zpa);
    	    }) << "Failure setting doppler_step." << std::endl;
 
    	    ASSERT_NO_THROW( {
@@ -343,8 +346,9 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, SpeedTestBlocking)
    	    }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
    	    acquisition->set_local_code();
-   	    acquisition->set_state(1); // Ensure that acquisition starts at the first sample
+   	    acquisition->set_state(0); // Ensure that acquisition starts at the first sample
    	    acquisition->init();
+   	    acquisition->reset();
    	    acquisition->set_testing(true);
 
     	EXPECT_NO_THROW( {
@@ -363,11 +367,11 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, SpeedTestBlocking)
     }
 }
 
-TEST_F(GpsL1CaPcpsAcquisitionTest, SpeedTestNonBlocking)
+TEST_F(GpsL1CaPcpsZPAcquisitionTest, SpeedTestNonBlocking)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     int fs_in[12] = {1000000, 1024000, 2000000, 2048000, 4000000, 4096000, 8000000, 8192000, 16000000, 16384000};
-    int ntests = FLAGS_ntests_pcps;
+    int ntests = FLAGS_ntests_pcps_zpa;
     int nfreqtest = 10;
     double elapsed_times[nfreqtest];
 
@@ -377,8 +381,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, SpeedTestNonBlocking)
     	top_block = gr::make_top_block("Acquisition test");
    	    config = std::make_shared<InMemoryConfiguration>();
    	    init_speed_test(fs_in[nfreq],false);
-   	    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
-   	    boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
+   	    std::shared_ptr<GpsL1CaPcpsZPAcquisition> acquisition = std::make_shared<GpsL1CaPcpsZPAcquisition>(config.get(), "Acquisition", 1, 1);
+   	    boost::shared_ptr<GpsL1CaPcpsZPAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsZPAcquisitionTest_msg_rx_make();
    	    ASSERT_NO_THROW( {
    	        acquisition->set_channel(1);
    	    }) << "Failure setting channel." << std::endl;
@@ -392,11 +396,11 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, SpeedTestNonBlocking)
    	    }) << "Failure setting threshold." << std::endl;
 
    	    ASSERT_NO_THROW( {
-   	        acquisition->set_doppler_max(FLAGS_doppler_max_pcps);
+   	        acquisition->set_doppler_max(FLAGS_doppler_max_pcps_zpa);
    	    }) << "Failure setting doppler_max." << std::endl;
 
    	    ASSERT_NO_THROW( {
-   	        acquisition->set_doppler_step(FLAGS_doppler_step_pcps);
+   	        acquisition->set_doppler_step(FLAGS_doppler_step_pcps_zpa);
    	    }) << "Failure setting doppler_step." << std::endl;
 
    	    ASSERT_NO_THROW( {
@@ -414,8 +418,9 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, SpeedTestNonBlocking)
    	    }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
    	    acquisition->set_local_code();
-   	    acquisition->set_state(1); // Ensure that acquisition starts at the first sample
+   	    acquisition->set_state(0); // Ensure that acquisition starts at the first sample
    	    acquisition->init();
+   	    acquisition->reset();
    	    acquisition->set_testing(true);
 
     	EXPECT_NO_THROW( {

@@ -70,6 +70,9 @@ DECLARE_string(log_dir);
 #include "unit-tests/arithmetic/code_generation_test.cc"
 #include "unit-tests/arithmetic/fft_length_test.cc"
 #include "unit-tests/arithmetic/fft_speed_test.cc"
+#include "unit-tests/arithmetic/fft_buffer_test.cc"
+#include "unit-tests/arithmetic/volk_kernels_acq_speed_test.cc"
+#include "unit-tests/arithmetic/gr_thread_generation.cc"
 
 #include "unit-tests/control-plane/file_configuration_test.cc"
 #include "unit-tests/control-plane/in_memory_configuration_test.cc"
@@ -94,6 +97,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/resampler/direct_resampler_conditioner_cc_test.cc"
 
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_zp_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"

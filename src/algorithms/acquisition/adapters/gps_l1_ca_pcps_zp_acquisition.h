@@ -1,16 +1,17 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition.h
+ * \file gps_l1_ca_pcps_zp_acquisition.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  GPS L1 C/A signals
  * \authors <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
+ *          <li> Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,15 +34,15 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_
-#define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_
+#ifndef GNSS_SDR_GPS_L1_CA_PCPS_ZP_ACQUISITION_H_
+#define GNSS_SDR_GPS_L1_CA_PCPS_ZP_ACQUISITION_H_
 
 #include <string>
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
-#include "pcps_acquisition_cc.h"
+#include "pcps_zp_acquisition_cc.h"
 #include "pcps_acquisition_sc.h"
 #include "complex_byte_to_float_x2.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -54,14 +55,14 @@ class ConfigurationInterface;
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GPS L1 C/A signals
  */
-class GpsL1CaPcpsAcquisition: public AcquisitionInterface
+class GpsL1CaPcpsZPAcquisition: public AcquisitionInterface
 {
 public:
-    GpsL1CaPcpsAcquisition(ConfigurationInterface* configuration,
+    GpsL1CaPcpsZPAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams);
 
-    virtual ~GpsL1CaPcpsAcquisition();
+    virtual ~GpsL1CaPcpsZPAcquisition();
 
     inline std::string role() override
     {
@@ -69,11 +70,11 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L1_CA_PCPS_Acquisition"
+     * \brief Returns "GPS_L1_CA_PCPS_ZP_Acquisition"
      */
     inline std::string implementation() override
     {
-        return "GPS_L1_CA_PCPS_Acquisition";
+        return "GPS_L1_CA_PCPS_ZP_Acquisition";
     }
 
     inline size_t item_size() override
@@ -142,7 +143,7 @@ public:
 
 private:
     ConfigurationInterface* configuration_;
-    pcps_acquisition_cc_sptr acquisition_cc_;
+    pcps_zp_acquisition_cc_sptr acquisition_cc_;
     pcps_acquisition_sc_sptr acquisition_sc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
@@ -173,4 +174,4 @@ private:
     float calculate_threshold(float pfa);
 };
 
-#endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_ */
+#endif /* GNSS_SDR_GPS_L1_CA_PCPS_ZP_ACQUISITION_H_ */

@@ -1,16 +1,17 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition.cc
+ * \file gps_l1_ca_pcps_zp_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  GPS L1 C/A signals
  * \authors <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
+ *          <li> Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,9 +34,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_zp_acquisition.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <iostream>
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
@@ -43,7 +45,7 @@
 
 using google::LogMessage;
 
-GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
+GpsL1CaPcpsZPAcquisition::GpsL1CaPcpsZPAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams) :
     role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -89,11 +91,13 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
                     doppler_max_, if_, fs_in_, code_length_, code_length_,
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
+            LOG(INFO) << "ACQ: Zero padding is not available with this data item type, non padded acquisition has been activated";
+            std::cout << "ACQ: Zero padding is not available with this data item type, non padded acquisition has been activated" << std::endl;
         }
     else
         {
             item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
+            acquisition_cc_ = pcps_zp_make_acquisition_cc(sampled_ms_, max_dwells_,
                     doppler_max_, if_, fs_in_, code_length_, code_length_,
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
@@ -115,13 +119,13 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 }
 
 
-GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition()
+GpsL1CaPcpsZPAcquisition::~GpsL1CaPcpsZPAcquisition()
 {
     delete[] code_;
 }
 
 
-void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
+void GpsL1CaPcpsZPAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
     if (item_type_.compare("cshort") == 0)
@@ -135,7 +139,7 @@ void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
 }
 
 
-void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
+void GpsL1CaPcpsZPAcquisition::set_threshold(float threshold)
 {
     float pfa = configuration_->property(role_ + ".pfa", 0.0);
 
@@ -162,7 +166,7 @@ void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 }
 
 
-void GpsL1CaPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
+void GpsL1CaPcpsZPAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
 
@@ -177,7 +181,7 @@ void GpsL1CaPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 }
 
 
-void GpsL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
+void GpsL1CaPcpsZPAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
 
@@ -192,7 +196,7 @@ void GpsL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 }
 
 
-void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
+void GpsL1CaPcpsZPAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
 
@@ -207,7 +211,7 @@ void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 }
 
 
-signed int GpsL1CaPcpsAcquisition::mag()
+signed int GpsL1CaPcpsZPAcquisition::mag()
 {
     if (item_type_.compare("cshort") == 0)
         {
@@ -220,7 +224,7 @@ signed int GpsL1CaPcpsAcquisition::mag()
 }
 
 
-void GpsL1CaPcpsAcquisition::init()
+void GpsL1CaPcpsZPAcquisition::init()
 {
     if (item_type_.compare("cshort") == 0)
         {
@@ -235,7 +239,7 @@ void GpsL1CaPcpsAcquisition::init()
 }
 
 
-void GpsL1CaPcpsAcquisition::set_local_code()
+void GpsL1CaPcpsZPAcquisition::set_local_code()
 {
     std::complex<float>* code = new std::complex<float>[code_length_];
 
@@ -260,7 +264,7 @@ void GpsL1CaPcpsAcquisition::set_local_code()
 }
 
 
-void GpsL1CaPcpsAcquisition::reset()
+void GpsL1CaPcpsZPAcquisition::reset()
 {
     if (item_type_.compare("cshort") == 0)
         {
@@ -273,7 +277,7 @@ void GpsL1CaPcpsAcquisition::reset()
 }
 
 
-void GpsL1CaPcpsAcquisition::set_state(int state)
+void GpsL1CaPcpsZPAcquisition::set_state(int state)
 {
     if (item_type_.compare("cshort") == 0)
         {
@@ -285,17 +289,19 @@ void GpsL1CaPcpsAcquisition::set_state(int state)
         }
 }
 
-void GpsL1CaPcpsAcquisition::set_testing(bool testing)
+void GpsL1CaPcpsZPAcquisition::set_testing(bool testing)
 {
     if (item_type_.compare("cshort") == 0)
-        {}
-    else
-        {
-            acquisition_cc_->set_testing(testing);
-        }
+	    {}
+	else
+	    {
+	        acquisition_cc_->set_testing(testing);
+	    }
 }
 
-float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
+
+
+float GpsL1CaPcpsZPAcquisition::calculate_threshold(float pfa)
 {
     //Calculate the threshold
     unsigned int frequency_bins = 0;
@@ -315,7 +321,7 @@ float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
 }
 
 
-void GpsL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
+void GpsL1CaPcpsZPAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -339,7 +345,7 @@ void GpsL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 }
 
 
-void GpsL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
+void GpsL1CaPcpsZPAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -365,7 +371,7 @@ void GpsL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr GpsL1CaPcpsAcquisition::get_left_block()
+gr::basic_block_sptr GpsL1CaPcpsZPAcquisition::get_left_block()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -387,7 +393,7 @@ gr::basic_block_sptr GpsL1CaPcpsAcquisition::get_left_block()
 }
 
 
-gr::basic_block_sptr GpsL1CaPcpsAcquisition::get_right_block()
+gr::basic_block_sptr GpsL1CaPcpsZPAcquisition::get_right_block()
 {
     if (item_type_.compare("cshort") == 0)
         {

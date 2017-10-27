@@ -1,5 +1,5 @@
 /*!
- * \file pcps_acquisition_cc.h
+ * \file pcps_zp_acquisition_cc.h
  * \brief This class implements a Parallel Code Phase Search Acquisition
  *
  *  Acquisition strategy (Kay Borre book + CFAR threshold).
@@ -21,6 +21,7 @@
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
  *          <li> Cillian O'Driscoll, 2017. cillian(at)ieee.org
+ *          <li> Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
@@ -48,25 +49,22 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_ACQUISITION_CC_H_
-#define GNSS_SDR_PCPS_ACQUISITION_CC_H_
+#ifndef GNSS_SDR_PCPS_ZP_ACQUISITION_CC_H_
+#define GNSS_SDR_PCPS_ZP_ACQUISITION_CC_H_
 
 #include <fstream>
 #include <string>
-#include <mutex>
-#include <thread>
-#include <condition_variable>
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
 #include "gnss_synchro.h"
 
-class pcps_acquisition_cc;
+class pcps_zp_acquisition_cc;
 
-typedef boost::shared_ptr<pcps_acquisition_cc> pcps_acquisition_cc_sptr;
+typedef boost::shared_ptr<pcps_zp_acquisition_cc> pcps_zp_acquisition_cc_sptr;
 
-pcps_acquisition_cc_sptr
-pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+pcps_zp_acquisition_cc_sptr
+pcps_zp_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag, bool use_CFAR_algorithm_flag,
@@ -79,18 +77,18 @@ pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class pcps_acquisition_cc: public gr::block
+class pcps_zp_acquisition_cc: public gr::block
 {
 private:
-    friend pcps_acquisition_cc_sptr
-    pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+    friend pcps_zp_acquisition_cc_sptr
+    pcps_zp_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
             bool dump, bool blocking,
             std::string dump_filename);
 
-    pcps_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+    pcps_zp_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
@@ -99,62 +97,52 @@ private:
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
 
-    void acquisition_core( void );
+    void acquisition_core(const gr_complex* data_in);
 
     void send_negative_acquisition();
+
     void send_positive_acquisition();
+
     long d_fs_in;
     long d_freq;
     int d_samples_per_ms;
     int d_samples_per_code;
-    //unsigned int d_doppler_resolution;
-    float d_threshold;
-    std::string d_satellite_str;
+    int d_state;
     unsigned int d_doppler_max;
     unsigned int d_doppler_step;
     unsigned int d_sampled_ms;
     unsigned int d_max_dwells;
     unsigned int d_well_count;
     unsigned int d_fft_size;
-    unsigned long int d_sample_counter;
-    gr_complex** d_grid_doppler_wipeoffs;
+    unsigned int d_segment_size;
     unsigned int d_num_doppler_bins;
-    gr_complex* d_fft_codes;
-    gr::fft::fft_complex* d_fft_if;
-    gr::fft::fft_complex* d_ifft;
-    Gnss_Synchro *d_gnss_synchro;
-    unsigned int d_code_phase;
+    unsigned int d_channel;
+    unsigned long int d_sample_counter;
+    float d_threshold;
     float d_doppler_freq;
     float d_mag;
-    float* d_magnitude;
     float d_input_power;
     float d_test_statistics;
+    float* d_magnitude;
     bool d_bit_transition_flag;
     bool d_use_CFAR_algorithm_flag;
-    std::ofstream d_dump_file;
-    bool d_active;
-    int d_state;
     bool d_dump;
-    bool d_testing;
-    unsigned int d_channel;
-    std::string d_dump_filename;
-
-    std::thread d_worker_thread;
-    std::mutex  d_mutex;
-
-    std::condition_variable d_cond;
-    bool d_done;
-    bool d_new_data_available;
-    bool d_worker_active;
     bool d_blocking;
-
-    gr_complex *d_data_buffer;
+    bool d_active;
+    bool d_testing;
+    std::ofstream d_dump_file;
+    std::string d_dump_filename;
+    std::string d_satellite_str;
+    gr_complex** d_grid_doppler_wipeoffs;
+    gr_complex* d_fft_codes;
+    gr_complex* d_data_buffer;
+    gr::fft::fft_complex* d_fft_if;
+    gr::fft::fft_complex* d_ifft;
+    Gnss_Synchro* d_gnss_synchro;
 
 public:
-    /*!
-     * \brief Default destructor.
-     */
-     ~pcps_acquisition_cc();
+
+     ~pcps_zp_acquisition_cc();
 
      /*!
       * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -187,23 +175,6 @@ public:
      void set_local_code(std::complex<float> * code);
 
      /*!
-      * \brief Starts acquisition algorithm, turning from standby mode to
-      * active mode
-      * \param active - bool that activates/deactivates the block.
-      */
-     inline void set_active(bool active)
-     {
-         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
-         d_active = active;
-     }
-
-     inline void set_testing(bool testing)
-     {
-    	 gr::thread::scoped_lock lock(d_setlock);
-    	 d_testing = testing;
-     }
-
-     /*!
       * \brief If set to 1, ensures that acquisition starts at the
       * first available sample.
       * \param state - int=1 forces start of acquisition
@@ -214,6 +185,12 @@ public:
       * \brief Set acquisition channel unique ID
       * \param channel - receiver channel.
       */
+     inline void set_testing(bool testing)
+     {
+    	 gr::thread::scoped_lock lock(d_setlock);
+    	 d_testing = testing;
+     }
+
      inline void set_channel(unsigned int channel)
      {
          gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
@@ -251,22 +228,18 @@ public:
          d_doppler_step = doppler_step;
      }
 
+     inline void set_active(bool active)
+     {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
+         d_active = active;
+     }
+
      /*!
       * \brief Parallel Code Phase Search Acquisition signal processing.
       */
-     int general_work(int noutput_items, gr_vector_int &ninput_items,
+     int general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
              gr_vector_const_void_star &input_items,
              gr_vector_void_star &output_items);
-
-     /*!
-      * Called by the flowgraph when processing is about to start.
-      */
-     bool start( void );
-
-     /*!
-      * Called by the flowgraph when processing is done.
-      */
-     bool stop( void );
 };
 
-#endif /* GNSS_SDR_PCPS_ACQUISITION_CC_H_*/
+#endif /* GNSS_SDR_PCPS_ZP_ACQUISITION_CC_H_*/

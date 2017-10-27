@@ -64,13 +64,54 @@ TEST(GlonassGnavEphemerisTest, ComputeGlonassTime)
 	ASSERT_TRUE(expected_gtime.seconds() -  t.seconds() < FLT_EPSILON );
 }
 
-TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT)
+// testing case where calendar
+TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT1)
 {
     Glonass_Gnav_Ephemeris gnav_eph;
-    gnav_eph.d_yr = 2005;
-    gnav_eph.d_N_T = 32;
+    gnav_eph.d_yr = 2004;
+    gnav_eph.d_N_T = 366+28;
 
     double tod = 70200;
+    double week = 0.0;
+    double tow = 0.0;
+    double true_leap_sec = 13;
+    double true_week = 1307;
+    double true_tow = 480600+true_leap_sec;
+
+	gnav_eph.glot_to_gpst(tod, 0.0, 0.0, &week, &tow);
+
+    // Perform assertions of decoded fields
+	ASSERT_TRUE(week - true_week < FLT_EPSILON );
+	ASSERT_TRUE(tow - true_week < FLT_EPSILON );
+}
+
+TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT2)
+{
+    Glonass_Gnav_Ephemeris gnav_eph;
+    gnav_eph.d_yr = 2016;
+    gnav_eph.d_N_T = 268;
+
+    double tod = 7560;
+    double week = 0.0;
+    double tow = 0.0;
+    double true_leap_sec = 13;
+    double true_week = 1915;
+    double true_tow = 480600+true_leap_sec;
+
+	gnav_eph.glot_to_gpst(tod, 0.0, 0.0, &week, &tow);
+
+    // Perform assertions of decoded fields
+	ASSERT_TRUE(week - true_week < FLT_EPSILON );
+	ASSERT_TRUE(tow - true_week < FLT_EPSILON );
+}
+
+TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT3)
+{
+    Glonass_Gnav_Ephemeris gnav_eph;
+    gnav_eph.d_yr = 2016;
+    gnav_eph.d_N_T = 62;
+
+    double tod = 7560 + 6*3600;
     double week = 0.0;
     double tow = 0.0;
     double true_leap_sec = 13;

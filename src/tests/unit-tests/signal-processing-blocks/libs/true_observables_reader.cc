@@ -34,7 +34,7 @@ bool true_observables_reader::read_binary_obs()
 {
     try
     {
-        for(int i=0;i<12;i++)
+        for(int i = 0; i < 12; i++)
         {
             d_dump_file.read(reinterpret_cast<char *>(&gps_time_sec[i]), sizeof(double));
             d_dump_file.read(reinterpret_cast<char *>(&doppler_l1_hz), sizeof(double));

@@ -257,15 +257,13 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
 
+    config->set_property("Acquisition_5X.implementation", "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF");
     config->set_property("Acquisition_5X.item_type", "gr_complex");
-    config->set_property("Acquisition_5X.if", "0");
     config->set_property("Acquisition_5X.coherent_integration_time_ms",
             std::to_string(integration_time_ms));
     config->set_property("Acquisition_5X.max_dwells", "1");
     config->set_property("Acquisition_5X.CAF_window_hz",std::to_string(CAF_window_hz));
     config->set_property("Acquisition_5X.Zero_padding",std::to_string(Zero_padding));
-
-    config->set_property("Acquisition_5X.implementation", "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF");
     config->set_property("Acquisition_5X.pfa","0.003");
     //    config->set_property("Acquisition_5X.threshold", "0.01");
     config->set_property("Acquisition_5X.doppler_max", "10000");
@@ -298,12 +296,11 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_2()
 
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
 
+    config->set_property("Acquisition_5X.implementation", "Galileo_E5a_PCPS_Acquisition");
     config->set_property("Acquisition_5X.item_type", "gr_complex");
-    config->set_property("Acquisition_5X.if", "0");
     config->set_property("Acquisition_5X.coherent_integration_time_ms",
             std::to_string(integration_time_ms));
     config->set_property("Acquisition_5X.max_dwells", "1");
-    config->set_property("Acquisition_5X.implementation", "Galileo_E5a_PCPS_Acquisition");
     config->set_property("Acquisition_5X.threshold", "0.1");
     config->set_property("Acquisition_5X.doppler_max", "10000");
     config->set_property("Acquisition_5X.doppler_step", "250");
@@ -530,7 +527,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::stop_queue()
 TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, Instantiate)
 {
     config_1();
-    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1);
+    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition_5X", 1, 1);
 }
 
 
@@ -541,7 +538,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
     int nsamples = 21000*3;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1);
+    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition_5X", 1, 1);
     boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx> msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
@@ -553,14 +550,14 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test."<< std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     EXPECT_NO_THROW( {
         start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block."<< std::endl;
+    }) << "Failure running the top_block.";
 
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
@@ -571,32 +568,32 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     config_1();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
-    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1);
+    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition_5X", 1, 1);
     boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx> msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(0);
-    }) << "Failure setting channel."<< std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_max(config->property("Acquisition_5X.doppler_max", 5000));
-    }) << "Failure setting doppler_max."<< std::endl;
+    }) << "Failure setting doppler_max.";
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_step(config->property("Acquisition_5X.doppler_step", 100));
-    }) << "Failure setting doppler_step."<< std::endl;
+    }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW( {
         acquisition->set_threshold(config->property("Acquisition_5X.threshold", 0.0001));
-    }) << "Failure setting threshold."<< std::endl;
+    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block.";
 
     // USING THE SIGNAL GENERATOR
 
@@ -609,7 +606,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     acquisition->reset();
     acquisition->init();
@@ -641,7 +638,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running the top_block."<< std::endl;
+            }) << "Failure running the top_block.";
 
             stop_queue();
 

@@ -148,14 +148,13 @@ void GpsL2MPcpsAcquisitionTest::init()
     sampling_freqeuncy_hz  = 5000000;
     nsamples = round(static_cast<double>(sampling_freqeuncy_hz) * GPS_L2_M_PERIOD) * 2;
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_freqeuncy_hz));
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.dump", "false");
-    config->set_property("Acquisition.implementation", "GPS_L2_M_PCPS_Acquisition");
-    config->set_property("Acquisition.threshold", "0.001");
-    config->set_property("Acquisition.doppler_max", "5000");
-    config->set_property("Acquisition.doppler_step", "100");
-    config->set_property("Acquisition.repeat_satellite", "false");
+    config->set_property("Acquisition_2S.implementation", "GPS_L2_M_PCPS_Acquisition");
+    config->set_property("Acquisition_2S.item_type", "gr_complex");
+    config->set_property("Acquisition_2S.dump", "false");
+    config->set_property("Acquisition_2S.threshold", "0.001");
+    config->set_property("Acquisition_2S.doppler_max", "5000");
+    config->set_property("Acquisition_2S.doppler_step", "100");
+    config->set_property("Acquisition_2S.repeat_satellite", "false");
 }
 
 
@@ -163,7 +162,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, Instantiate)
 {
     init();
     queue = gr::msg_queue::make(0);
-    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
+    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition_2S", 1, 1);
 }
 
 
@@ -175,7 +174,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
     queue = gr::msg_queue::make(0);
 
     init();
-    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
+    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition_2S", 1, 1);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -184,15 +183,14 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
-
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     EXPECT_NO_THROW( {
         start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
 
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
@@ -207,32 +205,32 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     double expected_delay_samples = 1;//2004;
     double expected_doppler_hz = 1200;//3000;
     init();
-    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
+    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition_2S", 1, 1);
     boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
-    }) << "Failure setting channel." << std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro." << std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
         acquisition->set_threshold(0.001);
-    }) << "Failure setting threshold." << std::endl;
+    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_max(5000);
-    }) << "Failure setting doppler_max." << std::endl;
+    }) << "Failure setting doppler_max.";
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_step(10);
-    }) << "Failure setting doppler_step." << std::endl;
+    }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block." << std::endl;
+    }) << "Failure connecting acquisition to the top_block.";
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
@@ -249,20 +247,20 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
         top_block->connect(file_source, 0, valve , 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     ASSERT_NO_THROW( {
         acquisition->set_local_code();
         acquisition->set_state(1); // Ensure that acquisition starts at the first sample
         acquisition->init();
-    }) << "Failure set_state and init acquisition test" << std::endl;
+    }) << "Failure set_state and init acquisition test";
 
     EXPECT_NO_THROW( {
         start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
 
     //unsigned long int Acq_samplestamp_samples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquisition process runtime duration: " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;

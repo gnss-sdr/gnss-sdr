@@ -39,6 +39,7 @@
   DEFINE_string(gnuplot_executable, "", "Gnuplot binary path");
 #endif
 
+DEFINE_bool(plot_acq_grid, false, "Plots acquisition grid with gnuplot");
 DEFINE_int32(plot_decimate, 1, "Decimate plots");
 
 #endif

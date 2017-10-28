@@ -53,9 +53,6 @@
 #include "acquisition_dump_reader.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 
-DEFINE_bool(plot_acq_grid, false, "Plots results of GpsL1CaPcpsAcquisitionTest with gnuplot");
-
-
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTest_msg_rx;
@@ -144,10 +141,9 @@ void GpsL1CaPcpsAcquisitionTest::init()
     std::string signal = "1C";
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
-    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
+    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition_1C.item_type", "gr_complex");
-    config->set_property("Acquisition_1C.if", "0");
     config->set_property("Acquisition_1C.coherent_integration_time_ms", "1");
     if(FLAGS_plot_acq_grid == true)
         {

@@ -96,7 +96,6 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             powers_of_two.push_back(d_fft_size);
                             execution_times_powers_of_two.push_back(exec_time / 1e-3);
                         }
-
                 }
     );
 
@@ -141,7 +140,7 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g2.savetopdf("FFT_execution_times", 18);
                             g2.showonscreen(); // window output
                     }
-                    catch (GnuplotException ge)
+                    catch (const GnuplotException & ge)
                     {
                             std::cout << ge.what() << std::endl;
                     }

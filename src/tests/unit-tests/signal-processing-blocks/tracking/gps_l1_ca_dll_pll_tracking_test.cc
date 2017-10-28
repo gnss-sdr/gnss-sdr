@@ -555,7 +555,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             g2.showonscreen(); // window output
 
                     }
-                    catch (GnuplotException ge)
+                    catch (const GnuplotException & ge)
                     {
                             std::cout << ge.what() << std::endl;
                     }

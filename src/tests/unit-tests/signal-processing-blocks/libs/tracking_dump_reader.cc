@@ -32,7 +32,8 @@
 
 bool tracking_dump_reader::read_binary_obs()
 {
-    try {
+    try
+    {
             d_dump_file.read(reinterpret_cast<char *>(&abs_E), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&abs_P), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&abs_L), sizeof(float));

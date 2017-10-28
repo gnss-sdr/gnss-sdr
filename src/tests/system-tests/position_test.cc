@@ -341,7 +341,6 @@ int StaticPositionSystemTest::configure_receiver()
             // Set Acquisition
             config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
             config->set_property("Acquisition_1C.item_type", "gr_complex");
-            config->set_property("Acquisition_1C.if", std::to_string(zero));
             config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
             config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
             config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
@@ -356,7 +355,6 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
             //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
             config->set_property("Tracking_1C.item_type", "gr_complex");
-            config->set_property("Tracking_1C.if", std::to_string(zero));
             config->set_property("Tracking_1C.dump", "false");
             config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
             config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));
@@ -630,6 +628,7 @@ void StaticPositionSystemTest::print_results(const std::vector<double> & east,
                     g2.cmd("set yrange [-" + std::to_string(range_3d) + ":" + std::to_string(range_3d) + "]");
                     g2.cmd("set zrange [-" + std::to_string(range_3d) + ":" + std::to_string(range_3d) + "]");
                     g2.cmd("set view equal xyz");
+                    g2.cmd("set ticslevel 0");
 
                     g2.cmd("set style fill transparent solid 0.30 border\n set parametric\n set urange [0:2.0*pi]\n set vrange [-pi/2:pi/2]\n r = " +
                             std::to_string(ninty_sas) +
@@ -640,7 +639,7 @@ void StaticPositionSystemTest::print_results(const std::vector<double> & east,
                     g2.savetopdf("Position_test_3D");
                     g2.showonscreen(); // window output
             }
-            catch (GnuplotException ge)
+            catch (const GnuplotException & ge)
             {
                     std::cout << ge.what() << std::endl;
             }

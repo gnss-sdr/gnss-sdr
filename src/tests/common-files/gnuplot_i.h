@@ -510,6 +510,10 @@ public:
     Gnuplot& plot_xy_err(const X &x, const Y &y, const E &dy,
             const std::string &title = "");
 
+    template<typename X, typename Y, typename E>
+    Gnuplot& plot_grid3d(const X &x, const Y &y, const E &mag,
+            const std::string &title = "");
+
     /// plot x,y,z triples: x y z
     ///   from file
     Gnuplot& plotfile_xyz(const std::string &filename,
@@ -803,6 +807,63 @@ Gnuplot& Gnuplot::plot_xy_err(const X &x,
     return *this;
 }
 
+
+//------------------------------------------------------------------------------
+//
+// Plots a 3d grid
+//
+template<typename X, typename Y, typename E>
+Gnuplot& Gnuplot::plot_grid3d(const X &x,
+        const Y &y,
+        const E &mag,
+        const std::string &title)
+{
+    if (x.size() == 0 || y.size() == 0 )
+        {
+            throw GnuplotException("std::vectors too small");
+            return *this;
+        }
+    std::ofstream tmp;
+    std::string name = create_tmpfile(tmp);
+    if (name == "")
+        return *this;
+
+    //
+    // write the data to file
+    //
+    for (unsigned int i = 0; i < x.size(); i++)
+        {
+            for (unsigned int k = 0; k < y.size(); k++)
+                {
+                    tmp << static_cast<float>(x.at(i)) << " " << static_cast<float>(y.at(k)) << " " << mag.at(i).at(k) << std::endl;
+                }
+            tmp.flush();
+        }
+
+    tmp.close();
+
+    std::ostringstream cmdstr;
+    cmdstr << "set ticslevel 0\n";
+    cmdstr << "set hidden3d\n";
+    cmdstr << "unset colorbox\n";
+    cmdstr << "set border 5\n";
+    cmdstr << "unset ztics\n";
+
+    cmdstr << " splot \"" << name << "\" u 1:2:3";
+
+    if (title == "")
+        cmdstr << " notitle with " << pstyle << " palette";
+    else
+        cmdstr << " title \"" << title << "\" with " << pstyle << " palette";
+    cmdstr << "\n";
+
+    //
+    // Do the actual plot
+    //
+    cmd(cmdstr.str());
+
+    return *this;
+}
 
 //------------------------------------------------------------------------------
 //

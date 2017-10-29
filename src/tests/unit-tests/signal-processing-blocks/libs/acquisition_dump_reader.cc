@@ -34,7 +34,7 @@
 bool acquisition_dump_reader::read_binary_acq()
 {
     std::complex<float>* aux = new std::complex<float>[1];
-    for(int i = 0; i < d_num_doppler_bins; i++)
+    for(unsigned int i = 0; i < d_num_doppler_bins; i++)
         {
             try
             {
@@ -44,7 +44,7 @@ bool acquisition_dump_reader::read_binary_acq()
                     d_dump_files.at(i).swap(ifs);
                     if (d_dump_files.at(i).is_open())
                         {
-                            for(int k = 0; k < d_samples_per_code; k++)
+                            for(unsigned int k = 0; k < d_samples_per_code; k++)
                                 {
                                     d_dump_files.at(i).read(reinterpret_cast<char *>(&aux[0]), sizeof(std::complex<float>));
                                     mag.at(i).at(k) = std::abs(*aux) / std::pow(d_samples_per_code, 2);
@@ -96,7 +96,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string & basename, u
 
 acquisition_dump_reader::~acquisition_dump_reader()
 {
-    for(int i = 0; i < d_num_doppler_bins; i++)
+    for(unsigned int i = 0; i < d_num_doppler_bins; i++)
         {
             if (d_dump_files.at(i).is_open() == true)
                 {

@@ -1,7 +1,7 @@
 /*!
  * \file acquisition_dump_reader.cc
  * \brief Helper file for unit testing
- * \author Javier Arribas, 2017. jarribas(at)cttc.es
+ * \author Carles Fernandez-Prades, 2017. cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -70,7 +70,7 @@ bool acquisition_dump_reader::read_binary_acq()
 }
 
 
-acquisition_dump_reader::acquisition_dump_reader(std::string & basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code)
+acquisition_dump_reader::acquisition_dump_reader(const std::string & basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code)
 {
     d_basename = basename;
     d_sat = sat;
@@ -84,15 +84,12 @@ acquisition_dump_reader::acquisition_dump_reader(std::string & basename, unsigne
         {
             doppler.push_back(-static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index);
             d_dump_filenames.push_back(d_basename + "_sat_" + std::to_string(d_sat) + "_doppler_" + std::to_string(doppler.at(doppler_index)) + ".dat");
+            std::ifstream ifs;
+            d_dump_files.push_back(std::move(ifs));
         }
     for (unsigned int k = 0; k < d_samples_per_code; k++)
         {
             samples.push_back(k);
-        }
-    for(int i = 0; i < d_num_doppler_bins; i++)
-        {
-            std::ifstream is;
-            d_dump_files.push_back(std::move(is));
         }
 }
 

@@ -170,7 +170,6 @@ GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::~GpsL1CADllPllTelemetryDecoderTest
 
 class GpsL1CATelemetryDecoderTest: public ::testing::Test
 {
-
 public:
     std::string generator_binary;
     std::string p1;
@@ -357,7 +356,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
             {
                 throw std::exception();
             };
-    }) << "Failure opening true observables file" << std::endl;
+    }) << "Failure opening true observables file";
 
     top_block = gr::make_top_block("Telemetry_Decoder test");
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
@@ -371,7 +370,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
         {
             throw std::exception();
         };
-    })<< "Failure reading true observables file" << std::endl;
+    }) << "Failure reading true observables file";
 
     //restart the epoch counter
     true_obs_data.restart();
@@ -388,15 +387,15 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         tracking->set_channel(gnss_synchro.Channel_ID);
-    }) << "Failure setting channel." << std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW( {
         tracking->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro." << std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
         tracking->connect(top_block);
-    }) << "Failure connecting tracking to the top_block." << std::endl;
+    }) << "Failure connecting tracking to the top_block.";
 
     ASSERT_NO_THROW( {
         std::string file =  "./" + filename_raw_data;
@@ -409,7 +408,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
         top_block->connect(tracking->get_right_block(), 0, tlm->get_left_block(), 0);
         top_block->connect(tlm->get_right_block(), 0, sink, 0);
         top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks." << std::endl;
+    }) << "Failure connecting the blocks.";
 
     tracking->start_tracking();
 
@@ -418,7 +417,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
 
     //check results
     //load the true values
@@ -449,7 +448,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
             {
                 throw std::exception();
             };
-    }) << "Failure opening telemetry dump file" << std::endl;
+    }) << "Failure opening telemetry dump file";
 
     nepoch = tlm_dump.num_epochs();
     std::cout << "Measured observation epochs=" << nepoch << std::endl;

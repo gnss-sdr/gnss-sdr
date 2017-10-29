@@ -118,6 +118,8 @@ protected:
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
+        doppler_max = 10000;
+        doppler_step = 250;
 }
 
     ~GalileoE1PcpsAmbiguousAcquisitionTest()
@@ -131,6 +133,8 @@ protected:
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
+    unsigned int doppler_max;
+    unsigned int doppler_step;
 };
 
 
@@ -142,9 +146,9 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
 
+    config->set_property("Acquisition_1B.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("Acquisition_1B.item_type", "gr_complex");
-    config->set_property("Acquisition_1B.if", "0");
     config->set_property("Acquisition_1B.coherent_integration_time_ms", "4");
     if(FLAGS_plot_acq_grid == true)
         {
@@ -154,10 +158,10 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
         {
             config->set_property("Acquisition_1B.dump", "false");
         }
-    config->set_property("Acquisition_1B.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
+    config->set_property("Acquisition_1B.dump_filename", "./tmp-acq-gal1/acquisition.dat");
     config->set_property("Acquisition_1B.threshold", "0.0001");
-    config->set_property("Acquisition_1B.doppler_max", "10000");
-    config->set_property("Acquisition_1B.doppler_step", "250");
+    config->set_property("Acquisition_1B.doppler_max", std::to_string(doppler_max));
+    config->set_property("Acquisition_1B.doppler_step", std::to_string(doppler_step));
     config->set_property("Acquisition_1B.repeat_satellite", "false");
     config->set_property("Acquisition_1B.cboc", "true");
 }
@@ -166,18 +170,17 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
 void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 {
     //load the measured values
-    std::string basename = "./data/acquisition_E_1B";
+    std::string basename = "./tmp-acq-gal1/acquisition_E_1B";
     unsigned int sat = static_cast<unsigned int>(gnss_synchro.PRN);
-    unsigned int doppler_max = 10000; // !!!
-    unsigned int doppler_step = 250; // !!
+
     unsigned int samples_per_code =  static_cast<unsigned int>(round(4000000 / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS))); // !!
     acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
 
     if(!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
 
-    std::vector<int> doppler = acq_dump.doppler;
-    std::vector<unsigned int> samples = acq_dump.samples;
-    std::vector<std::vector<float> > mag = acq_dump.mag;
+    std::vector<int> * doppler = &acq_dump.doppler;
+    std::vector<unsigned int> * samples = &acq_dump.samples;
+    std::vector<std::vector<float> > * mag = &acq_dump.mag;
 
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
     if(gnuplot_executable.empty())
@@ -188,7 +191,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
         }
     else
         {
-            std::cout << "Plotting the acquisition grid..." << std::endl;
+            std::cout << "Plotting the acquisition grid. This can take a while..." << std::endl;
             try
             {
                     boost::filesystem::path p(gnuplot_executable);
@@ -201,7 +204,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
                     //g1.cmd("set view 60, 105, 1, 1");
-                    g1.plot_grid3d(doppler, samples, mag);
+                    g1.plot_grid3d(*doppler, *samples, *mag);
 
                     g1.savetops("Galileo_E1_acq_grid");
                     g1.savetopdf("Galileo_E1_acq_grid");
@@ -212,7 +215,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
                     std::cout << ge.what() << std::endl;
             }
         }
-    std::string data_str = "./data";
+    std::string data_str = "./tmp-acq-gal1";
     if (boost::filesystem::exists(data_str))
         {
             boost::filesystem::remove_all(data_str);
@@ -268,7 +271,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
 
     if(FLAGS_plot_acq_grid == true)
         {
-            std::string data_str = "./data";
+            std::string data_str = "./tmp-acq-gal1";
             if (boost::filesystem::exists(data_str))
                 {
                     boost::filesystem::remove_all(data_str);
@@ -297,11 +300,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
+        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", doppler_max));
     }) << "Failure setting doppler_max.";
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 250));
+        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", doppler_step));
     }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW( {

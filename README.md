@@ -370,8 +370,7 @@ $ sudo make install
 
 ###### Build FMCOMMS2 based SDR Hardware support (OPTIONAL):
 
-Install [libiio] (https://github.com/analogdevicesinc/libiio.git
-), [libad9361] (clone https://github.com/analogdevicesinc/libad9361-iio.git) and [gr-iio] (clone https://github.com/analogdevicesinc/gr-iio.git) gnuradio block (based on https://www.plutosdr.com/viewtopic.php?t=5):
+Install [libiio](https://github.com/analogdevicesinc/libiio.git), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) gnuradio block (instructions based on https://www.plutosdr.com/viewtopic.php?t=5):
 
 ~~~~~~
 $ git clone https://github.com/analogdevicesinc/libiio.git

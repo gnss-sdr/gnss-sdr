@@ -34,6 +34,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -47,6 +48,9 @@
 #include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
+#include "gnuplot_i.h"
+#include "test_flags.h"
+#include "acquisition_dump_reader.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 
 
@@ -114,18 +118,23 @@ protected:
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
+        doppler_max = 5000;
+        doppler_step = 100;
     }
 
     ~GpsL1CaPcpsAcquisitionTest()
     {}
 
     void init();
+    void plot_grid();
 
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
+    unsigned int doppler_max;
+    unsigned int doppler_step;
 };
 
 
@@ -137,23 +146,86 @@ void GpsL1CaPcpsAcquisitionTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.coherent_integration_time_ms", "1");
-    config->set_property("Acquisition.dump", "false");
-    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.threshold", "0.00001");
-    config->set_property("Acquisition.doppler_max", "5000");
-    config->set_property("Acquisition.doppler_step", "500");
-    config->set_property("Acquisition.repeat_satellite", "false");
-    //config->set_property("Acquisition.pfa", "0.0");
+    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition_1C.item_type", "gr_complex");
+    config->set_property("Acquisition_1C.coherent_integration_time_ms", "1");
+    if(FLAGS_plot_acq_grid == true)
+        {
+            config->set_property("Acquisition_1C.dump", "true");
+        }
+    else
+        {
+            config->set_property("Acquisition_1C.dump", "false");
+        }
+    config->set_property("Acquisition_1C.dump_filename", "./tmp-acq-gps1/acquisition.dat");
+    config->set_property("Acquisition_1C.threshold", "0.00001");
+    config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
+    config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
+    config->set_property("Acquisition_1C.repeat_satellite", "false");
+    //config->set_property("Acquisition_1C.pfa", "0.0");
+}
+
+
+void GpsL1CaPcpsAcquisitionTest::plot_grid()
+{
+    //load the measured values
+    std::string basename = "./tmp-acq-gps1/acquisition_G_1C";
+    unsigned int sat = static_cast<unsigned int>(gnss_synchro.PRN);
+
+    unsigned int samples_per_code = static_cast<unsigned int>(round(4000000 / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS))); // !!
+    acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
+
+    if(!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
+
+    std::vector<int> *doppler = &acq_dump.doppler;
+    std::vector<unsigned int> *samples = &acq_dump.samples;
+    std::vector<std::vector<float> > *mag = &acq_dump.mag;
+
+    const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+    if(gnuplot_executable.empty())
+        {
+            std::cout << "WARNING: Although the flag plot_acq_grid has been set to TRUE," << std::endl;
+            std::cout << "gnuplot has not been found in your system." << std::endl;
+            std::cout << "Test results will not be plotted." << std::endl;
+        }
+    else
+        {
+            std::cout << "Plotting the acquisition grid. This can take a while..." << std::endl;
+            try
+            {
+                    boost::filesystem::path p(gnuplot_executable);
+                    boost::filesystem::path dir = p.parent_path();
+                    std::string gnuplot_path = dir.native();
+                    Gnuplot::set_GNUPlotPath(gnuplot_path);
+
+                    Gnuplot g1("lines");
+                    g1.set_title("GPS L1 C/A signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
+                    g1.set_xlabel("Doppler [Hz]");
+                    g1.set_ylabel("Sample");
+                    //g1.cmd("set view 60, 105, 1, 1");
+                    g1.plot_grid3d(*doppler, *samples, *mag);
+
+                    g1.savetops("GPS_L1_acq_grid");
+                    g1.savetopdf("GPS_L1_acq_grid");
+                    g1.showonscreen();
+            }
+            catch (const GnuplotException & ge)
+            {
+                    std::cout << ge.what() << std::endl;
+            }
+        }
+    std::string data_str = "./tmp-acq-gps1";
+    if (boost::filesystem::exists(data_str))
+        {
+            boost::filesystem::remove_all(data_str);
+        }
 }
 
 
 TEST_F(GpsL1CaPcpsAcquisitionTest, Instantiate)
 {
     init();
-    boost::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
+    boost::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 1);
 }
 
 
@@ -167,7 +239,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-    boost::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
+    boost::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 1);
     boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW( {
@@ -178,14 +250,14 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     EXPECT_NO_THROW( {
         start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
 
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
@@ -194,7 +266,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds(0);
+    std::chrono::duration<double> elapsed_seconds(0.0);
     top_block = gr::make_top_block("Acquisition test");
 
     double expected_delay_samples = 524;
@@ -202,32 +274,42 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 
     init();
 
-    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
+    if(FLAGS_plot_acq_grid == true)
+        {
+            std::string data_str = "./tmp-acq-gps1";
+            if (boost::filesystem::exists(data_str))
+                {
+                    boost::filesystem::remove_all(data_str);
+                }
+            boost::filesystem::create_directory(data_str);
+        }
+
+    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 1);
     boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
-    }) << "Failure setting channel." << std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro." << std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
         acquisition->set_threshold(0.001);
-    }) << "Failure setting threshold." << std::endl;
+    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(5000);
-    }) << "Failure setting doppler_max." << std::endl;
+        acquisition->set_doppler_max(doppler_max);
+    }) << "Failure setting doppler_max.";
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(100);
-    }) << "Failure setting doppler_step." << std::endl;
+        acquisition->set_doppler_step(doppler_step);
+    }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block." << std::endl;
+    }) << "Failure connecting acquisition to the top_block.";
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
@@ -236,7 +318,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     acquisition->set_local_code();
     acquisition->set_state(1); // Ensure that acquisition starts at the first sample
@@ -247,7 +329,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
@@ -259,4 +341,9 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
+
+    if(FLAGS_plot_acq_grid == true)
+        {
+            plot_grid();
+        }
 }

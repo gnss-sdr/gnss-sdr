@@ -46,7 +46,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "../data/acquisition.dat";
+    std::string default_dump_filename = "./data/acquisition.dat";
 
     DLOG(INFO) << "role " << role;
 

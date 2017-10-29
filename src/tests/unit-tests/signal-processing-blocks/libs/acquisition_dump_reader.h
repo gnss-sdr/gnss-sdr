@@ -1,5 +1,5 @@
 /*!
- * \file test_flags.h
+ * \file acquisition_dump_reader.h
  * \brief Helper file for unit testing
  * \author Carles Fernandez-Prades, 2017. cfernandez(at)cttc.es
  *
@@ -28,18 +28,34 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TEST_FLAGS_H_
-#define GNSS_SDR_TEST_FLAGS_H_
+#ifndef GNSS_SDR_ACQUISITION_DUMP_READER_H
+#define GNSS_SDR_ACQUISITION_DUMP_READER_H
 
-#include <gflags/gflags.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
 
-#if defined GNUPLOT_EXECUTABLE
-  DEFINE_string(gnuplot_executable, std::string(GNUPLOT_EXECUTABLE), "Gnuplot binary path");
-#elif !defined GNUPLOT_EXECUTABLE
-  DEFINE_string(gnuplot_executable, "", "Gnuplot binary path");
-#endif
+class acquisition_dump_reader
+{
+public:
+    acquisition_dump_reader(const std::string & basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code);
+    ~acquisition_dump_reader();
+    bool read_binary_acq();
 
-DEFINE_bool(plot_acq_grid, false, "Plots acquisition grid with gnuplot");
-DEFINE_int32(plot_decimate, 1, "Decimate plots");
+    std::vector<int> doppler;
+    std::vector<unsigned int> samples;
+    std::vector<std::vector<float> > mag;
 
-#endif
+private:
+    std::string d_basename;
+    unsigned int d_sat;
+    unsigned int d_doppler_max;
+    unsigned int d_doppler_step;
+    unsigned int d_samples_per_code;
+    unsigned int d_num_doppler_bins;
+    std::vector<std::string> d_dump_filenames;
+    std::vector<std::ifstream> d_dump_files;
+};
+
+#endif // GNSS_SDR_ACQUISITION_DUMP_READER_H

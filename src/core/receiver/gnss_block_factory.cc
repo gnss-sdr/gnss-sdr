@@ -119,6 +119,14 @@
 #include "uhd_signal_source.h"
 #endif
 
+#if PLUTOSDR_DRIVER
+#include "plutosdr_signal_source.h"
+#endif
+
+#if FMCOMMS2_DRIVER
+#include "fmcomms2_signal_source.h"
+#endif
+
 #if FLEXIBAND_DRIVER
 #include "flexiband_signal_source.h"
 #endif
@@ -806,6 +814,24 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Osmosdr_Signal_Source") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new OsmosdrSignalSource(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+#endif
+
+#if PLUTOSDR_DRIVER
+    else if (implementation.compare("Plutosdr_Signal_Source") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new PlutosdrSignalSource(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+#endif
+
+#if FMCOMMS2_DRIVER
+    else if (implementation.compare("Fmcomms2_Signal_Source") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new Fmcomms2SignalSource(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }

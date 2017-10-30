@@ -368,7 +368,63 @@ $ sudo make install
 
 (in order to disable the `Osmosdr_Signal_Source` compilation, you can pass `DENABLE_OSMOSDR=OFF` to cmake and build GNSS-SDR again).
 
+###### Build FMCOMMS2 based SDR Hardware support (OPTIONAL):
 
+Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>=v0.2) gnuradio block. For example in Ubuntu 16.04 follow these instructions (based on https://github.com/blurbdust/blurbdust.github.io):
+
+~~~~~~
+$ git clone https://github.com/analogdevicesinc/libiio.git
+$ cd libiio
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ sudo make install
+$ sudo ldconfig
+$ git clone https://github.com/analogdevicesinc/libad9361-iio.git
+$ cd libad9361-iio
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ sudo make install
+$ sudo ldconfig
+$ git clone https://github.com/analogdevicesinc/gr-iio.git
+$ cd gr-iio
+$ mv include/gnuradio/iio include/iio
+$ rm -r include/gnuradio
+$ sed -i 's/gnuradio\/iio/iio/g' CMakeLists.txt
+$ sed -i 's/gnuradio\/iio/iio/g' swig/*
+$ sed -i 's/gnuradio\/iio/iio/g' include/iio/*
+$ sed -i 's/gnuradio\/iio/iio/g' lib/*
+$ sed -i 's/gnuradio\/iio/iio/g' python/iio/*
+$ sed -i 's/from\ gnuradio\ import\ iio/import\ iio/g' grc/iio_pluto_sink.xml
+$ sed -i 's/from\ gnuradio\ import\ iio/import\ iio/g' grc/iio_pluto_source.xml
+$ sed -i 's/from\ gnuradio\ import\ iio/import\ iio/g' grc/iio_fmcomms2_sink.xml
+$ sed -i 's/from\ gnuradio\ import\ iio/import\ iio/g' grc/iio_fmcomms2_source.xml
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ sudo make install
+$ sudo ldconfig
+~~~~~~
+
+Then configure the gnss-sdr to build the `Fmcomms2_Signal_Source` and `Plutosdr_Signal_Source`:
+~~~~~~
+$ cmake -DENABLE_FMCOMMS2=ON ../
+$ make
+$ sudo make install
+~~~~~~
+
+or configure only `Plutosdr_Signal_Source`:
+~~~~~~
+$ cmake -DENABLE_PLUTOSDR=ON ../
+$ make
+$ sudo make install
+~~~~~~
+
+With `Fmcomms2_Signal_Source` you can use any SDR hardware based on fmcomms2, including the ADALM-PLUTO (PlutoSdr) by configuring correctly the .conf file. The `Plutosdr_Signal_Source` offers a simplier manner to use the ADALM-PLUTO because implements only a subset of fmcomms2's parameters valid for it device.
 
 ###### Build OpenCL support (OPTIONAL):
 

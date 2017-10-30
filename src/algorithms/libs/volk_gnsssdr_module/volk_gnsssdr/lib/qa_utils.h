@@ -19,7 +19,10 @@
 #ifndef GNSS_SDR_VOLK_QA_UTILS_H
 #define GNSS_SDR_VOLK_QA_UTILS_H
 
-#include <cstdlib>
+#ifdef __APPLE__
+#define _DARWIN_C_SOURCE
+#endif
+
 #include <string>
 #include <iostream>
 #include <fstream>

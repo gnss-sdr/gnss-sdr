@@ -56,7 +56,6 @@ pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(
 }
 
 
-
 pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
         int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
         long fs_in, int samples_per_ms, bool dump,
@@ -108,6 +107,7 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
     d_channel = 0;
 }
 
+
 void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_step)
 {
     d_doppler_step = doppler_step;
@@ -123,6 +123,7 @@ void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_ste
     update_carrier_wipeoff();
 }
 
+
 void pcps_acquisition_fine_doppler_cc::free_grid_memory()
 {
     for (int i = 0; i < d_num_doppler_points; i++)
@@ -133,6 +134,7 @@ void pcps_acquisition_fine_doppler_cc::free_grid_memory()
     delete d_grid_data;
     delete d_grid_doppler_wipeoffs;
 }
+
 
 pcps_acquisition_fine_doppler_cc::~pcps_acquisition_fine_doppler_cc()
 {
@@ -149,15 +151,14 @@ pcps_acquisition_fine_doppler_cc::~pcps_acquisition_fine_doppler_cc()
 }
 
 
-
 void pcps_acquisition_fine_doppler_cc::set_local_code(std::complex<float> * code)
 {
-
     memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
     d_fft_if->execute(); // We need the FFT of local code
     //Conjugate the local code
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
+
 
 void pcps_acquisition_fine_doppler_cc::init()
 {
@@ -165,15 +166,14 @@ void pcps_acquisition_fine_doppler_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Flag_preamble = false;
 
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_input_power = 0.0;
     d_state = 0;
-
 }
+
 
 void pcps_acquisition_fine_doppler_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
@@ -216,6 +216,7 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], - phase_step_rad, _phase, d_fft_size);
         }
 }
+
 
 double pcps_acquisition_fine_doppler_cc::search_maximum()
 {
@@ -260,16 +261,17 @@ double pcps_acquisition_fine_doppler_cc::search_maximum()
                     << d_gnss_synchro->PRN << "_doppler_" <<  d_gnss_synchro->Acq_doppler_hz << ".dat";
             d_dump_file.open(filename.str().c_str(), std::ios::out
                     | std::ios::binary);
-            d_dump_file.write((char*)d_grid_data[index_doppler], n); //write directly |abs(x)|^2 in this Doppler bin?
+            d_dump_file.write(reinterpret_cast<char*>(d_grid_data[index_doppler]), n); //write directly |abs(x)|^2 in this Doppler bin?
             d_dump_file.close();
         }
 
     return d_test_statistics;
 }
 
+
 float pcps_acquisition_fine_doppler_cc::estimate_input_power(gr_vector_const_void_star &input_items)
 {
-    const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
     // Compute the input signal power estimation
     float power = 0;
     volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
@@ -278,18 +280,17 @@ float pcps_acquisition_fine_doppler_cc::estimate_input_power(gr_vector_const_voi
     return power;
 }
 
+
 int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
 {
     // initialize acquisition algorithm
-    const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
 
     DLOG(INFO) << "Channel: " << d_channel
             << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
             << " ,sample stamp: " << d_sample_counter << ", threshold: "
             << d_threshold << ", doppler_max: " << d_config_doppler_max
             << ", doppler_step: " << d_doppler_step;
-
-
 
     // 2- Doppler frequency search loop
     float* p_tmp_vector = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
@@ -315,16 +316,15 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
             volk_32fc_magnitude_squared_32f(p_tmp_vector, d_ifft->get_outbuf(), d_fft_size);
             const float*  old_vector = d_grid_data[doppler_index];
             volk_32f_x2_add_32f(d_grid_data[doppler_index], old_vector, p_tmp_vector, d_fft_size);
-
         }
 
     volk_gnsssdr_free(p_tmp_vector);
     return d_fft_size;
 }
 
+
 int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star &input_items)
 {
-
     // Direct FFT
     int zero_padding_factor = 2;
     int fft_size_extended = d_fft_size * zero_padding_factor;
@@ -347,7 +347,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
         }
 
     //2. Perform code wipe-off
-    const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
 
     volk_32fc_x2_multiply_32fc(fft_operator->get_inbuf(), in, code_replica, d_fft_size);
 
@@ -368,7 +368,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
     float fftFreqBins[fft_size_extended];
     memset(fftFreqBins, 0, fft_size_extended * sizeof(float));
 
-    for (int k=0; k < (fft_size_extended / 2); k++)
+    for (int k = 0; k < (fft_size_extended / 2); k++)
         {
             fftFreqBins[counter] = ((static_cast<float>(d_fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(fft_size_extended) / 2.0);
             counter++;
@@ -400,14 +400,14 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
             //        filename << "../data/code_prn_" << d_gnss_synchro->PRN << ".dat";
             //        d_dump_file.open(filename.str().c_str(), std::ios::out
             //                | std::ios::binary);
-            //        d_dump_file.write((char*)code_replica, n); //write directly |abs(x)|^2 in this Doppler bin?
+            //        d_dump_file.write(reinterpret_cast<char*>(code_replica), n); //write directly |abs(x)|^2 in this Doppler bin?
             //        d_dump_file.close();
             //
             //        filename.str("");
             //        filename << "../data/signal_prn_" << d_gnss_synchro->PRN << ".dat";
             //        d_dump_file.open(filename.str().c_str(), std::ios::out
             //                | std::ios::binary);
-            //        d_dump_file.write((char*)in, n); //write directly |abs(x)|^2 in this Doppler bin?
+            //        d_dump_file.write(reinterpret_cast<char*>(in), n); //write directly |abs(x)|^2 in this Doppler bin?
             //        d_dump_file.close();
             //
             //
@@ -416,10 +416,9 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
             //        filename << "../data/fft_prn_" << d_gnss_synchro->PRN << ".dat";
             //        d_dump_file.open(filename.str().c_str(), std::ios::out
             //                | std::ios::binary);
-            //        d_dump_file.write((char*)p_tmp_vector, n); //write directly |abs(x)|^2 in this Doppler bin?
+            //        d_dump_file.write(reinterpret_cast<char*>(p_tmp_vector), n); //write directly |abs(x)|^2 in this Doppler bin?
             //        d_dump_file.close();
         }
-
 
     // free memory!!
     delete fft_operator;
@@ -433,7 +432,6 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items __attribute__((unused)), gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items __attribute__((unused)))
 {
-
     /*!
      * TODO:     High sensitivity acquisition algorithm:
      *             State Mechine:
@@ -480,9 +478,6 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 d_state = 5; //negative acquisition
             }
         break;
-
-
-
     case 3: // Fine doppler estimation
         //DLOG(INFO) <<"S3"<<std::endl;
         DLOG(INFO) << "Performing fine Doppler estimation";

@@ -36,9 +36,13 @@ if(ENABLE_CUDA)
      set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS})
 endif(ENABLE_CUDA)
 
+if(ENABLE_FPGA)
+     add_definitions(-DENABLE_FPGA=1)
+endif(ENABLE_FPGA)
+
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/libs
@@ -59,17 +63,20 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs/libswiftcnav
      ${CMAKE_SOURCE_DIR}/src/algorithms/observables/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
      ${ARMADILLO_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
@@ -78,7 +85,7 @@ include_directories(
      ${OPT_RECEIVER_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
-     
+
 if(Boost_VERSION LESS 105000)
      add_definitions(-DOLD_BOOST=1)
 endif(Boost_VERSION LESS 105000)
@@ -100,12 +107,14 @@ if(ENABLE_FLEXIBAND)
 endif(ENABLE_FLEXIBAND)
 
 if(ENABLE_OSMOSDR)
-    add_definitions(-DOSMOSDR_DRIVER=1)
+    if(GROSMOSDR_FOUND)
+        add_definitions(-DOSMOSDR_DRIVER=1)
+    endif(GROSMOSDR_FOUND)
 endif(ENABLE_OSMOSDR)
 
-if(ENABLE_UHD)
+if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
     add_definitions(-DUHD_DRIVER=1)
-endif(ENABLE_UHD)
+endif(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
 
 #Enable OpenCL if found in the system
 if(OPENCL_FOUND)
@@ -114,6 +123,16 @@ if(OPENCL_FOUND)
 else(OPENCL_FOUND)
     add_definitions(-DOPENCL_BLOCKS=0)
 endif(OPENCL_FOUND)
+
+#enable SDR Hardware based on fmcomms2
+if(ENABLE_PLUTOSDR)
+	add_definitions(-DPLUTOSDR_DRIVER=1)
+endif(ENABLE_PLUTOSDR)
+
+if(ENABLE_FMCOMMS2)
+	add_definitions(-DFMCOMMS2_DRIVER=1)
+	add_definitions(-DPLUTOSDR_DRIVER=1)
+endif(ENABLE_FMCOMMS2)
 
 add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
@@ -139,8 +158,11 @@ target_link_libraries(gnss_rx ${Boost_LIBRARIES}
                               resampler_adapters
                               acq_adapters
                               tracking_lib
+#                              acquisition_lib
                               tracking_adapters
                               channel_adapters
+                              telemetry_decoder_libswiftcnav
+                              telemetry_decoder_lib
                               telemetry_decoder_adapters
                               obs_adapters
                               pvt_adapters

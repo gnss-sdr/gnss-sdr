@@ -57,7 +57,7 @@ const float MAXLOG = 1e7;  /* Define infinity */
  *
  * This function is used by nsc_enc_bit(), rsc_enc_bit(), and rsc_tail()
  */
-static int parity_counter(int symbol, int length)
+inline static int parity_counter(int symbol, int length)
 {
     int counter;
     int temp_parity = 0;
@@ -69,7 +69,6 @@ static int parity_counter(int symbol, int length)
         }
     return(temp_parity);
 }
-
 
 
 /*!
@@ -86,7 +85,7 @@ static int parity_counter(int symbol, int length)
  *
  * This function is used by nsc_transit()
  */
-static int nsc_enc_bit(int state_out_p[],
+inline static int nsc_enc_bit(int state_out_p[],
                        int input,
                        int state_in,
                        int g[],
@@ -113,11 +112,10 @@ static int nsc_enc_bit(int state_out_p[],
 }
 
 
-
 /*!
  * \brief Function that creates the transit and output vectors
  */
-static void nsc_transit(int output_p[],
+inline static void nsc_transit(int output_p[],
                         int trans_p[],
                         int input,
                         int g[],
@@ -138,7 +136,6 @@ static void nsc_transit(int output_p[],
 }
 
 
-
 /*!
  * \brief  Computes the branch metric used for decoding.
  *  \return (returned float) The metric between the hypothetical symbol and the received vector
@@ -147,7 +144,7 @@ static void nsc_transit(int output_p[],
  *  \param[in] nn            The length of the received vector
  *
  */
-static float Gamma(float  rec_array[],
+inline static float Gamma(float  rec_array[],
                    int symbol,
                    int nn)
 {
@@ -177,7 +174,7 @@ static float Gamma(float  rec_array[],
  * \param[out] output_u_int[]    Hard decisions on the data bits
  *
  */
-static void Viterbi(int output_u_int[],
+inline static void Viterbi(int output_u_int[],
                     int out0[],
                     int state0[],
                     int out1[],

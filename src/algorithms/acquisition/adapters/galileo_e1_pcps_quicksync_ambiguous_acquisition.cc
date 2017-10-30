@@ -53,7 +53,8 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     item_type_ = configuration_->property(role + ".item_type",
             default_item_type);
 
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
+    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
@@ -67,14 +68,13 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
 
     int samples_per_ms = round(code_length_ / 4.0);
 
-
     /*Calculate the folding factor value based on the formula described in the paper.
     This may be a bug, but acquisition also work by variying the folding factor at va-
     lues different that the expressed in the paper. In adition, it is important to point
     out that by making the folding factor smaller we were able to get QuickSync work with 
     Galileo. Future work should be directed to test this asumption statistically.*/
 
-    //folding_factor_ = (unsigned int)ceil(sqrt(log2(code_length_)));
+    //folding_factor_ = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
     folding_factor_ = configuration_->property(role + ".folding_factor", 2);
 
     if (sampled_ms_ % (folding_factor_*4) != 0)
@@ -85,11 +85,11 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
 
             if(sampled_ms_ < (folding_factor_*4))
                 {
-                    sampled_ms_ = (int) (folding_factor_*4);
+                    sampled_ms_ = static_cast<int>(folding_factor_ * 4);
                 }
             else
                 {
-                    sampled_ms_ = (int)(sampled_ms_/(folding_factor_*4)) * (folding_factor_*4);
+                    sampled_ms_ = static_cast<int>(sampled_ms_/(folding_factor_*4)) * (folding_factor_*4);
                 }
             LOG(WARNING) << "coherent_integration_time should be multiple of "
                     << "Galileo code length (4 ms). coherent_integration_time = "
@@ -240,7 +240,7 @@ void
 GalileoE1PcpsQuickSyncAmbiguousAcquisition::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 
@@ -296,7 +296,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_state(int state)
 float GalileoE1PcpsQuickSyncAmbiguousAcquisition::calculate_threshold(float pfa)
 {
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
             frequency_bins++;
         }

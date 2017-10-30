@@ -34,9 +34,6 @@
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include "concurrent_queue.h"
-#include "sbas_telemetry_data.h"
-#include "sbas_ionospheric_correction.h"
-#include "sbas_satellite_correction.h"
 #include "sbas_ephemeris.h"
 #include "configuration_interface.h"
 #include "sbas_l1_telemetry_decoder_cc.h"
@@ -66,7 +63,7 @@ SbasL1TelemetryDecoder::~SbasL1TelemetryDecoder()
 {}
 
 
-void SbasL1TelemetryDecoder::set_satellite(Gnss_Satellite satellite)
+void SbasL1TelemetryDecoder::set_satellite(const Gnss_Satellite & satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     telemetry_decoder_->set_satellite(satellite_);

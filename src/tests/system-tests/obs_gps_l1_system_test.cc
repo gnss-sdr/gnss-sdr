@@ -30,13 +30,13 @@
  */
 
 #include <algorithm>
+#include <chrono>
+#include <cstdlib>
 #include <exception>
 #include <iostream>
-#include <cstring>
 #include <numeric>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/wait.h>
+#include <string>
+#include <thread>
 #include <unistd.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -57,7 +57,8 @@
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-class Obs_Gps_L1_System_Test: public ::testing::Test
+
+class ObsGpsL1SystemTest: public ::testing::Test
 {
 public:
     std::string generator_binary;
@@ -71,7 +72,7 @@ public:
 
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
-
+    std::string generated_rinex_obs;
     int configure_generator();
     int generate_signal();
     int configure_receiver();
@@ -82,11 +83,10 @@ public:
     double compute_stdev(const std::vector<double> & vec);
 
     std::shared_ptr<InMemoryConfiguration> config;
-    std::string generated_rinex_obs;
 };
 
 
-bool Obs_Gps_L1_System_Test::check_valid_rinex_nav(std::string filename)
+bool ObsGpsL1SystemTest::check_valid_rinex_nav(std::string filename)
 {
     bool res = false;
     res = gpstk::isRinexNavFile(filename);
@@ -94,7 +94,7 @@ bool Obs_Gps_L1_System_Test::check_valid_rinex_nav(std::string filename)
 }
 
 
-double Obs_Gps_L1_System_Test::compute_stdev(const std::vector<double> & vec)
+double ObsGpsL1SystemTest::compute_stdev(const std::vector<double> & vec)
 {
     double sum__ = std::accumulate(vec.begin(), vec.end(), 0.0);
     double mean__ = sum__ / vec.size();
@@ -107,7 +107,7 @@ double Obs_Gps_L1_System_Test::compute_stdev(const std::vector<double> & vec)
 }
 
 
-bool Obs_Gps_L1_System_Test::check_valid_rinex_obs(std::string filename)
+bool ObsGpsL1SystemTest::check_valid_rinex_obs(std::string filename)
 {
     bool res = false;
     res = gpstk::isRinexObsFile(filename);
@@ -115,7 +115,7 @@ bool Obs_Gps_L1_System_Test::check_valid_rinex_obs(std::string filename)
 }
 
 
-int Obs_Gps_L1_System_Test::configure_generator()
+int ObsGpsL1SystemTest::configure_generator()
 {
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
@@ -137,7 +137,7 @@ int Obs_Gps_L1_System_Test::configure_generator()
 }
 
 
-int Obs_Gps_L1_System_Test::generate_signal()
+int ObsGpsL1SystemTest::generate_signal()
 {
     pid_t wait_result;
     int child_status;
@@ -162,7 +162,7 @@ int Obs_Gps_L1_System_Test::generate_signal()
 }
 
 
-int Obs_Gps_L1_System_Test::configure_receiver()
+int ObsGpsL1SystemTest::configure_receiver()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
@@ -204,10 +204,9 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     const int extend_correlation_ms = 1;
 
     const int display_rate_ms = 500;
-    const int output_rate_ms = 1000;
-    const int averaging_depth = 1;
+    const int output_rate_ms =  100;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_rate_internal));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
 
     // Set the assistance system parameters
     config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
@@ -298,15 +297,13 @@ int Obs_Gps_L1_System_Test::configure_receiver()
     config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
     // Set Observables
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.dump", "false");
     config->set_property("Observables.dump_filename", "./observables.dat");
     config->set_property("Observables.averaging_depth", std::to_string(100));
 
     // Set PVT
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-    config->set_property("PVT.averaging_depth", std::to_string(averaging_depth));
-    config->set_property("PVT.flag_averaging", "true");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");
@@ -323,7 +320,7 @@ int Obs_Gps_L1_System_Test::configure_receiver()
 }
 
 
-int Obs_Gps_L1_System_Test::run_receiver()
+int ObsGpsL1SystemTest::run_receiver()
 {
     std::shared_ptr<ControlThread> control_thread;
     control_thread = std::make_shared<ControlThread>(config);
@@ -332,15 +329,16 @@ int Obs_Gps_L1_System_Test::run_receiver()
     {
             control_thread->run();
     }
-    catch( boost::exception & e )
+    catch(const boost::exception & e)
     {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch(std::exception const&  ex)
+    catch(const std::exception & ex)
     {
             std::cout  << "STD exception: " << ex.what();
     }
     // Get the name of the RINEX obs file generated by the receiver
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     FILE *fp;
     std::string argum2 = std::string("/bin/ls *O | grep GSDR | tail -1");
     char buffer[1035];
@@ -350,20 +348,17 @@ int Obs_Gps_L1_System_Test::run_receiver()
             std::cout << "Failed to run command: " << argum2 << std::endl;
             return -1;
         }
-    char * without_trailing = (char*)"0";
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
         {
             std::string aux = std::string(buffer);
-            without_trailing = strtok(&aux[0], "\n");
+            ObsGpsL1SystemTest::generated_rinex_obs = aux.erase(aux.length() - 1, 1);
         }
-    generated_rinex_obs = std::string(without_trailing);
     pclose(fp);
-
     return 0;
 }
 
 
-void Obs_Gps_L1_System_Test::check_results()
+void ObsGpsL1SystemTest::check_results()
 {
     std::vector<std::vector<std::pair<double, double>> > pseudorange_ref(33);
     std::vector<std::vector<std::pair<double, double>> > carrierphase_ref(33);
@@ -418,12 +413,12 @@ void Obs_Gps_L1_System_Test::check_results()
                         } // end for
                 } // end while
     } // End of 'try' block
-    catch(gpstk::FFStreamError& e)
+    catch(const gpstk::FFStreamError& e)
     {
             std::cout << e;
             exit(1);
     }
-    catch(gpstk::Exception& e)
+    catch(const gpstk::Exception& e)
     {
             std::cout << e;
             exit(1);
@@ -436,7 +431,7 @@ void Obs_Gps_L1_System_Test::check_results()
 
     try
     {
-            std::string arg2_gen = std::string("./") + generated_rinex_obs;
+            std::string arg2_gen = std::string("./") + ObsGpsL1SystemTest::generated_rinex_obs;
             gpstk::Rinex3ObsStream r_meas(arg2_gen);
             r_meas.exceptions(std::ios::failbit);
             gpstk::Rinex3ObsData r_meas_data;
@@ -478,12 +473,12 @@ void Obs_Gps_L1_System_Test::check_results()
                         } // end for
                 } // end while
     } // End of 'try' block
-    catch(gpstk::FFStreamError& e)
+    catch(const gpstk::FFStreamError& e)
     {
             std::cout << e;
             exit(1);
     }
-    catch(gpstk::Exception& e)
+    catch(const gpstk::Exception& e)
     {
             std::cout << e;
             exit(1);
@@ -596,7 +591,7 @@ void Obs_Gps_L1_System_Test::check_results()
         }
     double stdev_pr = compute_stdev(mean_pr_diff_v);
     std::cout << "Pseudorange diff error stdev = " << stdev_pr << " [m]" << std::endl;
-    ASSERT_LT(stdev_pr, 1.0);
+    ASSERT_LT(stdev_pr, 10.0);
 
     // Compute carrier phase error
     prn_id = 0;
@@ -657,11 +652,11 @@ void Obs_Gps_L1_System_Test::check_results()
 
     double stdev_dp = compute_stdev(mean_doppler_v);
     std::cout << "Doppler error stdev = " << stdev_dp << " [Hz]" << std::endl;
-    ASSERT_LT(stdev_dp, 1.0);
+    ASSERT_LT(stdev_dp, 10.0);
 }
 
 
-TEST_F(Obs_Gps_L1_System_Test, Observables_system_test)
+TEST_F(ObsGpsL1SystemTest, Observables_system_test)
 {
     std::cout << "Validating input RINEX nav file: " << FLAGS_rinex_nav_file << " ..." << std::endl;
     bool is_rinex_nav_valid = check_valid_rinex_nav(FLAGS_rinex_nav_file);
@@ -672,7 +667,10 @@ TEST_F(Obs_Gps_L1_System_Test, Observables_system_test)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
-    generate_signal();
+    if(!FLAGS_disable_generator)
+        {
+            generate_signal();
+        }
 
     std::cout << "Validating generated reference RINEX obs file: " << FLAGS_filename_rinex_obs << " ..." << std::endl;
     bool is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + FLAGS_filename_rinex_obs);
@@ -685,9 +683,9 @@ TEST_F(Obs_Gps_L1_System_Test, Observables_system_test)
     // Run the receiver
     EXPECT_EQ( run_receiver(), 0) << "Problem executing the software-defined signal generator";
 
-    std::cout << "Validating RINEX obs file obtained by GNSS-SDR: " << generated_rinex_obs << " ..." << std::endl;
-    is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + generated_rinex_obs);
-    EXPECT_EQ(true, is_gen_rinex_obs_valid) << "The RINEX observation file " << generated_rinex_obs << ", generated by GNSS-SDR, is not well formed.";
+    std::cout << "Validating RINEX obs file obtained by GNSS-SDR: " << ObsGpsL1SystemTest::generated_rinex_obs << " ..." << std::endl;
+    is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + ObsGpsL1SystemTest::generated_rinex_obs);
+    EXPECT_EQ(true, is_gen_rinex_obs_valid) << "The RINEX observation file " << ObsGpsL1SystemTest::generated_rinex_obs << ", generated by GNSS-SDR, is not well formed.";
     std::cout << "The file is valid." << std::endl;
 
     // Check results

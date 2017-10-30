@@ -52,18 +52,18 @@ public:
     //! Virtual destructor
     virtual ~GenSignalSource();
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
-    std::string role(){ return role_; }
+    inline std::string role() override { return role_; }
 
     //! Returns "Signal Source"
-    std::string implementation(){ return "Signal Source"; }
-    size_t item_size(){ return 0; }
+    inline std::string implementation() override { return "Signal Source"; }
+    inline size_t item_size() override { return 0; }
 
-    GNSSBlockInterface *signal_generator(){ return signal_generator_; }
+    inline GNSSBlockInterface *signal_generator() const { return signal_generator_; }
 
 private:
     GNSSBlockInterface *signal_generator_;

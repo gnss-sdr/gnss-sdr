@@ -53,7 +53,8 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
     item_type_ = configuration_->property(role + ".item_type",
             default_item_type);
 
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
+    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
@@ -61,11 +62,10 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
 
     if (sampled_ms_ % 4 != 0)
         {
-            sampled_ms_ = (int)(sampled_ms_/4) * 4;
+            sampled_ms_ = static_cast<int>(sampled_ms_ / 4) * 4;
             LOG(WARNING) << "coherent_integration_time should be multiple of "
-                                     << "Galileo code length (4 ms). coherent_integration_time = "
-                                     << sampled_ms_ << " ms will be used.";
-
+                    << "Galileo code length (4 ms). coherent_integration_time = "
+                    << sampled_ms_ << " ms will be used.";
         }
 
     tong_init_val_ = configuration->property(role + ".tong_init_val", 1);
@@ -82,7 +82,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
             / (Galileo_E1_CODE_CHIP_RATE_HZ
                     / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
-    vector_length_ = code_length_ * (int)(sampled_ms_/4);
+    vector_length_ = code_length_ * static_cast<int>(sampled_ms_ / 4);
 
     int samples_per_ms = code_length_ / 4;
 
@@ -204,7 +204,7 @@ signed int GalileoE1PcpsTongAmbiguousAcquisition::mag()
 void GalileoE1PcpsTongAmbiguousAcquisition::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 
@@ -251,7 +251,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_state(int state)
 float GalileoE1PcpsTongAmbiguousAcquisition::calculate_threshold(float pfa)
 {
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
             frequency_bins++;
         }
@@ -263,7 +263,7 @@ float GalileoE1PcpsTongAmbiguousAcquisition::calculate_threshold(float pfa)
     double val = pow(1.0-pfa,exponent);
     double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    float threshold = static_cast<float>(quantile(mydist,val));
 
     return threshold;
 }

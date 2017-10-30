@@ -89,7 +89,7 @@ public:
     bool E5a_DVS;              //!< E5a Data Validity Status
     double E5b_DVS_5;          //!< E5b Data Validity Status
     double E1B_DVS_5;          //!< E1B Data Validity Status
-    
+
     double BGD_E1E5a_5;        //!< E1-E5a Broadcast Group Delay [s]
     double BGD_E1E5b_5;        //!< E1-E5b Broadcast Group Delay [s]
 
@@ -116,10 +116,10 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
+    inline void serialize(Archive& archive, const unsigned int version)
     {
         using boost::serialization::make_nvp;
-
+        if(version){};
         archive & make_nvp("i_satellite_PRN",i_satellite_PRN);
         archive & make_nvp("M0_1", M0_1);
         archive & make_nvp("e_1", e_1);

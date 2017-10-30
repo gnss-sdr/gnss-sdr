@@ -27,7 +27,7 @@ enable_language(CXX)
 enable_language(C)
 enable_testing()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
@@ -49,7 +49,7 @@ message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_MINOR_VERSION 0)
-set(VERSION_INFO_MAINT_VERSION 9)
+set(VERSION_INFO_MAINT_VERSION 9.git)
 include(VolkVersion) #setup version info
 
 
@@ -75,6 +75,14 @@ if(MSVC)
     add_compile_options(/wo4273)
     add_compile_options(/wo4838)
 endif(MSVC)
+
+# allow 'large' files in 32 bit builds
+if(UNIX)
+    add_definitions( -D_LARGEFILE_SOURCE
+                     -D_FILE_OFFSET_BITS=64
+                     -D_LARGE_FILES
+                   )
+endif(UNIX)
 
 ########################################################################
 # Dependencies setup
@@ -184,7 +192,9 @@ install(FILES
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_prefs.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_complex.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_common.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/saturation_arithmetic.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_sse_intrinsics.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_sse3_intrinsics.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_neon_intrinsics.h
     ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr.h

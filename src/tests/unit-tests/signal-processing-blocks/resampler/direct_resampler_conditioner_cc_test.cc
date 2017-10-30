@@ -32,7 +32,7 @@
  */
 
 
-#include <ctime>
+#include <chrono>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -43,18 +43,17 @@
 #include "direct_resampler_conditioner_cc.h"
 
 
-TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest)
+TEST(DirectResamplerConditionerCcTest, InstantiationAndRunTest)
 {
     double fs_in = 8000000.0; // Input sampling frequency in Hz
     double fs_out = 4000000.0; // sampling freuqncy of the resampled signal in Hz
-    struct timeval tv;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     int nsamples = 1000000; //Number of samples to be computed
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     gr::top_block_sptr top_block = gr::make_top_block("direct_resampler_conditioner_cc_test");
     boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
     boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-    long long int begin = 0;
-    long long int end = 0;
 
     EXPECT_NO_THROW({
         direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(fs_in, fs_out);
@@ -70,13 +69,12 @@ TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest)
     }) << "Connection failure of direct_resampler_conditioner.";
 
     EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
         top_block->stop();
     }) << "Failure running direct_resampler_conditioner.";
 
-    std::cout <<  "Resampled " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Resampled " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }

@@ -32,7 +32,9 @@
 #define FRONT_END_CAL_VERSION "0.0.1"
 #endif
 
-#include <ctime>
+#include <stdlib.h>
+#include <chrono>
+#include <ctime> // for ctime
 #include <exception>
 #include <memory>
 #include <queue>
@@ -51,6 +53,7 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
 #include "concurrent_map.h"
+#include "concurrent_queue.h"
 #include "file_configuration.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "gnss_signal.h"
@@ -67,11 +70,7 @@
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include "sbas_telemetry_data.h"
-#include "sbas_ionospheric_correction.h"
-#include "sbas_satellite_correction.h"
 #include "sbas_ephemeris.h"
-#include "sbas_time.h"
 #include "gnss_sdr_supl_client.h"
 
 
@@ -217,7 +216,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
 
     //--- Find number of samples per spreading code ---
-    long fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    long fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
     int samples_per_code = round(fs_in_
             / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     int nsamples = samples_per_code * 50;
@@ -362,7 +361,7 @@ int main(int argc, char** argv)
     signal.copy(gnss_synchro->Signal, 2, 0);
     gnss_synchro->PRN = 1;
 
-    long fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    long fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
 
     GNSSBlockFactory block_factory;
     acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1);
@@ -375,8 +374,15 @@ int main(int argc, char** argv)
 
     gr::block_sptr source;
     source = gr::blocks::file_source::make(sizeof(gr_complex), "tmp_capture.dat");
-
-    boost::shared_ptr<FrontEndCal_msg_rx> msg_rx = FrontEndCal_msg_rx_make();
+    boost::shared_ptr<FrontEndCal_msg_rx> msg_rx;
+    try
+    {
+            msg_rx = FrontEndCal_msg_rx_make();
+    }
+    catch(const std::exception & e)
+    {
+            std::cout << "Failure connecting the message port system: " << e.what() << std::endl; exit(0);
+    }
 
     //gr_basic_block_sptr head = gr_make_head(sizeof(gr_complex), nsamples);
     //gr_head_sptr head_sptr = boost::dynamic_pointer_cast<gr_head>(head);
@@ -405,9 +411,9 @@ int main(int argc, char** argv)
     boost::thread ch_thread;
 
     // record startup time
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds;
+    start = std::chrono::system_clock::now();
 
     bool start_msg = true;
 
@@ -464,10 +470,10 @@ int main(int argc, char** argv)
     std::cout << "]" << std::endl;
 
     // report the elapsed time
-    gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    end = std::chrono::system_clock::now();
+    elapsed_seconds = end - start;
     std::cout << "Total signal acquisition run time "
-              << ((double)(end - begin))/1000000.0
+              << elapsed_seconds.count()
               << " [seconds]" << std::endl;
 
     //6. find TOW from SUPL assistance

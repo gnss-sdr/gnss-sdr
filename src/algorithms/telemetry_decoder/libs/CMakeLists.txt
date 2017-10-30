@@ -16,13 +16,15 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+add_subdirectory(libswiftcnav)
+
 set(TELEMETRY_DECODER_LIB_SOURCES 
      gps_l1_ca_subframe_fsm.cc 
-     viterbi_decoder.cc   
+     viterbi_decoder.cc
 )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
@@ -33,6 +35,7 @@ include_directories(
 )
 
 file(GLOB TELEMETRY_DECODER_LIB_HEADERS "*.h")
+
 list(SORT TELEMETRY_DECODER_LIB_HEADERS)
 add_library(telemetry_decoder_lib ${TELEMETRY_DECODER_LIB_SOURCES} ${TELEMETRY_DECODER_LIB_HEADERS})
 source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})

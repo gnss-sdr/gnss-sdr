@@ -38,7 +38,7 @@
 #include <gnuradio/msg_queue.h>
 #include "gnss_sdr_valve.h"
 
-TEST(Valve_Test, CheckEventSentAfter100Samples)
+TEST(ValveTest, CheckEventSentAfter100Samples)
 {
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 

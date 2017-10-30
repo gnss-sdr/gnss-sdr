@@ -197,7 +197,6 @@ void pcps_quicksync_acquisition_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-    d_gnss_synchro->Flag_preamble = false;
 
     //DLOG(INFO) << "START init";
     d_gnss_synchro->Acq_delay_samples = 0.0;
@@ -303,7 +302,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             int doppler;
             uint32_t indext = 0;
             float magt = 0.0;
-            const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
+            const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
 
             gr_complex* in_temp = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             gr_complex* in_temp_folded = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
@@ -480,7 +479,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                     << "_" << d_gnss_synchro->Signal << "_sat_"
                                     << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                            d_dump_file.write((char*)d_magnitude_folded, n); //write directly |abs(x)|^2 in this Doppler bin?
+                            d_dump_file.write(reinterpret_cast<char*>(d_magnitude_folded), n); //write directly |abs(x)|^2 in this Doppler bin?
                             d_dump_file.close();
                         }
                 }
@@ -490,12 +489,10 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                     if (d_test_statistics > d_threshold)
                         {
                             d_state = 2; // Positive acquisition
-
                         }
                     else if (d_well_count == d_max_dwells)
                         {
                             d_state = 3; // Negative acquisition
-
                         }
                 }
             else

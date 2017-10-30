@@ -61,10 +61,10 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     short default_port = 1234;
     AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    gain_ = configuration->property(role + ".gain", (double)40.0);
-    rf_gain_ = configuration->property(role + ".rf_gain", (double)40.0);
-    if_gain_ = configuration->property(role + ".if_gain", (double)40.0);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", (double)2.0e6);
+    gain_ = configuration->property(role + ".gain", 40.0);
+    rf_gain_ = configuration->property(role + ".rf_gain", 40.0);
+    if_gain_ = configuration->property(role + ".if_gain", 40.0);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 2.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     address_ = configuration->property(role + ".address", default_address);
     port_ = configuration->property(role + ".port", default_port);
@@ -78,16 +78,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the gr block
-            try
-            {
-                    std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
-                    LOG (INFO) << "Connecting to " << address_ << ":" << port_;
-                    signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
-            }
-            catch( boost::exception & e )
-            {
-                    DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
-            }
+            MakeBlock();
 
             // 2 set sampling rate
             signal_source_->set_sample_rate(sample_rate_);
@@ -143,6 +134,22 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
 
 RtlTcpSignalSource::~RtlTcpSignalSource()
 {}
+
+
+void RtlTcpSignalSource::MakeBlock()
+{
+    try
+    {
+            std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
+            LOG (INFO) << "Connecting to " << address_ << ":" << port_;
+            signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
+    }
+    catch( const boost::exception & e )
+    {
+            LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+            throw std::runtime_error( "Failure connecting to the device" );
+    }
+}
 
 
 void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)

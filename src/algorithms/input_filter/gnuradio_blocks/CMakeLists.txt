@@ -17,20 +17,31 @@
 #
 
 
-set(INPUT_FILTER_GR_BLOCKS_SOURCES 
+set(INPUT_FILTER_GR_BLOCKS_SOURCES
      beamformer.cc
+     pulse_blanking_cc.cc
+     notch_cc.cc
+     notch_lite_cc.cc
 )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${GNURADIO_BLOCKS_INCLUDE_DIRS}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
 )
 
 file(GLOB INPUT_FILTER_GR_BLOCKS_HEADERS "*.h")
 list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
 add_library(input_filter_gr_blocks ${INPUT_FILTER_GR_BLOCKS_SOURCES} ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
-target_link_libraries(input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})
+
+target_link_libraries(input_filter_gr_blocks ${GNURADIO_FILTER_LIBRARIES}  ${VOLK_GNSSSDR_LIBRARIES} ${LOG4CPP_LIBRARIES})
+
+if(NOT VOLK_GNSSSDR_FOUND)
+    add_dependencies(input_filter_gr_blocks volk_gnsssdr_module glog-${glog_RELEASE})
+else(NOT VOLK_GNSSSDR_FOUND)
+    add_dependencies(input_filter_gr_blocks glog-${glog_RELEASE})
+endif(NOT VOLK_GNSSSDR_FOUND)

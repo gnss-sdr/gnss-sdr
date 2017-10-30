@@ -33,7 +33,6 @@
  */
 
 #include "control_thread.h"
-#include <unistd.h>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -187,9 +186,9 @@ bool ControlThread::read_assistance_from_XML()
     std::cout << "SUPL: Try read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
         {
-            std::map<int,Gps_Ephemeris>::iterator gps_eph_iter;
-            for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
-                    gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
+            std::map<int,Gps_Ephemeris>::const_iterator gps_eph_iter;
+            for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
+                    gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                     gps_eph_iter++)
                 {
                     std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
@@ -315,9 +314,9 @@ void ControlThread::assist_GNSS()
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
-                            std::map<int,Gps_Ephemeris>::iterator gps_eph_iter;
-                            for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
-                                    gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
+                            std::map<int,Gps_Ephemeris>::const_iterator gps_eph_iter;
+                            for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
+                                    gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                                     gps_eph_iter++)
                                 {
                                     std::cout << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
@@ -352,9 +351,9 @@ void ControlThread::assist_GNSS()
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
-                            std::map<int,Gps_Almanac>::iterator gps_alm_iter;
-                            for(gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.begin();
-                                    gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.end();
+                            std::map<int,Gps_Almanac>::const_iterator gps_alm_iter;
+                            for(gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.cbegin();
+                                    gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
                                     gps_alm_iter++)
                                 {
                                     std::cout << "SUPL: Received Almanac for GPS SV " << gps_alm_iter->first << std::endl;
@@ -387,9 +386,9 @@ void ControlThread::assist_GNSS()
                     error = supl_client_acquisition_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
-                            std::map<int, Gps_Acq_Assist>::iterator gps_acq_iter;
-                            for(gps_acq_iter = supl_client_acquisition_.gps_acq_map.begin();
-                                    gps_acq_iter != supl_client_acquisition_.gps_acq_map.end();
+                            std::map<int, Gps_Acq_Assist>::const_iterator gps_acq_iter;
+                            for(gps_acq_iter = supl_client_acquisition_.gps_acq_map.cbegin();
+                                    gps_acq_iter != supl_client_acquisition_.gps_acq_map.cend();
                                     gps_acq_iter++)
                                 {
                                     std::cout << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first << std::endl;
@@ -423,7 +422,14 @@ void ControlThread::init()
 {
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = gr::msg_queue::make(0);
-    flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
+    try
+    {
+            flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
+    }
+    catch (const boost::bad_lexical_cast& e )
+    {
+            std::cout << "Caught bad lexical cast with error " << e.what() << std::endl;
+    }
     control_message_factory_ = std::make_shared<ControlMessageFactory>();
     stop_ = false;
     processed_control_messages_ = 0;

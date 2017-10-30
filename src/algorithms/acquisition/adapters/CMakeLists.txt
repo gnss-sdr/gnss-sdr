@@ -19,7 +19,6 @@
 
 set(ACQ_ADAPTER_SOURCES
     gps_l1_ca_pcps_acquisition.cc
-    gps_l1_ca_pcps_multithread_acquisition.cc
     gps_l1_ca_pcps_assisted_acquisition.cc
     gps_l1_ca_pcps_acquisition_fine_doppler.cc
     gps_l1_ca_pcps_tong_acquisition.cc
@@ -33,17 +32,21 @@ set(ACQ_ADAPTER_SOURCES
     galileo_e5a_noncoherent_iq_acquisition_caf.cc
 )
 
-
+if(ENABLE_FPGA)
+    set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES} gps_l1_ca_pcps_acquisition_fpga.cc)
+endif(ENABLE_FPGA)
+    
 if(OPENCL_FOUND)
     set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES} gps_l1_ca_pcps_opencl_acquisition.cc)
 endif(OPENCL_FOUND)
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${Boost_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}

@@ -19,12 +19,14 @@
 
 set(SIGNAL_PROCESSING_TESTING_LIB_SOURCES
     tracking_dump_reader.cc
-    tlm_dump_reader.cc   
+    tlm_dump_reader.cc  
+    observables_dump_reader.cc    
     tracking_true_obs_reader.cc
+    true_observables_reader.cc
 )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
 )

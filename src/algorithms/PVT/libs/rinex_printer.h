@@ -61,7 +61,6 @@
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "galileo_navigation_message.h"
-#include "sbas_telemetry_data.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "gnss_synchro.h"
@@ -214,7 +213,7 @@ public:
     /*!
      *  \brief Writes raw SBAS messages into the RINEX file
      */
-    void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
+    //void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
 
     void update_nav_header(std::fstream & out, const Gps_Utc_Model & gps_utc, const Gps_Iono & gps_iono);
 
@@ -276,6 +275,8 @@ private:
      *  Checks that the line is 80 characters length
      */
     void lengthCheck(const std::string & line);
+
+    double fake_cnav_iode;
 
     /*
      * If the string is bigger than length, truncate it from the right.
@@ -482,7 +483,7 @@ inline std::string & Rinex_Printer::rightJustify(std::string & s,
         }
     else
         {
-            s.insert((std::string::size_type)0, length-s.length(), pad);
+            s.insert(static_cast<std::string::size_type>(0), length - s.length(), pad);
         }
     return s;
 }
@@ -613,13 +614,13 @@ inline std::string & Rinex_Printer::sci2for(std::string & aStr,
     // (if it's negative, there's a leading '-'
     if (aStr[0] == '.')
         {
-            aStr.insert((std::string::size_type)0, 1, ' ');
+            aStr.insert(static_cast<std::string::size_type>(0), 1, ' ');
         }
 
     //If checkSwitch is false, add on one leading zero to the string
     if (!checkSwitch)
         {
-            aStr.insert((std::string::size_type)1, 1, '0');
+            aStr.insert(static_cast<std::string::size_type>(1), 1, '0');
         }
 
     return aStr;

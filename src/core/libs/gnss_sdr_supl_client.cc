@@ -201,39 +201,39 @@ void gnss_sdr_supl_client::read_supl_data()
     if (assist.set & SUPL_RRLP_ASSIST_REFTIME)
         {
             /* TS 44.031: GPSTOW, range 0-604799.92, resolution 0.08 sec, 23-bit presentation */
-            gps_time.d_TOW = ((double)assist.time.gps_tow)*0.08;
-            gps_time.d_Week = (double)assist.time.gps_week;
-            gps_time.d_tv_sec = (double)assist.time.stamp.tv_sec;
-            gps_time.d_tv_usec = (double)assist.time.stamp.tv_usec;
+            gps_time.d_TOW = static_cast<double>(assist.time.gps_tow) * 0.08;
+            gps_time.d_Week = static_cast<double>(assist.time.gps_week);
+            gps_time.d_tv_sec = static_cast<double>(assist.time.stamp.tv_sec);
+            gps_time.d_tv_usec = static_cast<double>(assist.time.stamp.tv_usec);
             gps_time.valid = true;
         }
 
     // READ UTC MODEL
     if (assist.set & SUPL_RRLP_ASSIST_UTC)
         {
-            gps_utc.d_A0 = ((double)assist.utc.a0)*pow(2.0, -30);
-            gps_utc.d_A1 = ((double)assist.utc.a1)*pow(2.0, -50);
-            gps_utc.d_DeltaT_LS = ((double)assist.utc.delta_tls);
-            gps_utc.d_DeltaT_LSF = ((double)assist.utc.delta_tlsf);
-            gps_utc.d_t_OT = ((double)assist.utc.tot)*pow(2.0,12);
-            gps_utc.i_DN = ((double)assist.utc.dn);
-            gps_utc.i_WN_T = ((double)assist.utc.wnt);
-            gps_utc.i_WN_LSF = ((double)assist.utc.wnlsf);
+            gps_utc.d_A0 = static_cast<double>(assist.utc.a0) * pow(2.0, -30);
+            gps_utc.d_A1 = static_cast<double>(assist.utc.a1) * pow(2.0, -50);
+            gps_utc.d_DeltaT_LS = static_cast<double>(assist.utc.delta_tls);
+            gps_utc.d_DeltaT_LSF = static_cast<double>(assist.utc.delta_tlsf);
+            gps_utc.d_t_OT = static_cast<double>(assist.utc.tot) * pow(2.0,12);
+            gps_utc.i_DN = static_cast<double>(assist.utc.dn);
+            gps_utc.i_WN_T = static_cast<double>(assist.utc.wnt);
+            gps_utc.i_WN_LSF = static_cast<double>(assist.utc.wnlsf);
             gps_utc.valid = true;
         }
 
     // READ IONOSPHERIC MODEL
     if (assist.set & SUPL_RRLP_ASSIST_IONO)
         {
-            gps_iono.d_alpha0 = (double)assist.iono.a0 * ALPHA_0_LSB;
-            gps_iono.d_alpha1 = (double)assist.iono.a1 * ALPHA_1_LSB;
-            gps_iono.d_alpha2 = (double)assist.iono.a2 * ALPHA_2_LSB;
-            gps_iono.d_alpha3 = (double)assist.iono.a3 * ALPHA_3_LSB;
+            gps_iono.d_alpha0 = static_cast<double>(assist.iono.a0) * ALPHA_0_LSB;
+            gps_iono.d_alpha1 = static_cast<double>(assist.iono.a1) * ALPHA_1_LSB;
+            gps_iono.d_alpha2 = static_cast<double>(assist.iono.a2) * ALPHA_2_LSB;
+            gps_iono.d_alpha3 = static_cast<double>(assist.iono.a3) * ALPHA_3_LSB;
 
-            gps_iono.d_beta0 = (double)assist.iono.b0 * BETA_0_LSB;
-            gps_iono.d_beta1 = (double)assist.iono.b1 * BETA_1_LSB;
-            gps_iono.d_beta2 = (double)assist.iono.b2 * BETA_2_LSB;
-            gps_iono.d_beta3 = (double)assist.iono.b3 * BETA_3_LSB;
+            gps_iono.d_beta0 = static_cast<double>(assist.iono.b0) * BETA_0_LSB;
+            gps_iono.d_beta1 = static_cast<double>(assist.iono.b1) * BETA_1_LSB;
+            gps_iono.d_beta2 = static_cast<double>(assist.iono.b2) * BETA_2_LSB;
+            gps_iono.d_beta3 = static_cast<double>(assist.iono.b3) * BETA_3_LSB;
             gps_iono.valid = true;
         }
 
@@ -254,16 +254,16 @@ void gnss_sdr_supl_client::read_supl_data()
                             gps_almanac_iterator = this->gps_almanac_map.find(a->prn);
                         }
                     gps_almanac_iterator->second.i_satellite_PRN = a->prn;
-                    gps_almanac_iterator->second.d_A_f0 = ((double)a->AF0)*pow(2.0, -20);
-                    gps_almanac_iterator->second.d_A_f1 = ((double)a->AF1)*pow(2.0, -38);
-                    gps_almanac_iterator->second.d_Delta_i = ((double)a->Ksii)*pow(2.0, -19);
-                    gps_almanac_iterator->second.d_OMEGA = ((double)a->w)*pow(2.0, -23);
-                    gps_almanac_iterator->second.d_OMEGA0 = ((double)a->OMEGA_0)*pow(2.0, -23);
-                    gps_almanac_iterator->second.d_sqrt_A = ((double)a->A_sqrt)*pow(2.0, -11);
-                    gps_almanac_iterator->second.d_OMEGA_DOT = ((double)a->OMEGA_dot)*pow(2.0, -38);
-                    gps_almanac_iterator->second.d_Toa = ((double)a->toa)*pow(2.0, 12);
-                    gps_almanac_iterator->second.d_e_eccentricity = ((double)a->toa)*pow(2.0, -21);
-                    gps_almanac_iterator->second.d_M_0 = ((double)a->M0)*pow(2.0, -23);
+                    gps_almanac_iterator->second.d_A_f0 = static_cast<double>(a->AF0) * pow(2.0, -20);
+                    gps_almanac_iterator->second.d_A_f1 = static_cast<double>(a->AF1) * pow(2.0, -38);
+                    gps_almanac_iterator->second.d_Delta_i = static_cast<double>(a->Ksii) * pow(2.0, -19);
+                    gps_almanac_iterator->second.d_OMEGA = static_cast<double>(a->w) * pow(2.0, -23);
+                    gps_almanac_iterator->second.d_OMEGA0 = static_cast<double>(a->OMEGA_0) * pow(2.0, -23);
+                    gps_almanac_iterator->second.d_sqrt_A = static_cast<double>(a->A_sqrt) * pow(2.0, -11);
+                    gps_almanac_iterator->second.d_OMEGA_DOT = static_cast<double>(a->OMEGA_dot) * pow(2.0, -38);
+                    gps_almanac_iterator->second.d_Toa = static_cast<double>(a->toa) * pow(2.0, 12);
+                    gps_almanac_iterator->second.d_e_eccentricity = static_cast<double>(a->toa) * pow(2.0, -21);
+                    gps_almanac_iterator->second.d_M_0 = static_cast<double>(a->M0) * pow(2.0, -23);
                 }
         }
 
@@ -288,7 +288,7 @@ void gnss_sdr_supl_client::read_supl_data()
                         {
                             gps_eph_iterator->second.i_GPS_week = assist.time.gps_week;
                             /* TS 44.031: GPSTOW, range 0-604799.92, resolution 0.08 sec, 23-bit presentation */
-                            gps_eph_iterator->second.d_TOW = ((double)assist.time.gps_tow)*0.08;
+                            gps_eph_iterator->second.d_TOW = static_cast<double>(assist.time.gps_tow) * 0.08;
                         }
                     else
                         {
@@ -300,32 +300,32 @@ void gnss_sdr_supl_client::read_supl_data()
                     gps_eph_iterator->second.i_code_on_L2 = e->bits;
                     gps_eph_iterator->second.i_SV_accuracy = e->ura; //User Range Accuracy (URA)
                     gps_eph_iterator->second.i_SV_health = e->health;
-                    gps_eph_iterator->second.d_IODC = (double)e->IODC;
+                    gps_eph_iterator->second.d_IODC = static_cast<double>(e->IODC);
                     //miss P flag (1 bit)
                     //miss SF1 Reserved (87 bits)
-                    gps_eph_iterator->second.d_TGD = ((double)e->tgd)*T_GD_LSB;
-                    gps_eph_iterator->second.d_Toc = ((double)e->toc)*T_OC_LSB;
-                    gps_eph_iterator->second.d_A_f0 = ((double)e->AF0)*A_F0_LSB;
-                    gps_eph_iterator->second.d_A_f1 = ((double)e->AF1)*A_F1_LSB;
-                    gps_eph_iterator->second.d_A_f2 = ((double)e->AF2)*A_F2_LSB;
-                    gps_eph_iterator->second.d_Crc = ((double)e->Crc)*C_RC_LSB;
-                    gps_eph_iterator->second.d_Delta_n = ((double)e->delta_n)*DELTA_N_LSB;
-                    gps_eph_iterator->second.d_M_0 = ((double)e->M0)*M_0_LSB;
-                    gps_eph_iterator->second.d_Cuc = ((double)e->Cuc)*C_UC_LSB;
-                    gps_eph_iterator->second.d_e_eccentricity = ((double)e->e)*E_LSB;
-                    gps_eph_iterator->second.d_Cus = ((double)e->Cus)*C_US_LSB;
-                    gps_eph_iterator->second.d_sqrt_A = ((double)e->A_sqrt)*SQRT_A_LSB;
-                    gps_eph_iterator->second.d_Toe = ((double)e->toe)*T_OE_LSB;
+                    gps_eph_iterator->second.d_TGD = static_cast<double>(e->tgd) * T_GD_LSB;
+                    gps_eph_iterator->second.d_Toc = static_cast<double>(e->toc) * T_OC_LSB;
+                    gps_eph_iterator->second.d_A_f0 = static_cast<double>(e->AF0) * A_F0_LSB;
+                    gps_eph_iterator->second.d_A_f1 = static_cast<double>(e->AF1) * A_F1_LSB;
+                    gps_eph_iterator->second.d_A_f2 = static_cast<double>(e->AF2) * A_F2_LSB;
+                    gps_eph_iterator->second.d_Crc = static_cast<double>(e->Crc) * C_RC_LSB;
+                    gps_eph_iterator->second.d_Delta_n = static_cast<double>(e->delta_n) * DELTA_N_LSB;
+                    gps_eph_iterator->second.d_M_0 = static_cast<double>(e->M0) * M_0_LSB;
+                    gps_eph_iterator->second.d_Cuc = static_cast<double>(e->Cuc) * C_UC_LSB;
+                    gps_eph_iterator->second.d_e_eccentricity = static_cast<double>(e->e) * E_LSB;
+                    gps_eph_iterator->second.d_Cus = static_cast<double>(e->Cus) * C_US_LSB;
+                    gps_eph_iterator->second.d_sqrt_A = static_cast<double>(e->A_sqrt) * SQRT_A_LSB;
+                    gps_eph_iterator->second.d_Toe = static_cast<double>(e->toe) * T_OE_LSB;
                     //miss fit interval flag (1 bit)
                     gps_eph_iterator->second.i_AODO = e->AODA * AODO_LSB;
-                    gps_eph_iterator->second.d_Cic = ((double)e->Cic)*C_IC_LSB;
-                    gps_eph_iterator->second.d_OMEGA0 = ((double)e->OMEGA_0)*OMEGA_0_LSB;
-                    gps_eph_iterator->second.d_Cis = ((double)e->Cis)*C_IS_LSB;
-                    gps_eph_iterator->second.d_i_0 = ((double)e->i0)*I_0_LSB;
-                    gps_eph_iterator->second.d_Crs = ((double)e->Crs)*C_RS_LSB;
-                    gps_eph_iterator->second.d_OMEGA = ((double)e->w)*OMEGA_LSB;
-                    gps_eph_iterator->second.d_OMEGA_DOT = (double)e->OMEGA_dot*OMEGA_DOT_LSB;
-                    gps_eph_iterator->second.d_IDOT = ((double)e->i_dot)*I_DOT_LSB;
+                    gps_eph_iterator->second.d_Cic = static_cast<double>(e->Cic) * C_IC_LSB;
+                    gps_eph_iterator->second.d_OMEGA0 = static_cast<double>(e->OMEGA_0) * OMEGA_0_LSB;
+                    gps_eph_iterator->second.d_Cis = static_cast<double>(e->Cis) * C_IS_LSB;
+                    gps_eph_iterator->second.d_i_0 = static_cast<double>(e->i0) * I_0_LSB;
+                    gps_eph_iterator->second.d_Crs = static_cast<double>(e->Crs) * C_RS_LSB;
+                    gps_eph_iterator->second.d_OMEGA = static_cast<double>(e->w) * OMEGA_LSB;
+                    gps_eph_iterator->second.d_OMEGA_DOT = static_cast<double>(e->OMEGA_dot) * OMEGA_DOT_LSB;
+                    gps_eph_iterator->second.d_IDOT = static_cast<double>(e->i_dot) * I_DOT_LSB;
                 }
         }
 
@@ -348,16 +348,16 @@ void gnss_sdr_supl_client::read_supl_data()
                         }
                     // fill the acquisition assistance structure
                     gps_acq_iterator->second.i_satellite_PRN = e->prn;
-                    gps_acq_iterator->second.d_TOW = (double)assist.acq_time;
-                    gps_acq_iterator->second.d_Doppler0 = (double)e->doppler0;
-                    gps_acq_iterator->second.d_Doppler1 = (double)e->doppler1;
-                    gps_acq_iterator->second.dopplerUncertainty = (double)e->d_win;
-                    gps_acq_iterator->second.Code_Phase = (double)e->code_ph;
-                    gps_acq_iterator->second.Code_Phase_int = (double)e->code_ph_int;
-                    gps_acq_iterator->second.Code_Phase_window = (double)e->code_ph_win;
-                    gps_acq_iterator->second.Azimuth = (double)e->az;
-                    gps_acq_iterator->second.Elevation = (double)e->el;
-                    gps_acq_iterator->second.GPS_Bit_Number = (double)e->bit_num;
+                    gps_acq_iterator->second.d_TOW = static_cast<double>(assist.acq_time);
+                    gps_acq_iterator->second.d_Doppler0 = static_cast<double>(e->doppler0);
+                    gps_acq_iterator->second.d_Doppler1 = static_cast<double>(e->doppler1);
+                    gps_acq_iterator->second.dopplerUncertainty = static_cast<double>(e->d_win);
+                    gps_acq_iterator->second.Code_Phase = static_cast<double>(e->code_ph);
+                    gps_acq_iterator->second.Code_Phase_int = static_cast<double>(e->code_ph_int);
+                    gps_acq_iterator->second.Code_Phase_window = static_cast<double>(e->code_ph_win);
+                    gps_acq_iterator->second.Azimuth = static_cast<double>(e->az);
+                    gps_acq_iterator->second.Elevation = static_cast<double>(e->el);
+                    gps_acq_iterator->second.GPS_Bit_Number = static_cast<double>(e->bit_num);
                 }
         }
 }

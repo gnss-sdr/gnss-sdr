@@ -53,13 +53,9 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef __INI_H__
-#define __INI_H__
+#ifndef GNSS_SDR_INI_H_
+#define GNSS_SDR_INI_H_
 
-/* Make this header file easier to include in C++ code */
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* Parse given INI-style file. May have [section]s, name=value pairs
    (whitespace stripped), and comments starting with ';' (semicolon). Section
@@ -84,8 +80,5 @@ int ini_parse(const char* filename,
 #define INI_ALLOW_MULTILINE 1
 #endif
 
-#ifdef __cplusplus
-}
-#endif
 
-#endif /* __INI_H__ */
+#endif  // GNSS_SDR_INI_H_

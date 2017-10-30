@@ -57,7 +57,6 @@
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <inttypes.h>
-#include <stdio.h>
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
@@ -212,7 +211,6 @@ static inline void volk_gnsssdr_32f_index_max_32u_a_sse4_1(uint32_t* target, con
 
             for(;number < quarterPoints; number++)
                 {
-
                     currentValues  = _mm_load_ps(inputPtr); inputPtr += 4;
                     currentIndexes = _mm_add_ps(currentIndexes, indexIncrementValues);
                     compareResults = _mm_cmpgt_ps(maxValues, currentValues);

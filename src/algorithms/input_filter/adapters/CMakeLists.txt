@@ -20,10 +20,13 @@ set(INPUT_FILTER_ADAPTER_SOURCES
      fir_filter.cc 
      freq_xlating_fir_filter.cc
      beamformer_filter.cc
+     pulse_blanking_filter.cc
+     notch_filter.cc
+     notch_filter_lite.cc
 )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks

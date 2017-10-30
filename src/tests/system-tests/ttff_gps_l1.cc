@@ -32,16 +32,16 @@
 
 #include <cerrno>
 #include <chrono>
-#include <cstdlib>
 #include <cmath>
-#include <ctime>
 #include <limits>
 #include <numeric>
+#include <random>
 #include <string>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <thread>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
@@ -74,7 +74,7 @@ typedef struct  {
 } ttff_msgbuf;
 
 
-class TTFF_GPS_L1_CA_Test: public ::testing::Test
+class TfttGpsL1CATest: public ::testing::Test
 {
 public:
     void config_1();
@@ -123,11 +123,11 @@ public:
 };
 
 
-void TTFF_GPS_L1_CA_Test::config_1()
+void TfttGpsL1CATest::config_1()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(FLAGS_fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(FLAGS_fs_in));
 
     // Set the assistance system parameters
     config->set_property("GNSS-SDR.SUPL_gps_ephemeris_server", "supl.google.com");
@@ -215,14 +215,12 @@ void TTFF_GPS_L1_CA_Test::config_1()
     config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
     // Set Observables
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.dump", "false");
     config->set_property("Observables.dump_filename", "./observables.dat");
 
     // Set PVT
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-    config->set_property("PVT.averaging_depth", std::to_string(averaging_depth));
-    config->set_property("PVT.flag_averaging", "true");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");
@@ -236,7 +234,7 @@ void TTFF_GPS_L1_CA_Test::config_1()
 }
 
 
-void TTFF_GPS_L1_CA_Test::config_2()
+void TfttGpsL1CATest::config_2()
 {
     if(FLAGS_config_file_ttff.empty())
         {
@@ -250,7 +248,7 @@ void TTFF_GPS_L1_CA_Test::config_2()
         }
 
     int d_sampling_rate;
-    d_sampling_rate = config2->property("GNSS-SDR.internal_fs_hz", FLAGS_fs_in);
+    d_sampling_rate = config2->property("GNSS-SDR.internal_fs_sps", FLAGS_fs_in);
     config2->set_property("SignalSource.samples", std::to_string(d_sampling_rate * FLAGS_max_measurement_duration));
 }
 
@@ -279,8 +277,8 @@ void receive_msg()
                     ttff_msg = msg.ttff;
                     if( (ttff_msg != 0) && (ttff_msg != -1))
                         {
-                            TTFF_v.push_back(ttff_msg / (1000.0 / decimation_factor) );
-                            LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg / (1000.0 / decimation_factor ) << "[s]";
+                            TTFF_v.push_back(ttff_msg);
+                            LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg << "[s]";
                             // Stop the receiver
                             while(((msqid_stop = msgget(key_stop, 0644))) == -1){}
                             double msgsend_size = sizeof(msg_stop.ttff);
@@ -297,46 +295,44 @@ void receive_msg()
 }
 
 
-void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_)
+void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_)
 {
     std::ofstream ttff_report_file;
     std::string filename = "ttff_report";
     std::string filename_;
 
-    time_t rawtime;
-    struct tm * timeinfo;
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
+    boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
+    tm timeinfo = boost::posix_time::to_tm(pt);
 
     std::stringstream strm0;
-    const int year = timeinfo->tm_year - 100;
+    const int year = timeinfo.tm_year - 100;
     strm0 << year;
-    const int month = timeinfo->tm_mon + 1;
+    const int month = timeinfo.tm_mon + 1;
     if(month < 10)
         {
             strm0 << "0";
         }
     strm0 << month;
-    const int day = timeinfo->tm_mday;
+    const int day = timeinfo.tm_mday;
     if(day < 10)
         {
             strm0 << "0";
         }
     strm0 << day << "_";
-    const int hour = timeinfo->tm_hour;
+    const int hour = timeinfo.tm_hour;
     if(hour < 10)
                 {
             strm0 << "0";
         }
     strm0 << hour;
-    const int min = timeinfo->tm_min;
+    const int min = timeinfo.tm_min;
 
     if(min < 10)
         {
             strm0 << "0";
         }
     strm0 << min;
-    const int sec = timeinfo->tm_sec;
+    const int sec = timeinfo.tm_sec;
     if(sec < 10)
         {
             strm0 << "0";
@@ -456,7 +452,7 @@ void TTFF_GPS_L1_CA_Test::print_TTFF_report(const std::vector<double> & ttff_v, 
 }
 
 
-TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
+TEST_F(TfttGpsL1CATest, ColdStart)
 {
     unsigned int num_measurements = 0;
 
@@ -485,30 +481,27 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
                 }
 
             // record startup time
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-            long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
-
             std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << std::endl;
-
+            std::chrono::time_point<std::chrono::system_clock> start, end;
+            start = std::chrono::system_clock::now();
             // start receiver
             try
             {
                     control_thread->run();
             }
-            catch( boost::exception & e )
+            catch(const boost::exception & e)
             {
                     std::cout << "Boost exception: " << boost::diagnostic_information(e);
             }
-            catch(std::exception const&  ex)
+            catch(const std::exception & ex)
             {
                     std::cout  << "STD exception: " << ex.what();
             }
 
             // stop clock
-            gettimeofday(&tv, NULL);
-            long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-            double ttff = static_cast<double>(end - begin) / 1000000.0;
+            end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            double ttff = elapsed_seconds.count();
 
             std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
             EXPECT_FALSE(flowgraph->running());
@@ -517,9 +510,10 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
             std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
             if(n < FLAGS_num_measurements - 1)
                 {
-                    std::srand(std::time(0)); // use current time as seed for random generator
-                    int random_variable = std::rand();
-                    float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
+                    std::random_device r;
+                    std::default_random_engine e1(r());
+                    std::uniform_real_distribution<float> uniform_dist(0, 1);
+                    float random_variable_0_1 = uniform_dist(e1);
                     int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
                     std::cout << "Waiting a random amount of time (from 5 to 30 s) to start a new measurement... " << std::endl;
                     std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
@@ -540,7 +534,7 @@ TEST_F(TTFF_GPS_L1_CA_Test, ColdStart)
 }
 
 
-TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
+TEST_F(TfttGpsL1CATest, HotStart)
 {
     unsigned int num_measurements = 0;
     TTFF_v.clear();
@@ -569,30 +563,28 @@ TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
                     control_thread = std::make_shared<ControlThread>(config2);
                 }
             // record startup time
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-            long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
-
             std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << std::endl;
+            std::chrono::time_point<std::chrono::system_clock> start, end;
+            start = std::chrono::system_clock::now();
 
             // start receiver
             try
             {
                     control_thread->run();
             }
-            catch( boost::exception & e )
+            catch(const boost::exception & e)
             {
                     std::cout << "Boost exception: " << boost::diagnostic_information(e);
             }
-            catch(std::exception const&  ex)
+            catch(const std::exception & ex)
             {
                     std::cout  << "STD exception: " << ex.what();
             }
 
             // stop clock
-            gettimeofday(&tv, NULL);
-            long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-            double ttff = static_cast<double>(end - begin) / 1000000.0;
+            end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            double ttff = elapsed_seconds.count();
 
             std::shared_ptr<GNSSFlowgraph> flowgraph = control_thread->flowgraph();
             EXPECT_FALSE(flowgraph->running());
@@ -601,9 +593,10 @@ TEST_F(TTFF_GPS_L1_CA_Test, HotStart)
             std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
             if(n < FLAGS_num_measurements - 1)
                 {
-                    std::srand(std::time(0)); // use current time as seed for random generator
-                    int random_variable = std::rand();
-                    float random_variable_0_1 = static_cast<float>(random_variable) / static_cast<float>( RAND_MAX );
+                    std::random_device r;
+                    std::default_random_engine e1(r());
+                    std::uniform_real_distribution<float> uniform_dist(0, 1);
+                    float random_variable_0_1 = uniform_dist(e1);
                     int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
                     std::cout << "Waiting a random amount of time (from 5 to 30 s) to start new measurement... " << std::endl;
                     std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
@@ -658,7 +651,7 @@ int main(int argc, char **argv)
     if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
     {
         std::cout << "GNSS-SDR can not create message queues!" << std::endl;
-        exit(1);
+        return 1;
     }
     ttff_msgbuf msg;
     msg.mtype = 1;

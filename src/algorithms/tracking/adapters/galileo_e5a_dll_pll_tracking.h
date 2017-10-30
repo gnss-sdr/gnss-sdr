@@ -59,39 +59,39 @@ public:
 
     virtual ~GalileoE5aDllPllTracking();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Galileo_E5a_DLL_PLL_Tracking"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Galileo_E5a_DLL_PLL_Tracking";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set tracking channel unique ID
      */
-    void set_channel(unsigned int channel);
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
-
-    void start_tracking();
+    void start_tracking() override;
 
 private:
     galileo_e5a_dll_pll_tracking_cc_sptr tracking_;

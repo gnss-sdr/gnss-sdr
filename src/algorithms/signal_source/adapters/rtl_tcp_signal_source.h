@@ -32,6 +32,7 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 
+#include <stdexcept>
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
@@ -57,7 +58,7 @@ public:
 
     virtual ~RtlTcpSignalSource();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
@@ -65,21 +66,23 @@ public:
     /*!
      * \brief Returns "RtlTcp_Signal_Source"
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "RtlTcp_Signal_Source";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
+    void MakeBlock();
     std::string role_;
 
     // rtl_tcp settings

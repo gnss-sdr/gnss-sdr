@@ -14,17 +14,18 @@
  *
  * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * "A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach", Birkha user, 2007. pp 81-84
+ * Approach", Birkhauser, 2007. pp 81-84
  *
  * \authors <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
+ *          <li> Cillian O'Driscoll, 2017. cillian(at)ieee.org
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -52,6 +53,9 @@
 
 #include <fstream>
 #include <string>
+#include <mutex>
+#include <thread>
+#include <condition_variable>
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
@@ -66,7 +70,7 @@ pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-                         bool dump,
+                         bool dump, bool blocking,
                          std::string dump_filename);
 
 /*!
@@ -83,18 +87,22 @@ private:
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-            bool dump,
+            bool dump, bool blocking,
             std::string dump_filename);
 
     pcps_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-            bool dump,
+            bool dump, bool blocking, 
             std::string dump_filename);
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
 
+    void acquisition_core( void );
+
+    void send_negative_acquisition();
+    void send_positive_acquisition();
     long d_fs_in;
     long d_freq;
     int d_samples_per_ms;
@@ -130,6 +138,17 @@ private:
     unsigned int d_channel;
     std::string d_dump_filename;
 
+    std::thread d_worker_thread;
+    std::mutex  d_mutex;
+
+    std::condition_variable d_cond;
+    bool d_done;
+    bool d_new_data_available;
+    bool d_worker_active;
+    bool d_blocking;
+
+    gr_complex *d_data_buffer;
+
 public:
     /*!
      * \brief Default destructor.
@@ -141,15 +160,16 @@ public:
       * to exchange synchronization data between acquisition and tracking blocks.
       * \param p_gnss_synchro Satellite information shared by the processing blocks.
       */
-     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+     inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_gnss_synchro = p_gnss_synchro;
      }
 
      /*!
       * \brief Returns the maximum peak of grid search.
       */
-     unsigned int mag()
+     inline unsigned int mag() const
      {
          return d_mag;
      }
@@ -170,8 +190,9 @@ public:
       * active mode
       * \param active - bool that activates/deactivates the block.
       */
-     void set_active(bool active)
+     inline void set_active(bool active)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_active = active;
      }
 
@@ -186,8 +207,9 @@ public:
       * \brief Set acquisition channel unique ID
       * \param channel - receiver channel.
       */
-     void set_channel(unsigned int channel)
+     inline void set_channel(unsigned int channel)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_channel = channel;
      }
 
@@ -196,8 +218,9 @@ public:
       * \param threshold - Threshold for signal detection (check \ref Navitec2012,
       * Algorithm 1, for a definition of this threshold).
       */
-     void set_threshold(float threshold)
+     inline void set_threshold(float threshold)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_threshold = threshold;
      }
 
@@ -205,8 +228,9 @@ public:
       * \brief Set maximum Doppler grid search
       * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
       */
-     void set_doppler_max(unsigned int doppler_max)
+     inline void set_doppler_max(unsigned int doppler_max)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_doppler_max = doppler_max;
      }
 
@@ -214,8 +238,9 @@ public:
       * \brief Set Doppler steps for the grid search
       * \param doppler_step - Frequency bin of the search grid [Hz].
       */
-     void set_doppler_step(unsigned int doppler_step)
+     inline void set_doppler_step(unsigned int doppler_step)
      {
+         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_doppler_step = doppler_step;
      }
 
@@ -225,6 +250,16 @@ public:
      int general_work(int noutput_items, gr_vector_int &ninput_items,
              gr_vector_const_void_star &input_items,
              gr_vector_void_star &output_items);
+
+     /*!
+      * Called by the flowgraph when processing is about to start.
+      */
+     bool start( void );
+
+     /*!
+      * Called by the flowgraph when processing is done.
+      */
+     bool stop( void );
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_CC_H_*/

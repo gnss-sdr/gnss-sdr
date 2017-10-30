@@ -31,7 +31,6 @@
  */
 
 #include "two_bit_packed_file_signal_source.h"
-#include <cstdlib>
 #include <exception>
 #include <fstream>
 #include <iomanip>
@@ -44,9 +43,6 @@
 
 
 using google::LogMessage;
-
-//DEFINE_string(two_bit_packed_signal_source, "-",
-//        "If defined, path to the file containing the NSR (byte to 2-bit packed) signal samples (overrides the configuration file)");
 
 
 TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterface* configuration,
@@ -70,7 +66,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     big_endian_items_ = configuration->property(role + ".big_endian_items", true);
     big_endian_bytes_ = configuration->property(role + ".big_endian_bytes", false);
-    sample_type_  = configuration->property(role + ".sample_type", default_sample_type ); // options: "real", "iq", "qi"
+    sample_type_ = configuration->property(role + ".sample_type", default_sample_type ); // options: "real", "iq", "qi"
     repeat_ = configuration->property(role + ".repeat", false);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
@@ -87,13 +83,13 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
             // If we have shorts stored in little endian format, might as
             // well read them in as bytes.
             if( big_endian_items_ )
-            {
-                item_size_ = sizeof(short);
-            }
+                {
+                    item_size_ = sizeof(short);
+                }
             else
-            {
-                item_size_ = sizeof(char);
-            }
+                {
+                    item_size_ = sizeof(char);
+                }
         }
     else
         {
@@ -102,51 +98,51 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
         }
 
     if( sample_type_.compare("real") == 0 )
-    {
-        is_complex_ = false;
-    }
+        {
+            is_complex_ = false;
+        }
     else if( sample_type_.compare("iq" ) == 0 )
-    {
-        is_complex_ = true;
-        reverse_interleaving_ = false;
-    }
+        {
+            is_complex_ = true;
+            reverse_interleaving_ = false;
+        }
     else if( sample_type_.compare("qi") == 0 )
-    {
-        is_complex_ = true;
-        reverse_interleaving_ = true;
-    }
+        {
+            is_complex_ = true;
+            reverse_interleaving_ = true;
+        }
     else
-    {
-        LOG(WARNING) << sample_type_ << " unrecognized sample type. Assuming: "
-            << ( is_complex_ ? ( reverse_interleaving_ ? "qi" : "iq" ) : "real" );
-    }
+        {
+            LOG(WARNING) << sample_type_ << " unrecognized sample type. Assuming: "
+                    << ( is_complex_ ? ( reverse_interleaving_ ? "qi" : "iq" ) : "real" );
+        }
     try
     {
             file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
 
             if( seconds_to_skip > 0 )
-            {
-                bytes_to_skip = static_cast< long >(
-                        seconds_to_skip * sampling_frequency_ / 4 );
-                if( is_complex_ )
                 {
-                    bytes_to_skip <<= 1;
+                    bytes_to_skip = static_cast< long >(
+                            seconds_to_skip * sampling_frequency_ / 4 );
+                    if( is_complex_ )
+                        {
+                            bytes_to_skip <<= 1;
+                        }
+                    file_source_->seek( bytes_to_skip, SEEK_SET );
                 }
-                file_source_->seek( bytes_to_skip, SEEK_SET );
-            }
 
             unpack_samples_ = make_unpack_2bit_samples( big_endian_bytes_,
                     item_size_, big_endian_items_, reverse_interleaving_);
             if( is_complex_ )
-            {
-                char_to_float_ =
-                    gr::blocks::interleaved_char_to_complex::make(false);
-            }
+                {
+                    char_to_float_ =
+                            gr::blocks::interleaved_char_to_complex::make(false);
+                }
             else
-            {
-                char_to_float_ =
-                    gr::blocks::char_to_float::make();
-            }
+                {
+                    char_to_float_ =
+                            gr::blocks::char_to_float::make();
+                }
 
     }
     catch (const std::exception &e)
@@ -168,11 +164,13 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
             << std::endl;
 
             LOG(WARNING) << "file_signal_source: Unable to open the samples file "
-                         << filename_.c_str() << ", exiting the program.";
+                    << filename_.c_str() << ", exiting the program.";
             throw(e);
     }
 
     DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";
+
+    size_t output_item_size = ( is_complex_ ? sizeof( gr_complex ) : sizeof( float ) );
 
     if (samples_ == 0) // read all file
         {
@@ -187,7 +185,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
             if (file.is_open())
                 {
                     size = file.tellg();
-                    samples_ = floor((double)size * ( is_complex_ ? 2.0 : 4.0 ) );
+                    samples_ = floor(static_cast<double>(size) * ( is_complex_ ? 2.0 : 4.0 ) );
                     LOG(INFO) << "Total samples in the file= " << samples_; // 4 samples per byte
                     samples_ -= bytes_to_skip;
 
@@ -201,29 +199,29 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
                 }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
-            std::cout << "Processing file " << filename_ << ", which contains " << (double)size << " [bytes]" << std::endl;
+            std::cout << "Processing file " << filename_ << ", which contains " << size << " [bytes]" << std::endl;
             std::cout.precision (ss);
         }
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
-    signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
+    signal_duration_s = static_cast<double>(samples_) * ( 1 /static_cast<double>(sampling_frequency_));
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 
-    valve_ = gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue_);
+    valve_ = gnss_sdr_make_valve(output_item_size, samples_, queue_);
     DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
 
     if (dump_)
         {
             //sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
-            sink_ = gr::blocks::file_sink::make(sizeof(gr_complex), dump_filename_.c_str());
+            sink_ = gr::blocks::file_sink::make(output_item_size, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
         }
 
     if (enable_throttle_control_)
         {
-            throttle_ = gr::blocks::throttle::make(sizeof(gr_complex), sampling_frequency_);
+            throttle_ = gr::blocks::throttle::make(output_item_size, sampling_frequency_);
         }
     DLOG(INFO) << "File source filename " << filename_;
     DLOG(INFO) << "Samples " << samples_;
@@ -255,20 +253,20 @@ void TwoBitPackedFileSignalSource::connect(gr::top_block_sptr top_block)
     DLOG(INFO) << "connected unpack samples to char to float";
 
     if( enable_throttle_control_ )
-    {
-        right_block = throttle_;
-        top_block->connect( left_block, 0, right_block, 0 );
-        left_block = right_block;
-        DLOG(INFO) << " connected to throttle";
-    }
+        {
+            right_block = throttle_;
+            top_block->connect( left_block, 0, right_block, 0 );
+            left_block = right_block;
+            DLOG(INFO) << " connected to throttle";
+        }
 
     top_block->connect(left_block, 0, valve_, 0);
     DLOG(INFO) << "connected to valve";
     if (dump_)
-    {
-        top_block->connect(valve_, 0, sink_, 0);
-        DLOG(INFO) << "connected valve to file sink";
-    }
+        {
+            top_block->connect(valve_, 0, sink_, 0);
+            DLOG(INFO) << "connected valve to file sink";
+        }
 }
 
 
@@ -288,20 +286,20 @@ void TwoBitPackedFileSignalSource::disconnect(gr::top_block_sptr top_block)
     DLOG(INFO) << "disconnected unpack samples to char to float";
 
     if( enable_throttle_control_ )
-    {
-        right_block = throttle_;
-        top_block->disconnect( left_block, 0, right_block, 0 );
-        left_block = right_block;
-        DLOG(INFO) << " disconnected to throttle";
-    }
+        {
+            right_block = throttle_;
+            top_block->disconnect( left_block, 0, right_block, 0 );
+            left_block = right_block;
+            DLOG(INFO) << " disconnected to throttle";
+        }
 
     top_block->disconnect(left_block, 0, valve_, 0);
     DLOG(INFO) << "disconnected to valve";
     if (dump_)
-    {
-        top_block->disconnect(valve_, 0, sink_, 0);
-        DLOG(INFO) << "disconnected valve to file sink";
-    }
+        {
+            top_block->disconnect(valve_, 0, sink_, 0);
+            DLOG(INFO) << "disconnected valve to file sink";
+        }
 }
 
 

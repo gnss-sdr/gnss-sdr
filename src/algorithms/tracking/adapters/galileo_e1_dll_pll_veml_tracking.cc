@@ -62,7 +62,8 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     float very_early_late_space_chips;
 
     item_type = configuration->property(role + ".item_type", default_item_type);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);

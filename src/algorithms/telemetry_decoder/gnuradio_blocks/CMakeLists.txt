@@ -25,10 +25,11 @@ set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
 )
       
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs/libswiftcnav
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
@@ -39,4 +40,4 @@ file(GLOB TELEMETRY_DECODER_GR_BLOCKS_HEADERS "*.h")
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_HEADERS)
 add_library(telemetry_decoder_gr_blocks ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES} ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
-target_link_libraries(telemetry_decoder_gr_blocks telemetry_decoder_lib gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES})
+target_link_libraries(telemetry_decoder_gr_blocks telemetry_decoder_libswiftcnav telemetry_decoder_lib gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES})

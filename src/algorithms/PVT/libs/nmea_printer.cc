@@ -167,7 +167,7 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data
             //GPGSV
             nmea_file_descriptor << GPGSV;
     }
-    catch(std::exception ex)
+    catch(const std::exception & ex)
     {
             DLOG(INFO) << "NMEA printer can not write on output file" << nmea_filename.c_str();;
     }
@@ -236,9 +236,10 @@ std::string Nmea_Printer::latitude_to_hm(double lat)
     out_string.fill('0');
     out_string.width(2);
     out_string << deg;
-    out_string.width(6);
-    out_string.precision(4);
-    out_string << mins;
+    out_string.width(2);
+    out_string << static_cast<int>(mins) << ".";
+    out_string.width(4);
+    out_string << static_cast<int>((mins - static_cast<double>(static_cast<int>(mins))) * 1e4);
 
     if (north == true)
         {
@@ -273,9 +274,10 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
     out_string.width(3);
     out_string.fill('0');
     out_string << deg;
-    out_string.width(6);
-    out_string.precision(4);
-    out_string << mins;
+    out_string.width(2);
+    out_string << static_cast<int>(mins) << ".";
+    out_string.width(4);
+    out_string << static_cast<int>((mins - static_cast<double>(static_cast<int>(mins))) * 1e4);
 
     if (east == true)
         {
@@ -338,7 +340,7 @@ std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_
 std::string Nmea_Printer::get_GPRMC()
 {
     // Sample -> $GPRMC,161229.487,A,3723.2475,N,12158.3416,W,0.13,309.62,120598,*10
-    bool valid_fix = d_PVT_data->b_valid_position;
+    bool valid_fix = d_PVT_data->is_valid_position();
 
     // ToDo: Compute speed and course over ground
     double speed_over_ground_knots = 0;
@@ -354,7 +356,7 @@ std::string Nmea_Printer::get_GPRMC()
     sentence_str << sentence_header;
 
     //UTC Time: hhmmss.sss
-    sentence_str << get_UTC_NMEA_time(d_PVT_data->d_position_UTC_time);
+    sentence_str << get_UTC_NMEA_time(d_PVT_data->get_position_UTC_time());
 
     //Status: A: data valid, V: data NOT valid
 
@@ -370,16 +372,16 @@ std::string Nmea_Printer::get_GPRMC()
     if (print_avg_pos == true)
         {
             // Latitude ddmm.mmmm,(N or S)
-            sentence_str << "," << latitude_to_hm(d_PVT_data->d_avg_latitude_d);
+            sentence_str << "," << latitude_to_hm(d_PVT_data->get_avg_latitude());
             // longitude dddmm.mmmm,(E or W)
-            sentence_str << "," << longitude_to_hm(d_PVT_data->d_avg_longitude_d);
+            sentence_str << "," << longitude_to_hm(d_PVT_data->get_avg_longitude());
         }
     else
         {
             // Latitude ddmm.mmmm,(N or S)
-            sentence_str << "," << latitude_to_hm(d_PVT_data->d_latitude_d);
+            sentence_str << "," << latitude_to_hm(d_PVT_data->get_latitude());
             // longitude dddmm.mmmm,(E or W)
-            sentence_str << "," << longitude_to_hm(d_PVT_data->d_longitude_d);
+            sentence_str << "," << longitude_to_hm(d_PVT_data->get_longitude());
         }
 
     //Speed over ground (knots)
@@ -395,7 +397,7 @@ std::string Nmea_Printer::get_GPRMC()
     sentence_str << course_over_ground_deg;
 
     // Date ddmmyy
-    boost::gregorian::date sentence_date = d_PVT_data->d_position_UTC_time.date();
+    boost::gregorian::date sentence_date = d_PVT_data->get_position_UTC_time().date();
     unsigned int year = sentence_date.year();
     unsigned int day = sentence_date.day();
     unsigned int month = sentence_date.month();
@@ -441,11 +443,11 @@ std::string Nmea_Printer::get_GPGSA()
 {
     //$GPGSA,A,3,07,02,26,27,09,04,15, , , , , ,1.8,1.0,1.5*33
     // GSA-GNSS DOP and Active Satellites
-    bool valid_fix = d_PVT_data->b_valid_position;
-    int n_sats_used = d_PVT_data->d_valid_observations;
-    double pdop = d_PVT_data->d_PDOP;
-    double hdop = d_PVT_data->d_HDOP;
-    double vdop = d_PVT_data->d_VDOP;
+    bool valid_fix = d_PVT_data->is_valid_position();
+    int n_sats_used = d_PVT_data->get_num_valid_observations();
+    double pdop = d_PVT_data->get_PDOP();
+    double hdop = d_PVT_data->get_HDOP();
+    double vdop = d_PVT_data->get_VDOP();
 
     std::stringstream sentence_str;
     std::string sentence_header;
@@ -479,7 +481,7 @@ std::string Nmea_Printer::get_GPGSA()
                 {
                     sentence_str.width(2);
                     sentence_str.fill('0');
-                    sentence_str << d_PVT_data->d_visible_satellites_IDs[i];
+                    sentence_str << d_PVT_data->get_visible_satellites_ID(i);
                 }
         }
 
@@ -527,7 +529,7 @@ std::string Nmea_Printer::get_GPGSV()
 {
     // GSV-GNSS Satellites in View
     // Notice that NMEA 2.1 only supports 12 channels
-    int n_sats_used = d_PVT_data->d_valid_observations;
+    int n_sats_used = d_PVT_data->get_num_valid_observations();
     std::stringstream sentence_str;
     std::stringstream frame_str;
     std::string sentence_header;
@@ -567,22 +569,22 @@ std::string Nmea_Printer::get_GPGSV()
                     frame_str << ",";
                     frame_str.width(2);
                     frame_str.fill('0');
-                    frame_str << std::dec << d_PVT_data->d_visible_satellites_IDs[current_satellite];
+                    frame_str << std::dec << d_PVT_data->get_visible_satellites_ID(current_satellite);
 
                     frame_str << ",";
                     frame_str.width(2);
                     frame_str.fill('0');
-                    frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_El[current_satellite]);
+                    frame_str << std::dec << static_cast<int>(d_PVT_data->get_visible_satellites_El(current_satellite));
 
                     frame_str << ",";
                     frame_str.width(3);
                     frame_str.fill('0');
-                    frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_Az[current_satellite]);
+                    frame_str << std::dec << static_cast<int>(d_PVT_data->get_visible_satellites_Az(current_satellite));
 
                     frame_str << ",";
                     frame_str.width(2);
                     frame_str.fill('0');
-                    frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_CN0_dB[current_satellite]);
+                    frame_str << std::dec << static_cast<int>(d_PVT_data->get_visible_satellites_CN0_dB(current_satellite));
 
                     current_satellite++;
 
@@ -617,18 +619,18 @@ std::string Nmea_Printer::get_GPGSV()
 std::string Nmea_Printer::get_GPGGA()
 {
     //boost::posix_time::ptime d_position_UTC_time=boost::posix_time::microsec_clock::universal_time();
-    bool valid_fix = d_PVT_data->b_valid_position;
-    int n_channels = d_PVT_data->d_valid_observations;//d_nchannels
-    double hdop = d_PVT_data->d_HDOP;
+    bool valid_fix = d_PVT_data->is_valid_position();
+    int n_channels = d_PVT_data->get_num_valid_observations();//d_nchannels
+    double hdop = d_PVT_data->get_HDOP();
     double MSL_altitude;
 
-    if (d_PVT_data->d_flag_averaging == true)
+    if (d_PVT_data->is_averaging() == true)
         {
-            MSL_altitude = d_PVT_data->d_avg_height_m;
+            MSL_altitude = d_PVT_data->get_avg_height();
         }
     else
         {
-            MSL_altitude = d_PVT_data->d_height_m;
+            MSL_altitude = d_PVT_data->get_height();
         }
 
     std::stringstream sentence_str;
@@ -639,21 +641,21 @@ std::string Nmea_Printer::get_GPGGA()
     sentence_str << sentence_header;
 
     //UTC Time: hhmmss.sss
-    sentence_str << get_UTC_NMEA_time(d_PVT_data->d_position_UTC_time);
+    sentence_str << get_UTC_NMEA_time(d_PVT_data->get_position_UTC_time());
 
-    if (d_PVT_data->d_flag_averaging == true)
+    if (d_PVT_data->is_averaging() == true)
         {
             // Latitude ddmm.mmmm,(N or S)
-            sentence_str << "," << latitude_to_hm(d_PVT_data->d_avg_latitude_d);
+            sentence_str << "," << latitude_to_hm(d_PVT_data->get_avg_latitude());
             // longitude dddmm.mmmm,(E or W)
-            sentence_str << "," << longitude_to_hm(d_PVT_data->d_avg_longitude_d);
+            sentence_str << "," << longitude_to_hm(d_PVT_data->get_avg_longitude());
         }
     else
         {
             // Latitude ddmm.mmmm,(N or S)
-            sentence_str << "," << latitude_to_hm(d_PVT_data->d_latitude_d);
+            sentence_str << "," << latitude_to_hm(d_PVT_data->get_latitude());
             // longitude dddmm.mmmm,(E or W)
-            sentence_str << "," << longitude_to_hm(d_PVT_data->d_longitude_d);
+            sentence_str << "," << longitude_to_hm(d_PVT_data->get_longitude());
         }
 
     // Position fix indicator

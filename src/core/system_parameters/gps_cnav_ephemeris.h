@@ -32,6 +32,7 @@
 #ifndef GNSS_SDR_GPS_CNAV_EPHEMERIS_H_
 #define GNSS_SDR_GPS_CNAV_EPHEMERIS_H_
 
+#include "GPS_L2C.h"
 #include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
 
@@ -129,7 +130,7 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
+    inline void serialize(Archive& archive, const unsigned int version)
     {
         using boost::serialization::make_nvp;
         if(version){};
@@ -153,8 +154,9 @@ public:
         archive & make_nvp("d_IDOT", d_IDOT);        //!< Rate of Inclination Angle [semi-circles/s]
         archive & make_nvp("i_GPS_week", i_GPS_week);      //!< GPS week number, aka WN [week]
         archive & make_nvp("d_TGD", d_TGD);           //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
-
-
+        archive & make_nvp("d_DELTA_A", d_DELTA_A);   //!< Semi-major axis difference at reference time [m]
+        archive & make_nvp("d_A_DOT", d_A_DOT);       //!< Change rate in semi-major axis [m/s]
+        archive & make_nvp("d_DELTA_OMEGA_DOT", d_DELTA_OMEGA_DOT);      //!< Rate of Right Ascension  difference [semi-circles/s]
         archive & make_nvp("d_A_f0", d_A_f0);          //!< Coefficient 0 of code phase offset model [s]
         archive & make_nvp("d_A_f1", d_A_f1);          //!< Coefficient 1 of code phase offset model [s/s]
         archive & make_nvp("d_A_f2", d_A_f2);          //!< Coefficient 2 of code phase offset model [s/s^2]
@@ -168,7 +170,7 @@ public:
      * \brief Compute the ECEF SV coordinates and ECEF velocity
      * Implementation of Table 20-IV (IS-GPS-200E)
      */
-    void satellitePosition(double transmitTime);
+    double satellitePosition(double transmitTime);
 
     /*!
      * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction

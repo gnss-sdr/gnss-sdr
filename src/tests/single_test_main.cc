@@ -48,20 +48,37 @@
 #include "gps_ref_location.h"
 #include "gps_ref_time.h"
 #include "galileo_navigation_message.h"
-#include "sbas_ionospheric_correction.h"
-#include "sbas_telemetry_data.h"
-#include "sbas_ephemeris.h"
-#include "sbas_satellite_correction.h"
+//#include "sbas_ionospheric_correction.h"
+//#include "sbas_telemetry_data.h"
+//#include "sbas_ephemeris.h"
+//#include "sbas_satellite_correction.h"
 
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
+using google::LogMessage;
+
+DECLARE_string(log_dir);
 
 int main(int argc, char **argv)
 {
     google::ParseCommandLineFlags(&argc, &argv, true);
-    testing::InitGoogleTest(&argc, argv);
+    try
+    {
+            testing::InitGoogleTest(&argc, argv);
+    }
+    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
     google::InitGoogleLogging(argv[0]);
-    return RUN_ALL_TESTS();
+    int res = 0;
+    try
+    {
+            res = RUN_ALL_TESTS();
+    }
+    catch(...)
+    {
+            LOG(WARNING) << "Unexpected catch";
+    }
+    google::ShutDownCommandLineFlags();
+    return res;
 }

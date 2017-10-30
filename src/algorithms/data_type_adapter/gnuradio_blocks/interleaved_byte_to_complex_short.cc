@@ -55,8 +55,8 @@ int interleaved_byte_to_complex_short::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    const int8_t *in = (const int8_t *) input_items[0];
-    lv_16sc_t *out = (lv_16sc_t *) output_items[0];
+    const int8_t *in = reinterpret_cast<const int8_t *>(input_items[0]);
+    lv_16sc_t *out = reinterpret_cast<lv_16sc_t *>(output_items[0]);
     // This could be put into a Volk kernel
     int8_t real_part;
     int8_t imag_part;
@@ -65,7 +65,7 @@ int interleaved_byte_to_complex_short::work(int noutput_items,
             // lv_cmake(r, i) defined at volk/volk_complex.h
             real_part = *in++;
             imag_part = *in++;
-            *out++ = lv_cmake((int16_t)real_part, (int16_t)imag_part);
+            *out++ = lv_cmake(static_cast<int16_t>(real_part), static_cast<int16_t>(imag_part));
         }
     return noutput_items;
 }

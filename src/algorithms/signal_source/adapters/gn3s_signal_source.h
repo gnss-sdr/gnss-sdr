@@ -52,7 +52,8 @@ public:
             unsigned int out_stream, gr::msg_queue::sptr queue);
 
     virtual ~Gn3sSignalSource();
-    std::string role()
+
+    inline std::string role() override
     {
         return role_;
     }
@@ -60,18 +61,20 @@ public:
     /*!
      * \brief Returns "Gn3sSignalSource".
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Gn3sSignalSource";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     std::string role_;

@@ -35,6 +35,12 @@
 
 #include <complex>
 
+//!Generates int GPS L1 C/A code for the desired SV ID and code shift 
+void gps_l1_ca_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift);
+
+//!Generates float GPS L1 C/A code for the desired SV ID and code shift 
+void gps_l1_ca_code_gen_float(float* _dest, signed int _prn, unsigned int _chip_shift);
+
 //!Generates complex GPS L1 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
 void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift);
 

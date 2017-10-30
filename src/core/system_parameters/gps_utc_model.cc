@@ -29,6 +29,7 @@
  */
 
 #include "gps_utc_model.h"
+#include <iostream>
 #include <cmath>
 
 Gps_Utc_Model::Gps_Utc_Model()
@@ -50,6 +51,11 @@ double Gps_Utc_Model::utc_time(double gpstime_corrected, int i_GPS_week)
     double t_utc_daytime;
     double Delta_t_UTC =  d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>(i_GPS_week - i_WN_T));
 
+    //std::cout<<"d_DeltaT_LS="<<d_DeltaT_LS
+    //        <<"d_A0="<<d_A0
+    //        <<"d_A1="<<d_A1
+    //        <<"d_t_OT="<<d_t_OT
+    //        <<"i_WN_T="<<i_WN_T<<std::endl;
     // Determine if the effectivity time of the leap second event is in the past
     int  weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
 

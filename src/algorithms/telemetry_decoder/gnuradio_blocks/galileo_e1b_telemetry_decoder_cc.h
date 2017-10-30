@@ -43,6 +43,7 @@
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
+#include "gnss_synchro.h"
 
 
 
@@ -50,7 +51,7 @@ class galileo_e1b_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<galileo_e1b_telemetry_decoder_cc> galileo_e1b_telemetry_decoder_cc_sptr;
 
-galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the INAV data defined in Galileo ICD
@@ -60,13 +61,9 @@ class galileo_e1b_telemetry_decoder_cc : public gr::block
 {
 public:
     ~galileo_e1b_telemetry_decoder_cc();
-    void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
+    void set_satellite(const Gnss_Satellite & satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
     int flag_even_word_arrived;
-    /*!
-     * \brief Set decimation factor to average the GPS synchronization estimation output from the tracking module.
-     */
-    void set_decimation(int decimation);
 
     /*!
      * \brief This is where all signal processing takes place
@@ -74,16 +71,10 @@ public:
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    /*!
-     * \brief Function which tells the scheduler how many input items
-     *        are required to produce noutput_items output items.
-     */
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
 private:
     friend galileo_e1b_telemetry_decoder_cc_sptr
-    galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-    galileo_e1b_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    galileo_e1b_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    galileo_e1b_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
 
@@ -96,6 +87,8 @@ private:
     int *d_preambles_symbols;
     unsigned int d_samples_per_symbol;
     int d_symbols_per_preamble;
+
+    std::deque<Gnss_Synchro> d_symbol_history;
 
     long unsigned int d_sample_counter;
     long unsigned int d_preamble_index;
@@ -113,16 +106,8 @@ private:
     Gnss_Satellite d_satellite;
     int d_channel;
 
-    // output averaging and decimation
-    int d_average_count;
-    int d_decimation_output_factor;
-
-    double d_preamble_time_seconds;
-
-    double d_TOW_at_Preamble;
     double d_TOW_at_current_symbol;
 
-    double Prn_timestamp_at_preamble_ms;
     bool flag_TOW_set;
     double delta_t; //GPS-GALILEO time offset
 

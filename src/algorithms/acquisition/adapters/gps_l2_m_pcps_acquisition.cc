@@ -55,9 +55,11 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
+    blocking_ = configuration_->property(role + ".blocking", true);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
@@ -85,15 +87,18 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
             item_size_ = sizeof(lv_16sc_t);
             acquisition_sc_ = pcps_make_acquisition_sc(1, max_dwells_,
                     doppler_max_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
 
-        }else{
-                item_size_ = sizeof(gr_complex);
-                acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
-                        doppler_max_, if_, fs_in_, code_length_, code_length_,
-                        bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
-                DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
+        }
+    else
+        {
+            item_size_ = sizeof(gr_complex);
+            acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
+                    doppler_max_, if_, fs_in_, code_length_, code_length_,
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_,
+                    dump_filename_);
+            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
@@ -233,7 +238,7 @@ void GpsL2MPcpsAcquisition::init()
             acquisition_cc_->init();
         }
 
-    set_local_code();
+    //set_local_code();
 }
 
 
@@ -251,17 +256,15 @@ void GpsL2MPcpsAcquisition::set_local_code()
             acquisition_cc_->set_local_code(code_);
         }
         
-//    //debug
-//    std::ofstream d_dump_file;
-//    std::stringstream filename;
-//    std::streamsize n = 2 * sizeof(float) * (code_length_); // complex file write
-//    filename.str("");
-//    filename << "../data/local_prn_sampled.dat";
-//    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-//    d_dump_file.write((char*)code_, n);
-//    d_dump_file.close();
-
-    //  }
+    //    //debug
+    //    std::ofstream d_dump_file;
+    //    std::stringstream filename;
+    //    std::streamsize n = 2 * sizeof(float) * (code_length_); // complex file write
+    //    filename.str("");
+    //    filename << "../data/local_prn_sampled.dat";
+    //    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
+    //    d_dump_file.write(reinterpret_cast<char*>(code_), n);
+    //    d_dump_file.close();
 }
 
 
@@ -305,7 +308,7 @@ float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    float threshold = static_cast<float>(quantile(mydist,val));
 
     return threshold;
 }

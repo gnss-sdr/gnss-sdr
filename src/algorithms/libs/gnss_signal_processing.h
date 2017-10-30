@@ -61,6 +61,13 @@ void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs,
 void hex_to_binary_converter(int * _dest, char _from);
 
 /*!
+ * \brief This function resamples a sequence of float values.
+ *
+ */
+void resampler(float* _from, float* _dest,
+        float _fs_in, float _fs_out, unsigned int _length_in,
+        unsigned int _length_out);
+/*!
  * \brief This function resamples a sequence of complex values.
  *
  */

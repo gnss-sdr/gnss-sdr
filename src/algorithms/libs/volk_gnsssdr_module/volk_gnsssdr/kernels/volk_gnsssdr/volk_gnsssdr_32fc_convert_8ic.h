@@ -85,6 +85,146 @@ static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector,
 #endif /* LV_HAVE_GENERIC */
 
 
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_32fc_convert_8ic_u_avx2(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
+    const unsigned int avx2_iters = num_points / 16;
+
+    float* inputVectorPtr = (float*)inputVector;
+    int8_t* outputVectorPtr = (int8_t*)outputVector;
+
+    const float min_val = (float)SCHAR_MIN;
+    const float max_val = (float)SCHAR_MAX;
+    float aux;
+    unsigned int i;
+
+    __m256 inputVal1, inputVal2, inputVal3, inputVal4;
+    __m256i intInputVal1, intInputVal2, intInputVal3, intInputVal4;
+    __m256i int8InputVal;
+    __m256 ret1, ret2, ret3, ret4;
+    const __m256 vmin_val = _mm256_set1_ps(min_val);
+    const __m256 vmax_val = _mm256_set1_ps(max_val);
+
+    for(i = 0; i < avx2_iters; i++)
+        {
+            inputVal1 = _mm256_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 8;
+            inputVal2 = _mm256_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 8;
+            inputVal3 = _mm256_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 8;
+            inputVal4 = _mm256_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 8;
+            __VOLK_GNSSSDR_PREFETCH(inputVectorPtr + 32);
+
+            inputVal1 = _mm256_mul_ps(inputVal1, vmax_val);
+            inputVal2 = _mm256_mul_ps(inputVal2, vmax_val);
+            inputVal3 = _mm256_mul_ps(inputVal3, vmax_val);
+            inputVal4 = _mm256_mul_ps(inputVal4, vmax_val);
+
+            // Clip
+            ret1 = _mm256_max_ps(_mm256_min_ps(inputVal1, vmax_val), vmin_val);
+            ret2 = _mm256_max_ps(_mm256_min_ps(inputVal2, vmax_val), vmin_val);
+            ret3 = _mm256_max_ps(_mm256_min_ps(inputVal3, vmax_val), vmin_val);
+            ret4 = _mm256_max_ps(_mm256_min_ps(inputVal4, vmax_val), vmin_val);
+
+            intInputVal1 = _mm256_cvtps_epi32(ret1);
+            intInputVal2 = _mm256_cvtps_epi32(ret2);
+            intInputVal3 = _mm256_cvtps_epi32(ret3);
+            intInputVal4 = _mm256_cvtps_epi32(ret4);
+
+            intInputVal1 = _mm256_packs_epi32(intInputVal1, intInputVal2);
+            intInputVal1 = _mm256_permute4x64_epi64(intInputVal1, 0b11011000);
+            intInputVal2 = _mm256_packs_epi32(intInputVal3, intInputVal4);
+            intInputVal2 = _mm256_permute4x64_epi64(intInputVal2, 0b11011000);
+            int8InputVal = _mm256_packs_epi16(intInputVal1, intInputVal2);
+            int8InputVal = _mm256_permute4x64_epi64(int8InputVal, 0b11011000);
+
+            _mm256_storeu_si256((__m256i*)outputVectorPtr, int8InputVal);
+            outputVectorPtr += 32;
+        }
+
+    for(i = avx2_iters * 32; i < num_points * 2; i++)
+        {
+            aux = *inputVectorPtr++ * max_val;
+            if(aux > max_val)
+                aux = max_val;
+            else if(aux < min_val)
+                aux = min_val;
+            *outputVectorPtr++ = (int8_t)rintf(aux);
+        }
+}
+#endif /* LV_HAVE_AVX2 */
+
+
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_32fc_convert_8ic_a_avx2(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
+    const unsigned int avx2_iters = num_points / 16;
+
+    float* inputVectorPtr = (float*)inputVector;
+    int8_t* outputVectorPtr = (int8_t*)outputVector;
+
+    const float min_val = (float)SCHAR_MIN;
+    const float max_val = (float)SCHAR_MAX;
+    float aux;
+    unsigned int i;
+
+    __m256 inputVal1, inputVal2, inputVal3, inputVal4;
+    __m256i intInputVal1, intInputVal2, intInputVal3, intInputVal4;
+    __m256i int8InputVal;
+    __m256 ret1, ret2, ret3, ret4;
+    const __m256 vmin_val = _mm256_set1_ps(min_val);
+    const __m256 vmax_val = _mm256_set1_ps(max_val);
+
+    for(i = 0; i < avx2_iters; i++)
+        {
+            inputVal1 = _mm256_load_ps((float*)inputVectorPtr); inputVectorPtr += 8;
+            inputVal2 = _mm256_load_ps((float*)inputVectorPtr); inputVectorPtr += 8;
+            inputVal3 = _mm256_load_ps((float*)inputVectorPtr); inputVectorPtr += 8;
+            inputVal4 = _mm256_load_ps((float*)inputVectorPtr); inputVectorPtr += 8;
+            __VOLK_GNSSSDR_PREFETCH(inputVectorPtr + 32);
+
+            inputVal1 = _mm256_mul_ps(inputVal1, vmax_val);
+            inputVal2 = _mm256_mul_ps(inputVal2, vmax_val);
+            inputVal3 = _mm256_mul_ps(inputVal3, vmax_val);
+            inputVal4 = _mm256_mul_ps(inputVal4, vmax_val);
+
+            // Clip
+            ret1 = _mm256_max_ps(_mm256_min_ps(inputVal1, vmax_val), vmin_val);
+            ret2 = _mm256_max_ps(_mm256_min_ps(inputVal2, vmax_val), vmin_val);
+            ret3 = _mm256_max_ps(_mm256_min_ps(inputVal3, vmax_val), vmin_val);
+            ret4 = _mm256_max_ps(_mm256_min_ps(inputVal4, vmax_val), vmin_val);
+
+            intInputVal1 = _mm256_cvtps_epi32(ret1);
+            intInputVal2 = _mm256_cvtps_epi32(ret2);
+            intInputVal3 = _mm256_cvtps_epi32(ret3);
+            intInputVal4 = _mm256_cvtps_epi32(ret4);
+
+            intInputVal1 = _mm256_packs_epi32(intInputVal1, intInputVal2);
+            intInputVal1 = _mm256_permute4x64_epi64(intInputVal1, 0b11011000);
+            intInputVal2 = _mm256_packs_epi32(intInputVal3, intInputVal4);
+            intInputVal2 = _mm256_permute4x64_epi64(intInputVal2, 0b11011000);
+            int8InputVal = _mm256_packs_epi16(intInputVal1, intInputVal2);
+            int8InputVal = _mm256_permute4x64_epi64(int8InputVal, 0b11011000);
+
+            _mm256_store_si256((__m256i*)outputVectorPtr, int8InputVal);
+            outputVectorPtr += 32;
+        }
+
+    for(i = avx2_iters * 32; i < num_points * 2; i++)
+        {
+            aux = *inputVectorPtr++ * max_val;
+            if(aux > max_val)
+                aux = max_val;
+            else if(aux < min_val)
+                aux = min_val;
+            *outputVectorPtr++ = (int8_t)rintf(aux);
+        }
+}
+#endif /* LV_HAVE_AVX2 */
+
+
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 

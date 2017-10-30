@@ -21,7 +21,7 @@ set (SIGNAL_SOURCE_LIB_SOURCES
   rtl_tcp_dongle_info.cc)
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${Boost_INCLUDE_DIRS}
 )
 

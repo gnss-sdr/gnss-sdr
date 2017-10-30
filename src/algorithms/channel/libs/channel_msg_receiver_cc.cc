@@ -94,4 +94,3 @@ channel_msg_receiver_cc::channel_msg_receiver_cc(ChannelFsm* channel_fsm, bool r
 
 channel_msg_receiver_cc::~channel_msg_receiver_cc()
 {}
-

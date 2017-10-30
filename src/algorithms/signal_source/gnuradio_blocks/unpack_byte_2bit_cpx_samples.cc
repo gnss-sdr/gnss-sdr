@@ -47,21 +47,24 @@ unpack_byte_2bit_cpx_samples_sptr make_unpack_byte_2bit_cpx_samples()
     return unpack_byte_2bit_cpx_samples_sptr(new unpack_byte_2bit_cpx_samples());
 }
 
+
 unpack_byte_2bit_cpx_samples::unpack_byte_2bit_cpx_samples() : sync_interpolator("unpack_byte_2bit_cpx_samples",
         gr::io_signature::make(1, 1, sizeof(signed char)),
         gr::io_signature::make(1, 1, sizeof(short)),
         4)
 {}
 
+
 unpack_byte_2bit_cpx_samples::~unpack_byte_2bit_cpx_samples()
 {}
+
 
 int unpack_byte_2bit_cpx_samples::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    const signed char *in = (const signed char *)input_items[0];
-    short *out = (short*)output_items[0];
+    const signed char *in = reinterpret_cast<const signed char *>(input_items[0]);
+    short *out = reinterpret_cast<short *>(output_items[0]);
 
     byte_2bit_struct sample;
     int n = 0;
@@ -91,16 +94,16 @@ int unpack_byte_2bit_cpx_samples::work(int noutput_items,
             signed char c = in[i];
             //I[n]
             sample.two_bit_sample = (c >> 4) & 3;
-            out[n++] = (2*(short)sample.two_bit_sample + 1);
+            out[n++] = (2 * static_cast<short>(sample.two_bit_sample) + 1);
             //Q[n]
             sample.two_bit_sample = (c >> 6) & 3;
-            out[n++] = (2*(short)sample.two_bit_sample + 1);
+            out[n++] = (2 * static_cast<short>(sample.two_bit_sample) + 1);
             //I[n+1]
             sample.two_bit_sample = c & 3;
-            out[n++] = (2*(short)sample.two_bit_sample + 1);
+            out[n++] = (2 * static_cast<short>(sample.two_bit_sample) + 1);
             //Q[n+1]
             sample.two_bit_sample = (c >> 2) & 3;
-            out[n++] = (2*(short)sample.two_bit_sample + 1);
+            out[n++] = (2 * static_cast<short>(sample.two_bit_sample) + 1);
         }
     return noutput_items;
 }

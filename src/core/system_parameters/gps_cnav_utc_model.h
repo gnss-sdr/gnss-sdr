@@ -34,7 +34,7 @@
 
 #include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
-
+#include <iostream>
 
 /*!
  * \brief This class is a storage for the GPS UTC MODEL data as described in in IS-GPS-200H
@@ -46,6 +46,7 @@ class Gps_CNAV_Utc_Model
 public:
     bool valid;
     // UTC parameters
+    double d_A2;          //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s/s]
     double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s/s]
     double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200H) [s]
     double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200H) [s]
@@ -60,11 +61,17 @@ public:
      */
     Gps_CNAV_Utc_Model();
 
+    /*!
+     * \brief Computes the Coordinated Universal Time (UTC) and
+     * returns it in [s] (IS-GPS-200E, 20.3.3.5.2.4 + 30.3.3.6.2)
+     */
+    double utc_time(double gpstime_corrected, int i_GPS_week);
+
     template<class Archive>
     /*
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
+    inline void serialize(Archive& archive, const unsigned int version)
     {
         using boost::serialization::make_nvp;
         if(version){};

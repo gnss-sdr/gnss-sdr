@@ -49,9 +49,7 @@ direct_resampler_make_conditioner_cs(double sample_freq_in,
  */
 class direct_resampler_conditioner_cs: public gr::block
 {
-
 private:
-
     friend direct_resampler_conditioner_cs_sptr
     direct_resampler_make_conditioner_cs(double sample_freq_in,
             double sample_freq_out);
@@ -67,18 +65,20 @@ private:
             double sample_freq_out);
 
 public:
-
     ~direct_resampler_conditioner_cs();
 
-    unsigned int sample_freq_in() const
+    inline unsigned int sample_freq_in() const
     {
         return d_sample_freq_in;
     }
-    unsigned int sample_freq_out() const
+
+    inline unsigned int sample_freq_out() const
     {
         return d_sample_freq_out;
     }
+
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+    
     int general_work(int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items,
             gr_vector_void_star &output_items);

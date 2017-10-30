@@ -76,7 +76,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     // 1. Setup lookup table
     for (unsigned i = 0; i < 0xff; i++)
         {
-            lookup_[i] = ((float)(i & 0xff) - 127.4f) * (1.0f / 128.0f);
+            lookup_[i] = (static_cast<float>(i & 0xff) - 127.4f) * (1.0f / 128.0f);
         }
 
     // 2. Set socket options

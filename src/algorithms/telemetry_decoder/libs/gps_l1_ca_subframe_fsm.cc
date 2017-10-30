@@ -238,9 +238,8 @@ GpsL1CaSubframeFsm::GpsL1CaSubframeFsm()
     d_nav.reset();
     i_channel_ID = 0;
     i_satellite_PRN = 0;
-    d_preamble_time_ms = 0;
-    d_subframe_ID=0;
-    d_flag_new_subframe=false;
+    d_subframe_ID = 0;
+    d_flag_new_subframe = false;
     initiate(); //start the FSM
 }
 
@@ -254,19 +253,18 @@ void GpsL1CaSubframeFsm::gps_word_to_subframe(int position)
 
 void GpsL1CaSubframeFsm::clear_flag_new_subframe()
 {
-    d_flag_new_subframe=false;
+    d_flag_new_subframe = false;
 }
 void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
 {
     //int subframe_ID;
     // NEW GPS SUBFRAME HAS ARRIVED!
     d_subframe_ID = d_nav.subframe_decoder(this->d_subframe); //decode the subframe
-    std::cout << "NAV Message: received subframe "
+    std::cout << "New GPS NAV message received: subframe "
               << d_subframe_ID << " from satellite "
               << Gnss_Satellite(std::string("GPS"), i_satellite_PRN) << std::endl;
     d_nav.i_satellite_PRN = i_satellite_PRN;
     d_nav.i_channel_ID = i_channel_ID;
-    d_nav.d_subframe_timestamp_ms = this->d_preamble_time_ms;
 
     d_flag_new_subframe=true;
 }

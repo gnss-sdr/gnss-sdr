@@ -32,8 +32,8 @@
 #ifndef GNSS_SDR_VITERBI_DECODER_H_
 #define GNSS_SDR_VITERBI_DECODER_H_
 
+#include <cstddef> // for size_t
 #include <deque>
-#include <cstdio>
 
 /*!
  * \brief Class that implements a Viterbi decoder
@@ -112,7 +112,7 @@ private:
     // operations on the trellis (change decoder state)
     void init_trellis_state();
     int do_acs(const double sym[], int nbits);
-    int do_traceback(size_t traceback_length);
+    int do_traceback(std::size_t traceback_length);
     int do_tb_and_decode(int traceback_length, int requested_decoding_length, int state, int bits[], float& indicator_metric);
 
     // branch metric function

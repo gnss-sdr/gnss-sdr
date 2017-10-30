@@ -41,14 +41,13 @@
 #include <gnuradio/block.h>
 #include "gnss_satellite.h"
 #include "viterbi_decoder.h"
-#include "sbas_telemetry_data.h"
 
 class sbas_l1_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<sbas_l1_telemetry_decoder_cc> sbas_l1_telemetry_decoder_cc_sptr;
 
 sbas_l1_telemetry_decoder_cc_sptr
-sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
@@ -58,8 +57,8 @@ class sbas_l1_telemetry_decoder_cc : public gr::block
 {
 public:
     ~sbas_l1_telemetry_decoder_cc();
-    void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                 //!< Set receiver's channel
+    void set_satellite(const Gnss_Satellite & satellite);  //!< Set satellite PRN
+    void set_channel(int channel);                         //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
@@ -67,16 +66,10 @@ public:
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    /*!
-     * \brief Function which tells the scheduler how many input items
-     *        are required to produce noutput_items output items.
-     */
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
 private:
     friend sbas_l1_telemetry_decoder_cc_sptr
-    sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-    sbas_l1_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    sbas_l1_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
     void align_samples();
@@ -159,8 +152,6 @@ private:
         void zerropad_back_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
     } d_crc_verifier;
 
-
-    Sbas_Telemetry_Data sbas_telemetry_data;
 };
 
 #endif

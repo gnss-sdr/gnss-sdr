@@ -17,15 +17,11 @@
 #
 
 set(OBS_ADAPTER_SOURCES
-	gps_l1_ca_observables.cc
-	gps_l2c_observables.cc
-	galileo_e1_observables.cc
-    galileo_e5a_observables.cc
 	hybrid_observables.cc
 )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver

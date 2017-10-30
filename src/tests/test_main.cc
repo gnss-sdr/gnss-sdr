@@ -16,7 +16,7 @@
 * GNSS-SDR is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+* (at your option) any later version.
 *
 * GNSS-SDR is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -58,12 +58,6 @@
 #include "galileo_utc_model.h"
 
 #include "sbas_ephemeris.h"
-#include "sbas_telemetry_data.h"
-#include "sbas_ionospheric_correction.h"
-#include "sbas_satellite_correction.h"
-#include "sbas_time.h"
-
-
 
 using google::LogMessage;
 
@@ -75,6 +69,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/arithmetic/multiply_test.cc"
 #include "unit-tests/arithmetic/code_generation_test.cc"
 #include "unit-tests/arithmetic/fft_length_test.cc"
+#include "unit-tests/arithmetic/fft_speed_test.cc"
 
 #include "unit-tests/control-plane/file_configuration_test.cc"
 #include "unit-tests/control-plane/in_memory_configuration_test.cc"
@@ -86,10 +81,15 @@ DECLARE_string(log_dir);
 
 #include "unit-tests/signal-processing-blocks/sources/file_signal_source_test.cc"
 #include "unit-tests/signal-processing-blocks/sources/gnss_sdr_valve_test.cc"
+#include "unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc"
 
 #include "unit-tests/signal-processing-blocks/adapter/pass_through_test.cc"
+#include "unit-tests/signal-processing-blocks/adapter/adapter_test.cc"
 
 #include "unit-tests/signal-processing-blocks/filter/fir_filter_test.cc"
+#include "unit-tests/signal-processing-blocks/filter/pulse_blanking_filter_test.cc"
+#include "unit-tests/signal-processing-blocks/filter/notch_filter_test.cc"
+#include "unit-tests/signal-processing-blocks/filter/notch_filter_lite_test.cc"
 
 #include "unit-tests/signal-processing-blocks/resampler/direct_resampler_conditioner_cc_test.cc"
 
@@ -105,7 +105,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
-//#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
+
 #if OPENCL_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
 #endif
@@ -114,14 +114,21 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e5a_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc"
 
 #if CUDA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/tracking/gpu_multicorrelator_test.cc"
 #endif
 
+#if FPGA_BLOCKS_TEST
+#include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test_fpga.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test_fpga.cc"
+#endif
+
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rinex_printer_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/nmea_printer_test.cc"
 
 #if EXTRA_TESTS
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l2_m_pcps_acquisition_test.cc"
@@ -129,8 +136,11 @@ DECLARE_string(log_dir);
 #if MODERN_ARMADILLO
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_l1_ca_telemetry_decoder_test.cc"
+#include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test.cc"
 #endif
 #endif
+
+
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

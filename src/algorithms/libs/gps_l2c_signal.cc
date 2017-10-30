@@ -48,7 +48,7 @@ void gps_l2c_m_code(int32_t * _dest, unsigned int _prn)
     x = GPS_L2C_M_INIT_REG[ _prn - 1];
     for (int n = 0; n < GPS_L2_M_CODE_LENGTH_CHIPS; n++)
         {
-            _dest[n] = (int8_t)(x&1);
+            _dest[n] = static_cast<int8_t>(x&1);
             x = gps_l2c_m_shift(x);
         }
 }
@@ -102,7 +102,7 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
 
             //--- Make index array to read L2C code values -------------------------
             //TODO: Check this formula! Seems to start with an extra sample
-            _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
+            _codeValueIndex = ceil((_ts * (static_cast<float>(i) + 1)) / _tc) - 1;
             //aux = (_ts * (i + 1)) / _tc;
             //_codeValueIndex = static_cast<int>(static_cast<long>(aux)) - 1;
 

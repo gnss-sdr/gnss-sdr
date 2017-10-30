@@ -52,7 +52,8 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     item_type_ = configuration_->property(role + ".item_type",
             default_item_type);
 
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
@@ -194,7 +195,7 @@ signed int GpsL1CaPcpsOpenClAcquisition::mag()
 void GpsL1CaPcpsOpenClAcquisition::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 
@@ -233,7 +234,7 @@ float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa)
     //Calculate the threshold
 
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
             frequency_bins++;
         }
@@ -245,7 +246,7 @@ float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa)
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    float threshold = static_cast<float>(quantile(mydist,val));
 
     return threshold;
 }

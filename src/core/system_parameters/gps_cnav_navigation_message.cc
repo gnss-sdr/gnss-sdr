@@ -68,15 +68,9 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
             satelliteBlock[prn_] = gnss_satellite_.what_block("GPS", prn_);
         }
     b_flag_iono_valid = false;
+    b_flag_utc_valid = false;
 }
 
-
-void Gps_CNAV_Navigation_Message::print_gps_word_bytes(unsigned int GPS_word)
-{
-    std::cout << " Word =";
-    std::cout << std::bitset<32>(GPS_word);
-    std::cout << std::endl;
-}
 
 
 bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter)
@@ -174,24 +168,8 @@ signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<
 }
 
 
-void Gps_CNAV_Navigation_Message::decode_page(std::vector<int> data)
+void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> data_bits)
 {
-    std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> data_bits;
-
-    try
-    {
-            for(int i = 0; i < GPS_L2_CNAV_DATA_PAGE_BITS; i++)
-                {
-                    data_bits[i] = static_cast<uint8_t>(data[GPS_L2_CNAV_DATA_PAGE_BITS - i - 1]);
-                }
-
-    }
-    catch(std::exception &e)
-    {
-            std::cout << "Exception converting to bitset " << e.what() << std::endl;
-            return;
-    }
-
     int PRN;
     int page_type;
 
@@ -210,7 +188,7 @@ void Gps_CNAV_Navigation_Message::decode_page(std::vector<int> data)
 
     page_type = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
 
-    std::cout << "PRN=" << PRN << " TOW=" << d_TOW << " alert_flag=" << alert_flag << " page_type= " << page_type << std::endl;
+    //std::cout << "PRN=" << PRN << " TOW=" << d_TOW << " alert_flag=" << alert_flag << " page_type= " << page_type << std::endl;
     switch(page_type)
     {
     case 10: // Ephemeris 1/2
@@ -231,7 +209,7 @@ void Gps_CNAV_Navigation_Message::decode_page(std::vector<int> data)
         ephemeris_record.d_DELTA_DOT_N = ephemeris_record.d_DELTA_DOT_N * CNAV_DELTA_N0_DOT_LSB;
         ephemeris_record.d_M_0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_M0));
         ephemeris_record.d_M_0 = ephemeris_record.d_M_0 * CNAV_M0_LSB;
-        ephemeris_record.d_e_eccentricity = static_cast<double>(read_navigation_signed(data_bits, CNAV_E_ECCENTRICITY));
+        ephemeris_record.d_e_eccentricity = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_E_ECCENTRICITY));
         ephemeris_record.d_e_eccentricity = ephemeris_record.d_e_eccentricity * CNAV_E_ECCENTRICITY_LSB;
         ephemeris_record.d_OMEGA = static_cast<double>(read_navigation_signed(data_bits, CNAV_OMEGA));
         ephemeris_record.d_OMEGA = ephemeris_record.d_OMEGA * CNAV_OMEGA_LSB;
@@ -309,6 +287,46 @@ void Gps_CNAV_Navigation_Message::decode_page(std::vector<int> data)
         iono_record.d_beta3 = iono_record.d_beta3 * CNAV_BETA3_LSB;
         b_flag_iono_valid = true;
         break;
+    case 33: // (CLOCK & UTC)
+        ephemeris_record.d_Top = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_TOP1));
+        ephemeris_record.d_Top = ephemeris_record.d_Top * CNAV_TOP1_LSB;
+        ephemeris_record.d_Toc = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_TOC));
+        ephemeris_record.d_Toc = ephemeris_record.d_Toc * CNAV_TOC_LSB;
+        ephemeris_record.d_A_f0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF0));
+        ephemeris_record.d_A_f0 = ephemeris_record.d_A_f0 * CNAV_AF0_LSB;
+        ephemeris_record.d_A_f1 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF1));
+        ephemeris_record.d_A_f1 = ephemeris_record.d_A_f1 * CNAV_AF1_LSB;
+        ephemeris_record.d_A_f2 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF2));
+        ephemeris_record.d_A_f2 = ephemeris_record.d_A_f2 * CNAV_AF2_LSB;
+
+
+        utc_model_record.d_A0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_A0));
+        utc_model_record.d_A0 = utc_model_record.d_A0 * CNAV_A0_LSB;
+        utc_model_record.d_A1 = static_cast<double>(read_navigation_signed(data_bits, CNAV_A1));
+        utc_model_record.d_A1 = utc_model_record.d_A1 * CNAV_A1_LSB;
+        utc_model_record.d_A2 = static_cast<double>(read_navigation_signed(data_bits, CNAV_A2));
+        utc_model_record.d_A2 = utc_model_record.d_A2 * CNAV_A2_LSB;
+
+
+        utc_model_record.d_DeltaT_LS = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_TLS));
+        utc_model_record.d_DeltaT_LS = utc_model_record.d_DeltaT_LS * CNAV_DELTA_TLS_LSB;
+
+        utc_model_record.d_t_OT = static_cast<double>(read_navigation_signed(data_bits, CNAV_TOT));
+        utc_model_record.d_t_OT = utc_model_record.d_t_OT * CNAV_TOT_LSB;
+
+        utc_model_record.i_WN_T = static_cast<double>(read_navigation_signed(data_bits, CNAV_WN_OT));
+        utc_model_record.i_WN_T = utc_model_record.i_WN_T * CNAV_WN_OT_LSB;
+
+        utc_model_record.i_WN_LSF = static_cast<double>(read_navigation_signed(data_bits, CNAV_WN_LSF));
+        utc_model_record.i_WN_LSF = utc_model_record.i_WN_LSF * CNAV_WN_LSF_LSB;
+
+        utc_model_record.i_DN = static_cast<double>(read_navigation_signed(data_bits, CNAV_DN));
+        utc_model_record.i_DN = utc_model_record.i_DN * CNAV_DN_LSB;
+
+        utc_model_record.d_DeltaT_LSF = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_TLSF));
+        utc_model_record.d_DeltaT_LSF = utc_model_record.d_DeltaT_LSF * CNAV_DELTA_TLSF_LSB;
+        b_flag_utc_valid = true;
+        break;
     default:
         break;
     }
@@ -319,7 +337,7 @@ bool Gps_CNAV_Navigation_Message::have_new_ephemeris() //Check if we have a new 
 {
     if (b_flag_ephemeris_1 == true and b_flag_ephemeris_2 == true)
         {
-            if (ephemeris_record.d_Toe1 == ephemeris_record.d_Toe2)
+            if (ephemeris_record.d_Toe1 == ephemeris_record.d_Toe2)// and ephemeris_record.d_Toe1==ephemeris_record.d_Toc)
                 {
                     //if all ephemeris pages have the same TOE, then they belong to the same block
                     // std::cout << "Ephemeris (1, 2) have been received and belong to the same batch" << std::endl;
@@ -364,6 +382,19 @@ Gps_CNAV_Iono Gps_CNAV_Navigation_Message::get_iono()
     return iono_record;
 }
 
+
+bool Gps_CNAV_Navigation_Message::have_new_utc_model() //Check if we have a new iono data stored in the galileo navigation class
+{
+    if (b_flag_utc_valid == true)
+        {
+            b_flag_utc_valid = false;// clear the flag
+            return true;
+        }
+    else
+        {
+            return false;
+        }
+}
 
 Gps_CNAV_Utc_Model Gps_CNAV_Navigation_Message::get_utc_model()
 {

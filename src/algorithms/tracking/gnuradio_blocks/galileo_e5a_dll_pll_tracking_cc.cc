@@ -211,22 +211,34 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
 }
 
 
-Galileo_E5a_Dll_Pll_Tracking_cc::~Galileo_E5a_Dll_Pll_Tracking_cc ()
+Galileo_E5a_Dll_Pll_Tracking_cc::~Galileo_E5a_Dll_Pll_Tracking_cc()
 {
-    d_dump_file.close();
-
-    delete[] d_codeI;
-    delete[] d_codeQ;
-    delete[] d_Prompt_buffer;
-
-    d_dump_file.close();
-
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_correlator_outs);
-    volk_gnsssdr_free(d_Single_Prompt_data);
-
-    multicorrelator_cpu_Q.free();
-    multicorrelator_cpu_I.free();
+    if (d_dump_file.is_open())
+        {
+            try
+            {
+                    d_dump_file.close();
+            }
+            catch(const std::exception & ex)
+            {
+                    LOG(WARNING)<<"Exception in destructor "<<ex.what();
+            }
+        }
+    try
+    {
+            delete[] d_codeI;
+            delete[] d_codeQ;
+            delete[] d_Prompt_buffer;
+            volk_gnsssdr_free(d_local_code_shift_chips);
+            volk_gnsssdr_free(d_correlator_outs);
+            volk_gnsssdr_free(d_Single_Prompt_data);
+            multicorrelator_cpu_Q.free();
+            multicorrelator_cpu_I.free();
+    }
+    catch(const std::exception & ex)
+    {
+            LOG(WARNING)<<"Exception in destructor "<<ex.what();
+    }
 }
 
 
@@ -301,9 +313,8 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
     sys = sys_.substr(0,1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
-
+    std::cout << "Tracking of Galileo E5a signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    LOG(INFO) << "Galileo E5a starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
     d_state = 1;
@@ -311,7 +322,6 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
             << " Code Phase correction [samples]=" << delay_correction_samples
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
-
 }
 
 
@@ -378,7 +388,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
     double code_error_filt_chips;
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]); //block output streams pointer
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data;
@@ -394,14 +404,11 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
     {
     case 0:
         {
-
             d_Early = gr_complex(0,0);
             d_Prompt = gr_complex(0,0);
             d_Late = gr_complex(0,0);
             d_Prompt_data = gr_complex(0,0);
-            current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) / static_cast<double>(d_fs_in);
-            *out[0] = current_synchro_data;
-
+            current_synchro_data.Tracking_sample_counter = d_sample_counter;
             break;
         }
     case 1:
@@ -419,10 +426,10 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             // make an output to not stop the rest of the processing blocks
             current_synchro_data.Prompt_I = 0.0;
             current_synchro_data.Prompt_Q = 0.0;
-            current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) / static_cast<double>(d_fs_in);
+            current_synchro_data.Tracking_sample_counter = d_sample_counter;
             current_synchro_data.Carrier_phase_rads = 0.0;
             current_synchro_data.CN0_dB_hz = 0.0;
-            *out[0] = current_synchro_data;
+            current_synchro_data.fs = d_fs_in;
             consume_each(samples_offset); //shift input to perform alignment with local replica
             return 1;
             break;
@@ -430,14 +437,12 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
     case 2:
         {
             // Block input data and block output stream pointers
-            const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment
+            const gr_complex* in = reinterpret_cast<const gr_complex *>(input_items[0]); //PRN start block alignment
             gr_complex sec_sign_Q;
             gr_complex sec_sign_I;
             // Secondary code Chip
             if (d_secondary_lock)
                 {
-                    //            sec_sign_Q = gr_complex((Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN-1].at(d_secondary_delay)=='0' ? 1 : -1),0);
-                    //            sec_sign_I = gr_complex((Galileo_E5a_I_SECONDARY_CODE.at(d_secondary_delay%Galileo_E5a_I_SECONDARY_CODE_LENGTH)=='0' ? 1 : -1),0);
                     sec_sign_Q = gr_complex((Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN-1].at(d_secondary_delay) == '0' ? -1 : 1), 0);
                     sec_sign_I = gr_complex((Galileo_E5a_I_SECONDARY_CODE.at(d_secondary_delay % Galileo_E5a_I_SECONDARY_CODE_LENGTH) == '0' ? -1 : 1), 0);
                 }
@@ -466,7 +471,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             multicorrelator_cpu_Q.set_local_code_and_taps(Galileo_E5a_CODE_LENGTH_CHIPS, d_codeQ, d_local_code_shift_chips);
             multicorrelator_cpu_I.set_local_code_and_taps(Galileo_E5a_CODE_LENGTH_CHIPS, d_codeI, &d_local_code_shift_chips[1]);
 
-
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
             multicorrelator_cpu_Q.set_input_output_vectors(d_correlator_outs,in);
@@ -488,7 +492,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     rem_code_phase_chips,
                     code_phase_step_chips,
                     d_current_prn_length_samples);
-
 
             // Accumulate results (coherent integration since there are no bit transitions in pilot signal)
             d_Early += (*d_Single_Early) * sec_sign_Q;
@@ -518,9 +521,9 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     // New code Doppler frequency estimation
                     d_code_freq_chips = Galileo_E5a_CODE_CHIP_RATE_HZ + ((d_carrier_doppler_hz * Galileo_E5a_CODE_CHIP_RATE_HZ) / Galileo_E5a_FREQ_HZ);
                 }
-            //carrier phase accumulator for (K) doppler estimation
+            // carrier phase accumulator for (K) doppler estimation
             d_acc_carrier_phase_rad -= 2.0 * GALILEO_PI * d_carrier_doppler_hz * GALILEO_E5a_CODE_PERIOD;
-            //remanent carrier phase to prevent overflow in the code NCO
+            // remnant carrier phase to prevent overflow in the code NCO
             d_rem_carr_phase_rad = d_rem_carr_phase_rad + 2.0 * GALILEO_PI * d_carrier_doppler_hz * GALILEO_E5a_CODE_PERIOD;
             d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, 2.0 * GALILEO_PI);
 
@@ -566,7 +569,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                             acquire_secondary(); // changes d_secondary_lock and d_secondary_delay
                             if (d_secondary_lock == true)
                                 {
-                                    std::cout << "Secondary code locked." << std::endl;
+                                    std::cout << "Galileo E5a secondary code locked for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
                                     d_current_ti_ms = d_ti_ms;
                                     // Change loop parameters ==========================================
                                     d_code_loop_filter.set_pdi(d_current_ti_ms * GALILEO_E5a_CODE_PERIOD);
@@ -576,7 +579,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                                 }
                             else
                                 {
-                                    std::cout << "Secondary code delay couldn't be resolved." << std::endl;
+                                    //std::cout << "Secondary code delay couldn't be resolved." << std::endl;
                                     d_carrier_lock_fail_counter++;
                                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                                         {
@@ -625,28 +628,29 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                 {
                     current_synchro_data.Prompt_I = static_cast<double>((d_Prompt_data).real());
                     current_synchro_data.Prompt_Q = static_cast<double>((d_Prompt_data).imag());
-                    // Tracking_timestamp_secs is aligned with the PRN start sample
-                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_current_prn_length_samples) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
-                    // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+                    current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
-
                 }
             else
                 {
                     // make an output to not stop the rest of the processing blocks
                     current_synchro_data.Prompt_I = 0.0;
                     current_synchro_data.Prompt_Q = 0.0;
-                    current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) /  static_cast<double>(d_fs_in);
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter;
                     current_synchro_data.Carrier_phase_rads = 0.0;
                     current_synchro_data.CN0_dB_hz = 0.0;
-
                 }
-            *out[0] = current_synchro_data;
+
             break;
         }
     }
+
+    current_synchro_data.fs = d_fs_in;
+    current_synchro_data.correlation_length_ms = GALILEO_E5a_CODE_PERIOD_MS;
+    *out[0] = current_synchro_data;
 
     if(d_dump)
         {
@@ -699,6 +703,10 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
 
+                    // PRN
+                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char*>(&prn_), sizeof(unsigned int));
+
             }
             catch (const std::ifstream::failure & e)
             {
@@ -728,11 +736,11 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::set_channel(unsigned int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (const std::ifstream::failure &e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                     }
                 }
         }
@@ -743,4 +751,3 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_sync
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }
-

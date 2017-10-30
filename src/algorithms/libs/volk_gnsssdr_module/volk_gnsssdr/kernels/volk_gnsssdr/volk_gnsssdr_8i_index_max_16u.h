@@ -58,6 +58,71 @@
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 
+
+#ifdef LV_HAVE_AVX2
+#include<immintrin.h>
+
+static inline void volk_gnsssdr_8i_index_max_16u_u_avx2(unsigned int* target, const char* src0, unsigned int num_points)
+{
+    if(num_points > 0)
+        {
+            const unsigned int avx2_iters = num_points / 32;
+            unsigned int number;
+            unsigned int i;
+            char* basePtr = (char*)src0;
+            char* inputPtr = (char*)src0;
+            char max = src0[0];
+            unsigned int index = 0;
+            unsigned int mask;
+            __VOLK_ATTR_ALIGNED(32) char currentValuesBuffer[32];
+            __m256i maxValues, compareResults, currentValues;
+
+            maxValues = _mm256_set1_epi8(max);
+
+            for(number = 0; number < avx2_iters; number++)
+                {
+                    currentValues  = _mm256_loadu_si256((__m256i*)inputPtr);
+                    compareResults = _mm256_cmpgt_epi8(maxValues, currentValues);
+                    mask = _mm256_movemask_epi8(compareResults);
+
+                    if (mask != 0xFFFFFFFF)
+                        {
+                            _mm256_storeu_si256((__m256i*)&currentValuesBuffer, currentValues);
+                            mask = ~mask;
+                            i = 0;
+                            while (mask > 0)
+                                {
+                                    if ((mask & 1) == 1)
+                                        {
+                                            if(currentValuesBuffer[i] > max)
+                                                {
+                                                    index = inputPtr - basePtr + i;
+                                                    max = currentValuesBuffer[i];
+                                                }
+                                        }
+                                    i++;
+                                    mask >>= 1;
+                                }
+                            maxValues = _mm256_set1_epi8(max);
+                        }
+                    inputPtr += 32;
+                }
+
+            for(i = 0; i<(num_points % 32); ++i)
+                {
+                    if(src0[i] > max)
+                        {
+                            index = i;
+                            max = src0[i];
+                        }
+                }
+            target[0] = index;
+        }
+}
+
+#endif /*LV_HAVE_AVX2*/
+
+
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
 
@@ -269,6 +334,70 @@ static inline void volk_gnsssdr_8i_index_max_16u_generic(unsigned int* target, c
 }
 
 #endif /*LV_HAVE_GENERIC*/
+
+
+#ifdef LV_HAVE_AVX2
+#include<immintrin.h>
+
+static inline void volk_gnsssdr_8i_index_max_16u_a_avx2(unsigned int* target, const char* src0, unsigned int num_points)
+{
+    if(num_points > 0)
+        {
+            const unsigned int avx2_iters = num_points / 32;
+            unsigned int number;
+            unsigned int i;
+            char* basePtr = (char*)src0;
+            char* inputPtr = (char*)src0;
+            char max = src0[0];
+            unsigned int index = 0;
+            unsigned int mask;
+            __VOLK_ATTR_ALIGNED(32) char currentValuesBuffer[32];
+            __m256i maxValues, compareResults, currentValues;
+
+            maxValues = _mm256_set1_epi8(max);
+
+            for(number = 0; number < avx2_iters; number++)
+                {
+                    currentValues  = _mm256_load_si256((__m256i*)inputPtr);
+                    compareResults = _mm256_cmpgt_epi8(maxValues, currentValues);
+                    mask = _mm256_movemask_epi8(compareResults);
+
+                    if (mask != 0xFFFFFFFF)
+                        {
+                            _mm256_store_si256((__m256i*)&currentValuesBuffer, currentValues);
+                            mask = ~mask;
+                            i = 0;
+                            while (mask > 0)
+                                {
+                                    if ((mask & 1) == 1)
+                                        {
+                                            if(currentValuesBuffer[i] > max)
+                                                {
+                                                    index = inputPtr - basePtr + i;
+                                                    max = currentValuesBuffer[i];
+                                                }
+                                        }
+                                    i++;
+                                    mask >>= 1;
+                                }
+                            maxValues = _mm256_set1_epi8(max);
+                        }
+                    inputPtr += 32;
+                }
+
+            for(i = 0; i<(num_points % 32); ++i)
+                {
+                    if(src0[i] > max)
+                        {
+                            index = i;
+                            max = src0[i];
+                        }
+                }
+            target[0] = index;
+        }
+}
+
+#endif /*LV_HAVE_AVX2*/
 
 
 #ifdef LV_HAVE_AVX

@@ -52,24 +52,26 @@ public:
 
     virtual ~IshortToComplex();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
+
     //! Returns "Ishort_To_Complex"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Ishort_To_Complex";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return 0;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_;
@@ -85,4 +87,3 @@ private:
 };
 
 #endif
-

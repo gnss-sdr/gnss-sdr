@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,7 +39,7 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include "cpu_multicorrelator.h"
+#include "cpu_multicorrelator_real_codes.h"
 
 class galileo_e1_dll_pll_veml_tracking_cc;
 
@@ -120,10 +120,10 @@ private:
     double d_early_late_spc_chips;
     double d_very_early_late_spc_chips;
 
-    gr_complex* d_ca_code;
+    float* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
-    cpu_multicorrelator multicorrelator_cpu;
+    cpu_multicorrelator_real_codes multicorrelator_cpu;
 
     gr_complex *d_Very_Early;
     gr_complex *d_Early;

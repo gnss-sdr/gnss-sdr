@@ -46,7 +46,7 @@
 #include "gnss_block_factory.h"
 #include "channel.h"
 
-TEST(GNSS_Block_Factory_Test, InstantiateFileSignalSource)
+TEST(GNSSBlockFactoryTest, InstantiateFileSignalSource)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("SignalSource.implementation", "File_Signal_Source");
@@ -63,7 +63,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateFileSignalSource)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateWrongSignalSource)
+TEST(GNSSBlockFactoryTest, InstantiateWrongSignalSource)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("SignalSource.implementation", "Pepito");
@@ -76,7 +76,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateWrongSignalSource)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateSignalConditioner)
+TEST(GNSSBlockFactoryTest, InstantiateSignalConditioner)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("SignalConditioner.implementation", "Signal_Conditioner");
@@ -87,7 +87,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateSignalConditioner)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateFIRFilter)
+TEST(GNSSBlockFactoryTest, InstantiateFIRFilter)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
@@ -120,7 +120,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateFIRFilter)
     EXPECT_STREQ("Fir_Filter", input_filter->implementation().c_str());
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateFreqXlatingFIRFilter)
+TEST(GNSSBlockFactoryTest, InstantiateFreqXlatingFIRFilter)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
@@ -155,7 +155,46 @@ TEST(GNSS_Block_Factory_Test, InstantiateFreqXlatingFIRFilter)
     EXPECT_STREQ("Freq_Xlating_Fir_Filter", input_filter->implementation().c_str());
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateDirectResampler)
+TEST(GNSSBlockFactoryTest, InstantiatePulseBlankingFilter)
+{
+    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    configuration->set_property("InputFilter.implementation", "Pulse_Blanking_Filter");
+    
+    std::unique_ptr<GNSSBlockFactory> factory;
+    std::unique_ptr<GNSSBlockInterface> input_filter = factory->GetBlock(configuration, "InputFilter", "Pulse_Blanking_Filter", 1, 1);
+
+    EXPECT_STREQ("InputFilter", input_filter->role().c_str());
+    EXPECT_STREQ("Pulse_Blanking_Filter", input_filter->implementation().c_str());
+}
+
+TEST(GNSSBlockFactoryTest, InstantiateNotchFilter)
+{
+    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    configuration->set_property("InputFilter.implementation", "Notch_Filter");
+    
+    std::unique_ptr<GNSSBlockFactory> factory;
+    std::unique_ptr<GNSSBlockInterface> input_filter = factory->GetBlock(configuration, "InputFilter", "Notch_Filter", 1, 1);
+
+    EXPECT_STREQ("InputFilter", input_filter->role().c_str());
+    EXPECT_STREQ("Notch_Filter", input_filter->implementation().c_str());
+}
+
+TEST(GNSSBlockFactoryTest, InstantiateNotchFilterLite)
+{
+    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    configuration->set_property("InputFilter.implementation", "Notch_Filter_Lite");
+    
+    std::unique_ptr<GNSSBlockFactory> factory;
+    std::unique_ptr<GNSSBlockInterface> input_filter = factory->GetBlock(configuration, "InputFilter", "Notch_Filter_Lite", 1, 1);
+
+    EXPECT_STREQ("InputFilter", input_filter->role().c_str());
+    EXPECT_STREQ("Notch_Filter_Lite", input_filter->implementation().c_str());
+}
+
+TEST(GNSSBlockFactoryTest, InstantiateDirectResampler)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Resampler.implementation", "Direct_Resampler");
@@ -165,7 +204,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateDirectResampler)
     EXPECT_STREQ("Direct_Resampler", resampler->implementation().c_str());
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsAcquisition)
+TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaPcpsAcquisition)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
@@ -177,7 +216,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsAcquisition)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsQuickSyncAcquisition)
+TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaPcpsQuickSyncAcquisition)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_QuickSync_Acquisition");
@@ -188,7 +227,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsQuickSyncAcquisition)
     EXPECT_STREQ("GPS_L1_CA_PCPS_QuickSync_Acquisition", acquisition->implementation().c_str());
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsQuickSyncAmbiguousAcquisition)
+TEST(GNSSBlockFactoryTest, InstantiateGalileoE1PcpsQuickSyncAmbiguousAcquisition)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Acquisition.implementation", "Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition");
@@ -200,7 +239,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsQuickSyncAmbiguousAcquisit
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsAmbiguousAcquisition)
+TEST(GNSSBlockFactoryTest, InstantiateGalileoE1PcpsAmbiguousAcquisition)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
@@ -212,7 +251,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsAmbiguousAcquisition)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllPllCAidTracking)
+TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaDllPllCAidTracking)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Tracking.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
@@ -224,7 +263,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllPllCAidTracking)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllPllTracking)
+TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaDllPllTracking)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Tracking.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
@@ -236,7 +275,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllPllTracking)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTcpConnectorTracking)
+TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaTcpConnectorTracking)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Tracking.implementation", "GPS_L1_CA_TCP_CONNECTOR_Tracking");
@@ -248,7 +287,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTcpConnectorTracking)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1DllPllVemlTracking)
+TEST(GNSSBlockFactoryTest, InstantiateGalileoE1DllPllVemlTracking)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Tracking.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
@@ -260,7 +299,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1DllPllVemlTracking)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTelemetryDecoder)
+TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaTelemetryDecoder)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
@@ -271,7 +310,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTelemetryDecoder)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateChannels)
+TEST(GNSSBlockFactoryTest, InstantiateChannels)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Channels_1C.count", "2");
@@ -285,12 +324,12 @@ TEST(GNSS_Block_Factory_Test, InstantiateChannels)
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = std::move(factory->GetChannels(configuration, queue));
-    EXPECT_EQ((unsigned int) 2, channels->size());
+    EXPECT_EQ(static_cast<unsigned int>(2), channels->size());
     channels->erase(channels->begin(), channels->end());
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateObservables)
+TEST(GNSSBlockFactoryTest, InstantiateObservables)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("Observables.implementation", "Pass_Through");
@@ -301,20 +340,20 @@ TEST(GNSS_Block_Factory_Test, InstantiateObservables)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaObservables)
+TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaObservables)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    configuration->set_property("Observables.implementation", "Hybrid_Observables");
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<GNSSBlockInterface> observables = factory->GetObservables(configuration);
     EXPECT_STREQ("Observables", observables->role().c_str());
-    EXPECT_STREQ("GPS_L1_CA_Observables", observables->implementation().c_str());
+    EXPECT_STREQ("Hybrid_Observables", observables->implementation().c_str());
 }
 
 
 
 
-TEST(GNSS_Block_Factory_Test, InstantiatePvt)
+TEST(GNSSBlockFactoryTest, InstantiatePvt)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("PVT.implementation", "Pass_Through");
@@ -325,19 +364,19 @@ TEST(GNSS_Block_Factory_Test, InstantiatePvt)
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPvt)
+TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaPvt)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    configuration->set_property("PVT.implementation", "Hybrid_PVT");
     std::unique_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<GNSSBlockInterface> pvt_ = factory->GetPVT(configuration);
     std::shared_ptr<PvtInterface> pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);
     EXPECT_STREQ("PVT", pvt->role().c_str());
-    EXPECT_STREQ("GPS_L1_CA_PVT", pvt->implementation().c_str());
+    EXPECT_STREQ("RTKLIB_PVT", pvt->implementation().c_str());
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateWrongPvt)
+TEST(GNSSBlockFactoryTest, InstantiateWrongPvt)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("PVT.implementation", "Pepito");
@@ -346,4 +385,3 @@ TEST(GNSS_Block_Factory_Test, InstantiateWrongPvt)
     std::shared_ptr<PvtInterface> pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);
     EXPECT_EQ(nullptr, pvt);
 }
-

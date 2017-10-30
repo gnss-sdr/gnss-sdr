@@ -33,9 +33,6 @@ set(SYSTEM_PARAMETERS_SOURCES
 	 galileo_iono.cc
 	 galileo_navigation_message.cc
 	 sbas_ephemeris.cc
-	 sbas_ionospheric_correction.cc
-	 sbas_satellite_correction.cc
-	 sbas_telemetry_data.cc
 	 galileo_fnav_message.cc
 	 gps_cnav_ephemeris.cc
 	 gps_cnav_navigation_message.cc
@@ -46,8 +43,10 @@ set(SYSTEM_PARAMETERS_SOURCES
 
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/receiver
+     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
      ${GLOG_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
@@ -58,6 +57,6 @@ file(GLOB SYSTEM_PARAMETERS_HEADERS "*.h")
 list(SORT SYSTEM_PARAMETERS_HEADERS)
 add_library(gnss_system_parameters ${SYSTEM_PARAMETERS_SOURCES} ${SYSTEM_PARAMETERS_HEADERS})
 source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
-add_dependencies(gnss_system_parameters glog-${glog_RELEASE})
-target_link_libraries(gnss_system_parameters ${Boost_LIBRARIES})
+add_dependencies(gnss_system_parameters rtklib_lib glog-${glog_RELEASE})
+target_link_libraries(gnss_system_parameters rtklib_lib ${Boost_LIBRARIES})
 

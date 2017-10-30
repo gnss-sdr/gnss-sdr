@@ -52,31 +52,37 @@ public:
             unsigned int out_stream);
 
     virtual ~Pass_Through();
-    std::string role()
+
+    inline std::string role() override
     {
         return role_;
     }
+
     //! returns "Pass_Through"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Pass_Through";
     }
-    std::string item_type()
+
+    inline std::string item_type() const
     {
         return item_type_;
     }
-    size_t vector_size()
+
+    inline size_t vector_size() const
     {
         return vector_size_;
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     std::string item_type_;

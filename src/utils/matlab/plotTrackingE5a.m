@@ -66,7 +66,7 @@ for channelNr = channelList
 
 %% Plot all figures =======================================================
 
-        timeAxisInSeconds = (1:settings.msToProcess)/1000;
+        timeAxisInSeconds = (1:settings.msToProcess-1)/1000;
 
         %----- Discrete-Time Scatter Plot ---------------------------------
         plot(handles(1, 1), trackResults(channelNr).I_PN,...
@@ -81,7 +81,7 @@ for channelNr = channelList
 
         %----- Nav bits ---------------------------------------------------
         plot  (handles(1, 2), timeAxisInSeconds, ...
-                              trackResults(channelNr).I_PN);
+                              trackResults(channelNr).I_PN(1:settings.msToProcess-1));
 
         grid  (handles(1, 2));
         title (handles(1, 2), 'Bits of the navigation message');
@@ -90,7 +90,7 @@ for channelNr = channelList
 
         %----- PLL discriminator unfiltered--------------------------------
         plot  (handles(2, 1), timeAxisInSeconds, ...
-                              trackResults(channelNr).pllDiscr, 'r');      
+                              trackResults(channelNr).pllDiscr(1:settings.msToProcess-1), 'r');      
 
         grid  (handles(2, 1));
         axis  (handles(2, 1), 'tight');
@@ -100,12 +100,12 @@ for channelNr = channelList
 
         %----- Correlation ------------------------------------------------
         plot(handles(2, 2), timeAxisInSeconds, ...
-                            [sqrt(trackResults(channelNr).I_E.^2 + ...
-                                  trackResults(channelNr).Q_E.^2)', ...
-                             sqrt(trackResults(channelNr).I_P.^2 + ...
-                                  trackResults(channelNr).Q_P.^2)', ...
-                             sqrt(trackResults(channelNr).I_L.^2 + ...
-                                  trackResults(channelNr).Q_L.^2)'], ...
+                            [sqrt(trackResults(channelNr).I_E(1:settings.msToProcess-1).^2 + ...
+                                  trackResults(channelNr).Q_E(1:settings.msToProcess-1).^2)', ...
+                             sqrt(trackResults(channelNr).I_P(1:settings.msToProcess-1).^2 + ...
+                                  trackResults(channelNr).Q_P(1:settings.msToProcess-1).^2)', ...
+                             sqrt(trackResults(channelNr).I_L(1:settings.msToProcess-1).^2 + ...
+                                  trackResults(channelNr).Q_L(1:settings.msToProcess-1).^2)'], ...
                             '-*');
 
         grid  (handles(2, 2));
@@ -122,7 +122,7 @@ for channelNr = channelList
 
         %----- PLL discriminator filtered----------------------------------
         plot  (handles(3, 1), timeAxisInSeconds, ...
-                              trackResults(channelNr).pllDiscrFilt, 'b');      
+                              trackResults(channelNr).pllDiscrFilt(1:settings.msToProcess-1), 'b');      
 
         grid  (handles(3, 1));
         axis  (handles(3, 1), 'tight');
@@ -132,7 +132,7 @@ for channelNr = channelList
 
         %----- DLL discriminator unfiltered--------------------------------
         plot  (handles(3, 2), timeAxisInSeconds, ...
-                              trackResults(channelNr).dllDiscr, 'r');      
+                              trackResults(channelNr).dllDiscr(1:settings.msToProcess-1), 'r');      
 
         grid  (handles(3, 2));
         axis  (handles(3, 2), 'tight');
@@ -142,7 +142,7 @@ for channelNr = channelList
 
         %----- DLL discriminator filtered----------------------------------
         plot  (handles(3, 3), timeAxisInSeconds, ...
-                              trackResults(channelNr).dllDiscrFilt, 'b');      
+                              trackResults(channelNr).dllDiscrFilt(1:settings.msToProcess-1), 'b');      
 
         grid  (handles(3, 3));
         axis  (handles(3, 3), 'tight');

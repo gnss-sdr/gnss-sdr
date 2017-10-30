@@ -124,6 +124,16 @@ else(OPENCL_FOUND)
     add_definitions(-DOPENCL_BLOCKS=0)
 endif(OPENCL_FOUND)
 
+#enable SDR Hardware based on fmcomms2
+if(ENABLE_PLUTOSDR)
+	add_definitions(-DPLUTOSDR_DRIVER=1)
+endif(ENABLE_PLUTOSDR)
+
+if(ENABLE_FMCOMMS2)
+	add_definitions(-DFMCOMMS2_DRIVER=1)
+	add_definitions(-DPLUTOSDR_DRIVER=1)
+endif(ENABLE_FMCOMMS2)
+
 add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
 file(GLOB GNSS_RECEIVER_HEADERS "*.h")

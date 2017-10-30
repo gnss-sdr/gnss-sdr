@@ -291,7 +291,7 @@ GNSS-SDR comes with a library which is a module of the Vector-Optimized Library 
 If you are using Eclipse as your development environment, CMake can create the project for you. Type:
 
 ~~~~~~
-$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=3.7 -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j8 ../
+$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=4.5 .
 ~~~~~~
 
 and then import the created project file into Eclipse:
@@ -413,7 +413,7 @@ More details can be found in our tutorial about [GNSS-SDR configuration options 
 ---------
 
 
-### macOS Sierra, Mac OS X 10.11 (El Capitan), 10.10 (Yosemite) and 10.9 (Mavericks).
+### macOS 10.13 (High Sierra) and 10.12 (Sierra), Mac OS X 10.11 (El Capitan), 10.10 (Yosemite) and 10.9 (Mavericks).
 
 If you still have not installed [Xcode](http://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 

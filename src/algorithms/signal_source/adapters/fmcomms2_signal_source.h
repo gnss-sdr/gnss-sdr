@@ -7,7 +7,7 @@
  * This class represent a fmcomms2 signal source. It use the gr_iio block
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -51,7 +51,7 @@ public:
 
     virtual ~Fmcomms2SignalSource();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
@@ -59,42 +59,43 @@ public:
     /*!
      * \brief Returns "fmcomms2_Signal_Source"
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Fmcomms2_Signal_Source";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     std::string role_;
 
     // Front-end settings
-	std::string uri_;//device direction
-	unsigned long freq_; //frequency of local oscilator
-	unsigned long sample_rate_;
-	unsigned long bandwidth_;
-	unsigned long buffer_size_; //reception buffer
-	unsigned int decimation_;
-	bool rx1_en_;
-	bool rx2_en_;
-	bool quadrature_;
-	bool rf_dc_;
-	bool bb_dc_;
-	std::string gain_mode_rx1_;
-	std::string gain_mode_rx2_;
-	double rf_gain_rx1_;
-	double rf_gain_rx2_;
-	std::string rf_port_select_;
-	std::string filter_file_;
-	bool filter_auto_;
+    std::string uri_;//device direction
+    unsigned long freq_; //frequency of local oscilator
+    unsigned long sample_rate_;
+    unsigned long bandwidth_;
+    unsigned long buffer_size_; //reception buffer
+    unsigned int decimation_;
+    bool rx1_en_;
+    bool rx2_en_;
+    bool quadrature_;
+    bool rf_dc_;
+    bool bb_dc_;
+    std::string gain_mode_rx1_;
+    std::string gain_mode_rx2_;
+    double rf_gain_rx1_;
+    double rf_gain_rx2_;
+    std::string rf_port_select_;
+    std::string filter_file_;
+    bool filter_auto_;
 
     unsigned int in_stream_;
     unsigned int out_stream_;
@@ -105,7 +106,7 @@ private:
     bool dump_;
     std::string dump_filename_;
 
-	gr::iio::fmcomms2_source_f32c::sptr fmcomms2_source_f32c_;
+    gr::iio::fmcomms2_source_f32c::sptr fmcomms2_source_f32c_;
 
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;

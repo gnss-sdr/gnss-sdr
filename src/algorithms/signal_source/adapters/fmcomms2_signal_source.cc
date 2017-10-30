@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -44,93 +44,94 @@ using google::LogMessage;
 Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream, unsigned int out_stream,
         boost::shared_ptr<gr::msg_queue> queue) :
-                role_(role), in_stream_(in_stream), out_stream_(out_stream),
-                queue_(queue)
+                        role_(role), in_stream_(in_stream), out_stream_(out_stream),
+                        queue_(queue)
 {
-	std::string default_item_type="gr_complex";
-	std::string default_dump_file="./data/signal_source.dat";
-	uri_= configuration->property(role+".device_address",std::string("192.168.2.1"));
-	freq_= configuration->property(role+".freq",GPS_L1_FREQ_HZ);
-	sample_rate_=configuration->property(role+".sampling_frequency",2600000);
-	bandwidth_= configuration->property(role+".bandwidth",2000000);
-	rx1_en_=configuration->property(role+".rx1_enable",true);
-	rx2_en_=configuration->property(role+".rx2_enable",false);
-	buffer_size_=configuration->property(role+".buffer_size",0xA0000);
-	decimation_=configuration->property(role+".decimation",1);
-	quadrature_=configuration->property(role+".quadrature",true);
-	rf_dc_=configuration->property(role+".rf_dc",true);
-	bb_dc_=configuration->property(role+".bb_dc",true);
-	gain_mode_rx1_=configuration->property(role+".gain_mode_rx1",std::string("manual"));
-	gain_mode_rx2_=configuration->property(role+".gain_mode_rx2",std::string("manual"));
-	rf_gain_rx1_=configuration->property(role+".gain_rx1",64.0);
-	rf_gain_rx2_=configuration->property(role+".gain_rx2",64.0);
-	rf_port_select_=configuration->property(role+".rf_port_select",std::string("A_BALANCED"));
-	filter_file_=configuration->property(role+".filter_file",std::string(""));
-	filter_auto_=configuration->property(role+".filter_auto",true);
-	item_type_=configuration->property(role+".item_type",default_item_type);
-	samples_=configuration->property(role+".samples",0);
-	dump_=configuration->property(role+".dump",false);
-	dump_filename_=configuration->property(role+".dump_filename",default_dump_file);
-	
-	item_size_=sizeof(gr_complex);
+    std::string default_item_type = "gr_complex";
+    std::string default_dump_file = "./data/signal_source.dat";
+    uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
+    freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 2600000);
+    bandwidth_ = configuration->property(role + ".bandwidth", 2000000);
+    rx1_en_ = configuration->property(role + ".rx1_enable", true);
+    rx2_en_ = configuration->property(role + ".rx2_enable", false);
+    buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
+    decimation_ = configuration->property(role + ".decimation", 1);
+    quadrature_ = configuration->property(role + ".quadrature", true);
+    rf_dc_ = configuration->property(role + ".rf_dc", true);
+    bb_dc_ = configuration->property(role + ".bb_dc", true);
+    gain_mode_rx1_ = configuration->property(role + ".gain_mode_rx1", std::string("manual"));
+    gain_mode_rx2_ = configuration->property(role + ".gain_mode_rx2", std::string("manual"));
+    rf_gain_rx1_ = configuration->property(role + ".gain_rx1", 64.0);
+    rf_gain_rx2_ = configuration->property(role + ".gain_rx2", 64.0);
+    rf_port_select_ = configuration->property(role + ".rf_port_select", std::string("A_BALANCED"));
+    filter_file_ = configuration->property(role + ".filter_file", std::string(""));
+    filter_auto_ = configuration->property(role + ".filter_auto", true);
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    samples_ = configuration->property(role + ".samples", 0);
+    dump_ = configuration->property(role + ".dump", false);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-	std::cout<<"device address: "<<uri_<<std::endl;
-	std::cout<<"LO frequency : "<<freq_<<"Hz"<<std::endl;
-	std::cout<<"sample rate: "<<sample_rate_<<"Hz"<<std::endl;
+    item_size_ = sizeof(gr_complex);
 
-	if(item_type_.compare("gr_complex")==0)
-	{
-		fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
-			uri_.c_str(), freq_, sample_rate_,
-		    decimation_, bandwidth_,
-		    rx1_en_, rx2_en_,
-		    buffer_size_, quadrature_, rf_dc_,
-		    bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
-		    gain_mode_rx2_.c_str(), rf_gain_rx2_,
-		    rf_port_select_.c_str(), filter_file_.c_str(),
-		    filter_auto_);
-	}
-	else
-	{
-		LOG(FATAL) <<"Exception: item type "<<item_type_<<" not suported!";
-	}
+    std::cout << "device address: " << uri_ << std::endl;
+    std::cout << "LO frequency : " << freq_ << "Hz" << std::endl;
+    std::cout << "sample rate: " << sample_rate_ << "Hz" << std::endl;
 
-	if (samples_ != 0)
-    {
-    	DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";
-        valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
-        DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
-    }
+    if(item_type_.compare("gr_complex")==0)
+        {
+            fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
+                    uri_.c_str(), freq_, sample_rate_,
+                    decimation_, bandwidth_,
+                    rx1_en_, rx2_en_,
+                    buffer_size_, quadrature_, rf_dc_,
+                    bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
+                    gain_mode_rx2_.c_str(), rf_gain_rx2_,
+                    rf_port_select_.c_str(), filter_file_.c_str(),
+                    filter_auto_);
+        }
+    else
+        {
+            LOG(FATAL) << "Exception: item type " << item_type_ << " not suported!";
+        }
+
+    if (samples_ != 0)
+        {
+            DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";
+            valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
+            DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
+        }
 
     if (dump_)
-    {
-    	DLOG(INFO) << "Dumping output into file " << dump_filename_;
-        file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
-         DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
-	}
+        {
+            DLOG(INFO) << "Dumping output into file " << dump_filename_;
+            file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
+            DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
+        }
 }
 
+
 Fmcomms2SignalSource::~Fmcomms2SignalSource()
-{
-}
+{}
+
 
 void Fmcomms2SignalSource::connect(gr::top_block_sptr top_block)
 {
     if (samples_ != 0)
         {
-			top_block->connect(fmcomms2_source_f32c_, 0, valve_, 0);
+            top_block->connect(fmcomms2_source_f32c_, 0, valve_, 0);
             DLOG(INFO) << "connected fmcomms2 source to valve";
             if (dump_)
                 {
                     top_block->connect(valve_, 0, file_sink_, 0);
                     DLOG(INFO) << "connected valve to file sink";
                 }
-		}
+        }
     else
         {
             if (dump_)
                 {
-					
+
                     top_block->connect(fmcomms2_source_f32c_ , 0, file_sink_, 0);
                     DLOG(INFO) << "connected fmcomms2 source to file sink";
                 }

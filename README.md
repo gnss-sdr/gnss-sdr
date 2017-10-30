@@ -424,7 +424,7 @@ $ make
 $ sudo make install
 ~~~~~~
 
-With `Fmcomms2_Signal_Source` you can use any SDR hardware based on fmcomms2, including the ADALM-PLUTO (PlutoSdr) by configuring correctly the .conf file. The `Plutosdr_Signal_Source` offers a simplier manner to use the ADALM-PLUTO because implements only a subset of fmcomms2's parameters valid for it device.
+With `Fmcomms2_Signal_Source` you can use any SDR hardware based on fmcomms2, including the ADALM-PLUTO (PlutoSdr) by configuring correctly the .conf file. The `Plutosdr_Signal_Source` offers a simplier manner to use the ADALM-PLUTO because implements only a subset of fmcomms2's parameters valid for those devices.
 
 ###### Build OpenCL support (OPTIONAL):
 

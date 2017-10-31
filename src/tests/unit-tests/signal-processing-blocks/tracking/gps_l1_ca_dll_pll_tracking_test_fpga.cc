@@ -465,7 +465,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
                         {
                             throw std::exception();
                         };
-                })<< "Failure opening true observables file" << std::endl;
+                }) << "Failure opening true observables file";
 
     top_block = gr::make_top_block("Tracking test");
     std::shared_ptr<GpsL1CaDllPllCAidTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllCAidTrackingFpga> (config.get(), "Tracking_1C", 1, 1);
@@ -479,7 +479,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
                         {
                             throw std::exception();
                         };
-                })<< "Failure reading true observables file" << std::endl;
+                }) << "Failure reading true observables file";
 
     //restart the epoch counter
     true_obs_data.restart();
@@ -497,24 +497,24 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     ASSERT_NO_THROW(
                 {
                     tracking->set_channel(gnss_synchro.Channel_ID);
-                })<< "Failure setting channel." << std::endl;
+                }) << "Failure setting channel.";
 
     ASSERT_NO_THROW(
                 {
                     tracking->set_gnss_synchro(&gnss_synchro);
-                })<< "Failure setting gnss_synchro." << std::endl;
+                }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW(
                 {
                     tracking->connect(top_block);
-                })<< "Failure connecting tracking to the top_block." << std::endl;
+                }) << "Failure connecting tracking to the top_block.";
 
     ASSERT_NO_THROW(
                 {
                     gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
                     top_block->connect(tracking->get_right_block(), 0, sink, 0);
                     top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-                })<< "Failure connecting the blocks of tracking test." << std::endl;
+                }) << "Failure connecting the blocks of tracking test.";
 
     tracking->start_tracking();
 
@@ -533,7 +533,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
                     tracking->reset();// unlock the channel
                     end = std::chrono::system_clock::now();
                     elapsed_seconds = end - start;
-                })<< "Failure running the top_block." << std::endl;
+                }) << "Failure running the top_block.";
 
     // wait until child thread terminates
     t.join();
@@ -568,7 +568,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
                         {
                             throw std::exception();
                         };
-                })<< "Failure opening tracking dump file" << std::endl;
+                }) << "Failure opening tracking dump file";
 
     nepoch = trk_dump.num_epochs();
     std::cout << "Measured observation epochs=" << nepoch << std::endl;

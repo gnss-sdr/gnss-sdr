@@ -48,6 +48,8 @@ option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based
 option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNURadio driver" OFF)
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
 option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
+option(ENABLE_PLUTOSDR "Enable the use of ADALM-PLUTO Evaluation Boards (Analog Devices Inc.), requires gr-iio" OFF)
+option(ENABLE_FMCOMMS2 "Enable the use of FMCOMMS4-EBZ + ZedBoard hardware" OFF)
 
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
@@ -214,15 +216,21 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-# Detect Mac OS X Version
+# Detect macOS / Mac OS X Version
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      set(OperatingSystem "Mac OS X")
      set(OS_IS_MACOSX TRUE)
      exec_program(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
      string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
+     if(${DARWIN_VERSION} MATCHES "17")
+         set(MACOS_HIGH_SIERRA TRUE)
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14")
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on macOS High Sierra 10.13")
+     endif(${DARWIN_VERSION} MATCHES "17")
      if(${DARWIN_VERSION} MATCHES "16")
          set(MACOS_SIERRA TRUE)
-         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14")
          set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
          message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on macOS Sierra 10.12")
      endif(${DARWIN_VERSION} MATCHES "16")

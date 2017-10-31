@@ -192,7 +192,9 @@ install(FILES
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_prefs.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_complex.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_common.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/saturation_arithmetic.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_sse_intrinsics.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_sse3_intrinsics.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_neon_intrinsics.h
     ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr.h

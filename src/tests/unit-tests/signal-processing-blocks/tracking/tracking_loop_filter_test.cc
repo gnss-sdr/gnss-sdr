@@ -57,10 +57,10 @@ TEST(TrackingLoopFilterTest, FirstOrderLoop)
 
     float result = 0.0;
     for( unsigned int i = 0; i < sample_data.size(); ++i )
-    {
-        result = theFilter.apply( sample_data[i] );
-        EXPECT_FLOAT_EQ( result, sample_data[i]*g1 );
-    }
+        {
+            result = theFilter.apply( sample_data[i] );
+            EXPECT_FLOAT_EQ( result, sample_data[i]*g1 );
+        }
 }
 
 
@@ -88,10 +88,10 @@ TEST(TrackingLoopFilterTest, FirstOrderLoopWithLastIntegrator)
 
     float result = 0.0;
     for( unsigned int i = 0; i < sample_data.size(); ++i )
-    {
-        result = theFilter.apply( sample_data[i] );
-        EXPECT_NEAR( result, expected_out[i], 1e-4 );
-    }
+        {
+            result = theFilter.apply( sample_data[i] );
+            EXPECT_NEAR( result, expected_out[i], 1e-4 );
+        }
 }
 
 
@@ -120,10 +120,10 @@ TEST(TrackingLoopFilterTest, SecondOrderLoop)
 
     float result = 0.0;
     for( unsigned int i = 0; i < sample_data.size(); ++i )
-    {
-        result = theFilter.apply( sample_data[i] );
-        EXPECT_NEAR( result, expected_out[i], 1e-4 );
-    }
+        {
+            result = theFilter.apply( sample_data[i] );
+            EXPECT_NEAR( result, expected_out[i], 1e-4 );
+        }
 }
 
 
@@ -151,10 +151,10 @@ TEST(TrackingLoopFilterTest, SecondOrderLoopWithLastIntegrator)
 
     float result = 0.0;
     for( unsigned int i = 0; i < sample_data.size(); ++i )
-    {
-        result = theFilter.apply( sample_data[i] );
-        EXPECT_NEAR( result, expected_out[i], 1e-4 );
-    }
+        {
+            result = theFilter.apply( sample_data[i] );
+            EXPECT_NEAR( result, expected_out[i], 1e-4 );
+        }
 }
 
 
@@ -182,10 +182,10 @@ TEST(TrackingLoopFilterTest, ThirdOrderLoop)
 
     float result = 0.0;
     for( unsigned int i = 0; i < sample_data.size(); ++i )
-    {
-        result = theFilter.apply( sample_data[i] );
-        EXPECT_NEAR( result, expected_out[i], 1e-4 );
-    }
+        {
+            result = theFilter.apply( sample_data[i] );
+            EXPECT_NEAR( result, expected_out[i], 1e-4 );
+        }
 }
 
 
@@ -213,10 +213,10 @@ TEST(TrackingLoopFilterTest, ThirdOrderLoopWithLastIntegrator)
 
     float result = 0.0;
     for( unsigned int i = 0; i < sample_data.size(); ++i )
-    {
-        result = theFilter.apply( sample_data[i] );
-        EXPECT_NEAR( result, expected_out[i], 1e-4 );
-    }
+        {
+            result = theFilter.apply( sample_data[i] );
+            EXPECT_NEAR( result, expected_out[i], 1e-4 );
+        }
 }
 
 

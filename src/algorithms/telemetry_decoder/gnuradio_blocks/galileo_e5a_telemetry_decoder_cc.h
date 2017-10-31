@@ -55,7 +55,7 @@ class galileo_e5a_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<galileo_e5a_telemetry_decoder_cc> galileo_e5a_telemetry_decoder_cc_sptr;
 
-galileo_e5a_telemetry_decoder_cc_sptr galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+galileo_e5a_telemetry_decoder_cc_sptr galileo_e5a_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
 
 /*!
@@ -66,8 +66,8 @@ class galileo_e5a_telemetry_decoder_cc : public gr::block
 {
 public:
     ~galileo_e5a_telemetry_decoder_cc();
-    void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                 //!< Set receiver's channel
+    void set_satellite(const Gnss_Satellite & satellite);  //!< Set satellite PRN
+    void set_channel(int channel);                         //!< Set receiver's channel
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -76,20 +76,18 @@ public:
 
 private:
     friend galileo_e5a_telemetry_decoder_cc_sptr
-    galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-    galileo_e5a_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    galileo_e5a_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    galileo_e5a_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
 
     void deinterleaver(int rows, int cols, double *in, double *out);
 
-    void decode_word(double *page_symbols,int frame_length);
+    void decode_word(double *page_symbols, int frame_length);
 
     int d_preamble_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-    // signed int d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
     double d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
 
-    // signed int *d_preamble_symbols;
     double d_current_symbol;
     long unsigned int d_symbol_counter;
     int d_prompt_counter;

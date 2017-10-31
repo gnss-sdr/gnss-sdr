@@ -2,6 +2,7 @@
  * \file pulse_blanking_filter.h
  * \brief Instantiates the GNSS-SDR pulse blanking filter
  * \author Javier Arribas 2017
+ *         Antonio Ramos  2017
  *
  * -------------------------------------------------------------------------
  *
@@ -39,9 +40,6 @@
 
 class ConfigurationInterface;
 
-/*!
- * \brief TODO
- */
 class PulseBlankingFilter: public GNSSBlockInterface
 {
 public:

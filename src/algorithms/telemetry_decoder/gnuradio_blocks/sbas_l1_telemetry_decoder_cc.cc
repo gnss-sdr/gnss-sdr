@@ -48,7 +48,7 @@ using google::LogMessage;
 
 
 sbas_l1_telemetry_decoder_cc_sptr
-sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
+sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump)
 {
     return sbas_l1_telemetry_decoder_cc_sptr(new sbas_l1_telemetry_decoder_cc(satellite, dump));
 }
@@ -56,7 +56,7 @@ sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
 
 
 sbas_l1_telemetry_decoder_cc::sbas_l1_telemetry_decoder_cc(
-        Gnss_Satellite satellite,
+        const Gnss_Satellite & satellite,
         bool dump) :
                 gr::block("sbas_l1_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
@@ -177,7 +177,7 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
 
 
 
-void sbas_l1_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
+void sbas_l1_telemetry_decoder_cc::set_satellite(const Gnss_Satellite & satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "SBAS telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;

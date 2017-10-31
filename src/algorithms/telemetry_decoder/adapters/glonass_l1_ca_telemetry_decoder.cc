@@ -67,7 +67,7 @@ GlonassL1CaTelemetryDecoder::~GlonassL1CaTelemetryDecoder()
 {}
 
 
-void GlonassL1CaTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
+void GlonassL1CaTelemetryDecoder::set_satellite(const Gnss_Satellite & satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     telemetry_decoder_->set_satellite(satellite_);

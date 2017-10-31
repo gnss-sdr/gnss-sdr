@@ -49,14 +49,14 @@ using google::LogMessage;
 
 
 glonass_l1_ca_telemetry_decoder_cc_sptr
-glonass_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
+glonass_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump)
 {
     return glonass_l1_ca_telemetry_decoder_cc_sptr(new glonass_l1_ca_telemetry_decoder_cc(satellite, dump));
 }
 
 
 glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
-        Gnss_Satellite satellite,
+        const Gnss_Satellite & satellite,
         bool dump) :
         gr::block("glonass_l1_ca_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -221,7 +221,8 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
     if(d_nav.flag_update_slot_number == true)
         {
             LOG(INFO) << "GLONASS GNAV Slot Number Identified on channel " << d_channel;
-            d_satellite.what_block(d_satellite.get_system(), d_nav.get_ephemeris().d_n);
+            d_satellite.update_PRN(d_nav.gnav_ephemeris.d_n);
+            d_satellite.what_block(d_satellite.get_system(), d_nav.gnav_ephemeris.d_n);
             d_nav.flag_update_slot_number = false;
         }
 }
@@ -354,7 +355,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
     if (this->d_flag_preamble == true and d_nav.flag_TOW_new == true)
         //update TOW at the preamble instant
         {
-            d_TOW_at_current_symbol = floor((d_nav.d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S)*1000.0)/1000.0;
+            d_TOW_at_current_symbol = floor((d_nav.gnav_ephemeris.d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S)*1000)/1000;
             d_nav.flag_TOW_new = false;
 
         }
@@ -379,7 +380,8 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
             current_symbol.Flag_valid_word = false;
         }
 
-    current_symbol.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol*1000.0)/1000.0;
+    current_symbol.PRN = this->d_satellite.get_PRN();
+    current_symbol.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
     current_symbol.TOW_at_current_symbol_s -=delta_t; //Galileo to GPS TOW
 
     if(d_dump == true)
@@ -414,7 +416,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
 }
 
 
-void glonass_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
+void glonass_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite & satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite "<< d_satellite;

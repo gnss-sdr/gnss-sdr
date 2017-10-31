@@ -43,6 +43,7 @@
 void Glonass_Gnav_Navigation_Message::reset()
 {
     //!< Satellite Identification
+	i_satellite_PRN = 0;
     i_alm_satellite_slot_number = 0;    //!< SV Orbit Slot Number
     flag_update_slot_number = false;
 
@@ -74,7 +75,6 @@ void Glonass_Gnav_Navigation_Message::reset()
     //broadcast orbit 1
     flag_TOW_set = false;
     flag_TOW_new = false;
-    d_TOW = 0.0;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
 
     flag_CRC_test = false;
     d_frame_ID = 0;
@@ -325,7 +325,7 @@ double Glonass_Gnav_Navigation_Message::get_WN()
     boost::gregorian::date gps_epoch { 1980, 1, 6 };
     // Map to UTC
     boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
-    boost::gregorian::days d2(gnav_ephemeris.d_N_T);
+    boost::gregorian::days d2(gnav_ephemeris.d_N_T-1);
     glo_date = glo_date + d2;
 
 
@@ -363,7 +363,7 @@ double Glonass_Gnav_Navigation_Message::get_TOW()
 
     // tk is relative to UTC(SU) + 3.00 hrs, so we need to convert to utc and add corrections
     // tk plus 10 sec is the true tod since get_TOW is called when in str5
-    TOD = (gnav_ephemeris.d_t_k + 10) - glot2utcsu - utcsu2utc + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
+    TOD = (gnav_ephemeris.d_t_k + 10) - glot2utcsu - utcsu2utc;// + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
 
 
     boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
@@ -375,10 +375,10 @@ double Glonass_Gnav_Navigation_Message::get_TOW()
 
     for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
         {
-            if (GLONASS_LEAP_SECONDS[i][0] == gnav_ephemeris.d_yr)
+            if (gnav_ephemeris.d_yr >= GLONASS_LEAP_SECONDS[i][0])
             {
                 // We add the leap second when going from utc to gpst
-                TOW += GLONASS_LEAP_SECONDS[i][6];
+                TOW += fabs(GLONASS_LEAP_SECONDS[i][6]);
             }
         }
     // Compute the arithmetic modules to wrap around range
@@ -492,21 +492,21 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     // Compute Year and DoY based on Algorithm A3.11 of GLONASS ICD
                     // 1). Current year number J in the four-year interval is calculated
                     if (gnav_ephemeris.d_N_T >= 1 && gnav_ephemeris.d_N_T <= 366)
-                    {
-                        J = 1;
-                    }
+                        {
+                            J = 1;
+                        }
                     else if (gnav_ephemeris.d_N_T >= 367 && gnav_ephemeris.d_N_T <= 731)
-                    {
-                        J = 2;
-                    }
+                        {
+                            J = 2;
+                        }
                     else if (gnav_ephemeris.d_N_T >= 732 && gnav_ephemeris.d_N_T <= 1096)
-                    {
-                        J = 3;
-                    }
+                        {
+                            J = 3;
+                        }
                     else if (gnav_ephemeris.d_N_T >= 1097 && gnav_ephemeris.d_N_T <= 1461)
-                    {
-                        J = 4;
-                    }
+                        {
+                            J = 4;
+                        }
                     // 2). Current year in common form is calculated by the following formula:
                     gnav_ephemeris.d_yr = 1996 + 4.0 * (gnav_utc_model.d_N_4 - 1.0) + (J - 1.0);
                     gnav_ephemeris.d_tau_c = gnav_utc_model.d_tau_c;
@@ -514,12 +514,13 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     // 3). Set TOW once the year has been defined, it helps with leap second determination
                     if (flag_ephemeris_str_1 == true)
                     {
-                        d_TOW = get_TOW();
-                        gnav_ephemeris.d_TOW = d_TOW;
-                        gnav_ephemeris.d_WN = get_WN();
+                        gnav_ephemeris.glot_to_gpst(gnav_ephemeris.d_t_k+10, gnav_utc_model.d_tau_c, gnav_utc_model.d_tau_gps, &gnav_ephemeris.d_WN, &gnav_ephemeris.d_TOW);
                         flag_TOW_set = true;
                         flag_TOW_new = true;
                     }
+
+                    // 4) Set time of day (tod) when ephemeris data is complety decoded
+                    gnav_ephemeris.d_tod = gnav_ephemeris.d_t_k + 2*d_string_ID;
 
                 }
 
@@ -805,9 +806,7 @@ bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a 
                     DLOG(INFO) << "GLONASS GNAV Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
                     new_eph = true;
                 }
-
         }
-
 
     return new_eph;
 }

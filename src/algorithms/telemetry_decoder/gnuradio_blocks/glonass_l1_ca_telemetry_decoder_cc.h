@@ -51,7 +51,7 @@ class glonass_l1_ca_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<glonass_l1_ca_telemetry_decoder_cc> glonass_l1_ca_telemetry_decoder_cc_sptr;
 
-glonass_l1_ca_telemetry_decoder_cc_sptr glonass_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+glonass_l1_ca_telemetry_decoder_cc_sptr glonass_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
@@ -62,9 +62,9 @@ glonass_l1_ca_telemetry_decoder_cc_sptr glonass_l1_ca_make_telemetry_decoder_cc(
 class glonass_l1_ca_telemetry_decoder_cc : public gr::block
 {
 public:
-    ~glonass_l1_ca_telemetry_decoder_cc();          //!< Class destructor
-    void set_satellite(Gnss_Satellite satellite);   //!< Set satellite PRN
-    void set_channel(int channel);                  //!< Set receiver's channel
+    ~glonass_l1_ca_telemetry_decoder_cc();                  //!< Class destructor
+    void set_satellite(const Gnss_Satellite & satellite);   //!< Set satellite PRN
+    void set_channel(int channel);                          //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
@@ -74,8 +74,8 @@ public:
 
 private:
     friend glonass_l1_ca_telemetry_decoder_cc_sptr
-    glonass_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-    glonass_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    glonass_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    glonass_l1_ca_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
     void decode_string(double *symbols, int frame_length);
 

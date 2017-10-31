@@ -63,38 +63,17 @@ DEFINE_string(configuration_file_space, "./default_configuration.conf", "Path of
 class ObsGpsL1SpaceSystemTest: public ::testing::Test
 {
 public:
-    //std::string generator_binary;
-    //std::string p1;
-    //std::string p2;
-    //std::string p3;
-    //std::string p4;
-    //std::string p5;
-
-    //const double baseband_sampling_freq = 2.6e6;
-
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
-    //std::string filename_raw_data = FLAGS_filename_raw_data;
     std::string generated_rinex_obs;
     std::string configuration_file_ = FLAGS_configuration_file_space;
-    //int configure_generator();
-    //int generate_signal();
     int configure_receiver();
     int run_receiver();
     void check_results();
-    bool check_valid_rinex_nav(std::string filename);  // return true if the file is a valid Rinex navigation file.
-    bool check_valid_rinex_obs(std::string filename);  // return true if the file is a valid Rinex observation file.
+    bool check_valid_rinex_obs(std::string filename, int rinex_ver);  // return true if the file is a valid Rinex observation file.
     double compute_stdev(const std::vector<double> & vec);
 
     std::shared_ptr<FileConfiguration> config;
 };
-
-
-bool ObsGpsL1SpaceSystemTest::check_valid_rinex_nav(std::string filename)
-{
-    bool res = false;
-    res = gpstk::isRinexNavFile(filename);
-    return res;
-}
 
 
 double ObsGpsL1SpaceSystemTest::compute_stdev(const std::vector<double> & vec)
@@ -110,64 +89,29 @@ double ObsGpsL1SpaceSystemTest::compute_stdev(const std::vector<double> & vec)
 }
 
 
-bool ObsGpsL1SpaceSystemTest::check_valid_rinex_obs(std::string filename)
+bool ObsGpsL1SpaceSystemTest::check_valid_rinex_obs(std::string filename, int rinex_ver)
 {
     bool res = false;
-    res = gpstk::isRinex3ObsFile(filename);
+    if(rinex_ver == 2)
+        {
+            res = gpstk::isRinexObsFile(filename);
+        }
+    if(rinex_ver == 3)
+        {
+            res = gpstk::isRinex3ObsFile(filename);
+        }
     return res;
 }
-
-/*
-int ObsGpsL1SpaceSystemTest::configure_generator()
-{
-    // Configure signal generator
-    generator_binary = FLAGS_generator_binary;
-
-    p1 = std::string("-rinex_nav_file=") + FLAGS_rinex_nav_file;
-    if(FLAGS_dynamic_position.empty())
-        {
-            p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(std::min(FLAGS_duration * 10, 3000));
-            if(FLAGS_duration > 300) std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
-        }
-    else
-        {
-            p2 = std::string("-obs_pos_file=") + std::string(FLAGS_dynamic_position);
-        }
-    p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs; // RINEX 2.10 observation file output
-    p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data; // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
-    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq); //Baseband sampling frequency [MSps]
-    return 0;
-}
-*/
-/*
-int ObsGpsL1SpaceSystemTest::generate_signal()
-{
-    pid_t wait_result;
-    int child_status;
-
-    char *const parmList[] = { &generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL };
-
-    int pid;
-    if ((pid = fork()) == -1)
-        perror("fork error");
-    else if (pid == 0)
-        {
-            execv(&generator_binary[0], parmList);
-            std::cout << "Return not expected. Must be an execv error." << std::endl;
-            std::terminate();
-        }
-
-    wait_result = waitpid(pid, &child_status, 0);
-    if (wait_result == -1) perror("waitpid error");
-    EXPECT_EQ(true, check_valid_rinex_obs(filename_rinex_obs));
-    std::cout << "Signal and Observables RINEX files created."  << std::endl;
-    return 0;
-}
-*/
 
 int ObsGpsL1SpaceSystemTest::configure_receiver()
 {
     config = std::make_shared<FileConfiguration>(configuration_file_);
+    int d_rinex_ver = config->property("PVT.rinex_version", 0);
+    if(d_rinex_ver != 2)
+        {
+    	    std::cout << "Invalid RINEX version. Set PVT.rinex_ver=2 in configuration file." << std::endl;
+    	    std::cout << "GPSTk does not work with RINEX v. 3.02." << std::endl;
+    	}
     return 0;
 }
 
@@ -511,25 +455,10 @@ void ObsGpsL1SpaceSystemTest::check_results()
 TEST_F(ObsGpsL1SpaceSystemTest, Observables_system_test)
 {
     std::cout << "Validating input RINEX obs (TRUE) file: " << filename_rinex_obs << " ..." << std::endl;
-    bool is_rinex_obs_valid = check_valid_rinex_obs(filename_rinex_obs);
-    ASSERT_EQ(true, is_rinex_obs_valid) << "The RINEX observation file " << filename_rinex_obs << " is not well formed.";
+    bool is_rinex_obs_valid = check_valid_rinex_obs(filename_rinex_obs, 3);
+    ASSERT_EQ(true, is_rinex_obs_valid) << "The RINEX observation file " << filename_rinex_obs << " is not well formed. Only RINEX v. 3.00 files are allowed";
     std::cout << "The file is valid." << std::endl;
 
-    // Configure the signal generator
-    //configure_generator();
-
-    // Generate signal raw signal samples and observations RINEX file
-    /*
-    if(!FLAGS_disable_generator)
-        {
-            generate_signal();
-        }
-
-    std::cout << "Validating generated reference RINEX obs file: " << FLAGS_filename_rinex_obs << " ..." << std::endl;
-    bool is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + FLAGS_filename_rinex_obs);
-    EXPECT_EQ(true, is_gen_rinex_obs_valid) << "The RINEX observation file " << FLAGS_filename_rinex_obs << ", generated by gnss-sim, is not well formed.";
-    std::cout << "The file is valid." << std::endl;
-    */
     // Configure receiver
     configure_receiver();
 
@@ -537,7 +466,7 @@ TEST_F(ObsGpsL1SpaceSystemTest, Observables_system_test)
     ASSERT_EQ( run_receiver(), 0) << "Problem executing the software-defined signal generator";
 
     std::cout << "Validating RINEX obs file obtained by GNSS-SDR: " << ObsGpsL1SpaceSystemTest::generated_rinex_obs << " ..." << std::endl;
-    bool is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + ObsGpsL1SpaceSystemTest::generated_rinex_obs);
+    bool is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + ObsGpsL1SpaceSystemTest::generated_rinex_obs, 2);
     ASSERT_EQ(true, is_gen_rinex_obs_valid) << "The RINEX observation file " << ObsGpsL1SpaceSystemTest::generated_rinex_obs << ", generated by GNSS-SDR, is not well formed.";
     std::cout << "The file is valid." << std::endl;
 

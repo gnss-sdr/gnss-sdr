@@ -43,6 +43,7 @@
 void Glonass_Gnav_Navigation_Message::reset()
 {
     //!< Satellite Identification
+	i_satellite_PRN = 0;
     i_alm_satellite_slot_number = 0;    //!< SV Orbit Slot Number
     flag_update_slot_number = false;
 
@@ -74,7 +75,6 @@ void Glonass_Gnav_Navigation_Message::reset()
     //broadcast orbit 1
     flag_TOW_set = false;
     flag_TOW_new = false;
-    d_TOW = 0.0;           //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
 
     flag_CRC_test = false;
     d_frame_ID = 0;
@@ -325,7 +325,7 @@ double Glonass_Gnav_Navigation_Message::get_WN()
     boost::gregorian::date gps_epoch { 1980, 1, 6 };
     // Map to UTC
     boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
-    boost::gregorian::days d2(gnav_ephemeris.d_N_T);
+    boost::gregorian::days d2(gnav_ephemeris.d_N_T-1);
     glo_date = glo_date + d2;
 
 
@@ -363,7 +363,7 @@ double Glonass_Gnav_Navigation_Message::get_TOW()
 
     // tk is relative to UTC(SU) + 3.00 hrs, so we need to convert to utc and add corrections
     // tk plus 10 sec is the true tod since get_TOW is called when in str5
-    TOD = (gnav_ephemeris.d_t_k + 10) - glot2utcsu - utcsu2utc + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
+    TOD = (gnav_ephemeris.d_t_k + 10) - glot2utcsu - utcsu2utc;// + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
 
 
     boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
@@ -375,10 +375,10 @@ double Glonass_Gnav_Navigation_Message::get_TOW()
 
     for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
         {
-            if (GLONASS_LEAP_SECONDS[i][0] == gnav_ephemeris.d_yr)
+            if (gnav_ephemeris.d_yr >= GLONASS_LEAP_SECONDS[i][0])
             {
                 // We add the leap second when going from utc to gpst
-                TOW += GLONASS_LEAP_SECONDS[i][6];
+                TOW += fabs(GLONASS_LEAP_SECONDS[i][6]);
             }
         }
     // Compute the arithmetic modules to wrap around range
@@ -513,17 +513,17 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 
                     // 3). Set TOW once the year has been defined, it helps with leap second determination
                     if (flag_ephemeris_str_1 == true)
-                        {
-                            d_TOW = get_TOW();
-                            gnav_ephemeris.d_TOW = d_TOW;
-                            gnav_ephemeris.d_WN = get_WN();
-                            flag_TOW_set = true;
-                            flag_TOW_new = true;
-                        }
+                    {
+                        gnav_ephemeris.glot_to_gpst(gnav_ephemeris.d_t_k+10, gnav_utc_model.d_tau_c, gnav_utc_model.d_tau_gps, &gnav_ephemeris.d_WN, &gnav_ephemeris.d_TOW);
+                        flag_TOW_set = true;
+                        flag_TOW_new = true;
+                    }
 
                     // 4) Set time of day (tod) when ephemeris data is complety decoded
                     gnav_ephemeris.d_tod = gnav_ephemeris.d_t_k + 2*d_string_ID;
+
                 }
+
 
             break;
 
@@ -573,8 +573,8 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     flag_almanac_str_7 = true;
                 }
 
-            break;
 
+            break;
         case 8:
             // --- It is string 8 ----------------------------------------------
             i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
@@ -594,7 +594,6 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
             flag_almanac_str_8 = true;
 
             break;
-
         case 9:
             // --- It is string 9 ----------------------------------------------
             if (flag_almanac_str_8 == true)
@@ -617,7 +616,6 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     flag_almanac_str_9 = true;
                 }
             break;
-
         case 10:
             // --- It is string 10 ---------------------------------------------
             i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
@@ -660,7 +658,6 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     flag_almanac_str_11 = true;
                 }
             break;
-
         case 12:
             // --- It is string 12 ---------------------------------------------
             i_alm_satellite_slot_number = static_cast<unsigned int>(read_navigation_unsigned(string_bits, n_A));
@@ -702,7 +699,6 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                     flag_almanac_str_13 = true;
                 }
             break;
-
         case 14:
             // --- It is string 14 ---------------------------------------------
             if (d_frame_ID == 5)
@@ -750,13 +746,14 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 flag_almanac_str_15 = true;
             }
             break;
-
         default:
             LOG(INFO) << "GLONASS GNAV: Invalid String ID of received. Received " << d_string_ID
                       << ", but acceptable range is from 1-15";
 
+
             break;
     } // switch string ID ...
+
 
     return d_string_ID;
 }

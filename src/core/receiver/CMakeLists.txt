@@ -41,6 +41,58 @@ if(ENABLE_FPGA)
 endif(ENABLE_FPGA)
 
 
+if(Boost_VERSION LESS 105000)
+     add_definitions(-DOLD_BOOST=1)
+endif(Boost_VERSION LESS 105000)
+
+if(OPENSSL_FOUND)
+    add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
+endif(OPENSSL_FOUND)
+
+if(ENABLE_GN3S)
+    add_definitions(-DGN3S_DRIVER=1)
+endif(ENABLE_GN3S)
+
+if(ENABLE_ARRAY)
+    add_definitions(-DRAW_ARRAY_DRIVER=1)
+endif(ENABLE_ARRAY)
+
+if(ENABLE_FLEXIBAND)
+    add_definitions(-DFLEXIBAND_DRIVER=1)
+endif(ENABLE_FLEXIBAND)
+
+if(ENABLE_OSMOSDR)
+    if(GROSMOSDR_FOUND)
+        add_definitions(-DOSMOSDR_DRIVER=1)
+    endif(GROSMOSDR_FOUND)
+endif(ENABLE_OSMOSDR)
+
+if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
+    add_definitions(-DUHD_DRIVER=1)
+endif(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
+
+#Enable OpenCL if found in the system
+if(OPENCL_FOUND)
+    message(STATUS "Adding processing blocks implemented using OpenCL" )
+    add_definitions(-DOPENCL_BLOCKS=1)
+else(OPENCL_FOUND)
+    add_definitions(-DOPENCL_BLOCKS=0)
+endif(OPENCL_FOUND)
+
+#enable SDR Hardware based on fmcomms2
+if(ENABLE_PLUTOSDR)
+	add_definitions(-DPLUTOSDR_DRIVER=1)
+	set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
+endif(ENABLE_PLUTOSDR)
+
+if(ENABLE_FMCOMMS2)
+	add_definitions(-DFMCOMMS2_DRIVER=1)
+	set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
+endif(ENABLE_FMCOMMS2)
+
+add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
+
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -85,46 +137,6 @@ include_directories(
      ${OPT_RECEIVER_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
-
-if(Boost_VERSION LESS 105000)
-     add_definitions(-DOLD_BOOST=1)
-endif(Boost_VERSION LESS 105000)
-
-if(OPENSSL_FOUND)
-    add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
-endif(OPENSSL_FOUND)
-
-if(ENABLE_GN3S)
-    add_definitions(-DGN3S_DRIVER=1)
-endif(ENABLE_GN3S)
-
-if(ENABLE_ARRAY)
-    add_definitions(-DRAW_ARRAY_DRIVER=1)
-endif(ENABLE_ARRAY)
-
-if(ENABLE_FLEXIBAND)
-    add_definitions(-DFLEXIBAND_DRIVER=1)
-endif(ENABLE_FLEXIBAND)
-
-if(ENABLE_OSMOSDR)
-    if(GROSMOSDR_FOUND)
-        add_definitions(-DOSMOSDR_DRIVER=1)
-    endif(GROSMOSDR_FOUND)
-endif(ENABLE_OSMOSDR)
-
-if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
-    add_definitions(-DUHD_DRIVER=1)
-endif(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
-
-#Enable OpenCL if found in the system
-if(OPENCL_FOUND)
-    message(STATUS "Adding processing blocks implemented using OpenCL" )
-    add_definitions(-DOPENCL_BLOCKS=1)
-else(OPENCL_FOUND)
-    add_definitions(-DOPENCL_BLOCKS=0)
-endif(OPENCL_FOUND)
-
-add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
 file(GLOB GNSS_RECEIVER_HEADERS "*.h")
 list(SORT GNSS_RECEIVER_HEADERS)

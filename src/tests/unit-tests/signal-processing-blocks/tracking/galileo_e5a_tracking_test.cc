@@ -81,22 +81,22 @@ void GalileoE5aTrackingTest::init()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
-    std::string signal = "5Q";
+    std::string signal = "5X";
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 11;
 
     config->set_property("GNSS-SDR.internal_fs_sps", "32000000");
-    config->set_property("Tracking_Galileo.item_type", "gr_complex");
-    config->set_property("Tracking_Galileo.dump", "false");
-    config->set_property("Tracking_Galileo.dump_filename", "../data/e5a_tracking_ch_");
-    config->set_property("Tracking_Galileo.implementation", "Galileo_E5a_DLL_PLL_Tracking");
-    config->set_property("Tracking_Galileo.early_late_space_chips", "0.5");
-    config->set_property("Tracking_Galileo.order", "2");
-    config->set_property("Tracking_Galileo.pll_bw_hz_init","20.0");
-    config->set_property("Tracking_Galileo.pll_bw_hz", "5");
-    config->set_property("Tracking_Galileo.dll_bw_hz_init","2.0");
-    config->set_property("Tracking_Galileo.dll_bw_hz", "2");
-    config->set_property("Tracking_Galileo.ti_ms", "1");
+    config->set_property("Tracking_5X.implementation", "Galileo_E5a_DLL_PLL_Tracking");
+    config->set_property("Tracking_5X.item_type", "gr_complex");
+    config->set_property("Tracking_5X.dump", "false");
+    config->set_property("Tracking_5X.dump_filename", "../data/e5a_tracking_ch_");
+    config->set_property("Tracking_5X.early_late_space_chips", "0.5");
+    config->set_property("Tracking_5X.order", "2");
+    config->set_property("Tracking_5X.pll_bw_hz_init","20.0");
+    config->set_property("Tracking_5X.pll_bw_hz", "5");
+    config->set_property("Tracking_5X.dll_bw_hz_init","2.0");
+    config->set_property("Tracking_5X.dll_bw_hz", "2");
+    config->set_property("Tracking_5X.ti_ms", "1");
 }
 
 
@@ -105,13 +105,13 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     int fs_in = 32000000;
-    int nsamples = 32000000*5;
+    int nsamples = 32000000 * 5;
     init();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
-    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", "Galileo_E5a_DLL_PLL_Tracking", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_5X", "Galileo_E5a_DLL_PLL_Tracking", 1, 1);
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
     //REAL
@@ -123,15 +123,15 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         tracking->set_channel(gnss_synchro.Channel_ID);
-    }) << "Failure setting channel." << std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW( {
         tracking->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro." << std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
         tracking->connect(top_block);
-    }) << "Failure connecting tracking to the top_block." << std::endl;
+    }) << "Failure connecting tracking to the top_block.";
 
     ASSERT_NO_THROW( {
         gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
@@ -140,8 +140,7 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, tracking->get_left_block(), 0);
         top_block->connect(tracking->get_right_block(), 0, sink, 0);
-
-    }) << "Failure connecting the blocks of tracking test." << std::endl;
+    }) << "Failure connecting the blocks of tracking test.";
 
     tracking->start_tracking();
 
@@ -150,7 +149,7 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
 
     std::cout <<  "Tracked " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }

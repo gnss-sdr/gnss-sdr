@@ -99,10 +99,10 @@ public:
     double d_satClkDrift;                   //!< GLONASS clock error
     double d_dtr;                           //!< relativistic clock correction term
     double d_iode;                          //!< Issue of data, ephemeris (Bit 0-6 of tb)
-    double d_tau_c;
-    double d_TOW; // tow of the start of frame
-    double d_WN; //  week number of the start of frame
-    double d_tod;
+    double d_tau_c;							//!< GLONASST 2 UTC correction (todo) may be eliminated
+    double d_TOW; 							//!< GLONASST IN GPST seconds of week
+    double d_WN; 							//!< GLONASST IN GPST week number of the start of frame
+    double d_tod;							//!< Time of Day since ephemeris where decoded
 
     template<class Archive>
 
@@ -158,6 +158,26 @@ public:
      * \ param offset_time Is the start of day offset to compute the time
      */
     boost::posix_time::ptime compute_GLONASS_time(const double offset_time) const;
+
+    /*!
+     * \brief Converts from GLONASST to UTC
+     * \details The function simply adjust for the 6 hrs offset between GLONASST and UTC
+     * \param[in] offset_time Is the start of day offset
+     * \param[in] glot2utc_corr Correction from GLONASST to UTC
+     * \returns UTC time as a boost::posix_time::ptime object
+     */
+    boost::posix_time::ptime glot_to_utc(const double offset_time, const double glot2utc_corr) const;
+
+    /*!
+     * \brief Converts from GLONASST to GPST
+     * \details Converts from GLONASST to GPST in time of week (TOW) and week number (WN) format
+     * \param[in] tod_offset Is the start of day offset
+     * \param[in] glot2utc_corr Correction from GLONASST to UTC
+     * \param[in] glot2gpst_corr Correction from GLONASST to GPST
+     * \param[out] WN Week Number, not in mod(1024) format
+     * \param[out] TOW Time of Week in seconds of week
+     */
+    void glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, double * WN, double * TOW) const;
 
     /*!
      * Default constructor

@@ -36,7 +36,7 @@
  */
 
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
-#define    GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
+#define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
 
 #include "rtl_tcp_dongle_info.h"
 #include <boost/asio.hpp>
@@ -67,8 +67,8 @@ public:
     ~rtl_tcp_signal_source_c();
 
     int work (int noutput_items,
-          gr_vector_const_void_star &input_items,
-          gr_vector_void_star &output_items);
+            gr_vector_const_void_star &input_items,
+            gr_vector_void_star &output_items);
 
     void set_frequency (int frequency);
     void set_sample_rate (int sample_rate);
@@ -110,13 +110,15 @@ private:
     void handle_read (const boost::system::error_code &ec,
             size_t bytes_transferred);
 
-    inline bool not_full ( ) const {
+    inline bool not_full ( ) const
+    {
         return unread_ < buffer_.capacity( );
     }
 
-    inline bool not_empty ( ) const {
+    inline bool not_empty ( ) const
+    {
         return unread_ > 0 || io_service_.stopped ();
     }
 };
 
-#endif //GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
+#endif // GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H

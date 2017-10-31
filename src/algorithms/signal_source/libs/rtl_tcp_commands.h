@@ -48,8 +48,7 @@ enum RTL_TCP_COMMAND {
 /*!
  * \brief Send a command to rtl_tcp over the given socket.
  */
-boost::system::error_code
-rtl_tcp_command (RTL_TCP_COMMAND id, unsigned param,
-                 boost::asio::ip::tcp::socket &socket);
+boost::system::error_code rtl_tcp_command (RTL_TCP_COMMAND id, unsigned param,
+        boost::asio::ip::tcp::socket &socket);
 
 #endif // GNSS_SDR_RTL_TCP_COMMANDS_H

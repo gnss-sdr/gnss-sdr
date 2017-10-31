@@ -53,13 +53,13 @@ public:
             unsigned int out_streams);
 
     virtual ~GlonassL1CaTelemetryDecoder();
-    std::string role()
+    std::string role() override
     {
         return role_;
     }
 
     //! Returns "GLONASS_L1_CA_Telemetry_Decoder"
-    std::string implementation()
+    std::string implementation() override
     {
         return "GLONASS_L1_CA_Telemetry_Decoder";
     }
@@ -69,11 +69,11 @@ public:
     gr::basic_block_sptr get_right_block() override;
     void set_satellite(const Gnss_Satellite & satellite) override;
     void set_channel(int channel) override {telemetry_decoder_->set_channel(channel);}
-    void reset()
+    void reset() override
     {
         return;
     }
-    size_t item_size()
+    size_t item_size() override
     {
         return 0;
     }

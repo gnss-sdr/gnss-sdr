@@ -237,7 +237,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
             if (d_stat == 1)
                 {
                     preamble_diff_ms =  round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - static_cast<double>(d_preamble_time_samples)) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
-                    if (preamble_diff_ms > GPS_SUBFRAME_MS+1)
+                    if (preamble_diff_ms > GPS_SUBFRAME_MS + 1)
                         {
                             DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff_ms;
                             d_stat = 0; //lost of frame sync
@@ -344,16 +344,16 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
          }
 
     //2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true and d_flag_new_tow_available==true)
+    if (this->d_flag_preamble == true and d_flag_new_tow_available == true)
         {
             //double decoder_latency_ms=(double)(current_symbol.Tracking_sample_counter-d_symbol_history.at(0).Tracking_sample_counter)
             //        /(double)current_symbol.fs;
             // update TOW at the preamble instant (account with decoder latency)
-            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 2*GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
+            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 2 * GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
 
-            d_TOW_at_current_symbol = floor(d_TOW_at_Preamble*1000.0)/1000.0;
+            d_TOW_at_current_symbol = floor(d_TOW_at_Preamble * 1000.0) / 1000.0;
             flag_TOW_set = true;
-            d_flag_new_tow_available=false;
+            d_flag_new_tow_available = false;
         }
     else
         {

@@ -34,16 +34,16 @@ bool observables_dump_reader::read_binary_obs()
 {
     try
     {
-        for(int i = 0; i < n_channels; i++)
-        {
-            d_dump_file.read(reinterpret_cast<char *>(&RX_time[i]), sizeof(double));
-            d_dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_s[i]), sizeof(double));
-            d_dump_file.read(reinterpret_cast<char *>(&Carrier_Doppler_hz[i]), sizeof(double));
-            d_dump_file.read(reinterpret_cast<char *>(&Acc_carrier_phase_hz[i]), sizeof(double));
-            d_dump_file.read(reinterpret_cast<char *>(&Pseudorange_m[i]), sizeof(double));
-            d_dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(double));
-            d_dump_file.read(reinterpret_cast<char *>(&valid[i]), sizeof(double));
-        }
+            for(int i = 0; i < n_channels; i++)
+                {
+                    d_dump_file.read(reinterpret_cast<char *>(&RX_time[i]), sizeof(double));
+                    d_dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_s[i]), sizeof(double));
+                    d_dump_file.read(reinterpret_cast<char *>(&Carrier_Doppler_hz[i]), sizeof(double));
+                    d_dump_file.read(reinterpret_cast<char *>(&Acc_carrier_phase_hz[i]), sizeof(double));
+                    d_dump_file.read(reinterpret_cast<char *>(&Pseudorange_m[i]), sizeof(double));
+                    d_dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(double));
+                    d_dump_file.read(reinterpret_cast<char *>(&valid[i]), sizeof(double));
+                }
     }
     catch (const std::ifstream::failure &e)
     {

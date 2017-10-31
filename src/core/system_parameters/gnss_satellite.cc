@@ -135,6 +135,27 @@ void Gnss_Satellite::set_system(const std::string& system_)
 }
 
 
+void Gnss_Satellite::update_PRN(unsigned int PRN_)
+{
+    if (system.compare("Glonass") != 0)
+				{
+						DLOG(INFO) << "Trying to update PRN for not GLONASS system";
+						PRN = 0;
+				}
+    else
+    		{
+				 if (PRN_ < 1 or PRN_ > 24)
+						 {
+								 DLOG(INFO) << "This PRN is not defined";
+								 // Adjusting for PRN 26, now used in
+								 PRN = PRN_;
+						 }
+				 else
+						 {
+								 PRN = PRN_;
+						 }
+    		}
+}
 
 
 void Gnss_Satellite::set_PRN(unsigned int PRN_)

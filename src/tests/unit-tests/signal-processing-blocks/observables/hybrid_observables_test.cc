@@ -379,8 +379,8 @@ void HybridObservablesTest::check_results_carrier_phase(
     ASSERT_LT(error_var_ch1, 1e-2);
     ASSERT_LT(max_error_ch1, 5e-2);
     ASSERT_GT(min_error_ch1, -5e-2);
-
 }
+
 
 void HybridObservablesTest::check_results_code_psudorange(
         arma::vec & true_ch0_dist_m,
@@ -400,8 +400,6 @@ void HybridObservablesTest::check_results_code_psudorange(
     // generate delta pseudoranges
     arma::vec delta_true_dist_m = true_ch0_dist_interp-true_ch1_dist_interp;
     arma::vec delta_measured_dist_m = measuded_ch0_Pseudorange_m-measuded_ch1_Pseudorange_m;
-
-
 
     //2. RMSE
     arma::vec err;
@@ -467,7 +465,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             {
                 throw std::exception();
             };
-    }) << "Failure opening true observables file" << std::endl;
+    }) << "Failure opening true observables file";
 
     true_obs_file = std::string("./gps_l1_ca_obs_prn");
     true_obs_file.append(std::to_string(test_satellite_PRN2));
@@ -477,7 +475,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             {
                 throw std::exception();
             };
-    }) << "Failure opening true observables file" << std::endl;
+    }) << "Failure opening true observables file";
 
     top_block = gr::make_top_block("Telemetry_Decoder test");
     std::shared_ptr<TrackingInterface> tracking_ch0 = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
@@ -494,14 +492,14 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         {
             throw std::exception();
         };
-    })<< "Failure reading true observables file" << std::endl;
+    }) << "Failure reading true observables file";
 
     ASSERT_NO_THROW({
         if (true_obs_data_ch1.read_binary_obs() == false)
         {
             throw std::exception();
         };
-    }) << "Failure reading true observables file" << std::endl;
+    }) << "Failure reading true observables file";
 
     //restart the epoch counter
     true_obs_data_ch0.restart();
@@ -529,7 +527,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
         tlm_ch0->set_satellite(Gnss_Satellite(std::string("GPS"),gnss_synchro_ch0.PRN));
         tlm_ch1->set_satellite(Gnss_Satellite(std::string("GPS"),gnss_synchro_ch1.PRN));
-    }) << "Failure setting gnss_synchro." << std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     boost::shared_ptr<HybridObservablesTest_tlm_msg_rx> tlm_msg_rx_ch1 = HybridObservablesTest_tlm_msg_rx_make();
     boost::shared_ptr<HybridObservablesTest_tlm_msg_rx> tlm_msg_rx_ch2 = HybridObservablesTest_tlm_msg_rx_make();
@@ -540,17 +538,17 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     ASSERT_NO_THROW( {
         tracking_ch0->set_channel(gnss_synchro_ch0.Channel_ID);
         tracking_ch1->set_channel(gnss_synchro_ch1.Channel_ID);
-    }) << "Failure setting channel." << std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW( {
         tracking_ch0->set_gnss_synchro(&gnss_synchro_ch0);
         tracking_ch1->set_gnss_synchro(&gnss_synchro_ch1);
-    }) << "Failure setting gnss_synchro." << std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
         tracking_ch0->connect(top_block);
         tracking_ch1->connect(top_block);
-    }) << "Failure connecting tracking to the top_block." << std::endl;
+    }) << "Failure connecting tracking to the top_block.";
 
     ASSERT_NO_THROW( {
         std::string file =  "./" + filename_raw_data;
@@ -574,7 +572,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         top_block->connect(observables->get_right_block(), 0, sink_ch0, 0);
         top_block->connect(observables->get_right_block(), 1, sink_ch1, 0);
 
-    }) << "Failure connecting the blocks." << std::endl;
+    }) << "Failure connecting the blocks.";
 
     tracking_ch0->start_tracking();
     tracking_ch1->start_tracking();
@@ -584,7 +582,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
 
     //check results
     //load the true values
@@ -596,7 +594,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             {
                 throw std::exception();
             };
-    }) << "Failure opening true observables file" << std::endl;
+    }) << "Failure opening true observables file";
 
     long int nepoch = true_observables.num_epochs();
 
@@ -637,7 +635,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
             epoch_counter++;
         }
-
     });
 
     //read measured values
@@ -647,7 +644,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             {
                 throw std::exception();
             };
-    }) << "Failure opening dump observables file" << std::endl;
+    }) << "Failure opening dump observables file";
 
     nepoch = estimated_observables.num_epochs();
     std::cout << "Measured observation epochs=" << nepoch << std::endl;

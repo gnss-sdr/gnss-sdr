@@ -34,6 +34,7 @@
 #include <glog/logging.h>
 #include <gnuradio/filter/firdes.h>
 #include "configuration_interface.h"
+#include <vector>
 
 using google::LogMessage;
 

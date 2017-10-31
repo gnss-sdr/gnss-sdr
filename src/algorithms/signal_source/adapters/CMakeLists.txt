@@ -35,27 +35,26 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
 endif(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
 
+
 if(ENABLE_PLUTOSDR)
     ##############################################
     # ADALM-PLUTO (Analog Devices Inc.)
     ##############################################
     if(IIO_FOUND)
-        #set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
-        #set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} plutosdr_signal_source.cc)
     endif(IIO_FOUND)
 endif(ENABLE_PLUTOSDR)
+
 
 if(ENABLE_FMCOMMS2)
     ###############################################
     # FMCOMMS2 based SDR Hardware
     ###############################################
     if(IIO_FOUND)
-        #set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
-        #set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} fmcomms2_signal_source.cc)
     endif(IIO_FOUND)
 endif(ENABLE_FMCOMMS2)
+
 
 if(ENABLE_GN3S)
      ##############################################

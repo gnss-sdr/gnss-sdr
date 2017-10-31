@@ -3,15 +3,12 @@ PKG_CHECK_MODULES(PC_IIO gnuradio-iio)
 
 FIND_PATH(
     IIO_INCLUDE_DIRS
-    NAMES iio/api.h
+    NAMES gnuradio/iio/api.h
     HINTS $ENV{IIO_DIR}/include
         ${PC_IIO_INCLUDEDIR}
     PATHS ${CMAKE_INSTALL_PREFIX}/include
           /usr/local/include
           /usr/include
-          ${CMAKE_INSTALL_PREFIX}/include/gnuradio
-          /usr/local/include/gnuradio
-          /usr/include/gnuradio
 )
 
 FIND_LIBRARY(

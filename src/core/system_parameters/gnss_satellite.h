@@ -50,6 +50,7 @@ public:
     Gnss_Satellite();                          //!< Default Constructor.
     Gnss_Satellite(const std::string& system_, unsigned int PRN_); //!< Concrete GNSS satellite Constructor.
     ~Gnss_Satellite();                         //!< Default Destructor.
+    void update_PRN(unsigned int PRN);       	 //!< Updates the PRN Number when information is decoded, only applies to GLONASS GNAV messages
     unsigned int get_PRN() const;              //!< Gets satellite's PRN
     std::string get_system() const;            //!< Gets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}
     std::string get_system_short() const;      //!< Gets the satellite system {"G", "R", "SBAS", "E", "C"}

@@ -91,8 +91,6 @@ const int GLONASS_L1_CA_NBR_SATS             = 24; // STRING DATA WITHOUT PREAMB
 
 //FIXME Probably should use leap seconds definitions of rtklib
 const double GLONASS_LEAP_SECONDS[21][7] = { /* leap seconds (y,m,d,h,m,s,utc-gpst) */
-        {2019, 1, 1, 0, 0, 0, -20},
-        {2018, 1, 1, 0, 0, 0, -19},
         {2017, 1, 1, 0, 0, 0, -18},
         {2015, 7, 1, 0, 0, 0, -17},
         {2012, 7, 1, 0, 0, 0, -16},
@@ -149,7 +147,7 @@ const int GLONASS_L1_CA_HISTORY_DEEP = 100;
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
 #define GLONASS_GNAV_PREAMBLE {1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0}
-const double GLONASS_GNAV_PREAMBLE_DURATION_S = 0.3;
+const double GLONASS_GNAV_PREAMBLE_DURATION_S = 0.300;
 const int GLONASS_GNAV_PREAMBLE_LENGTH_BITS = 30;
 const int GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS = 300;
 const int GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS = 2000;

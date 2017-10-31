@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
 #include "gnss_block_interface.h"
 #include "pulse_blanking_cc.h"
 
@@ -82,6 +83,7 @@ private:
     unsigned int out_streams_;
     gr::blocks::file_sink::sptr file_sink_;
     pulse_blanking_cc_sptr pulse_blanking_cc_;
+    gr::filter::freq_xlating_fir_filter_ccf::sptr freq_xlating_;
 };
 
 #endif // GNSS_SDR_PULSE_BLANKING_FILTER_H_

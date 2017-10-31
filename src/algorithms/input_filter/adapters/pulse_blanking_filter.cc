@@ -30,7 +30,9 @@
 
 #include "pulse_blanking_filter.h"
 #include <boost/lexical_cast.hpp>
+#include <vector>
 #include <glog/logging.h>
+#include <gnuradio/filter/firdes.h>
 #include "configuration_interface.h"
 
 using google::LogMessage;
@@ -71,7 +73,17 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
             item_size = sizeof(gr_complex); //avoids uninitialization
             input_size_ = sizeof(gr_complex); //avoids uninitialization
         }
-
+    float default_if = 0.0;
+    float if_ = config_->property(role_ + ".if", default_if);
+    if (if_ > 0.0)
+        {
+            double default_bw = 2000000.0;
+            double bw_ = config_->property(role_ + ".bw", default_bw);
+            double default_tw = bw_ / 15.0;
+            double tw_ = config_->property(role_ + ".tw", default_tw);
+            const std::vector<float> taps = gr::filter::firdes::low_pass(1.0, config_->property("SignalSource.sampling_frequency", 2000000.0), bw_ / 2.0, tw_);
+            freq_xlating_ = gr::filter::freq_xlating_fir_filter_ccf::make(1, taps, if_, config_->property("SignalSource.sampling_frequency", 2000000.0));
+        }
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
@@ -95,6 +107,10 @@ void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
                 {
                     top_block->connect(pulse_blanking_cc_, 0, file_sink_, 0);
                 }
+            if (config_->property(role_ + ".if", 0.0) > 0.0)
+                {
+                    top_block->connect(freq_xlating_, 0, pulse_blanking_cc_, 0);
+                }
         }
 
     else
@@ -113,6 +129,10 @@ void PulseBlankingFilter::disconnect(gr::top_block_sptr top_block)
                 {
                     top_block->disconnect(pulse_blanking_cc_, 0, file_sink_, 0);
                 }
+            if (config_->property(role_ + ".if", 0.0) > 0.0)
+                {
+                    top_block->disconnect(freq_xlating_, 0, pulse_blanking_cc_, 0);
+                }
         }
     else
         {
@@ -125,7 +145,14 @@ gr::basic_block_sptr PulseBlankingFilter::get_left_block()
 {
     if (input_item_type_.compare("gr_complex") == 0)
         {
-            return pulse_blanking_cc_;
+            if (config_->property(role_ + ".if", 0.0) > 0.0)
+                {
+                    return freq_xlating_;
+                }
+            else
+                {
+                    return pulse_blanking_cc_;
+                }
         }
     else
         {

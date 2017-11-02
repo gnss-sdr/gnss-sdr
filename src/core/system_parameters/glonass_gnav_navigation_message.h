@@ -65,7 +65,6 @@ public:
     unsigned int d_string_ID;
     bool flag_update_slot_number;
 
-    // satellite identification info
     int i_channel_ID;
     unsigned int i_satellite_PRN;
 
@@ -102,17 +101,25 @@ public:
     bool flag_TOW_set;      //!< Flag indicating when the TOW has been set
     bool flag_TOW_new;      //!< Flag indicating when a new TOW has been computed
 
-    // Clock terms
-    double d_satClkCorr;     // Satellite clock error
-    double d_dtr;            // Relativistic clock correction term
-    double d_satClkDrift;    // Satellite clock drift
+    double d_satClkCorr;     //!<  Satellite clock error
+    double d_dtr;            //!<  Relativistic clock correction term
+    double d_satClkDrift;    //!<  Satellite clock drift
 
-    // Data update parameters
-    double d_previous_tb;
-    double d_previous_Na[GLONASS_L1_CA_NBR_SATS];
+    double d_previous_tb;	//!< Previous iode for the Glonass_Gnav_Ephemeris object. Used to determine when new data arrives
+    double d_previous_Na[GLONASS_L1_CA_NBR_SATS];	//!< Previous time for almanac of the Glonass_Gnav_Almanac object
 
+
+    /*!
+     * \brief Compute CRC for GLONASS GNAV strings
+     * \param bits Bits of the string message where to compute CRC
+     */
     bool CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits);
 
+    /*!
+	 * \brief Computes the frame number being decoded given the satellite slot number
+	 * \param satellite_slot_number [in] Satellite slot number identifier
+	 * \returns Frame number being decoded, 0 if operation was not successful.
+	 */
     unsigned int get_frame_number(unsigned int satellite_slot_number);
 
     /*!
@@ -130,44 +137,34 @@ public:
      */
     Glonass_Gnav_Utc_Model get_utc_model();
 
-    /*
-     * \brief Returns a Galileo_Almanac object filled with the latest navigation data received
+    /*!
+     * \brief Returns a Glonass_Gnav_Almanac object filled with the latest navigation data received
+     * \param satellite_slot_number Slot number identifier for the satellite
+     * \returns Returns the Glonass_Gnav_Almanac object for the input slot number
      */
     Glonass_Gnav_Almanac get_almanac(unsigned int satellite_slot_number);
 
-    /*
-     * \brief Returns true if new Ephemeris has arrived. The flag is set to false when the function is executed
+    /*!
+     * \brief Returns true if a new Glonass_Gnav_Ephemeris object has arrived.
      */
     bool have_new_ephemeris();
 
-    /*
-     * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
+    /*!
+     * \brief Returns true if new Glonass_Gnav_Utc_Model object has arrived
      */
     bool have_new_utc_model();
 
-    /*
-     * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
+    /*!
+     * \brief Returns true if new Glonass_Gnav_Almanac object has arrived.
      */
     bool have_new_almanac();
 
     /*!
      * \brief Decodes the GLONASS GNAV string
+     * \param frame_string [in] is the string message within the parsed frame
+     * \returns Returns the ID of the decoded string
      */
     int string_decoder(std::string frame_string);
-
-    /*!
-    * \brief Gets the time of week in GPS Time
-    * \details This converts from GLONASS Time to GPS Time of Week based on the
-    * start of frame
-    */
-    double get_TOW();
-
-    double get_WN();
-
-    /*!
-     * \brief Computes the Coordinated Universal Time (UTC) and returns it in [s]
-     */
-    double utc_time(const double glonasstime_corrected) const;
 
     /*!
      * Default constructor

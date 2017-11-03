@@ -78,7 +78,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     std::cout << "LO frequency : " << freq_ << "Hz" << std::endl;
     std::cout << "sample rate: " << sample_rate_ << "Hz" << std::endl;
 
-    if(item_type_.compare("gr_complex")==0)
+    if(item_type_.compare("gr_complex") == 0)
         {
             fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
                     uri_.c_str(), freq_, sample_rate_,
@@ -92,7 +92,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
         }
     else
         {
-            LOG(FATAL) << "Exception: item type " << item_type_ << " not suported!";
+            LOG(FATAL) << "Exception: item type " << item_type_ << " not supported!";
         }
 
     if (samples_ != 0)

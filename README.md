@@ -373,51 +373,38 @@ $ sudo make install
 Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>=v0.2) gnuradio block. For example in Ubuntu 16.04 follow these instructions (based on https://github.com/blurbdust/blurbdust.github.io):
 
 ~~~~~~
+$ sudo apt-get install libxml2-dev bison flex
 $ git clone https://github.com/analogdevicesinc/libiio.git
 $ cd libiio
 $ mkdir build
 $ cd build
 $ cmake ..
-$ make
-$ sudo make install
-$ sudo ldconfig
+$ make && sudo make install && sudo ldconfig
+$ cd ../..
 $ git clone https://github.com/analogdevicesinc/libad9361-iio.git
 $ cd libad9361-iio
 $ mkdir build
 $ cd build
 $ cmake ..
-$ make
-$ sudo make install
-$ sudo ldconfig
+$ make && sudo make install && sudo ldconfig
+$ cd ../..
 $ git clone https://github.com/analogdevicesinc/gr-iio.git
 $ cd gr-iio
-$ mv include/gnuradio/iio include/iio
-$ rm -r include/gnuradio
-$ sed -i 's/gnuradio\/iio/iio/g' CMakeLists.txt
-$ sed -i 's/gnuradio\/iio/iio/g' swig/*
-$ sed -i 's/gnuradio\/iio/iio/g' include/iio/*
-$ sed -i 's/gnuradio\/iio/iio/g' lib/*
-$ sed -i 's/gnuradio\/iio/iio/g' python/iio/*
-$ sed -i 's/from\ gnuradio\ import\ iio/import\ iio/g' grc/iio_pluto_sink.xml
-$ sed -i 's/from\ gnuradio\ import\ iio/import\ iio/g' grc/iio_pluto_source.xml
-$ sed -i 's/from\ gnuradio\ import\ iio/import\ iio/g' grc/iio_fmcomms2_sink.xml
-$ sed -i 's/from\ gnuradio\ import\ iio/import\ iio/g' grc/iio_fmcomms2_source.xml
 $ mkdir build
 $ cd build
-$ cmake ..
-$ make
-$ sudo make install
-$ sudo ldconfig
+$ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+$ make && sudo make install && sudo ldconfig
+$ cd ../..
 ~~~~~~
 
-Then configure the gnss-sdr to build the `Fmcomms2_Signal_Source` and `Plutosdr_Signal_Source`:
+Then configure the gnss-sdr to build the `Fmcomms2_Signal_Source` implementation:
 ~~~~~~
 $ cmake -DENABLE_FMCOMMS2=ON ../
 $ make
 $ sudo make install
 ~~~~~~
 
-or configure only `Plutosdr_Signal_Source`:
+or configure it to build `Plutosdr_Signal_Source`:
 ~~~~~~
 $ cmake -DENABLE_PLUTOSDR=ON ../
 $ make

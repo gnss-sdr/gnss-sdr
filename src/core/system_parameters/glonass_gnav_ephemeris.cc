@@ -140,6 +140,7 @@ void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_cor
 	    sec_of_day = static_cast<double>((glonass_time.time_of_day()).total_seconds());
 	    total_sec = days*86400 + sec_of_day;
 
+	    // GLONASST already includes leap second addition or deletion
 	    for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
 	    {
 	        if (d_yr >= GLONASS_LEAP_SECONDS[i][0])

@@ -315,78 +315,6 @@ unsigned int Glonass_Gnav_Navigation_Message::get_frame_number(unsigned int sate
     return frame_ID;
 }
 
-double Glonass_Gnav_Navigation_Message::get_WN()
-{
-    double WN = 0.0;
-    double days = 0.0;
-    double total_sec = 0.0;
-    int i = 0;
-
-    boost::gregorian::date gps_epoch { 1980, 1, 6 };
-    // Map to UTC
-    boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
-    boost::gregorian::days d2(gnav_ephemeris.d_N_T-1);
-    glo_date = glo_date + d2;
-
-
-    boost::posix_time::time_duration t(-6, 0, 0);
-    boost::posix_time::ptime glo_time(glo_date, t);
-    boost::gregorian::date utc_date = glo_time.date();
-
-    days =  static_cast<double>((utc_date - gps_epoch).days());
-    total_sec = days*86400;
-
-    for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
-    {
-        if (GLONASS_LEAP_SECONDS[i][0] == gnav_ephemeris.d_yr)
-        {
-            // We add the leap second when going from utc to gpst
-            total_sec += GLONASS_LEAP_SECONDS[i][6];
-        }
-    }
-
-
-    WN = floor(total_sec/604800);
-
-    return WN;
-}
-
-
-double Glonass_Gnav_Navigation_Message::get_TOW()
-{
-    double TOD = 0.0;
-    double TOW = 0.0;
-    double dayofweek = 0.0;
-    double utcsu2utc = 3*3600;
-    double glot2utcsu = 3*3600;
-    int i = 0;
-
-    // tk is relative to UTC(SU) + 3.00 hrs, so we need to convert to utc and add corrections
-    // tk plus 10 sec is the true tod since get_TOW is called when in str5
-    TOD = (gnav_ephemeris.d_t_k + 10) - glot2utcsu - utcsu2utc;// + gnav_utc_model.d_tau_c + gnav_utc_model.d_tau_gps;
-
-
-    boost::gregorian::date glo_date(gnav_ephemeris.d_yr, 1, 1);
-    boost::gregorian::days d2(gnav_ephemeris.d_N_T);
-    glo_date = glo_date + d2;
-
-    dayofweek = static_cast<double>(glo_date.day_of_week());
-    TOW = TOD + dayofweek*86400;
-
-    for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
-        {
-            if (gnav_ephemeris.d_yr >= GLONASS_LEAP_SECONDS[i][0])
-            {
-                // We add the leap second when going from utc to gpst
-                TOW += fabs(GLONASS_LEAP_SECONDS[i][6]);
-            }
-        }
-    // Compute the arithmetic modules to wrap around range
-    TOW = TOW - 604800*floor(TOW/604800);
-
-    return TOW;
-}
-
 
 int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 {
@@ -426,7 +354,7 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
                 {
                     gnav_ephemeris.d_B_n = static_cast<double>(read_navigation_unsigned(string_bits, B_N));
                     gnav_ephemeris.d_P_2 = static_cast<bool>(read_navigation_bool(string_bits, P2));
-                    gnav_ephemeris.d_t_b = static_cast<double>(read_navigation_unsigned(string_bits, T_B)) * gnav_ephemeris.d_P_1 * 60;
+                    gnav_ephemeris.d_t_b = static_cast<double>(read_navigation_unsigned(string_bits, T_B)) * 15 * 60;
                     gnav_ephemeris.d_VYn = static_cast<double>(read_navigation_signed(string_bits, Y_N_DOT)) * TWO_N20;
                     gnav_ephemeris.d_AYn = static_cast<double>(read_navigation_signed(string_bits, Y_N_DOT_DOT)) * TWO_N30;
                     gnav_ephemeris.d_Yn = static_cast<double>(read_navigation_signed(string_bits, Y_N)) * TWO_N11;
@@ -759,15 +687,6 @@ int Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 }
 
 
-double Glonass_Gnav_Navigation_Message::utc_time(const double glonass_time_corrected) const
-{
-    double t_utc;
-
-    t_utc = glonass_time_corrected + 3*3600 + gnav_utc_model.d_tau_c;
-    return t_utc;
-}
-
-
 Glonass_Gnav_Ephemeris Glonass_Gnav_Navigation_Message::get_ephemeris()
 {
     return gnav_ephemeris;
@@ -814,9 +733,9 @@ bool Glonass_Gnav_Navigation_Message::have_new_ephemeris() //Check if we have a 
 
 bool Glonass_Gnav_Navigation_Message::have_new_utc_model() // Check if we have a new utc data set stored in the galileo navigation class
 {
-    if (flag_utc_model_valid == true)
+    if (flag_utc_model_str_5 == true)
         {
-            flag_utc_model_valid = false; // clear the flag
+    		flag_utc_model_str_5 = false; // clear the flag
             return true;
         }
     else

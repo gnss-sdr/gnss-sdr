@@ -2931,7 +2931,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Glonass_
                     line += Rinex_Printer::doub2for(+glonass_gnav_ephemeris_iter->second.d_gamma_n, 18, 2);
                     line += std::string(1, ' ');
                     //TODO need to define this here. what is nd
-                    line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_t_k + p_utc_time.date().day()*86400, 18, 2);
+                    line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_t_k + p_utc_time.date().day_of_week()*86400, 18, 2);
                 }
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
@@ -3015,6 +3015,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Glonass_
                 }
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
+            line.clear();
         }
 }
 

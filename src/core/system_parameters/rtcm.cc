@@ -1911,7 +1911,7 @@ int Rtcm::read_MT1020(const std::string & message, Glonass_Gnav_Ephemeris & glon
     glonass_gnav_eph.d_P_2 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
-    glonass_gnav_eph.d_t_b = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 7)))*glonass_gnav_eph.d_P_1*60.0;
+    glonass_gnav_eph.d_t_b = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 7)))*15*60.0;
     index += 7;
 
     // TODO Check for type spec for intS24
@@ -4385,7 +4385,7 @@ int Rtcm::set_DF109(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 
 int Rtcm::set_DF110(const Glonass_Gnav_Ephemeris & glonass_gnav_eph)
 {
-    unsigned int t_b = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_t_b/(glonass_gnav_eph.d_P_1*60)));
+    unsigned int t_b = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_t_b/(15*60)));
     DF110 = std::bitset<7>(t_b);
     return 0;
 }

@@ -51,7 +51,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     std::string default_dump_file = "./data/signal_source.dat";
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    sample_rate_  configuration->property(role + ".sampling_frequency", 3000000);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 3000000);
     bandwidth_ = configuration->property(role + ".bandwidth", 2000000);
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
     decimation_ = configuration->property(role + ".decimation", 1);

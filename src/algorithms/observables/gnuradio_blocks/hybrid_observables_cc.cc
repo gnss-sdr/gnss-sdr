@@ -179,12 +179,11 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                         {
                             channel_history_ok = false;
                         }
-
                 }
             if (channel_history_ok == true)
                 {
-                    std::map<int,Gnss_Synchro>::iterator gnss_synchro_map_iter;
-                    std::deque<Gnss_Synchro>::iterator gnss_synchro_deque_iter;
+                    std::map<int,Gnss_Synchro>::const_iterator gnss_synchro_map_iter;
+                    std::deque<Gnss_Synchro>::const_iterator gnss_synchro_deque_iter;
 
                     // 1. If the RX time is not set, set the Rx time
                     if (T_rx_s == 0)
@@ -196,8 +195,8 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                     gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue[i].front().Channel_ID,
                                             d_gnss_synchro_history_queue[i].front()));
                                 }
-                            gnss_synchro_map_iter = min_element(gnss_synchro_map.begin(),
-                                    gnss_synchro_map.end(),
+                            gnss_synchro_map_iter = min_element(gnss_synchro_map.cbegin(),
+                                    gnss_synchro_map.cend(),
                                     Hybrid_pairCompare_gnss_synchro_sample_counter);
                             T_rx_s = static_cast<double>(gnss_synchro_map_iter->second.Tracking_sample_counter) / static_cast<double>(gnss_synchro_map_iter->second.fs);
                             T_rx_s = floor(T_rx_s * 1000.0) / 1000.0; // truncate to ms
@@ -210,11 +209,11 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                     // shift channels history to match the reference TOW
                     for (unsigned int i = 0; i < d_nchannels; i++)
                         {
-                            gnss_synchro_deque_iter = std::lower_bound(d_gnss_synchro_history_queue[i].begin(),
-                                    d_gnss_synchro_history_queue[i].end(),
+                            gnss_synchro_deque_iter = std::lower_bound(d_gnss_synchro_history_queue[i].cbegin(),
+                                    d_gnss_synchro_history_queue[i].cend(),
                                     T_rx_s,
                                     Hybrid_valueCompare_gnss_synchro_receiver_time);
-                            if (gnss_synchro_deque_iter != d_gnss_synchro_history_queue[i].end())
+                            if (gnss_synchro_deque_iter != d_gnss_synchro_history_queue[i].cend())
                                 {
                                     if (gnss_synchro_deque_iter->Flag_valid_word == true)
                                         {
@@ -226,10 +225,10 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                                 {
                                                     // record the word structure in a map for pseudorange computation
                                                     // save the previous observable
-                                                    int distance = std::distance(d_gnss_synchro_history_queue[i].begin(), gnss_synchro_deque_iter);
+                                                    int distance = std::distance(d_gnss_synchro_history_queue[i].cbegin(), gnss_synchro_deque_iter);
                                                     if (distance > 0)
                                                         {
-                                                            if (d_gnss_synchro_history_queue[i].at(distance-1).Flag_valid_word)
+                                                            if (d_gnss_synchro_history_queue[i].at(distance - 1).Flag_valid_word)
                                                                 {
                                                                     double T_rx_channel_prev = static_cast<double>(d_gnss_synchro_history_queue[i].at(distance - 1).Tracking_sample_counter) / static_cast<double>(gnss_synchro_deque_iter->fs);
                                                                     double delta_T_rx_s_prev = T_rx_channel_prev - T_rx_s;
@@ -268,8 +267,8 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                              *  common RX time algorithm
                              */
                             // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
-                            gnss_synchro_map_iter = max_element(realigned_gnss_synchro_map.begin(),
-                                    realigned_gnss_synchro_map.end(),
+                            gnss_synchro_map_iter = max_element(realigned_gnss_synchro_map.cbegin(),
+                                    realigned_gnss_synchro_map.cend(),
                                     Hybrid_pairCompare_gnss_synchro_d_TOW);
                             double ref_fs_hz = static_cast<double>(gnss_synchro_map_iter->second.fs);
 
@@ -292,7 +291,7 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                             double channel_T_rx_s;
                             double channel_fs_hz;
                             double channel_TOW_s;
-                            for(gnss_synchro_map_iter = realigned_gnss_synchro_map.begin(); gnss_synchro_map_iter != realigned_gnss_synchro_map.end(); gnss_synchro_map_iter++)
+                            for(gnss_synchro_map_iter = realigned_gnss_synchro_map.cbegin(); gnss_synchro_map_iter != realigned_gnss_synchro_map.cend(); gnss_synchro_map_iter++)
                                 {
                                     channel_fs_hz = static_cast<double>(gnss_synchro_map_iter->second.fs);
                                     channel_TOW_s = gnss_synchro_map_iter->second.TOW_at_current_symbol_s;

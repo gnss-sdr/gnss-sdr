@@ -318,6 +318,18 @@ set(GNSSSDR_ARMADILLO_MIN_VERSION "4.200.0")
 
 
 ################################################################################
+# Versions to download and build (but not installed) if not found
+################################################################################
+set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")
+set(GNSSSDR_GLOG_LOCAL_VERSION "0.3.5")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "unstable")
+set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.0")
+set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
+set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10")
+
+
+
+################################################################################
 # Check cmake version
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS ${GNSSSDR_CMAKE_MIN_VERSION})
@@ -668,7 +680,6 @@ endif(NOT VOLK_GNSSSDR_FOUND)
 # gflags - https://github.com/gflags/gflags
 ################################################################################
 set(LOCAL_GFLAGS false)
-set(gflags_RELEASE 2.2.1)
 find_package(GFlags)
 if (NOT GFlags_FOUND)
      message (STATUS " gflags library has not been found.")
@@ -677,12 +688,12 @@ if (NOT GFlags_FOUND)
 
      if(CMAKE_VERSION VERSION_LESS 3.2)
           ExternalProject_Add(
-          gflags-${gflags_RELEASE}
-          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
           GIT_REPOSITORY git://github.com/gflags/gflags.git
-          GIT_TAG v${gflags_RELEASE}
-          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}
-          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
+          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
           CMAKE_ARGS -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=ON -DBUILD_gflags_nothreads_LIB=OFF -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
           UPDATE_COMMAND ""
@@ -691,15 +702,15 @@ if (NOT GFlags_FOUND)
      )
      else(CMAKE_VERSION VERSION_LESS 3.2)
      ExternalProject_Add(
-          gflags-${gflags_RELEASE}
-          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
           GIT_REPOSITORY git://github.com/gflags/gflags.git
-          GIT_TAG v${gflags_RELEASE}
-          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}
-          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
+          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
           CMAKE_ARGS -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=ON -DBUILD_gflags_nothreads_LIB=OFF -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
-          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
+          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
           UPDATE_COMMAND ""
           PATCH_COMMAND ""
           INSTALL_COMMAND ""
@@ -707,16 +718,16 @@ if (NOT GFlags_FOUND)
      endif(CMAKE_VERSION VERSION_LESS 3.2)
 
      set(GFlags_INCLUDE_DIRS
-          ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/include CACHE PATH "Local Gflags headers"
+          ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include CACHE PATH "Local Gflags headers"
      )
 
      add_library(gflags UNKNOWN IMPORTED)
-     set_property(TARGET gflags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX})
-     add_dependencies(gflags gflags-${gflags_RELEASE})
+     set_property(TARGET gflags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX})
+     add_dependencies(gflags gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
      set(GFlags_LIBS gflags)
-     file(GLOB GFlags_SHARED_LIBS "${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*")
-     set(GFlags_LIBRARY gflags-${gflags_RELEASE})
-     set(GFlags_LIBRARY_PATH ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib )
+     file(GLOB GFlags_SHARED_LIBS "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*")
+     set(GFlags_LIBRARY gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+     set(GFlags_LIBRARY_PATH ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib )
      link_directories(${GFlags_LIBRARY_PATH})
      set(GFlags_lib ${GFlags_LIBS} CACHE FILEPATH "Local Gflags library")
      set(GFlags_LIBRARY_PATH ${GFlags_LIBS})
@@ -734,7 +745,7 @@ if(NOT ${ENABLE_OWN_GLOG})
         set(GLOG_FOUND ON)
      endif(GLOG_INCLUDE_DIRS)
 endif(NOT ${ENABLE_OWN_GLOG})
-set(glog_RELEASE 0.3.5)
+set(glog_RELEASE ${GNSSSDR_GLOG_LOCAL_VERSION})
 if (NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
      message (STATUS " glog library has not been found")
      if(NOT GFlags_FOUND)
@@ -743,20 +754,20 @@ if (NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
      message (STATUS " glog will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
      if(NOT ${LOCAL_GFLAGS})
-         add_library(gflags-${gflags_RELEASE} UNKNOWN IMPORTED)
-         set_property(TARGET gflags-${gflags_RELEASE} PROPERTY IMPORTED_LOCATION "${GFlags_LIBS}")
+         add_library(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION} UNKNOWN IMPORTED)
+         set_property(TARGET gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION} PROPERTY IMPORTED_LOCATION "${GFlags_LIBS}")
      endif(NOT ${LOCAL_GFLAGS})
-     set(TARGET_GFLAGS gflags-${gflags_RELEASE})
+     set(TARGET_GFLAGS gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
      if(${LOCAL_GFLAGS})
          set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_SHARED_LIBS})
-         set(GFLAGS_LIBRARY_DIR_TO_LINK ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib)
+         set(GFLAGS_LIBRARY_DIR_TO_LINK ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib)
      else(${LOCAL_GFLAGS})
          set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_LIBS})
          set(GFLAGS_LIBRARY_DIR_TO_LINK ${GFlags_LIBRARY_DIRS})
      endif(${LOCAL_GFLAGS})
 
      if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
 export LDFLAGS=-L${GFLAGS_LIBRARY_DIR_TO_LINK}
@@ -764,34 +775,34 @@ export LIBS=\"${GFLAGS_LIBRARIES_TO_LINK} -lc++\"
 export CXXFLAGS=\"-stdlib=libc++\"
 export CC=clang
 export CXX=clang++
-cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/
+cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/
 aclocal
 automake --add-missing
 autoreconf -vfi
-cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
+cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure")
 
       else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-             file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+             file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
 export LDFLAGS=-L${GFLAGS_LIBRARY_DIR_TO_LINK}
 export LIBS=${GFLAGS_LIBRARIES_TO_LINK}
-cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/
+cd ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/
 aclocal
 automake --add-missing
 autoreconf -vfi
-cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
+cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure")
 
      endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
-     file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
-          DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+     file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
+          DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
           FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
                            GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
-     set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)
+     set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure_with_gflags)
 
      # Ensure that aclocal and libtool are present
      if(OS_IS_LINUX)
@@ -826,13 +837,13 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
 
      if(CMAKE_VERSION VERSION_LESS 3.2)
       ExternalProject_Add(
-         glog-${glog_RELEASE}
+         glog-${GNSSSDR_GLOG_LOCAL_VERSION}
          DEPENDS ${TARGET_GFLAGS}
-         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
          GIT_REPOSITORY https://github.com/google/glog/
-         GIT_TAG v${glog_RELEASE}
-         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
-         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+         GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
          BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
          UPDATE_COMMAND ""
@@ -841,16 +852,16 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
       )
      else(CMAKE_VERSION VERSION_LESS 3.2)
       ExternalProject_Add(
-         glog-${glog_RELEASE}
+         glog-${GNSSSDR_GLOG_LOCAL_VERSION}
          DEPENDS ${TARGET_GFLAGS}
-         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
          GIT_REPOSITORY https://github.com/google/glog/
-         GIT_TAG v${glog_RELEASE}
-         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
-         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+         GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
          BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
-         BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+         BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
          INSTALL_COMMAND ""
@@ -859,16 +870,16 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
 
      # Set up variables
      set(GLOG_INCLUDE_DIRS
-          ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/src/
-          ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/src
+          ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src/
+          ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
      )
      set(GLOG_LIBRARIES
-          ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+          ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
      )
      set(LOCAL_GLOG true CACHE STRING "Glog downloaded and built automatically" FORCE)
 else(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
-     add_library(glog-${glog_RELEASE} UNKNOWN IMPORTED)
-     set_property(TARGET glog-${glog_RELEASE} PROPERTY IMPORTED_LOCATION "${GLOG_LIBRARIES}")
+     add_library(glog-${GNSSSDR_GLOG_LOCAL_VERSION} UNKNOWN IMPORTED)
+     set_property(TARGET glog-${GNSSSDR_GLOG_LOCAL_VERSION} PROPERTY IMPORTED_LOCATION "${GLOG_LIBRARIES}")
 endif(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
 
 if(NOT ENABLE_LOG)
@@ -1051,7 +1062,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " Armadillo has not been found.")
      message(STATUS " Armadillo will be downloaded and built automatically")
      message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'. ")
-     set(armadillo_BRANCH unstable)
+     set(armadillo_BRANCH ${GNSSSDR_ARMADILLO_LOCAL_VERSION})
      set(armadillo_RELEASE ${armadillo_BRANCH})
 
      if(CMAKE_VERSION VERSION_LESS 3.2)

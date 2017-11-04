@@ -47,15 +47,13 @@ endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
 
 if(NOT ${GTEST_DIR_LOCAL})
      # if GTEST_DIR is not defined, we download and build it
-     set(gtest_RELEASE 1.8.0)
-
      if(CMAKE_VERSION VERSION_LESS 3.2)
       ExternalProject_Add(
-         gtest-${gtest_RELEASE}
+         gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
          GIT_REPOSITORY https://github.com/google/googletest
-         GIT_TAG release-${gtest_RELEASE}
-         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
-         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
+         GIT_TAG release-${GNSSSDR_GTEST_LOCAL_VERSION}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
          CMAKE_ARGS ${GTEST_COMPILER} -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF ${TOOLCHAIN_ARG}
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
@@ -63,41 +61,41 @@ if(NOT ${GTEST_DIR_LOCAL})
       )
      else(CMAKE_VERSION VERSION_LESS 3.2)
       ExternalProject_Add(
-         gtest-${gtest_RELEASE}
+         gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
          GIT_REPOSITORY https://github.com/google/googletest
-         GIT_TAG release-${gtest_RELEASE}
-         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
-         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
+         GIT_TAG release-${GNSSSDR_GTEST_LOCAL_VERSION}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
          CMAKE_ARGS ${GTEST_COMPILER} -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF ${TOOLCHAIN_ARG}
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
-         BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-                          ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+         BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+                          ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
          INSTALL_COMMAND ""
       )
      endif(CMAKE_VERSION VERSION_LESS 3.2)
 
      # Set up variables
      # Set recently downloaded and build Googletest root folder
-     set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}/googletest")
+     set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest")
      # Source code
-     ExternalProject_Get_Property(gtest-${gtest_RELEASE} source_dir)
+     ExternalProject_Get_Property(gtest-${GNSSSDR_GTEST_LOCAL_VERSION} source_dir)
      set(GTEST_INCLUDE_DIR ${source_dir}/googletest/include)
      set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
      # Library
-     ExternalProject_Get_Property(gtest-${gtest_RELEASE} binary_dir)
+     ExternalProject_Get_Property(gtest-${GNSSSDR_GTEST_LOCAL_VERSION} binary_dir)
      if(OS_IS_MACOSX)
          if(CMAKE_GENERATOR STREQUAL Xcode)
              set(binary_dir "${binary_dir}/Debug")
          endif(CMAKE_GENERATOR STREQUAL Xcode)
      endif(OS_IS_MACOSX)
      set(GTEST_LIBRARY_PATH "${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX};${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}")
-     set(GTEST_LIBRARY gtest-${gtest_RELEASE})
+     set(GTEST_LIBRARY gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
      set(GTEST_LIBRARIES
           ${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
           ${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
      )
-     set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}/googletest")
+     set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest")
 else(NOT ${GTEST_DIR_LOCAL})
      if(GTEST_INCLUDE_DIRS)
           set(GTEST_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIRS} ${LIBGTEST_DEV_DIR})
@@ -178,7 +176,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    ExternalProject_Add(
       gnss-sim
       GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
-      GIT_TAG master
+      GIT_TAG ${GNSSSDR_GNSS_SIM_LOCAL_VERSION}
       SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gnss-sim
       BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim
       CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} ${CROSS_INSTALL_DIR}
@@ -207,38 +205,36 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    find_package(GPSTK)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
       if(NOT ENABLE_FPGA)
-          set(gpstk_RELEASE "2.9")
-
           if(CMAKE_VERSION VERSION_LESS 3.2)
            ExternalProject_Add(
-             gpstk-${gpstk_RELEASE}
+             gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
              GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
-             GIT_TAG v${gpstk_RELEASE}
-             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}
-             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${gpstk_RELEASE}
-             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
+             GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
+             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
+             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
+             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
              UPDATE_COMMAND ""
              PATCH_COMMAND ""
            )
           else(CMAKE_VERSION VERSION_LESS 3.2)
            ExternalProject_Add(
-             gpstk-${gpstk_RELEASE}
+             gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
              GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
-             GIT_TAG v${gpstk_RELEASE}
-             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}
-             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${gpstk_RELEASE}
-             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
-             BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${gpstk_RELEASE}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
+             GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
+             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
+             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
+             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
+             BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
              UPDATE_COMMAND ""
              PATCH_COMMAND ""
            )
           endif(CMAKE_VERSION VERSION_LESS 3.2)
 
-          set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/include CACHE PATH "Local GPSTK headers")
+          set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GPSTK headers")
           add_library(gpstk UNKNOWN IMPORTED)
-          set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
-          add_dependencies(gpstk gpstk-${gpstk_RELEASE})
-          set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${gpstk_RELEASE}/install/bin/ )
+          set_property(TARGET gpstk PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+          add_dependencies(gpstk gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
+          set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/ )
           add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
           set(gpstk_libs gpstk)
           set(OWN_GPSTK True)
@@ -360,7 +356,7 @@ if(ENABLE_UNIT_TESTING)
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
     )
     if(NOT ${GTEST_DIR_LOCAL})
-        add_dependencies(run_tests gtest-${gtest_RELEASE})
+        add_dependencies(run_tests gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
     endif(NOT ${GTEST_DIR_LOCAL})
 
     if(ENABLE_INSTALL_TESTS)
@@ -417,7 +413,7 @@ if(ENABLE_SYSTEM_TESTING)
     add_executable(ttff
         ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/ttff_gps_l1.cc )
     if(NOT ${GTEST_DIR_LOCAL})
-        add_dependencies(ttff gtest-${gtest_RELEASE})
+        add_dependencies(ttff gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
     else(NOT ${GTEST_DIR_LOCAL})
         add_dependencies(ttff gtest)
     endif(NOT ${GTEST_DIR_LOCAL})
@@ -451,7 +447,7 @@ if(ENABLE_SYSTEM_TESTING)
         add_executable(position_test
              ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/position_test.cc )
         if(NOT ${GTEST_DIR_LOCAL})
-             add_dependencies(position_test gtest-${gtest_RELEASE})
+             add_dependencies(position_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
         else(NOT ${GTEST_DIR_LOCAL})
              add_dependencies(position_test gtest)
         endif(NOT ${GTEST_DIR_LOCAL})
@@ -484,11 +480,11 @@ if(ENABLE_SYSTEM_TESTING)
         if(GPSTK_FOUND OR OWN_GPSTK)
             add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc)
             if(NOT ${GTEST_DIR_LOCAL})
-                add_dependencies(obs_gps_l1_system_test gtest-${gtest_RELEASE} )
+                add_dependencies(obs_gps_l1_system_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION} )
             else(NOT ${GTEST_DIR_LOCAL})
                 add_dependencies(obs_gps_l1_system_test gtest)
             endif(NOT ${GTEST_DIR_LOCAL})
-            include_directories(${GPSTK_INCLUDE_DIRS})
+            include_directories(${GPSTK_INCLUDE_DIRS} ${GPSTK_INCLUDE_DIRS}/gpstk)
             target_link_libraries(obs_gps_l1_system_test ${GFlags_LIBS}
                                                          ${GLOG_LIBRARIES}
                                                          ${GTEST_LIBRARIES}
@@ -534,7 +530,7 @@ if(NOT ${ENABLE_PACKAGING})
                           )
      add_test(control_thread_test control_thread_test)
      if(NOT ${GTEST_DIR_LOCAL})
-          add_dependencies(control_thread_test gtest-${gtest_RELEASE})
+          add_dependencies(control_thread_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
      else(NOT ${GTEST_DIR_LOCAL})
           add_dependencies(control_thread_test gtest)
      endif(NOT ${GTEST_DIR_LOCAL})
@@ -556,7 +552,7 @@ if(NOT ${ENABLE_PACKAGING})
                                           ${VOLK_GNSSSDR_LIBRARIES} )
      add_test(flowgraph_test flowgraph_test)
      if(NOT ${GTEST_DIR_LOCAL})
-          add_dependencies(flowgraph_test gtest-${gtest_RELEASE})
+          add_dependencies(flowgraph_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
      else(NOT ${GTEST_DIR_LOCAL})
           add_dependencies(flowgraph_test gtest)
      endif(NOT ${GTEST_DIR_LOCAL})
@@ -591,7 +587,7 @@ if(NOT ${ENABLE_PACKAGING})
                           )
      add_test(gnss_block_test gnss_block_test)
      if(NOT ${GTEST_DIR_LOCAL})
-          add_dependencies(gnss_block_test gtest-${gtest_RELEASE})
+          add_dependencies(gnss_block_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
      else(NOT ${GTEST_DIR_LOCAL})
           add_dependencies(gnss_block_test gtest)
      endif(NOT ${GTEST_DIR_LOCAL})
@@ -616,7 +612,7 @@ target_link_libraries(gnuradio_block_test ${Boost_LIBRARIES}
                      )
 add_test(gnuradio_block_test gnuradio_block_test)
 if(NOT ${GTEST_DIR_LOCAL})
-    add_dependencies(gnuradio_block_test gtest-${gtest_RELEASE})
+    add_dependencies(gnuradio_block_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
 else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(gnuradio_block_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL})
@@ -662,7 +658,7 @@ target_link_libraries(trk_test ${Boost_LIBRARIES}
                      )
 add_test(trk_test trk_test)
 if(NOT ${GTEST_DIR_LOCAL})
-    add_dependencies(trk_test gtest-${gtest_RELEASE})
+    add_dependencies(trk_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
 else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(trk_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL})

@@ -31,12 +31,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.0")
+if(CMAKE_VERSION VERSION_GREATER "3.0")
     cmake_policy(SET CMP0042 NEW)
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.9")
+    if(CMAKE_VERSION VERSION_GREATER "3.9")
          cmake_policy(SET CMP0068 NEW)
-    endif(CMAKE_VERSION VERSION_GREATER_EQUAL "3.9")
-endif(CMAKE_VERSION VERSION_GREATER_EQUAL "3.0")
+    endif(CMAKE_VERSION VERSION_GREATER "3.9")
+endif(CMAKE_VERSION VERSION_GREATER "3.0")
 
 option(ENABLE_STRIP "Create a stripped volk_gnsssdr_profile binary (without shared libraries)" OFF)
 

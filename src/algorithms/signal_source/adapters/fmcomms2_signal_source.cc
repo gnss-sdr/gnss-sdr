@@ -30,11 +30,8 @@
  */
 
 #include "fmcomms2_signal_source.h"
-#include <cstdio>
 #include <iostream>
-#include <boost/format.hpp>
 #include <glog/logging.h>
-#include <gnuradio/blocks/file_sink.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include "GPS_L1_CA.h"
@@ -75,8 +72,8 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     item_size_ = sizeof(gr_complex);
 
     std::cout << "device address: " << uri_ << std::endl;
-    std::cout << "LO frequency : " << freq_ << "Hz" << std::endl;
-    std::cout << "sample rate: " << sample_rate_ << "Hz" << std::endl;
+    std::cout << "LO frequency : " << freq_ << " Hz" << std::endl;
+    std::cout << "sample rate: " << sample_rate_ << " Hz" << std::endl;
 
     if(item_type_.compare("gr_complex") == 0)
         {
@@ -92,7 +89,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
         }
     else
         {
-            LOG(FATAL) << "Exception: item type " << item_type_ << " not supported!";
+            LOG(FATAL) << "Configuration error: item type " << item_type_ << " not supported!";
         }
 
     if (samples_ != 0)
@@ -153,7 +150,7 @@ void Fmcomms2SignalSource::disconnect(gr::top_block_sptr top_block)
         {
             if (dump_)
                 {
-                    top_block->disconnect(fmcomms2_source_f32c_, 0,	file_sink_, 0);
+                    top_block->disconnect(fmcomms2_source_f32c_, 0, file_sink_, 0);
                 }
         }
 }

@@ -182,8 +182,15 @@ Rinex_Printer::Rinex_Printer(int conf_version)
     if(conf_version != 0)
     {
         if(conf_version == 2)
-        version = 2;
-        stringVersion = "2.11";
+            {
+                version = 2;
+                stringVersion = "2.11";
+            }
+        if(conf_version == 3)
+            {
+                version = 3;
+                stringVersion = "3.02";
+            }
     }
 
     numberTypesObservations = 4; // Number of available types of observable in the system

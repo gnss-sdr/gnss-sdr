@@ -69,6 +69,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/arithmetic/multiply_test.cc"
 #include "unit-tests/arithmetic/code_generation_test.cc"
 #include "unit-tests/arithmetic/fft_length_test.cc"
+#include "unit-tests/arithmetic/fft_speed_test.cc"
 
 #include "unit-tests/control-plane/file_configuration_test.cc"
 #include "unit-tests/control-plane/in_memory_configuration_test.cc"
@@ -86,6 +87,9 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/adapter/adapter_test.cc"
 
 #include "unit-tests/signal-processing-blocks/filter/fir_filter_test.cc"
+#include "unit-tests/signal-processing-blocks/filter/pulse_blanking_filter_test.cc"
+#include "unit-tests/signal-processing-blocks/filter/notch_filter_test.cc"
+#include "unit-tests/signal-processing-blocks/filter/notch_filter_lite_test.cc"
 
 #include "unit-tests/signal-processing-blocks/resampler/direct_resampler_conditioner_cc_test.cc"
 
@@ -101,7 +105,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
-//#include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
+
 #if OPENCL_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
 #endif

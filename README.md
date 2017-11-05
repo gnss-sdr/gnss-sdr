@@ -84,11 +84,16 @@ Download, build and install PyBOMBS:
 $ sudo pip install git+https://github.com/gnuradio/pybombs.git
 ~~~~~~
 
-Add some software recipes (i.e., instructions on how to install software dependencies):
+Apply a configuration:
 
 ~~~~~~
-$ pybombs recipes add gr-recipes git+https://github.com/gnuradio/gr-recipes.git
-$ pybombs recipes add gr-etcetera git+https://github.com/gnuradio/gr-etcetera.git
+$ pybombs auto-config
+~~~~~~
+
+Add list of default recipes:
+
+~~~~~~
+$ pybombs recipes add-defaults
 ~~~~~~
 
 Download, build and install GNU Radio, related drivers and some other extra modules into the directory ```/path/to/prefix``` (replace this path by your preferred one, for instance ```$HOME/sdr```):
@@ -291,7 +296,7 @@ GNSS-SDR comes with a library which is a module of the Vector-Optimized Library 
 If you are using Eclipse as your development environment, CMake can create the project for you. Type:
 
 ~~~~~~
-$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=3.7 -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j8 ../
+$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=4.5 .
 ~~~~~~
 
 and then import the created project file into Eclipse:
@@ -368,7 +373,50 @@ $ sudo make install
 
 (in order to disable the `Osmosdr_Signal_Source` compilation, you can pass `DENABLE_OSMOSDR=OFF` to cmake and build GNSS-SDR again).
 
+###### Build FMCOMMS2 based SDR Hardware support (OPTIONAL):
 
+Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>=v0.2) gnuradio block. For example in Ubuntu 16.04 follow these instructions (based on https://github.com/blurbdust/blurbdust.github.io):
+
+~~~~~~
+$ sudo apt-get install libxml2-dev bison flex
+$ git clone https://github.com/analogdevicesinc/libiio.git
+$ cd libiio
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make && sudo make install && sudo ldconfig
+$ cd ../..
+$ git clone https://github.com/analogdevicesinc/libad9361-iio.git
+$ cd libad9361-iio
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make && sudo make install && sudo ldconfig
+$ cd ../..
+$ git clone https://github.com/analogdevicesinc/gr-iio.git
+$ cd gr-iio
+$ mkdir build
+$ cd build
+$ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+$ make && sudo make install && sudo ldconfig
+$ cd ../..
+~~~~~~
+
+Then configure the gnss-sdr to build the `Fmcomms2_Signal_Source` implementation:
+~~~~~~
+$ cmake -DENABLE_FMCOMMS2=ON ../
+$ make
+$ sudo make install
+~~~~~~
+
+or configure it to build `Plutosdr_Signal_Source`:
+~~~~~~
+$ cmake -DENABLE_PLUTOSDR=ON ../
+$ make
+$ sudo make install
+~~~~~~
+
+With `Fmcomms2_Signal_Source` you can use any SDR hardware based on fmcomms2, including the ADALM-PLUTO (PlutoSdr) by configuring correctly the .conf file. The `Plutosdr_Signal_Source` offers a simplier manner to use the ADALM-PLUTO because implements only a subset of fmcomms2's parameters valid for those devices.
 
 ###### Build OpenCL support (OPTIONAL):
 
@@ -413,7 +461,7 @@ More details can be found in our tutorial about [GNSS-SDR configuration options 
 ---------
 
 
-### macOS Sierra, Mac OS X 10.11 (El Capitan), 10.10 (Yosemite) and 10.9 (Mavericks).
+### macOS 10.13 (High Sierra) and 10.12 (Sierra), Mac OS X 10.11 (El Capitan), 10.10 (Yosemite) and 10.9 (Mavericks).
 
 If you still have not installed [Xcode](http://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 

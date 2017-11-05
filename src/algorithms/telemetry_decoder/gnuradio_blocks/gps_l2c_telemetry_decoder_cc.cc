@@ -41,14 +41,14 @@
 using google::LogMessage;
 
 gps_l2c_telemetry_decoder_cc_sptr
-gps_l2c_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
+gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump)
 {
     return gps_l2c_telemetry_decoder_cc_sptr(new gps_l2c_telemetry_decoder_cc(satellite, dump));
 }
 
 
 gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
-        Gnss_Satellite satellite, bool dump) : gr::block("gps_l2c_telemetry_decoder_cc",
+        const Gnss_Satellite & satellite, bool dump) : gr::block("gps_l2c_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
@@ -202,7 +202,7 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
 }
 
 
-void gps_l2c_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
+void gps_l2c_telemetry_decoder_cc::set_satellite(const Gnss_Satellite & satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "GPS L2C CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;

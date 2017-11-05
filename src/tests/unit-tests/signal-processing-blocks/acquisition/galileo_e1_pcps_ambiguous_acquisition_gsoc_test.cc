@@ -158,17 +158,16 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 11;
 
+    config->set_property("Acquisition_1B.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.coherent_integration_time_ms", "4");
-    config->set_property("Acquisition.dump", "false");
-    config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
-    config->set_property("Acquisition.threshold", "0.1");
-    config->set_property("Acquisition.doppler_max", "10000");
-    config->set_property("Acquisition.doppler_step", "125");
-    config->set_property("Acquisition.repeat_satellite", "false");
-    config->set_property("Acquisition0.cboc", "true");
+    config->set_property("Acquisition_1B.item_type", "gr_complex");
+    config->set_property("Acquisition_1B.coherent_integration_time_ms", "4");
+    config->set_property("Acquisition_1B.dump", "false");
+    config->set_property("Acquisition_1B.threshold", "0.1");
+    config->set_property("Acquisition_1B.doppler_max", "10000");
+    config->set_property("Acquisition_1B.doppler_step", "125");
+    config->set_property("Acquisition_1B.repeat_satellite", "false");
+    config->set_property("Acquisition_1B.cboc", "true");
 }
 
 
@@ -205,7 +204,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::stop_queue()
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, Instantiate)
 {
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     EXPECT_STREQ("Galileo_E1_PCPS_Ambiguous_Acquisition", acquisition->implementation().c_str());
 }
@@ -221,7 +220,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
 
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     boost::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx> msg_rx = GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx_make(channel_internal_queue);
 
@@ -232,14 +231,14 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     EXPECT_NO_THROW( {
         start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
@@ -258,27 +257,27 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(gnss_synchro.Channel_ID);
-    }) << "Failure setting channel." << std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro." << std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.00001));
-    }) << "Failure setting threshold." << std::endl;
+        acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.00001));
+    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max." << std::endl;
+        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
+    }) << "Failure setting doppler_max.";
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 250));
-    }) << "Failure setting doppler_step." << std::endl;
+        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 250));
+    }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block." << std::endl;
+    }) << "Failure connecting acquisition to the top_block.";
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
@@ -288,7 +287,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     ASSERT_NO_THROW( {
         start_queue();
@@ -296,14 +295,14 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
         acquisition->init();
         acquisition->reset();
         acquisition->set_state(1);
-    }) << "Failure starting acquisition" << std::endl;
+    }) << "Failure starting acquisition";
 
     EXPECT_NO_THROW( {
         start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
 
     stop_queue();
 

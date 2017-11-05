@@ -422,7 +422,14 @@ void ControlThread::init()
 {
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = gr::msg_queue::make(0);
-    flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
+    try
+    {
+            flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
+    }
+    catch (const boost::bad_lexical_cast& e )
+    {
+            std::cout << "Caught bad lexical cast with error " << e.what() << std::endl;
+    }
     control_message_factory_ = std::make_shared<ControlMessageFactory>();
     stop_ = false;
     processed_control_messages_ = 0;

@@ -717,11 +717,11 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                                             {
                                                 if(both_sigs[j].is_signed)
                                                     {
-                                                        fail = icompare((int16_t *) test_data[generic_offset][j], (int16_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                        fail = icompare((int8_t *) test_data[generic_offset][j], (int8_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
                                                     }
                                                 else
                                                     {
-                                                        fail = icompare((uint16_t *) test_data[generic_offset][j], (uint16_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                        fail = icompare((uint8_t *) test_data[generic_offset][j], (uint8_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
                                                     }
                                             }
                                         else

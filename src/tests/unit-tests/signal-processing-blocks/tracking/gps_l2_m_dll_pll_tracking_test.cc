@@ -155,9 +155,9 @@ void GpsL2MDllPllTrackingTest::init()
 TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds(0);
+    std::chrono::duration<double> elapsed_seconds(0.0);
     int fs_in = 5000000;
-    int nsamples = fs_in*9;
+    int nsamples = fs_in * 9;
 
     init();
     queue = gr::msg_queue::make(0);
@@ -171,15 +171,15 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         tracking->set_channel(gnss_synchro.Channel_ID);
-    }) << "Failure setting channel." << std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW( {
         tracking->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro." << std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
         tracking->connect(top_block);
-    }) << "Failure connecting tracking to the top_block." << std::endl;
+    }) << "Failure connecting tracking to the top_block.";
 
     ASSERT_NO_THROW( {
         //gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
@@ -193,7 +193,7 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
         top_block->connect(valve, 0, tracking->get_left_block(), 0);
         top_block->connect(tracking->get_right_block(), 0, sink, 0);
         top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of tracking test." << std::endl;
+    }) << "Failure connecting the blocks of tracking test.";
 
     tracking->start_tracking();
 
@@ -202,7 +202,7 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
 
     // TODO: Verify tracking results
     std::cout <<  "Tracked " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;

@@ -50,6 +50,15 @@ elseif(ORC_FOUND)
 endif(ORC_FOUND)
 
 
+# allow 'large' files in 32 bit builds
+if(UNIX)
+    add_definitions( -D_LARGEFILE_SOURCE
+                     -D_FILE_OFFSET_BITS=64
+                     -D_LARGE_FILES
+                   )
+endif(UNIX)
+
+
 # MAKE volk_gnsssdr_profile
 add_executable(volk_gnsssdr_profile
     ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_profile.cc

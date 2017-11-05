@@ -65,9 +65,10 @@
 #include "freq_xlating_fir_filter.h"
 #include "beamformer_filter.h"
 #include "pulse_blanking_filter.h"
+#include "notch_filter.h"
+#include "notch_filter_lite.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l2_m_pcps_acquisition.h"
-#include "gps_l1_ca_pcps_multithread_acquisition.h"
 #include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
@@ -116,6 +117,14 @@
 
 #if UHD_DRIVER
 #include "uhd_signal_source.h"
+#endif
+
+#if PLUTOSDR_DRIVER
+#include "plutosdr_signal_source.h"
+#endif
+
+#if FMCOMMS2_DRIVER
+#include "fmcomms2_signal_source.h"
 #endif
 
 #if FLEXIBAND_DRIVER
@@ -810,6 +819,24 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         }
 #endif
 
+#if PLUTOSDR_DRIVER
+    else if (implementation.compare("Plutosdr_Signal_Source") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new PlutosdrSignalSource(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+#endif
+
+#if FMCOMMS2_DRIVER
+    else if (implementation.compare("Fmcomms2_Signal_Source") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new Fmcomms2SignalSource(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+#endif
+
 #if FLEXIBAND_DRIVER
     else if (implementation.compare("Flexiband_Signal_Source") == 0)
         {
@@ -882,6 +909,18 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("Notch_Filter") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new NotchFilter(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Notch_Filter_Lite") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new NotchFilterLite(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
 
 
     // RESAMPLER -------------------------------------------------------------------
@@ -917,12 +956,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_PCPS_Tong_Acquisition") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaPcpsTongAcquisition(configuration.get(), role, in_streams,
-                    out_streams));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("GPS_L1_CA_PCPS_Multithread_Acquisition") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaPcpsMultithreadAcquisition(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }
@@ -1143,12 +1176,6 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     else if (implementation.compare("GPS_L1_CA_PCPS_Tong_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GpsL1CaPcpsTongAcquisition(configuration.get(), role, in_streams,
-                    out_streams));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("GPS_L1_CA_PCPS_Multithread_Acquisition") == 0)
-        {
-            std::unique_ptr<AcquisitionInterface> block_(new GpsL1CaPcpsMultithreadAcquisition(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

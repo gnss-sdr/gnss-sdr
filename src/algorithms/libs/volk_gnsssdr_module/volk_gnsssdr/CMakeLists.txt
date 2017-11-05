@@ -31,6 +31,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
+if(CMAKE_VERSION VERSION_GREATER "3.0")
+    cmake_policy(SET CMP0042 NEW)
+    if(CMAKE_VERSION VERSION_GREATER "3.9")
+         cmake_policy(SET CMP0068 NEW)
+    endif(CMAKE_VERSION VERSION_GREATER "3.9")
+endif(CMAKE_VERSION VERSION_GREATER "3.0")
+
 option(ENABLE_STRIP "Create a stripped volk_gnsssdr_profile binary (without shared libraries)" OFF)
 
 set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) #allows this to be a sub-project
@@ -83,6 +90,7 @@ if(UNIX)
                      -D_LARGE_FILES
                    )
 endif(UNIX)
+
 
 ########################################################################
 # Dependencies setup
@@ -192,7 +200,9 @@ install(FILES
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_prefs.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_complex.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_common.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/saturation_arithmetic.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_sse_intrinsics.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_sse3_intrinsics.h
     ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_neon_intrinsics.h
     ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr.h

@@ -259,19 +259,17 @@ void GpsL1CaPcpsAcquisitionTestFpga::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
-    config->set_property("Acquisition.item_type", "cshort");
-    config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.coherent_integration_time_ms", "1");
-    config->set_property("Acquisition.dump", "false");
-    config->set_property("Acquisition.implementation",
-            "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.threshold", "0.001");
-    config->set_property("Acquisition.doppler_max", "5000");
-    config->set_property("Acquisition.doppler_step", "500");
-    config->set_property("Acquisition.repeat_satellite", "false");
-    config->set_property("Acquisition.pfa", "0.0");
-    config->set_property("Acquisition.select_queue_Fpga", "0");
-    config->set_property("Acquisition.devicename", "/dev/uio0");
+    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition_1C.item_type", "cshort");
+    config->set_property("Acquisition_1C.coherent_integration_time_ms", "1");
+    config->set_property("Acquisition_1C.dump", "false");
+    config->set_property("Acquisition_1C.threshold", "0.001");
+    config->set_property("Acquisition_1C.doppler_max", "5000");
+    config->set_property("Acquisition_1C.doppler_step", "500");
+    config->set_property("Acquisition_1C.repeat_satellite", "false");
+    config->set_property("Acquisition_1C.pfa", "0.0");
+    config->set_property("Acquisition_1C.select_queue_Fpga", "0");
+    config->set_property("Acquisition_1C.devicename", "/dev/uio0");
 }
 
 
@@ -279,7 +277,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, Instantiate)
 {
     init();
     boost::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition =
-            boost::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 1);
+            boost::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition_1C", 0, 1);
 }
 
 
@@ -294,39 +292,39 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
     init();
 
     std::shared_ptr < GpsL1CaPcpsAcquisitionFpga > acquisition =
-            std::make_shared < GpsL1CaPcpsAcquisitionFpga > (config.get(), "Acquisition", 0, 1);
+            std::make_shared < GpsL1CaPcpsAcquisitionFpga > (config.get(), "Acquisition_1C", 0, 1);
 
     boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTestFpga_msg_rx_make();
 
     ASSERT_NO_THROW(
                 {
                     acquisition->set_channel(1);
-                })<< "Failure setting channel." << std::endl;
+                })<< "Failure setting channel.";
 
     ASSERT_NO_THROW(
                 {
                     acquisition->set_gnss_synchro(&gnss_synchro);
-                })<< "Failure setting gnss_synchro." << std::endl;
+                })<< "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW(
                 {
                     acquisition->set_threshold(0.1);
-                })<< "Failure setting threshold." << std::endl;
+                })<< "Failure setting threshold.";
 
     ASSERT_NO_THROW(
                 {
                     acquisition->set_doppler_max(10000);
-                })<< "Failure setting doppler_max." << std::endl;
+                })<< "Failure setting doppler_max.";
 
     ASSERT_NO_THROW(
                 {
                     acquisition->set_doppler_step(250);
-                })<< "Failure setting doppler_step." << std::endl;
+                })<< "Failure setting doppler_step.";
 
     ASSERT_NO_THROW(
                 {
                     acquisition->connect(top_block);
-                })<< "Failure connecting acquisition to the top_block." << std::endl;
+                })<< "Failure connecting acquisition to the top_block.";
 
     // uncomment the next line to load the file from the current directory
     std::string file = "./GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
@@ -349,7 +347,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
                     top_block->connect(file_source, 0, throttle_block, 0);
                     top_block->connect(throttle_block, 0, null_sink, 0);
                     top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-                })<< "Failure connecting the blocks of acquisition test." << std::endl;
+                })<< "Failure connecting the blocks of acquisition test." ;
 
     acquisition->set_state(1); // Ensure that acquisition starts at the first state
     acquisition->init();
@@ -366,7 +364,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTestFpga, ValidationOfResults)
                     top_block->wait();
                     end = std::chrono::system_clock::now();
                     elapsed_seconds = end - start;
-                })<< "Failure running the top_block." << std::endl;
+                })<< "Failure running the top_block.";
 
     t3.join();
 

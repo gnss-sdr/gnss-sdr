@@ -1,11 +1,12 @@
 /*!
  * \file freq_xlating_fir_filter.cc
- * \brief Adapts a gnuradio gr_freq_xlating_fir_filter designed with gr_remez
+ * \brief Adapts a gnuradio gr_freq_xlating_fir_filter designed with gr_remez or gr_firdes
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *         Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

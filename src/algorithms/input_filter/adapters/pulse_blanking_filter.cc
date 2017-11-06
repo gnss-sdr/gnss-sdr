@@ -78,12 +78,14 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
     double if_ = config_->property(role_ + ".if", default_if);
     if (std::abs(if_) > 1.0)
         {
+            double default_sampling_freq = 4000000.0;
+            double sampling_freq_ = config_->property(role_ + ".sampling_frequency", default_sampling_freq);
             double default_bw = 2000000.0;
             double bw_ = config_->property(role_ + ".bw", default_bw);
             double default_tw = bw_ / 20.0;
             double tw_ = config_->property(role_ + ".tw", default_tw);
-            const std::vector<float> taps = gr::filter::firdes::low_pass(1.0, config_->property("SignalSource.sampling_frequency", 2000000.0), bw_ / 2.0, tw_);
-            freq_xlating_ = gr::filter::freq_xlating_fir_filter_ccf::make(1, taps, if_, config_->property("SignalSource.sampling_frequency", 2000000.0));
+            const std::vector<float> taps = gr::filter::firdes::low_pass(1.0, sampling_freq_, bw_ / 2.0, tw_);
+            freq_xlating_ = gr::filter::freq_xlating_fir_filter_ccf::make(1, taps, if_, sampling_freq_);
         }
     if (dump_)
         {

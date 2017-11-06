@@ -21,35 +21,40 @@ list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
 
 # Optional drivers
 
+if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+   find_package(iio REQUIRED)
+   if(NOT IIO_FOUND)
+      message(STATUS "gnuradio-iio not found, its installation is required.")
+      message(STATUS "Please build and install the following projects:")
+      message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
+      message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
+      message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
+      message(FATAL_ERROR "gnuradio-iio required for building gnss-sdr with this option enabled")
+   endif(NOT IIO_FOUND)
+   set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
+   set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
+endif(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+
+
 if(ENABLE_PLUTOSDR)
     ##############################################
     # ADALM-PLUTO (Analog Devices Inc.)
     ##############################################
-	find_package(iio REQUIRED)
-	if(NOT IIO_FOUND)
-		message("gnuradio-iio not found, installation is required")
-		message(FATAL_ERROR "gnuradio-iio required for building gnss-sdr with this option enabled")
-	else(NOT IIO_FOUND)
-	    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
-        set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
+    if(IIO_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} plutosdr_signal_source.cc)
-    endif(NOT IIO_FOUND)
+    endif(IIO_FOUND)
 endif(ENABLE_PLUTOSDR)
+
 
 if(ENABLE_FMCOMMS2)
     ###############################################
     # FMCOMMS2 based SDR Hardware
     ###############################################
-	find_package(iio REQUIRED)
-	if(NOT IIO_FOUND)
-		message("gnuradio-iio not found, installation is required")
-		message(FATAL_ERROR "gnuradio-iio required for building gnss-sdr with this option enabled")
-	else(NOT IIO_FOUND)
-	    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
-        set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
+    if(IIO_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} fmcomms2_signal_source.cc)
-   endif(NOT IIO_FOUND)
+    endif(IIO_FOUND)
 endif(ENABLE_FMCOMMS2)
+
 
 if(ENABLE_GN3S)
      ##############################################
@@ -134,7 +139,7 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc
                                   gen_signal_source.cc
                                   nsr_file_signal_source.cc
                                   spir_file_signal_source.cc
-				  				  rtl_tcp_signal_source.cc
+                                  rtl_tcp_signal_source.cc
                                   ${OPT_DRIVER_SOURCES}
 )
 

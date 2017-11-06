@@ -42,11 +42,11 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
-#include "RinexUtilities.hpp"
-#include "Rinex3ObsBase.hpp"
-#include "Rinex3ObsData.hpp"
-#include "Rinex3ObsHeader.hpp"
-#include "Rinex3ObsStream.hpp"
+#include <gpstk/RinexUtilities.hpp>
+#include <gpstk/Rinex3ObsBase.hpp>
+#include <gpstk/Rinex3ObsData.hpp>
+#include <gpstk/Rinex3ObsHeader.hpp>
+#include <gpstk/Rinex3ObsStream.hpp>
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"

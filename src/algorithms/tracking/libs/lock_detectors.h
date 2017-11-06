@@ -116,4 +116,8 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
  */
 float carrier_lock_detector(gr_complex* Prompt_buffer, int length);
 
+/*!
+ * \brief A frequency lock detector
+ */
+float frequency_lock_detector( gr_complex* Prompt_buffer, int length );
 #endif

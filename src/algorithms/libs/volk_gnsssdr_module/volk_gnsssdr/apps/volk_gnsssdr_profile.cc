@@ -213,7 +213,6 @@ int main(int argc, char *argv[]) {
             }
 
             if(!dry_run) {
-                    write_results(&results, false);
                     if(vm.count("path")) write_results(&results, false, config_file);
                     else write_results(&results, false);
             }

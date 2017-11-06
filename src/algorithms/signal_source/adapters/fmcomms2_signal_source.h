@@ -57,7 +57,7 @@ public:
     }
 
     /*!
-     * \brief Returns "fmcomms2_Signal_Source"
+     * \brief Returns "Fmcomms2_Signal_Source"
      */
     inline std::string implementation() override
     {

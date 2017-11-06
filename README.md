@@ -84,11 +84,16 @@ Download, build and install PyBOMBS:
 $ sudo pip install git+https://github.com/gnuradio/pybombs.git
 ~~~~~~
 
-Add some software recipes (i.e., instructions on how to install software dependencies):
+Apply a configuration:
 
 ~~~~~~
-$ pybombs recipes add gr-recipes git+https://github.com/gnuradio/gr-recipes.git
-$ pybombs recipes add gr-etcetera git+https://github.com/gnuradio/gr-etcetera.git
+$ pybombs auto-config
+~~~~~~
+
+Add list of default recipes:
+
+~~~~~~
+$ pybombs recipes add-defaults
 ~~~~~~
 
 Download, build and install GNU Radio, related drivers and some other extra modules into the directory ```/path/to/prefix``` (replace this path by your preferred one, for instance ```$HOME/sdr```):

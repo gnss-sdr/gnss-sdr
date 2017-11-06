@@ -75,7 +75,8 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
             input_size_ = sizeof(gr_complex); //avoids uninitialization
         }
     double default_if = 0.0;
-    double if_ = config_->property(role_ + ".if", default_if);
+    double if_aux = config_->property(role_ + ".if", default_if);
+    double if_ = config_->property(role_ + ".IF", if_aux);
     if (std::abs(if_) > 1.0)
         {
             double default_sampling_freq = 4000000.0;

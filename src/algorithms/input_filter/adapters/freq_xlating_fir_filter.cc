@@ -32,6 +32,7 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/filter/pm_remez.h>
+#include <gnuradio/filter/firdes.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
 #include "configuration_interface.h"
@@ -343,8 +344,8 @@ void FreqXlatingFirFilter::init()
     std::string default_output_item_type = "gr_complex";
     std::string default_taps_item_type = "float";
     std::string default_dump_filename = "../data/input_filter.dat";
-    double default_intermediate_freq = 0;
-    double default_sampling_freq = 4000000;
+    double default_intermediate_freq = 0.0;
+    double default_sampling_freq = 4000000.0;
     int default_number_of_taps = 6;
     unsigned int default_number_of_bands = 2;
     std::vector<double> default_bands = { 0.0, 0.4, 0.6, 1.0 };
@@ -364,46 +365,54 @@ void FreqXlatingFirFilter::init()
     sampling_freq_ = config_->property(role_ + ".sampling_frequency", default_sampling_freq);
     int number_of_taps = config_->property(role_ + ".number_of_taps", default_number_of_taps);
     unsigned int number_of_bands = config_->property(role_ + ".number_of_bands", default_number_of_bands);
-
-    std::vector<double> bands;
-    std::vector<double> ampl;
-    std::vector<double> error_w;
-    std::string option;
-    double option_value;
-
-    for (unsigned int i = 0; i < number_of_bands; i++)
-        {
-            option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_begin";
-            option_value = config_->property(role_ + option, default_bands[i]);
-            bands.push_back(option_value);
-
-            option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_end";
-            option_value = config_->property(role_ + option, default_bands[i]);
-            bands.push_back(option_value);
-
-            option = ".ampl" + boost::lexical_cast<std::string>(i + 1) + "_begin";
-            option_value = config_->property(role_ + option, default_bands[i]);
-            ampl.push_back(option_value);
-
-            option = ".ampl" + boost::lexical_cast<std::string>(i + 1) + "_end";
-            option_value = config_->property(role_ + option, default_bands[i]);
-            ampl.push_back(option_value);
-
-            option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_error";
-            option_value = config_->property(role_ + option, default_bands[i]);
-            error_w.push_back(option_value);
-        }
-
     std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
-    int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
 
-    std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl,
-            error_w, filter_type, grid_density);
-
-    taps_.reserve(taps_d.size());
-    for (std::vector<double>::iterator it = taps_d.begin(); it != taps_d.end(); it++)
+    if(filter_type.compare("lowpass") != 0)
         {
-            taps_.push_back(float(*it));
-            //std::cout<<"TAP="<<float(*it)<<std::endl;
+    	    std::vector<double> taps_d;
+    	    std::vector<double> bands;
+            std::vector<double> ampl;
+            std::vector<double> error_w;
+            std::string option;
+            double option_value;
+
+            for (unsigned int i = 0; i < number_of_bands; i++)
+                {
+                    option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_begin";
+                    option_value = config_->property(role_ + option, default_bands[i]);
+                    bands.push_back(option_value);
+
+                    option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_end";
+                    option_value = config_->property(role_ + option, default_bands[i]);
+                    bands.push_back(option_value);
+
+                    option = ".ampl" + boost::lexical_cast<std::string>(i + 1) + "_begin";
+                    option_value = config_->property(role_ + option, default_bands[i]);
+                    ampl.push_back(option_value);
+
+                    option = ".ampl" + boost::lexical_cast<std::string>(i + 1) + "_end";
+                    option_value = config_->property(role_ + option, default_bands[i]);
+                    ampl.push_back(option_value);
+
+                    option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_error";
+                    option_value = config_->property(role_ + option, default_bands[i]);
+                    error_w.push_back(option_value);
+                }
+
+            int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
+            taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
+            taps_.reserve(taps_d.size());
+            for (std::vector<double>::iterator it = taps_d.begin(); it != taps_d.end(); it++)
+                {
+                    taps_.push_back(static_cast<float>(*it));
+                }
         }
+    else
+        {
+    	    double default_bw = 2000000.0;
+    	    double bw_ = config_->property(role_ + ".bw", default_bw);
+    	    double default_tw = bw_ / 20.0;
+    	    double tw_ = config_->property(role_ + ".tw", default_tw);
+    	    taps_ = gr::filter::firdes::low_pass(1.0, sampling_freq_, bw_ / 2.0, tw_);
+    	}
 }

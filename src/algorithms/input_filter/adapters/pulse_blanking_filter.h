@@ -33,7 +33,6 @@
 #define GNSS_SDR_PULSE_BLANKING_FILTER_H_
 
 #include <string>
-#include <vector>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
 #include "gnss_block_interface.h"

@@ -44,6 +44,7 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
                         out_streams_(out_streams)
 {
     size_t item_size;
+    xlat_ = false;
     std::string default_input_item_type = "gr_complex";
     std::string default_output_item_type = "gr_complex";
     std::string default_dump_filename = "../data/input_filter.dat";
@@ -79,6 +80,7 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
     double if_ = config_->property(role_ + ".IF", if_aux);
     if (std::abs(if_) > 1.0)
         {
+            xlat_ = true;
             double default_sampling_freq = 4000000.0;
             double sampling_freq_ = config_->property(role_ + ".sampling_frequency", default_sampling_freq);
             double default_bw = 2000000.0;
@@ -111,7 +113,7 @@ void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
                 {
                     top_block->connect(pulse_blanking_cc_, 0, file_sink_, 0);
                 }
-            if (std::abs(config_->property(role_ + ".if", 0.0)) > 1.0)
+            if (xlat_)
                 {
                     top_block->connect(freq_xlating_, 0, pulse_blanking_cc_, 0);
                 }
@@ -133,7 +135,7 @@ void PulseBlankingFilter::disconnect(gr::top_block_sptr top_block)
                 {
                     top_block->disconnect(pulse_blanking_cc_, 0, file_sink_, 0);
                 }
-            if (std::abs(config_->property(role_ + ".if", 0.0)) > 1.0)
+            if (xlat_)
                 {
                     top_block->disconnect(freq_xlating_, 0, pulse_blanking_cc_, 0);
                 }
@@ -149,7 +151,7 @@ gr::basic_block_sptr PulseBlankingFilter::get_left_block()
 {
     if (input_item_type_.compare("gr_complex") == 0)
         {
-            if (std::abs(config_->property(role_ + ".if", 0.0)) > 1.0)
+            if (xlat_)
                 {
                     return freq_xlating_;
                 }

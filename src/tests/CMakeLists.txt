@@ -479,13 +479,13 @@ if(ENABLE_SYSTEM_TESTING)
 
         if(GPSTK_FOUND OR OWN_GPSTK)
             add_executable(obs_gps_l1_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc)
-            add_executable(obs_gps_l1_space_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_space_system_test.cc)
+            add_executable(obs_space_system_test ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_space_system_test.cc)
             if(NOT ${GTEST_DIR_LOCAL})
                 add_dependencies(obs_gps_l1_system_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION} )
-                add_dependencies(obs_gps_l1_space_system_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION} )
+                add_dependencies(obs_space_system_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION} )
             else(NOT ${GTEST_DIR_LOCAL})
                 add_dependencies(obs_gps_l1_system_test gtest)
-                add_dependencies(obs_gps_l1_space_system_test gtest)
+                add_dependencies(obs_space_system_test gtest)
             endif(NOT ${GTEST_DIR_LOCAL})
             include_directories(${GPSTK_INCLUDE_DIRS} ${GPSTK_INCLUDE_DIRS}/gpstk)
             target_link_libraries(obs_gps_l1_system_test ${GFlags_LIBS}
@@ -495,7 +495,7 @@ if(ENABLE_SYSTEM_TESTING)
                                                          gnss_rx
                                                          ${gpstk_libs})
                                                          
-            target_link_libraries(obs_gps_l1_space_system_test ${GFlags_LIBS}
+            target_link_libraries(obs_space_system_test ${GFlags_LIBS}
                                                                ${GLOG_LIBRARIES}
                                                                ${GTEST_LIBRARIES}
                                                                gnss_sp_libs
@@ -511,9 +511,9 @@ if(ENABLE_SYSTEM_TESTING)
                 add_custom_command(TARGET obs_gps_l1_system_test POST_BUILD
                                    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_gps_l1_system_test>
                                    ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_gps_l1_system_test> )
-                add_custom_command(TARGET obs_gps_l1_space_system_test POST_BUILD
-                                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_gps_l1_space_system_test>
-                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_gps_l1_space_system_test> )
+                add_custom_command(TARGET obs_space_system_test POST_BUILD
+                                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_space_system_test>
+                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_space_system_test> )
 
             endif(ENABLE_INSTALL_TESTS)
         endif(GPSTK_FOUND OR OWN_GPSTK)

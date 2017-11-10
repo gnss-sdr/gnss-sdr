@@ -1,5 +1,5 @@
 /*!
- * \file obs_space_system_test.cc
+ * \file obs_system_test.cc
  * \brief  This class implements a test for the validation of generated observables.
  * \author Carles Fernandez-Prades, 2016. cfernandez(at)cttc.es
  *         Antonio Ramos, 2017. antonio.ramos(at)cttc.es
@@ -67,7 +67,7 @@ DEFINE_double(cp_error_std_max, 50.0, "Maximum standard deviation in carrier pha
 DEFINE_double(dp_error_mean_max, 5.0, "Maximum mean error in Doppler frequency");
 DEFINE_double(dp_error_std_max, 10.0, "Maximum standard deviation in Doppler frequency");
 
-class ObsSpaceSystemTest: public ::testing::Test
+class ObsSystemTest: public ::testing::Test
 {
 public:
     int configure_receiver();
@@ -118,7 +118,7 @@ public:
 };
 
 
-bool ObsSpaceSystemTest::check_valid_rinex_obs(std::string filename, int rinex_ver)
+bool ObsSystemTest::check_valid_rinex_obs(std::string filename, int rinex_ver)
 {
     bool res = false;
     if(rinex_ver == 2)
@@ -132,7 +132,7 @@ bool ObsSpaceSystemTest::check_valid_rinex_obs(std::string filename, int rinex_v
     return res;
 }
 
-void ObsSpaceSystemTest::read_rinex_files(
+void ObsSystemTest::read_rinex_files(
 		std::vector<arma::mat>& pseudorange_ref,
 		std::vector<arma::mat>& carrierphase_ref,
 		std::vector<arma::mat>& doppler_ref,
@@ -321,7 +321,7 @@ void ObsSpaceSystemTest::read_rinex_files(
 	EXPECT_TRUE(meas_exist) << "RINEX generated file does not contain " << signal_type_string << " information";
 }
 
-void ObsSpaceSystemTest::time_alignment_diff(
+void ObsSystemTest::time_alignment_diff(
     		std::vector<arma::mat>& ref,
     		std::vector<arma::mat>& meas,
 			std::vector<arma::vec>& diff)
@@ -351,7 +351,7 @@ void ObsSpaceSystemTest::time_alignment_diff(
         }
 }
 
-int ObsSpaceSystemTest::configure_receiver()
+int ObsSystemTest::configure_receiver()
 {
     config = std::make_shared<FileConfiguration>(configuration_file_);
     int d_rinex_ver = config->property("PVT.rinex_version", 0);
@@ -372,7 +372,7 @@ int ObsSpaceSystemTest::configure_receiver()
     return 0;
 }
 
-int ObsSpaceSystemTest::run_receiver()
+int ObsSystemTest::run_receiver()
 {
     std::shared_ptr<ControlThread> control_thread;
     control_thread = std::make_shared<ControlThread>(config);
@@ -410,7 +410,7 @@ int ObsSpaceSystemTest::run_receiver()
     return 0;
 }
 
-void ObsSpaceSystemTest::compute_pseudorange_error(
+void ObsSystemTest::compute_pseudorange_error(
 		std::vector<arma::vec>& diff,
 		double error_th_mean, double error_th_std)
 {
@@ -432,7 +432,7 @@ void ObsSpaceSystemTest::compute_pseudorange_error(
 	    }
 }
 
-void ObsSpaceSystemTest::compute_carrierphase_error(
+void ObsSystemTest::compute_carrierphase_error(
 		std::vector<arma::vec>& diff,
 		double error_th_mean, double error_th_std)
 {
@@ -454,7 +454,7 @@ void ObsSpaceSystemTest::compute_carrierphase_error(
         }
 }
 
-void ObsSpaceSystemTest::compute_doppler_error(
+void ObsSystemTest::compute_doppler_error(
 		std::vector<arma::vec>& diff,
 		double error_th_mean, double error_th_std)
 {
@@ -475,7 +475,7 @@ void ObsSpaceSystemTest::compute_doppler_error(
             prn_id++;
         }
 }
-void ObsSpaceSystemTest::check_results()
+void ObsSystemTest::check_results()
 {
     if(gps_1C)
     {
@@ -624,7 +624,7 @@ void ObsSpaceSystemTest::check_results()
 }
 
 
-TEST_F(ObsSpaceSystemTest, Observables_system_test)
+TEST_F(ObsSystemTest, Observables_system_test)
 {
     std::cout << "Validating input RINEX obs (TRUE) file: " << filename_rinex_obs << " ..." << std::endl;
     bool is_rinex_obs_valid = check_valid_rinex_obs(filename_rinex_obs, 3);

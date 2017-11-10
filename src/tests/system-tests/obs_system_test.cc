@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <exception>
 #include <iostream>
@@ -48,6 +49,8 @@
 #include <gpstk/Rinex3ObsData.hpp>
 #include <gpstk/Rinex3ObsHeader.hpp>
 #include <gpstk/Rinex3ObsStream.hpp>
+#include "gnuplot_i.h"
+#include "test_flags.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"
@@ -66,6 +69,7 @@ DEFINE_double(cp_error_mean_max, 5.0, "Maximum mean error in carrier phase");
 DEFINE_double(cp_error_std_max, 2.5, "Maximum standard deviation in carrier phase");
 DEFINE_double(dp_error_mean_max, 50.0, "Maximum mean error in Doppler frequency");
 DEFINE_double(dp_error_std_max, 15.0, "Maximum standard deviation in Doppler frequency");
+DEFINE_bool(plot_obs_sys_test, false, "Plots results of ObsSystemTest with gnuplot");
 
 class ObsSystemTest: public ::testing::Test
 {
@@ -97,13 +101,16 @@ public:
 			std::vector<arma::vec>& diff,
 			arma::mat& sow_prn_ref);
     void compute_pseudorange_error(std::vector<arma::vec>& diff,
-			double error_th_mean, double error_th_std);
+			double error_th_mean, double error_th_std,
+			std::string signal_name);
     void compute_carrierphase_error(
         	std::vector<arma::vec>& diff,
-    		double error_th_mean, double error_th_std);
+    		double error_th_mean, double error_th_std,
+			std::string signal_name);
     void compute_doppler_error(
         	std::vector<arma::vec>& diff,
-    		double error_th_mean, double error_th_std);
+    		double error_th_mean, double error_th_std,
+			std::string signal_name);
     std::string filename_rinex_obs = FLAGS_filename_rinex_true;
     std::string generated_rinex_obs = FLAGS_filename_rinex_obs;
     std::string configuration_file_ = FLAGS_configuration_file;
@@ -466,12 +473,7 @@ void ObsSystemTest::time_alignment_diff_pr(
 int ObsSystemTest::configure_receiver()
 {
     config = std::make_shared<FileConfiguration>(configuration_file_);
-    int d_rinex_ver = config->property("PVT.rinex_version", 0);
-    if(d_rinex_ver != 2)
-        {
-    	    std::cout << "Invalid RINEX version. Set PVT.rinex_version=2 in configuration file." << std::endl;
-    	    std::cout << "GPSTk does not work with RINEX v. 3.02." << std::endl;
-    	}
+
     if( config->property("Channels_1C.count", 0) > 0 )
     {gps_1C = true;}
     if( config->property("Channels_1B.count", 0) > 0 )
@@ -524,16 +526,23 @@ int ObsSystemTest::run_receiver()
 
 void ObsSystemTest::compute_pseudorange_error(
 		std::vector<arma::vec>& diff,
-		double error_th_mean, double error_th_std)
+		double error_th_mean, double error_th_std,
+		std::string signal_name)
 {
     int prn_id = 0;
     std::vector<arma::vec>::iterator iter_diff;
+    std::vector<double> means;
+    std::vector<double> stddevs;
+    std::vector<double> prns;
 	for(iter_diff = diff.begin(); iter_diff != diff.end(); iter_diff++)
         {
 	        if(!iter_diff->is_empty())
 	            {
 	        	    double d_mean = arma::mean(*iter_diff);
+	        	    means.push_back(d_mean);
 	        	    double d_stddev = arma::stddev(*iter_diff);
+	        	    stddevs.push_back(d_stddev);
+	        	    prns.push_back(static_cast<double>(prn_id));
 	        	    std::cout << "-- Mean pseudorange difference for sat " << prn_id << ": " << d_mean;
 	        	    std::cout << " +/- " << d_stddev;
 	        	    std::cout << " [m]" << std::endl;
@@ -542,20 +551,62 @@ void ObsSystemTest::compute_pseudorange_error(
 	            }
 	        prn_id++;
 	    }
+	if(FLAGS_plot_obs_sys_test == true)
+	        {
+	            const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+	            if(gnuplot_executable.empty())
+	                {
+	                    std::cout << "WARNING: Although the flag plot_obs_sys_test has been set to TRUE," << std::endl;
+	                    std::cout << "gnuplot has not been found in your system." << std::endl;
+	                    std::cout << "Test results will not be plotted." << std::endl;
+	                }
+	            else
+	                {
+	                    try
+	                    {
+	                            boost::filesystem::path p(gnuplot_executable);
+	                            boost::filesystem::path dir = p.parent_path();
+	                            std::string gnuplot_path = dir.native();
+	                            Gnuplot::set_GNUPlotPath(gnuplot_path);
+
+	                            Gnuplot g1("linespoints");
+	                            g1.set_title(signal_name + " Pseudorange error");
+	                            g1.set_grid();
+	                            g1.set_xlabel("PRN");
+	                            g1.set_ylabel("Pseudorange error [m]");
+	                            g1.plot_xy(prns, means, "Mean");
+	                            g1.plot_xy(prns, stddevs, "Standard deviation");
+	                            //g1.savetops("FFT_execution_times_extended");
+	                            //g1.savetopdf("FFT_execution_times_extended", 18);
+	                            g1.showonscreen(); // window output
+                        }
+	                    catch (const GnuplotException & ge)
+	                    {
+	                            std::cout << ge.what() << std::endl;
+	                    }
+	                }
+	        }
 }
 
 void ObsSystemTest::compute_carrierphase_error(
 		std::vector<arma::vec>& diff,
-		double error_th_mean, double error_th_std)
+		double error_th_mean, double error_th_std,
+		std::string signal_name)
 {
     int prn_id = 0;
+    std::vector<double> means;
+    std::vector<double> stddevs;
+    std::vector<double> prns;
     std::vector<arma::vec>::iterator iter_diff;
     for(iter_diff = diff.begin(); iter_diff != diff.end(); iter_diff++)
         {
     	    if(!iter_diff->is_empty())
     	        {
     	    	    double d_mean = arma::mean(*iter_diff);
+    	    	    means.push_back(d_mean);
     	    	    double d_stddev = arma::stddev(*iter_diff);
+    	    	    stddevs.push_back(d_stddev);
+    	    	    prns.push_back(static_cast<double>(prn_id));
     	    	    std::cout << "-- Mean carrier phase difference for sat " << prn_id << ": " << d_mean;
     	    	    std::cout << " +/- " << d_stddev;
     	    	    std::cout << " whole cycles" << std::endl;
@@ -564,20 +615,62 @@ void ObsSystemTest::compute_carrierphase_error(
     	    	}
             prn_id++;
         }
+	if(FLAGS_plot_obs_sys_test == true)
+	        {
+	            const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+	            if(gnuplot_executable.empty())
+	                {
+	                    std::cout << "WARNING: Although the flag plot_obs_sys_test has been set to TRUE," << std::endl;
+	                    std::cout << "gnuplot has not been found in your system." << std::endl;
+	                    std::cout << "Test results will not be plotted." << std::endl;
+	                }
+	            else
+	                {
+	                    try
+	                    {
+	                            boost::filesystem::path p(gnuplot_executable);
+	                            boost::filesystem::path dir = p.parent_path();
+	                            std::string gnuplot_path = dir.native();
+	                            Gnuplot::set_GNUPlotPath(gnuplot_path);
+
+	                            Gnuplot g1("linespoints");
+	                            g1.set_title(signal_name + " Carrier phase error");
+	                            g1.set_grid();
+	                            g1.set_xlabel("PRN");
+	                            g1.set_ylabel("Carrier phase error [whole cycles]");
+	                            g1.plot_xy(prns, means, "Mean");
+	                            g1.plot_xy(prns, stddevs, "Standard deviation");
+	                            //g1.savetops("FFT_execution_times_extended");
+	                            //g1.savetopdf("FFT_execution_times_extended", 18);
+	                            g1.showonscreen(); // window output
+                        }
+	                    catch (const GnuplotException & ge)
+	                    {
+	                            std::cout << ge.what() << std::endl;
+	                    }
+	                }
+	        }
 }
 
 void ObsSystemTest::compute_doppler_error(
 		std::vector<arma::vec>& diff,
-		double error_th_mean, double error_th_std)
+		double error_th_mean, double error_th_std,
+		std::string signal_name)
 {
     int prn_id = 0;
+    std::vector<double> means;
+    std::vector<double> stddevs;
+    std::vector<double> prns;
     std::vector<arma::vec>::iterator iter_diff;
     for(iter_diff = diff.begin(); iter_diff != diff.end(); iter_diff++)
         {
     	    if(!iter_diff->is_empty())
     	        {
     	    	    double d_mean = arma::mean(*iter_diff);
+    	    	    means.push_back(d_mean);
     	    	    double d_stddev = arma::stddev(*iter_diff);
+    	    	    stddevs.push_back(d_stddev);
+    	    	    prns.push_back(static_cast<double>(prn_id));
     	    	    std::cout << "-- Mean Doppler difference for sat " << prn_id << ": " << d_mean;
     	    	    std::cout << " +/- " << d_stddev;
     	    	    std::cout << " [Hz]" << std::endl;
@@ -586,6 +679,41 @@ void ObsSystemTest::compute_doppler_error(
     	        }
             prn_id++;
         }
+	if(FLAGS_plot_obs_sys_test == true)
+	        {
+	            const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+	            if(gnuplot_executable.empty())
+	                {
+	                    std::cout << "WARNING: Although the flag plot_obs_sys_test has been set to TRUE," << std::endl;
+	                    std::cout << "gnuplot has not been found in your system." << std::endl;
+	                    std::cout << "Test results will not be plotted." << std::endl;
+	                }
+	            else
+	                {
+	                    try
+	                    {
+	                            boost::filesystem::path p(gnuplot_executable);
+	                            boost::filesystem::path dir = p.parent_path();
+	                            std::string gnuplot_path = dir.native();
+	                            Gnuplot::set_GNUPlotPath(gnuplot_path);
+
+	                            Gnuplot g1("linespoints");
+	                            g1.set_title(signal_name + " Doppler error");
+	                            g1.set_grid();
+	                            g1.set_xlabel("PRN");
+	                            g1.set_ylabel("Doppler error [Hz]");
+	                            g1.plot_xy(prns, means, "Mean");
+	                            g1.plot_xy(prns, stddevs, "Standard deviation");
+	                            //g1.savetops("FFT_execution_times_extended");
+	                            //g1.savetopdf("FFT_execution_times_extended", 18);
+	                            g1.showonscreen(); // window output
+                        }
+	                    catch (const GnuplotException & ge)
+	                    {
+	                            std::cout << ge.what() << std::endl;
+	                    }
+	                }
+	        }
 }
 void ObsSystemTest::check_results()
 {
@@ -612,19 +740,21 @@ void ObsSystemTest::check_results()
         time_alignment_diff(doppler_ref, doppler_meas, dp_diff);
 
         // Results
+        std::cout << std::endl;
+        std::cout << std::endl;
         std::cout << "GPS L1 C/A obs. results" << std::endl;
 
         // Compute pseudorange error
 
-        compute_pseudorange_error(pr_diff, pseudorange_error_th_mean, pseudorange_error_th_std);
+        compute_pseudorange_error(pr_diff, pseudorange_error_th_mean, pseudorange_error_th_std, "GPS L1 C/A");
 
         // Compute carrier phase error
 
-        compute_carrierphase_error(cp_diff, carrierphase_error_th_mean, carrierphase_error_th_std);
+        compute_carrierphase_error(cp_diff, carrierphase_error_th_mean, carrierphase_error_th_std, "GPS L1 C/A");
 
         // Compute Doppler error
 
-        compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std);
+        compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std, "GPS L1 C/A");
     }
     if(gps_L5)
     {
@@ -648,19 +778,21 @@ void ObsSystemTest::check_results()
         time_alignment_diff(doppler_ref, doppler_meas, dp_diff);
 
         // Results
+        std::cout << std::endl;
+        std::cout << std::endl;
         std::cout << "GPS L5 obs. results" << std::endl;
 
         // Compute pseudorange error
 
-        compute_pseudorange_error(pr_diff, pseudorange_error_th_mean, pseudorange_error_th_std);
+        compute_pseudorange_error(pr_diff, pseudorange_error_th_mean, pseudorange_error_th_std, "GPS L5");
 
         // Compute carrier phase error
 
-        compute_carrierphase_error(cp_diff, carrierphase_error_th_mean, carrierphase_error_th_std);
+        compute_carrierphase_error(cp_diff, carrierphase_error_th_mean, carrierphase_error_th_std, "GPS L5");
 
         // Compute Doppler error
 
-        compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std);
+        compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std, "GPS L5");
     }
     if(gal_1B)
     {
@@ -684,19 +816,21 @@ void ObsSystemTest::check_results()
         time_alignment_diff(doppler_ref, doppler_meas, dp_diff);
 
         // Results
+        std::cout << std::endl;
+        std::cout << std::endl;
         std::cout << "Galileo E1B obs. results" << std::endl;
 
         // Compute pseudorange error
 
-        compute_pseudorange_error(pr_diff, pseudorange_error_th_mean, pseudorange_error_th_std);
+        compute_pseudorange_error(pr_diff, pseudorange_error_th_mean, pseudorange_error_th_std, "Galileo E1B");
 
         // Compute carrier phase error
 
-        compute_carrierphase_error(cp_diff, carrierphase_error_th_mean, carrierphase_error_th_std);
+        compute_carrierphase_error(cp_diff, carrierphase_error_th_mean, carrierphase_error_th_std, "Galileo E1B");
 
         // Compute Doppler error
 
-        compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std);
+        compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std, "Galileo E1B");
     }
     if(gal_E5a)
     {
@@ -720,19 +854,21 @@ void ObsSystemTest::check_results()
         time_alignment_diff(doppler_ref, doppler_meas, dp_diff);
 
         // Results
+        std::cout << std::endl;
+        std::cout << std::endl;
         std::cout << "Galileo E5a obs. results" << std::endl;
 
         // Compute pseudorange error
 
-        compute_pseudorange_error(pr_diff, pseudorange_error_th_mean, pseudorange_error_th_std);
+        compute_pseudorange_error(pr_diff, pseudorange_error_th_mean, pseudorange_error_th_std, "Galileo E5a");
 
         // Compute carrier phase error
 
-        compute_carrierphase_error(cp_diff, carrierphase_error_th_mean, carrierphase_error_th_std);
+        compute_carrierphase_error(cp_diff, carrierphase_error_th_mean, carrierphase_error_th_std, "Galileo E5a");
 
         // Compute Doppler error
 
-        compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std);
+        compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std, "Galileo E5a");
     }
 }
 
@@ -754,11 +890,11 @@ TEST_F(ObsSystemTest, Observables_system_test)
     bool is_gen_rinex_obs_valid = false;
     if(internal_rinex_generation)
         {
-    	    is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + generated_rinex_obs, 2);
+    	    is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + generated_rinex_obs, config->property("PVT.rinex_version", 3));
         }
     else
         {
-    	    is_gen_rinex_obs_valid = check_valid_rinex_obs(generated_rinex_obs, 2);
+    	    is_gen_rinex_obs_valid = check_valid_rinex_obs(generated_rinex_obs, config->property("PVT.rinex_version", 3));
     	}
     ASSERT_EQ(true, is_gen_rinex_obs_valid) << "The RINEX observation file " << generated_rinex_obs << ", generated by GNSS-SDR, is not well formed.";
     std::cout << "The file is valid." << std::endl;

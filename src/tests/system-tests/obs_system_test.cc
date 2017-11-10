@@ -60,12 +60,12 @@ concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 DEFINE_string(configuration_file, "./default_configuration.conf", "Path of configuration file");
 DEFINE_string(filename_rinex_true, "./default_rinex.txt", "Path of RINEX true observations");
 DEFINE_string(filename_rinex_obs, "default_string", "Path of RINEX true observations");
-DEFINE_double(pr_error_mean_max, 50.0, "Maximum mean error in pseudorange");
-DEFINE_double(pr_error_std_max, 50.0, "Maximum standard deviation in pseudorange");
-DEFINE_double(cp_error_mean_max, 50.0, "Maximum mean error in carrier phase");
-DEFINE_double(cp_error_std_max, 50.0, "Maximum standard deviation in carrier phase");
-DEFINE_double(dp_error_mean_max, 5.0, "Maximum mean error in Doppler frequency");
-DEFINE_double(dp_error_std_max, 10.0, "Maximum standard deviation in Doppler frequency");
+DEFINE_double(pr_error_mean_max, 25.0, "Maximum mean error in pseudorange");
+DEFINE_double(pr_error_std_max, 5.0, "Maximum standard deviation in pseudorange");
+DEFINE_double(cp_error_mean_max, 5.0, "Maximum mean error in carrier phase");
+DEFINE_double(cp_error_std_max, 2.5, "Maximum standard deviation in carrier phase");
+DEFINE_double(dp_error_mean_max, 50.0, "Maximum mean error in Doppler frequency");
+DEFINE_double(dp_error_std_max, 15.0, "Maximum standard deviation in Doppler frequency");
 
 class ObsSystemTest: public ::testing::Test
 {
@@ -81,11 +81,21 @@ public:
     		std::vector<arma::mat>& pseudorange_meas,
     		std::vector<arma::mat>& carrierphase_meas,
     		std::vector<arma::mat>& doppler_meas,
+			arma::mat& sow_prn_ref,
     		int signal_type);
     void time_alignment_diff(
     		std::vector<arma::mat>& ref,
     		std::vector<arma::mat>& meas,
 			std::vector<arma::vec>& diff);
+    void time_alignment_diff_cp(
+        		std::vector<arma::mat>& ref,
+        		std::vector<arma::mat>& meas,
+    			std::vector<arma::vec>& diff);
+    void time_alignment_diff_pr(
+    		std::vector<arma::mat>& ref,
+    		std::vector<arma::mat>& meas,
+			std::vector<arma::vec>& diff,
+			arma::mat& sow_prn_ref);
     void compute_pseudorange_error(std::vector<arma::vec>& diff,
 			double error_th_mean, double error_th_std);
     void compute_carrierphase_error(
@@ -139,6 +149,7 @@ void ObsSystemTest::read_rinex_files(
 		std::vector<arma::mat>& pseudorange_meas,
 		std::vector<arma::mat>& carrierphase_meas,
 		std::vector<arma::mat>& doppler_meas,
+		arma::mat& sow_prn_ref,
 		int signal_type)
 {
 	bool ref_exist = false;
@@ -149,6 +160,7 @@ void ObsSystemTest::read_rinex_files(
 	std::string cp_string;
 	std::string dp_string;
 	std::string signal_type_string;
+	sow_prn_ref.reset();
 
     switch(signal_type)
     {
@@ -273,7 +285,11 @@ void ObsSystemTest::read_rinex_files(
 
 		    while (r_meas >> r_meas_data)
 		        {
-		            for (int myprn = 1; myprn < max_prn; myprn++)
+		            double pr_min = 0.0;
+		            double sow_insert = 0.0;
+		            double prn_min = 0.0;
+		            bool set_pr_min = true;
+		    	    for (int myprn = 1; myprn < max_prn; myprn++)
 		                {
 		                    gpstk::SatID prn( myprn, sat_type);
 		                    gpstk::CommonTime time = r_meas_data.time;
@@ -288,6 +304,13 @@ void ObsSystemTest::read_rinex_files(
 		                            dataobj = r_meas_data.getObs(prn, pr_string,  r_meas_header);
 		                            double P1 = dataobj.data;
 		                            pseudorange_meas.at(myprn).insert_rows(pseudorange_meas.at(myprn).n_rows, arma::rowvec({sow, P1}));
+		                            if(set_pr_min || (P1 < pr_min))
+		                                {
+		                            	    set_pr_min = false;
+		                            	    pr_min = P1;
+		                            	    sow_insert = sow;
+		                            	    prn_min = static_cast<double>(myprn);
+		                                }
 
 		                            dataobj = r_meas_data.getObs(prn, cp_string,  r_meas_header);
 		                            double L1 = dataobj.data;
@@ -300,6 +323,7 @@ void ObsSystemTest::read_rinex_files(
 		                            meas_exist = true;
 		                        }  // End of 'if( pointer == roe.obs.end() )'
 		                } // end for
+		    	    sow_prn_ref.insert_rows(sow_prn_ref.n_rows, arma::rowvec({sow_insert, pr_min, prn_min}));
 		        } // end while
         } // End of 'try' block
     catch(const gpstk::FFStreamError& e)
@@ -344,6 +368,94 @@ void ObsSystemTest::time_alignment_diff(
                     mat_aux = iter_meas->rows(index_min, index_max);
                     arma::vec ref_aligned;
                     arma::interp1(iter_ref->col(0), iter_ref->col(1), mat_aux.col(0), ref_aligned);
+                    *iter_diff = ref_aligned - mat_aux.col(1);
+                }
+            iter_ref++;
+            iter_diff++;
+        }
+}
+
+void ObsSystemTest::time_alignment_diff_cp(
+    		std::vector<arma::mat>& ref,
+    		std::vector<arma::mat>& meas,
+			std::vector<arma::vec>& diff)
+{
+	std::vector<arma::mat>::iterator iter_ref;
+	std::vector<arma::mat>::iterator iter_meas;
+	std::vector<arma::vec>::iterator iter_diff;
+	arma::mat mat_aux;
+
+    iter_ref = ref.begin();
+    iter_diff = diff.begin();
+    for(iter_meas = meas.begin(); iter_meas != meas.end(); iter_meas++)
+        {
+    	    if( !iter_meas->is_empty() && !iter_ref->is_empty() )
+    	        {
+    	    	    arma::uvec index_ = arma::find(iter_meas->col(0) > iter_ref->at(0, 0));
+    	    	    arma::uword index_min = arma::min(index_);
+    	    	    index_ = arma::find(iter_meas->col(0) < iter_ref->at(iter_ref->n_rows - 1, 0));
+    	    	    arma::uword index_max = arma::max(index_);
+                    mat_aux = iter_meas->rows(index_min, index_max);
+                    mat_aux.col(1) -= arma::min(mat_aux.col(1));
+                    arma::vec ref_aligned;
+                    arma::interp1(iter_ref->col(0), iter_ref->col(1), mat_aux.col(0), ref_aligned);
+                    ref_aligned -= arma::min(ref_aligned);
+                    *iter_diff = ref_aligned - mat_aux.col(1);
+                }
+            iter_ref++;
+            iter_diff++;
+        }
+}
+
+
+void ObsSystemTest::time_alignment_diff_pr(
+    		std::vector<arma::mat>& ref,
+    		std::vector<arma::mat>& meas,
+			std::vector<arma::vec>& diff,
+			arma::mat& sow_prn_ref)
+{
+	std::vector<arma::mat>::iterator iter_ref;
+	std::vector<arma::mat>::iterator iter_meas;
+	std::vector<arma::vec>::iterator iter_diff;
+	arma::mat mat_aux;
+	arma::vec subtraction_meas;
+	arma::vec subtraction_ref;
+
+	arma::mat subtraction_pr_ref = sow_prn_ref;
+	arma::vec::iterator iter_vec0 = subtraction_pr_ref.begin_col(0);
+	arma::vec::iterator iter_vec1 = subtraction_pr_ref.begin_col(1);
+	arma::vec::iterator iter_vec2 = subtraction_pr_ref.begin_col(2);
+
+	for(iter_vec1 = subtraction_pr_ref.begin_col(1); iter_vec1 != subtraction_pr_ref.end_col(1); iter_vec1++)
+	{
+		arma::vec aux_pr; //vector with only 1 element
+		arma::vec aux_sow = {*iter_vec0}; //vector with only 1 element
+		arma::interp1(ref.at(static_cast<int>(*iter_vec2)).col(0),
+				      ref.at(static_cast<int>(*iter_vec2)).col(1),
+					  aux_sow,
+					  aux_pr);
+		*iter_vec1 = aux_pr(0);
+		iter_vec0++;
+		iter_vec2++;
+	}
+
+    iter_ref = ref.begin();
+    iter_diff = diff.begin();
+    for(iter_meas = meas.begin(); iter_meas != meas.end(); iter_meas++)
+        {
+    	    if( !iter_meas->is_empty() && !iter_ref->is_empty() )
+    	        {
+    	    	    arma::uvec index_ = arma::find(iter_meas->col(0) > iter_ref->at(0, 0));
+    	    	    arma::uword index_min = arma::min(index_);
+    	    	    index_ = arma::find(iter_meas->col(0) < iter_ref->at(iter_ref->n_rows - 1, 0));
+    	    	    arma::uword index_max = arma::max(index_);
+                    mat_aux = iter_meas->rows(index_min, index_max);
+                    arma::interp1(sow_prn_ref.col(0), sow_prn_ref.col(1), mat_aux.col(0), subtraction_meas);
+                    mat_aux.col(1) -= subtraction_meas;
+                    arma::vec ref_aligned;
+                    arma::interp1(iter_ref->col(0), iter_ref->col(1), mat_aux.col(0), ref_aligned);
+                    arma::interp1(subtraction_pr_ref.col(0), subtraction_pr_ref.col(1), mat_aux.col(0), subtraction_ref);
+                    ref_aligned -= subtraction_ref;
                     *iter_diff = ref_aligned - mat_aux.col(1);
                 }
             iter_ref++;
@@ -477,7 +589,8 @@ void ObsSystemTest::compute_doppler_error(
 }
 void ObsSystemTest::check_results()
 {
-    if(gps_1C)
+	arma::mat sow_prn_ref;
+	if(gps_1C)
     {
     	std::vector<arma::mat> pseudorange_ref(num_prn_gps);
         std::vector<arma::mat> carrierphase_ref(num_prn_gps);
@@ -487,15 +600,15 @@ void ObsSystemTest::check_results()
         std::vector<arma::mat> carrierphase_meas(num_prn_gps);
         std::vector<arma::mat> doppler_meas(num_prn_gps);
 
-        read_rinex_files(pseudorange_ref, carrierphase_ref, doppler_ref, pseudorange_meas, carrierphase_meas, doppler_meas, 0);
+        read_rinex_files(pseudorange_ref, carrierphase_ref, doppler_ref, pseudorange_meas, carrierphase_meas, doppler_meas, sow_prn_ref, 0);
 
         // Time alignment and difference computation
 
         std::vector<arma::vec> pr_diff(num_prn_gps);
         std::vector<arma::vec> cp_diff(num_prn_gps);
         std::vector<arma::vec> dp_diff(num_prn_gps);
-        time_alignment_diff(pseudorange_ref, pseudorange_meas, pr_diff);
-        time_alignment_diff(carrierphase_ref, carrierphase_meas, cp_diff);
+        time_alignment_diff_pr(pseudorange_ref, pseudorange_meas, pr_diff, sow_prn_ref);
+        time_alignment_diff_cp(carrierphase_ref, carrierphase_meas, cp_diff);
         time_alignment_diff(doppler_ref, doppler_meas, dp_diff);
 
         // Results
@@ -523,15 +636,15 @@ void ObsSystemTest::check_results()
         std::vector<arma::mat> carrierphase_meas(num_prn_gps);
         std::vector<arma::mat> doppler_meas(num_prn_gps);
 
-        read_rinex_files(pseudorange_ref, carrierphase_ref, doppler_ref, pseudorange_meas, carrierphase_meas, doppler_meas, 2);
+        read_rinex_files(pseudorange_ref, carrierphase_ref, doppler_ref, pseudorange_meas, carrierphase_meas, doppler_meas, sow_prn_ref, 2);
 
         // Time alignment and difference computation
 
         std::vector<arma::vec> pr_diff(num_prn_gps);
         std::vector<arma::vec> cp_diff(num_prn_gps);
         std::vector<arma::vec> dp_diff(num_prn_gps);
-        time_alignment_diff(pseudorange_ref, pseudorange_meas, pr_diff);
-        time_alignment_diff(carrierphase_ref, carrierphase_meas, cp_diff);
+        time_alignment_diff_pr(pseudorange_ref, pseudorange_meas, pr_diff, sow_prn_ref);
+        time_alignment_diff_cp(carrierphase_ref, carrierphase_meas, cp_diff);
         time_alignment_diff(doppler_ref, doppler_meas, dp_diff);
 
         // Results
@@ -559,15 +672,15 @@ void ObsSystemTest::check_results()
         std::vector<arma::mat> carrierphase_meas(num_prn_gal);
         std::vector<arma::mat> doppler_meas(num_prn_gal);
 
-        read_rinex_files(pseudorange_ref, carrierphase_ref, doppler_ref, pseudorange_meas, carrierphase_meas, doppler_meas, 1);
+        read_rinex_files(pseudorange_ref, carrierphase_ref, doppler_ref, pseudorange_meas, carrierphase_meas, doppler_meas, sow_prn_ref, 1);
 
         // Time alignment and difference computation
 
         std::vector<arma::vec> pr_diff(num_prn_gal);
         std::vector<arma::vec> cp_diff(num_prn_gal);
         std::vector<arma::vec> dp_diff(num_prn_gal);
-        time_alignment_diff(pseudorange_ref, pseudorange_meas, pr_diff);
-        time_alignment_diff(carrierphase_ref, carrierphase_meas, cp_diff);
+        time_alignment_diff_pr(pseudorange_ref, pseudorange_meas, pr_diff, sow_prn_ref);
+        time_alignment_diff_cp(carrierphase_ref, carrierphase_meas, cp_diff);
         time_alignment_diff(doppler_ref, doppler_meas, dp_diff);
 
         // Results
@@ -595,15 +708,15 @@ void ObsSystemTest::check_results()
         std::vector<arma::mat> carrierphase_meas(num_prn_gal);
         std::vector<arma::mat> doppler_meas(num_prn_gal);
 
-        read_rinex_files(pseudorange_ref, carrierphase_ref, doppler_ref, pseudorange_meas, carrierphase_meas, doppler_meas, 3);
+        read_rinex_files(pseudorange_ref, carrierphase_ref, doppler_ref, pseudorange_meas, carrierphase_meas, doppler_meas, sow_prn_ref, 3);
 
         // Time alignment and difference computation
 
         std::vector<arma::vec> pr_diff(num_prn_gal);
         std::vector<arma::vec> cp_diff(num_prn_gal);
         std::vector<arma::vec> dp_diff(num_prn_gal);
-        time_alignment_diff(pseudorange_ref, pseudorange_meas, pr_diff);
-        time_alignment_diff(carrierphase_ref, carrierphase_meas, cp_diff);
+        time_alignment_diff_pr(pseudorange_ref, pseudorange_meas, pr_diff, sow_prn_ref);
+        time_alignment_diff_cp(carrierphase_ref, carrierphase_meas, cp_diff);
         time_alignment_diff(doppler_ref, doppler_meas, dp_diff);
 
         // Results

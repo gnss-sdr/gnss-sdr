@@ -67,8 +67,8 @@ DEFINE_double(pr_error_mean_max, 25.0, "Maximum mean error in pseudorange");
 DEFINE_double(pr_error_std_max, 5.0, "Maximum standard deviation in pseudorange");
 DEFINE_double(cp_error_mean_max, 5.0, "Maximum mean error in carrier phase");
 DEFINE_double(cp_error_std_max, 2.5, "Maximum standard deviation in carrier phase");
-DEFINE_double(dp_error_mean_max, 50.0, "Maximum mean error in Doppler frequency");
-DEFINE_double(dp_error_std_max, 15.0, "Maximum standard deviation in Doppler frequency");
+DEFINE_double(dp_error_mean_max, 75.0, "Maximum mean error in Doppler frequency");
+DEFINE_double(dp_error_std_max, 25.0, "Maximum standard deviation in Doppler frequency");
 DEFINE_bool(plot_obs_sys_test, false, "Plots results of ObsSystemTest with gnuplot");
 
 class ObsSystemTest: public ::testing::Test
@@ -538,12 +538,12 @@ void ObsSystemTest::compute_pseudorange_error(
         {
 	        if(!iter_diff->is_empty())
 	            {
-	        	    double d_mean = arma::mean(*iter_diff);
+	        	    double d_mean = std::sqrt(arma::mean(arma::square(*iter_diff)));
 	        	    means.push_back(d_mean);
 	        	    double d_stddev = arma::stddev(*iter_diff);
 	        	    stddevs.push_back(d_stddev);
 	        	    prns.push_back(static_cast<double>(prn_id));
-	        	    std::cout << "-- Mean pseudorange difference for sat " << prn_id << ": " << d_mean;
+	        	    std::cout << "-- RMS pseudorange difference for sat " << prn_id << ": " << d_mean;
 	        	    std::cout << " +/- " << d_stddev;
 	        	    std::cout << " [m]" << std::endl;
 	        	    EXPECT_LT(d_mean, error_th_mean);
@@ -574,7 +574,7 @@ void ObsSystemTest::compute_pseudorange_error(
 	                            g1.set_grid();
 	                            g1.set_xlabel("PRN");
 	                            g1.set_ylabel("Pseudorange error [m]");
-	                            g1.plot_xy(prns, means, "Mean");
+	                            g1.plot_xy(prns, means, "RMS error");
 	                            g1.plot_xy(prns, stddevs, "Standard deviation");
 	                            //g1.savetops("FFT_execution_times_extended");
 	                            //g1.savetopdf("FFT_execution_times_extended", 18);
@@ -602,12 +602,12 @@ void ObsSystemTest::compute_carrierphase_error(
         {
     	    if(!iter_diff->is_empty())
     	        {
-    	    	    double d_mean = arma::mean(*iter_diff);
+    	    	    double d_mean = std::sqrt(arma::mean(arma::square(*iter_diff)));
     	    	    means.push_back(d_mean);
     	    	    double d_stddev = arma::stddev(*iter_diff);
     	    	    stddevs.push_back(d_stddev);
     	    	    prns.push_back(static_cast<double>(prn_id));
-    	    	    std::cout << "-- Mean carrier phase difference for sat " << prn_id << ": " << d_mean;
+    	    	    std::cout << "-- RMS carrier phase difference for sat " << prn_id << ": " << d_mean;
     	    	    std::cout << " +/- " << d_stddev;
     	    	    std::cout << " whole cycles" << std::endl;
     	    	    EXPECT_LT(d_mean, error_th_mean);
@@ -638,7 +638,7 @@ void ObsSystemTest::compute_carrierphase_error(
 	                            g1.set_grid();
 	                            g1.set_xlabel("PRN");
 	                            g1.set_ylabel("Carrier phase error [whole cycles]");
-	                            g1.plot_xy(prns, means, "Mean");
+	                            g1.plot_xy(prns, means, "RMS error");
 	                            g1.plot_xy(prns, stddevs, "Standard deviation");
 	                            //g1.savetops("FFT_execution_times_extended");
 	                            //g1.savetopdf("FFT_execution_times_extended", 18);
@@ -666,12 +666,12 @@ void ObsSystemTest::compute_doppler_error(
         {
     	    if(!iter_diff->is_empty())
     	        {
-    	    	    double d_mean = arma::mean(*iter_diff);
+    	    	    double d_mean = std::sqrt(arma::mean(arma::square(*iter_diff)));
     	    	    means.push_back(d_mean);
     	    	    double d_stddev = arma::stddev(*iter_diff);
     	    	    stddevs.push_back(d_stddev);
     	    	    prns.push_back(static_cast<double>(prn_id));
-    	    	    std::cout << "-- Mean Doppler difference for sat " << prn_id << ": " << d_mean;
+    	    	    std::cout << "-- RMS Doppler difference for sat " << prn_id << ": " << d_mean;
     	    	    std::cout << " +/- " << d_stddev;
     	    	    std::cout << " [Hz]" << std::endl;
     	    	    EXPECT_LT(d_mean, error_th_mean);
@@ -702,7 +702,7 @@ void ObsSystemTest::compute_doppler_error(
 	                            g1.set_grid();
 	                            g1.set_xlabel("PRN");
 	                            g1.set_ylabel("Doppler error [Hz]");
-	                            g1.plot_xy(prns, means, "Mean");
+	                            g1.plot_xy(prns, means, "RMS error");
 	                            g1.plot_xy(prns, stddevs, "Standard deviation");
 	                            //g1.savetops("FFT_execution_times_extended");
 	                            //g1.savetopdf("FFT_execution_times_extended", 18);

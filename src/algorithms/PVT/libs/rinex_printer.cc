@@ -409,8 +409,8 @@ std::string Rinex_Printer::getLocalTime()
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& iono, const Galileo_Utc_Model& utc_model, const Galileo_Almanac& galileo_almanac)
 {
     std::string line;
-    stringVersion = "3.02";
-    version = 3;
+    //stringVersion = "3.02";
+    //version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -815,8 +815,8 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac)
 {
     std::string line;
-    stringVersion = "3.02";
-    version = 3;
+    //stringVersion = "3.02";
+    //version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -2909,11 +2909,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream & out, const Gps_Ephemeris & e
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation, const std::string bands)
 {
     std::string line;
-    version = 3;
+    //version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += "3.02";
+    line += stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
     line += satelliteSystem["Galileo"];
@@ -3171,11 +3171,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 {
     if(galileo_eph.e_1){} // avoid warning, not needed
     std::string line;
-    version = 3;
+    //version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += "3.02";
+    line += stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
     line += satelliteSystem["Mixed"];

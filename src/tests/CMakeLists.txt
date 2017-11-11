@@ -530,10 +530,10 @@ if(ENABLE_SYSTEM_TESTING)
                     file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
                 endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
                 install(TARGETS obs_gps_l1_system_test RUNTIME DESTINATION bin COMPONENT "obs_gps_l1_system_test")
+                
                 if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
                     file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_system_test)
                 endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
-                install(TARGETS obs_gps_l1_system_test RUNTIME DESTINATION bin COMPONENT "obs_gps_l1_system_test")
                 install(TARGETS obs_system_test RUNTIME DESTINATION bin COMPONENT "obs_system_test")
             else(ENABLE_INSTALL_TESTS)
                 add_custom_command(TARGET obs_gps_l1_system_test POST_BUILD

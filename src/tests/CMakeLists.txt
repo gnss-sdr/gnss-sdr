@@ -412,7 +412,7 @@ if(ENABLE_SYSTEM_TESTING)
     add_definitions(-DHOST_SYSTEM="${HOST_SYSTEM}")
     set(TTFF_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/ttff_gps_l1.cc)
     
-    # Ensure that ttff is rebuild if was previously built and then removed
+    # Ensure that ttff is rebuilt if it was previously built and then removed
     if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
         execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${TTFF_SOURCES})     
     endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
@@ -452,7 +452,7 @@ if(ENABLE_SYSTEM_TESTING)
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
         set(POSITION_TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/position_test.cc)
-        # Ensure that position_test is rebuild if was previously built and then removed
+        # Ensure that position_test is rebuilt if it was previously built and then removed
         if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
             execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${POSITION_TEST_SOURCES})     
         endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
@@ -490,15 +490,25 @@ if(ENABLE_SYSTEM_TESTING)
 
         if(GPSTK_FOUND OR OWN_GPSTK)
             set(OBS_GPS_L1_TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc)
-            # Ensure that obs_gps_l1_system_test is rebuild if was previously built and then removed
+            # Ensure that obs_gps_l1_system_test is rebuilt if it was previously built and then removed
             if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
                 execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${OBS_GPS_L1_TEST_SOURCES})     
             endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
             add_executable(obs_gps_l1_system_test ${OBS_GPS_L1_TEST_SOURCES})
+            
+            set(OBS_SYSTEM_TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_system_test.cc)
+            # Ensure that obs_system_test is rebuilt if it was previously built and then removed
+            if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
+                execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${OBS_SYSTEM_TEST_SOURCES})     
+            endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
+            add_executable(obs_system_test ${OBS_SYSTEM_TEST_SOURCES})
+            
             if(NOT ${GTEST_DIR_LOCAL})
                 add_dependencies(obs_gps_l1_system_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION} )
+                add_dependencies(obs_system_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION} )
             else(NOT ${GTEST_DIR_LOCAL})
                 add_dependencies(obs_gps_l1_system_test gtest)
+                add_dependencies(obs_system_test gtest)
             endif(NOT ${GTEST_DIR_LOCAL})
             include_directories(${GPSTK_INCLUDE_DIRS} ${GPSTK_INCLUDE_DIRS}/gpstk)
             target_link_libraries(obs_gps_l1_system_test ${GFlags_LIBS}
@@ -507,16 +517,32 @@ if(ENABLE_SYSTEM_TESTING)
                                                          gnss_sp_libs
                                                          gnss_rx
                                                          ${gpstk_libs})
+                                                         
+            target_link_libraries(obs_system_test ${GFlags_LIBS}
+                                                  ${GLOG_LIBRARIES}
+                                                  ${GTEST_LIBRARIES}
+                                                  gnss_sp_libs
+                                                  gnss_rx
+                                                  ${gpstk_libs})
 
             if(ENABLE_INSTALL_TESTS)
                 if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
                     file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
                 endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
                 install(TARGETS obs_gps_l1_system_test RUNTIME DESTINATION bin COMPONENT "obs_gps_l1_system_test")
+                if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
+                    file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_system_test)
+                endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
+                install(TARGETS obs_gps_l1_system_test RUNTIME DESTINATION bin COMPONENT "obs_gps_l1_system_test")
+                install(TARGETS obs_system_test RUNTIME DESTINATION bin COMPONENT "obs_system_test")
             else(ENABLE_INSTALL_TESTS)
                 add_custom_command(TARGET obs_gps_l1_system_test POST_BUILD
                                    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_gps_l1_system_test>
                                    ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_gps_l1_system_test> )
+                add_custom_command(TARGET obs_system_test POST_BUILD
+                                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_system_test>
+                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_system_test> )
+
             endif(ENABLE_INSTALL_TESTS)
         endif(GPSTK_FOUND OR OWN_GPSTK)
     else(ENABLE_SYSTEM_TESTING_EXTRA)
@@ -526,7 +552,10 @@ if(ENABLE_SYSTEM_TESTING)
         endif(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
         if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
            file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-        endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)      
+        endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
+        if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
+           file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_system_test)
+        endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
     endif(ENABLE_SYSTEM_TESTING_EXTRA)
 else(ENABLE_SYSTEM_TESTING)
     # Avoid working with old executables if they were switched ON and then OFF
@@ -538,7 +567,10 @@ else(ENABLE_SYSTEM_TESTING)
     endif(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
     if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
        file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-    endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)   
+    endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
+    if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
+       file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_system_test)
+    endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)    
 endif(ENABLE_SYSTEM_TESTING)
 
 

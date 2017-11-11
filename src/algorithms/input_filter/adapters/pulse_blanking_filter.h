@@ -73,6 +73,7 @@ public:
 private:
     ConfigurationInterface* config_;
     bool dump_;
+    bool xlat_;
     std::string dump_filename_;
     std::string input_item_type_;
     size_t input_size_;

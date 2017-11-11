@@ -412,8 +412,8 @@ void FreqXlatingFirFilter::init()
         {
     	    double default_bw = 2000000.0;
     	    double bw_ = config_->property(role_ + ".bw", default_bw);
-    	    double default_tw = bw_ / 20.0;
+    	    double default_tw = bw_ / 10.0;
     	    double tw_ = config_->property(role_ + ".tw", default_tw);
-    	    taps_ = gr::filter::firdes::low_pass(1.0, sampling_freq_, bw_ / 2.0, tw_);
+    	    taps_ = gr::filter::firdes::low_pass(1.0, sampling_freq_, bw_, tw_);
     	}
 }

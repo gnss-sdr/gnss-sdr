@@ -60,6 +60,13 @@ concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 class StaticPositionSystemTest: public ::testing::Test
 {
 public:
+    int configure_generator();
+    int generate_signal();
+    int configure_receiver();
+    int run_receiver();
+    void check_results();
+
+private:
     std::string generator_binary;
     std::string p1;
     std::string p2;
@@ -72,12 +79,6 @@ public:
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
 
-    int configure_generator();
-    int generate_signal();
-
-    int configure_receiver();
-    int run_receiver();
-    void check_results();
     void print_results(const std::vector<double> & east,
                        const std::vector<double> & north,
                        const std::vector<double> & up);
@@ -88,13 +89,12 @@ public:
     void geodetic2Enu(const double latitude, const double longitude, const double altitude,
                         double* east, double* north, double* up);
 
+    void geodetic2Ecef(const double latitude, const double longitude, const double altitude,
+                            double* x, double* y, double* z);
+
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config_f;
     std::string generated_kml_file;
-
-private:
-    void geodetic2Ecef(const double latitude, const double longitude, const double altitude,
-                            double* x, double* y, double* z);
 };
 
 
@@ -521,29 +521,41 @@ void StaticPositionSystemTest::check_results()
     double sum__u = std::accumulate(pos_u.begin(), pos_u.end(), 0.0);
     double mean__u = sum__u / pos_u.size();
 
+    std::stringstream stm;
+    std::ofstream position_test_file;
+
     if(FLAGS_config_file_ptest.empty())
         {
-            std::cout << "---- ACCURACY ----" << std::endl;
-            std::cout << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-            std::cout << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-            std::cout << "CEP = " << 0.62 * compute_stdev_accuracy(pos_n, 0.0) + 0.56 * compute_stdev_accuracy(pos_e, 0.0) << " [m]" << std::endl;
-            std::cout << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            std::cout << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            std::cout << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            std::cout << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            std::cout << "Bias 2D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0)) << " [m]" << std::endl;
-            std::cout << "Bias 3D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0) + std::pow(mean__u, 2.0)) << " [m]" << std::endl;
-            std::cout << std::endl;
+            stm << "---- ACCURACY ----" << std::endl;
+            stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
+            stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
+            stm << "CEP = " << 0.62 * compute_stdev_accuracy(pos_n, 0.0) + 0.56 * compute_stdev_accuracy(pos_e, 0.0) << " [m]" << std::endl;
+            stm << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            stm << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            stm << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            stm << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            stm << "Bias 2D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0)) << " [m]" << std::endl;
+            stm << "Bias 3D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0) + std::pow(mean__u, 2.0)) << " [m]" << std::endl;
+            stm << std::endl;
         }
 
-    std::cout << "---- PRECISION ----" << std::endl;
-    std::cout << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
-    std::cout << "DRMS = " << sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
-    std::cout << "CEP = " << 0.62 * compute_stdev_precision(pos_n) + 0.56 * compute_stdev_precision(pos_e) << " [m]" << std::endl;
-    std::cout << "99% SAS = " << 1.122 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-    std::cout << "90% SAS = " << 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-    std::cout << "MRSE = " << sqrt(sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-    std::cout << "SEP = " << 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
+    stm << "---- PRECISION ----" << std::endl;
+    stm << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
+    stm << "DRMS = " << sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
+    stm << "CEP = " << 0.62 * compute_stdev_precision(pos_n) + 0.56 * compute_stdev_precision(pos_e) << " [m]" << std::endl;
+    stm << "99% SAS = " << 1.122 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
+    stm << "90% SAS = " << 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
+    stm << "MRSE = " << sqrt(sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
+    stm << "SEP = " << 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
+
+    std::cout << stm.rdbuf();
+    std::string output_filename = "position_test_output_" + StaticPositionSystemTest::generated_kml_file.erase(StaticPositionSystemTest::generated_kml_file.length() - 3,3) + "txt";
+    position_test_file.open(output_filename.c_str());
+    if(position_test_file.is_open())
+        {
+            position_test_file << stm.str();
+            position_test_file.close();
+        }
 
     // Sanity Check
     double precision_SEP =  0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);

@@ -419,8 +419,6 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
 {
     if(glonass_gnav_almanac.i_satellite_freq_channel){}
     std::string line;
-    stringVersion = "3.02";
-    version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -643,8 +641,6 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
      //Avoid compiler warning, there is not time system correction between Galileo and GLONASS
     if(galileo_almanac.A_0G_10){}
     std::string line;
-    stringVersion = "3.02";
-    version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -753,8 +749,6 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& iono, const Galileo_Utc_Model& utc_model, const Galileo_Almanac& galileo_almanac)
 {
     std::string line;
-    stringVersion = "3.02";
-    version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -1159,8 +1153,6 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac)
 {
     std::string line;
-    stringVersion = "3.02";
-    version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -2931,7 +2923,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Glonass_
                     line += Rinex_Printer::doub2for(+glonass_gnav_ephemeris_iter->second.d_gamma_n, 18, 2);
                     line += std::string(1, ' ');
                     //TODO need to define this here. what is nd
-                    line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_t_k + p_utc_time.date().day()*86400, 18, 2);
+                    line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_t_k + p_utc_time.date().day_of_week()*86400, 18, 2);
                 }
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
@@ -3015,6 +3007,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Glonass_
                 }
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
+            line.clear();
         }
 }
 
@@ -5197,6 +5190,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     out << line << std::endl;
 }
 
+
 void Rinex_Printer::update_obs_header(std::fstream& out, const Glonass_Gnav_Utc_Model& utc_model)
 {
     if(utc_model.d_N_4)
@@ -5584,7 +5578,6 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
                 }
             line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
 
-
             // Receiver clock offset (optional)
             //line += rightJustify(asString(clockOffset, 12), 15);
 
@@ -5652,6 +5645,9 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
                 }
         }
 }
+
+
+
 
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph,  double gps_obs_time, const std::map<int,Gnss_Synchro>& observables)

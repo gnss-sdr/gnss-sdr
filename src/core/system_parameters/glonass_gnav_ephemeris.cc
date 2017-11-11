@@ -113,8 +113,7 @@ void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_cor
 {
 		double tod = 0.0;
 	    double dayofweek = 0.0;
-	    double utcsu2utc = 3*3600;
-	    double glot2utcsu = 3*3600;
+	    double glot2utc = 3*3600;
 	    double days = 0.0;
 	    double total_sec = 0.0, sec_of_day = 0.0;
 	    int i = 0;
@@ -123,7 +122,7 @@ void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_cor
 
 	    // tk is relative to UTC(SU) + 3.00 hrs, so we need to convert to utc and add corrections
 	    // tk plus 10 sec is the true tod since get_TOW is called when in str5
-	    tod = tod_offset - glot2utcsu - utcsu2utc;
+	    tod = tod_offset - glot2utc ;
 
 
 	    boost::posix_time::time_duration t(0, 0, tod);

@@ -359,96 +359,58 @@ void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> & ttff_v, std:
     std::string default_str = "default";
     source = config_->property("SignalSource.implementation", default_str);
 
-    if (ttff_report_file.is_open())
-        {
-            ttff_report_file << "---------------------------" << std::endl;
-            ttff_report_file << " Time-To-First-Fix Report" << std::endl;
-            ttff_report_file <<  "---------------------------" << std::endl;
-            ttff_report_file << "Initial receiver status: ";
-            if (read_ephemeris)
-                {
-                    ttff_report_file << "Hot start." << std::endl;
-                }
-            else
-                {
-                    ttff_report_file << "Cold start." << std::endl;
-                }
-            ttff_report_file << "A-GNSS: ";
-            if (agnss && read_ephemeris)
-                {
-                    ttff_report_file << "Enabled." << std::endl;
-                }
-            else
-                {
-                    ttff_report_file << "Disabled." << std::endl;
-                }
-            ttff_report_file << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
-            for(double ttff_ : ttff) ttff_report_file << ttff_ << " ";
-            ttff_report_file << std::endl;
-            ttff_report_file << "TTFF mean: " << mean << " [s]" << std::endl;
-            if (ttff.size() > 0)
-                {
-                    ttff_report_file << "TTFF max: " << *max_ttff << " [s]" << std::endl;
-                    ttff_report_file << "TTFF min: " << *min_ttff << " [s]" << std::endl;
-                }
-            ttff_report_file << "TTFF stdev: " << stdev << " [s]" << std::endl;
-            ttff_report_file << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
-            ttff_report_file << "Navigation mode: " << "3D" << std::endl;
+    std::stringstream stm;
 
-            if(source.compare("UHD_Signal_Source"))
-                {
-                    ttff_report_file << "Source: File" << std::endl;
-                }
-            else
-                {
-                    ttff_report_file << "Source: Live" << std::endl;
-                }
-            ttff_report_file << "---------------------------" << std::endl;
-        }
-    ttff_report_file.close();
-    std::cout << "---------------------------" << std::endl;
-    std::cout << " Time-To-First-Fix Report" << std::endl;
-    std::cout << "---------------------------" << std::endl;
-    std::cout << "Initial receiver status: ";
+    stm << "---------------------------" << std::endl;
+    stm << " Time-To-First-Fix Report" << std::endl;
+    stm <<  "---------------------------" << std::endl;
+    stm << "Initial receiver status: ";
     if (read_ephemeris)
         {
-            std::cout << "Hot start." << std::endl;
+            stm << "Hot start." << std::endl;
         }
     else
         {
-            std::cout << "Cold start." << std::endl;
+            stm << "Cold start." << std::endl;
         }
-    std::cout << "A-GNSS: ";
+    stm << "A-GNSS: ";
     if (agnss && read_ephemeris)
         {
-            std::cout << "Enabled." << std::endl;
+            stm << "Enabled." << std::endl;
         }
     else
         {
-            std::cout << "Disabled." << std::endl;
+            stm << "Disabled." << std::endl;
         }
-    std::cout << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
-    for(double ttff_ : ttff) std::cout << ttff_ << " ";
-    std::cout << std::endl;
-    std::cout << "TTFF mean: " << mean << " [s]" << std::endl;
+    stm << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
+    for(double ttff_ : ttff) stm << ttff_ << " ";
+    stm << std::endl;
+    stm << "TTFF mean: " << mean << " [s]" << std::endl;
     if (ttff.size() > 0)
         {
-            std::cout << "TTFF max: " << *max_ttff << " [s]" << std::endl;
-            std::cout << "TTFF min: " << *min_ttff << " [s]" << std::endl;
+            stm << "TTFF max: " << *max_ttff << " [s]" << std::endl;
+            stm << "TTFF min: " << *min_ttff << " [s]" << std::endl;
         }
-    std::cout << "TTFF stdev: " << stdev << " [s]" << std::endl;
-    std::cout << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
-    std::cout << "Navigation mode: " << "3D" << std::endl;
+    stm << "TTFF stdev: " << stdev << " [s]" << std::endl;
+    stm << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
+    stm << "Navigation mode: " << "3D" << std::endl;
 
     if(source.compare("UHD_Signal_Source"))
         {
-            std::cout << "Source: File" << std::endl;
+            stm << "Source: File" << std::endl;
         }
     else
         {
-            std::cout << "Source: Live" << std::endl;
+            stm << "Source: Live" << std::endl;
         }
-    std::cout << "---------------------------" << std::endl;
+    stm << "---------------------------" << std::endl;
+
+    std::cout << stm.rdbuf();
+    if (ttff_report_file.is_open())
+        {
+            ttff_report_file << stm.str();
+            ttff_report_file.close();
+        }
 }
 
 

@@ -115,14 +115,14 @@ TEST_F(PulseBlankingFilterTest, ConnectAndRun)
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
-    }) << "Failure connecting the top_block."<< std::endl;
+    }) << "Failure connecting the top_block.";
     
     EXPECT_NO_THROW( {
         start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
     std::cout <<  "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6  << " microseconds" << std::endl;
 }
 
@@ -156,13 +156,13 @@ TEST_F(PulseBlankingFilterTest, ConnectAndRunGrcomplex)
 
         top_block->connect(source->get_right_block(), 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
-    }) << "Failure connecting the top_block."<< std::endl;
+    }) << "Failure connecting the top_block.";
 
     EXPECT_NO_THROW( {
         start = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
-    }) << "Failure running the top_block." << std::endl;
+    }) << "Failure running the top_block.";
     std::cout <<  "Filtered " << nsamples << " gr_complex samples in " << elapsed_seconds.count() * 1e6  << " microseconds" << std::endl;
 }

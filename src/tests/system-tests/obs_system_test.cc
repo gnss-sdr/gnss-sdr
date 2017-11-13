@@ -64,7 +64,7 @@ DEFINE_string(configuration_file, "./default_configuration.conf", "Path of confi
 DEFINE_string(filename_rinex_true, "./default_rinex.txt", "Path of RINEX true observations");
 DEFINE_string(filename_rinex_obs, "default_string", "Path of RINEX true observations");
 DEFINE_double(pr_error_mean_max, 25.0, "Maximum mean error in pseudorange");
-DEFINE_double(pr_error_std_max, 5.0, "Maximum standard deviation in pseudorange");
+DEFINE_double(pr_error_std_max, 15.0, "Maximum standard deviation in pseudorange");
 DEFINE_double(cp_error_mean_max, 5.0, "Maximum mean error in carrier phase");
 DEFINE_double(cp_error_std_max, 2.5, "Maximum standard deviation in carrier phase");
 DEFINE_double(dp_error_mean_max, 75.0, "Maximum mean error in Doppler frequency");
@@ -330,7 +330,10 @@ void ObsSystemTest::read_rinex_files(
                                     meas_exist = true;
                                 }  // End of 'if( pointer == roe.obs.end() )'
                         } // end for
-                    sow_prn_ref.insert_rows(sow_prn_ref.n_rows, arma::rowvec({sow_insert, pr_min, prn_min}));
+                    if (!set_pr_min)
+                        {
+                    	    sow_prn_ref.insert_rows(sow_prn_ref.n_rows, arma::rowvec({sow_insert, pr_min, prn_min}));
+                        }
                 } // end while
     } // End of 'try' block
     catch(const gpstk::FFStreamError& e)
@@ -405,10 +408,10 @@ void ObsSystemTest::time_alignment_diff_cp(
                     index_ = arma::find(iter_meas->col(0) < iter_ref->at(iter_ref->n_rows - 1, 0));
                     arma::uword index_max = arma::max(index_);
                     mat_aux = iter_meas->rows(index_min, index_max);
-                    mat_aux.col(1) -= arma::min(mat_aux.col(1));
+                    mat_aux.col(1) -= mat_aux.col(1)(0);
                     arma::vec ref_aligned;
                     arma::interp1(iter_ref->col(0), iter_ref->col(1), mat_aux.col(0), ref_aligned);
-                    ref_aligned -= arma::min(ref_aligned);
+                    ref_aligned -= ref_aligned(0);
                     *iter_diff = ref_aligned - mat_aux.col(1);
                 }
             iter_ref++;
@@ -543,13 +546,27 @@ void ObsSystemTest::compute_pseudorange_error(
         {
             if(!iter_diff->is_empty())
                 {
+                    while(iter_diff->has_nan())
+                        {
+                            bool nan_found = false;
+                            int k_aux = 0;
+                            while(!nan_found)
+                                {
+                                    if(!iter_diff->row(k_aux).is_finite())
+                                        {
+                                    	    nan_found = true;
+                                	        iter_diff->shed_row(k_aux);
+                                        }
+                                    k_aux++;
+                                }
+                    	}
                     double d_mean = std::sqrt(arma::mean(arma::square(*iter_diff)));
                     means.push_back(d_mean);
                     double d_stddev = arma::stddev(*iter_diff);
                     stddevs.push_back(d_stddev);
                     prns.push_back(static_cast<double>(prn_id));
                     std::cout << "-- RMS pseudorange difference for sat " << prn_id << ": " << d_mean;
-                    std::cout << " +/- " << d_stddev;
+                    std::cout << ". Std. dev.: " << d_stddev;
                     std::cout << " [m]" << std::endl;
                     EXPECT_LT(d_mean, error_th_mean);
                     EXPECT_LT(d_stddev, error_th_std);
@@ -581,8 +598,20 @@ void ObsSystemTest::compute_pseudorange_error(
                             g1.set_ylabel("Pseudorange error [m]");
                             g1.plot_xy(prns, means, "RMS error");
                             g1.plot_xy(prns, stddevs, "Standard deviation");
-                            //g1.savetops("FFT_execution_times_extended");
-                            //g1.savetopdf("FFT_execution_times_extended", 18);
+                            size_t char_pos = signal_name.find(" ");
+                            while(char_pos != std::string::npos)
+                                {
+                                    signal_name.replace(char_pos, 1, "_");
+                                    char_pos = signal_name.find(" ");
+                                }
+                            char_pos = signal_name.find("/");
+                            while(char_pos != std::string::npos)
+                                {
+                                    signal_name.replace(char_pos, 1, "_");
+                                    char_pos = signal_name.find("/");
+                                }
+                            g1.savetops("Pseudorange_error_" + signal_name);
+                            g1.savetopdf("Pseudorange_error_" + signal_name, 18);
                             g1.showonscreen(); // window output
                     }
                     catch (const GnuplotException & ge)
@@ -608,13 +637,27 @@ void ObsSystemTest::compute_carrierphase_error(
         {
             if(!iter_diff->is_empty())
                 {
+                    while(iter_diff->has_nan())
+                        {
+                            bool nan_found = false;
+                            int k_aux = 0;
+                            while(!nan_found)
+                                {
+                                    if(!iter_diff->row(k_aux).is_finite())
+                                        {
+                                	        nan_found = true;
+                            	            iter_diff->shed_row(k_aux);
+                                        }
+                                    k_aux++;
+                                }
+                	    }
                     double d_mean = std::sqrt(arma::mean(arma::square(*iter_diff)));
                     means.push_back(d_mean);
                     double d_stddev = arma::stddev(*iter_diff);
                     stddevs.push_back(d_stddev);
                     prns.push_back(static_cast<double>(prn_id));
                     std::cout << "-- RMS carrier phase difference for sat " << prn_id << ": " << d_mean;
-                    std::cout << " +/- " << d_stddev;
+                    std::cout << ". Std. dev.: " << d_stddev;
                     std::cout << " whole cycles" << std::endl;
                     EXPECT_LT(d_mean, error_th_mean);
                     EXPECT_LT(d_stddev, error_th_std);
@@ -646,8 +689,20 @@ void ObsSystemTest::compute_carrierphase_error(
                             g1.set_ylabel("Carrier phase error [whole cycles]");
                             g1.plot_xy(prns, means, "RMS error");
                             g1.plot_xy(prns, stddevs, "Standard deviation");
-                            //g1.savetops("FFT_execution_times_extended");
-                            //g1.savetopdf("FFT_execution_times_extended", 18);
+                            size_t char_pos = signal_name.find(" ");
+                            while(char_pos != std::string::npos)
+                                {
+                                    signal_name.replace(char_pos, 1, "_");
+                                    char_pos = signal_name.find(" ");
+                                }
+                            char_pos = signal_name.find("/");
+                            while(char_pos != std::string::npos)
+                                {
+                                    signal_name.replace(char_pos, 1, "_");
+                                    char_pos = signal_name.find("/");
+                                }
+                            g1.savetops("Carrier_phase_error_" + signal_name);
+                            g1.savetopdf("Carrier_phase_error_" + signal_name, 18);
                             g1.showonscreen(); // window output
                     }
                     catch (const GnuplotException & ge)
@@ -673,13 +728,27 @@ void ObsSystemTest::compute_doppler_error(
         {
             if(!iter_diff->is_empty())
                 {
+                    while(iter_diff->has_nan())
+                        {
+                            bool nan_found = false;
+                            int k_aux = 0;
+                            while(!nan_found)
+                                {
+                                    if(!iter_diff->row(k_aux).is_finite())
+                                        {
+                                    	    nan_found = true;
+                            	            iter_diff->shed_row(k_aux);
+                                        }
+                                    k_aux++;
+                                }
+                    	}
                     double d_mean = std::sqrt(arma::mean(arma::square(*iter_diff)));
                     means.push_back(d_mean);
                     double d_stddev = arma::stddev(*iter_diff);
                     stddevs.push_back(d_stddev);
                     prns.push_back(static_cast<double>(prn_id));
                     std::cout << "-- RMS Doppler difference for sat " << prn_id << ": " << d_mean;
-                    std::cout << " +/- " << d_stddev;
+                    std::cout << ". Std. dev.: " << d_stddev;
                     std::cout << " [Hz]" << std::endl;
                     EXPECT_LT(d_mean, error_th_mean);
                     EXPECT_LT(d_stddev, error_th_std);
@@ -711,8 +780,20 @@ void ObsSystemTest::compute_doppler_error(
                             g1.set_ylabel("Doppler error [Hz]");
                             g1.plot_xy(prns, means, "RMS error");
                             g1.plot_xy(prns, stddevs, "Standard deviation");
-                            //g1.savetops("FFT_execution_times_extended");
-                            //g1.savetopdf("FFT_execution_times_extended", 18);
+                            size_t char_pos = signal_name.find(" ");
+                            while(char_pos != std::string::npos)
+                                {
+                                    signal_name.replace(char_pos, 1, "_");
+                                    char_pos = signal_name.find(" ");
+                                }
+                            char_pos = signal_name.find("/");
+                            while(char_pos != std::string::npos)
+                                {
+                                    signal_name.replace(char_pos, 1, "_");
+                                    char_pos = signal_name.find("/");
+                                }
+                            g1.savetops("Doppler_error_" + signal_name);
+                            g1.savetopdf("Doppler_error_" + signal_name, 18);
                             g1.showonscreen(); // window output
                     }
                     catch (const GnuplotException & ge)

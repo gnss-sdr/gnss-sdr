@@ -375,7 +375,7 @@ $ sudo make install
 
 ###### Build FMCOMMS2 based SDR Hardware support (OPTIONAL):
 
-Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>=v0.2) gnuradio block. For example in Ubuntu 16.04 follow these instructions (based on https://github.com/blurbdust/blurbdust.github.io):
+Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>v0.2) gnuradio block:
 
 ~~~~~~
 $ sudo apt-get install libxml2-dev bison flex
@@ -402,8 +402,10 @@ $ make && sudo make install && sudo ldconfig
 $ cd ../..
 ~~~~~~
 
-Then configure the gnss-sdr to build the `Fmcomms2_Signal_Source` implementation:
+Then configure GNSS-SDR to build the `Fmcomms2_Signal_Source` implementation:
+
 ~~~~~~
+$ cd gnss-sdr/build
 $ cmake -DENABLE_FMCOMMS2=ON ../
 $ make
 $ sudo make install
@@ -416,7 +418,7 @@ $ make
 $ sudo make install
 ~~~~~~
 
-With `Fmcomms2_Signal_Source` you can use any SDR hardware based on fmcomms2, including the ADALM-PLUTO (PlutoSdr) by configuring correctly the .conf file. The `Plutosdr_Signal_Source` offers a simplier manner to use the ADALM-PLUTO because implements only a subset of fmcomms2's parameters valid for those devices.
+With `Fmcomms2_Signal_Source` you can use any SDR hardware based on [FMCOMMS2](https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms2-ebz), including the ADALM-PLUTO (PlutoSdr) by configuring correctly the .conf file. The `Plutosdr_Signal_Source` offers a simpler manner to use the ADALM-PLUTO because implements only a subset of FMCOMMS2's parameters valid for those devices.
 
 ###### Build OpenCL support (OPTIONAL):
 

@@ -6,8 +6,6 @@
 
 Visit [http://gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR website") for more information about this open source GNSS software defined receiver.
 
-If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers "Subscribe to the gnss-sdr-developers mailing list" ) and post your questions there.
-
 
 
 # How to build GNSS-SDR
@@ -511,15 +509,30 @@ $ sudo port select --set python python27
 
 #### <a name="homebrew">Homebrew</a>
 
-Instructions for installing GNU Radio using [homebrew](http://www.brew.sh) can be found [here](http://github.com/odrisci/homebrew-gnuradio) - please ensure to install all dependencies as required.
+First, install [Homebrew](https://brew.sh/). Paste this in a terminal prompt:
 
-Install Armadillo and dependencies:
+~~~~~~
+$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+~~~~~~
+
+The script explains what it will do and then pauses before it does it. There are more installation options [here](https://docs.brew.sh/Installation.html).
+
+Install pip:
+
+~~~~~~
+$ sudo easy_install pip
+~~~~~~
+
+Install the required dependencies:
 
 ~~~~~~
 $ brew tap homebrew/science
 $ brew install cmake hdf5 arpack superlu
 $ brew install armadillo
 $ brew install glog gflags gnutls
+$ brew install gnuradio
+$ pip install mako
+$ pip install six
 ~~~~~~
 
 #### Build GNSS-SDR

@@ -106,6 +106,7 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
 
     d_flag_parity = false;
     d_TOW_at_current_symbol = 0;
+    Flag_valid_word = false;
     delta_t = 0;
     d_CRC_error_counter = 0;
     d_flag_preamble = false;

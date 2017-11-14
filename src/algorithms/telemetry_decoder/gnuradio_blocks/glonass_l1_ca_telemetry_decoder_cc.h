@@ -83,7 +83,6 @@ private:
     unsigned short int d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS];
     int *d_preambles_symbols;
     unsigned int d_samples_per_symbol;
-    unsigned int d_samples_per_preamble_symbol;
     int d_symbols_per_preamble;
 
     //!< Storage for incoming data

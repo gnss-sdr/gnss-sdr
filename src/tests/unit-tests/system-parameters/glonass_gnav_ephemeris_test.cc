@@ -74,18 +74,19 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT1)
     gnav_eph.d_yr = 2004;
     gnav_eph.d_N_T = 366+28;
 
-    double tod = 70200;
+    double glo2utc = 3600*3;
+    double tod = 48600;
     double week = 0.0;
     double tow = 0.0;
     double true_leap_sec = 13;
     double true_week = 1307;
     double true_tow = 480600+true_leap_sec;
 
-	gnav_eph.glot_to_gpst(tod, 0.0, 0.0, &week, &tow);
+	gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
 
     // Perform assertions of decoded fields
 	ASSERT_TRUE(week - true_week < FLT_EPSILON );
-	ASSERT_TRUE(tow - true_week < FLT_EPSILON );
+	ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
 }
 
 /*!
@@ -98,18 +99,19 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT2)
     gnav_eph.d_yr = 2016;
     gnav_eph.d_N_T = 268;
 
+    double glo2utc = 3600*3;
     double tod = 7560;
     double week = 0.0;
     double tow = 0.0;
-    double true_leap_sec = 13;
+    double true_leap_sec = 17;
     double true_week = 1915;
-    double true_tow = 480600+true_leap_sec;
+    double true_tow = 518400+true_leap_sec+tod;
 
-	gnav_eph.glot_to_gpst(tod, 0.0, 0.0, &week, &tow);
+	gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
 
     // Perform assertions of decoded fields
 	ASSERT_TRUE(week - true_week < FLT_EPSILON );
-	ASSERT_TRUE(tow - true_week < FLT_EPSILON );
+	ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
 }
 
 /*!
@@ -122,16 +124,17 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT3)
     gnav_eph.d_yr = 2016;
     gnav_eph.d_N_T = 62;
 
-    double tod = 7560 + 6*3600;
+    double glo2utc = 3600*3;
+    double tod = 7560;
     double week = 0.0;
     double tow = 0.0;
-    double true_leap_sec = 13;
-    double true_week = 1307;
-    double true_tow = 480600+true_leap_sec;
+    double true_leap_sec = 17;
+    double true_week = 1886;
+    double true_tow = 259200+true_leap_sec;
 
-	gnav_eph.glot_to_gpst(tod, 0.0, 0.0, &week, &tow);
+	gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
 
     // Perform assertions of decoded fields
 	ASSERT_TRUE(week - true_week < FLT_EPSILON );
-	ASSERT_TRUE(tow - true_week < FLT_EPSILON );
+	ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
 }

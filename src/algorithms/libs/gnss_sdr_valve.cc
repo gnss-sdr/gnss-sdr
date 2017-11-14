@@ -35,6 +35,7 @@
 #include <cstring>  // for memcpy
 #include <gnuradio/io_signature.h>
 #include "control_message_factory.h"
+#include <glog/logging.h>
 
 gnss_sdr_valve::gnss_sdr_valve (size_t sizeof_stream_item,
         unsigned long long nitems,
@@ -61,6 +62,7 @@ int gnss_sdr_valve::work (int noutput_items,
         {
             ControlMessageFactory* cmf = new ControlMessageFactory();
             d_queue->handle(cmf->GetQueueMessage(200,0));
+            LOG(INFO) << "Stoping reciver, "<< d_ncopied_items << " samples processed";
             delete cmf;
             return -1;    // Done!
         }

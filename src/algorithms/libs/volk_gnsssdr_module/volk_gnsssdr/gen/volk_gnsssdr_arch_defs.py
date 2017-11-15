@@ -82,7 +82,7 @@ for arch_xml in archs_xml:
     flags = dict()
     for flag_xml in arch_xml.getElementsByTagName("flag"):
         name = flag_xml.attributes["compiler"].value
-        if not flags.has_key(name): flags[name] = list()
+        if name not in flags: flags[name] = list()
         flags[name].append(flag_xml.firstChild.data)
     #force kwargs keys to be of type str, not unicode for py25
     kwargs = dict((str(k), v) for k, v in six.iteritems(kwargs))

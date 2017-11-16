@@ -39,7 +39,6 @@
 #define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 
 #include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"

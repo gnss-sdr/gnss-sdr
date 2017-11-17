@@ -1443,6 +1443,54 @@ endif(ENABLE_GPROF)
 
 
 ########################################################################
+# Matio (OPTIONAL) - https://github.com/tbeu/matio
+########################################################################
+find_package(MATIO)
+if(NOT MATIO_FOUND)
+    find_package(ZLIB)
+    get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
+    find_package(HDF5)
+    list(GET ${HDF5_INCLUDE_DIRS} 0 HDF5_INCLUDE_FIRST_DIR)
+    get_filename_component(HDF5_BASE_DIR ${HDF5_INCLUDE_FIRST_DIR} DIRECTORY)
+    if(OS_IS_MACOSX)
+        if(EXISTS /opt/local/include/hdf5.h)
+           set(HDF5_BASE_DIR /opt/local)
+        endif(EXISTS /opt/local/include/hdf5.h)
+        if(EXISTS /usr/local/include/hdf5.h)
+           set(HDF5_BASE_DIR /usr/local)
+        endif(EXISTS /usr/local/include/hdf5.h)
+    endif(OS_IS_MACOSX)
+    if(CMAKE_VERSION VERSION_LESS 3.2)
+      ExternalProject_Add(
+         matio
+         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
+         GIT_REPOSITORY https://github.com/tbeu/matio
+         GIT_TAG master
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio
+         UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio/autogen.sh
+         CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
+         BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
+      )
+    else(CMAKE_VERSION VERSION_LESS 3.2)
+      ExternalProject_Add(
+         matio
+         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
+         GIT_REPOSITORY https://github.com/tbeu/matio
+         GIT_TAG master
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio
+         UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio/autogen.sh
+         CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
+         BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
+         BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}
+      )
+    endif(CMAKE_VERSION VERSION_LESS 3.2)
+    set(MATIO_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX} ${HDF5_LIBRARIES} ${ZLIB_LIBRARIES} )
+    set(MATIO_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/matio/include )    
+endif(NOT MATIO_FOUND)
+
+
+
+########################################################################
 # Set compiler flags
 ########################################################################
 # Enable C++14 support in GCC / Fallback to C++11 when using GCC < 6.1.1

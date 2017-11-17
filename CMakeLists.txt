@@ -326,6 +326,7 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "unstable")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.11")
 
 
 
@@ -1448,44 +1449,49 @@ endif(ENABLE_GPROF)
 find_package(MATIO)
 if(NOT MATIO_FOUND)
     find_package(ZLIB)
-    get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
-    find_package(HDF5)
-    list(GET ${HDF5_INCLUDE_DIRS} 0 HDF5_INCLUDE_FIRST_DIR)
-    get_filename_component(HDF5_BASE_DIR ${HDF5_INCLUDE_FIRST_DIR} DIRECTORY)
-    if(OS_IS_MACOSX)
-        if(EXISTS /opt/local/include/hdf5.h)
-           set(HDF5_BASE_DIR /opt/local)
-        endif(EXISTS /opt/local/include/hdf5.h)
-        if(EXISTS /usr/local/include/hdf5.h)
-           set(HDF5_BASE_DIR /usr/local)
-        endif(EXISTS /usr/local/include/hdf5.h)
-    endif(OS_IS_MACOSX)
-    if(CMAKE_VERSION VERSION_LESS 3.2)
-      ExternalProject_Add(
-         matio
-         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
-         GIT_REPOSITORY https://github.com/tbeu/matio
-         GIT_TAG master
-         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio
-         UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio/autogen.sh
-         CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
-         BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
-      )
-    else(CMAKE_VERSION VERSION_LESS 3.2)
-      ExternalProject_Add(
-         matio
-         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
-         GIT_REPOSITORY https://github.com/tbeu/matio
-         GIT_TAG master
-         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio
-         UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio/autogen.sh
-         CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
-         BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
-         BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}
-      )
-    endif(CMAKE_VERSION VERSION_LESS 3.2)
-    set(MATIO_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX} ${HDF5_LIBRARIES} ${ZLIB_LIBRARIES} )
-    set(MATIO_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/matio/include )    
+    if(ZLIB_FOUND)
+        get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY) 
+        find_package(HDF5)
+        if(HDF5_FOUND)
+            list(GET HDF5_LIBRARIES 0 HDF5_FIRST_DIR)
+            get_filename_component(HDF5_BASE_DIR2 ${HDF5_FIRST_DIR} DIRECTORY)
+            get_filename_component(HDF5_BASE_DIR ${HDF5_BASE_DIR2} DIRECTORY)
+            if(OS_IS_MACOSX)
+                if(EXISTS /opt/local/include/hdf5.h)
+                    set(HDF5_BASE_DIR /opt/local)
+                endif(EXISTS /opt/local/include/hdf5.h)
+                if(EXISTS /usr/local/include/hdf5.h)
+                    set(HDF5_BASE_DIR /usr/local)
+                endif(EXISTS /usr/local/include/hdf5.h)
+            endif(OS_IS_MACOSX)
+            if(CMAKE_VERSION VERSION_LESS 3.2)
+              ExternalProject_Add(
+                 matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/mati
+                 GIT_REPOSITORY https://github.com/tbeu/matio
+                 GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
+                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+                 UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
+                 CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
+                 BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
+              )
+            else(CMAKE_VERSION VERSION_LESS 3.2)
+              ExternalProject_Add(
+                 matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
+                 GIT_REPOSITORY https://github.com/tbeu/matio
+                 GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
+                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+                 UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
+                 CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
+                 BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
+                 BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}
+              )
+            endif(CMAKE_VERSION VERSION_LESS 3.2)
+            set(MATIO_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX} ${HDF5_LIBRARIES} ${ZLIB_LIBRARIES} )
+            set(MATIO_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/matio/include )
+        endif(HDF5_FOUND)
+    endif(ZLIB_FOUND)
 endif(NOT MATIO_FOUND)
 
 

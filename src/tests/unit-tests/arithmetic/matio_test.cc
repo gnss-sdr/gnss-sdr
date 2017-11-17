@@ -87,10 +87,12 @@ TEST(MatioTest, WriteAndReadGrComplex)
     const int size = x_v.size();
     float x_real[size];
     float x_imag[size];
-    for (int i = 0; i < x_v.size(); i++)
+    unsigned int i = 0;
+    for (std::vector<gr_complex>::const_iterator it = x_v.cbegin(); it != x_v.cend(); it++)
         {
-            x_real[i] = x_v.at(i).real();
-            x_imag[i] = x_v.at(i).imag();
+            x_real[i] = it->real();
+            x_imag[i] = it->imag();
+            i++;
         }
 
     struct mat_complex_split_t x = {x_real, x_imag};
@@ -118,7 +120,7 @@ TEST(MatioTest, WriteAndReadGrComplex)
     float * x_read_real = reinterpret_cast<float*>(x_read_st->Re);
     float * x_read_imag = reinterpret_cast<float*>(x_read_st->Im);
     std::vector<gr_complex> x_v_read;
-    for(int i = 0; i < size; i++)
+    for(unsigned int i = 0; i < size; i++)
         {
             x_v_read.push_back(gr_complex(x_read_real[i], x_read_imag[i]));
         }

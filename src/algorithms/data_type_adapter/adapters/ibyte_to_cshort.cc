@@ -51,6 +51,7 @@ IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, std::string 
 
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
+    inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
     size_t item_size = sizeof(lv_16sc_t);
 
@@ -63,6 +64,10 @@ IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, std::string 
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
+    if(inverted_spectrum)
+        {
+            conjugate_sc_ = make_conjugate_sc();
+        }
 }
 
 
@@ -74,7 +79,22 @@ void IbyteToCshort::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->connect(interleaved_byte_to_complex_short_, 0, file_sink_, 0);
+            if(inverted_spectrum)
+                {
+                    top_block->connect(interleaved_byte_to_complex_short_, 0, conjugate_sc_, 0);
+                    top_block->connect(conjugate_sc_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    top_block->connect(interleaved_byte_to_complex_short_, 0, file_sink_, 0);
+                }
+        }
+    else
+        {
+            if(inverted_spectrum)
+                {
+                    top_block->connect(interleaved_byte_to_complex_short_, 0, conjugate_sc_, 0);
+                }
         }
 }
 
@@ -83,10 +103,24 @@ void IbyteToCshort::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->disconnect(interleaved_byte_to_complex_short_, 0, file_sink_, 0);
+            if(inverted_spectrum)
+                {
+                    top_block->disconnect(interleaved_byte_to_complex_short_, 0, conjugate_sc_, 0);
+                    top_block->disconnect(conjugate_sc_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    top_block->disconnect(interleaved_byte_to_complex_short_, 0, file_sink_, 0);
+                }
+        }
+    else
+        {
+            if(inverted_spectrum)
+                {
+                    top_block->disconnect(interleaved_byte_to_complex_short_, 0, conjugate_sc_, 0);
+                }
         }
 }
-
 
 
 gr::basic_block_sptr IbyteToCshort::get_left_block()
@@ -95,10 +129,14 @@ gr::basic_block_sptr IbyteToCshort::get_left_block()
 }
 
 
-
 gr::basic_block_sptr IbyteToCshort::get_right_block()
 {
-    return interleaved_byte_to_complex_short_;
+    if(inverted_spectrum)
+        {
+            return conjugate_sc_;
+        }
+    else
+        {
+            return interleaved_byte_to_complex_short_;
+        }
 }
-
-

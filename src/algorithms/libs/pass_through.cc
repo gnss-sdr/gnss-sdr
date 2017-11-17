@@ -57,7 +57,7 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
         }
 
     item_type_ = configuration->property(role + ".item_type", input_type);
-    vector_size_ = configuration->property(role + ".vector_size", 1);
+    inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
     if(item_type_.compare("float") == 0)
         {
@@ -66,6 +66,10 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
     else if(item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
+            if(inverted_spectrum)
+                {
+                    conjugate_cc_ = make_conjugate_cc();
+                }
         }
     else if(item_type_.compare("short") == 0)
         {
@@ -78,6 +82,10 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
     else if(item_type_.compare("cshort") == 0)
         {
             item_size_ = sizeof(lv_16sc_t);
+            if(inverted_spectrum)
+                {
+                    conjugate_sc_ = make_conjugate_sc();
+                }
         }
     else if(item_type_.compare("byte") == 0)
         {
@@ -90,12 +98,17 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
     else if(item_type_.compare("cbyte") == 0)
         {
             item_size_ = sizeof(lv_8sc_t);
+            if(inverted_spectrum)
+                {
+                    conjugate_ic_ = make_conjugate_ic();
+                }
         }
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using float";
             item_size_ = sizeof(float);
         }
+
     kludge_copy_ = gr::blocks::copy::make(item_size_);
     DLOG(INFO) << "kludge_copy(" << kludge_copy_->unique_id() << ")";
 }
@@ -125,6 +138,27 @@ void Pass_Through::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr Pass_Through::get_left_block()
 {
+    if(inverted_spectrum)
+        {
+            if(item_type_.compare("gr_complex") == 0)
+                {
+                    return conjugate_cc_;
+                }
+            else if(item_type_.compare("cshort") == 0)
+                {
+                    return conjugate_sc_;
+                }
+            else if(item_type_.compare("cbyte") == 0)
+                {
+                    return conjugate_ic_;
+                }
+            else
+                {
+                    LOG(WARNING) << "Setting inverted_spectrum to true with item_type "
+                                 << item_type_ << " is not defined and has no effect.";
+                }
+        }
+
     return kludge_copy_;
 }
 
@@ -132,5 +166,26 @@ gr::basic_block_sptr Pass_Through::get_left_block()
 
 gr::basic_block_sptr Pass_Through::get_right_block()
 {
+    if(inverted_spectrum)
+        {
+            if(item_type_.compare("gr_complex") == 0)
+                {
+                    return conjugate_cc_;
+                }
+            else if(item_type_.compare("cshort") == 0)
+                {
+                    return conjugate_sc_;
+                }
+            else if(item_type_.compare("cbyte") == 0)
+                {
+                    return conjugate_ic_;
+                }
+            else
+                {
+                    DLOG(WARNING) << "Setting inverted_spectrum to true with item_type "
+                                  << item_type_ << " is not defined and has no effect.";
+                }
+        }
+
     return kludge_copy_;
 }

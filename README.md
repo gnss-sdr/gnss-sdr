@@ -47,7 +47,7 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
        liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
        libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev \
-       python-mako python-six
+       python-mako python-six libmatio-dev
 ~~~~~~
 
 Alternatively, and starting from Ubuntu 16.04 LTS, you can install all the required dependencies by adding the line
@@ -495,6 +495,7 @@ $ sudo port install gnutls
 $ sudo port install google-glog +gflags
 $ sudo port install py27-mako
 $ sudo port install py27-six
+$ sudo port install matio
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:
@@ -533,6 +534,7 @@ $ brew install cmake hdf5 arpack superlu
 $ brew install armadillo
 $ brew install glog gflags gnutls
 $ brew install gnuradio
+$ brew install libmatio
 $ pip install mako
 $ pip install six
 ~~~~~~

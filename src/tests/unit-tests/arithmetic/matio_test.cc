@@ -66,6 +66,7 @@ TEST(MatioTest, WriteAndReadDoubles)
     matvar_read = Mat_VarRead(matfp_read, "x");
     double *x_read = reinterpret_cast<double*>(matvar_read->data);
     Mat_Close(matfp_read);
+    Mat_VarFree(matvar_read);
     for(int i = 0; i < 10; i++)
         {
             EXPECT_DOUBLE_EQ(x[i], x_read[i]);
@@ -84,7 +85,7 @@ TEST(MatioTest, WriteAndReadGrComplex)
     ASSERT_FALSE(reinterpret_cast<long*>(matfp) == NULL) << "Error creating .mat file";
 
     std::vector<gr_complex> x_v = { {1, 10}, {2, 9}, {3, 8}, {4, 7}, {5, 6}, {6, -5}, {7, -4}, {8, 3}, {9, 2}, {10, 1}};
-    const int size = x_v.size();
+    const unsigned int size = x_v.size();
     float x_real[size];
     float x_imag[size];
     unsigned int i = 0;
@@ -126,8 +127,9 @@ TEST(MatioTest, WriteAndReadGrComplex)
         }
 
     Mat_Close(matfp_read);
+    Mat_VarFree(matvar_read);
 
-    for(int i = 0; i < size; i++)
+    for(unsigned int i = 0; i < size; i++)
         {
             EXPECT_FLOAT_EQ(x_v[i].real(), x_v_read[i].real());
             EXPECT_FLOAT_EQ(x_v[i].imag(), x_v_read[i].imag());

@@ -101,8 +101,28 @@ TEST(MatioTest, WriteAndReadGrComplex)
     matvar = Mat_VarCreate("x", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, &x, MAT_F_COMPLEX);
     ASSERT_FALSE(reinterpret_cast<long*>(matvar) == NULL) << "Error creating variable for ’x’";
 
+    std::vector<gr_complex> y_v = { {1.1, -10}, {2, -9}, {3, -8}, {4, -7}, {5, 6}, {6, -5}, {7, -4}, {8, 3}, {9, 2}, {10, 1}};
+    const unsigned int size_y = y_v.size();
+    float y_real[size_y];
+    float y_imag[size_y];
+    i = 0;
+    for (std::vector<gr_complex>::const_iterator it = y_v.cbegin(); it != y_v.cend(); it++)
+        {
+            y_real[i] = it->real();
+            y_imag[i] = it->imag();
+            i++;
+        }
+
+    struct mat_complex_split_t y = {y_real, y_imag};
+    size_t dims_y[2] = {static_cast<size_t>(size_y), 1};
+    matvar_t *matvar_y;
+    matvar_y = Mat_VarCreate("y", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims_y, &y, MAT_F_COMPLEX);
+    ASSERT_FALSE(reinterpret_cast<long*>(matvar_y) == NULL) << "Error creating variable for ’y’";
+
     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+    Mat_VarWrite(matfp, matvar_y, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
     Mat_VarFree(matvar);
+    Mat_VarFree(matvar_y);
 
     Mat_Close(matfp);
 
@@ -134,5 +154,5 @@ TEST(MatioTest, WriteAndReadGrComplex)
             EXPECT_FLOAT_EQ(x_v[i].real(), x_v_read[i].real());
             EXPECT_FLOAT_EQ(x_v[i].imag(), x_v_read[i].imag());
         }
-    ASSERT_EQ(remove(filename.c_str()), 0);
+    //ASSERT_EQ(remove(filename.c_str()), 0);
 }

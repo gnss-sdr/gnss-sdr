@@ -161,6 +161,10 @@ if(GNUPLOT_FOUND)
     add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")
 endif(GNUPLOT_FOUND)
 
+if(MATIO_FOUND OR MATIO_LOCAL)
+    add_definitions(-DMATIO_TEST=1)
+endif(MATIO_FOUND OR MATIO_LOCAL)
+
 ################################################################################
 # Optional generator
 ################################################################################

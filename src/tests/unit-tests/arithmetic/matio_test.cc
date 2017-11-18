@@ -120,9 +120,9 @@ TEST(MatioTest, WriteAndReadGrComplex)
     matvar2 = Mat_VarCreate("y", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims_y, &y, MAT_F_COMPLEX);
     ASSERT_FALSE(reinterpret_cast<long*>(matvar2) == NULL) << "Error creating variable for ’y’";
 
-    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+    Mat_VarWrite(matfp, matvar1, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
     Mat_VarWrite(matfp, matvar2, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
-    Mat_VarFree(matvar);
+    Mat_VarFree(matvar1);
     Mat_VarFree(matvar2);
 
     Mat_Close(matfp);

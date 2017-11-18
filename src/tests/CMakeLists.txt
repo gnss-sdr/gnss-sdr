@@ -163,6 +163,8 @@ endif(GNUPLOT_FOUND)
 
 if(MATIO_FOUND OR MATIO_LOCAL)
     add_definitions(-DMATIO_TEST=1)
+    set(GNSS_SDR_TEST_OPTIONAL_LIBS "${GNSS_SDR_TEST_OPTIONAL_LIBS};${MATIO_LIBRARIES}")
+    set(GNSS_SDR_TEST_OPTIONAL_HEADERS "${GNSS_SDR_TEST_OPTIONAL_HEADERS};${MATIO_INCLUDE_DIRS}")
 endif(MATIO_FOUND OR MATIO_LOCAL)
 
 ################################################################################
@@ -323,8 +325,6 @@ include_directories(
      ${VOLK_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
      ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
-     ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
-     ${MATIO_INCLUDE_DIRS}
 )
 
 
@@ -359,7 +359,6 @@ if(ENABLE_UNIT_TESTING)
                                 signal_processing_testing_lib
                                 ${VOLK_GNSSSDR_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
-                                ${MATIO_LIBRARIES}
     )
     if(NOT ${GTEST_DIR_LOCAL})
         add_dependencies(run_tests gtest-${GNSSSDR_GTEST_LOCAL_VERSION})

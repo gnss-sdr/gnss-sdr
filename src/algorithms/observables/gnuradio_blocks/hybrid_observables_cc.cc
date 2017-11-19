@@ -38,6 +38,7 @@
 #include <armadillo>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <matio.h>
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 
@@ -104,6 +105,197 @@ hybrid_observables_cc::~hybrid_observables_cc()
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
             }
         }
+    if(d_dump == true)
+        {
+            std::cout << "Writing observables .mat files ...";
+            hybrid_observables_cc::save_matfile();
+            std::cout << " done." << std::endl;
+        }
+}
+
+
+int hybrid_observables_cc::save_matfile()
+{
+    // READ DUMP FILE
+    std::ifstream::pos_type size;
+    int number_of_double_vars = 7;
+    int epoch_size_bytes = sizeof(double) * number_of_double_vars * d_nchannels;
+    std::ifstream dump_file;
+    dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try
+    {
+            dump_file.open(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+    }
+    catch(const std::ifstream::failure &e)
+    {
+            std::cerr << "Problem opening dump file:" <<  e.what() << std::endl;
+            return 1;
+    }
+    // count number of epochs and rewind
+    long int num_epoch = 0;
+    if (dump_file.is_open())
+        {
+            size = dump_file.tellg();
+            num_epoch = static_cast<long int>(size) / static_cast<long int>(epoch_size_bytes);
+            dump_file.seekg(0, std::ios::beg);
+        }
+    else
+        {
+            return 1;
+        }
+    double ** RX_time = new double * [d_nchannels];
+    double ** TOW_at_current_symbol_s = new double * [d_nchannels];
+    double ** Carrier_Doppler_hz = new double * [d_nchannels];
+    double ** Carrier_phase_cycles = new double * [d_nchannels];
+    double ** Pseudorange_m = new double * [d_nchannels];
+    double ** PRN = new double * [d_nchannels];
+    double ** Flag_valid_pseudorange = new double * [d_nchannels];
+
+    for(unsigned int i = 0; i < d_nchannels; i++)
+        {
+            RX_time[i] = new double [num_epoch];
+            TOW_at_current_symbol_s[i] = new double[num_epoch];
+            Carrier_Doppler_hz[i] = new double[num_epoch];
+            Carrier_phase_cycles[i] = new double[num_epoch];
+            Pseudorange_m[i] = new double[num_epoch];
+            PRN[i] = new double[num_epoch];
+            Flag_valid_pseudorange[i] = new double[num_epoch];
+        }
+
+    try
+    {
+            if (dump_file.is_open())
+                {
+                    for(long int i = 0; i < num_epoch; i++)
+                        {
+                            for(unsigned int chan = 0; chan < d_nchannels; chan++)
+                                {
+                                    dump_file.read(reinterpret_cast<char *>(&RX_time[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_s[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&Carrier_Doppler_hz[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&Carrier_phase_cycles[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&Pseudorange_m[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&PRN[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&Flag_valid_pseudorange[chan][i]), sizeof(double));
+                                }
+                        }
+                }
+            dump_file.close();
+    }
+    catch (const std::ifstream::failure &e)
+    {
+            std::cerr << "Problem reading dump file:" <<  e.what() << std::endl;
+            for(unsigned int i = 0; i < d_nchannels; i++)
+                {
+                    delete[] RX_time[i];
+                    delete[] TOW_at_current_symbol_s[i];
+                    delete[] Carrier_Doppler_hz[i];
+                    delete[] Carrier_phase_cycles[i];
+                    delete[] Pseudorange_m[i];
+                    delete[] PRN[i];
+                    delete[] Flag_valid_pseudorange[i];
+                }
+            delete[] RX_time;
+            delete[] TOW_at_current_symbol_s;
+            delete[] Carrier_Doppler_hz;
+            delete[] Carrier_phase_cycles;
+            delete[] Pseudorange_m;
+            delete[] PRN;
+            delete[] Flag_valid_pseudorange;
+
+            return 1;
+    }
+
+    double * RX_time_aux = new double [d_nchannels * num_epoch];
+    double * TOW_at_current_symbol_s_aux = new double [d_nchannels * num_epoch];
+    double * Carrier_Doppler_hz_aux = new double [d_nchannels * num_epoch];
+    double * Carrier_phase_cycles_aux = new double [d_nchannels * num_epoch];
+    double * Pseudorange_m_aux = new double [d_nchannels * num_epoch];
+    double * PRN_aux = new double [d_nchannels * num_epoch];
+    double * Flag_valid_pseudorange_aux = new double[d_nchannels * num_epoch];
+    unsigned int k = 0;
+    for(unsigned int j = 0; j < num_epoch; j++ )
+        {
+            for(unsigned int i = 0; i < d_nchannels; i++ )
+                {
+                    RX_time_aux[k] = RX_time[i][j];
+                    TOW_at_current_symbol_s_aux[k] = TOW_at_current_symbol_s[i][j];
+                    Carrier_Doppler_hz_aux[k] = Carrier_Doppler_hz[i][j];
+                    Carrier_phase_cycles_aux[k] = Carrier_phase_cycles[i][j];
+                    Pseudorange_m_aux[k] = Pseudorange_m[i][j];
+                    PRN_aux[k] = PRN[i][j];
+                    Flag_valid_pseudorange_aux[k] = Flag_valid_pseudorange[i][j];
+                    k++;
+                }
+        }
+
+    // WRITE MAT FILE
+    mat_t *matfp;
+    matvar_t *matvar;
+    std::string filename = d_dump_filename;
+    filename.erase(filename.length() - 4, 4);
+    filename.append(".mat");
+    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
+    if(reinterpret_cast<long*>(matfp) != NULL)
+        {
+            size_t dims[2] = {static_cast<size_t>(d_nchannels), static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("TOW_at_current_symbol_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, TOW_at_current_symbol_s_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("Carrier_Doppler_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_Doppler_hz_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("Carrier_phase_cycles", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_phase_cycles_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("Pseudorange_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Pseudorange_m_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("PRN", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, PRN_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("Flag_valid_pseudorange", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Flag_valid_pseudorange_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+        }
+    Mat_Close(matfp);
+
+    for(unsigned int i = 0; i < d_nchannels; i++)
+        {
+            delete[] RX_time[i];
+            delete[] TOW_at_current_symbol_s[i];
+            delete[] Carrier_Doppler_hz[i];
+            delete[] Carrier_phase_cycles[i];
+            delete[] Pseudorange_m[i];
+            delete[] PRN[i];
+            delete[] Flag_valid_pseudorange[i];
+
+        }
+    delete[] RX_time;
+    delete[] TOW_at_current_symbol_s;
+    delete[] Carrier_Doppler_hz;
+    delete[] Carrier_phase_cycles;
+    delete[] Pseudorange_m;
+    delete[] PRN;
+    delete[] Flag_valid_pseudorange;
+
+    delete[] RX_time_aux;
+    delete[] TOW_at_current_symbol_s_aux;
+    delete[] Carrier_Doppler_hz_aux;
+    delete[] Carrier_phase_cycles_aux;
+    delete[] Pseudorange_m_aux;
+    delete[] PRN_aux;
+    delete[] Flag_valid_pseudorange_aux;
+    return 0;
 }
 
 
@@ -149,7 +341,11 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
     double past_history_s = 100e-3;
 
     Gnss_Synchro current_gnss_synchro[d_nchannels];
-
+    Gnss_Synchro aux = Gnss_Synchro();
+    for(unsigned int i = 0; i < d_nchannels; i++)
+        {
+            current_gnss_synchro[i] = aux;
+        }
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels.
      *  Multi-rate GNURADIO Block. Read how many input items are avaliable in each channel
@@ -339,13 +535,13 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                                     tmp_double = current_gnss_synchro[i].Carrier_Doppler_hz;
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                                                    tmp_double = current_gnss_synchro[i].Carrier_phase_rads/GPS_TWO_PI;
+                                                    tmp_double = current_gnss_synchro[i].Carrier_phase_rads / GPS_TWO_PI;
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                                     tmp_double = current_gnss_synchro[i].Pseudorange_m;
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                                     tmp_double = current_gnss_synchro[i].PRN;
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                                                    tmp_double = current_gnss_synchro[i].Flag_valid_pseudorange;
+                                                    tmp_double = static_cast<double>(current_gnss_synchro[i].Flag_valid_pseudorange);
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                                 }
                                     }
@@ -384,3 +580,4 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
 
     return n_outputs;
 }
+

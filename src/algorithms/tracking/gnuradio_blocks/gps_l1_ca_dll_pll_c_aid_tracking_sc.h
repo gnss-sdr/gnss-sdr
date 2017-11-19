@@ -200,6 +200,8 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
+
+    int save_matfile();
 };
 
 #endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H

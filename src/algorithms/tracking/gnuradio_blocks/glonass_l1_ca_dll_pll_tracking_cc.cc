@@ -181,6 +181,8 @@ Glonass_L1_Ca_Dll_Pll_Tracking_cc::Glonass_L1_Ca_Dll_Pll_Tracking_cc(
     d_code_phase_step_chips = 0.0;
     d_carrier_phase_step_rad = 0.0;
 
+    d_glonass_freq_ch = 0;
+
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 }
 

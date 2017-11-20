@@ -79,6 +79,9 @@ private:
 
     void decode_string(double *symbols, int frame_length);
 
+    //!< Help with coherent tracking
+    double d_preamble_time_samples;
+
     //!< Preamble decoding
     unsigned short int d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS];
     int *d_preambles_symbols;

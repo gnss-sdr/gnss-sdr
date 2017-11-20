@@ -161,6 +161,12 @@ if(GNUPLOT_FOUND)
     add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")
 endif(GNUPLOT_FOUND)
 
+if(MATIO_FOUND OR MATIO_LOCAL)
+    add_definitions(-DMATIO_TEST=1)
+    set(GNSS_SDR_TEST_OPTIONAL_LIBS "${GNSS_SDR_TEST_OPTIONAL_LIBS};${MATIO_LIBRARIES}")
+    set(GNSS_SDR_TEST_OPTIONAL_HEADERS "${GNSS_SDR_TEST_OPTIONAL_HEADERS};${MATIO_INCLUDE_DIRS}")
+endif(MATIO_FOUND OR MATIO_LOCAL)
+
 ################################################################################
 # Optional generator
 ################################################################################
@@ -318,7 +324,6 @@ include_directories(
      ${ARMADILLO_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
-     ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
      ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
 )
 

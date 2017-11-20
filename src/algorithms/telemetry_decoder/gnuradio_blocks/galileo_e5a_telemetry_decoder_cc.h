@@ -39,6 +39,7 @@
 
 #include <fstream>
 #include <string>
+#include <deque>
 #include <gnuradio/block.h>
 #include "Galileo_E5a.h"
 #include "concurrent_queue.h"
@@ -48,8 +49,7 @@
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-
-//#include "convolutional.h"
+#include "gnss_synchro.h"
 
 class galileo_e5a_telemetry_decoder_cc;
 
@@ -85,38 +85,33 @@ private:
 
     void decode_word(double *page_symbols, int frame_length);
 
-    int d_preamble_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-    double d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-
-    double d_current_symbol;
-    long unsigned int d_symbol_counter;
-    int d_prompt_counter;
-    int d_sign_init;
-
+    int d_preambles_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+    int d_preamble_samples[GALILEO_FNAV_CODES_PER_PREAMBLE];
+    std::deque<int> d_preamble_init;
+    int d_stat;
+    int d_CRC_error_counter;
+    int d_channel;
+    int d_symbol_counter;
+    int corr_value;
+    unsigned int required_symbols;
     long unsigned int d_sample_counter;
     long unsigned int d_preamble_index;
-
-    bool d_preamble_lock;
     bool d_flag_frame_sync;
-    int d_state;
-
     bool d_flag_preamble;
-    int d_CRC_error_counter;
-
-    // navigation message vars
-    Galileo_Fnav_Message d_nav;
-
     bool d_dump;
-    Gnss_Satellite d_satellite;
-    int d_channel;
-
-    double d_TOW_at_Preamble;
-    double d_TOW_at_current_symbol;
-
     bool flag_TOW_set;
-
+    bool flag_bit_start;
+    bool new_symbol;
+    double d_prompt_acum;
+    double page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+    double d_TOW_at_current_symbol;
+    double delta_t; //GPS-GALILEO time offset
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+    std::deque<Gnss_Synchro> d_symbol_history;
+    Gnss_Satellite d_satellite;
+    // navigation message vars
+    Galileo_Fnav_Message d_nav;
 };
 
 #endif /* GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_CC_H_ */

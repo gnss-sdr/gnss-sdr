@@ -31,6 +31,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}

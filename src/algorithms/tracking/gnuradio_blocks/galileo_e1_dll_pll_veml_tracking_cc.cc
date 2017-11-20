@@ -607,9 +607,11 @@ int galileo_e1_dll_pll_veml_tracking_cc::save_matfile()
     catch (const std::ifstream::failure &e)
     {
             std::cerr << "Problem reading dump file:" <<  e.what() << std::endl;
+            delete[] abs_VE;
             delete[] abs_E;
             delete[] abs_P;
             delete[] abs_L;
+            delete[] abs_VL;
             delete[] Prompt_I;
             delete[] Prompt_Q;
             delete[] PRN_start_sample_count;
@@ -719,9 +721,11 @@ int galileo_e1_dll_pll_veml_tracking_cc::save_matfile()
             Mat_VarFree(matvar);
         }
     Mat_Close(matfp);
+    delete[] abs_VE;
     delete[] abs_E;
     delete[] abs_P;
     delete[] abs_L;
+    delete[] abs_VL;
     delete[] Prompt_I;
     delete[] Prompt_Q;
     delete[] PRN_start_sample_count;

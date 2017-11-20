@@ -214,7 +214,7 @@ int hybrid_observables_cc::save_matfile()
     double * PRN_aux = new double [d_nchannels * num_epoch];
     double * Flag_valid_pseudorange_aux = new double[d_nchannels * num_epoch];
     unsigned int k = 0;
-    for(unsigned int j = 0; j < num_epoch; j++ )
+    for(long int j = 0; j < num_epoch; j++ )
         {
             for(unsigned int i = 0; i < d_nchannels; i++ )
                 {

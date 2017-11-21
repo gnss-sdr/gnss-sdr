@@ -91,7 +91,7 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris & glonass_gnav_eph, const Glon
     rtklib_sat.age    = static_cast<int>(glonass_gnav_eph.d_Delta_tau_n);   /* delay between L1 and L2 (s) */
 
     // Time expressed in GPS Time but using RTKLib format
-    glonass_gnav_eph.glot_to_gpst(glonass_gnav_eph.d_tod, gnav_clock_model.d_tau_c, gnav_clock_model.d_tau_gps, &week, &sec);
+    glonass_gnav_eph.glot_to_gpst(glonass_gnav_eph.d_t_b, gnav_clock_model.d_tau_c, gnav_clock_model.d_tau_gps, &week, &sec);
     adj_week = adjgpsweek(static_cast<int>(week));
     rtklib_sat.toe = gpst2time(adj_week, sec);
 

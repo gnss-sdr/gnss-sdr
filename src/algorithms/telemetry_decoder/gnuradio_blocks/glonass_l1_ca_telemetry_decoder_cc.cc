@@ -106,6 +106,7 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
 
     d_flag_parity = false;
     d_TOW_at_current_symbol = 0;
+    Flag_valid_word = false;
     delta_t = 0;
     d_CRC_error_counter = 0;
     d_flag_preamble = false;
@@ -355,7 +356,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
     if (this->d_flag_preamble == true and d_nav.flag_TOW_new == true)
         //update TOW at the preamble instant
         {
-            d_TOW_at_current_symbol = floor((d_nav.gnav_ephemeris.d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S)*1000)/1000;
+            d_TOW_at_current_symbol = floor((d_nav.gnav_ephemeris.d_TOW-GLONASS_GNAV_PREAMBLE_DURATION_S)*1000)/1000;
             d_nav.flag_TOW_new = false;
 
         }

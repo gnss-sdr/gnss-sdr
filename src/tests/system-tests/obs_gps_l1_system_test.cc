@@ -41,11 +41,11 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
-#include "RinexUtilities.hpp"
-#include "Rinex3ObsBase.hpp"
-#include "Rinex3ObsData.hpp"
-#include "Rinex3ObsHeader.hpp"
-#include "Rinex3ObsStream.hpp"
+#include <gpstk/RinexUtilities.hpp>
+#include <gpstk/Rinex3ObsBase.hpp>
+#include <gpstk/Rinex3ObsData.hpp>
+#include <gpstk/Rinex3ObsHeader.hpp>
+#include <gpstk/Rinex3ObsStream.hpp>
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"
@@ -513,7 +513,7 @@ void ObsGpsL1SystemTest::check_results()
                     // If a measure exists for this sow, store it
                     for(it2 = pseudorange_meas.at(prn_id).begin(); it2 != pseudorange_meas.at(prn_id).end(); it2++)
                         {
-                            if(std::abs(it->first - it2->first) < 0.01) // store measures closer than 10 ms.
+                            if(std::abs(it->first - it2->first) < 0.1) // store measures closer than 10 ms.
                                 {
                                     pseudorange_ref_aligned.at(prn_id).push_back(*it);
                                     pr_diff.at(prn_id).push_back(it->second - it2->second );
@@ -532,7 +532,7 @@ void ObsGpsL1SystemTest::check_results()
                     // If a measure exists for this sow, store it
                     for(it2 = carrierphase_meas.at(prn_id).begin(); it2 != carrierphase_meas.at(prn_id).end(); it2++)
                         {
-                            if(std::abs(it->first - it2->first) < 0.01) // store measures closer than 10 ms.
+                            if(std::abs(it->first - it2->first) < 0.1) // store measures closer than 10 ms.
                                 {
                                     carrierphase_ref_aligned.at(prn_id).push_back(*it);
                                     cp_diff.at(prn_id).push_back(it->second - it2->second );

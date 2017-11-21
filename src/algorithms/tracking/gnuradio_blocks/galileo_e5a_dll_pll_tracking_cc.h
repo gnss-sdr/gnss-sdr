@@ -204,6 +204,8 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
+
+    int save_matfile();
 };
 
 #endif /* GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_CC_H_ */

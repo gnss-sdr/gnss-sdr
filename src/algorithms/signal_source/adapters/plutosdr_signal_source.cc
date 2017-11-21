@@ -30,9 +30,7 @@
 
 #include "plutosdr_signal_source.h"
 #include <iostream>
-#include <boost/format.hpp>
 #include <glog/logging.h>
-#include <gnuradio/blocks/file_sink.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include "GPS_L1_CA.h"
@@ -51,7 +49,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     std::string default_dump_file = "./data/signal_source.dat";
     uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    sample_rate_  configuration->property(role + ".sampling_frequency", 3000000);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 3000000);
     bandwidth_ = configuration->property(role + ".bandwidth", 2000000);
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
     decimation_ = configuration->property(role + ".decimation", 1);
@@ -70,15 +68,15 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
 
     if(item_type_.compare("gr_complex") != 0)
         {
-            std::cout << "bad item_type!!" << std::endl;
-            LOG(FATAL) << "Exception: item type must be gr_complex!";
+            std::cout << "Configuration error: item_type must be gr_complex" << std::endl;
+            LOG(FATAL) << "Configuration error: item_type must be gr_complex!";
         }
 
     item_size_ = sizeof(gr_complex);
 
     std::cout << "device address: " << uri_ << std::endl;
-    std::cout << "frequency : " << freq_ << "Hz" << std::endl;
-    std::cout << "sample rate: " << sample_rate_ << "Hz" << std::endl;
+    std::cout << "frequency : " << freq_ << " Hz" << std::endl;
+    std::cout << "sample rate: " << sample_rate_ << " Hz" << std::endl;
     std::cout << "gain mode: " << gain_mode_ << std::endl;
     std::cout << "item type: " << item_type_ << std::endl;
 

@@ -36,7 +36,7 @@
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
-#include <iio/pluto_source.h>
+#include <gnuradio/iio/pluto_source.h>
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;

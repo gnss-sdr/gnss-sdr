@@ -1,6 +1,6 @@
 /*!
  * \file fmcomms2_signal_source.h
- * \brief Interface to use SDR hardware based in FMCOMMS2 driver from analog 
+ * \brief Interface to use SDR hardware based in FMCOMMS2 driver from analog
  * devices, for example FMCOMMS4 and ADALM-PLUTO (PlutoSdr)
  * \author Rodrigo Muñoz, 2017. rmunozl(at)inacap.cl
  *
@@ -37,7 +37,7 @@
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
-#include <iio/fmcomms2_source.h>
+#include <gnuradio/iio/fmcomms2_source.h>
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;
@@ -57,7 +57,7 @@ public:
     }
 
     /*!
-     * \brief Returns "fmcomms2_Signal_Source"
+     * \brief Returns "Fmcomms2_Signal_Source"
      */
     inline std::string implementation() override
     {

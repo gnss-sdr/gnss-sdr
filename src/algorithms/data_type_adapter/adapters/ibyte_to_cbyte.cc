@@ -51,6 +51,7 @@ IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, std::string ro
 
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
+    inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
     size_t item_size = sizeof(lv_8sc_t);
 
@@ -63,6 +64,10 @@ IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, std::string ro
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
+    if(inverted_spectrum)
+        {
+            conjugate_ic_ = make_conjugate_ic();
+        }
 }
 
 
@@ -74,7 +79,26 @@ void IbyteToCbyte::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->connect(ibyte_to_cbyte_, 0, file_sink_, 0);
+            if(inverted_spectrum)
+                {
+                    top_block->connect(ibyte_to_cbyte_, 0, conjugate_ic_, 0);
+                    top_block->connect(conjugate_ic_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    top_block->connect(ibyte_to_cbyte_, 0, file_sink_, 0);
+                }
+        }
+    else
+        {
+            if(inverted_spectrum)
+                {
+                    top_block->connect(ibyte_to_cbyte_, 0, conjugate_ic_, 0);
+                }
+            else
+                {
+                    DLOG(INFO) << "Nothing to connect internally";
+                }
         }
 }
 
@@ -83,10 +107,24 @@ void IbyteToCbyte::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->disconnect(ibyte_to_cbyte_, 0, file_sink_, 0);
+            if(inverted_spectrum)
+                {
+                    top_block->disconnect(ibyte_to_cbyte_, 0, conjugate_ic_, 0);
+                    top_block->disconnect(conjugate_ic_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    top_block->disconnect(ibyte_to_cbyte_, 0, file_sink_, 0);
+                }
+        }
+    else
+        {
+            if(inverted_spectrum)
+                {
+                    top_block->disconnect(ibyte_to_cbyte_, 0, conjugate_ic_, 0);
+                }
         }
 }
-
 
 
 gr::basic_block_sptr IbyteToCbyte::get_left_block()
@@ -95,9 +133,14 @@ gr::basic_block_sptr IbyteToCbyte::get_left_block()
 }
 
 
-
 gr::basic_block_sptr IbyteToCbyte::get_right_block()
 {
-    return ibyte_to_cbyte_;
+    if(inverted_spectrum)
+        {
+            return conjugate_ic_;
+        }
+    else
+        {
+            return ibyte_to_cbyte_;
+        }
 }
-

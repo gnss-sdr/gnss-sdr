@@ -344,7 +344,7 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_state(int state)
 
 
 
-int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items,
+int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items __attribute__((unused)),
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items __attribute__((unused)))
 {
@@ -392,17 +392,17 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
         {
             const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]); //Get the input samples pointer
             unsigned int buff_increment;
-            if (ninput_items[0] + d_buffer_count <= d_fft_size)
+            if ((ninput_items[0] + d_buffer_count) <= d_fft_size)
                 {
                     buff_increment = ninput_items[0];
                 }
             else
                 {
-                    buff_increment = (d_fft_size - d_buffer_count);
+                    buff_increment = d_fft_size - d_buffer_count;
                 }
             memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex) * buff_increment);
             // If buffer will be full in next iteration
-            if (d_buffer_count >= d_fft_size - d_gr_stream_buffer)
+            if (d_buffer_count >= (d_fft_size - d_gr_stream_buffer))
                 {
                     d_state = 2;
                 }
@@ -419,7 +419,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 {
                     memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex)*(d_fft_size-d_buffer_count));
                 }
-            d_sample_counter += d_fft_size-d_buffer_count; // sample counter
+            d_sample_counter += (d_fft_size - d_buffer_count); // sample counter
 
             // initialize acquisition algorithm
             int doppler;
@@ -810,6 +810,6 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
         }
     }
 
-    return noutput_items;
+    return 0;
 }
 

@@ -1,6 +1,6 @@
 /*!
  * \file conjugate_sc.h
- * \brief Adapts a std::complex<short> stream into two float streams
+ * \brief Conjugate a stream of lv_16sc_t ( std::complex<short> )
  * \author Carles Fernandez Prades, cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------

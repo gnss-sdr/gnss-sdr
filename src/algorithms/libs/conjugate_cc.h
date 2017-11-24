@@ -1,6 +1,6 @@
 /*!
  * \file conjugate_cc.h
- * \brief Conjugate
+ * \brief Conjugate a stream of gr_complex
  * \author Carles Fernandez Prades, cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------

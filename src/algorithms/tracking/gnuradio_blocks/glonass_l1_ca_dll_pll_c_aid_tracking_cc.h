@@ -1,5 +1,5 @@
 /*!
- * \file glonass_l1_ca_dll_pll_tracking.h
+ * \file glonass_l1_ca_dll_pll_c_aid_tracking_cc.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for Glonass L1 C/A to a TrackingInterface
  * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
@@ -157,6 +157,7 @@ private:
     double d_code_freq_chips;
     double d_code_phase_step_chips;
     double d_carrier_doppler_hz;
+    double d_carrier_frequency_hz;
     double d_carrier_phase_step_rad;
     double d_acc_carrier_phase_cycles;
     double d_code_phase_samples;
@@ -201,6 +202,8 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
+
+    int save_matfile();
 };
 
 #endif //GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H

@@ -409,12 +409,21 @@ endif(NOT ENABLE_GENERIC_ARCH)
 
 
 ################################################################################
-# Find a thread library
+# Find the POSIX thread (pthread) libraries
 ################################################################################
-if(NOT OS_IS_MACOSX)
+if(CMAKE_VERSION VERSION_LESS 3.1)
     find_package(Threads REQUIRED)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif(NOT OS_IS_MACOSX)
+else(CMAKE_VERSION VERSION_LESS 3.1)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    if(CMAKE_CROSSCOMPILING)
+        set(THREADS_PREFER_PTHREAD_FLAG FALSE)
+    else(CMAKE_CROSSCOMPILING)
+        set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    endif(CMAKE_CROSSCOMPILING)
+    find_package(Threads REQUIRED)
+    link_libraries(Threads::Threads)
+endif(CMAKE_VERSION VERSION_LESS 3.1)
 
 
 

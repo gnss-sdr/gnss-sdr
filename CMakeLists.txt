@@ -412,15 +412,8 @@ endif(NOT ENABLE_GENERIC_ARCH)
 # Find a thread library
 ################################################################################
 if(NOT ${OS_IS_MACOSX})
-    if(CMAKE_VERSION VERSION_LESS 3.1)
-        find_package(Threads REQUIRED)
-        link_libraries(${CMAKE_THREAD_LIBS_INIT})
-    else(CMAKE_VERSION VERSION_LESS 3.1)
-        set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-        set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-        find_package(Threads REQUIRED)
-        link_libraries(Threads::Threads)
-    endif(CMAKE_VERSION VERSION_LESS 3.1)
+    find_package(Threads REQUIRED)
+    link_libraries(${CMAKE_THREAD_LIBS_INIT})
 endif(NOT ${OS_IS_MACOSX})
 
 

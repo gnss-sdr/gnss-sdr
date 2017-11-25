@@ -408,13 +408,20 @@ endif(NOT ENABLE_GENERIC_ARCH)
 
 
 
-###############################
+################################################################################
 # Find a thread library
-###############################
-if(OS_IS_LINUX)
-    find_package(Threads REQUIRED)
-    link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif(OS_IS_LINUX)
+################################################################################
+if(NOT ${OS_IS_MACOSX})
+    if(CMAKE_VERSION VERSION_LESS 3.1)
+        find_package(Threads REQUIRED)
+        link_libraries(${CMAKE_THREAD_LIBS_INIT})
+    else(CMAKE_VERSION VERSION_LESS 3.1)
+        set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+        set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+        find_package(Threads REQUIRED)
+        link_libraries(Threads::Threads)
+    endif(CMAKE_VERSION VERSION_LESS 3.1)
+endif(NOT ${OS_IS_MACOSX})
 
 
 
@@ -891,12 +898,32 @@ endif(NOT ENABLE_LOG)
 
 
 ################################################################################
-# Armadillo - http://arma.sourceforge.net/
+# Find BLAS, LAPACK and GFortran
 ################################################################################
-if(OS_IS_LINUX)
+if(NOT ${OS_IS_MACOSX})
+    if(NOT LINUX_DISTRIBUTION)
+        set(LINUX_DISTRIBUTION "Unknown")
+    endif(NOT LINUX_DISTRIBUTION)
+
     #############################################################################
-    # Check that LAPACK is found in the system
-    # LAPACK is required for matrix decompositions (eg. SVD) and matrix inverse.
+    # Check that BLAS (Basic Linear Algebra Subprograms) is found in the system
+    # See http://www.netlib.org/blas/
+    #############################################################################
+    find_library(BLAS blas)
+    if(NOT BLAS)
+        message(" The BLAS library has not been found.")
+        message(" You can try to install it by typing:")
+        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo yum install blas-devel")
+        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo apt-get install libopenblas-dev")
+        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        message(FATAL_ERROR "BLAS is required to build gnss-sdr")
+    endif(NOT BLAS)
+
+    #############################################################################
+    # Check that LAPACK (Linear Algebra PACKage) is found in the system
+    # See http://www.netlib.org/lapack/
     #############################################################################
     find_library(LAPACK lapack)
     if(NOT LAPACK)
@@ -909,34 +936,9 @@ if(OS_IS_LINUX)
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(" sudo apt-get install liblapack-dev")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        if(IS_ARM)
-            message(WARNING "LAPACK is recommended to build gnss-sdr")
-            set(LAPACK "")
-        else(IS_ARM)
-            message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
-        endif(IS_ARM)
+        message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
     endif(NOT LAPACK)
-    #############################################################################
-    # Check that BLAS is found in the system
-    # BLAS is used for matrix multiplication.
-    # Without BLAS, matrix multiplication will still work, but might be slower.
-    #############################################################################
-    find_library(BLAS blas)
-    if(NOT BLAS)
-        message(" The BLAS library has not been found.")
-        message(" You can try to install it by typing:")
-        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo yum install blas-devel")
-        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo apt-get install libopenblas-dev")
-        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        if(IS_ARM)
-            message(WARNING "BLAS is recommended to build gnss-sdr")
-            set(BLAS "")
-        else(IS_ARM)
-            message(FATAL_ERROR "BLAS is required to build gnss-sdr")
-        endif(IS_ARM)
-    endif(NOT BLAS)
+
     #############################################
     # Check if GFORTRAN is found in the system
     #############################################
@@ -1037,6 +1039,25 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/sparc64-linux-gnu/7
                        /usr/lib/gcc/x86_64-linux-gnux32/7
                        /usr/lib/gcc/sh4-linux-gnu/7
+                       /usr/lib/x86_64-linux-gnu         # libgfortran4
+                       /usr/lib/i386-linux-gnu
+                       /usr/lib/arm-linux-gnueabi
+                       /usr/lib/arm-linux-gnueabihf
+                       /usr/lib/aarch64-linux-gnu
+                       /usr/lib/i386-gnu
+                       /usr/lib/x86_64-kfreebsd-gnu
+                       /usr/lib/i386-kfreebsd-gnu
+                       /usr/lib/mips-linux-gnu
+                       /usr/lib/mips64el-linux-gnuabi64
+                       /usr/lib/mipsel-linux-gnu
+                       /usr/lib/powerpc-linux-gnu
+                       /usr/lib/powerpc64-linux-gnu
+                       /usr/lib/powerpc64le-linux-gnu
+                       /usr/lib/s390x-linux-gnu
+                       /usr/lib/sh4-linux-gnu
+                       /usr/lib/sparc64-linux-gnu
+                       /usr/lib/x86_64-linux-gnux32
+                       /usr/lib/alpha-linux-gnu
                 )
     if(NOT GFORTRAN)
         message(STATUS "The gfortran library has not been found.")
@@ -1048,9 +1069,15 @@ if(OS_IS_LINUX)
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " sudo apt-get install gfortran")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        message(FATAL_ERROR "gfortran is required to build gnss-sdr")
     endif(NOT GFORTRAN)
-endif(OS_IS_LINUX)
+endif(NOT ${OS_IS_MACOSX})
 
+
+
+################################################################################
+# Armadillo - http://arma.sourceforge.net/
+################################################################################
 find_package(Armadillo)
 if(ARMADILLO_FOUND)
     if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
@@ -1137,6 +1164,7 @@ find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
                                           /usr/lib/i386-linux-gnu
                                           /usr/lib/alpha-linux-gnu
                                           /usr/lib/hppa-linux-gnu
+                                          /usr/lib/i386-gnu
                                           /usr/lib/i686-gnu
                                           /usr/lib/i686-linux-gnu
                                           /usr/lib/x86_64-kfreebsd-gnu
@@ -1526,13 +1554,6 @@ endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 
 # Enable C++14 support in Clang from 3.5 / Fallback to C++11 if older version and use lib++ if working in macOS
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(OS_IS_LINUX)
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-    endif(OS_IS_LINUX)
     if(OS_IS_MACOSX)
         # See https://trac.macports.org/wiki/XcodeVersionInfo for Apple Clang version equivalences
         if(CLANG_VERSION VERSION_LESS "600")
@@ -1541,6 +1562,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
         endif(CLANG_VERSION VERSION_LESS "600")
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wno-deprecated-declarations")
+    else(OS_IS_MACOSX)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
     endif(OS_IS_MACOSX)
 
     if(CMAKE_BUILD_TYPE MATCHES "Release")

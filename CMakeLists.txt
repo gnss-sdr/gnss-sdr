@@ -411,10 +411,10 @@ endif(NOT ENABLE_GENERIC_ARCH)
 ################################################################################
 # Find a thread library
 ################################################################################
-if(NOT ${OS_IS_MACOSX})
+if(NOT OS_IS_MACOSX)
     find_package(Threads REQUIRED)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif(NOT ${OS_IS_MACOSX})
+endif(NOT OS_IS_MACOSX)
 
 
 
@@ -893,7 +893,7 @@ endif(NOT ENABLE_LOG)
 ################################################################################
 # Find BLAS, LAPACK and GFortran
 ################################################################################
-if(NOT ${OS_IS_MACOSX})
+if(NOT OS_IS_MACOSX)
     if(NOT LINUX_DISTRIBUTION)
         set(LINUX_DISTRIBUTION "Unknown")
     endif(NOT LINUX_DISTRIBUTION)
@@ -1064,7 +1064,7 @@ if(NOT ${OS_IS_MACOSX})
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "gfortran is required to build gnss-sdr")
     endif(NOT GFORTRAN)
-endif(NOT ${OS_IS_MACOSX})
+endif(NOT OS_IS_MACOSX)
 
 
 

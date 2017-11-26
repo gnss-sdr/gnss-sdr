@@ -215,6 +215,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      endif(NOT LINUX_DISTRIBUTION)
      message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(NOT LINUX_DISTRIBUTION)
+    set(LINUX_DISTRIBUTION "Unknown")
+endif(NOT LINUX_DISTRIBUTION)
 
 # Detect macOS / Mac OS X Version
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -899,181 +902,41 @@ endif(NOT ENABLE_LOG)
 
 
 
-################################################################################
-# Find BLAS, LAPACK and GFortran
-################################################################################
-if(NOT OS_IS_MACOSX)
-    if(NOT LINUX_DISTRIBUTION)
-        set(LINUX_DISTRIBUTION "Unknown")
-    endif(NOT LINUX_DISTRIBUTION)
+#############################################################################
+# Check that BLAS (Basic Linear Algebra Subprograms) is found in the system
+# See http://www.netlib.org/blas/
+#############################################################################
+find_library(BLAS blas)
+if(NOT BLAS)
+    message(" The BLAS library has not been found.")
+    message(" You can try to install it by typing:")
+    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        message(" sudo yum install blas-devel")
+    else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        message(" sudo apt-get install libblas-dev")
+    endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+    message(FATAL_ERROR "BLAS is required to build gnss-sdr")
+endif(NOT BLAS)
 
-    #############################################################################
-    # Check that BLAS (Basic Linear Algebra Subprograms) is found in the system
-    # See http://www.netlib.org/blas/
-    #############################################################################
-    find_library(BLAS blas)
-    if(NOT BLAS)
-        message(" The BLAS library has not been found.")
-        message(" You can try to install it by typing:")
-        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo yum install blas-devel")
-        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo apt-get install libopenblas-dev")
-        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        message(FATAL_ERROR "BLAS is required to build gnss-sdr")
-    endif(NOT BLAS)
 
-    #############################################################################
-    # Check that LAPACK (Linear Algebra PACKage) is found in the system
-    # See http://www.netlib.org/lapack/
-    #############################################################################
-    find_library(LAPACK lapack)
-    if(NOT LAPACK)
-        message(" The LAPACK library has not been found.")
-        message(" You can try to install it by typing:")
-        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo yum install lapack-devel")
-        elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-            message(" sudo zypper install lapack-devel")
-        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo apt-get install liblapack-dev")
-        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
-    endif(NOT LAPACK)
 
-    #############################################
-    # Check if GFORTRAN is found in the system
-    #############################################
-    find_library(GFORTRAN NAMES gfortran
-                 PATHS /usr/lib
-                       /usr/lib64
-                       /usr/local/lib
-                       /usr/local/lib/i386
-                       /usr/lib/gcc/x86_64-linux-gnu
-                       /usr/lib/gcc/i686-linux-gnu
-                       /usr/lib/gcc/i386-linux-gnu
-                       /usr/lib/gcc/x86_64-linux-gnu/4.6 # Ubuntu 12.04
-                       /usr/lib/gcc/i686-linux-gnu/4.6
-                       /usr/lib/gcc/x86_64-linux-gnu/4.7
-                       /usr/lib/gcc/i686-linux-gnu/4.7
-                       /usr/lib/gcc/x86_64-linux-gnu/4.8
-                       /usr/lib/gcc/i686-linux-gnu/4.8
-                       /usr/lib/gcc/x86_64-linux-gnu/4.9
-                       /usr/lib/gcc/i686-linux-gnu/4.9
-                       /usr/lib/gcc/x86_64-redhat-linux/4.7.2 # Fedora 18
-                       /usr/lib/gcc/i686-redhat-linux/4.7.2
-                       /usr/lib/gcc/x86_64-redhat-linux/4.8.1 # Fedora 19
-                       /usr/lib/gcc/x86_64-redhat-linux/4.8.3 # Fedora 20
-                       /usr/lib/gcc/x86_64-redhat-linux/4.9.1 # Fedora 21
-                       /usr/lib/gcc/i686-redhat-linux/4.8.1
-                       /usr/lib/gcc/i686-redhat-linux/4.8.3
-                       /usr/lib/gcc/i686-redhat-linux/4.9.1
-                       /usr/lib/gcc/x86_64-redhat-linux/4.4.4 # CentOS 6
-                       /usr/lib/gcc/i686-redhat-linux/4.4.4
-                       /usr/lib/gcc/x86_64-redhat-linux/4.8.2
-                       /usr/lib/gcc/i686-redhat-linux/4.8.2
-                       /usr/lib/gcc/i586-suse-linux/4.8  # OpenSUSE 13.1
-                       /usr/lib/gcc/i586-suse-linux/4.9
-                       /usr/lib/gcc/x86_64-suse-linux/4.8
-                       /usr/lib/gcc/x86_64-suse-linux/4.9
-                       /usr/lib/gcc/i486-linux-gnu # Debian 7
-                       /usr/lib/gcc/i486-linux-gnu/4.4
-                       /usr/lib/gcc/i486-linux-gnu/4.6
-                       /usr/lib/gcc/i486-linux-gnu/4.7
-                       /usr/lib/gcc/i486-linux-gnu/4.8
-                       /usr/lib/gcc/i486-linux-gnu/4.9
-                       /usr/lib/gcc/i586-linux-gnu/4.9
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.4 # Debian armhf
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.5
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.6
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.7
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.8
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.9
-                       /usr/lib/gcc/aarch64-linux-gnu/4.9   # Debian arm64
-                       /usr/lib/gcc/arm-linux-gnueabi/4.7   # Debian armel
-                       /usr/lib/gcc/arm-linux-gnueabi/4.9
-                       /usr/lib/gcc/x86_64-linux-gnu/5
-                       /usr/lib/gcc/i686-linux-gnu/5
-                       /usr/lib/gcc/arm-linux-gnueabi/5
-                       /usr/lib/gcc/arm-linux-gnueabihf/5
-                       /usr/lib/gcc/aarch64-linux-gnu/5
-                       /usr/lib/gcc/x86_64-linux-gnu/6      # Ubuntu 16.10
-                       /usr/lib/gcc/alpha-linux-gnu/6
-                       /usr/lib/gcc/aarch64-linux-gnu/6
-                       /usr/lib/gcc/arm-linux-gnueabi/6
-                       /usr/lib/gcc/arm-linux-gnueabihf/6
-                       /usr/lib/gcc/hppa-linux-gnu/6
-                       /usr/lib/gcc/i686-gnu/6
-                       /usr/lib/gcc/i686-linux-gnu/6
-                       /usr/lib/gcc/x86_64-kfreebsd-gnu/6
-                       /usr/lib/gcc/i686-kfreebsd-gnu/6
-                       /usr/lib/gcc/m68k-linux-gnu/6
-                       /usr/lib/gcc/mips-linux-gnu/6
-                       /usr/lib/gcc/mips64el-linux-gnuabi64/6
-                       /usr/lib/gcc/mipsel-linux-gnu/6
-                       /usr/lib/gcc/powerpc-linux-gnu/6
-                       /usr/lib/gcc/powerpc-linux-gnuspe/6
-                       /usr/lib/gcc/powerpc64-linux-gnu/6
-                       /usr/lib/gcc/powerpc64le-linux-gnu/6
-                       /usr/lib/gcc/s390x-linux-gnu/6
-                       /usr/lib/gcc/sparc64-linux-gnu/6
-                       /usr/lib/gcc/x86_64-linux-gnux32/6
-                       /usr/lib/gcc/sh4-linux-gnu/6
-                       /usr/lib/gcc/x86_64-linux-gnu/7      # Debian 9 Buster
-                       /usr/lib/gcc/alpha-linux-gnu/7
-                       /usr/lib/gcc/aarch64-linux-gnu/7
-                       /usr/lib/gcc/arm-linux-gnueabi/7
-                       /usr/lib/gcc/arm-linux-gnueabihf/7
-                       /usr/lib/gcc/hppa-linux-gnu/7
-                       /usr/lib/gcc/i686-gnu/7
-                       /usr/lib/gcc/i686-linux-gnu/7
-                       /usr/lib/gcc/x86_64-kfreebsd-gnu/7
-                       /usr/lib/gcc/i686-kfreebsd-gnu/7
-                       /usr/lib/gcc/m68k-linux-gnu/7
-                       /usr/lib/gcc/mips-linux-gnu/7
-                       /usr/lib/gcc/mips64el-linux-gnuabi64/7
-                       /usr/lib/gcc/mipsel-linux-gnu/7
-                       /usr/lib/gcc/powerpc-linux-gnu/7
-                       /usr/lib/gcc/powerpc-linux-gnuspe/7
-                       /usr/lib/gcc/powerpc64-linux-gnu/7
-                       /usr/lib/gcc/powerpc64le-linux-gnu/7
-                       /usr/lib/gcc/s390x-linux-gnu/7
-                       /usr/lib/gcc/sparc64-linux-gnu/7
-                       /usr/lib/gcc/x86_64-linux-gnux32/7
-                       /usr/lib/gcc/sh4-linux-gnu/7
-                       /usr/lib/x86_64-linux-gnu         # libgfortran4
-                       /usr/lib/i386-linux-gnu
-                       /usr/lib/arm-linux-gnueabi
-                       /usr/lib/arm-linux-gnueabihf
-                       /usr/lib/aarch64-linux-gnu
-                       /usr/lib/i386-gnu
-                       /usr/lib/x86_64-kfreebsd-gnu
-                       /usr/lib/i386-kfreebsd-gnu
-                       /usr/lib/mips-linux-gnu
-                       /usr/lib/mips64el-linux-gnuabi64
-                       /usr/lib/mipsel-linux-gnu
-                       /usr/lib/powerpc-linux-gnu
-                       /usr/lib/powerpc64-linux-gnu
-                       /usr/lib/powerpc64le-linux-gnu
-                       /usr/lib/s390x-linux-gnu
-                       /usr/lib/sh4-linux-gnu
-                       /usr/lib/sparc64-linux-gnu
-                       /usr/lib/x86_64-linux-gnux32
-                       /usr/lib/alpha-linux-gnu
-                )
-    if(NOT GFORTRAN)
-        message(STATUS "The gfortran library has not been found.")
-        message(STATUS " You can try to install it by typing:")
-        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo yum install gcc-fortran")
-        elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-            message(STATUS " sudo zypper install gcc-fortran")
-        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo apt-get install gfortran")
-        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        message(FATAL_ERROR "gfortran is required to build gnss-sdr")
-    endif(NOT GFORTRAN)
-endif(NOT OS_IS_MACOSX)
+#############################################################################
+# Check that LAPACK (Linear Algebra PACKage) is found in the system
+# See http://www.netlib.org/lapack/
+#############################################################################
+find_library(LAPACK lapack)
+if(NOT LAPACK)
+    message(" The LAPACK library has not been found.")
+    message(" You can try to install it by typing:")
+    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        message(" sudo yum install lapack-devel")
+    elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+        message(" sudo zypper install lapack-devel")
+    else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        message(" sudo apt-get install liblapack-dev")
+    endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+    message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
+endif(NOT LAPACK)
 
 
 
@@ -1094,7 +957,29 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'. ")
      set(armadillo_BRANCH ${GNSSSDR_ARMADILLO_LOCAL_VERSION})
      set(armadillo_RELEASE ${armadillo_BRANCH})
+     
+     #############################################
+     # Check if GFORTRAN is found in the system
+     #############################################
+     if(NOT OS_IS_MACOSX)
+         find_package(GFORTRAN)
+         if(NOT GFORTRAN)
+             message(STATUS "The gfortran library has not been found.")
+             message(STATUS " You can try to install it by typing:")
+             if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                 message(STATUS " sudo yum install gcc-fortran")
+             elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                 message(STATUS " sudo zypper install gcc-fortran")
+             else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                 message(STATUS " sudo apt-get install gfortran")
+             endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+             message(FATAL_ERROR "gfortran is required to build gnss-sdr")
+         endif(NOT GFORTRAN)
+     endif(NOT OS_IS_MACOSX)
 
+     #############################################
+     # Download and build Armadillo
+     #############################################
      if(CMAKE_VERSION VERSION_LESS 3.2)
       ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
@@ -1127,14 +1012,6 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      # Set up variables
      ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
      set(ARMADILLO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include )
-     find_library(LAPACK NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
-     if(OS_IS_MACOSX)
-         find_library(BLAS blas)
-     endif(OS_IS_MACOSX)
-     find_package(OpenBLAS)
-     if(OPENBLAS_FOUND)
-         set(BLAS ${OPENBLAS})
-     endif(OPENBLAS_FOUND)
      if(NOT GFORTRAN)
          set(GFORTRAN "")
      endif(NOT GFORTRAN)

@@ -3461,7 +3461,7 @@ double geodist(const double *rs, const double *rr, double *e)
 /* satellite azimuth/elevation angle -------------------------------------------
  * compute satellite azimuth/elevation angle
  * args   : double *pos      I   geodetic position {lat,lon,h} (rad,m)
- *          double *e        I   receiver-to-satellilte unit vevtor (ecef)
+ *          double *e        I   receiver-to-satellilte unit vector (ecef)
  *          double *azel     IO  azimuth/elevation {az,el} (rad) (NULL: no output)
  *                               (0.0<=azel[0]<2*pi,-pi/2<=azel[1]<=pi/2)
  * return : elevation angle (rad)

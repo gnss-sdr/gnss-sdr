@@ -47,7 +47,7 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
        liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
        libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev \
-       python-mako python-six
+       python-mako python-six libmatio-dev
 ~~~~~~
 
 Alternatively, and starting from Ubuntu 16.04 LTS, you can install all the required dependencies by adding the line
@@ -134,9 +134,9 @@ or manually as explained below, and then please follow instructions on how to [d
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-7.800.2.tar.xz
-$ tar xvfz armadillo-7.800.2.tar.xz
-$ cd armadillo-7.800.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-8.200.2.tar.xz
+$ tar xvfz armadillo-8.200.2.tar.xz
+$ cd armadillo-8.200.2
 $ cmake .
 $ make
 $ sudo make install
@@ -149,9 +149,9 @@ The full stop separated from ```cmake``` by a space is important. [CMake](http:/
 #### Install [Gflags](https://github.com/gflags/gflags "Gflags' Homepage"), a commandline flags processing module for C++:
 
 ~~~~~~
-$ wget https://github.com/gflags/gflags/archive/v2.2.0.tar.gz
-$ tar xvfz v2.2.0.tar.gz
-$ cd gflags-2.2.0
+$ wget https://github.com/gflags/gflags/archive/v2.2.1.tar.gz
+$ tar xvfz v2.2.1.tar.gz
+$ cd gflags-2.2.1
 $ cmake -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DBUILD_gflags_nothreads_LIB=OFF .
 $ make
 $ sudo make install
@@ -163,9 +163,9 @@ $ sudo ldconfig
 #### Install [Glog](https://github.com/google/glog "Glog's Homepage"), a library that implements application-level logging:
 
 ~~~~~~
-$ wget https://github.com/google/glog/archive/v0.3.4.tar.gz
-$ tar xvfz v0.3.4.tar.gz
-$ cd glog-0.3.4
+$ wget https://github.com/google/glog/archive/v0.3.5.tar.gz
+$ tar xvfz v0.3.5.tar.gz
+$ cd glog-0.3.5
 $ ./configure
 $ make
 $ sudo make install
@@ -495,6 +495,7 @@ $ sudo port install gnutls
 $ sudo port install google-glog +gflags
 $ sudo port install py27-mako
 $ sudo port install py27-six
+$ sudo port install matio
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:
@@ -533,6 +534,7 @@ $ brew install cmake hdf5 arpack superlu
 $ brew install armadillo
 $ brew install glog gflags gnutls
 $ brew install gnuradio
+$ brew install libmatio
 $ pip install mako
 $ pip install six
 ~~~~~~

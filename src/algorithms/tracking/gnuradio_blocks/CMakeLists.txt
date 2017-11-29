@@ -51,6 +51,7 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
      ${OPT_TRACKING_INCLUDES}
+     ${MATIO_INCLUDE_DIRS}
 )
 
 if(ENABLE_GENERIC_ARCH)
@@ -62,8 +63,16 @@ list(SORT TRACKING_GR_BLOCKS_HEADERS)
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
 
-target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_TRACKING_LIBRARIES})
+target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${MATIO_LIBRARIES} ${OPT_TRACKING_LIBRARIES})
 
 if(NOT VOLK_GNSSSDR_FOUND)
-    add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
+    if(MATIO_FOUND)
+        add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
+    else(MATIO_FOUND)
+        add_dependencies(tracking_gr_blocks volk_gnsssdr_module matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+    endif(MATIO_FOUND)
+else(NOT VOLK_GNSSSDR_FOUND)
+    if(NOT MATIO_FOUND)
+        add_dependencies(tracking_gr_blocks matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+    endif(NOT MATIO_FOUND)
 endif(NOT VOLK_GNSSSDR_FOUND)

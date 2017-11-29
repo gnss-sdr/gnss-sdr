@@ -72,6 +72,8 @@ private:
     unsigned int history_deep;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+
+    int save_matfile();
 };
 
 #endif

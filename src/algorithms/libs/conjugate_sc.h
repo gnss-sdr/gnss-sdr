@@ -1,13 +1,11 @@
 /*!
- * \file pass_through_test.cc
- * \brief  This file implements tests for the Pass_Through block
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
- *
+ * \file conjugate_sc.h
+ * \brief Conjugate a stream of lv_16sc_t ( std::complex<short> )
+ * \author Carles Fernandez Prades, cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,17 +28,32 @@
  * -------------------------------------------------------------------------
  */
 
+#ifndef GNSS_SDR_CONJUGATE_SC_H_
+#define GNSS_SDR_CONJUGATE_SC_H_
 
-#include "pass_through.h"
-#include <gtest/gtest.h>
-#include "in_memory_configuration.h"
+#include <boost/shared_ptr.hpp>
+#include <gnuradio/sync_block.h>
 
+class conjugate_sc;
 
+typedef boost::shared_ptr<conjugate_sc> conjugate_sc_sptr;
 
-TEST(PassThroughTest, Instantiate)
+conjugate_sc_sptr make_conjugate_sc();
+
+/*!
+ * \brief This class adapts a std::complex<short> stream
+ * into two 32-bits (float) streams
+ */
+class conjugate_sc : public gr::sync_block
 {
-    std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
-    config->set_property("Test.item_type", "gr_complex");
-    std::shared_ptr<Pass_Through> signal_conditioner = std::make_shared<Pass_Through>(config.get(), "Test", 1, 1);
-    EXPECT_STREQ("gr_complex", signal_conditioner->item_type().c_str());
-}
+private:
+    friend conjugate_sc_sptr make_conjugate_sc();
+public:
+    conjugate_sc();
+
+    int work(int noutput_items,
+            gr_vector_const_void_star &input_items,
+            gr_vector_void_star &output_items);
+};
+
+#endif

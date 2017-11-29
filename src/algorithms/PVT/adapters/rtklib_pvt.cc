@@ -193,9 +193,8 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     int num_bands = 0;
     if ((gps_1C_count > 0) || (gal_1B_count > 0)) num_bands = 1;
-    if (((gps_1C_count > 0) || (gal_1B_count > 0)) && (gps_2S_count > 0) ) num_bands = 2;
-    if (((gps_1C_count > 0) || (gal_1B_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0)) ) num_bands = 2;
-    if (((gps_1C_count > 0) || (gal_1B_count > 0)) && (gps_2S_count > 0) && ((gal_E5a_count > 0) || (gal_E5b_count > 0))) num_bands = 3;
+    if (gps_2S_count > 0) num_bands = 2;
+    if ((gal_E5a_count > 0) || (gal_E5b_count > 0)) num_bands = 3;
     int number_of_frequencies = configuration->property(role + ".num_bands", num_bands); /* (1:L1, 2:L1+L2, 3:L1+L2+L5) */
     if( (number_of_frequencies < 1) || (number_of_frequencies > 3) )
         {

@@ -49,9 +49,11 @@
  */
 /** Viterbi decoder reversed polynomial A */
 #define GPS_L2C_V27_POLY_A       (0x4F) /* 0b01001111 - reversed 0171*/
+#define GPS_L5_V27_POLY_A       (0x4F) /* 0b01001111 - reversed 0171*/
+
 /** Viterbi decoder reversed polynomial B */
 #define GPS_L2C_V27_POLY_B       (0x6D) /* 0b01101101 - reversed 0133 */
-
+#define GPS_L5_V27_POLY_B       (0x6D) /* 0b01101101 - reversed 0133 */
 /*
  * GPS L2C message constants.
  */
@@ -67,7 +69,7 @@
 /** GPS LC2 CNAV CRC length in bits */
 #define GPS_CNAV_MSG_CRC_LENGTH     (24)
 /** GPS L2C CNAV message payload length in bits */
-#define GPS_CNAV_MSG_DATA_LENGTH    (GPS_CNAV_MSG_LENGTH-GPS_CNAV_MSG_CRC_LENGTH)
+#define GPS_CNAV_MSG_DATA_LENGTH    (GPS_CNAV_MSG_LENGTH - GPS_CNAV_MSG_CRC_LENGTH)
 /** GPS L2C CNAV message lock detector threshold */
 #define GPS_CNAV_LOCK_MAX_CRC_FAILS (10)
 

@@ -2881,17 +2881,23 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Glonass_
                             line += minutes;
                         }
                     line += std::string(1, ' ');
-                    if(boost::lexical_cast<int>(seconds) < 10)
-                        {
-                            line += std::string(1, ' ');
-                            line += std::string(seconds, 1, 1);
-                        }
-                    else
-                        {
-                            line += seconds;
-                        }
-
-                    line += std::string(1, ' ');
+					if(boost::lexical_cast<int>(seconds) < 10)
+						{
+							line += std::string(1, ' ');
+							line += std::string(seconds, 1, 1);
+						}
+					else
+						{
+							line += seconds;
+						}
+					line += std::string(1, '.');
+					std::string decimal = std::string("0");
+					if (timestring.size() > 16)
+						{
+							std::string decimal (timestring, 16, 1);
+						}
+					line += decimal;
+					line += std::string(1, ' ');
                     line += Rinex_Printer::doub2for(-glonass_gnav_ephemeris_iter->second.d_tau_c, 18, 2);
                     line += std::string(1, ' ');
                     line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_gamma_n, 18, 2);

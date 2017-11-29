@@ -216,6 +216,9 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
     d_code_error_filt_chips_s = 0.0;
     d_carr_phase_error_secs_Ti = 0.0;
     d_preamble_timestamp_s = 0.0;
+
+    d_carrier_frequency_hz = 0.0;
+
     //set_min_output_buffer((long int)300);
 }
 
@@ -264,10 +267,13 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
 
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
-    d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    // d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
     // d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
+    // d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+    d_carrier_frequency_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
+    d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_frequency_hz / static_cast<double>(d_fs_in);
 
-    d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); // The carrier loop filter implements the Doppler accumulator
@@ -300,8 +306,8 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
-    d_enable_extended_integration = true;
-    d_preamble_synchronized = true;
+    d_enable_extended_integration = false;
+    d_preamble_synchronized = false;
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " Code Phase correction [samples]=" << delay_correction_samples
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
@@ -335,12 +341,18 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::~glonass_l1_ca_dll_pll_c_aid_tracking_c
                 }
         }
 
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_correlator_outs);
-    volk_gnsssdr_free(d_ca_code);
-
-    delete[] d_Prompt_buffer;
-    multicorrelator_cpu.free();
+    try
+    {
+            volk_gnsssdr_free(d_local_code_shift_chips);
+            volk_gnsssdr_free(d_correlator_outs);
+            volk_gnsssdr_free(d_ca_code);
+            delete[] d_Prompt_buffer;
+            multicorrelator_cpu.free();
+    }
+    catch(const std::exception & ex)
+    {
+            LOG(WARNING) << "Exception in destructor " << ex.what();
+    }
 }
 
 

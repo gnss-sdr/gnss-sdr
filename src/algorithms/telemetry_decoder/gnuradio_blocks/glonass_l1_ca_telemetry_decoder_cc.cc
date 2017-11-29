@@ -112,6 +112,7 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     d_flag_preamble = false;
     d_channel = 0;
     flag_TOW_set = false;
+    d_preamble_time_samples = 0;
 }
 
 
@@ -274,6 +275,8 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
                     LOG(INFO) << "Preamble detection for GLONASS L1 C/A SAT " << this->d_satellite;
                     // Enter into frame pre-detection status
                     d_stat = 1;
+                    d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter; // record the preamble sample stamp
+
                 }
         }
     else if (d_stat == 1) // posible preamble lock
@@ -282,12 +285,17 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
                 {
                     //check preamble separation
                     preamble_diff = d_sample_counter - d_preamble_index;
+                    // Record the PRN start sample index associated to the preamble
+                    d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter;
                     if (abs(preamble_diff - GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
                             //try to decode frame
                             LOG(INFO) << "Starting string decoder for GLONASS L1 C/A SAT " << this->d_satellite;
                             d_preamble_index = d_sample_counter; //record the preamble sample stamp
                             d_stat = 2;
+                            // send asynchronous message to tracking to inform of frame sync and extend correlation time
+														pmt::pmt_t value = pmt::from_double(static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) - 0.001);
+														this->message_port_pub(pmt::mp("preamble_timestamp_s"), value);
                         }
                     else
                         {

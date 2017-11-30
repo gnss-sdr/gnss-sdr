@@ -39,6 +39,7 @@
 #include <vector>
 #include <utility>
 #include "GPS_L2C.h"
+#include "GPS_L5.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
 #include "gps_cnav_utc_model.h"

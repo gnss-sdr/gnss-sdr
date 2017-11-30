@@ -188,7 +188,6 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_L2_CNAV_DATA_PAGE_
 
     page_type = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
 
-    //std::cout << "PRN=" << PRN << " TOW=" << d_TOW << " alert_flag=" << alert_flag << " page_type= " << page_type << std::endl;
     switch(page_type)
     {
     case 10: // Ephemeris 1/2

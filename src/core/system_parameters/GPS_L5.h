@@ -1,5 +1,5 @@
 /*!
- * \file GPS_L2C.h
+ * \file GPS_L5.h
  * \brief  Defines system parameters for GPS L5 signal
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
@@ -33,31 +33,29 @@
 #define GNSS_SDR_GPS_L5_H_
 
 #include <cstdint>
-#include <vector>
-#include <utility> // std::pair
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 
 // Physical constants
-const double GPS_L5_C_m_s       = 299792458.0;      //!< The speed of light, [m/s]
-const double GPS_L5_C_m_ms      = 299792.4580;      //!< The speed of light, [m/ms]
-const double GPS_L5_PI          = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
-const double GPS_L5_TWO_PI      = 6.283185307179586;//!< 2Pi as defined in IS-GPS-200E
+const double GPS_L5_C_m_s       = 299792458.0;          //!< The speed of light, [m/s]
+const double GPS_L5_C_m_ms      = 299792.4580;          //!< The speed of light, [m/ms]
+const double GPS_L5_PI          = 3.1415926535898;      //!< Pi as defined in IS-GPS-200E
+const double GPS_L5_TWO_PI      = 6.283185307179586;    //!< 2Pi as defined in IS-GPS-200E
 const double GPS_L5_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
 const double GPS_L5_GM              = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
 const double GPS_L5_F               = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
 
 
 // carrier and code frequencies
-const double GPS_L5_FREQ_HZ = FREQ5;             //!< L2 [Hz]
+const double GPS_L5_FREQ_HZ = FREQ5;           //!< L2 [Hz]
 
 const double GPS_L5i_CODE_RATE_HZ = 10.23e6;   //!< GPS L5i code rate [chips/s]
-const int GPS_L5i_CODE_LENGTH_CHIPS = 10230;    //!< GPS L5i  code length [chips]
-const double GPS_L5i_PERIOD = 0.001;             //!< GPS L2 M code period [seconds]
+const int GPS_L5i_CODE_LENGTH_CHIPS = 10230;   //!< GPS L5i  code length [chips]
+const double GPS_L5i_PERIOD = 0.001;           //!< GPS L2 M code period [seconds]
 
 const double GPS_L5q_CODE_RATE_HZ = 10.23e6;   //!< GPS L5i code rate [chips/s]
-const int GPS_L5q_CODE_LENGTH_CHIPS = 10230;    //!< GPS L5i  code length [chips]
-const double GPS_L5q_PERIOD = 0.001;             //!< GPS L2 M code period [seconds]
+const int GPS_L5q_CODE_LENGTH_CHIPS = 10230;   //!< GPS L5i  code length [chips]
+const double GPS_L5q_PERIOD = 0.001;           //!< GPS L2 M code period [seconds]
 
 
 const int32_t GPS_L5i_INIT_REG[210] =

@@ -154,13 +154,13 @@ int gps_l5_telemetry_decoder_cc::general_work (int noutput_items __attribute__((
             //* delay by the formulae:
             //* \code
             //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20
-            d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L5_PERIOD + 6 * GPS_L5_PERIOD;
+            d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L5i_PERIOD + 6 * GPS_L5i_PERIOD;
             d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
             d_flag_valid_word = true;
         }
     else
         {
-            d_TOW_at_current_symbol += GPS_L5_PERIOD;
+            d_TOW_at_current_symbol += GPS_L5i_PERIOD;
             if (current_synchro_data.Flag_valid_symbol_output == false)
                 {
                     d_flag_valid_word = false;

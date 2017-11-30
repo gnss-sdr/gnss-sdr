@@ -141,14 +141,17 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
      */
     int gps_1C_count = configuration->property("Channels_1C.count", 0);
     int gps_2S_count = configuration->property("Channels_2S.count", 0);
+    int gps_L5_count = configuration->property("Channels_L5.count", 0);
     int gal_1B_count = configuration->property("Channels_1B.count", 0);
     int gal_E5a_count = configuration->property("Channels_5X.count", 0); // GPS L5 or Galileo E5a ?
     int gal_E5b_count = configuration->property("Channels_7X.count", 0);
 
     unsigned int type_of_receiver = 0;
+    // *******************WARNING!!!!!!!***********
+    // GPS L5 only configurable for single frequency, single system at the moment!!!!!!
     if( (gps_1C_count != 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 1;
     if( (gps_1C_count == 0) && (gps_2S_count != 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 2;
-
+    if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gps_L5_count != 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 3;
     if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 4;
     if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0)) type_of_receiver = 5;
     if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0)) type_of_receiver = 6;
@@ -194,7 +197,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     int num_bands = 0;
     if ((gps_1C_count > 0) || (gal_1B_count > 0)) num_bands = 1;
     if (gps_2S_count > 0) num_bands = 2;
-    if ((gal_E5a_count > 0) || (gal_E5b_count > 0)) num_bands = 3;
+    if ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0)) num_bands = 3;
     int number_of_frequencies = configuration->property(role + ".num_bands", num_bands); /* (1:L1, 2:L1+L2, 3:L1+L2+L5) */
     if( (number_of_frequencies < 1) || (number_of_frequencies > 3) )
         {
@@ -272,7 +275,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     int earth_tide = configuration->property(role + ".earth_tide", 0);
 
     int nsys = 0;
-    if ((gps_1C_count > 0) || (gps_2S_count > 0)) nsys += SYS_GPS;
+    if ((gps_1C_count > 0) || (gps_2S_count > 0) || (gps_L5_count > 0)) nsys += SYS_GPS;
     if ((gal_1B_count > 0) || (gal_E5a_count > 0) || (gal_E5b_count > 0)) nsys += SYS_GAL;
     int navigation_system = configuration->property(role + ".navigation_system", nsys);  /* (SYS_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     if( (navigation_system < 1) || (navigation_system > 255) ) /* GPS: 1   SBAS: 2   GPS+SBAS: 3 Galileo: 8  Galileo+GPS: 9 GPS+SBAS+Galileo: 11 All: 255 */

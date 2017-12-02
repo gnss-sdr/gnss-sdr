@@ -138,75 +138,72 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
             {
             case 'E':
                 {
-                    // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
-                    galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                    if (galileo_ephemeris_iter != galileo_ephemeris_map.end())
-                    {
-                        std::string sig_(gnss_observables_iter->second.Signal);
-                        // Galileo E1
-                        if(sig_.compare("1B") == 0)
-                            {
-                                // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
-                                galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
-                                    {
-                                        //convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                        eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
-                                        //convert observation from GNSS-SDR class to RTKLIB structure
-                                        obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
-                                        obs_data[valid_obs] = insert_obs_to_rtklib(newobs,
-                                                gnss_observables_iter->second,
-                                                galileo_ephemeris_iter->second.WN_5,
-                                                0);
-                                        valid_obs++;
-                                    }
-                                else // the ephemeris are not available for this SV
-                                    {
-                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
-                                    }
+                    std::string sig_(gnss_observables_iter->second.Signal);
+                    // Galileo E1
+                    if(sig_.compare("1B") == 0)
+                        {
+                            // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
+                            galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                            if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
+                                {
+                                    //convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                    eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
+                                    //convert observation from GNSS-SDR class to RTKLIB structure
+                                    obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                    obs_data[valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            galileo_ephemeris_iter->second.WN_5,
+                                            0);
+                                    valid_obs++;
+                                }
+                            else // the ephemeris are not available for this SV
+                                {
+                                    DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                }
+                        }
 
-                            }
                         // Galileo E5
                         if(sig_.compare("5X") == 0)
                             {
-
-                                // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
-                                galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
-                                    {
-                                        bool found_E1_obs=false;
-                                        for (int i = 0; i < valid_obs; i++)
-                                            {
-                                                if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO)))
-                                                    {
-                                                        obs_data[i+glo_valid_obs] = insert_obs_to_rtklib(obs_data[i+glo_valid_obs],
-                                                                gnss_observables_iter->second,
-                                                                galileo_ephemeris_iter->second.WN_5,
-                                                                2);//Band 3 (L5/E5)
-                                                        found_E1_obs=true;
-                                                        break;
-                                                    }
-                                            }
-                                        if (!found_E1_obs)
-                                            {
-                                                //insert Galileo E5 obs as new obs and also insert its ephemeris
-                                                //convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
-                                                //convert observation from GNSS-SDR class to RTKLIB structure
-                                                obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
-                                                obs_data[valid_obs+glo_valid_obs] = insert_obs_to_rtklib(newobs,
-                                                        gnss_observables_iter->second,
-                                                        galileo_ephemeris_iter->second.WN_5,
-                                                        2); //Band 3 (L5/E5)
-                                                valid_obs++;
-                                            }
-                                    }
-                                else // the ephemeris are not available for this SV
-                                    {
-                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
-                                    }
-                            }
-                    }
+                            // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
+                            galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                            if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
+                                {
+                                    bool found_E1_obs = false;
+                                    for (int i = 0; i < valid_obs; i++)
+                                        {
+                                            if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO)))
+                                                {
+                                                    obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
+                                                            gnss_observables_iter->second,
+                                                            galileo_ephemeris_iter->second.WN_5,
+                                                            2);//Band 3 (L5/E5)
+                                                    found_E1_obs = true;
+                                                    break;
+                                                }
+                                        }
+                                    if (!found_E1_obs)
+                                        {
+                                            //insert Galileo E5 obs as new obs and also insert its ephemeris
+                                            //convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                            eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
+                                            //convert observation from GNSS-SDR class to RTKLIB structure
+                                            unsigned char default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                            obsd_t newobs = {{0,0}, '0', '0', {}, {},
+                                                             {default_code_, default_code_, default_code_},
+                                                             {}, {0.0, 0.0, 0.0}, {}};
+                                            obs_data[valid_obs+glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+                                                    galileo_ephemeris_iter->second.WN_5,
+                                                    2); //Band 3 (L5/E5)
+                                            valid_obs++;
+                                        }
+                                }
+                            else // the ephemeris are not available for this SV
+                                {
+                                    DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                }
+                        }
                     break;
                 }
             case 'G':
@@ -280,75 +277,75 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                         }
                     break;
                 }
-			case 'R': //TODO This should be using rtk lib nomenclature
-				{
-					std::string sig_(gnss_observables_iter->second.Signal);
-					// GLONASS GNAV L1
-					if(sig_.compare("1G") == 0)
-					{
-							// 1 Glo - find the ephemeris for the current GLONASS SV observation. The SV Slot Number (PRN ID) is the map key
-							glonass_gnav_ephemeris_iter = glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
-							if (glonass_gnav_ephemeris_iter != glonass_gnav_ephemeris_map.cend())
-							{
-									//convert ephemeris from GNSS-SDR class to RTKLIB structure
-									geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
-									//convert observation from GNSS-SDR class to RTKLIB structure
-									obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
-									obs_data[valid_obs+glo_valid_obs] = insert_obs_to_rtklib(newobs,
-													gnss_observables_iter->second,
-													glonass_gnav_ephemeris_iter->second.d_WN,
-													0);//Band 0 (L1)
-									glo_valid_obs++;
-							}
-							else // the ephemeris are not available for this SV
-							{
-									DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
-							}
+            case 'R': //TODO This should be using rtk lib nomenclature
+                {
+                    std::string sig_(gnss_observables_iter->second.Signal);
+                    // GLONASS GNAV L1
+                    if(sig_.compare("1G") == 0)
+                        {
+                            // 1 Glo - find the ephemeris for the current GLONASS SV observation. The SV Slot Number (PRN ID) is the map key
+                            glonass_gnav_ephemeris_iter = glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                            if (glonass_gnav_ephemeris_iter != glonass_gnav_ephemeris_map.cend())
+                                {
+                                    //convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                    geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
+                                    //convert observation from GNSS-SDR class to RTKLIB structure
+                                    obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                    obs_data[valid_obs+glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            glonass_gnav_ephemeris_iter->second.d_WN,
+                                            0);//Band 0 (L1)
+                                    glo_valid_obs++;
+                                }
+                            else // the ephemeris are not available for this SV
+                                {
+                                    DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                }
 
-					}
-					// GLONASS GNAV L2
-					if(sig_.compare("2G") == 0)
-					{
-							// 1 GLONASS - find the ephemeris for the current GLONASS SV observation. The SV PRN ID is the map key
-							glonass_gnav_ephemeris_iter = glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
-							if (glonass_gnav_ephemeris_iter != glonass_gnav_ephemeris_map.cend())
-							{
-									bool found_L1_obs=false;
-									for (int i = 0; i < glo_valid_obs; i++)
-										{
-												if (geph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN+NSATGPS)))
-													{
-															obs_data[i+valid_obs] = insert_obs_to_rtklib(obs_data[i+valid_obs],
-																			gnss_observables_iter->second,
-																			glonass_gnav_ephemeris_iter->second.d_WN,
-																			1);//Band 1 (L2)
-															found_L1_obs=true;
-															break;
-													}
-										}
-									if (!found_L1_obs)
-									{
-											//insert GLONASS GNAV L2 obs as new obs and also insert its ephemeris
-											//convert ephemeris from GNSS-SDR class to RTKLIB structure
-											geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
-											//convert observation from GNSS-SDR class to RTKLIB structure
-											obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
-											obs_data[valid_obs+glo_valid_obs] = insert_obs_to_rtklib(newobs,
-															gnss_observables_iter->second,
-															glonass_gnav_ephemeris_iter->second.d_WN,
-															1); //Band 1 (L2)
-											glo_valid_obs++;
-									}
-							}
-							else // the ephemeris are not available for this SV
-							{
-									DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
-							}
+                        }
+                    // GLONASS GNAV L2
+                    if(sig_.compare("2G") == 0)
+                        {
+                            // 1 GLONASS - find the ephemeris for the current GLONASS SV observation. The SV PRN ID is the map key
+                            glonass_gnav_ephemeris_iter = glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                            if (glonass_gnav_ephemeris_iter != glonass_gnav_ephemeris_map.cend())
+                                {
+                                    bool found_L1_obs = false;
+                                    for (int i = 0; i < glo_valid_obs; i++)
+                                        {
+                                            if (geph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN+NSATGPS)))
+                                                {
+                                                    obs_data[i+valid_obs] = insert_obs_to_rtklib(obs_data[i+valid_obs],
+                                                            gnss_observables_iter->second,
+                                                            glonass_gnav_ephemeris_iter->second.d_WN,
+                                                            1);//Band 1 (L2)
+                                                    found_L1_obs = true;
+                                                    break;
+                                                }
+                                        }
+                                    if (!found_L1_obs)
+                                        {
+                                            //insert GLONASS GNAV L2 obs as new obs and also insert its ephemeris
+                                            //convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                            geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
+                                            //convert observation from GNSS-SDR class to RTKLIB structure
+                                            obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                            obs_data[valid_obs+glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+                                                    glonass_gnav_ephemeris_iter->second.d_WN,
+                                                    1); //Band 1 (L2)
+                                            glo_valid_obs++;
+                                        }
+                                }
+                            else // the ephemeris are not available for this SV
+                                {
+                                    DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                }
 
 
-					}
-					break;
-				}
+                        }
+                    break;
+                }
             default :
                 DLOG(INFO) << "Hybrid observables: Unknown GNSS";
                 break;

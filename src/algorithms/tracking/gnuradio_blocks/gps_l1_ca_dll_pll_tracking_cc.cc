@@ -534,7 +534,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
-    int next_prn_lenght_samples = d_current_prn_length_samples;
     if (d_enable_tracking == true)
         {
             // Fill the acquisition data
@@ -571,7 +570,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
                     d_code_phase_step_chips,
                     d_current_prn_length_samples);
 
-
             // ################## PLL ##########################################################
             // PLL discriminator
             // Update PLL discriminator [rads/Ti -> Secs/Ti]
@@ -600,8 +598,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             //double T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
             double T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
             double K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
-            next_prn_lenght_samples = round(K_blk_samples); // round to a discrete number of samples
-            //d_current_prn_length_samples = round(K_blk_samples); // round to a discrete number of samples
+            d_current_prn_length_samples = round(K_blk_samples); // round to a discrete number of samples
 
             //################### PLL COMMANDS #################################################
             // carrier phase step (NCO phase increment per sample) [rads/sample]
@@ -616,8 +613,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             // code phase step (Code resampler phase increment per sample) [chips/sample]
             d_code_phase_step_chips = d_code_freq_chips / static_cast<double>(d_fs_in);
             // remnant code phase [chips]
-            //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; // rounding error < 1 sample
-            d_rem_code_phase_samples = K_blk_samples - next_prn_lenght_samples; // rounding error < 1 sample
+            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; // rounding error < 1 sample
             d_rem_code_phase_chips = d_code_freq_chips * (d_rem_code_phase_samples / static_cast<double>(d_fs_in));
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
@@ -740,8 +736,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
 
     consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
     d_sample_counter += d_current_prn_length_samples; // count for the processed samples
-
-    d_current_prn_length_samples=next_prn_lenght_samples;
     return 1; // output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 

@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_GPS_L2C_SIGNAL_H_
-#define GNSS_GPS_L2C_SIGNAL_H_
+#ifndef GNSS_SDR_GPS_L2C_SIGNAL_H_
+#define GNSS_SDR_GPS_L2C_SIGNAL_H_
 
 #include <complex>
 

@@ -74,9 +74,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/arithmetic/code_generation_test.cc"
 #include "unit-tests/arithmetic/fft_length_test.cc"
 #include "unit-tests/arithmetic/fft_speed_test.cc"
-#if MATIO_TEST
 #include "unit-tests/arithmetic/matio_test.cc"
-#endif
 
 #include "unit-tests/control-plane/file_configuration_test.cc"
 #include "unit-tests/control-plane/in_memory_configuration_test.cc"

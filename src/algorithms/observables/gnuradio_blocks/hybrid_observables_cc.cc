@@ -358,11 +358,6 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                 {
                     d_gnss_synchro_history_queue[i].push_back(in[i][j]);
                 }
-            //std::cout<<"push["<<i<<"] items "<<n_consume[i]
-            ///         <<" latest T_rx: "<<(double)in[i][ninput_items[i]-1].Tracking_sample_counter/(double)in[i][ninput_items[i]-1].fs
-            //         <<" [s] q size: "
-            //         <<d_gnss_synchro_history_queue[i].size()
-            //         <<std::endl;
         }
 
     bool channel_history_ok;
@@ -447,10 +442,6 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                                             realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
                                                         }
 
-                                                }
-                                            else
-                                                {
-                                                    //std::cout<<"ch["<<i<<"] delta_T_rx:"<<delta_T_rx_s*1000.0<<std::endl;
                                                 }
                                         }
                                 }

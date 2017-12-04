@@ -1,13 +1,13 @@
 /*!
  * \file gps_l5_signal.h
- * \brief This class implements signal generators for the GPS L2C signals
+ * \brief This class implements signal generators for the GPS L5 signals
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_GPS_L5_SIGNAL_H_
-#define GNSS_GPS_L5_SIGNAL_H_
+#ifndef GNSS_SDR_GPS_L5_SIGNAL_H_
+#define GNSS_SDR_GPS_L5_SIGNAL_H_
 
 #include <complex>
 
@@ -49,4 +49,4 @@ void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _
 void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs);
 
 
-#endif /* GNSS_GPS_L5_SIGNAL_H_ */
+#endif /* GNSS_SDR_GPS_L5_SIGNAL_H_ */

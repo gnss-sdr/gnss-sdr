@@ -88,12 +88,9 @@
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "galileo_e5a_dll_pll_tracking.h"
 #include "gps_l2_m_dll_pll_tracking.h"
-<<<<<<< HEAD
 #include "glonass_l1_ca_dll_pll_tracking.h"
 #include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
-=======
 #include "gps_l5i_dll_pll_tracking.h"
->>>>>>> 88a02340ac87139047e80cadb864b1022bf0e3ff
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l2c_telemetry_decoder.h"
 #include "galileo_e1b_telemetry_decoder.h"

@@ -1,13 +1,13 @@
 /*!
- * \file gps_l2c_signal.cc
- * \brief This class implements signal generators for the GPS L2C signals
- * \author Javier Arribas, 2015. jarribas(at)cttc.es
+ * \file gps_l5_signal.cc
+ * \brief This class implements signal generators for the GPS L5 signals
+ * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,138 +35,150 @@
 #include <cmath>
 #include <cinttypes>
 #include <complex>
-
 #include "GPS_L5.h"
 
-using namespace std;
 
 std::deque<bool> l5i_xa_shift(std::deque<bool> xa)
 {
-  if (xa==std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,0,1})
-    {
-      return std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,1,1};
-    }else{
-        std::deque<bool> out(xa.begin(), xa.end()-1);
-        out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
-        return out;
-    }
+    if (xa == std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,0,1})
+        {
+            return std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,1,1};
+        }
+    else
+        {
+            std::deque<bool> out(xa.begin(), xa.end() - 1);
+            out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
+            return out;
+        }
 }
+
 
 std::deque<bool> l5q_xa_shift(std::deque<bool> xa)
 {
-  if (xa==std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,0,1})
-    {
-      return std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,1,1};
-    }else{
-        std::deque<bool> out(xa.begin(), xa.end()-1);
-        out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
-        return out;
-    }
+    if (xa == std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,0,1})
+        {
+            return std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,1,1};
+        }
+    else
+        {
+            std::deque<bool> out(xa.begin(), xa.end() - 1);
+            out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
+            return out;
+        }
 }
 
+
 std::deque<bool> l5i_xb_shift(std::deque<bool> xb)
-    {
-      std::deque<bool> out(xb.begin(), xb.end()-1);
-      out.push_front(xb[12] xor xb[11] xor xb[7] xor xb[6] xor xb[5] xor xb[3] xor xb[2] xor xb[0]);
-      return out;
-    }
+{
+    std::deque<bool> out(xb.begin(), xb.end() - 1);
+    out.push_front(xb[12] xor xb[11] xor xb[7] xor xb[6] xor xb[5] xor xb[3] xor xb[2] xor xb[0]);
+    return out;
+}
+
 
 std::deque<bool> l5q_xb_shift(std::deque<bool> xb)
-    {
-      std::deque<bool> out(xb.begin(), xb.end()-1);
-      out.push_front(xb[12] xor xb[11] xor xb[7] xor xb[6] xor xb[5] xor xb[3] xor xb[2] xor xb[0]);
-      return out;
-    }
+{
+    std::deque<bool> out(xb.begin(), xb.end()-1);
+    out.push_front(xb[12] xor xb[11] xor xb[7] xor xb[6] xor xb[5] xor xb[3] xor xb[2] xor xb[0]);
+    return out;
+}
+
 
 std::deque<bool> make_l5i_xa()
 {
-  std::deque<bool> xa={1,1,1,1,1,1,1,1,1,1,1,1,1};
-  std::deque<bool> y(GPS_L5i_CODE_LENGTH_CHIPS,0);
+    std::deque<bool> xa = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+    std::deque<bool> y(GPS_L5i_CODE_LENGTH_CHIPS, 0);
 
-  for (int i=0; i<GPS_L5i_CODE_LENGTH_CHIPS; i++)
-    {
-      y[i] = xa[12];
-      xa = l5i_xa_shift(xa);
-    }
-  return y;
+    for (int i = 0; i < GPS_L5i_CODE_LENGTH_CHIPS; i++)
+        {
+            y[i] = xa[12];
+            xa = l5i_xa_shift(xa);
+        }
+    return y;
 }
+
 
 std::deque<bool> make_l5i_xb()
 {
-  std::deque<bool> xb={1,1,1,1,1,1,1,1,1,1,1,1,1};
-  std::deque<bool> y(GPS_L5i_CODE_LENGTH_CHIPS,0);
+    std::deque<bool> xb = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+    std::deque<bool> y(GPS_L5i_CODE_LENGTH_CHIPS,0);
 
-  for (int i=0; i<GPS_L5i_CODE_LENGTH_CHIPS; i++)
-    {
-      y[i] = xb[12];
-      xb = l5i_xb_shift(xb);
-    }
-  return y;
+    for (int i = 0; i < GPS_L5i_CODE_LENGTH_CHIPS; i++)
+        {
+            y[i] = xb[12];
+            xb = l5i_xb_shift(xb);
+        }
+    return y;
 }
+
 
 std::deque<bool> make_l5q_xa()
 {
-  std::deque<bool> xa={1,1,1,1,1,1,1,1,1,1,1,1,1};
-  std::deque<bool> y(GPS_L5q_CODE_LENGTH_CHIPS,0);
+    std::deque<bool> xa = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+    std::deque<bool> y(GPS_L5q_CODE_LENGTH_CHIPS, 0);
 
-  for (int i=0; i<GPS_L5q_CODE_LENGTH_CHIPS; i++)
-    {
-      y[i] = xa[12];
-      xa = l5q_xa_shift(xa);
-    }
-  return y;
+    for (int i = 0; i < GPS_L5q_CODE_LENGTH_CHIPS; i++)
+        {
+            y[i] = xa[12];
+            xa = l5q_xa_shift(xa);
+        }
+    return y;
 }
+
 
 std::deque<bool> make_l5q_xb()
 {
-  std::deque<bool> xb={1,1,1,1,1,1,1,1,1,1,1,1,1};
-  std::deque<bool> y(GPS_L5q_CODE_LENGTH_CHIPS,0);
+    std::deque<bool> xb = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+    std::deque<bool> y(GPS_L5q_CODE_LENGTH_CHIPS, 0);
 
-  for (int i=0; i<GPS_L5q_CODE_LENGTH_CHIPS; i++)
-    {
-      y[i] = xb[12];
-      xb = l5q_xb_shift(xb);
-    }
-  return y;
+    for (int i = 0; i < GPS_L5q_CODE_LENGTH_CHIPS; i++)
+        {
+            y[i] = xb[12];
+            xb = l5q_xb_shift(xb);
+        }
+    return y;
 }
+
 
 void make_l5i(int32_t * _dest, int prn)
 {
-  int xb_offset = GPS_L5i_INIT_REG[prn];
+    int xb_offset = GPS_L5i_INIT_REG[prn];
 
-  std::deque<bool> xb=make_l5i_xb();
-  std::deque<bool> xa=make_l5i_xa();
-  std::deque<bool> xb_shift(GPS_L5i_CODE_LENGTH_CHIPS,0);
+    std::deque<bool> xb = make_l5i_xb();
+    std::deque<bool> xa = make_l5i_xa();
+    std::deque<bool> xb_shift(GPS_L5i_CODE_LENGTH_CHIPS, 0);
 
-  for (int n=0; n<GPS_L5i_CODE_LENGTH_CHIPS; n++)
-    {
-      xb_shift[n]=xb[(xb_offset+n)%GPS_L5i_CODE_LENGTH_CHIPS];
-    }
-  std::deque<bool> out_code(GPS_L5i_CODE_LENGTH_CHIPS,0);
-  for (int n=0; n<GPS_L5i_CODE_LENGTH_CHIPS; n++)
-    {
-      _dest[n]=xa[n] xor xb_shift[n];
-    }
+    for (int n = 0; n < GPS_L5i_CODE_LENGTH_CHIPS; n++)
+        {
+            xb_shift[n] = xb[(xb_offset + n) % GPS_L5i_CODE_LENGTH_CHIPS];
+        }
+    std::deque<bool> out_code(GPS_L5i_CODE_LENGTH_CHIPS, 0);
+    for (int n = 0; n < GPS_L5i_CODE_LENGTH_CHIPS; n++)
+        {
+            _dest[n] = xa[n] xor xb_shift[n];
+        }
 }
+
 
 void make_l5q(int32_t * _dest, int prn)
 {
-  int xb_offset = GPS_L5q_INIT_REG[prn];
+    int xb_offset = GPS_L5q_INIT_REG[prn];
 
-  std::deque<bool> xb=make_l5q_xb();
-  std::deque<bool> xa=make_l5q_xa();
-  std::deque<bool> xb_shift(GPS_L5q_CODE_LENGTH_CHIPS,0);
+    std::deque<bool> xb = make_l5q_xb();
+    std::deque<bool> xa = make_l5q_xa();
+    std::deque<bool> xb_shift(GPS_L5q_CODE_LENGTH_CHIPS, 0);
 
-  for (int n=0; n<GPS_L5q_CODE_LENGTH_CHIPS; n++)
-    {
-      xb_shift[n]=xb[(xb_offset+n)%GPS_L5q_CODE_LENGTH_CHIPS];
-    }
-  std::deque<bool> out_code(GPS_L5q_CODE_LENGTH_CHIPS,0);
-  for (int n=0; n<GPS_L5q_CODE_LENGTH_CHIPS; n++)
-    {
-      _dest[n]=xa[n] xor xb_shift[n];
-    }
+    for (int n = 0; n < GPS_L5q_CODE_LENGTH_CHIPS; n++)
+        {
+            xb_shift[n] = xb[(xb_offset + n) % GPS_L5q_CODE_LENGTH_CHIPS];
+        }
+    std::deque<bool> out_code(GPS_L5q_CODE_LENGTH_CHIPS, 0);
+    for (int n = 0; n < GPS_L5q_CODE_LENGTH_CHIPS; n++)
+        {
+            _dest[n] = xa[n] xor xb_shift[n];
+        }
 }
+
 
 void gps_l5i_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
 {

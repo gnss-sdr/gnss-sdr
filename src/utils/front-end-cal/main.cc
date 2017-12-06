@@ -422,6 +422,7 @@ int main(int argc, char** argv)
             gnss_synchro->PRN = PRN;
             acquisition->set_gnss_synchro(gnss_synchro);
             acquisition->init();
+            acquisition->set_local_code();
             acquisition->reset();
             stop = false;
             try

@@ -240,6 +240,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared
     Galileo_channels += configuration->property("Channels_5X.count", 0);
     unsigned int GPS_channels = configuration->property("Channels_1C.count", 0);
     GPS_channels += configuration->property("Channels_2S.count", 0);
+    GPS_channels += configuration->property("Channels_L5.count", 0);
     return GetBlock(configuration, "Observables", implementation, Galileo_channels + GPS_channels, Galileo_channels + GPS_channels);
 }
 
@@ -254,6 +255,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<Con
     Galileo_channels += configuration->property("Channels_5X.count", 0);
     unsigned int GPS_channels = configuration->property("Channels_1C.count", 0);
     GPS_channels += configuration->property("Channels_2S.count", 0);
+    GPS_channels += configuration->property("Channels_L5.count", 0);
     return GetBlock(configuration, "PVT", implementation, Galileo_channels + GPS_channels, 0);
 }
 

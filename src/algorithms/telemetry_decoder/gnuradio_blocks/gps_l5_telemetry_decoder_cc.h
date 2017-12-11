@@ -31,17 +31,15 @@
 #ifndef GNSS_SDR_GPS_L5_TELEMETRY_DECODER_CC_H
 #define GNSS_SDR_GPS_L5_TELEMETRY_DECODER_CC_H
 
-#include <algorithm> // for copy
+#include <algorithm>
 #include <deque>
 #include <fstream>
 #include <string>
-#include <utility> // for pair
+#include <utility>
 #include <vector>
 #include <gnuradio/block.h>
 #include "gnss_satellite.h"
 #include "gps_cnav_navigation_message.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
 #include "concurrent_queue.h"
 
 extern "C" {
@@ -99,6 +97,10 @@ private:
     bool d_flag_valid_word;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
+    double bits_NH[GPS_L5_NH_CODE_LENGTH];
+    std::deque<double> sym_hist;
+    bool sync_NH;
+    bool new_sym;
 };
 
 

@@ -42,6 +42,7 @@
 */
 
 const double PI = 3.1415926535897932;             //!<  pi
+const double PI_2 = 2.0 * PI;                     //!<  2 * pi
 
 const double TWO_P4 = (16);                       //!< 2^4
 const double TWO_P11 = (2048);                    //!< 2^11

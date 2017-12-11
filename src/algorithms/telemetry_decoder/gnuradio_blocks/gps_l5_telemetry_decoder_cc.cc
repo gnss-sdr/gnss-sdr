@@ -37,6 +37,8 @@
 #include <boost/lexical_cast.hpp>
 #include "gnss_synchro.h"
 #include "gps_l5_telemetry_decoder_cc.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
 
 using google::LogMessage;
 
@@ -70,6 +72,19 @@ gps_l5_telemetry_decoder_cc::gps_l5_telemetry_decoder_cc(
 
     //initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
+    for(int aux = 0; aux < GPS_L5_NH_CODE_LENGTH; aux++)
+        {
+            if(GPS_L5_NH_CODE[aux] == 0)
+                {
+                    bits_NH[aux] = -1.0;
+                }
+            else
+                {
+                    bits_NH[aux] = 1.0;
+                }
+        }
+    sync_NH = false;
+    new_sym = false;
 }
 
 
@@ -96,26 +111,58 @@ int gps_l5_telemetry_decoder_cc::general_work (int noutput_items __attribute__((
     Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);           // Get the output buffer pointer
     const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]); // Get the input buffer pointer
 
+    // UPDATE GNSS SYNCHRO DATA
+    Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
+    //1. Copy the current tracking output
+    current_synchro_data = in[0];
+    consume_each(1); //one by one
+    sym_hist.push_back(in[0].Prompt_I);
+    double symbol_value = 0.0;
+
+    if(sym_hist.size() == GPS_L5_NH_CODE_LENGTH)
+        {
+            std::deque<double>::iterator it;
+            int corr_NH = 0;
+            it = sym_hist.begin();
+            for(int i = 0; i < GPS_L5_NH_CODE_LENGTH; i++)
+                {
+                    if((bits_NH[i] * (*it)) > 0.0){corr_NH += 1;}
+                    else{corr_NH -= 1;}
+                    it++;
+                }
+            if(abs(corr_NH) == GPS_L5_NH_CODE_LENGTH){sync_NH = true;}
+            else
+                {
+                    sym_hist.pop_front();
+                    sync_NH = false;
+                }
+            if (sync_NH)
+                {
+                    new_sym = true;
+                    for(it = sym_hist.begin(); it != sym_hist.end(); it++)
+                        {
+                            symbol_value += (*it);
+                        }
+                    sym_hist.clear();
+                }
+        }
+
     bool flag_new_cnav_frame = false;
     cnav_msg_t msg;
     u32 delay = 0;
 
     //add the symbol to the decoder
-    u8 symbol_clip = static_cast<u8>(in[0].Prompt_I > 0) * 255;
-    flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
-
-    consume_each(1); //one by one
-
-    // UPDATE GNSS SYNCHRO DATA
-    Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
-
-    //1. Copy the current tracking output
-    current_synchro_data = in[0];
-
+    if(new_sym)
+        {
+            u8 symbol_clip = static_cast<u8>(symbol_value > 0.0) * 255;
+            flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
+            new_sym = false;
+        }
     //2. Add the telemetry decoder information
     //check if new CNAV frame is available
     if (flag_new_cnav_frame == true)
         {
+            std::cout << "NEW CNAV FRAME" << std::endl;
             std::bitset<GPS_L5_CNAV_DATA_PAGE_BITS> raw_bits;
             //Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
             for (u32 i = 0; i < GPS_L5_CNAV_DATA_PAGE_BITS ; i++)
@@ -168,12 +215,6 @@ int gps_l5_telemetry_decoder_cc::general_work (int noutput_items __attribute__((
         }
     current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
     current_synchro_data.Flag_valid_word = d_flag_valid_word;
-
-    //    if (flag_PLL_180_deg_phase_locked == true)
-    //        {
-    //            //correct the accumulated phase for the Costas loop phase shift, if required
-    //            current_synchro_data.Carrier_phase_rads += GPS_PI;
-    //        }
 
     if(d_dump == true)
         {

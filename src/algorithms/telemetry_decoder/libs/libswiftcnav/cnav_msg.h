@@ -49,16 +49,12 @@
 
 /** Size of the Viterbi decoder history. */
 #define GPS_L2_V27_HISTORY_LENGTH_BITS 64
-#define GPS_L5_V27_HISTORY_LENGTH_BITS 64
 /** Bits to accumulate before decoding starts. */
 #define GPS_L2C_V27_INIT_BITS    (32)
-#define GPS_L5_V27_INIT_BITS    (32)
 /** Bits to decode at a time. */
 #define GPS_L2C_V27_DECODE_BITS  (32)
-#define GPS_L5_V27_DECODE_BITS  (32)
 /** Bits in decoder tail. We ignore them. */
 #define GPS_L2C_V27_DELAY_BITS   (32)
-#define GPS_L5_V27_DELAY_BITS   (32)
 /**
  * GPS CNAV message container.
  *
@@ -72,15 +68,6 @@ typedef struct
     bool alert;  /**< CNAV message alert flag */
     u8   raw_msg[GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS]; /**< RAW MSG for GNSS-SDR */
 } cnav_msg_t;
-
-typedef struct
-{
-    u8   prn;    /**< SV PRN. 0..31 */
-    u8   msg_id; /**< Message id. 0..31 */
-    u32  tow;    /**< GPS ToW in 6-second units. Multiply to 6 to get seconds. */
-    bool alert;  /**< CNAV message alert flag */
-    u8   raw_msg[GPS_L5_V27_DECODE_BITS + GPS_L5_V27_DELAY_BITS]; /**< RAW MSG for GNSS-SDR */
-} cnav_L5_msg_t;
 
 /**
  * GPS CNAV decoder component.
@@ -108,27 +95,6 @@ typedef struct {
     bool           init;          /**< Initial state flag. When true, initial bits
      *   do not produce output. */
 } cnav_v27_part_t;
-
-typedef struct {
-    v27_t          dec;           /**< Viterbi block decoder object */
-    v27_decision_t decisions[GPS_L5_V27_HISTORY_LENGTH_BITS];
-    /**< Decision graph */
-    unsigned char  symbols[(GPS_L5_V27_INIT_BITS + GPS_L5_V27_DECODE_BITS) * 2];
-    /**< Symbol buffer */
-    size_t         n_symbols;     /**< Count of symbols in the symbol buffer */
-    unsigned char  decoded[GPS_L5_V27_DECODE_BITS + GPS_L5_V27_DELAY_BITS];
-    /**< Decode buffer */
-    size_t         n_decoded;     /**< Number of bits in the decode buffer */
-    bool           preamble_seen; /**< When true, the decode buffer is aligned on
-     *   preamble. */
-    bool           invert;        /**< When true, indicates the bits are inverted */
-    bool           message_lock;  /**< When true, indicates the message boundary
-     *   is found. */
-    bool           crc_ok;        /**< Flag that the last message had good CRC */
-    size_t         n_crc_fail;    /**< Counter for CRC failures */
-    bool           init;          /**< Initial state flag. When true, initial bits
-     *   do not produce output. */
-} cnav_L5_v27_part_t;
 
 /**
  * GPS CNAV message lock and decoder object.

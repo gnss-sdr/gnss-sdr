@@ -49,11 +49,9 @@
  */
 /** Viterbi decoder reversed polynomial A */
 #define GPS_L2C_V27_POLY_A       (0x4F) /* 0b01001111 - reversed 0171*/
-#define GPS_L5_V27_POLY_A       (0x4F) /* 0b01001111 - reversed 0171*/
 
 /** Viterbi decoder reversed polynomial B */
 #define GPS_L2C_V27_POLY_B       (0x6D) /* 0b01101101 - reversed 0133 */
-#define GPS_L5_V27_POLY_B       (0x6D) /* 0b01101101 - reversed 0133 */
 /*
  * GPS L2C message constants.
  */

@@ -35,7 +35,7 @@
 #include <cstdint>
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
-#include "GPS_L2C.h" // CNAV GPS NAVIGATION MESSAGE STRUCTURE
+#include "GPS_CNAV.h"
 
 // Physical constants
 const double GPS_L5_C_m_s       = 299792458.0;          //!< The speed of light, [m/s]
@@ -179,6 +179,7 @@ const int GPS_L5_SYMBOLS_PER_BIT = 2;
 const int GPS_L5_SAMPLES_PER_SYMBOL = 10;
 const int GPS_L5_CNAV_DATA_PAGE_SYMBOLS = 600;
 const int GPS_L5_CNAV_DATA_PAGE_DURATION_S = 6;
-
+const int GPS_L5_NH_CODE_LENGTH = 10;
+const int GPS_L5_NH_CODE[10] = {0, 0, 0, 0, 1, 1, 0, 1, 0, 1};
 
 #endif /* GNSS_SDR_GPS_L5_H_ */

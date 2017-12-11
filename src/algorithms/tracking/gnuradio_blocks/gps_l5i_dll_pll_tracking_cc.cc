@@ -257,14 +257,14 @@ void gps_l5i_dll_pll_tracking_cc::start_tracking()
     sys = sys_.substr(0,1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking of GPS L2CM signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    LOG(INFO) << "Starting GPS L2CM tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+    std::cout << "Tracking of GPS L5i signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    LOG(INFO) << "Starting GPS L5i tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
 
-    LOG(INFO) << "GPS L2CM PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
+    LOG(INFO) << "GPS L5i PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " Code Phase correction [samples]=" << delay_correction_samples
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }

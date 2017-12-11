@@ -34,10 +34,6 @@
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include "concurrent_queue.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_almanac.h"
-#include "gps_cnav_iono.h"
-#include "gps_cnav_utc_model.h"
 #include "configuration_interface.h"
 
 

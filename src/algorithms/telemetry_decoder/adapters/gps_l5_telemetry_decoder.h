@@ -36,6 +36,7 @@
 #include <string>
 #include "telemetry_decoder_interface.h"
 #include "gps_l5_telemetry_decoder_cc.h"
+#include "gnss_satellite.h"
 
 
 class ConfigurationInterface;

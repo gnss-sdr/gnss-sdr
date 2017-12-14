@@ -58,7 +58,7 @@ gps_l5_telemetry_decoder_cc_sptr
 gps_l5_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
 
 /*!
- * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
+ * \brief This class implements a GPS L5 Telemetry decoder
  *
  */
 class gps_l5_telemetry_decoder_cc : public gr::block
@@ -67,10 +67,6 @@ public:
     ~gps_l5_telemetry_decoder_cc();
     void set_satellite(const Gnss_Satellite & satellite);  //!< Set satellite PRN
     void set_channel(int channel);                         //!< Set receiver's channel
-
-    /*!
-     * \brief This is where all signal processing takes place
-     */
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
@@ -88,9 +84,6 @@ private:
     std::ofstream d_dump_file;
 
     cnav_msg_decoder_t d_cnav_decoder;
-
-    int d_state;
-    int d_crc_error_count;
 
     double d_TOW_at_current_symbol;
     double d_TOW_at_Preamble;

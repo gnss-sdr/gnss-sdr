@@ -275,7 +275,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                                 }
                         }
                     //GPS L5
-                    if(sig_.compare("5X") == 0)
+                    if(sig_.compare("L5") == 0)
                         {
                             gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                             if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.cend())
@@ -346,7 +346,6 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                     nav_data.lam[i][1] = SPEED_OF_LIGHT / FREQ2; /* L2 */
                     nav_data.lam[i][2] = SPEED_OF_LIGHT / FREQ5; /* L5/E5 */
                 }
-
             result = rtkpos(&rtk_, obs_data, valid_obs, &nav_data);
             if(result == 0)
                 {

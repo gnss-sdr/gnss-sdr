@@ -62,14 +62,10 @@ gps_l5_telemetry_decoder_cc::gps_l5_telemetry_decoder_cc(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "GPS L5 TELEMETRY PROCESSING: satellite " << d_satellite;
-    //set_output_multiple (1);
     d_channel = 0;
     d_flag_valid_word = false;
-    d_TOW_at_current_symbol = 0;
-    d_TOW_at_Preamble = 0;
-    d_state = 0; //initial state
-    d_crc_error_count = 0;
-
+    d_TOW_at_current_symbol = 0.0;
+    d_TOW_at_Preamble = 0.0;
     //initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
     for(int aux = 0; aux < GPS_L5_NH_CODE_LENGTH; aux++)
@@ -117,33 +113,30 @@ int gps_l5_telemetry_decoder_cc::general_work (int noutput_items __attribute__((
     current_synchro_data = in[0];
     consume_each(1); //one by one
     sym_hist.push_back(in[0].Prompt_I);
-    double symbol_value = 0.0;
+    int corr_NH = 0;
+    int symbol_value = 0;
 
+    //Search correlation with Neuman-Hofman Code (see IS-GPS-705D)
     if(sym_hist.size() == GPS_L5_NH_CODE_LENGTH)
         {
-            std::deque<double>::iterator it;
-            int corr_NH = 0;
-            it = sym_hist.begin();
             for(int i = 0; i < GPS_L5_NH_CODE_LENGTH; i++)
                 {
-                    if((bits_NH[i] * (*it)) > 0.0){corr_NH += 1;}
-                    else{corr_NH -= 1;}
-                    it++;
+                    if((bits_NH[i] * sym_hist.at(i)) > 0.0) {corr_NH += 1;}
+                    else {corr_NH -= 1;}
                 }
-            if(abs(corr_NH) == GPS_L5_NH_CODE_LENGTH){sync_NH = true;}
+            if(abs(corr_NH) == GPS_L5_NH_CODE_LENGTH)
+                {
+                    sync_NH = true;
+                    if(corr_NH > 0) {symbol_value = 1;}
+                    else {symbol_value = -1;}
+                    new_sym = true;
+                    sym_hist.clear();
+                }
             else
                 {
                     sym_hist.pop_front();
                     sync_NH = false;
-                }
-            if (sync_NH)
-                {
-                    new_sym = true;
-                    for(it = sym_hist.begin(); it != sym_hist.end(); it++)
-                        {
-                            symbol_value += (*it);
-                        }
-                    sym_hist.clear();
+                    new_sym = false;
                 }
         }
 
@@ -154,7 +147,7 @@ int gps_l5_telemetry_decoder_cc::general_work (int noutput_items __attribute__((
     //add the symbol to the decoder
     if(new_sym)
         {
-            u8 symbol_clip = static_cast<u8>(symbol_value > 0.0) * 255;
+            u8 symbol_clip = static_cast<u8>(symbol_value > 0) * 255;
             flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
             new_sym = false;
         }
@@ -162,7 +155,6 @@ int gps_l5_telemetry_decoder_cc::general_work (int noutput_items __attribute__((
     //check if new CNAV frame is available
     if (flag_new_cnav_frame == true)
         {
-            std::cout << "NEW CNAV FRAME" << std::endl;
             std::bitset<GPS_L5_CNAV_DATA_PAGE_BITS> raw_bits;
             //Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
             for (u32 i = 0; i < GPS_L5_CNAV_DATA_PAGE_BITS ; i++)
@@ -177,31 +169,31 @@ int gps_l5_telemetry_decoder_cc::general_work (int noutput_items __attribute__((
                 {
                     // get ephemeris object for this SV
                     std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                    std::cout << "New GPS CNAV message received: ephemeris from satellite " << d_satellite << std::endl;
+                    std::cout << "New GPS L5 CNAV message received: ephemeris from satellite " << d_satellite << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
 
                 }
             if (d_CNAV_Message.have_new_iono() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                    std::cout << "New GPS CNAV message received: iono model parameters from satellite " << d_satellite << std::endl;
+                    std::cout << "New GPS L5 CNAV message received: iono model parameters from satellite " << d_satellite << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
             if (d_CNAV_Message.have_new_utc_model() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                    std::cout << "New GPS CNAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
+                    std::cout << "New GPS L5 CNAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
             //update TOW at the preamble instant
-            d_TOW_at_Preamble = static_cast<int>(msg.tow);
+            d_TOW_at_Preamble = static_cast<double>(msg.tow) * 6.0;
             //* The time of the last input symbol can be computed from the message ToW and
             //* delay by the formulae:
             //* \code
-            //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20
-            d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L5i_PERIOD + 6 * GPS_L5i_PERIOD;
+            //* symbolTime_ms = msg->tow * 6000 + *pdelay * 10
+            d_TOW_at_current_symbol = (static_cast<double>(msg.tow) * 6.0) + (static_cast<double>(delay) + 12.0) * GPS_L5i_SYMBOL_PERIOD;
             d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
             d_flag_valid_word = true;
         }
@@ -232,7 +224,7 @@ int gps_l5_telemetry_decoder_cc::general_work (int noutput_items __attribute__((
             }
             catch (const std::ifstream::failure & e)
             {
-                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                    LOG(WARNING) << "Exception writing Telemetry GPS L5 dump file " << e.what();
             }
         }
 
@@ -246,12 +238,14 @@ void gps_l5_telemetry_decoder_cc::set_satellite(const Gnss_Satellite & satellite
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "GPS L5 CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
+    d_CNAV_Message.reset();
 }
 
 
 void gps_l5_telemetry_decoder_cc::set_channel(int channel)
 {
     d_channel = channel;
+    d_CNAV_Message.reset();
     LOG(INFO) << "GPS L5 CNAV channel set to " << channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -270,7 +264,7 @@ void gps_l5_telemetry_decoder_cc::set_channel(int channel)
                     }
                     catch (const std::ifstream::failure &e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening Telemetry GPS L5 dump file " << e.what();
                     }
                 }
         }

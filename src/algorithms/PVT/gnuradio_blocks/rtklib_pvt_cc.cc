@@ -123,7 +123,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
                     // update/insert new ephemeris record to the global ephemeris map
                     d_ls_pvt->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN] = *gps_cnav_ephemeris;
-                    LOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
+                    DLOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
                 }
             else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Iono>) )
                 {
@@ -335,7 +335,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     msgctl(sysv_msqid, IPC_RMID, NULL);
 
     //save GPS L2CM ephemeris to XML file
-    std::string file_name = "eph_GPS_L2CM.xml";
+    std::string file_name = "eph_GPS_L2CM_L5.xml";
 
     if (d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
         {
@@ -470,7 +470,8 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                             if(((tmp_eph_iter_gps->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("1C") == 0))
                                     || ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("2S") == 0))
                                     || ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("1B") == 0))
-                                    || ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("5X") == 0)))
+                                    || ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("5X") == 0))
+                                    || ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("L5") == 0)))
                                 {
                                     // store valid observables in a map.
                                     gnss_observables_map.insert(std::pair<int,Gnss_Synchro>(i, in[i][epoch]));

@@ -40,6 +40,7 @@ void Gps_CNAV_Navigation_Message::reset()
     b_flag_ephemeris_1 = false;
     b_flag_ephemeris_2 = false;
     b_flag_iono_valid = false;
+    b_flag_utc_valid = false;
 
     // satellite positions
     d_satpos_X = 0;

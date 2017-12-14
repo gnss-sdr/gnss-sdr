@@ -170,12 +170,6 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
     current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
     current_synchro_data.Flag_valid_word = d_flag_valid_word;
 
-    //    if (flag_PLL_180_deg_phase_locked == true)
-    //        {
-    //            //correct the accumulated phase for the Costas loop phase shift, if required
-    //            current_synchro_data.Carrier_phase_rads += GPS_PI;
-    //        }
-
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
@@ -192,7 +186,7 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
             }
             catch (const std::ifstream::failure & e)
             {
-                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                    LOG(WARNING) << "Exception writing Telemetry GPS L2 dump file " << e.what();
             }
         }
 
@@ -230,7 +224,7 @@ void gps_l2c_telemetry_decoder_cc::set_channel(int channel)
                     }
                     catch (const std::ifstream::failure &e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening Telemetry GPS L2 dump file " << e.what();
                     }
                 }
         }

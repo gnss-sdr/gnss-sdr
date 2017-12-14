@@ -186,7 +186,7 @@ void gps_l5i_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
 
     if (_prn > 0 and _prn < 51)
         {
-          make_l5i(_code, _prn);
+          make_l5i(_code, _prn - 1);
         }
 
     for (signed int i = 0; i < GPS_L5i_CODE_LENGTH_CHIPS; i++)
@@ -206,7 +206,7 @@ void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _
     int32_t* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
-          make_l5i(_code, _prn);
+          make_l5i(_code, _prn - 1);
         }
 
     signed int _samplesPerCode, _codeValueIndex;
@@ -253,7 +253,7 @@ void gps_l5q_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
 
     if (_prn > 0 and _prn < 51)
         {
-          make_l5q(_code, _prn);
+          make_l5q(_code, _prn - 1);
         }
 
     for (signed int i = 0; i < GPS_L5q_CODE_LENGTH_CHIPS; i++)
@@ -273,7 +273,7 @@ void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _
     int32_t* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
-          make_l5q(_code, _prn);
+          make_l5q(_code, _prn - 1);
         }
 
     signed int _samplesPerCode, _codeValueIndex;

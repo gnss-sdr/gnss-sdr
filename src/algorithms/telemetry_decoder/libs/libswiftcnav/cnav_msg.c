@@ -411,7 +411,8 @@ void cnav_msg_decoder_init(cnav_msg_decoder_t *dec)
  * The time of the last input symbol can be computed from the message ToW and
  * delay by the formulae:
  * \code
- * symbolTime_ms = msg->tow * 6000 + *pdelay * 20
+ * symbolTime_ms = msg->tow * 6000 + *pdelay * 20 (L2)
+ * symbolTime_ms = msg->tow * 6000 + *pdelay * 10 (L5)
  * \endcode
  *
  * \param[in,out] dec    Decoder object.

@@ -150,23 +150,27 @@ void ChannelFsm::Event_start_acquisition()
 {
     this->process_event(Ev_channel_start_acquisition());
     //std::cout<<"Ev_channel_start_acquisition launched"<<std::endl;
+    DLOG(INFO) << "CH = " << channel_ << ". Ev start acquisition";
 }
 
 
 void ChannelFsm::Event_valid_acquisition()
 {
     this->process_event(Ev_channel_valid_acquisition());
+    DLOG(INFO) << "CH = " << channel_ << ". Ev valid acquisition";
 }
 
 
 void ChannelFsm::Event_failed_acquisition_repeat()
 {
     this->process_event(Ev_channel_failed_acquisition_repeat());
+    DLOG(INFO) << "CH = " << channel_ << ". Ev failed acquisition repeat";
 }
 
 void ChannelFsm::Event_failed_acquisition_no_repeat()
 {
     this->process_event(Ev_channel_failed_acquisition_no_repeat());
+    DLOG(INFO) << "CH = " << channel_ << ". Ev failed acquisition no repeat";
 }
 
 
@@ -174,6 +178,7 @@ void ChannelFsm::Event_failed_acquisition_no_repeat()
 void ChannelFsm::Event_failed_tracking_standby()
 {
     this->process_event(Ev_channel_failed_tracking_standby());
+    DLOG(INFO) << "CH = " << channel_ << ". Ev failed tracking standby";
 }
 
 //void ChannelFsm::Event_failed_tracking_reacq() {

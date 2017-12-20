@@ -91,12 +91,6 @@ void GNSSFlowgraph::start()
 
 void GNSSFlowgraph::stop()
 {
-    //    for (unsigned int i = 0; i < channels_count_; i++)
-    //        {
-    //            channels_.at(i)->stop_channel();
-    //            LOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
-    //        }
-    //    LOG(INFO) << "Threads finished. Return to main program.";
     top_block_->stop();
     running_ = false;
 }
@@ -373,11 +367,13 @@ bool GNSSFlowgraph::send_telemetry_msg(pmt::pmt_t msg)
  */
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
-    DLOG(INFO) << "received " << what << " from " << who;
+    DLOG(INFO) << "Received " << what << " from " << who << ". Number of applied actions = " << applied_actions_;
+    VLOG(-100) << "Received " << what << " from " << who << ". Number of applied actions = " << applied_actions_;
     switch (what)
     {
     case 0:
         DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
+        VLOG(-100) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
         available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
         //TODO: Optimize the channel and signal matching!
         while ( channels_.at(who)->get_signal().get_signal_str().compare(available_GNSS_signals_.front().get_signal_str()) != 0 )
@@ -388,11 +384,13 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         channels_.at(who)->set_signal(available_GNSS_signals_.front());
         available_GNSS_signals_.pop_front();
         DLOG(INFO) << "Channel "<< who << " Starting acquisition " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
+        VLOG(-100) << "Channel "<< who << " Starting acquisition " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
         channels_.at(who)->start_acquisition();
         break;
 
     case 1:
         DLOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_.at(who)->get_signal().get_satellite();
+        VLOG(-100) << "Channel " << who << " ACQ SUCCESS satellite " << channels_.at(who)->get_signal().get_satellite();
         channels_state_[who] = 2;
         acq_channels_count_--;
         for (unsigned int i = 0; i < channels_count_; i++)
@@ -440,6 +438,9 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     case 2:
         DLOG(INFO) << "Channel " << who << " TRK FAILED satellite " << channels_.at(who)->get_signal().get_satellite();
         DLOG(INFO) << "Number of channels in acquisition = " << acq_channels_count_;
+        VLOG(-100) << "Channel " << who << " TRK FAILED satellite " << channels_.at(who)->get_signal().get_satellite();
+        VLOG(-100) << "Number of channels in acquisition = " << acq_channels_count_;
+
         if (acq_channels_count_ < max_acq_channels_)
             {
                 channels_state_[who] = 1;

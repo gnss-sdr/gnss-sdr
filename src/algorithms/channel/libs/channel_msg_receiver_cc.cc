@@ -50,13 +50,9 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
             switch (message)
             {
             case 1: //positive acquisition
-                //DLOG(INFO) << "Channel " << channel_ << " ACQ SUCCESS satellite " <<
-                //    gnss_synchro_.System << " " << gnss_synchro_.PRN;
                 d_channel_fsm->Event_valid_acquisition();
                 break;
             case 2: //negative acquisition
-                //DLOG(INFO) << "Channel " << channel_
-                //    << " ACQ FAILED satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
                 if (d_repeat == true)
                     {
                         d_channel_fsm->Event_failed_acquisition_repeat();

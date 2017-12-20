@@ -115,8 +115,7 @@ public:
     typedef sc::transition<Ev_channel_start_acquisition,
             channel_acquiring_fsm_S1> reactions;
 
-    channel_waiting_fsm_S3(my_context ctx) :
-        my_base(ctx)
+    channel_waiting_fsm_S3(my_context ctx) : my_base(ctx)
     {
         //std::cout << "Enter Channel_waiting_S3 " << std::endl;
         context<ChannelFsm> ().request_satellite();

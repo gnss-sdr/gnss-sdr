@@ -105,7 +105,7 @@ private:
     bool connected_;
     bool repeat_;
     ChannelFsm channel_fsm_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    gr::msg_queue::sptr queue_;
 };
 
 #endif /*GNSS_SDR_CHANNEL_H_*/

@@ -40,7 +40,7 @@ using google::LogMessage;
 Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
         std::shared_ptr<GNSSBlockInterface> pass_through, std::shared_ptr<AcquisitionInterface> acq,
         std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
-        std::string role, std::string implementation, boost::shared_ptr<gr::msg_queue> queue)
+        std::string role, std::string implementation, gr::msg_queue::sptr queue)
 {
     pass_through_ = pass_through;
     acq_ = acq;

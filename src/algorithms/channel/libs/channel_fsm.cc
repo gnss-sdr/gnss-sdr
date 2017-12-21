@@ -194,7 +194,7 @@ void ChannelFsm::set_tracking(std::shared_ptr<TrackingInterface> tracking)
     trk_ = tracking;
 }
 
-void ChannelFsm::set_queue(boost::shared_ptr<gr::msg_queue> queue)
+void ChannelFsm::set_queue(gr::msg_queue::sptr queue)
 {
     queue_ = queue;
 }

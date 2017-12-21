@@ -158,7 +158,7 @@ void ControlThread::run()
 }
 
 
-void ControlThread::set_control_queue(boost::shared_ptr<gr::msg_queue> control_queue)
+void ControlThread::set_control_queue(gr::msg_queue::sptr control_queue)
 {
     if (flowgraph_->running())
         {
@@ -445,7 +445,7 @@ void ControlThread::init()
 void ControlThread::read_control_messages()
 {
     DLOG(INFO) << "Reading control messages from queue";
-    boost::shared_ptr<gr::message> queue_message = control_queue_->delete_head();
+    gr::message::sptr queue_message = control_queue_->delete_head();
     if (queue_message != 0)
         {
             control_messages_ = control_message_factory_->GetControlMessages(queue_message);

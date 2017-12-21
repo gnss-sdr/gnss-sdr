@@ -51,8 +51,7 @@
 
 using google::LogMessage;
 
-GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration,
-        boost::shared_ptr<gr::msg_queue> queue)
+GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue)
 {
     connected_ = false;
     running_ = false;

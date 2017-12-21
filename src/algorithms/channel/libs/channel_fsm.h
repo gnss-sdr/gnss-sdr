@@ -59,7 +59,7 @@ public:
 
     void set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition);
     void set_tracking(std::shared_ptr<TrackingInterface> tracking);
-    void set_queue(boost::shared_ptr<gr::msg_queue> queue);
+    void set_queue(gr::msg_queue::sptr queue);
     void set_channel(unsigned int channel);
     void start_acquisition();
     void start_tracking();
@@ -77,7 +77,7 @@ public:
 private:
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    gr::msg_queue::sptr queue_;
     unsigned int channel_;
 };
 

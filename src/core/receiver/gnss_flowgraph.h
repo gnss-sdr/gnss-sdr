@@ -139,7 +139,7 @@ private:
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gnss_sdr_sample_counter_sptr ch_out_sample_counter;
     gr::top_block_sptr top_block_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    gr::msg_queue::sptr queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;
     std::vector<unsigned int> channels_state_;
 };

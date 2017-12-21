@@ -579,7 +579,8 @@ void GNSSFlowgraph::set_signals_list()
     unsigned int total_channels = configuration_->property("Channels_1C.count", 0) +
             configuration_->property("Channels_2S.count", 0) +
             configuration_->property("Channels_1B.count", 0) +
-            configuration_->property("Channels_5X.count", 0);
+            configuration_->property("Channels_5X.count", 0) +
+            configuration_->property("Channels_L5.count", 0);
 
     /*
      * Loop to create the list of GNSS Signals
@@ -672,6 +673,19 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
+    if (configuration_->property("Channels_L5.count", 0) > 0)
+        {
+            /*
+             * Loop to create GPS L5 signals
+             */
+            for (available_gnss_prn_iter = available_gps_prn.cbegin();
+                    available_gnss_prn_iter != available_gps_prn.cend();
+                    available_gnss_prn_iter++)
+                {
+                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
+                            *available_gnss_prn_iter), std::string("L5")));
+                }
+        }
     if (configuration_->property("Channels_SBAS.count", 0) > 0)
         {
             /*
@@ -725,7 +739,7 @@ void GNSSFlowgraph::set_signals_list()
         {
             std::string gnss_signal = (configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("1C")));
             std::string gnss_system;
-            if((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) ) gnss_system = "GPS";
+            if((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) or (gnss_signal.compare("L5") == 0)) gnss_system = "GPS";
             if((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0) ) gnss_system = "Galileo";
             unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
             LOG(INFO) << "Channel " << i <<  " system " << gnss_system << ", signal " << gnss_signal <<", sat "<<sat;

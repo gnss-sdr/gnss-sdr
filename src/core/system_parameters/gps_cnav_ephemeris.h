@@ -32,7 +32,7 @@
 #ifndef GNSS_SDR_GPS_CNAV_EPHEMERIS_H_
 #define GNSS_SDR_GPS_CNAV_EPHEMERIS_H_
 
-#include "GPS_L2C.h"
+#include "GPS_CNAV.h"
 #include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
 

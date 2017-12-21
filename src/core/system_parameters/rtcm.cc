@@ -41,6 +41,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <glog/logging.h>
 #include "Galileo_E1.h"
+#include "GPS_L2C.h"
 
 using google::LogMessage;
 

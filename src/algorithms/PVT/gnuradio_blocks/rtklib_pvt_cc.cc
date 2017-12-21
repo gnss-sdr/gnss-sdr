@@ -123,7 +123,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
                     // update/insert new ephemeris record to the global ephemeris map
                     d_ls_pvt->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN] = *gps_cnav_ephemeris;
-                    LOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
+                    DLOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
                 }
             else if(pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Iono>) )
                 {
@@ -335,7 +335,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     msgctl(sysv_msqid, IPC_RMID, NULL);
 
     //save GPS L2CM ephemeris to XML file
-    std::string file_name = "eph_GPS_L2CM.xml";
+    std::string file_name = "eph_GPS_L2CM_L5.xml";
 
     if (d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
         {
@@ -345,7 +345,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->gps_cnav_ephemeris_map);
                     ofs.close();
-                    LOG(INFO) << "Saved GPS L2CM Ephemeris map data";
+                    LOG(INFO) << "Saved GPS L2CM or L5 Ephemeris map data";
             }
             catch (const std::exception & e)
             {
@@ -354,7 +354,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         }
     else
         {
-            LOG(WARNING) << "Failed to save GPS L2CM Ephemeris, map is empty";
+            LOG(WARNING) << "Failed to save GPS L2CM or L5 Ephemeris, map is empty";
         }
 
     //save GPS L1 CA ephemeris to XML file
@@ -470,7 +470,8 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                             if(((tmp_eph_iter_gps->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("1C") == 0))
                                     || ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("2S") == 0))
                                     || ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("1B") == 0))
-                                    || ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("5X") == 0)))
+                                    || ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("5X") == 0))
+                                    || ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal).compare("L5") == 0)))
                                 {
                                     // store valid observables in a map.
                                     gnss_observables_map.insert(std::pair<int,Gnss_Synchro>(i, in[i][epoch]));
@@ -647,6 +648,15 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                             b_rinex_header_written = true; // do not write header anymore
                                                         }
                                                 }
+                                            if(type_of_rx == 3) // GPS L5 only
+                                                {
+                                                    if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend())
+                                                        {
+                                                            rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time);
+                                                            rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model);
+                                                            b_rinex_header_written = true; // do not write header anymore
+                                                        }
+                                                }
                                             if(type_of_rx == 4) // Galileo E1B only
                                                 {
                                                     if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend())
@@ -749,6 +759,10 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                         {
                                                             rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_cnav_ephemeris_map);
                                                         }
+                                                    if(type_of_rx == 3) // GPS L5 only
+                                                        {
+                                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_cnav_ephemeris_map);
+                                                        }
                                                     if( (type_of_rx == 4)  || (type_of_rx == 5)  || (type_of_rx == 6) ) // Galileo
                                                         {
                                                             rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
@@ -787,6 +801,19 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                                 }
                                                         }
                                                     if(type_of_rx == 2) // GPS L2C only
+                                                        {
+                                                            if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end())
+                                                                {
+                                                                    rp->log_rinex_obs(rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                }
+                                                            if (!b_rinex_header_updated && (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0))
+                                                                {
+                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_cnav_utc_model);
+                                                                    rp->update_nav_header(rp->navFile, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->gps_cnav_iono);
+                                                                    b_rinex_header_updated = true;
+                                                                }
+                                                        }
+                                                    if(type_of_rx == 3) // GPS L5
                                                         {
                                                             if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end())
                                                                 {

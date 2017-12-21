@@ -642,8 +642,8 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             // The first Prompt output not equal to 0 is synchronized with the transition of a navigation data bit.
             if (d_secondary_lock && d_first_transition)
                 {
-                    current_synchro_data.Prompt_I = static_cast<double>((d_Prompt_data).real());
-                    current_synchro_data.Prompt_Q = static_cast<double>((d_Prompt_data).imag());
+                    current_synchro_data.Prompt_I = static_cast<double>(d_Prompt_data.real());
+                    current_synchro_data.Prompt_Q = static_cast<double>(d_Prompt_data.imag());
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
                     current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;

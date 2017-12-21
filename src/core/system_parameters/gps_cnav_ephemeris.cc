@@ -32,7 +32,6 @@
 
 #include "gps_cnav_ephemeris.h"
 #include <cmath>
-#include "GPS_L2C.h"
 #include <iostream>
 
 Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
@@ -168,7 +167,7 @@ double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
         {
             E_old   = E;
             E       = M + d_e_eccentricity * sin(E);
-            dE      = fmod(E - E_old, 2.0 * GPS_L2_PI);
+            dE      = fmod(E - E_old, 2.0 * PI);
             if (fabs(dE) < 1e-12)
                 {
                     //Necessary precision is reached, exit from the loop
@@ -239,7 +238,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
         {
             E_old   = E;
             E       = M + d_e_eccentricity * sin(E);
-            dE      = fmod(E - E_old, 2 * GPS_L2_PI);
+            dE      = fmod(E - E_old, 2 * PI);
             if (fabs(dE) < 1e-12)
                 {
                     //Necessary precision is reached, exit from the loop
@@ -268,7 +267,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     i = d_i_0 + d_IDOT * tk + d_Cic * cos(2*phi) + d_Cis * sin(2*phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    double d_OMEGA_DOT = OMEGA_DOT_REF*GPS_L2_PI + d_DELTA_OMEGA_DOT;
+    double d_OMEGA_DOT = OMEGA_DOT_REF*PI + d_DELTA_OMEGA_DOT;
     Omega = d_OMEGA0 + (d_OMEGA_DOT - OMEGA_EARTH_DOT)*tk - OMEGA_EARTH_DOT * d_Toe1;
 
     // Reduce to between 0 and 2*pi rad
@@ -291,7 +290,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     double dtr_s = d_A_f0 + d_A_f1 * tk + d_A_f2 * tk * tk;
 
     /* relativity correction */
-    dtr_s -= 2.0 * sqrt(GM * a) * d_e_eccentricity * sin(E) / (GPS_L2_C_m_s * GPS_L2_C_m_s);
+    dtr_s -= 2.0 * sqrt(GM * a) * d_e_eccentricity * sin(E) / (SPEED_OF_LIGHT * SPEED_OF_LIGHT);
 
     return dtr_s;
 }

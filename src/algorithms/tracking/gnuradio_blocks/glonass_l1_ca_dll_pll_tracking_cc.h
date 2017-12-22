@@ -140,6 +140,7 @@ private:
     double d_code_freq_chips;
     double d_code_phase_step_chips;
     double d_carrier_doppler_hz;
+    double d_carrier_doppler_phase_step_rad;
     double d_carrier_frequency_hz;
     double d_carrier_phase_step_rad;
     double d_acc_carrier_phase_rad;

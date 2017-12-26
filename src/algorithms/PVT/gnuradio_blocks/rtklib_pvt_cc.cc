@@ -843,7 +843,7 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                     if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend())
                                                         {
                                                             rp->rinex_obs_header(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, signal);
-                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
                                                             b_rinex_header_written = true; // do not write header anymore
                                                         }
                                                 }
@@ -852,8 +852,8 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                     std::string signal("2G");
                                                     if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend())
                                                         {
-                                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, signal);
-                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                            rp->rinex_obs_header(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, signal);
+                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
                                                             b_rinex_header_written = true; // do not write header anymore
                                                         }
                                                 }
@@ -863,7 +863,7 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                                     if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend())
                                                         {
                                                             rp->rinex_obs_header(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, signal);
-                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
                                                             b_rinex_header_written = true; // do not write header anymore
                                                         }
                                                 }

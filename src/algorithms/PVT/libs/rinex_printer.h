@@ -116,7 +116,7 @@ public:
     /*!
      *  \brief Generates the GLONASS L1, L2 C/A Navigation Data header
      */
-    void rinex_nav_header(std::fstream & out, const Glonass_Gnav_Utc_Model & utc_model, const Glonass_Gnav_Almanac & glonass_gnav_almanac);
+    void rinex_nav_header(std::fstream & out, const Glonass_Gnav_Utc_Model & utc_model, const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
 
     /*!
      *  \brief Generates the Mixed (Galileo/GLONASS) Navigation Data header
@@ -194,9 +194,13 @@ public:
     boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris & eph, const double obs_time);
 
     /*!
-     *  \brief Computes the GLONASS System Time and returns a boost::posix_time::ptime object
-     */
-    boost::posix_time::ptime compute_GLONASS_time(const Glonass_Gnav_Ephemeris & eph, const double obs_time);
+	 *  \brief Computes the UTC Time and returns a boost::posix_time::ptime object
+	 *  \details Function used as a method to convert the observation time into UTC time which is used
+	 *  as the default time for RINEX files
+	 *  \param eph GLONASS GNAV Ephemeris object
+	 *  \param obs_time Observation time in GPS seconds of week
+	 */
+	boost::posix_time::ptime compute_UTC_time(const Glonass_Gnav_Ephemeris & eph, const double obs_time);
 
     /*!
      *  \brief Writes data from the GPS L1 C/A navigation message into the RINEX file

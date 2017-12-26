@@ -7398,18 +7398,8 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Glonass_Gnav_Ephe
 	double obs_time_utc = 0.0, obs_time_glot = 0.0;
 	int i = 0;
 
-	// GLONASST already includes leap second addition or deletion
-	for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
-		{
-			if (eph.d_yr >= GLONASS_LEAP_SECONDS[i][0])
-			{
-				// We substract the leap second when going from gpst to utc
-				obs_time_utc = obs_time - fabs(GLONASS_LEAP_SECONDS[i][6]);
-				break;
-			}
-		}
-	// Get observation time in GLONASS time
-	obs_time_glot = obs_time_utc + glot2utc;
+	// Get observation time in nearly GLONASS time. Correction for leap seconds done at the end
+	obs_time_glot = obs_time + glot2utc;
 
 	// Get seconds of day in glonass time
 	tod = fmod (obs_time_glot, 86400);
@@ -7423,6 +7413,20 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Glonass_Gnav_Ephe
 	// Convert to utc
 	boost::posix_time::time_duration t2(0, 0, glot2utc);
 	boost::posix_time::ptime utc_time = glo_time - t2;
+
+	// Adjust for leap second correction
+	for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
+		{
+			boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
+			boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
+			boost::posix_time::ptime ls_time(d3, t3);
+			if (utc_time >= ls_time)
+			{
+				// We subtract the leap second when going from gpst to utc
+				utc_time = utc_time - boost::posix_time::time_duration(0,0,fabs(GLONASS_LEAP_SECONDS[i][6]));
+				break;
+			}
+		}
 
 	return utc_time;
 }

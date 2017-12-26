@@ -156,7 +156,7 @@ public:
     /*!
      *  \brief Generates the GLONASS GNAV Observation data header. Example: bands("1C"), bands("1C 2C"), bands("2C"), ... Default: "1C".
      */
-    void rinex_obs_header(std::fstream & out, const Glonass_Gnav_Ephemeris & eph, const double d_TOW_first_observation, const std::string bands = "1C");
+    void rinex_obs_header(std::fstream & out, const Glonass_Gnav_Ephemeris & eph, const double d_TOW_first_observation, const std::string bands = "1G");
 
     /*!
      *  \brief Generates the Mixed (GPS L1 C/A /GLONASS) Observation data header. Example: galileo_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".

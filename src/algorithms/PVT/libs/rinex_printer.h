@@ -202,6 +202,13 @@ public:
 	 */
 	boost::posix_time::ptime compute_UTC_time(const Glonass_Gnav_Ephemeris & eph, const double obs_time);
 
+	/*!
+	 *  \brief Computes number of leap seconds of GPS relative to UTC
+	 *  \param eph GLONASS GNAV Ephemeris object
+	 *  \param gps_obs_time Observation time in GPS seconds of week
+	 */
+	double get_leap_second(const Glonass_Gnav_Ephemeris& eph, const double gps_obs_time);
+
     /*!
      *  \brief Writes data from the GPS L1 C/A navigation message into the RINEX file
      */

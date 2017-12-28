@@ -52,9 +52,9 @@ const int Galileo_E5a_SYMBOL_RATE_BPS = 50;               //!< Galileo E5a symbo
 const int Galileo_E5a_NUMBER_OF_CODES = 50;
 
 
-// OBSERVABLE HISTORY DEEP FOR INTERPOLATION
+// OBSERVABLE HISTORY DEEP FOR INTERPOLATION AND CRC ERROR LIMIT
 const int GALILEO_E5A_HISTORY_DEEP = 20;
-
+const int GALILEO_E5A_CRC_ERROR_LIMIT = 6;
 
 // F/NAV message structure
 
@@ -103,7 +103,7 @@ const double FNAV_BGD_1_LSB = TWO_N32;
 const std::vector<std::pair<int,int>> FNAV_E5ahs_1_bit({{154,2}});
 const std::vector<std::pair<int,int>> FNAV_WN_1_bit({{156,12}});
 const std::vector<std::pair<int,int>> FNAV_TOW_1_bit({{168,20}});
-const std::vector<std::pair<int,int>> FNAV_E5advs_1_bit({{189,1}});
+const std::vector<std::pair<int,int>> FNAV_E5advs_1_bit({{188,1}});
 
 // WORD 2 Ephemeris (1/3)
 const std::vector<std::pair<int,int>> FNAV_IODnav_2_bit({{7,10}});
@@ -145,7 +145,7 @@ const std::vector<std::pair<int,int>> FNAV_TOW_3_bit({{187,20}});
 
 // WORD 4 Ephemeris (3/3)
 const std::vector<std::pair<int,int>> FNAV_IODnav_4_bit({{7,10}});
-const std::vector<std::pair<int,int>> FNAV_Cic_4_bit({{18,16}});
+const std::vector<std::pair<int,int>> FNAV_Cic_4_bit({{17,16}});
 const double FNAV_Cic_4_LSB = TWO_N29;
 const std::vector<std::pair<int,int>> FNAV_Cis_4_bit({{33,16}});
 const double FNAV_Cis_4_LSB = TWO_N29;

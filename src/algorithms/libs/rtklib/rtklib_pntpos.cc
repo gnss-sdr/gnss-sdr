@@ -84,7 +84,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         int iter, const prcopt_t *opt, double *var)
 {
     const double *lam = nav->lam[obs->sat - 1];
-    double PC, P1, P2, P1_P2, P1_C1, P2_C2, gamma;
+    double PC, P1, P2, P1_P2, P1_C1, P2_C2, gamma_;
     int i = 0, j = 1, sys;
 
     *var = 0.0;
@@ -124,7 +124,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                         }
                 }
         }
-    gamma = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0); /* f1^2/f2^2 */
+    gamma_ = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0); /* f1^2/f2^2 */
     P1 = obs->P[i];
     P2 = obs->P[j];
     P1_P2 = nav->cbias[obs->sat-1][0];
@@ -134,7 +134,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     /* if no P1-P2 DCB, use TGD instead */
     if (P1_P2 == 0.0 && (sys & (SYS_GPS | SYS_GAL | SYS_QZS)))
         {
-            P1_P2 = (1.0 - gamma) * gettgd(obs->sat, nav);
+            P1_P2 = (1.0 - gamma_) * gettgd(obs->sat, nav);
         }
     if (opt->ionoopt == IONOOPT_IFLC)
         { /* dual-frequency */
@@ -144,15 +144,30 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             if (obs->code[j] == CODE_L2C) P2 += P2_C2; /* C2->P2 */
 
             /* iono-free combination */
-            PC = (gamma * P1 - P2) / (gamma - 1.0);
+            PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
         }
     else
         { /* single-frequency */
+    	    if((obs->code[i] == CODE_NONE) && (obs->code[j] == CODE_NONE)){return 0.0;}
 
-            if (P1 == 0.0) return 0.0;
-            if (obs->code[i] == CODE_L1C) P1 += P1_C1; /* C1->P1 */
-            PC = P1 - P1_P2 / (1.0 - gamma);
-        }
+    	    else if((obs->code[i] != CODE_NONE) && (obs->code[j] == CODE_NONE))
+    	        {
+                    P1 += P1_C1; /* C1->P1 */
+                    PC = P1 - P1_P2 / (1.0 - gamma_);
+    	        }
+    	    else if((obs->code[i] == CODE_NONE) && (obs->code[j] != CODE_NONE))
+    	        {
+    	    	    P2 += P2_C2; /* C2->P2 */
+    	    	    PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+    	        }
+    	    /* dual-frequency */
+    	    else
+    	        {
+    	      	    P1 += P1_C1;
+    	      	    P2 += P2_C2;
+    	      	    PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
+    	        }
+    	}
     if (opt->sateph == EPHOPT_SBAS) PC -= P1_C1; /* sbas clock based C1 */
 
     *var = std::pow(ERR_CBIAS, 2.0);
@@ -285,12 +300,17 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     continue;
                 }
             /* geometric distance/azimuth/elevation angle */
-            if ((r = geodist(rs + i * 6, rr, e)) <= 0.0 || satazel(pos, e, azel + i * 2) < opt->elmin)
+            if ((r = geodist(rs + i * 6, rr, e)) <= 0.0)
                 {
-                    trace(4, "geodist / satazel error\n");
+                    trace(4, "geodist error\n");
                     continue;
                 }
-
+            double elaux = satazel(pos, e, azel + i * 2);
+            if(elaux < opt->elmin)
+                {
+                    trace(4, "satazel error. el = %lf , elmin = %lf\n", elaux, opt->elmin);
+                    continue;
+                }
             /* psudorange with code bias correction */
             if ((P = prange(obs+i, nav, azel+i*2, iter, opt, &vmeas)) == 0.0)
                 {
@@ -671,53 +691,6 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
         const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
         char *msg)
 {
-    //    int k = 0;
-    //    for (k = 0;k<n;k++)
-    //    {
-    //        printf("OBS[%i]: sat %i, P:%f ,LLI:%s \r\n",k,obs[k].sat,obs[k].P[0], obs[k].LLI);
-    //    }
-    //
-    //    for (k = 0;k<nav->n;k++)
-    //     {
-    //         printf("NAV[%i]: sat %i, %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f , %f \r\n",
-    //                 k,
-    //                 nav->eph[k].sat,
-    //                 nav->eph[k].A,
-    //                 nav->eph[k].Adot,
-    //                 nav->eph[k].M0,
-    //                 nav->eph[k].OMG0,
-    //                 nav->eph[k].OMGd,
-    //                 nav->eph[k].cic,
-    //                 nav->eph[k].cis,
-    //                 nav->eph[k].code,
-    //                 nav->eph[k].crc,
-    //                 nav->eph[k].crs,
-    //                 nav->eph[k].cuc,
-    //                 nav->eph[k].cus,
-    //                 nav->eph[k].deln,
-    //                 nav->eph[k].e,
-    //                 nav->eph[k].f0,
-    //                 nav->eph[k].f1,
-    //                 nav->eph[k].f2,
-    //                 nav->eph[k].fit,
-    //                 nav->eph[k].flag,
-    //                 nav->eph[k].i0,
-    //                 nav->eph[k].idot,
-    //                 nav->eph[k].iodc,
-    //                 nav->eph[k].iode,
-    //                 nav->eph[k].ndot,
-    //                 nav->eph[k].omg,
-    //                 nav->eph[k].sat,
-    //                 nav->eph[k].sva,
-    //                 nav->eph[k].svh,
-    //                 nav->eph[k].tgd[0],
-    //                 nav->eph[k].toc.sec,
-    //                 nav->eph[k].toe.sec,
-    //                 nav->eph[k].toes,
-    //                 nav->eph[k].ttr.sec,
-    //                 nav->eph[k].week);
-    //     }
-
     prcopt_t opt_ = *opt;
     double *rs, *dts, *var, *azel_, *resp;
     int i, stat, vsat[MAXOBS] = {0}, svh[MAXOBS];

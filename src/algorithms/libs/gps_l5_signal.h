@@ -1,13 +1,13 @@
 /*!
- * \file gps_l2c_signal.h
- * \brief This class implements signal generators for the GPS L2C signals
- * \author Javier Arribas, 2015. jarribas(at)cttc.es
+ * \file gps_l5_signal.h
+ * \brief This class implements signal generators for the GPS L5 signals
+ * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,17 +30,23 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L2C_SIGNAL_H_
-#define GNSS_SDR_GPS_L2C_SIGNAL_H_
+#ifndef GNSS_SDR_GPS_L5_SIGNAL_H_
+#define GNSS_SDR_GPS_L5_SIGNAL_H_
 
 #include <complex>
 
 
-//!Generates complex GPS L2C M code for the desired SV ID
-void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, unsigned int _prn);
+//!Generates complex GPS L5i M code for the desired SV ID
+void gps_l5i_code_gen_complex(std::complex<float>* _dest, unsigned int _prn);
+
+//!Generates complex GPS L5q M code for the desired SV ID
+void gps_l5q_code_gen_complex(std::complex<float>* _dest, unsigned int _prn);
+
+//! Generates complex GPS L5i M code for the desired SV ID, and sampled to specific sampling frequency
+void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs);
+
+//! Generates complex GPS L5q M code for the desired SV ID, and sampled to specific sampling frequency
+void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs);
 
 
-//! Generates complex GPS L2C M code for the desired SV ID, and sampled to specific sampling frequency
-void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs);
-
-#endif /* GNSS_GPS_L2C_SIGNAL_H_ */
+#endif /* GNSS_SDR_GPS_L5_SIGNAL_H_ */

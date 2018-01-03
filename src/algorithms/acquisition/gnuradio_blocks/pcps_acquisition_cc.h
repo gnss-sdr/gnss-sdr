@@ -60,6 +60,7 @@
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
 #include "gnss_synchro.h"
+#include <glog/logging.h>
 
 class pcps_acquisition_cc;
 
@@ -194,6 +195,7 @@ public:
      {
          gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_active = active;
+         LOG(INFO) << "ACQ RESET";
      }
 
      /*!

@@ -329,6 +329,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     d_input_power = 0.0;
                     d_test_statistics = 0.0;
                     d_state = 1;
+                    LOG(INFO) << "ACQ. general_work changing to state 1 (active)";
                 }
 
             d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
@@ -368,8 +369,9 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
                     if( d_blocking )
                         {
+                            LOG(INFO) << "ACQ. general_work waiting for acquisition_core";
                             d_cond.wait( lk, [&]{ return !this->d_new_data_available; } );
-
+                            LOG(INFO) << "ACQ. Exiting general_work";
                         }
                 }
 

@@ -140,7 +140,7 @@ ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) :
 void ChannelFsm::Event_start_acquisition()
 {
     this->process_event(Ev_channel_start_acquisition());
-    LOG(INFO) << "FSM Event_start_acquisition"
+    LOG(INFO) << "FSM Event_start_acquisition";
     DLOG(INFO) << "CH = " << channel_ << ". Ev start acquisition";
 }
 

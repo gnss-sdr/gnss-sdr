@@ -140,6 +140,7 @@ ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) :
 void ChannelFsm::Event_start_acquisition()
 {
     this->process_event(Ev_channel_start_acquisition());
+    LOG(INFO) << "FSM Event_start_acquisition"
     DLOG(INFO) << "CH = " << channel_ << ". Ev start acquisition";
 }
 
@@ -198,6 +199,7 @@ void ChannelFsm::set_channel(unsigned int channel)
 void ChannelFsm::start_acquisition()
 {
     acq_->reset();
+    LOG(INFO) << "FSM. start_acquisition()";
 }
 
 void ChannelFsm::start_tracking()

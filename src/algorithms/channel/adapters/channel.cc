@@ -202,5 +202,6 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
 void Channel::start_acquisition()
 {
     channel_fsm_.Event_start_acquisition();
+    LOG(INFO) << "Channel start_acquisition()";
 }
 

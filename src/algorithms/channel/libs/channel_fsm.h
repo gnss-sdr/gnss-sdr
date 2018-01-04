@@ -1,8 +1,8 @@
 /*!
  * \file channel_fsm.h
  * \brief Interface of the State Machine for channel
- * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
- *
+ * \authors Antonio Ramos, 2017. antonio.ramos(at)cttc.es
+ *          Luis Esteve,   2011. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
  *

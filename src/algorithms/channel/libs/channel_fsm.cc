@@ -30,15 +30,10 @@
 
 #include "channel_fsm.h"
 #include <memory>
-#include <boost/statechart/simple_state.hpp>
-#include <boost/statechart/state.hpp>
-#include <boost/statechart/transition.hpp>
-#include <boost/statechart/custom_reaction.hpp>
-#include <boost/mpl/list.hpp>
 #include <glog/logging.h>
 #include "control_message_factory.h"
 
-
+/*
 struct Ev_channel_start_acquisition: sc::event<Ev_channel_start_acquisition>
 {};
 
@@ -53,10 +48,9 @@ struct Ev_channel_failed_acquisition_no_repeat: sc::event<Ev_channel_failed_acqu
 
 struct Ev_channel_failed_tracking_standby: sc::event<Ev_channel_failed_tracking_standby>
 {};
+*/
 
-//struct Ev_channel_failed_tracking_reacq: sc::event<Ev_channel_failed_tracking_reacq>
-//{};
-
+/*
 struct channel_idle_fsm_S0: public sc::state<channel_idle_fsm_S0, ChannelFsm>
 {
 public:
@@ -114,7 +108,7 @@ public:
     }
     ~channel_waiting_fsm_S3(){}
 };
-
+*/
 
 
 ChannelFsm::ChannelFsm()
@@ -122,7 +116,7 @@ ChannelFsm::ChannelFsm()
     acq_ = nullptr;
     trk_ = nullptr;
     channel_ = 0;
-    initiate(); //start the FSM
+    d_state = 0;
 }
 
 
@@ -132,50 +126,59 @@ ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) :
 {
     trk_ = nullptr;
     channel_ = 0;
-    initiate(); //start the FSM
+    d_state = 0;
 }
 
 
 
 void ChannelFsm::Event_start_acquisition()
 {
-    initiate();
-    this->process_event(Ev_channel_start_acquisition());
+    mx.lock();
+    d_state = 1;
+    start_acquisition();
     LOG(INFO) << "FSM Event_start_acquisition";
     DLOG(INFO) << "CH = " << channel_ << ". Ev start acquisition";
+    mx.unlock();
 }
 
 
 void ChannelFsm::Event_valid_acquisition()
 {
-    this->process_event(Ev_channel_valid_acquisition());
+    mx.lock();
+    d_state = 2;
+    start_tracking();
     DLOG(INFO) << "CH = " << channel_ << ". Ev valid acquisition";
+    mx.unlock();
 }
 
 
 void ChannelFsm::Event_failed_acquisition_repeat()
 {
-    this->process_event(Ev_channel_failed_acquisition_repeat());
+    mx.lock();
+    d_state = 1;
+    start_acquisition();
     DLOG(INFO) << "CH = " << channel_ << ". Ev failed acquisition repeat";
+    mx.unlock();
 }
 
 void ChannelFsm::Event_failed_acquisition_no_repeat()
 {
-    this->process_event(Ev_channel_failed_acquisition_no_repeat());
+    mx.lock();
+    d_state = 3;
+    request_satellite();
     DLOG(INFO) << "CH = " << channel_ << ". Ev failed acquisition no repeat";
+    mx.unlock();
 }
 
 
-// Something is wrong here, we are using a memory after it ts freed
 void ChannelFsm::Event_failed_tracking_standby()
 {
-    this->process_event(Ev_channel_failed_tracking_standby());
+    mx.lock();
+    d_state = 0;
+    notify_stop_tracking();
     DLOG(INFO) << "CH = " << channel_ << ". Ev failed tracking standby";
+    mx.unlock();
 }
-
-//void ChannelFsm::Event_failed_tracking_reacq() {
-//    this->process_event(Ev_channel_failed_tracking_reacq());
-//}
 
 void ChannelFsm::set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition)
 {

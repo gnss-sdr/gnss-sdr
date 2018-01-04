@@ -1,12 +1,12 @@
 /*!
  * \file channel_fsm.h
- * \brief Interface of the State Machine for channel using boost::statechart
- * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ * \brief Interface of the State Machine for channel
+ * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,26 +32,23 @@
 #ifndef GNSS_SDR_CHANNEL_FSM_H
 #define GNSS_SDR_CHANNEL_FSM_H
 
-
-#include <boost/statechart/state_machine.hpp>
+#include <mutex>
 #include <gnuradio/msg_queue.h>
 #include "acquisition_interface.h"
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
 
-
-namespace sc = boost::statechart;
-namespace mpl = boost::mpl;
-
+/*
 struct channel_idle_fsm_S0;
 struct channel_acquiring_fsm_S1;
 struct channel_tracking_fsm_S2;
 struct channel_waiting_fsm_S3;
+*/
 
 /*!
  * \brief This class implements a State Machine for channel using boost::statechart
  */
-class ChannelFsm: public sc::state_machine<ChannelFsm, channel_idle_fsm_S0>
+class ChannelFsm
 {
 public:
     ChannelFsm();
@@ -61,24 +58,27 @@ public:
     void set_tracking(std::shared_ptr<TrackingInterface> tracking);
     void set_queue(gr::msg_queue::sptr queue);
     void set_channel(unsigned int channel);
-    void start_acquisition();
-    void start_tracking();
-    void request_satellite();
-    void notify_stop_tracking();
 
     //FSM EVENTS
     void Event_start_acquisition();
     void Event_valid_acquisition();
     void Event_failed_acquisition_repeat();
     void Event_failed_acquisition_no_repeat();
-    //void Event_gps_failed_tracking_reacq();
     void Event_failed_tracking_standby();
 
 private:
+
+    void start_acquisition();
+    void start_tracking();
+    void request_satellite();
+    void notify_stop_tracking();
+
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
     gr::msg_queue::sptr queue_;
     unsigned int channel_;
+    unsigned int d_state;
+    std::mutex mx;
 };
 
 #endif /*GNSS_SDR_CHANNEL_FSM_H*/

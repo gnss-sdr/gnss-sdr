@@ -405,29 +405,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     }
                 DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
             }
-        /*
-        if (!available_GNSS_signals_.empty() && (acq_channels_count_ < max_acq_channels_))
-            {
-                for (unsigned int i = 0; i < channels_count_; i++)
-                    {
-                        if (channels_state_[i] == 0)
-                            {
-                                channels_state_[i] = 1;
-                                while (channels_.at(i)->get_signal().get_signal_str().compare(available_GNSS_signals_.front().get_signal_str()) != 0 )
-                                    {
-                                        available_GNSS_signals_.push_back(available_GNSS_signals_.front());
-                                        available_GNSS_signals_.pop_front();
-                                    }
-                                channels_.at(i)->set_signal(available_GNSS_signals_.front());
-                                available_GNSS_signals_.pop_front();
-                                acq_channels_count_++;
-                                channels_.at(i)->start_acquisition();
-                                break;
-                            }
-                        DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
-                    }
-            }
-        */
         break;
 
     case 2:

@@ -195,7 +195,6 @@ public:
      {
          gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
          d_active = active;
-         LOG(INFO) << "ACQ RESET";
      }
 
      /*!

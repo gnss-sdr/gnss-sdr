@@ -1,11 +1,11 @@
 /*!
  * \file channel_fsm.cc
- * \brief Implementation of a State Machine for channel using boost::statechart
- * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ * \brief Implementation of a State Machine for channel
+ * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,83 +33,6 @@
 #include <glog/logging.h>
 #include "control_message_factory.h"
 
-/*
-struct Ev_channel_start_acquisition: sc::event<Ev_channel_start_acquisition>
-{};
-
-struct Ev_channel_valid_acquisition: sc::event<Ev_channel_valid_acquisition>
-{};
-
-struct Ev_channel_failed_acquisition_repeat: sc::event<Ev_channel_failed_acquisition_repeat>
-{};
-
-struct Ev_channel_failed_acquisition_no_repeat: sc::event<Ev_channel_failed_acquisition_no_repeat>
-{};
-
-struct Ev_channel_failed_tracking_standby: sc::event<Ev_channel_failed_tracking_standby>
-{};
-*/
-
-/*
-struct channel_idle_fsm_S0: public sc::state<channel_idle_fsm_S0, ChannelFsm>
-{
-public:
-    // sc::transition(event, next state)
-    typedef sc::transition<Ev_channel_start_acquisition, channel_acquiring_fsm_S1> reactions;
-    channel_idle_fsm_S0(my_context ctx) : my_base(ctx){}
-
-};
-
-
-struct channel_acquiring_fsm_S1: public sc::state<channel_acquiring_fsm_S1, ChannelFsm>
-{
-public:
-    typedef mpl::list<sc::transition<Ev_channel_failed_acquisition_no_repeat, channel_waiting_fsm_S3>,
-                      sc::transition<Ev_channel_failed_acquisition_repeat, channel_acquiring_fsm_S1>,
-                      sc::transition<Ev_channel_valid_acquisition, channel_tracking_fsm_S2> > reactions;
-
-    channel_acquiring_fsm_S1(my_context ctx) : my_base(ctx)
-    {
-        context<ChannelFsm> ().start_acquisition();
-    }
-    ~channel_acquiring_fsm_S1(){}
-
-};
-
-
-struct channel_tracking_fsm_S2: public sc::state<channel_tracking_fsm_S2, ChannelFsm>
-{
-public:
-    typedef mpl::list<sc::transition<Ev_channel_failed_tracking_standby, channel_idle_fsm_S0>,
-                      sc::transition<Ev_channel_start_acquisition, channel_acquiring_fsm_S1>> reactions;
-
-    channel_tracking_fsm_S2(my_context ctx) : my_base(ctx)
-    {
-        context<ChannelFsm> ().start_tracking();
-    }
-
-    ~channel_tracking_fsm_S2()
-    {
-        context<ChannelFsm> ().notify_stop_tracking();
-    }
-
-};
-
-
-struct channel_waiting_fsm_S3: public sc::state<channel_waiting_fsm_S3, ChannelFsm>
-{
-public:
-    typedef sc::transition<Ev_channel_start_acquisition,
-            channel_acquiring_fsm_S1> reactions;
-
-    channel_waiting_fsm_S3(my_context ctx) : my_base(ctx)
-    {
-        context<ChannelFsm> ().request_satellite();
-    }
-    ~channel_waiting_fsm_S3(){}
-};
-*/
-
 
 ChannelFsm::ChannelFsm()
 {
@@ -136,7 +59,6 @@ void ChannelFsm::Event_start_acquisition()
     mx.lock();
     d_state = 1;
     start_acquisition();
-    LOG(INFO) << "FSM Event_start_acquisition";
     DLOG(INFO) << "CH = " << channel_ << ". Ev start acquisition";
     mx.unlock();
 }
@@ -203,7 +125,6 @@ void ChannelFsm::set_channel(unsigned int channel)
 void ChannelFsm::start_acquisition()
 {
     acq_->reset();
-    LOG(INFO) << "FSM. start_acquisition()";
 }
 
 void ChannelFsm::start_tracking()

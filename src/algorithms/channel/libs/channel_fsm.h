@@ -38,15 +38,8 @@
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
 
-/*
-struct channel_idle_fsm_S0;
-struct channel_acquiring_fsm_S1;
-struct channel_tracking_fsm_S2;
-struct channel_waiting_fsm_S3;
-*/
-
 /*!
- * \brief This class implements a State Machine for channel using boost::statechart
+ * \brief This class implements a State Machine for channel
  */
 class ChannelFsm
 {

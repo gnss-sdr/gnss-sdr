@@ -63,8 +63,7 @@ public:
     /*!
      * \brief Constructor that initializes the receiver flowgraph
      */
-    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration,
-                  boost::shared_ptr<gr::msg_queue> queue);
+    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue);
 
     /*!
      * \brief Virtual destructor
@@ -119,6 +118,7 @@ private:
     void set_signals_list();
     void set_channels_state(); // Initializes the channels state (start acquisition or keep standby)
                                // using the configuration parameters (number of channels and max channels in acquisition)
+    Gnss_Signal search_next_signal(std::string searched_signal, bool pop);
     bool connected_;
     bool running_;
     int sources_count_;

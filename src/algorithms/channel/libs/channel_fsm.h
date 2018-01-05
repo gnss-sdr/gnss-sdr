@@ -33,6 +33,7 @@
 #define GNSS_SDR_CHANNEL_FSM_H
 
 #include <mutex>
+#include <memory>
 #include <gnuradio/msg_queue.h>
 #include "acquisition_interface.h"
 #include "tracking_interface.h"

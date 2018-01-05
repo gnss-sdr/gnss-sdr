@@ -30,7 +30,6 @@
  */
 
 #include "channel_fsm.h"
-#include <memory>
 #include <glog/logging.h>
 #include "control_message_factory.h"
 

@@ -38,7 +38,7 @@ class channel_msg_receiver_cc;
 
 typedef boost::shared_ptr<channel_msg_receiver_cc> channel_msg_receiver_cc_sptr;
 
-channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(ChannelFsm* channel_fsm, bool repeat);
+channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
 
 /*!
  * \brief GNU Radio block that receives asynchronous channel messages from acquisition and tracking blocks
@@ -46,11 +46,11 @@ channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(ChannelFsm* channel_fs
 class channel_msg_receiver_cc : public gr::block
 {
 private:
-    ChannelFsm* d_channel_fsm;
+    std::shared_ptr<ChannelFsm> d_channel_fsm;
     bool d_repeat; // todo: change FSM to include repeat value
-    friend channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(ChannelFsm* channel_fsm, bool repeat);
+    friend channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
     void msg_handler_events(pmt::pmt_t msg);
-    channel_msg_receiver_cc(ChannelFsm* channel_fsm, bool repeat);
+    channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
 
 public:
     ~channel_msg_receiver_cc (); //!< Default destructor

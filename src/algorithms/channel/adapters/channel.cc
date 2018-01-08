@@ -50,6 +50,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     implementation_ = implementation;
     channel_ = channel;
     queue_ = queue;
+    channel_fsm_ = std::make_shared<ChannelFsm>();
 
     flag_enable_fpga = configuration->property("Channel.enable_FPGA", false);
     acq_->set_channel(channel_);
@@ -89,16 +90,16 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     repeat_ = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".repeat_satellite", false);
     DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_;
 
-    channel_fsm_.set_acquisition(acq_);
-    channel_fsm_.set_tracking(trk_);
-    channel_fsm_.set_channel(channel_);
-    channel_fsm_.set_queue(queue_);
+    channel_fsm_->set_acquisition(acq_);
+    channel_fsm_->set_tracking(trk_);
+    channel_fsm_->set_channel(channel_);
+    channel_fsm_->set_queue(queue_);
 
     connected_ = false;
 
     gnss_signal_ = Gnss_Signal(implementation_);
 
-    channel_msg_rx = channel_msg_receiver_make_cc(&channel_fsm_, repeat_);
+    channel_msg_rx = channel_msg_receiver_make_cc(channel_fsm_, repeat_);
 }
 
 
@@ -198,7 +199,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
 void Channel::start_acquisition()
 {
     bool result = false;
-    result = channel_fsm_.Event_start_acquisition();
+    result = channel_fsm_->Event_start_acquisition();
     if(!result)
         {
             LOG(WARNING) << "Invalid channel event";

@@ -104,7 +104,7 @@ private:
     Gnss_Signal gnss_signal_;
     bool connected_;
     bool repeat_;
-    ChannelFsm channel_fsm_;
+    std::shared_ptr<ChannelFsm> channel_fsm_;
     gr::msg_queue::sptr queue_;
 };
 

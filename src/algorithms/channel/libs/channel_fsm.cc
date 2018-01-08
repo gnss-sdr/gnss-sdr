@@ -53,53 +53,88 @@ ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) :
 }
 
 
-
-void ChannelFsm::Event_start_acquisition()
+bool ChannelFsm::Event_start_acquisition()
 {
-    mx.lock();
-    d_state = 1;
-    start_acquisition();
-    DLOG(INFO) << "CH = " << channel_ << ". Ev start acquisition";
-    mx.unlock();
+    std::lock_guard<std::mutex> lk(mx);
+    if((d_state == 1) || (d_state == 2))
+        {
+            return false;
+        }
+    else
+        {
+            d_state = 1;
+            start_acquisition();
+            DLOG(INFO) << "CH = " << channel_ << ". Ev start acquisition";
+            return true;
+        }
 }
 
 
-void ChannelFsm::Event_valid_acquisition()
+bool ChannelFsm::Event_valid_acquisition()
 {
-    mx.lock();
-    d_state = 2;
-    start_tracking();
-    DLOG(INFO) << "CH = " << channel_ << ". Ev valid acquisition";
-    mx.unlock();
+    std::lock_guard<std::mutex> lk(mx);
+    if(d_state != 1)
+        {
+            return false;
+        }
+    else
+        {
+            d_state = 2;
+            start_tracking();
+            DLOG(INFO) << "CH = " << channel_ << ". Ev valid acquisition";
+            return true;
+        }
 }
 
 
-void ChannelFsm::Event_failed_acquisition_repeat()
+bool ChannelFsm::Event_failed_acquisition_repeat()
 {
-    mx.lock();
-    d_state = 1;
-    start_acquisition();
-    DLOG(INFO) << "CH = " << channel_ << ". Ev failed acquisition repeat";
-    mx.unlock();
+    std::lock_guard<std::mutex> lk(mx);
+    if(d_state != 1)
+        {
+            return false;
+        }
+    else
+        {
+            d_state = 1;
+            start_acquisition();
+            DLOG(INFO) << "CH = " << channel_ << ". Ev failed acquisition repeat";
+            return true;
+        }
 }
 
-void ChannelFsm::Event_failed_acquisition_no_repeat()
+
+bool ChannelFsm::Event_failed_acquisition_no_repeat()
 {
-    mx.lock();
-    d_state = 3;
-    request_satellite();
-    DLOG(INFO) << "CH = " << channel_ << ". Ev failed acquisition no repeat";
-    mx.unlock();
+    std::lock_guard<std::mutex> lk(mx);
+    if(d_state != 1)
+        {
+            return false;
+        }
+    else
+        {
+            d_state = 3;
+            request_satellite();
+            DLOG(INFO) << "CH = " << channel_ << ". Ev failed acquisition no repeat";
+            return true;
+        }
 }
 
 
-void ChannelFsm::Event_failed_tracking_standby()
+bool ChannelFsm::Event_failed_tracking_standby()
 {
-    mx.lock();
-    d_state = 0;
-    notify_stop_tracking();
-    DLOG(INFO) << "CH = " << channel_ << ". Ev failed tracking standby";
-    mx.unlock();
+    std::lock_guard<std::mutex> lk(mx);
+    if(d_state != 2)
+        {
+            return false;
+        }
+    else
+        {
+            d_state = 0;
+            notify_stop_tracking();
+            DLOG(INFO) << "CH = " << channel_ << ". Ev failed tracking standby";
+            return true;
+        }
 }
 
 void ChannelFsm::set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition)

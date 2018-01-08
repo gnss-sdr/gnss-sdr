@@ -44,26 +44,27 @@ channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(ChannelFsm* channel_fs
 
 void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
 {
+    bool result = false;
     try
     {
             long int message = pmt::to_long(msg);
             switch (message)
             {
             case 1: //positive acquisition
-                d_channel_fsm->Event_valid_acquisition();
+                result = d_channel_fsm->Event_valid_acquisition();
                 break;
             case 2: //negative acquisition
                 if (d_repeat == true)
                     {
-                        d_channel_fsm->Event_failed_acquisition_repeat();
+                        result = d_channel_fsm->Event_failed_acquisition_repeat();
                     }
                 else
                     {
-                        d_channel_fsm->Event_failed_acquisition_no_repeat();
+                        result = d_channel_fsm->Event_failed_acquisition_no_repeat();
                     }
                 break;
             case 3: // tracking loss of lock event
-                d_channel_fsm->Event_failed_tracking_standby();
+                result = d_channel_fsm->Event_failed_tracking_standby();
                 break;
             default:
                 LOG(WARNING) << "Default case, invalid message.";
@@ -74,6 +75,10 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
     {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
     }
+    if(!result)
+        {
+            LOG(WARNING) << "msg_handler_telemetry invalid event";
+        }
 }
 
 

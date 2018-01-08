@@ -54,11 +54,11 @@ public:
     void set_channel(unsigned int channel);
 
     //FSM EVENTS
-    void Event_start_acquisition();
-    void Event_valid_acquisition();
-    void Event_failed_acquisition_repeat();
-    void Event_failed_acquisition_no_repeat();
-    void Event_failed_tracking_standby();
+    bool Event_start_acquisition();
+    bool Event_valid_acquisition();
+    bool Event_failed_acquisition_repeat();
+    bool Event_failed_acquisition_no_repeat();
+    bool Event_failed_tracking_standby();
 
 private:
 

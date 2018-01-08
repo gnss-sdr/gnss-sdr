@@ -139,21 +139,25 @@ bool ChannelFsm::Event_failed_tracking_standby()
 
 void ChannelFsm::set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition)
 {
+    std::lock_guard<std::mutex> lk(mx);
     acq_ = acquisition;
 }
 
 void ChannelFsm::set_tracking(std::shared_ptr<TrackingInterface> tracking)
 {
+    std::lock_guard<std::mutex> lk(mx);
     trk_ = tracking;
 }
 
 void ChannelFsm::set_queue(gr::msg_queue::sptr queue)
 {
+    std::lock_guard<std::mutex> lk(mx);
     queue_ = queue;
 }
 
 void ChannelFsm::set_channel(unsigned int channel)
 {
+    std::lock_guard<std::mutex> lk(mx);
     channel_ = channel;
 }
 

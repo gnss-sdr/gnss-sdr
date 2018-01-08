@@ -184,6 +184,7 @@ gr::basic_block_sptr Channel::get_right_block()
 
 void Channel::set_signal(const Gnss_Signal& gnss_signal)
 {
+    std::lock_guard<std::mutex> lk(mx);
     gnss_signal_ = gnss_signal;
     std::string str_aux = gnss_signal_.get_signal_str();
     const char * str = str_aux.c_str(); // get a C style null terminated string
@@ -198,6 +199,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
 
 void Channel::start_acquisition()
 {
+    std::lock_guard<std::mutex> lk(mx);
     bool result = false;
     result = channel_fsm_->Event_start_acquisition();
     if(!result)

@@ -21,6 +21,7 @@
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
  *          <li> Cillian O'Driscoll, 2017. cillian(at)ieee.org
+ *          <li> Antonio Ramos, 2017. antonio.ramos@cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
@@ -53,9 +54,6 @@
 
 #include <fstream>
 #include <string>
-#include <mutex>
-#include <thread>
-#include <condition_variable>
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
@@ -109,7 +107,6 @@ private:
     int d_samples_per_code;
     //unsigned int d_doppler_resolution;
     float d_threshold;
-    std::string d_satellite_str;
     unsigned int d_doppler_max;
     unsigned int d_doppler_step;
     unsigned int d_sampled_ms;
@@ -137,16 +134,8 @@ private:
     bool d_dump;
     unsigned int d_channel;
     std::string d_dump_filename;
-
-    std::thread d_worker_thread;
-    std::mutex  d_mutex;
-
-    std::condition_variable d_cond;
-    bool d_done;
-    bool d_new_data_available;
     bool d_worker_active;
     bool d_blocking;
-
     gr_complex *d_data_buffer;
 
 public:
@@ -251,15 +240,6 @@ public:
              gr_vector_const_void_star &input_items,
              gr_vector_void_star &output_items);
 
-     /*!
-      * Called by the flowgraph when processing is about to start.
-      */
-     bool start( void );
-
-     /*!
-      * Called by the flowgraph when processing is done.
-      */
-     bool stop( void );
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_CC_H_*/

@@ -328,13 +328,14 @@ int pcps_acquisition_cc::general_work(int noutput_items __attribute__((unused)),
             if(d_blocking)
                 {
                     lk.unlock();
-                    acquisition_core();
+                    acquisition_core(d_sample_counter);
                 }
             else
                 {
-                    gr::thread::thread d_worker(&pcps_acquisition_cc::acquisition_core, this);
+                    gr::thread::thread d_worker(&pcps_acquisition_cc::acquisition_core, this, d_sample_counter);
                     d_worker_active = true;
                 }
+            d_sample_counter += d_fft_size;
             consume_each(1);
             break;
         }
@@ -343,11 +344,10 @@ int pcps_acquisition_cc::general_work(int noutput_items __attribute__((unused)),
 }
 
 
-void pcps_acquisition_cc::acquisition_core( void )
+void pcps_acquisition_cc::acquisition_core( unsigned long int samp_count )
 {
     gr::thread::scoped_lock lk(d_setlock);
 
-    unsigned long int sample_counter = d_sample_counter; // sample counter
     // initialize acquisition algorithm
     int doppler;
     uint32_t indext = 0;
@@ -364,7 +364,7 @@ void pcps_acquisition_cc::acquisition_core( void )
 
     DLOG(INFO) << "Channel: " << d_channel
             << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-            << " ,sample stamp: " << sample_counter << ", threshold: "
+            << " ,sample stamp: " << samp_count << ", threshold: "
             << d_threshold << ", doppler_max: " << d_doppler_max
             << ", doppler_step: " << d_doppler_step
             << ", use_CFAR_algorithm_flag: " << ( d_use_CFAR_algorithm_flag ? "true" : "false" );
@@ -431,7 +431,7 @@ void pcps_acquisition_cc::acquisition_core( void )
                         {
                             d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-                            d_gnss_synchro->Acq_samplestamp_samples = sample_counter;
+                            d_gnss_synchro->Acq_samplestamp_samples = samp_count;
 
                             // 5- Compute the test statistics and compare to the threshold
                             //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;

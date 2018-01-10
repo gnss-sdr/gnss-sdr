@@ -97,7 +97,7 @@ private:
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
 
-    void acquisition_core( void );
+    void acquisition_core( unsigned long int samp_count );
 
     void send_negative_acquisition();
     void send_positive_acquisition();

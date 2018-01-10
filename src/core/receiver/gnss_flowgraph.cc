@@ -382,6 +382,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                         channels_state_[i] = 1;
                         channels_.at(i)->set_signal(search_next_signal(channels_.at(i)->get_signal().get_signal_str(), true));
                         acq_channels_count_++;
+                        DLOG(INFO) << "Channel "<< i << " Starting acquisition " << channels_.at(i)->get_signal().get_satellite() << ", Signal " << channels_.at(i)->get_signal().get_signal_str();
                         channels_.at(i)->start_acquisition();
                     }
                 DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];

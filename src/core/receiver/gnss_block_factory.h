@@ -57,7 +57,7 @@ public:
     GNSSBlockFactory();
     virtual ~GNSSBlockFactory();
     std::unique_ptr<GNSSBlockInterface> GetSignalSource(std::shared_ptr<ConfigurationInterface> configuration,
-            boost::shared_ptr<gr::msg_queue> queue, int ID = -1);
+            gr::msg_queue::sptr queue, int ID = -1);
 
     std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(std::shared_ptr<ConfigurationInterface> configuration, int ID = -1);
 
@@ -66,7 +66,7 @@ public:
     std::unique_ptr<GNSSBlockInterface> GetObservables(std::shared_ptr<ConfigurationInterface> configuration);
 
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GetChannels(std::shared_ptr<ConfigurationInterface> configuration,
-            boost::shared_ptr<gr::msg_queue> queue);
+            gr::msg_queue::sptr queue);
 
     /*
      * \brief Returns the block with the required configuration and implementation
@@ -74,29 +74,29 @@ public:
     std::unique_ptr<GNSSBlockInterface> GetBlock(std::shared_ptr<ConfigurationInterface> configuration,
             std::string role, std::string implementation,
             unsigned int in_streams, unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue = nullptr);
+            gr::msg_queue::sptr queue = nullptr);
 
 private:
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_1C(std::shared_ptr<ConfigurationInterface> configuration,
             std::string acq, std::string trk, std::string tlm, int channel,
-            boost::shared_ptr<gr::msg_queue> queue);
+            gr::msg_queue::sptr queue);
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_2S(std::shared_ptr<ConfigurationInterface> configuration,
             std::string acq, std::string trk, std::string tlm, int channel,
-            boost::shared_ptr<gr::msg_queue> queue);
+            gr::msg_queue::sptr queue);
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_1B(std::shared_ptr<ConfigurationInterface> configuration,
             std::string acq, std::string trk, std::string tlm, int channel,
-            boost::shared_ptr<gr::msg_queue> queue);
+            gr::msg_queue::sptr queue);
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_5X(std::shared_ptr<ConfigurationInterface> configuration,
             std::string acq, std::string trk, std::string tlm, int channel,
-            boost::shared_ptr<gr::msg_queue> queue);
+            gr::msg_queue::sptr queue);
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_L5(std::shared_ptr<ConfigurationInterface> configuration,
-                std::string acq, std::string trk, std::string tlm, int channel,
-                boost::shared_ptr<gr::msg_queue> queue);
+            std::string acq, std::string trk, std::string tlm, int channel,
+            gr::msg_queue::sptr queue);
 
     std::unique_ptr<AcquisitionInterface> GetAcqBlock(
             std::shared_ptr<ConfigurationInterface> configuration,

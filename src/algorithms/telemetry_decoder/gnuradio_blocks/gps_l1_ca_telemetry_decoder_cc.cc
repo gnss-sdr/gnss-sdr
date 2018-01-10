@@ -404,7 +404,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
  void gps_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite & satellite)
  {
      d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-     LOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
+     DLOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
      d_GPS_FSM.i_satellite_PRN = d_satellite.get_PRN();
      DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
  }

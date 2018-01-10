@@ -53,7 +53,6 @@ template<typename Data>class concurrent_queue;
 class AcquisitionInterface: public GNSSBlockInterface
 {
 public:
-    //virtual void set_active(bool active) = 0;
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
     virtual void set_channel(unsigned int channel) = 0;
     virtual void set_threshold(float threshold) = 0;

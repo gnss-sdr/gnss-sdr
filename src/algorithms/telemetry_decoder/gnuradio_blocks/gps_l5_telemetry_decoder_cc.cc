@@ -192,7 +192,7 @@ int gps_l5_telemetry_decoder_cc::general_work (int noutput_items __attribute__((
             //* The time of the last input symbol can be computed from the message ToW and
             //* delay by the formulae:
             //* \code
-            //* symbolTime_ms = msg->tow * 6000 + *pdelay * 10
+            //* symbolTime_ms = msg->tow * 6000 + *pdelay * 10 + (12 * 10); 12 symbols of the encoder's transitory
             d_TOW_at_current_symbol = (static_cast<double>(msg.tow) * 6.0) + (static_cast<double>(delay) + 12.0) * GPS_L5i_SYMBOL_PERIOD;
             d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
             d_flag_valid_word = true;

@@ -349,7 +349,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
             result = rtkpos(&rtk_, obs_data, valid_obs, &nav_data);
             if(result == 0)
                 {
-                    LOG(INFO) << "RTKLIB rtkpos error message: " << rtk_.errbuf;
+                    DLOG(INFO) << "RTKLIB rtkpos error message: " << rtk_.errbuf;
                     this->set_time_offset_s(0.0); //reset rx time estimation
                     this->set_num_valid_observations(0);
                 }

@@ -58,6 +58,7 @@
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
 #include "gnss_synchro.h"
+#include <glog/logging.h>
 
 class pcps_acquisition_cc;
 

@@ -58,7 +58,7 @@ public:
     //! Virtual destructor
     virtual ~ControlMessageFactory();
 
-    boost::shared_ptr<gr::message> GetQueueMessage(unsigned int who, unsigned int what);
+    gr::message::sptr GetQueueMessage(unsigned int who, unsigned int what);
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> GetControlMessages(gr::message::sptr queue_message);
 };
 

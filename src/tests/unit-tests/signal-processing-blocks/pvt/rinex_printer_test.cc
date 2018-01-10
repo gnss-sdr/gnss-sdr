@@ -95,8 +95,9 @@ TEST(RinexPrinterTest, GlonassObsHeader)
     const Glonass_Gnav_Ephemeris eph = Glonass_Gnav_Ephemeris();
 
     std::shared_ptr<Rinex_Printer> rp1;
-    rp1 = std::make_shared<Rinex_Printer>();
-    rp1->rinex_obs_header(rp1->obsFile, eph, 0.0);
+    rp1 = std::make_shared<Rinex_Printer>(3);
+    const std::string bands = "1G";
+    rp1->rinex_obs_header(rp1->obsFile, eph, 0.0, bands);
     rp1->obsFile.seekp(0);
 
     while(!rp1->obsFile.eof())

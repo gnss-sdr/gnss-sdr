@@ -729,7 +729,12 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
         }
     consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
     d_sample_counter += d_current_prn_length_samples; // count for the processed samples
-    return 1; // output tracking result ALWAYS even in the case of d_enable_tracking==false
+    if (d_enable_tracking)
+    {
+        return 1;
+    }else{
+        return 0;
+    }
 }
 
 

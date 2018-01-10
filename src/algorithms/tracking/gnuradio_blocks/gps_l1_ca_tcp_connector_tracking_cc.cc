@@ -549,7 +549,12 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
     d_sample_counter_seconds = d_sample_counter_seconds + ( static_cast<double>(d_current_prn_length_samples) / static_cast<double>(d_fs_in) );
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
 
-    return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
+    if (d_enable_tracking)
+    {
+        return 1;
+    }else{
+        return 0;
+    }
 }
 
 

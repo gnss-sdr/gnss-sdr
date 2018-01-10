@@ -733,7 +733,13 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
     d_secondary_delay = (d_secondary_delay + 1) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
     consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
-    return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
+
+    if (current_synchro_data.Flag_valid_symbol_output)
+    {
+        return 1;
+    }else{
+        return 0;
+    }
 }
 
 

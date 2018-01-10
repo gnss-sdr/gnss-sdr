@@ -70,6 +70,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true); //will be false in future versions
+    acquire_pilot_= configuration_->property(role + ".acquire_pilot", false); //will be true in future versions
 
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
 
@@ -252,8 +253,18 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
 
     std::complex<float> * code = new std::complex<float>[code_length_];
 
-    galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
-                    cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+    if (acquire_pilot_==true)
+    {
+        //set local signal generator to Galileo E1 pilot component (1C)
+        char pilot_signal[3]="1C";
+        galileo_e1_code_gen_complex_sampled(code, pilot_signal,
+                        cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+    }else
+    {
+        galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+                        cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+    }
+
 
     for (unsigned int i = 0; i < sampled_ms_ / 4; i++)
         {

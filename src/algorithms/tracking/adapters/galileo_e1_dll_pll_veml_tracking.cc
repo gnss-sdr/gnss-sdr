@@ -57,19 +57,31 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     std::string item_type;
     std::string default_item_type = "gr_complex";
     float pll_bw_hz;
+    float pll_bw_narrow_hz;
     float dll_bw_hz;
+    float dll_bw_narrow_hz;
     float early_late_space_chips;
     float very_early_late_space_chips;
+    float early_late_space_narrow_chips;
+    float very_early_late_space_narrow_chips;
 
     item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
-    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
+    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 0.5);
+    pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 2.0);
+    dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 0.25);
+    int extend_correlation_symbols;
+    extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.15);
     very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", 0.6);
+    early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);
+    very_early_late_space_narrow_chips = configuration->property(role + ".very_early_late_space_narrow_chips", 0.6);
+
+    bool track_pilot=configuration->property(role + ".track_pilot", false);
 
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
@@ -88,8 +100,24 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
                     dump_filename,
                     pll_bw_hz,
                     dll_bw_hz,
+                    pll_bw_narrow_hz,
+                    dll_bw_narrow_hz,
                     early_late_space_chips,
-                    very_early_late_space_chips);
+                    very_early_late_space_chips,
+                    early_late_space_narrow_chips,
+                    very_early_late_space_narrow_chips,
+                    extend_correlation_symbols,
+                    track_pilot);
+//            tracking_ = galileo_e1_dll_pll_veml_make_tracking_cc(
+//                    f_if,
+//                    fs_in,
+//                    vector_length,
+//                    dump,
+//                    dump_filename,
+//                    pll_bw_hz,
+//                    dll_bw_hz,
+//                    early_late_space_chips,
+//                    very_early_late_space_chips);
         }
     else
         {

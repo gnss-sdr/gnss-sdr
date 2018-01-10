@@ -953,7 +953,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
 
     if (current_synchro_data.Flag_valid_symbol_output)
     {
-        return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
+        return 1;
     }else{
         return 0;
     }

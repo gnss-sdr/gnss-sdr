@@ -66,11 +66,6 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, 
         {
             d_gnss_synchro_history_queue.push_back(std::deque<Gnss_Synchro>());
         }
-    // todo: this is a gnuradio scheduler hack.
-    // Migrate the queues to gnuradio set_history to see if the scheduler can handle
-    // the multiple output flow
-    d_max_noutputs = 100;
-    this->set_min_noutput_items(100);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -328,8 +323,15 @@ bool Hybrid_valueCompare_gnss_synchro_d_TOW(const Gnss_Synchro& a, double b)
     return (a.TOW_at_current_symbol_s) < (b);
 }
 
+void hybrid_observables_cc::forecast (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
+{
+    for(unsigned int i = 0; i < d_nchannels; i++)
+        {
+            ninput_items_required[i] = 0; //set the required available samples in each call
+        }
+}
 
-int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused)),
+int hybrid_observables_cc::general_work (int noutput_items ,
         gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
@@ -351,13 +353,25 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
      *  Multi-rate GNURADIO Block. Read how many input items are avaliable in each channel
      *  Record all synchronization data into queues
      */
+    bool zero_samples=true;
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
             n_consume[i] = ninput_items[i];// full throttle
             for (int j = 0; j < n_consume[i]; j++)
                 {
                     d_gnss_synchro_history_queue[i].push_back(in[i][j]);
+                    zero_samples=false;
                 }
+        }
+
+    //check if there are new channel data available
+    //This is required because the combination of several GNSS tracking signals
+    //leads to a multirrate inputs that can not warantee that every channel will have new data
+    //and forecast method is set to zero samples for each channel to avoid blockings
+    if (zero_samples==true)
+        {
+            usleep(500); // run this task at up to 2 kHz rate
+            return 0; // No new samples in this call, thus, return.
         }
 
     bool channel_history_ok;
@@ -561,7 +575,7 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                 }
                         }
                 }
-        } while(channel_history_ok == true && d_max_noutputs > n_outputs);
+        } while(channel_history_ok == true && noutput_items > n_outputs);
 
     // Multi-rate consume!
     for (unsigned int i = 0; i < d_nchannels; i++)

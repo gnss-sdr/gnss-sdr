@@ -130,7 +130,7 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT3)
     double tow = 0.0;
     double true_leap_sec = 17;
     double true_week = 1886;
-    double true_tow = 259200+true_leap_sec;
+    double true_tow = 259200+true_leap_sec+tod;
 
 	gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
 

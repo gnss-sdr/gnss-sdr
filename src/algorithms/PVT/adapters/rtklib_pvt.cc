@@ -150,6 +150,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
      *    25   |  GLONASS L1 C/A + GLONASS L2 C/A
      *    26   |  GPS L1 C/A + GLONASS L1 C/A
      *    27   |  Galileo E1B + GLONASS L1 C/A
+     *    28   |  GPS L2C + GLONASS L1 C/A
      */
     int gps_1C_count = configuration->property("Channels_1C.count", 0);
     int gps_2S_count = configuration->property("Channels_2S.count", 0);
@@ -187,6 +188,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_1G_count != 0)) type_of_receiver = 25;
     if( (gps_1C_count != 0) && (gps_2S_count == 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0)) type_of_receiver = 26;
     if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0)) type_of_receiver = 27;
+    if( (gps_1C_count == 0) && (gps_2S_count != 0)  && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0)) type_of_receiver = 28;
     //RTKLIB PVT solver options
     // Settings 1
     int positioning_mode = -1;

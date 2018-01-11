@@ -82,7 +82,6 @@ Glonass_Gnav_Ephemeris::Glonass_Gnav_Ephemeris()
 	d_tod = 0.0;
 }
 
-
 boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(const double offset_time) const
 {
     boost::posix_time::time_duration t(0, 0, offset_time + d_tau_c + d_tau_n);
@@ -93,68 +92,71 @@ boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(const doub
     return glonass_time;
 }
 
-
 boost::posix_time::ptime Glonass_Gnav_Ephemeris::glot_to_utc(const double offset_time, const double glot2utc_corr) const
 {
-		double tod = 0.0;
-		double glot2utc = 3*3600;
+	double tod = 0.0;
+	double glot2utc = 3*3600;
 
-		tod = offset_time - glot2utc + glot2utc_corr + d_tau_n;
-		boost::posix_time::time_duration t(0, 0, tod);
-		boost::gregorian::date d1(d_yr, 1, 1);
-		boost::gregorian::days d2(d_N_T - 1);
-		boost::posix_time::ptime utc_time(d1+d2, t);
+	tod = offset_time - glot2utc + glot2utc_corr + d_tau_n;
+	boost::posix_time::time_duration t(0, 0, tod);
+	boost::gregorian::date d1(d_yr, 1, 1);
+	boost::gregorian::days d2(d_N_T - 1);
+	boost::posix_time::ptime utc_time(d1+d2, t);
 
-		return utc_time;
+	return utc_time;
 }
 
 void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, double * wn, double * tow) const
 {
-		double tod = 0.0;
-	    double glot2utc = 3*3600;
-	    double days = 0.0;
-	    double total_sec = 0.0, sec_of_day = 0.0;
-	    int i = 0;
+	double tod = 0.0;
+	double glot2utc = 3*3600;
+	double days = 0.0;
+	double total_sec = 0.0, sec_of_day = 0.0;
+	int i = 0;
 
-	    boost::gregorian::date gps_epoch { 1980, 1, 6 };
+	boost::gregorian::date gps_epoch { 1980, 1, 6 };
 
-	    // tk is relative to UTC(SU) + 3.00 hrs, so we need to convert to utc and add corrections
-	    // tk plus 10 sec is the true tod since get_TOW is called when in str5
-	    tod = tod_offset - glot2utc ;
+	// tk is relative to UTC(SU) + 3.00 hrs, so we need to convert to utc and add corrections
+	// tk plus 10 sec is the true tod since get_TOW is called when in str5
+	tod = tod_offset - glot2utc ;
 
 
-	    boost::posix_time::time_duration t(0, 0, tod);
-	    boost::gregorian::date d1(d_yr, 1, 1);
-	    boost::gregorian::days d2(d_N_T-1);
-	    boost::posix_time::ptime glonass_time(d1+d2, t);
-	    boost::gregorian::date utc_date = glonass_time.date();
+	boost::posix_time::time_duration t(0, 0, tod);
+	boost::gregorian::date d1(d_yr, 1, 1);
+	boost::gregorian::days d2(d_N_T-1);
+	boost::posix_time::ptime utc_time(d1+d2, t);
+	boost::gregorian::date utc_date = utc_time.date();
+	boost::posix_time::ptime gps_time;
 
-	    // Total number of days
-	    std::string fdat = boost::posix_time::to_simple_string(glonass_time);
-	    days =  static_cast<double>((utc_date - gps_epoch).days());
+	// Adjust for leap second correction
+	for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
+		{
+			boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
+			boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
+			boost::posix_time::ptime ls_time(d3, t3);
+			if (utc_time >= ls_time)
+			{
+				// We add the leap second when going from utc to gpst
+				gps_time = utc_time + boost::posix_time::time_duration(0,0,fabs(GLONASS_LEAP_SECONDS[i][6]));
+				break;
+			}
+		}
 
-	    // Total number of seconds
-	    sec_of_day = static_cast<double>((glonass_time.time_of_day()).total_seconds());
-	    total_sec = days*86400 + sec_of_day;
+	// Total number of days
+	std::string fdat = boost::posix_time::to_simple_string(gps_time);
+	days =  static_cast<double>((utc_date - gps_epoch).days());
 
-	    // GLONASST already includes leap second addition or deletion
-	    for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
-	    {
-	        if (d_yr >= GLONASS_LEAP_SECONDS[i][0])
-	        {
-	            // We add the leap second when going from utc to gpst
-	            total_sec += fabs(GLONASS_LEAP_SECONDS[i][6]);
-	            break;
-	        }
-	    }
+	// Total number of seconds
+	sec_of_day = static_cast<double>((gps_time.time_of_day()).total_seconds());
+	total_sec = days*86400 + sec_of_day;
 
-	    // Compute Week number
-	    *wn = floor(total_sec/604800);
+	// Compute Week number
+	*wn = floor(total_sec/604800);
 
-	    // Compute the arithmetic modules to wrap around range
-	    *tow = total_sec - 604800*floor(total_sec/604800);
-	    // Perform corrections from fractional seconds
-	    *tow += glot2utc_corr + glot2gpst_corr;
+	// Compute the arithmetic modules to wrap around range
+	*tow = total_sec - 604800*floor(total_sec/604800);
+	// Perform corrections from fractional seconds
+	*tow += glot2utc_corr + glot2gpst_corr;
 
 }
 

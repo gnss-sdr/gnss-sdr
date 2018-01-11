@@ -172,6 +172,7 @@ TEST(GlonassGnavNavigationMessageTest, String3Decoder)
     gnav_ephemeris.d_Zn         = 19929.2377929688;
 
     // Call target test method
+    gnav_nav_message.flag_ephemeris_str_2 = true;
     gnav_nav_message.string_decoder(str3);
 
     // Perform assertions of decoded fields
@@ -209,6 +210,7 @@ TEST(GlonassGnavNavigationMessageTest, String4Decoder)
     gnav_ephemeris.d_M = 1;
 
     // Call target test method
+    gnav_nav_message.flag_ephemeris_str_3 = true;
     gnav_nav_message.string_decoder(str4);
 
     // Perform assertions of decoded fields
@@ -243,6 +245,7 @@ TEST(GlonassGnavNavigationMessageTest, String5Decoder)
     gnav_utc_model.d_tau_gps    = 9.313225746154785e-08;
 
     // Call target test method
+    gnav_nav_message.flag_ephemeris_str_4 = true;
     gnav_nav_message.string_decoder(str5);
 
     // Perform assertions of decoded fields

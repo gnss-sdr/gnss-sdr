@@ -37,7 +37,7 @@ class unpack_spir_gss6450_samples;
 
 typedef boost::shared_ptr<unpack_spir_gss6450_samples> unpack_spir_gss6450_samples_sptr;
 
-unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int n_chann, unsigned int sel_ch, size_t item_size);
+unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int n_chann, unsigned int sel_ch, int samp_item, size_t item_size);
 
 
 class unpack_spir_gss6450_samples: public gr::block
@@ -46,17 +46,25 @@ public:
     int general_work (int noutput_items,
                           gr_vector_const_void_star &input_items,
                           gr_vector_void_star &output_items);
-    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+    friend unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples_sptr(unsigned int n_chann, unsigned int sel_ch, int samp_item, size_t item_size);
+    unpack_spir_gss6450_samples(unsigned int n_chann, unsigned int sel_ch, int samp_item, size_t item_size);
     ~unpack_spir_gss6450_samples();
 
 private:
     unsigned int d_channels;
     unsigned int d_sel_ch;
     unsigned int ch_processing;
+    int d_samp_item;
+    int samp_frame;
+    int adc_bits;
     size_t item_size_;
-    friend unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples_sptr(unsigned int n_chann, unsigned int sel_ch, size_t item_size);
-    unpack_spir_gss6450_samples(unsigned int n_chann, unsigned int sel_ch, size_t item_size);
-
+    void process_sample(gr_complex* out);
+    void swap_data(int& data);
+    void compute_two_complement(int& data);
+    bool i_;
+    bool new_sample;
+    int i_data;
+    int q_data;
 };
 
 #endif

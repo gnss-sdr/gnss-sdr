@@ -78,8 +78,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
     {
             file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
             file_source_->seek(bytes_seek, SEEK_SET);
-            unpack_ii_ = gr::blocks::packed_to_unpacked_ii::make(2 * adc_bits_, gr::GR_MSB_FIRST);
-            unpack_spir_ = make_unpack_spir_gss6450_samples(n_channels_, sel_ch_, item_size_);
+            unpack_ii_ = gr::blocks::packed_to_unpacked_ii::make(adc_bits_, gr::GR_MSB_FIRST);
+            unpack_spir_ = make_unpack_spir_gss6450_samples(n_channels_, sel_ch_, samples_per_item, item_size_);
     }
     catch (const std::exception &e)
     {
@@ -139,8 +139,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
         }
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
-    double signal_duration_s;
-    signal_duration_s = static_cast<double>(samples_) * ( 1 /static_cast<double>(sampling_frequency_));
+    double signal_duration_s = static_cast<double>(samples_) * ( 1 /static_cast<double>(sampling_frequency_));
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 

@@ -328,7 +328,6 @@ bool Hybrid_valueCompare_gnss_synchro_d_TOW(const Gnss_Synchro& a, double b)
 
 void hybrid_observables_cc::forecast (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
-
     bool zero_samples = true;
     for(unsigned int i = 0; i < d_nchannels; i++)
         {

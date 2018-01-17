@@ -310,7 +310,7 @@ bool Hybrid_valueCompare_gnss_synchro_sample_counter(const Gnss_Synchro& a, unsi
 
 bool Hybrid_valueCompare_gnss_synchro_receiver_time(const Gnss_Synchro& a, double b)
 {
-    return (((double)a.Tracking_sample_counter+a.Code_phase_samples)/(double)a.fs) < (b);
+    return ((static_cast<double>(a.Tracking_sample_counter) + static_cast<double>(a.Code_phase_samples)) / static_cast<double>(a.fs) ) < (b);
 }
 
 
@@ -331,8 +331,8 @@ void hybrid_observables_cc::forecast (int noutput_items __attribute__((unused)),
     bool zero_samples = true;
     for(unsigned int i = 0; i < d_nchannels; i++)
         {
-            int items=detail()->input(i)->items_available();
-            if (items>0) zero_samples = false;
+            int items = detail()->input(i)->items_available();
+            if (items > 0) zero_samples = false;
             ninput_items_required[i] = items; // set the required available samples in each call
         }
 

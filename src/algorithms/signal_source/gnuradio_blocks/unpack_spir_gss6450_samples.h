@@ -31,40 +31,35 @@
 #ifndef GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H
 #define GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H
 
-#include <gnuradio/block.h>
+#include <gnuradio/sync_interpolator.h>
+#include <vector>
 
 class unpack_spir_gss6450_samples;
 
 typedef boost::shared_ptr<unpack_spir_gss6450_samples> unpack_spir_gss6450_samples_sptr;
 
-unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int n_chann, unsigned int sel_ch, int samp_item, size_t item_size);
+unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int adc_nbit);
 
 
-class unpack_spir_gss6450_samples: public gr::block
+class unpack_spir_gss6450_samples: public gr::sync_interpolator
 {
 public:
-    int general_work (int noutput_items,
-                          gr_vector_const_void_star &input_items,
-                          gr_vector_void_star &output_items);
-    friend unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples_sptr(unsigned int n_chann, unsigned int sel_ch, int samp_item, size_t item_size);
-    unpack_spir_gss6450_samples(unsigned int n_chann, unsigned int sel_ch, int samp_item, size_t item_size);
+    int work(int noutput_items,
+             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    friend unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples_sptr(unsigned int adc_nbit);
+    unpack_spir_gss6450_samples(unsigned int adc_nbit);
     ~unpack_spir_gss6450_samples();
 
 private:
-    unsigned int d_channels;
-    unsigned int d_sel_ch;
-    unsigned int ch_processing;
-    int d_samp_item;
-    int samp_frame;
-    int adc_bits;
-    size_t item_size_;
-    void process_sample(gr_complex* out);
-    void swap_data(int& data);
+    unsigned int adc_bits;
+    unsigned int samples_per_int;
+    void process_sample(gr_complex& out);
     void compute_two_complement(int& data);
-    bool i_;
-    bool new_sample;
+    void reverse_bits(int& data);
     int i_data;
     int q_data;
+    int mask_data;
+    std::vector<int> map_;
 };
 
 #endif

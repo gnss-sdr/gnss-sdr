@@ -1,12 +1,12 @@
 /*!
- * \file spir_file_signal_source.h
+ * \file spir_gss6450_file_signal_source.h
  * \brief Implementation of a class that reads signals samples from a SPIR file
  * and adapts it to a SignalSourceInterface.
- * \author Fran Fabra, 2014 fabra(at)ice.csic.es
+ * \author Antonio Ramos, 2017 antonio.ramos(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,10 +33,14 @@
 #define GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_
 
 #include <string>
+#include <vector>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/blocks/packed_to_unpacked_ii.h>
+#include <gnuradio/blocks/deinterleave.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/endian_swap.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
 #include "gnss_block_interface.h"
@@ -104,10 +108,11 @@ public:
 
 private:
     unsigned long long samples_;
-    long sampling_frequency_;
+    double sampling_frequency_;
     std::string filename_;
     bool repeat_;
     bool dump_;
+    bool enable_throttle_control_;
     std::string dump_filename_;
     std::string role_;
     std::string item_type_;
@@ -117,14 +122,16 @@ private:
     unsigned int n_channels_;
     unsigned int sel_ch_;
     gr::blocks::file_source::sptr file_source_;
-    gr::blocks::packed_to_unpacked_ii::sptr unpack_ii_;
+    gr::blocks::deinterleave::sptr deint_;
+    gr::blocks::endian_swap::sptr endian_;
+    std::vector<gr::blocks::null_sink::sptr> null_sinks_;
     unpack_spir_gss6450_samples_sptr unpack_spir_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
+    gr::blocks::file_sink::sptr sink_test;
     gr::blocks::throttle::sptr  throttle_;
     gr::msg_queue::sptr queue_;
     size_t item_size_;
-    bool enable_throttle_control_;
 };
 
 #endif /*GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_*/

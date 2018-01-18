@@ -34,123 +34,90 @@
 
 
 
-unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int n_chann, unsigned int sel_ch, int samp_item, size_t item_size)
+unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int adc_nbit)
 {
-    return unpack_spir_gss6450_samples_sptr(new unpack_spir_gss6450_samples(n_chann, sel_ch, samp_item, item_size));
+    return unpack_spir_gss6450_samples_sptr(new unpack_spir_gss6450_samples(adc_nbit));
 }
 
 
-unpack_spir_gss6450_samples::unpack_spir_gss6450_samples(
-        unsigned int n_chann, unsigned int sel_ch, int samp_item, size_t item_size) : gr::block("unpack_spir_gss6450_samples",
+unpack_spir_gss6450_samples::unpack_spir_gss6450_samples(unsigned int adc_nbit) : gr::sync_interpolator("unpack_spir_gss6450_samples",
         gr::io_signature::make(1, 1, sizeof(int)),
-        gr::io_signature::make(1, 1, sizeof(gr_complex)))
+        gr::io_signature::make(1, 1, sizeof(gr_complex)), 16 / adc_nbit)
 {
-    d_channels = n_chann;
-    d_sel_ch = sel_ch;
-    item_size_ = item_size;
-    ch_processing = 1;
-    d_samp_item = samp_item;
-    samp_frame = 0;
-    adc_bits = 16 / d_samp_item;
-    i_ = true;
-    new_sample = false;
+    adc_bits = adc_nbit;
     i_data = 0;
     q_data = 0;
+    samples_per_int = 16 / adc_bits;
+    if(adc_bits == 2)
+    {
+        mask_data = 0x00000003;
+        map_ = {0, 1, -2, -1};
+    }
+    else
+    {
+        mask_data = 0x0000000F;
+        map_ = {0, 1, 2, 3, 4, 5, 6, 7, -8, -7, -6, -5, -4, -3, -2, -1};
+    }
 }
 
 
 unpack_spir_gss6450_samples::~unpack_spir_gss6450_samples()
 {}
 
-void unpack_spir_gss6450_samples::process_sample(gr_complex* out)
+void unpack_spir_gss6450_samples::process_sample(gr_complex& out)
 {
-    gr_complex result = gr_complex(0.5, 0.5);
+    out = gr_complex(0.5, 0.5);
     compute_two_complement(i_data);
     compute_two_complement(q_data);
-    result += gr_complex(static_cast<float>(i_data), static_cast<float>(q_data));
-    *out = result;
+    out += gr_complex(static_cast<float>(i_data), static_cast<float>(q_data));
 }
 
-int unpack_spir_gss6450_samples::general_work(int noutput_items,
-                                              gr_vector_const_void_star &input_items,
-                                              gr_vector_void_star &output_items)
+
+int unpack_spir_gss6450_samples::work(int noutput_items,
+                      gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     const int* in = reinterpret_cast<const int*>(input_items[0]);
     gr_complex* out = reinterpret_cast<gr_complex*>(output_items[0]);
-    int samples_produced = 0;
+    unsigned int n_sample = 0;
+    unsigned int in_counter = 0;
     for(int i = 0; i < noutput_items; i++)
     {
-        if(ch_processing == d_sel_ch)
+        int sample_aux = in[in_counter];
+        //reverse_bits(sample_aux);
+        int aux_i = sample_aux;
+        int aux_q = sample_aux;
+        int i_shift = adc_bits * 2 * (samples_per_int - n_sample - 1) + adc_bits;
+        int q_shift = adc_bits * 2 * (samples_per_int - n_sample - 1);
+        i_data = (aux_i >> i_shift) & mask_data;
+        q_data = (aux_q >> q_shift) & mask_data;
+        process_sample(out[samples_per_int * in_counter + samples_per_int - n_sample - 1]);
+        n_sample++;
+        if(n_sample == samples_per_int)
         {
-            if(i_)
-            {
-                i_data = in[i];
-                swap_data(i_data);
-                i_ = false;
-            }
-            else
-            {
-                q_data = in[i];
-                swap_data(q_data);
-                i_ = true;
-                process_sample(out);
-                out++;
-                samples_produced++;
-                new_sample = true;
-            }
-        }
-        else
-        {
-            if(i_) { i_ = false;}
-            else
-            {
-                i_ = true;
-                new_sample = true;
-            }
-        }
-        if(new_sample)
-        {
-            new_sample = false;
-            samp_frame++;
-            if(samp_frame == d_samp_item)
-            {
-                samp_frame = 0;
-                ch_processing++;
-                if(ch_processing > d_channels) { ch_processing = 1; }
-            }
+            n_sample = 0;
+            in_counter++;
         }
     }
-    consume_each(noutput_items);
-    return samples_produced;
+    return noutput_items;
 }
 
-void unpack_spir_gss6450_samples::swap_data(int& data)
+void unpack_spir_gss6450_samples::reverse_bits(int& data)
 {
-    int result = 0;
-    int aux = data;
-    int mask = 1;
-    for (int i = 0; i < adc_bits; i++)
+    unsigned int v = data;     // input bits to be reversed
+    unsigned int r = v; // r will be reversed bits of v; first get LSB of v
+    int s = sizeof(v) * CHAR_BIT - 1; // extra shift needed at end
+
+    for (v >>= 1; v; v >>= 1)
     {
-        result = result << 1;
-        result += (aux & mask);
-        aux = aux >> 1;
+      r <<= 1;
+      r |= v & 1;
+      s--;
     }
-    data = result;
+    r <<= s; // shift when v's highest bits are zero
+    data = r;
 }
 
 void unpack_spir_gss6450_samples::compute_two_complement(int& data)
 {
-    int result = 0;
-    int mask = 1;
-    for(int i = 0; i < (adc_bits - 1); i++)
-    {
-        result = result << 1;
-        result += (data >> i) & mask;
-    }
-    if((data >> (adc_bits - 1)) == 1)
-    {
-        if(adc_bits == 2) { result -= 2; }
-        else { result -= 8; }
-    }
-    data = result;
+    data = map_[data];
 }

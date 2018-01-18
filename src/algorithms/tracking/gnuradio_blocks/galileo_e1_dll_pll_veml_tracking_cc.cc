@@ -251,6 +251,13 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_carrier_doppler_hz = 0.0;
     d_acc_carrier_phase_rad = 0.0;
 
+    d_extend_correlation_symbols_count = 0;
+    d_code_phase_step_chips = 0.0;
+    d_carrier_phase_step_rad = 0.0;
+    d_rem_code_phase_chips = 0.0;
+    d_K_blk_samples = 0.0;
+    d_code_phase_samples = 0.0;
+
     d_state = 0; // initial state: standby
 }
 

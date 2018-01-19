@@ -41,9 +41,6 @@ TEST(PassThroughTest, Instantiate)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Test.item_type", "gr_complex");
-    config->set_property("Test.vector_size", "2");
     std::shared_ptr<Pass_Through> signal_conditioner = std::make_shared<Pass_Through>(config.get(), "Test", 1, 1);
     EXPECT_STREQ("gr_complex", signal_conditioner->item_type().c_str());
-    unsigned int expected2 = 2;
-    EXPECT_EQ(expected2, signal_conditioner->vector_size());
 }

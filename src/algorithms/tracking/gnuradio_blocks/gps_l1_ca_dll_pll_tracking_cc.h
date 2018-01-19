@@ -101,6 +101,7 @@ private:
             float dll_bw_hz,
             float early_late_space_chips);
 
+    int save_matfile();
     // tracking configuration vars
     unsigned int d_vector_length;
     bool d_dump;

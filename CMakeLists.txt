@@ -216,6 +216,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      endif(NOT LINUX_DISTRIBUTION)
      message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(NOT LINUX_DISTRIBUTION)
+    set(LINUX_DISTRIBUTION "Unknown")
+endif(NOT LINUX_DISTRIBUTION)
 
 # Detect macOS / Mac OS X Version
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -327,6 +330,7 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "unstable")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.11")
 
 
 
@@ -408,13 +412,22 @@ endif(NOT ENABLE_GENERIC_ARCH)
 
 
 
-###############################
-# Find a thread library
-###############################
-if(OS_IS_LINUX)
+################################################################################
+# Find the POSIX thread (pthread) libraries
+################################################################################
+if(CMAKE_VERSION VERSION_LESS 3.1)
     find_package(Threads REQUIRED)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif(OS_IS_LINUX)
+else(CMAKE_VERSION VERSION_LESS 3.1)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    if(CMAKE_CROSSCOMPILING)
+        set(THREADS_PREFER_PTHREAD_FLAG FALSE)
+    else(CMAKE_CROSSCOMPILING)
+        set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    endif(CMAKE_CROSSCOMPILING)
+    find_package(Threads REQUIRED)
+    link_libraries(Threads::Threads)
+endif(CMAKE_VERSION VERSION_LESS 3.1)
 
 
 
@@ -890,167 +903,47 @@ endif(NOT ENABLE_LOG)
 
 
 
+#############################################################################
+# Check that BLAS (Basic Linear Algebra Subprograms) is found in the system
+# See http://www.netlib.org/blas/
+#############################################################################
+find_library(BLAS blas)
+if(NOT BLAS)
+    message(" The BLAS library has not been found.")
+    message(" You can try to install it by typing:")
+    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        message(" sudo yum install blas-devel")
+    else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        message(" sudo apt-get install libblas-dev")
+    endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+    message(FATAL_ERROR "BLAS is required to build gnss-sdr")
+endif(NOT BLAS)
+
+
+
+#############################################################################
+# Check that LAPACK (Linear Algebra PACKage) is found in the system
+# See http://www.netlib.org/lapack/
+#############################################################################
+find_library(LAPACK lapack)
+if(NOT LAPACK)
+    message(" The LAPACK library has not been found.")
+    message(" You can try to install it by typing:")
+    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        message(" sudo yum install lapack-devel")
+    elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+        message(" sudo zypper install lapack-devel")
+    else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+        message(" sudo apt-get install liblapack-dev")
+    endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+    message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
+endif(NOT LAPACK)
+
+
+
 ################################################################################
 # Armadillo - http://arma.sourceforge.net/
 ################################################################################
-if(OS_IS_LINUX)
-    #############################################################################
-    # Check that LAPACK is found in the system
-    # LAPACK is required for matrix decompositions (eg. SVD) and matrix inverse.
-    #############################################################################
-    find_library(LAPACK lapack)
-    if(NOT LAPACK)
-        message(" The LAPACK library has not been found.")
-        message(" You can try to install it by typing:")
-        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo yum install lapack-devel")
-        elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-            message(" sudo zypper install lapack-devel")
-        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo apt-get install liblapack-dev")
-        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        if(IS_ARM)
-            message(WARNING "LAPACK is recommended to build gnss-sdr")
-            set(LAPACK "")
-        else(IS_ARM)
-            message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
-        endif(IS_ARM)
-    endif(NOT LAPACK)
-    #############################################################################
-    # Check that BLAS is found in the system
-    # BLAS is used for matrix multiplication.
-    # Without BLAS, matrix multiplication will still work, but might be slower.
-    #############################################################################
-    find_library(BLAS blas)
-    if(NOT BLAS)
-        message(" The BLAS library has not been found.")
-        message(" You can try to install it by typing:")
-        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo yum install blas-devel")
-        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo apt-get install libopenblas-dev")
-        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        if(IS_ARM)
-            message(WARNING "BLAS is recommended to build gnss-sdr")
-            set(BLAS "")
-        else(IS_ARM)
-            message(FATAL_ERROR "BLAS is required to build gnss-sdr")
-        endif(IS_ARM)
-    endif(NOT BLAS)
-    #############################################
-    # Check if GFORTRAN is found in the system
-    #############################################
-    find_library(GFORTRAN NAMES gfortran
-                 PATHS /usr/lib
-                       /usr/lib64
-                       /usr/local/lib
-                       /usr/local/lib/i386
-                       /usr/lib/gcc/x86_64-linux-gnu
-                       /usr/lib/gcc/i686-linux-gnu
-                       /usr/lib/gcc/i386-linux-gnu
-                       /usr/lib/gcc/x86_64-linux-gnu/4.6 # Ubuntu 12.04
-                       /usr/lib/gcc/i686-linux-gnu/4.6
-                       /usr/lib/gcc/x86_64-linux-gnu/4.7
-                       /usr/lib/gcc/i686-linux-gnu/4.7
-                       /usr/lib/gcc/x86_64-linux-gnu/4.8
-                       /usr/lib/gcc/i686-linux-gnu/4.8
-                       /usr/lib/gcc/x86_64-linux-gnu/4.9
-                       /usr/lib/gcc/i686-linux-gnu/4.9
-                       /usr/lib/gcc/x86_64-redhat-linux/4.7.2 # Fedora 18
-                       /usr/lib/gcc/i686-redhat-linux/4.7.2
-                       /usr/lib/gcc/x86_64-redhat-linux/4.8.1 # Fedora 19
-                       /usr/lib/gcc/x86_64-redhat-linux/4.8.3 # Fedora 20
-                       /usr/lib/gcc/x86_64-redhat-linux/4.9.1 # Fedora 21
-                       /usr/lib/gcc/i686-redhat-linux/4.8.1
-                       /usr/lib/gcc/i686-redhat-linux/4.8.3
-                       /usr/lib/gcc/i686-redhat-linux/4.9.1
-                       /usr/lib/gcc/x86_64-redhat-linux/4.4.4 # CentOS 6
-                       /usr/lib/gcc/i686-redhat-linux/4.4.4
-                       /usr/lib/gcc/x86_64-redhat-linux/4.8.2
-                       /usr/lib/gcc/i686-redhat-linux/4.8.2
-                       /usr/lib/gcc/i586-suse-linux/4.8  # OpenSUSE 13.1
-                       /usr/lib/gcc/i586-suse-linux/4.9
-                       /usr/lib/gcc/x86_64-suse-linux/4.8
-                       /usr/lib/gcc/x86_64-suse-linux/4.9
-                       /usr/lib/gcc/i486-linux-gnu # Debian 7
-                       /usr/lib/gcc/i486-linux-gnu/4.4
-                       /usr/lib/gcc/i486-linux-gnu/4.6
-                       /usr/lib/gcc/i486-linux-gnu/4.7
-                       /usr/lib/gcc/i486-linux-gnu/4.8
-                       /usr/lib/gcc/i486-linux-gnu/4.9
-                       /usr/lib/gcc/i586-linux-gnu/4.9
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.4 # Debian armhf
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.5
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.6
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.7
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.8
-                       /usr/lib/gcc/arm-linux-gnueabihf/4.9
-                       /usr/lib/gcc/aarch64-linux-gnu/4.9   # Debian arm64
-                       /usr/lib/gcc/arm-linux-gnueabi/4.7   # Debian armel
-                       /usr/lib/gcc/arm-linux-gnueabi/4.9
-                       /usr/lib/gcc/x86_64-linux-gnu/5
-                       /usr/lib/gcc/i686-linux-gnu/5
-                       /usr/lib/gcc/arm-linux-gnueabi/5
-                       /usr/lib/gcc/arm-linux-gnueabihf/5
-                       /usr/lib/gcc/aarch64-linux-gnu/5
-                       /usr/lib/gcc/x86_64-linux-gnu/6      # Ubuntu 16.10
-                       /usr/lib/gcc/alpha-linux-gnu/6
-                       /usr/lib/gcc/aarch64-linux-gnu/6
-                       /usr/lib/gcc/arm-linux-gnueabi/6
-                       /usr/lib/gcc/arm-linux-gnueabihf/6
-                       /usr/lib/gcc/hppa-linux-gnu/6
-                       /usr/lib/gcc/i686-gnu/6
-                       /usr/lib/gcc/i686-linux-gnu/6
-                       /usr/lib/gcc/x86_64-kfreebsd-gnu/6
-                       /usr/lib/gcc/i686-kfreebsd-gnu/6
-                       /usr/lib/gcc/m68k-linux-gnu/6
-                       /usr/lib/gcc/mips-linux-gnu/6
-                       /usr/lib/gcc/mips64el-linux-gnuabi64/6
-                       /usr/lib/gcc/mipsel-linux-gnu/6
-                       /usr/lib/gcc/powerpc-linux-gnu/6
-                       /usr/lib/gcc/powerpc-linux-gnuspe/6
-                       /usr/lib/gcc/powerpc64-linux-gnu/6
-                       /usr/lib/gcc/powerpc64le-linux-gnu/6
-                       /usr/lib/gcc/s390x-linux-gnu/6
-                       /usr/lib/gcc/sparc64-linux-gnu/6
-                       /usr/lib/gcc/x86_64-linux-gnux32/6
-                       /usr/lib/gcc/sh4-linux-gnu/6
-                       /usr/lib/gcc/x86_64-linux-gnu/7      # Debian 9 Buster
-                       /usr/lib/gcc/alpha-linux-gnu/7
-                       /usr/lib/gcc/aarch64-linux-gnu/7
-                       /usr/lib/gcc/arm-linux-gnueabi/7
-                       /usr/lib/gcc/arm-linux-gnueabihf/7
-                       /usr/lib/gcc/hppa-linux-gnu/7
-                       /usr/lib/gcc/i686-gnu/7
-                       /usr/lib/gcc/i686-linux-gnu/7
-                       /usr/lib/gcc/x86_64-kfreebsd-gnu/7
-                       /usr/lib/gcc/i686-kfreebsd-gnu/7
-                       /usr/lib/gcc/m68k-linux-gnu/7
-                       /usr/lib/gcc/mips-linux-gnu/7
-                       /usr/lib/gcc/mips64el-linux-gnuabi64/7
-                       /usr/lib/gcc/mipsel-linux-gnu/7
-                       /usr/lib/gcc/powerpc-linux-gnu/7
-                       /usr/lib/gcc/powerpc-linux-gnuspe/7
-                       /usr/lib/gcc/powerpc64-linux-gnu/7
-                       /usr/lib/gcc/powerpc64le-linux-gnu/7
-                       /usr/lib/gcc/s390x-linux-gnu/7
-                       /usr/lib/gcc/sparc64-linux-gnu/7
-                       /usr/lib/gcc/x86_64-linux-gnux32/7
-                       /usr/lib/gcc/sh4-linux-gnu/7
-                )
-    if(NOT GFORTRAN)
-        message(STATUS "The gfortran library has not been found.")
-        message(STATUS " You can try to install it by typing:")
-        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo yum install gcc-fortran")
-        elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-            message(STATUS " sudo zypper install gcc-fortran")
-        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo apt-get install gfortran")
-        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-    endif(NOT GFORTRAN)
-endif(OS_IS_LINUX)
-
 find_package(Armadillo)
 if(ARMADILLO_FOUND)
     if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
@@ -1065,7 +958,29 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'. ")
      set(armadillo_BRANCH ${GNSSSDR_ARMADILLO_LOCAL_VERSION})
      set(armadillo_RELEASE ${armadillo_BRANCH})
+     
+     #############################################
+     # Check if GFORTRAN is found in the system
+     #############################################
+     if(NOT OS_IS_MACOSX)
+         find_package(GFORTRAN)
+         if(NOT GFORTRAN)
+             message(STATUS "The gfortran library has not been found.")
+             message(STATUS " You can try to install it by typing:")
+             if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                 message(STATUS " sudo yum install gcc-fortran")
+             elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                 message(STATUS " sudo zypper install gcc-fortran")
+             else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                 message(STATUS " sudo apt-get install gfortran")
+             endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+             message(FATAL_ERROR "gfortran is required to build gnss-sdr")
+         endif(NOT GFORTRAN)
+     endif(NOT OS_IS_MACOSX)
 
+     #############################################
+     # Download and build Armadillo
+     #############################################
      if(CMAKE_VERSION VERSION_LESS 3.2)
       ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
@@ -1098,14 +1013,6 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      # Set up variables
      ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
      set(ARMADILLO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include )
-     find_library(LAPACK NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
-     if(OS_IS_MACOSX)
-         find_library(BLAS blas)
-     endif(OS_IS_MACOSX)
-     find_package(OpenBLAS)
-     if(OPENBLAS_FOUND)
-         set(BLAS ${OPENBLAS})
-     endif(OPENBLAS_FOUND)
      if(NOT GFORTRAN)
          set(GFORTRAN "")
      endif(NOT GFORTRAN)
@@ -1137,6 +1044,7 @@ find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
                                           /usr/lib/i386-linux-gnu
                                           /usr/lib/alpha-linux-gnu
                                           /usr/lib/hppa-linux-gnu
+                                          /usr/lib/i386-gnu
                                           /usr/lib/i686-gnu
                                           /usr/lib/i686-linux-gnu
                                           /usr/lib/x86_64-kfreebsd-gnu
@@ -1178,6 +1086,74 @@ if(NOT GNUTLS_OPENSSL_LIBRARY)
             message(FATAL_ERROR "GnuTLS libraries with openssl compatibility are required to build gnss-sdr")
      endif(OPENSSL_FOUND)
 endif(NOT GNUTLS_OPENSSL_LIBRARY)
+
+
+
+########################################################################
+# Matio - https://github.com/tbeu/matio
+########################################################################
+find_package(MATIO)
+if(NOT MATIO_FOUND)
+    find_package(ZLIB)
+    if(ZLIB_FOUND)
+        get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
+        find_package(HDF5)
+        if(HDF5_FOUND)
+            list(GET HDF5_LIBRARIES 0 HDF5_FIRST_DIR)
+            get_filename_component(HDF5_BASE_DIR2 ${HDF5_FIRST_DIR} DIRECTORY)
+            get_filename_component(HDF5_BASE_DIR ${HDF5_BASE_DIR2} DIRECTORY)
+            if(OS_IS_MACOSX)
+                if(EXISTS /opt/local/include/hdf5.h)
+                    set(HDF5_BASE_DIR /opt/local)
+                endif(EXISTS /opt/local/include/hdf5.h)
+                if(EXISTS /usr/local/include/hdf5.h)
+                    set(HDF5_BASE_DIR /usr/local)
+                endif(EXISTS /usr/local/include/hdf5.h)
+            endif(OS_IS_MACOSX)
+            if(CMAKE_VERSION VERSION_LESS 3.2)
+              ExternalProject_Add(
+                 matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/mati
+                 GIT_REPOSITORY https://github.com/tbeu/matio
+                 GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
+                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+                 UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
+                 CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
+                 BUILD_COMMAND make
+              )
+            else(CMAKE_VERSION VERSION_LESS 3.2)
+              ExternalProject_Add(
+                 matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
+                 GIT_REPOSITORY https://github.com/tbeu/matio
+                 GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
+                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+                 UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
+                 CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
+                 BUILD_COMMAND make
+                 BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}
+              )
+            endif(CMAKE_VERSION VERSION_LESS 3.2)
+            set(MATIO_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX} ${HDF5_LIBRARIES} ${ZLIB_LIBRARIES} )
+            set(MATIO_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/matio/include )
+            set(MATIO_LOCAL true)
+        else(HDF5_FOUND)
+            message(STATUS " The hdf5 library has not been found in your system.")
+            message(STATUS " Please try to install it by doing:")
+            if(OS_IS_MACOSX)
+                message(STATUS "  $ sudo port install hdf5")
+                message(STATUS " or")
+                message(STATUS "  $ brew install hdf5")
+            endif(OS_IS_MACOSX)
+            if(OS_IS_LINUX)
+                message(STATUS "  $ sudo apt-get install libhdf5-dev")
+            endif(OS_IS_LINUX)
+            message(FATAL_ERROR "*** The hdf5 library is required to build gnss-sdr")
+        endif(HDF5_FOUND)
+    else(ZLIB_FOUND)
+        message(FATAL_ERROR "*** The zlib library is required to build gnss-sdr")
+    endif(ZLIB_FOUND)
+endif(NOT MATIO_FOUND)
 
 
 
@@ -1458,13 +1434,6 @@ endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 
 # Enable C++14 support in Clang from 3.5 / Fallback to C++11 if older version and use lib++ if working in macOS
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(OS_IS_LINUX)
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-    endif(OS_IS_LINUX)
     if(OS_IS_MACOSX)
         # See https://trac.macports.org/wiki/XcodeVersionInfo for Apple Clang version equivalences
         if(CLANG_VERSION VERSION_LESS "600")
@@ -1473,6 +1442,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
         endif(CLANG_VERSION VERSION_LESS "600")
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wno-deprecated-declarations")
+    else(OS_IS_MACOSX)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
     endif(OS_IS_MACOSX)
 
     if(CMAKE_BUILD_TYPE MATCHES "Release")

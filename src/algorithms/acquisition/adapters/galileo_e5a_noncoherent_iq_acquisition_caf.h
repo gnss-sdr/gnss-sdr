@@ -39,7 +39,6 @@
 #define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 
 #include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
@@ -135,7 +134,6 @@ public:
 private:
     ConfigurationInterface* configuration_;
     galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr acquisition_cc_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;

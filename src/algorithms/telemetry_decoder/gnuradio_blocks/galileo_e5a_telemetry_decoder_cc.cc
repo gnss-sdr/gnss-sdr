@@ -39,8 +39,8 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <cmath>
 #include "control_message_factory.h"
-#include "gnss_synchro.h"
 #include "convolutional.h"
 
 
@@ -114,7 +114,7 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int fra
     double page_symbols_deint[frame_length];
     // 1. De-interleave
 
-    galileo_e5a_telemetry_decoder_cc::deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
+    deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
@@ -127,7 +127,7 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int fra
                 }
         }
     int page_bits[frame_length/2];
-    galileo_e5a_telemetry_decoder_cc::viterbi_decoder(page_symbols_deint, page_bits);
+    viterbi_decoder(page_symbols_deint, page_bits);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -197,32 +197,37 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
         {
             if (GALILEO_FNAV_PREAMBLE.at(i) == '0')
                 {
-                    d_preamble_bits[i] = 1;
+                    d_preambles_bits[i] = 1;
                 }
             else
                 {
-                    d_preamble_bits[i] = -1;
+                    d_preambles_bits[i] = -1;
+                }
+        }
+    for (int i = 0; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
+        {
+            for (int k = 0; k < GALILEO_FNAV_CODES_PER_SYMBOL; k++)
+                {
+                    d_preamble_samples[(i * GALILEO_FNAV_CODES_PER_SYMBOL) + k] = d_preambles_bits[i];
                 }
         }
 
     d_sample_counter = 0;
-    d_state = 0;
-    d_preamble_lock = false;
+    d_stat = 0;
+    corr_value = 0;
+    d_flag_preamble = false;
     d_preamble_index = 0;
     d_flag_frame_sync = false;
-    d_current_symbol = 0;
-    d_prompt_counter = 0;
-    d_symbol_counter = 0;
-
-    d_TOW_at_Preamble = 0;
-    d_TOW_at_current_symbol = 0;
-
-    d_CRC_error_counter = 0;
-    d_sign_init = 0;
-
-    d_flag_preamble = false;
-    d_channel = 0;
+    d_TOW_at_current_symbol = 0.0;
     flag_TOW_set = false;
+    d_CRC_error_counter = 0;
+    d_channel = 0;
+    delta_t = 0.0;
+    d_symbol_counter = 0;
+    d_prompt_acum = 0.0;
+    flag_bit_start = false;
+    new_symbol = false;
+    required_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
 }
 
 
@@ -245,265 +250,216 @@ galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
 int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);           // Get the output buffer pointer
-    const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]); // Get the input buffer pointer
+    int preamble_diff = 0;
 
-    /* Terminology:     Prompt: output from tracking Prompt correlator (Prompt samples)
-     *             Symbol: encoded navigation bits. 1 symbol = 20 samples in E5a
-     *             Bit: decoded navigation bits forming words as described in Galileo ICD
-     * States:     0 Receiving dummy samples.
-     *         1 Preamble not locked
-     *         3 Preamble lock
-     */
-    switch (d_state)
+    Gnss_Synchro* out = reinterpret_cast<Gnss_Synchro*>(output_items[0]);           // Get the output buffer pointer
+    const Gnss_Synchro* in = reinterpret_cast<const Gnss_Synchro*>(input_items[0]); // Get the input buffer pointer
+
+    Gnss_Synchro current_sample; //structure to save the synchronization information and send the output object to the next block
+    //1. Copy the current tracking output
+    current_sample = in[0];
+    d_symbol_counter++;
+    if(flag_bit_start)
     {
-    case 0:
-        {
-            if (in[0].Prompt_I != 0)
-                {
-                    d_current_symbol += in[0].Prompt_I;
-                    if (d_prompt_counter == GALILEO_FNAV_CODES_PER_SYMBOL - 1)
-                        {
-                            if (d_current_symbol > 0)
-                                {
-                                    d_page_symbols[d_symbol_counter] = 1;
-                                }
-                            else
-                                {
-                                    d_page_symbols[d_symbol_counter] = -1;
-                                }
-                            d_current_symbol = 0;
-                            d_symbol_counter++;
-                            d_prompt_counter = 0;
-                            if (d_symbol_counter == GALILEO_FNAV_PREAMBLE_LENGTH_BITS - 1)
-                                {
-                                    d_state = 1;
-                                }
-                        }
-                    else
-                        {
-                            d_prompt_counter++;
-                        }
-                }
-            break;
-        }
-    case 1:
-        {
-            d_current_symbol += in[0].Prompt_I;
-            if (d_prompt_counter == GALILEO_FNAV_CODES_PER_SYMBOL - 1)
-                {
-                    if (d_current_symbol > 0)
-                        {
-                            d_page_symbols[d_symbol_counter] = 1;
-                        }
-                    else
-                        {
-                            d_page_symbols[d_symbol_counter] = -1;
-                        }
-                    //            d_page_symbols[d_symbol_counter] = d_current_symbol_float/(float)GALILEO_FNAV_CODES_PER_SYMBOL;
-                    d_current_symbol = 0;
-                    d_symbol_counter++;
-                    d_prompt_counter = 0;
-                    // **** Attempt Preamble correlation ****
-                    bool corr_flag = true;
-                    int corr_sign = 0; // sequence can be found inverted
-                    // check if the preamble starts positive correlated or negative correlated
-                    if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS] < 0)    // symbols clipping
-                        {
-                            corr_sign = -d_preamble_bits[0];
-                        }
-                    else
-                        {
-                            corr_sign = d_preamble_bits[0];
-                        }
-                    // the preamble is fully correlated only if maintains corr_sign along the whole sequence
-                    for (int i = 1; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
-                        {
-                            if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS + i] < 0 && d_preamble_bits[i]+corr_sign != 0)
-                                {
-                                    //exit for
-                                    corr_flag = false;
-                                    break;
-                                }
-                            if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS + i] > 0 && d_preamble_bits[i]+corr_sign == 0)
-                                {
-                                    //exit for
-                                    corr_flag = false;
-                                    break;
-                                }
-                        }
-                    //
-                    if (corr_flag == true) // preamble fully correlates
-                        {
-                            d_preamble_index = d_sample_counter - GALILEO_FNAV_CODES_PER_PREAMBLE;//record the preamble sample stamp. Remember correlation appears at the end of the preamble in this design
-                            LOG(INFO) << "Preamble detection in E5a for Galileo satellite " << this->d_satellite << std::endl;
-                            d_symbol_counter = 0; // d_page_symbols start right after preamble and finish at the end of next preamble.
-                            d_state = 2; // preamble lock
-                        }
-                    if (d_symbol_counter >= GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS)
-                        {
-                            d_symbol_counter = GALILEO_FNAV_PREAMBLE_LENGTH_BITS; // prevents overflow
-                        }
-                }
-            else
-                {
-                    d_prompt_counter++;
-                }
-            break;
-        }
-    case 2:
-        {
-            d_current_symbol += in[0].Prompt_I;
-            if (d_prompt_counter == GALILEO_FNAV_CODES_PER_SYMBOL - 1)
-                {
-                    if (d_current_symbol > 0)
-                        {
-                            d_page_symbols[d_symbol_counter] = 1;
-                        }
-                    else
-                        {
-                            d_page_symbols[d_symbol_counter] = -1;
-                        }
-                    // d_page_symbols[d_symbol_counter] = d_current_symbol_float/(float)GALILEO_FNAV_CODES_PER_SYMBOL;
-                    d_current_symbol = 0;
-                    d_symbol_counter++;
-                    d_prompt_counter = 0;
-                    // At the right sample stamp, check preamble synchro
-                    if (d_sample_counter == d_preamble_index + GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE)
-                        {
-                            // **** Attempt Preamble correlation ****
-                            bool corr_flag = true;
-                            int corr_sign = 0; // sequence can be found inverted
-                            // check if the preamble starts positive correlated or negative correlated
-                            if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS] < 0)    // symbols clipping
-                                {
-                                    corr_sign = -d_preamble_bits[0];
-                                }
-                            else
-                                {
-                                    corr_sign = d_preamble_bits[0];
-                                }
-                            // the preamble is fully correlated only if maintains corr_sign along the whole sequence
-                            for (int i = 1; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
-                                {
-                                    if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS + i] < 0 && d_preamble_bits[i]+corr_sign != 0)
-                                        {
-                                            //exit for
-                                            corr_flag = false;
-                                            break;
-                                        }
-                                    if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS + i] > 0 && d_preamble_bits[i]+corr_sign == 0)
-                                        {
-                                            //exit for
-                                            corr_flag = false;
-                                            break;
-                                        }
-                                }
+        d_prompt_acum += current_sample.Prompt_I;
+        if(d_symbol_counter == GALILEO_FNAV_CODES_PER_SYMBOL)
+            {
+                current_sample.Prompt_I = d_prompt_acum / static_cast<double>(GALILEO_FNAV_CODES_PER_SYMBOL);
+                d_symbol_history.push_back(current_sample); //add new symbol to the symbol queue
+                d_prompt_acum = 0.0;
+                d_symbol_counter = 0;
+                new_symbol = true;
+            }
+    }
+    else
+    {
+        if(current_sample.Prompt_I < 0.0)
+            {
+                d_preamble_init.push_back(1);
+            }
+        else
+            {
+                d_preamble_init.push_back(-1);
+            }
 
-                            if (corr_flag == true) // NEW PREAMBLE RECEIVED. DECODE PAGE
-                                {
-                                    d_preamble_index = d_sample_counter - GALILEO_FNAV_CODES_PER_PREAMBLE;//record the preamble sample stamp
-                                    // DECODE WORD
-                                    decode_word(d_page_symbols, GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS);
-                                    // CHECK CRC
-                                    if (d_nav.flag_CRC_test == true)
-                                        {
-                                            d_CRC_error_counter = 0;
-                                            d_flag_preamble = true; //valid preamble indicator (initialized to false every work())
-                                            if (!d_flag_frame_sync)
-                                                {
-                                                    d_flag_frame_sync = true;
-                                                    DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
-                                                               << in[0].Tracking_sample_counter << " [samples]";
-                                                }
-                                            d_symbol_counter = 0; // d_page_symbols start right after preamble and finish at the end of next preamble.
-                                        }
-                                    else
-                                        {
-                                            d_CRC_error_counter++;
-                                            if (d_CRC_error_counter > GALILEO_E5a_CRC_ERROR_LIMIT)
-                                                {
-                                                    LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
-                                                    d_state = 1;
-                                                    d_symbol_counter = GALILEO_FNAV_PREAMBLE_LENGTH_BITS; // prevents overflow
-                                                    d_flag_frame_sync = false;
-                                                }
-                                            else
-                                                {
-                                                    d_symbol_counter = 0; // d_page_symbols start right after preamble and finish at the end of next preamble.
-                                                }
-                                        }
-                                }
-                        }
-                }
-            else
-                {
-                    d_prompt_counter++;
-                }
-            break;
-        }
+        if (d_preamble_init.size() == GALILEO_FNAV_CODES_PER_PREAMBLE)
+            {
+                std::deque<int>::iterator iter;
+                int k = 0;
+                corr_value = 0;
+                for (iter = d_preamble_init.begin(); iter != d_preamble_init.end(); iter++)
+                    {
+                        corr_value += *iter * d_preamble_samples[k];
+                        k++;
+                    }
+                if(abs(corr_value) == GALILEO_FNAV_CODES_PER_PREAMBLE)
+                    {
+                        d_symbol_counter = 0;
+                        flag_bit_start = true;
+                        corr_value = 0;
+                        d_preamble_init.clear();
+                        d_symbol_history.clear();
+                        LOG(INFO) << "Bit start sync for Galileo E5a satellite " << d_satellite;
+                    }
+                else
+                    {
+                        d_preamble_init.pop_front();
+                    }
+            }
+    }
+    d_sample_counter++; //count for the processed samples
+    consume_each(1);
+
+    d_flag_preamble = false;
+
+    if ((d_symbol_history.size() > required_symbols) && new_symbol)
+    {
+        //******* preamble correlation ********
+        corr_value = 0;
+        for (int i = 0; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
+            {
+                if (d_symbol_history.at(i).Prompt_I < 0.0)    // symbols clipping
+                    {
+                        corr_value -= d_preambles_bits[i];
+                    }
+                else
+                    {
+                        corr_value += d_preambles_bits[i];
+                    }
+            }
     }
 
+    //******* frame sync ******************
+    if ((d_stat == 0) && new_symbol) //no preamble information
+        {
+            if (abs(corr_value) >= GALILEO_FNAV_PREAMBLE_LENGTH_BITS)
+                {
+                    d_preamble_index = d_sample_counter;//record the preamble sample stamp
+                    LOG(INFO) << "Preamble detection for Galileo E5a satellite " << d_satellite;
+                    d_stat = 1; // enter into frame pre-detection status
+                }
+        }
+    else if ((d_stat == 1) && new_symbol) // posible preamble lock
+        {
+            if (abs(corr_value) >= GALILEO_FNAV_PREAMBLE_LENGTH_BITS)
+                {
+                    //check preamble separation
+                    preamble_diff = d_sample_counter - d_preamble_index;
+                    if (preamble_diff == GALILEO_FNAV_CODES_PER_PAGE)
+                        {
+                            //try to decode frame
+                            LOG(INFO) << "Starting page decoder for Galileo E5a satellite " << d_satellite;
+                            d_preamble_index = d_sample_counter; //record the preamble sample stamp
+                            d_stat = 2;
+                        }
+                    else if (preamble_diff > GALILEO_FNAV_CODES_PER_PAGE)
+                        {
+                            d_stat = 0; // start again
+                            flag_bit_start = false;
+                            LOG(INFO) << "Preamble diff = " << preamble_diff;
+                        }
+                }
+        }
+    else if ((d_stat == 2) && new_symbol)
+        {
+            if (d_sample_counter == (d_preamble_index + GALILEO_FNAV_CODES_PER_PAGE))
+                {
+                    // NEW Galileo page part is received
+                    // 0. fetch the symbols into an array
+                    int frame_length = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
+                    double corr_sign = 0.0;
+                    if(corr_value > 0)
+                        {
+                            corr_sign = -1.0;
+                        }
+                    else
+                        {
+                            corr_sign = 1.0;
+                        }
+                    for (int i = 0; i < frame_length; i++)
+                        {
+                            page_symbols[i] = corr_sign * d_symbol_history.at(i + GALILEO_FNAV_PREAMBLE_LENGTH_BITS).Prompt_I; // because last symbol of the preamble is just received now!
+                        }
+
+                    //call the decoder
+                    decode_word(page_symbols, frame_length);
+                    if (d_nav.flag_CRC_test == true)
+                        {
+                            d_CRC_error_counter = 0;
+                            d_flag_preamble = true; //valid preamble indicator (initialized to false every work())
+                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
+                            if (!d_flag_frame_sync)
+                                {
+                                    d_flag_frame_sync = true;
+                                    DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
+                                            << d_symbol_history.at(0).Tracking_sample_counter << " [samples]";
+                                }
+                        }
+                    else
+                        {
+                            d_CRC_error_counter++;
+                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp
+                            if (d_CRC_error_counter > GALILEO_E5A_CRC_ERROR_LIMIT)
+                                {
+                                    LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
+                                    d_flag_frame_sync = false;
+                                    d_stat = 0;
+                                    flag_bit_start = false;
+                                }
+                        }
+                }
+        }
+    new_symbol = false;
 
     // UPDATE GNSS SYNCHRO DATA
-    Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
-    //1. Copy the current tracking output
-    current_synchro_data = in[0];
-    //2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true and d_nav.flag_TOW_set == true)
+    //Add the telemetry decoder information
+    if (d_flag_preamble and d_nav.flag_TOW_set)
         //update TOW at the preamble instant
         //We expect a preamble each 10 seconds (FNAV page period)
         {
             if (d_nav.flag_TOW_1 == true)
                 {
-                    d_TOW_at_Preamble = d_nav.FNAV_TOW_1;
-                    d_TOW_at_current_symbol = d_TOW_at_Preamble + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+                    d_TOW_at_current_symbol = d_nav.FNAV_TOW_1 + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
                     d_nav.flag_TOW_1 = false;
                 }
-            if (d_nav.flag_TOW_2 == true)
+            else if (d_nav.flag_TOW_2 == true)
                 {
-                    d_TOW_at_Preamble = d_nav.FNAV_TOW_2;
-                    d_TOW_at_current_symbol = d_TOW_at_Preamble + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+                    d_TOW_at_current_symbol = d_nav.FNAV_TOW_2 + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
                     d_nav.flag_TOW_2 = false;
                 }
-            if (d_nav.flag_TOW_3 == true)
+            else if (d_nav.flag_TOW_3 == true)
                 {
-                    d_TOW_at_Preamble = d_nav.FNAV_TOW_3;
-                    d_TOW_at_current_symbol = d_TOW_at_Preamble + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+                    d_TOW_at_current_symbol = d_nav.FNAV_TOW_3 + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
                     d_nav.flag_TOW_3 = false;
                 }
-            if (d_nav.flag_TOW_4 == true)
+            else if (d_nav.flag_TOW_4 == true)
                 {
-                    d_TOW_at_Preamble = d_nav.FNAV_TOW_4;
-                    d_TOW_at_current_symbol = d_TOW_at_Preamble + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+                    d_TOW_at_current_symbol = d_nav.FNAV_TOW_4 + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
                     d_nav.flag_TOW_4 = false;
                 }
             else
                 {
-                    //this page has no timming information
-                    d_TOW_at_Preamble = d_TOW_at_Preamble + GALILEO_FNAV_SECONDS_PER_PAGE;
-                    d_TOW_at_current_symbol =  d_TOW_at_current_symbol + GALILEO_E5a_CODE_PERIOD;
+                    d_TOW_at_current_symbol += GALILEO_E5a_CODE_PERIOD;
                 }
-
         }
     else //if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GALILEO_E5a_CODE_PERIOD;
+            d_TOW_at_current_symbol += GALILEO_E5a_CODE_PERIOD;
         }
 
     //if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
-    if (d_flag_frame_sync == true and d_nav.flag_TOW_set == true)
+    if (d_flag_frame_sync and d_nav.flag_TOW_set)
         {
-            current_synchro_data.Flag_valid_word = true;
+            current_sample.Flag_valid_word = true;
         }
     else
         {
-            current_synchro_data.Flag_valid_word = false;
+            current_sample.Flag_valid_word = false;
         }
 
-    current_synchro_data.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol*1000.0)/1000.0;
+    current_sample.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol*1000.0)/1000.0;
 
-    if(d_dump == true)
+    if(d_dump)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
@@ -512,20 +468,23 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                     unsigned long int tmp_ulong_int;
                     tmp_double = d_TOW_at_current_symbol;
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                    tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
+                    tmp_ulong_int = current_sample.Tracking_sample_counter;
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_ulong_int), sizeof(unsigned long int));
-                    tmp_double = d_TOW_at_Preamble;
+                    tmp_double = 0.0;
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }
             catch (const std::ifstream::failure & e)
             {
-                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                    LOG(WARNING) << "Exception writing Galileo E5a Telemetry Decoder dump file " << e.what();
             }
         }
-    d_sample_counter++; //count for the processed samples
-    //3. Make the output (copy the object contents to the GNURadio reserved memory)
-    out[0] = current_synchro_data;
-    consume_each(1);
+    // remove used symbols from history
+    while (d_symbol_history.size() > required_symbols)
+        {
+            d_symbol_history.pop_front();
+        }
+    //3. Make the output
+    out[0] = current_sample;
     return 1;
 }
 

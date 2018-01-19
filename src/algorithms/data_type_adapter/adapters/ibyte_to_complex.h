@@ -34,8 +34,9 @@
 #include <string>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/file_sink.h>
-#include "gnss_synchro.h"
+#include "conjugate_cc.h"
 #include "gnss_block_interface.h"
+#include "gnss_synchro.h"
 
 
 class ConfigurationInterface;
@@ -85,6 +86,8 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
     gr::blocks::file_sink::sptr file_sink_;
+    conjugate_cc_sptr conjugate_cc_;
+    bool inverted_spectrum;
 };
 
 #endif

@@ -44,18 +44,18 @@ ControlMessageFactory::~ControlMessageFactory()
 {}
 
 
-boost::shared_ptr<gr::message> ControlMessageFactory::GetQueueMessage(unsigned int who, unsigned int what)
+gr::message::sptr ControlMessageFactory::GetQueueMessage(unsigned int who, unsigned int what)
 {
     std::shared_ptr<ControlMessage> control_message = std::make_shared<ControlMessage>();
     control_message->who = who;
     control_message->what = what;
-    boost::shared_ptr<gr::message> queue_message = gr::message::make(0, 0, 0, sizeof(ControlMessage));
+    gr::message::sptr queue_message = gr::message::make(0, 0, 0, sizeof(ControlMessage));
     memcpy(queue_message->msg(), control_message.get(), sizeof(ControlMessage));
     return queue_message;
 }
 
 
-std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>>  ControlMessageFactory::GetControlMessages(boost::shared_ptr<gr::message> queue_message)
+std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>>  ControlMessageFactory::GetControlMessages(gr::message::sptr queue_message)
 {
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>>  control_messages = std::make_shared<std::vector<std::shared_ptr<ControlMessage>>>();
     unsigned int control_messages_count = queue_message->length() / sizeof(ControlMessage);

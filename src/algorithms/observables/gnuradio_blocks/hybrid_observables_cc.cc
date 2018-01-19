@@ -37,7 +37,10 @@
 #include <utility>
 #include <armadillo>
 #include <gnuradio/io_signature.h>
+#include <gnuradio/block_detail.h>
+#include <gnuradio/buffer.h>
 #include <glog/logging.h>
+#include <matio.h>
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 
@@ -51,8 +54,8 @@ hybrid_observables_cc_sptr hybrid_make_observables_cc(unsigned int nchannels, bo
 
 
 hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history) :
-        gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
-        gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
+                        gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+                                  gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_dump = dump;
@@ -65,11 +68,6 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, 
         {
             d_gnss_synchro_history_queue.push_back(std::deque<Gnss_Synchro>());
         }
-    // todo: this is a gnuradio scheduler hack.
-    // Migrate the queues to gnuradio set_history to see if the scheduler can handle
-    // the multiple output flow
-    d_max_noutputs = 100;
-    this->set_min_noutput_items(100);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -104,6 +102,197 @@ hybrid_observables_cc::~hybrid_observables_cc()
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
             }
         }
+    if(d_dump == true)
+        {
+            std::cout << "Writing observables .mat files ...";
+            hybrid_observables_cc::save_matfile();
+            std::cout << " done." << std::endl;
+        }
+}
+
+
+int hybrid_observables_cc::save_matfile()
+{
+    // READ DUMP FILE
+    std::ifstream::pos_type size;
+    int number_of_double_vars = 7;
+    int epoch_size_bytes = sizeof(double) * number_of_double_vars * d_nchannels;
+    std::ifstream dump_file;
+    dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try
+    {
+            dump_file.open(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+    }
+    catch(const std::ifstream::failure &e)
+    {
+            std::cerr << "Problem opening dump file:" <<  e.what() << std::endl;
+            return 1;
+    }
+    // count number of epochs and rewind
+    long int num_epoch = 0;
+    if (dump_file.is_open())
+        {
+            size = dump_file.tellg();
+            num_epoch = static_cast<long int>(size) / static_cast<long int>(epoch_size_bytes);
+            dump_file.seekg(0, std::ios::beg);
+        }
+    else
+        {
+            return 1;
+        }
+    double ** RX_time = new double * [d_nchannels];
+    double ** TOW_at_current_symbol_s = new double * [d_nchannels];
+    double ** Carrier_Doppler_hz = new double * [d_nchannels];
+    double ** Carrier_phase_cycles = new double * [d_nchannels];
+    double ** Pseudorange_m = new double * [d_nchannels];
+    double ** PRN = new double * [d_nchannels];
+    double ** Flag_valid_pseudorange = new double * [d_nchannels];
+
+    for(unsigned int i = 0; i < d_nchannels; i++)
+        {
+            RX_time[i] = new double [num_epoch];
+            TOW_at_current_symbol_s[i] = new double[num_epoch];
+            Carrier_Doppler_hz[i] = new double[num_epoch];
+            Carrier_phase_cycles[i] = new double[num_epoch];
+            Pseudorange_m[i] = new double[num_epoch];
+            PRN[i] = new double[num_epoch];
+            Flag_valid_pseudorange[i] = new double[num_epoch];
+        }
+
+    try
+    {
+            if (dump_file.is_open())
+                {
+                    for(long int i = 0; i < num_epoch; i++)
+                        {
+                            for(unsigned int chan = 0; chan < d_nchannels; chan++)
+                                {
+                                    dump_file.read(reinterpret_cast<char *>(&RX_time[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_s[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&Carrier_Doppler_hz[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&Carrier_phase_cycles[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&Pseudorange_m[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&PRN[chan][i]), sizeof(double));
+                                    dump_file.read(reinterpret_cast<char *>(&Flag_valid_pseudorange[chan][i]), sizeof(double));
+                                }
+                        }
+                }
+            dump_file.close();
+    }
+    catch (const std::ifstream::failure &e)
+    {
+            std::cerr << "Problem reading dump file:" <<  e.what() << std::endl;
+            for(unsigned int i = 0; i < d_nchannels; i++)
+                {
+                    delete[] RX_time[i];
+                    delete[] TOW_at_current_symbol_s[i];
+                    delete[] Carrier_Doppler_hz[i];
+                    delete[] Carrier_phase_cycles[i];
+                    delete[] Pseudorange_m[i];
+                    delete[] PRN[i];
+                    delete[] Flag_valid_pseudorange[i];
+                }
+            delete[] RX_time;
+            delete[] TOW_at_current_symbol_s;
+            delete[] Carrier_Doppler_hz;
+            delete[] Carrier_phase_cycles;
+            delete[] Pseudorange_m;
+            delete[] PRN;
+            delete[] Flag_valid_pseudorange;
+
+            return 1;
+    }
+
+    double * RX_time_aux = new double [d_nchannels * num_epoch];
+    double * TOW_at_current_symbol_s_aux = new double [d_nchannels * num_epoch];
+    double * Carrier_Doppler_hz_aux = new double [d_nchannels * num_epoch];
+    double * Carrier_phase_cycles_aux = new double [d_nchannels * num_epoch];
+    double * Pseudorange_m_aux = new double [d_nchannels * num_epoch];
+    double * PRN_aux = new double [d_nchannels * num_epoch];
+    double * Flag_valid_pseudorange_aux = new double[d_nchannels * num_epoch];
+    unsigned int k = 0;
+    for(long int j = 0; j < num_epoch; j++ )
+        {
+            for(unsigned int i = 0; i < d_nchannels; i++ )
+                {
+                    RX_time_aux[k] = RX_time[i][j];
+                    TOW_at_current_symbol_s_aux[k] = TOW_at_current_symbol_s[i][j];
+                    Carrier_Doppler_hz_aux[k] = Carrier_Doppler_hz[i][j];
+                    Carrier_phase_cycles_aux[k] = Carrier_phase_cycles[i][j];
+                    Pseudorange_m_aux[k] = Pseudorange_m[i][j];
+                    PRN_aux[k] = PRN[i][j];
+                    Flag_valid_pseudorange_aux[k] = Flag_valid_pseudorange[i][j];
+                    k++;
+                }
+        }
+
+    // WRITE MAT FILE
+    mat_t *matfp;
+    matvar_t *matvar;
+    std::string filename = d_dump_filename;
+    filename.erase(filename.length() - 4, 4);
+    filename.append(".mat");
+    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
+    if(reinterpret_cast<long*>(matfp) != NULL)
+        {
+            size_t dims[2] = {static_cast<size_t>(d_nchannels), static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("TOW_at_current_symbol_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, TOW_at_current_symbol_s_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("Carrier_Doppler_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_Doppler_hz_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("Carrier_phase_cycles", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Carrier_phase_cycles_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("Pseudorange_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Pseudorange_m_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("PRN", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, PRN_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("Flag_valid_pseudorange", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, Flag_valid_pseudorange_aux, MAT_F_DONT_COPY_DATA);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+        }
+    Mat_Close(matfp);
+
+    for(unsigned int i = 0; i < d_nchannels; i++)
+        {
+            delete[] RX_time[i];
+            delete[] TOW_at_current_symbol_s[i];
+            delete[] Carrier_Doppler_hz[i];
+            delete[] Carrier_phase_cycles[i];
+            delete[] Pseudorange_m[i];
+            delete[] PRN[i];
+            delete[] Flag_valid_pseudorange[i];
+
+        }
+    delete[] RX_time;
+    delete[] TOW_at_current_symbol_s;
+    delete[] Carrier_Doppler_hz;
+    delete[] Carrier_phase_cycles;
+    delete[] Pseudorange_m;
+    delete[] PRN;
+    delete[] Flag_valid_pseudorange;
+
+    delete[] RX_time_aux;
+    delete[] TOW_at_current_symbol_s_aux;
+    delete[] Carrier_Doppler_hz_aux;
+    delete[] Carrier_phase_cycles_aux;
+    delete[] Pseudorange_m_aux;
+    delete[] PRN_aux;
+    delete[] Flag_valid_pseudorange_aux;
+    return 0;
 }
 
 
@@ -121,7 +310,7 @@ bool Hybrid_valueCompare_gnss_synchro_sample_counter(const Gnss_Synchro& a, unsi
 
 bool Hybrid_valueCompare_gnss_synchro_receiver_time(const Gnss_Synchro& a, double b)
 {
-    return (((double)a.Tracking_sample_counter+a.Code_phase_samples)/(double)a.fs) < (b);
+    return ((static_cast<double>(a.Tracking_sample_counter) + static_cast<double>(a.Code_phase_samples)) / static_cast<double>(a.fs) ) < (b);
 }
 
 
@@ -137,7 +326,27 @@ bool Hybrid_valueCompare_gnss_synchro_d_TOW(const Gnss_Synchro& a, double b)
 }
 
 
-int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused)),
+void hybrid_observables_cc::forecast (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
+{
+    bool zero_samples = true;
+    for(unsigned int i = 0; i < d_nchannels; i++)
+        {
+            int items = detail()->input(i)->items_available();
+            if (items > 0) zero_samples = false;
+            ninput_items_required[i] = items; // set the required available samples in each call
+        }
+
+    if (zero_samples == true)
+        {
+            for(unsigned int i = 0; i < d_nchannels; i++)
+                {
+                    ninput_items_required[i] = 1; // set the required available samples in each call
+                }
+        }
+}
+
+
+int hybrid_observables_cc::general_work (int noutput_items ,
         gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
@@ -149,7 +358,11 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
     double past_history_s = 100e-3;
 
     Gnss_Synchro current_gnss_synchro[d_nchannels];
-
+    Gnss_Synchro aux = Gnss_Synchro();
+    for(unsigned int i = 0; i < d_nchannels; i++)
+        {
+            current_gnss_synchro[i] = aux;
+        }
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels.
      *  Multi-rate GNURADIO Block. Read how many input items are avaliable in each channel
@@ -157,16 +370,11 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
      */
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
-            n_consume[i] = ninput_items[i];// full throttle
+            n_consume[i] = ninput_items[i]; // full throttle
             for (int j = 0; j < n_consume[i]; j++)
                 {
                     d_gnss_synchro_history_queue[i].push_back(in[i][j]);
                 }
-            //std::cout<<"push["<<i<<"] items "<<n_consume[i]
-            ///         <<" latest T_rx: "<<(double)in[i][ninput_items[i]-1].Tracking_sample_counter/(double)in[i][ninput_items[i]-1].fs
-            //         <<" [s] q size: "
-            //         <<d_gnss_synchro_history_queue[i].size()
-            //         <<std::endl;
         }
 
     bool channel_history_ok;
@@ -252,10 +460,6 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                                         }
 
                                                 }
-                                            else
-                                                {
-                                                    //std::cout<<"ch["<<i<<"] delta_T_rx:"<<delta_T_rx_s*1000.0<<std::endl;
-                                                }
                                         }
                                 }
                         }
@@ -339,13 +543,13 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                                     tmp_double = current_gnss_synchro[i].Carrier_Doppler_hz;
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                                                    tmp_double = current_gnss_synchro[i].Carrier_phase_rads/GPS_TWO_PI;
+                                                    tmp_double = current_gnss_synchro[i].Carrier_phase_rads / GPS_TWO_PI;
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                                     tmp_double = current_gnss_synchro[i].Pseudorange_m;
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                                     tmp_double = current_gnss_synchro[i].PRN;
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                                                    tmp_double = current_gnss_synchro[i].Flag_valid_pseudorange;
+                                                    tmp_double = static_cast<double>(current_gnss_synchro[i].Flag_valid_pseudorange);
                                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                                 }
                                     }
@@ -374,7 +578,7 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                 }
                         }
                 }
-        } while(channel_history_ok == true && d_max_noutputs > n_outputs);
+        } while(channel_history_ok == true && noutput_items > n_outputs);
 
     // Multi-rate consume!
     for (unsigned int i = 0; i < d_nchannels; i++)
@@ -384,3 +588,4 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
 
     return n_outputs;
 }
+

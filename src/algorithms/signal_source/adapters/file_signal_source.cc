@@ -37,7 +37,6 @@
 #include <exception>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <volk/volk.h>
 #include "gnss_sdr_valve.h"
 #include "configuration_interface.h"
 
@@ -51,7 +50,7 @@ DEFINE_string(signal_source, "-",
 FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
-                        role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+                role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     std::string default_filename = "./example_capture.dat";
     std::string default_item_type = "short";
@@ -71,8 +70,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
-    std::string s = "InputFilter";
-    //double IF = configuration->property(s + ".IF", 0.0);
+
     double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip );
     header_size = configuration->property( role + ".header_size", 0 );
     long samples_to_skip = 0;
@@ -116,29 +114,27 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
             file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
 
             if( seconds_to_skip > 0 )
-            {
-                samples_to_skip = static_cast< long >(
-                        seconds_to_skip * sampling_frequency_ );
-
-                if( is_complex )
                 {
-                    samples_to_skip *= 2;
+                    samples_to_skip = static_cast< long >( seconds_to_skip * sampling_frequency_ );
+
+                    if( is_complex )
+                        {
+                            samples_to_skip *= 2;
+                        }
                 }
-            }
             if( header_size > 0 )
-            {
-                samples_to_skip += header_size;
-            }
+                {
+                    samples_to_skip += header_size;
+                }
 
             if( samples_to_skip > 0 )
-            {
-                LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
-                if( not file_source_->seek( samples_to_skip, SEEK_SET ) )
                 {
-                    LOG(INFO) << "Error skipping bytes!";
+                    LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
+                    if( not file_source_->seek( samples_to_skip, SEEK_SET ) )
+                        {
+                            LOG(INFO) << "Error skipping bytes!";
+                        }
                 }
-            }
-
     }
     catch (const std::exception &e)
     {
@@ -171,7 +167,6 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
                     << std::endl
                     << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
                     << std::endl;
-
                 }
 
             LOG(INFO) << "file_signal_source: Unable to open the samples file "
@@ -238,8 +233,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     if (enable_throttle_control_)
         {
             throttle_ = gr::blocks::throttle::make(item_size_, sampling_frequency_);
-
         }
+
     DLOG(INFO) << "File source filename " << filename_;
     DLOG(INFO) << "Samples " << samples_;
     DLOG(INFO) << "Sampling frequency " << sampling_frequency_;
@@ -251,12 +246,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 }
 
 
-
-
 FileSignalSource::~FileSignalSource()
 {}
-
-
 
 
 void FileSignalSource::connect(gr::top_block_sptr top_block)
@@ -310,10 +301,6 @@ void FileSignalSource::connect(gr::top_block_sptr top_block)
 }
 
 
-
-
-
-
 void FileSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (samples_ > 0)
@@ -365,17 +352,11 @@ void FileSignalSource::disconnect(gr::top_block_sptr top_block)
 }
 
 
-
-
-
 gr::basic_block_sptr FileSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::blocks::file_source::sptr();
 }
-
-
-
 
 
 gr::basic_block_sptr FileSignalSource::get_right_block()

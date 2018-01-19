@@ -89,7 +89,7 @@ public:
      *
      * \param[in] boost::shared_ptr<gr::msg_queue> control_queue
      */
-    void set_control_queue(boost::shared_ptr<gr::msg_queue> control_queue);
+    void set_control_queue(gr::msg_queue::sptr control_queue);
 
 
     unsigned int processed_control_messages()
@@ -146,7 +146,7 @@ private:
     void apply_action(unsigned int what);
     std::shared_ptr<GNSSFlowgraph> flowgraph_;
     std::shared_ptr<ConfigurationInterface> configuration_;
-    boost::shared_ptr<gr::msg_queue> control_queue_;
+    gr::msg_queue::sptr control_queue_;
     std::shared_ptr<ControlMessageFactory> control_message_factory_;
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
     bool stop_;

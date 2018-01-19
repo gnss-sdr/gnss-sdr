@@ -37,6 +37,7 @@
 
 #include <memory>
 #include <string>
+#include <mutex>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/block.h>
 #include "channel_interface.h"
@@ -63,8 +64,7 @@ public:
     Channel(ConfigurationInterface *configuration, unsigned int channel,
             std::shared_ptr<GNSSBlockInterface> pass_through, std::shared_ptr<AcquisitionInterface> acq,
             std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
-            std::string role, std::string implementation,
-            boost::shared_ptr<gr::msg_queue> queue);
+            std::string role, std::string implementation, gr::msg_queue::sptr queue);
     //! Virtual destructor
     virtual ~Channel();
 
@@ -79,6 +79,7 @@ public:
     inline std::string implementation() override { return implementation_; }
 
     inline size_t item_size() override { return 0; }
+
     inline Gnss_Signal get_signal() const override { return gnss_signal_; }
 
     void start_acquisition() override;   //!< Start the State Machine
@@ -104,8 +105,9 @@ private:
     Gnss_Signal gnss_signal_;
     bool connected_;
     bool repeat_;
-    ChannelFsm channel_fsm_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    std::shared_ptr<ChannelFsm> channel_fsm_;
+    gr::msg_queue::sptr queue_;
+    std::mutex mx;
 };
 
 #endif /*GNSS_SDR_CHANNEL_H_*/

@@ -37,6 +37,10 @@
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/blocks/copy.h>
 #include "gnss_block_interface.h"
+#include "conjugate_cc.h"
+#include "conjugate_sc.h"
+#include "conjugate_ic.h"
+
 
 class ConfigurationInterface;
 
@@ -69,11 +73,6 @@ public:
         return item_type_;
     }
 
-    inline size_t vector_size() const
-    {
-        return vector_size_;
-    }
-
     inline size_t item_size() override
     {
         return item_size_;
@@ -86,13 +85,16 @@ public:
 
 private:
     std::string item_type_;
-    size_t vector_size_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
     //gr_kludge_copy_sptr kludge_copy_;
     gr::blocks::copy::sptr kludge_copy_;
     size_t item_size_;
+    conjugate_cc_sptr conjugate_cc_;
+    conjugate_sc_sptr conjugate_sc_;
+    conjugate_ic_sptr conjugate_ic_;
+    bool inverted_spectrum;
 };
 
 #endif /*GNSS_SDR_PASS_THROUGH_H_*/

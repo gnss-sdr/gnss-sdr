@@ -69,6 +69,7 @@
 #include "notch_filter_lite.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l2_m_pcps_acquisition.h"
+#include "gps_l5i_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
@@ -86,8 +87,10 @@
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "galileo_e5a_dll_pll_tracking.h"
 #include "gps_l2_m_dll_pll_tracking.h"
+#include "gps_l5i_dll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l2c_telemetry_decoder.h"
+#include "gps_l5_telemetry_decoder.h"
 #include "galileo_e1b_telemetry_decoder.h"
 #include "galileo_e5a_telemetry_decoder.h"
 #include "sbas_l1_telemetry_decoder.h"
@@ -148,7 +151,7 @@ GNSSBlockFactory::~GNSSBlockFactory()
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
-        std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue, int ID)
+        std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue, int ID)
 {
     std::string default_implementation = "File_Signal_Source";
     std::string role = "SignalSource"; //backwards compatibility for old conf files
@@ -237,6 +240,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared
     Galileo_channels += configuration->property("Channels_5X.count", 0);
     unsigned int GPS_channels = configuration->property("Channels_1C.count", 0);
     GPS_channels += configuration->property("Channels_2S.count", 0);
+    GPS_channels += configuration->property("Channels_L5.count", 0);
     return GetBlock(configuration, "Observables", implementation, Galileo_channels + GPS_channels, Galileo_channels + GPS_channels);
 }
 
@@ -251,6 +255,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<Con
     Galileo_channels += configuration->property("Channels_5X.count", 0);
     unsigned int GPS_channels = configuration->property("Channels_1C.count", 0);
     GPS_channels += configuration->property("Channels_2S.count", 0);
+    GPS_channels += configuration->property("Channels_L5.count", 0);
     return GetBlock(configuration, "PVT", implementation, Galileo_channels + GPS_channels, 0);
 }
 
@@ -259,7 +264,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<Con
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
         std::shared_ptr<ConfigurationInterface> configuration,
         std::string acq, std::string trk, std::string tlm, int channel,
-        boost::shared_ptr<gr::msg_queue> queue)
+        gr::msg_queue::sptr queue)
 {
     //"appendix" is added to the "role" with the aim of Acquisition, Tracking and Telemetry Decoder adapters
     //can find their specific configurations when they read the config
@@ -327,7 +332,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
         std::shared_ptr<ConfigurationInterface> configuration,
         std::string acq, std::string trk, std::string tlm, int channel,
-        boost::shared_ptr<gr::msg_queue> queue)
+        gr::msg_queue::sptr queue)
 {
 
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
@@ -392,7 +397,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
         std::shared_ptr<ConfigurationInterface> configuration,
         std::string acq, std::string trk, std::string tlm, int channel,
-        boost::shared_ptr<gr::msg_queue> queue)
+        gr::msg_queue::sptr queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -459,7 +464,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
         std::shared_ptr<ConfigurationInterface> configuration,
         std::string acq, std::string trk, std::string tlm, int channel,
-        boost::shared_ptr<gr::msg_queue> queue)
+        gr::msg_queue::sptr queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -522,9 +527,77 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
     return channel_;
 }
 
+//********* GPS L5  CHANNEL *****************
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
+        std::shared_ptr<ConfigurationInterface> configuration,
+        std::string acq, std::string trk, std::string tlm, int channel,
+        gr::msg_queue::sptr queue)
+{
+    std::stringstream stream;
+    stream << channel;
+    std::string id = stream.str();
+    LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
+              << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
+    std::string aux = configuration->property("Acquisition_L5" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix1;
+    if(aux.compare("W") != 0)
+        {
+            appendix1 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix1 = "";
+        }
+    aux = configuration->property("Tracking_L5" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix2;
+    if(aux.compare("W") != 0)
+        {
+            appendix2 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix2 = "";
+        }
+    aux = configuration->property("TelemetryDecoder_L5" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix3;
+    if(aux.compare("W") != 0)
+        {
+            appendix3 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix3 = "";
+        }
+    // Automatically detect input data type
+    std::shared_ptr<InMemoryConfiguration> config;
+    config = std::make_shared<InMemoryConfiguration>();
+    std::string default_item_type = "gr_complex";
+    std::string acq_item_type = configuration->property("Acquisition_L5" + appendix1 + ".item_type", default_item_type);
+    std::string trk_item_type = configuration->property("Tracking_L5" + appendix2 + ".item_type", default_item_type);
+    if(acq_item_type.compare(trk_item_type))
+        {
+            LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
+        }
+    config->set_property("Channel.item_type", acq_item_type);
+
+    std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_L5" + appendix1, acq, 1, 0);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_L5" + appendix2, trk, 1, 1);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_L5" + appendix3, tlm, 1, 1);
+
+    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, std::move(pass_through_),
+            std::move(acq_),
+            std::move(trk_),
+            std::move(tlm_),
+            "Channel", "L5", queue));
+
+    return channel_;
+}
+
+
 
 std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFactory::GetChannels(
-        std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue)
+        std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue)
 {
     std::string default_implementation = "Pass_Through";
     std::string tracking_implementation;
@@ -537,11 +610,13 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     unsigned int Channels_2S_count = configuration->property("Channels_2S.count", 0);
     unsigned int Channels_1B_count = configuration->property("Channels_1B.count", 0);
     unsigned int Channels_5X_count = configuration->property("Channels_5X.count", 0);
+    unsigned int Channels_L5_count = configuration->property("Channels_L5.count", 0);
 
     unsigned int total_channels = Channels_1C_count +
             Channels_2S_count +
             Channels_1B_count +
-            Channels_5X_count;
+            Channels_5X_count +
+            Channels_L5_count;
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels(new std::vector<std::unique_ptr<GNSSBlockInterface>>(total_channels));
 
     //**************** GPS L1 C/A  CHANNELS **********************
@@ -604,7 +679,34 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                      queue));
              channel_absolute_id++;
         }
+    //**************** GPS L5  CHANNELS **********************
+    LOG(INFO)<< "Getting " << Channels_L5_count << " GPS L5 channels";
+    tracking_implementation  = configuration->property("Tracking_L5.implementation", default_implementation);
+    telemetry_decoder_implementation = configuration->property("TelemetryDecoder_L5.implementation", default_implementation);
+    acquisition_implementation = configuration->property("Acquisition_L5.implementation", default_implementation);
+    for (unsigned int i = 0; i < Channels_L5_count; i++)
+        {
+            //(i.e. Acquisition_1C0.implementation=xxxx)
+            std::string acquisition_implementation_specific = configuration->property(
+                            "Acquisition_L5" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
+                            acquisition_implementation);
+            //(i.e. Tracking_1C0.implementation=xxxx)
+            std::string tracking_implementation_specific  = configuration->property(
+                            "Tracking_L5" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
+                            tracking_implementation);
+            std::string  telemetry_decoder_implementation_specific = configuration->property(
+                            "TelemetryDecoder_L5" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
+                            telemetry_decoder_implementation);
 
+            // Push back the channel to the vector of channels
+             channels->at(channel_absolute_id) = std::move(GetChannel_L5(configuration,
+                     acquisition_implementation_specific,
+                     tracking_implementation_specific,
+                     telemetry_decoder_implementation_specific,
+                     channel_absolute_id,
+                     queue));
+             channel_absolute_id++;
+        }
     //**************** GALILEO E1 B (I/NAV OS) CHANNELS **********************
 
     LOG(INFO) << "Getting " << Channels_1B_count << " GALILEO E1 B (I/NAV OS) channels";
@@ -681,7 +783,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         std::shared_ptr<ConfigurationInterface> configuration,
         std::string role,
         std::string implementation, unsigned int in_streams,
-        unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue)
+        unsigned int out_streams, gr::msg_queue::sptr queue)
 {
     std::unique_ptr<GNSSBlockInterface> block;
 
@@ -981,6 +1083,18 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("GPS_L2_M_PCPS_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GpsL2MPcpsAcquisition(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GPS_L5i_PCPS_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GpsL5iPcpsAcquisition(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
     else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1PcpsAmbiguousAcquisition(configuration.get(), role, in_streams,
@@ -1054,6 +1168,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL5iDllPllTracking(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
 #if CUDA_GPU_ACCEL
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_GPU") == 0)
         {
@@ -1091,6 +1211,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L2C_Telemetry_Decoder") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GpsL2CTelemetryDecoder(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GPS_L5_Telemetry_Decoder") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL5TelemetryDecoder(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }
@@ -1207,6 +1333,12 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("GPS_L5i_PCPS_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GpsL5iPcpsAcquisition(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
     else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GalileoE1PcpsAmbiguousAcquisition(configuration.get(), role, in_streams,
@@ -1312,6 +1444,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GpsL5iDllPllTracking(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
 #if CUDA_GPU_ACCEL
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_GPU") == 0)
         {
@@ -1368,6 +1506,12 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("GPS_L5_Telemetry_Decoder") == 0)
+            {
+                std::unique_ptr<TelemetryDecoderInterface> block_(new GpsL5TelemetryDecoder(configuration.get(), role, in_streams,
+                        out_streams));
+                block = std::move(block_);
+            }
     else
         {
             // Log fatal. This causes execution to stop.

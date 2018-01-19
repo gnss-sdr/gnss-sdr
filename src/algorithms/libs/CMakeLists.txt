@@ -20,6 +20,7 @@ add_subdirectory(rtklib)
 
 set(GNSS_SPLIBS_SOURCES
 	gps_l2c_signal.cc
+	gps_l5_signal.cc
     galileo_e1_signal_processing.cc
     gnss_sdr_valve.cc
     gnss_sdr_sample_counter.cc
@@ -32,6 +33,9 @@ set(GNSS_SPLIBS_SOURCES
     cshort_to_float_x2.cc
     short_x2_to_cshort.cc
     complex_float_to_complex_byte.cc
+    conjugate_cc.cc
+    conjugate_sc.cc
+    conjugate_ic.cc
 )
 
 

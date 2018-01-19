@@ -1890,17 +1890,17 @@ bool Gnuplot::get_program_path()
     if (path == NULL)
         {
             throw GnuplotException("Path is not set");
-            return false;
         }
     else
         {
             std::list<std::string> ls;
+            std::string path_str = path;
 
             //split path (one long string) into list ls of strings
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
-            stringtok(ls,path,";");
+            stringtok(ls,path_str,";");
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
-            stringtok(ls,path,":");
+            stringtok(ls,path_str,":");
 #endif
 
             // scan list for Gnuplot program files
@@ -1921,10 +1921,8 @@ bool Gnuplot::get_program_path()
 
             tmp = "Can't find gnuplot neither in PATH nor in \"" +
                     Gnuplot::m_sGNUPlotPath + "\"";
-            throw GnuplotException(tmp);
-
             Gnuplot::m_sGNUPlotPath = "";
-            return false;
+            throw GnuplotException(tmp);
         }
 }
 
@@ -2037,7 +2035,6 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
                 std::ostringstream except;
                 except << "Cannot create temporary file \"" << name << "\"";
                 throw GnuplotException(except.str());
-                return "";
             }
 
     tmp.open(name);
@@ -2046,7 +2043,6 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
             std::ostringstream except;
             except << "Cannot create temporary file \"" << name << "\"";
             throw GnuplotException(except.str());
-            return "";
         }
 
     //
@@ -2064,7 +2060,8 @@ void Gnuplot::remove_tmpfiles()
     if ((tmpfile_list).size() > 0)
         {
             for (unsigned int i = 0; i < tmpfile_list.size(); i++)
-                remove( tmpfile_list[i].c_str() );
+                if(remove( tmpfile_list[i].c_str() ) != 0)
+                    std::cout << "Problem closing files" << std::endl;
 
             Gnuplot::tmpfile_num -= tmpfile_list.size();
         }

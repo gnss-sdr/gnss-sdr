@@ -31,11 +31,16 @@ include_directories(
      ${ARMADILLO_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
+     ${MATIO_INCLUDE_DIRS}
 )
 
 file(GLOB OBS_GR_BLOCKS_HEADERS "*.h")
 list(SORT OBS_GR_BLOCKS_HEADERS)
 add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} ${OBS_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
-add_dependencies(obs_gr_blocks glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
-target_link_libraries(obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${ARMADILLO_LIBRARIES})
+if(MATIO_FOUND)
+    add_dependencies(obs_gr_blocks glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
+else(MATIO_FOUND)
+    add_dependencies(obs_gr_blocks glog-${glog_RELEASE} armadillo-${armadillo_RELEASE} matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+endif(MATIO_FOUND)
+target_link_libraries(obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${ARMADILLO_LIBRARIES} ${MATIO_LIBRARIES})

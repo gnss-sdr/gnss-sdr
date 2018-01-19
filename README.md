@@ -1,10 +1,10 @@
-![](./docs/doxygen/images/gnss-sdr_logo.png)
+[![](./docs/doxygen/images/gnss-sdr_logo.png)](http://gnss-sdr.org "GNSS-SDR website")
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 **Welcome to GNSS-SDR!**
 
-Visit [gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR's Homepage") for more information about this open source GNSS software defined receiver.
-
-If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers "Subscribe to the gnss-sdr-developers mailing list" ) and post your questions there.
+Visit [http://gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR website") for more information about this open source GNSS software defined receiver.
 
 
 
@@ -47,7 +47,7 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
        liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
        libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev \
-       python-mako python-six
+       python-mako python-six libmatio-dev
 ~~~~~~
 
 Alternatively, and starting from Ubuntu 16.04 LTS, you can install all the required dependencies by adding the line
@@ -134,9 +134,9 @@ or manually as explained below, and then please follow instructions on how to [d
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-7.800.2.tar.xz
-$ tar xvfz armadillo-7.800.2.tar.xz
-$ cd armadillo-7.800.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-8.200.2.tar.xz
+$ tar xvfz armadillo-8.200.2.tar.xz
+$ cd armadillo-8.200.2
 $ cmake .
 $ make
 $ sudo make install
@@ -149,9 +149,9 @@ The full stop separated from ```cmake``` by a space is important. [CMake](http:/
 #### Install [Gflags](https://github.com/gflags/gflags "Gflags' Homepage"), a commandline flags processing module for C++:
 
 ~~~~~~
-$ wget https://github.com/gflags/gflags/archive/v2.2.0.tar.gz
-$ tar xvfz v2.2.0.tar.gz
-$ cd gflags-2.2.0
+$ wget https://github.com/gflags/gflags/archive/v2.2.1.tar.gz
+$ tar xvfz v2.2.1.tar.gz
+$ cd gflags-2.2.1
 $ cmake -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DBUILD_gflags_nothreads_LIB=OFF .
 $ make
 $ sudo make install
@@ -163,9 +163,9 @@ $ sudo ldconfig
 #### Install [Glog](https://github.com/google/glog "Glog's Homepage"), a library that implements application-level logging:
 
 ~~~~~~
-$ wget https://github.com/google/glog/archive/v0.3.4.tar.gz
-$ tar xvfz v0.3.4.tar.gz
-$ cd glog-0.3.4
+$ wget https://github.com/google/glog/archive/v0.3.5.tar.gz
+$ tar xvfz v0.3.5.tar.gz
+$ cd glog-0.3.5
 $ ./configure
 $ make
 $ sudo make install
@@ -375,7 +375,7 @@ $ sudo make install
 
 ###### Build FMCOMMS2 based SDR Hardware support (OPTIONAL):
 
-Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>=v0.2) gnuradio block. For example in Ubuntu 16.04 follow these instructions (based on https://github.com/blurbdust/blurbdust.github.io):
+Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>v0.2) gnuradio block:
 
 ~~~~~~
 $ sudo apt-get install libxml2-dev bison flex
@@ -402,8 +402,10 @@ $ make && sudo make install && sudo ldconfig
 $ cd ../..
 ~~~~~~
 
-Then configure the gnss-sdr to build the `Fmcomms2_Signal_Source` implementation:
+Then configure GNSS-SDR to build the `Fmcomms2_Signal_Source` implementation:
+
 ~~~~~~
+$ cd gnss-sdr/build
 $ cmake -DENABLE_FMCOMMS2=ON ../
 $ make
 $ sudo make install
@@ -416,7 +418,7 @@ $ make
 $ sudo make install
 ~~~~~~
 
-With `Fmcomms2_Signal_Source` you can use any SDR hardware based on fmcomms2, including the ADALM-PLUTO (PlutoSdr) by configuring correctly the .conf file. The `Plutosdr_Signal_Source` offers a simplier manner to use the ADALM-PLUTO because implements only a subset of fmcomms2's parameters valid for those devices.
+With `Fmcomms2_Signal_Source` you can use any SDR hardware based on [FMCOMMS2](https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms2-ebz), including the ADALM-PLUTO (PlutoSdr) by configuring correctly the .conf file. The `Plutosdr_Signal_Source` offers a simpler manner to use the ADALM-PLUTO because implements only a subset of FMCOMMS2's parameters valid for those devices.
 
 ###### Build OpenCL support (OPTIONAL):
 
@@ -493,6 +495,7 @@ $ sudo port install gnutls
 $ sudo port install google-glog +gflags
 $ sudo port install py27-mako
 $ sudo port install py27-six
+$ sudo port install matio
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:
@@ -509,15 +512,31 @@ $ sudo port select --set python python27
 
 #### <a name="homebrew">Homebrew</a>
 
-Instructions for installing GNU Radio using [homebrew](http://www.brew.sh) can be found [here](http://github.com/odrisci/homebrew-gnuradio) - please ensure to install all dependencies as required.
+First, install [Homebrew](https://brew.sh/). Paste this in a terminal prompt:
 
-Install Armadillo and dependencies:
+~~~~~~
+$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+~~~~~~
+
+The script explains what it will do and then pauses before it does it. There are more installation options [here](https://docs.brew.sh/Installation.html).
+
+Install pip:
+
+~~~~~~
+$ sudo easy_install pip
+~~~~~~
+
+Install the required dependencies:
 
 ~~~~~~
 $ brew tap homebrew/science
 $ brew install cmake hdf5 arpack superlu
 $ brew install armadillo
 $ brew install glog gflags gnutls
+$ brew install gnuradio
+$ brew install libmatio
+$ pip install mako
+$ pip install six
 ~~~~~~
 
 #### Build GNSS-SDR
@@ -1028,8 +1047,9 @@ Each channel must be assigned to a GNSS signal, according to the following ident
 |:------------------|:---------------:|
 | GPS L1 C/A        |      1C         |
 | GPS L2 L2C(M)     |      2S         |
-| Galileo E1B       |      1B         |
-| Galileo E5a (I+Q) |      5X         |
+| GPS L5            |      L5         |
+| Galileo E1b/c     |      1B         |
+| Galileo E5a       |      5X         |
 
 
 Example: Eight GPS L1 C/A channels.

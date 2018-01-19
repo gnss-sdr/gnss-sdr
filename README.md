@@ -1047,8 +1047,9 @@ Each channel must be assigned to a GNSS signal, according to the following ident
 |:------------------|:---------------:|
 | GPS L1 C/A        |      1C         |
 | GPS L2 L2C(M)     |      2S         |
-| Galileo E1B       |      1B         |
-| Galileo E5a (I+Q) |      5X         |
+| GPS L5            |      L5         |
+| Galileo E1b/c     |      1B         |
+| Galileo E5a       |      5X         |
 
 
 Example: Eight GPS L1 C/A channels.

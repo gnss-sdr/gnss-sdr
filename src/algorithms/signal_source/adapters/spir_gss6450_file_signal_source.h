@@ -111,8 +111,10 @@ private:
     double sampling_frequency_;
     std::string filename_;
     bool repeat_;
-    bool dump_;
+    bool dump_; //Enables dumping the gr_complex sample output
+    bool dump_test_; //Enables dumping the raw 32-bits deinterleaved (and endian swapped if enabled) words
     bool enable_throttle_control_;
+    bool endian_swap_;
     std::string dump_filename_;
     std::string role_;
     std::string item_type_;

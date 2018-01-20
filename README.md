@@ -375,7 +375,7 @@ $ sudo make install
 
 ###### Build FMCOMMS2 based SDR Hardware support (OPTIONAL):
 
-Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>v0.2) gnuradio block:
+Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>v0.3) gnuradio block:
 
 ~~~~~~
 $ sudo apt-get install libxml2-dev bison flex

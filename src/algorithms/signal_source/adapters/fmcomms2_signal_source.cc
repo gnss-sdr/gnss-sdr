@@ -53,7 +53,6 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     rx1_en_ = configuration->property(role + ".rx1_enable", true);
     rx2_en_ = configuration->property(role + ".rx2_enable", false);
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
-    decimation_ = configuration->property(role + ".decimation", 1);
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);
     bb_dc_ = configuration->property(role + ".bb_dc", true);
@@ -79,7 +78,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
         {
             fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
                     uri_.c_str(), freq_, sample_rate_,
-                    decimation_, bandwidth_,
+                    bandwidth_,
                     rx1_en_, rx2_en_,
                     buffer_size_, quadrature_, rf_dc_,
                     bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,

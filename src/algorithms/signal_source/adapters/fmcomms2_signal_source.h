@@ -83,7 +83,6 @@ private:
     unsigned long sample_rate_;
     unsigned long bandwidth_;
     unsigned long buffer_size_; //reception buffer
-    unsigned int decimation_;
     bool rx1_en_;
     bool rx2_en_;
     bool quadrature_;

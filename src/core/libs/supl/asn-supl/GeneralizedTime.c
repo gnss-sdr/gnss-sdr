@@ -3,7 +3,7 @@
  * Redistribution and modifications are permitted subject to BSD license.
  */
 #define	_POSIX_PTHREAD_SEMANTICS	/* for Sun */
-#ifdef _REENTRANT
+#ifndef _REENTRANT
 #define	_REENTRANT			/* for Sun */
 #endif
 #include <asn_internal.h>

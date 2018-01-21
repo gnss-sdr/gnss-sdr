@@ -1,7 +1,6 @@
 /*!
- * \file glonass_l1_ca_dll_pll_tracking.h
- * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for Glonass L1 C/A to a TrackingInterface
+ * \file glonass_l1_ca_dll_pll_c_aid_tracking_sc.h
+ * \brief  Implementation of a code DLL + carrier PLL tracking block
  * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
  * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com

@@ -505,7 +505,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
 			line += Rinex_Printer::rightJustify(month, 6);
 			line += Rinex_Printer::rightJustify(day, 6);
 			line += std::string(3, ' ');
-			line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(glonass_gnav_utc_model.d_tau_c, 16, 2), 19);
+			line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(glonass_gnav_utc_model.d_tau_c, 19, 2), 19);
 			line += std::string(20, ' ');
 			line += Rinex_Printer::leftJustify("CORR TO SYSTEM TIME", 20);
 			Rinex_Printer::lengthCheck(line);
@@ -3348,12 +3348,24 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     out << line << std::endl;
 
     // -------- Line MARKER TYPE
-    line.clear();
-    line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
-    line += std::string(40, ' ');
-    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
+    if (version == 2)
+		{
+			line.clear();
+			line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+			line += std::string(40, ' ');
+			line += Rinex_Printer::leftJustify("MARKER NUMBER", 20);
+			Rinex_Printer::lengthCheck(line);
+			out << line << std::endl;
+		}
+	if (version == 3)
+		{
+			line.clear();
+			line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+			line += std::string(40, ' ');
+			line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+			Rinex_Printer::lengthCheck(line);
+			out << line << std::endl;
+		}
 
     // -------- Line OBSERVER / AGENCY
     line.clear();
@@ -3648,12 +3660,25 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
-    // -------- Line MARKER NAME
-    line.clear();
-    line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
-    line += Rinex_Printer::leftJustify("MARKER NAME", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
+    // -------- Line MARKER NAME / TYPE
+    if (version == 2)
+		{
+			line.clear();
+			line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+			line += std::string(40, ' ');
+			line += Rinex_Printer::leftJustify("MARKER NUMBER", 20);
+			Rinex_Printer::lengthCheck(line);
+			out << line << std::endl;
+		}
+	if (version == 3)
+		{
+			line.clear();
+			line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+			line += std::string(40, ' ');
+			line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+			Rinex_Printer::lengthCheck(line);
+			out << line << std::endl;
+		}
 
     // -------- Line MARKER TYPE
     line.clear();
@@ -3987,11 +4012,24 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     out << line << std::endl;
 
     // -------- Line MARKER NAME
-    line.clear();
-    line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
-    line += Rinex_Printer::leftJustify("MARKER NAME", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
+    if (version == 2)
+		{
+			line.clear();
+			line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+			line += std::string(40, ' ');
+			line += Rinex_Printer::leftJustify("MARKER NUMBER", 20);
+			Rinex_Printer::lengthCheck(line);
+			out << line << std::endl;
+		}
+	if (version == 3)
+		{
+			line.clear();
+			line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+			line += std::string(40, ' ');
+			line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+			Rinex_Printer::lengthCheck(line);
+			out << line << std::endl;
+		}
 
     // -------- Line MARKER TYPE
     line.clear();
@@ -4294,7 +4332,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     // -------- Line MARKER NAME
     line.clear();
     line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
-    line += Rinex_Printer::leftJustify("MARKER NAME", 20);
+    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 

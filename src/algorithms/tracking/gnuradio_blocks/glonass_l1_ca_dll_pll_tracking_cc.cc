@@ -580,7 +580,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
         carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
         // New carrier Doppler frequency estimation
         d_carrier_frequency_hz += carr_error_filt_hz;
-        d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
+        d_carrier_doppler_hz += carr_error_filt_hz;
         d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GLONASS_L1_CA_CODE_RATE_HZ) / d_glonass_freq_ch);
 
         // ################## DLL ##########################################################

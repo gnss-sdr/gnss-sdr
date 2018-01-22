@@ -1,11 +1,11 @@
 /*!
- * \file unpack_intspir_1bit_samples.h
+ * \file unpack_spir_gss6450_samples.h
  *
- * \brief Unpacks SPIR int samples to NSR 1 bit samples
- * \author Fran Fabra fabra (at) ice.csic.es
+ * \brief Unpacks SPIR int samples
+ * \author Antonio Ramos, antonio.ramos(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

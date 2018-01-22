@@ -83,7 +83,6 @@ int unpack_spir_gss6450_samples::work(int noutput_items,
     for(int i = 0; i < noutput_items; i++)
     {
         int sample_aux = in[in_counter];
-        //reverse_bits(sample_aux);
         int aux_i = sample_aux;
         int aux_q = sample_aux;
         int i_shift = adc_bits * 2 * (samples_per_int - n_sample - 1) + adc_bits;
@@ -99,22 +98,6 @@ int unpack_spir_gss6450_samples::work(int noutput_items,
         }
     }
     return noutput_items;
-}
-
-void unpack_spir_gss6450_samples::reverse_bits(int& data)
-{
-    unsigned int v = data;     // input bits to be reversed
-    unsigned int r = v; // r will be reversed bits of v; first get LSB of v
-    int s = sizeof(v) * CHAR_BIT - 1; // extra shift needed at end
-
-    for (v >>= 1; v; v >>= 1)
-    {
-      r <<= 1;
-      r |= v & 1;
-      s--;
-    }
-    r <<= s; // shift when v's highest bits are zero
-    data = r;
 }
 
 void unpack_spir_gss6450_samples::compute_two_complement(int& data)

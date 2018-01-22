@@ -55,7 +55,6 @@ private:
     unsigned int samples_per_int;
     void process_sample(gr_complex& out);
     void compute_two_complement(int& data);
-    void reverse_bits(int& data);
     int i_data;
     int q_data;
     int mask_data;

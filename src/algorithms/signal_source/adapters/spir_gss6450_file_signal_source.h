@@ -112,7 +112,6 @@ private:
     std::string filename_;
     bool repeat_;
     bool dump_; //Enables dumping the gr_complex sample output
-    bool dump_test_; //Enables dumping the raw 32-bits deinterleaved (and endian swapped if enabled) words
     bool enable_throttle_control_;
     bool endian_swap_;
     std::string dump_filename_;
@@ -130,7 +129,6 @@ private:
     unpack_spir_gss6450_samples_sptr unpack_spir_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
-    gr::blocks::file_sink::sptr sink_test;
     gr::blocks::throttle::sptr  throttle_;
     gr::msg_queue::sptr queue_;
     size_t item_size_;

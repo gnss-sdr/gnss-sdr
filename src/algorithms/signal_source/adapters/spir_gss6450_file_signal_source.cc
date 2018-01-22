@@ -54,7 +54,6 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
     filename_ = configuration->property(role + ".filename", default_filename);
     repeat_ = configuration->property(role + ".repeat", false);
     dump_ = configuration->property(role + ".dump", false);
-    dump_test_ = configuration->property(role + ".dump_test", false);
     endian_swap_ = configuration->property(role + ".endian", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
@@ -150,10 +149,6 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
             sink_ = gr::blocks::file_sink::make(sizeof(gr_complex), dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
         }
-    if (dump_test_)
-        {
-            sink_test = gr::blocks::file_sink::make(sizeof(int), (dump_filename_ + "int").c_str());
-        }
     if (enable_throttle_control_)
         {
             throttle_ = gr::blocks::throttle::make(sizeof(gr_complex), sampling_frequency_);
@@ -216,11 +211,6 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
                 {
                     top_block->connect(valve_, 0, sink_, 0);
                 }
-            if(dump_test_)
-                {
-                if(endian_swap_) top_block->connect(endian_, 0, sink_test, 0);
-                else top_block->connect(deint_, sel_ch_ - 1, sink_test, 0);
-                }
         }
     else
         {
@@ -267,11 +257,6 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
         if(dump_)
         {
             top_block->disconnect(valve_, 0, sink_, 0);
-        }
-        if(dump_test_)
-        {
-            if(endian_swap_) top_block->disconnect(endian_, 0, sink_test, 0);
-            else top_block->disconnect(deint_, sel_ch_ - 1, sink_test, 0);
         }
     }
     else

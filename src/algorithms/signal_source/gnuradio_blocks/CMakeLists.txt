@@ -23,6 +23,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
      unpack_intspir_1bit_samples.cc
      rtl_tcp_signal_source_c.cc
      unpack_2bit_samples.cc
+     unpack_spir_gss6450_samples.cc
 )
 
 include_directories(

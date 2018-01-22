@@ -3660,7 +3660,14 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
-    // -------- Line MARKER NAME / TYPE
+    // -------- Line MARKER NAME
+	line.clear();
+	line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
+	line += Rinex_Printer::leftJustify("MARKER NAME", 20);
+	Rinex_Printer::lengthCheck(line);
+	out << line << std::endl;
+
+    // -------- Line MARKER NUMBER / TYPE
     if (version == 2)
 		{
 			line.clear();
@@ -3679,14 +3686,6 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 			Rinex_Printer::lengthCheck(line);
 			out << line << std::endl;
 		}
-
-    // -------- Line MARKER TYPE
-    line.clear();
-    line += Rinex_Printer::leftJustify("NON_GEODETIC", 20); // put a flag or a property
-    line += std::string(40, ' ');
-    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
 
     // -------- Line OBSERVER / AGENCY
     line.clear();
@@ -4012,6 +4011,13 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     out << line << std::endl;
 
     // -------- Line MARKER NAME
+	line.clear();
+	line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
+	line += Rinex_Printer::leftJustify("MARKER NAME", 20);
+	Rinex_Printer::lengthCheck(line);
+	out << line << std::endl;
+
+    // -------- Line MARKER NUMBER / TYPE
     if (version == 2)
 		{
 			line.clear();
@@ -4030,14 +4036,6 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 			Rinex_Printer::lengthCheck(line);
 			out << line << std::endl;
 		}
-
-    // -------- Line MARKER TYPE
-    line.clear();
-    line += Rinex_Printer::leftJustify("NON_GEODETIC", 20); // put a flag or a property
-    line += std::string(40, ' ');
-    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
 
     // -------- Line OBSERVER / AGENCY
     line.clear();
@@ -4332,17 +4330,17 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     // -------- Line MARKER NAME
     line.clear();
     line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
-    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+    line += Rinex_Printer::leftJustify("MARKER NAME", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
     // -------- Line MARKER TYPE
-    //line.clear();
-    //line += Rinex_Printer::leftJustify("NON_GEODETIC", 20); // put a flag or a property
-    //line += std::string(40, ' ');
-    //line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
-    //Rinex_Printer::lengthCheck(line);
-    //out << line << std::endl;
+    line.clear();
+    line += Rinex_Printer::leftJustify("NON_GEODETIC", 20); // put a flag or a property
+    line += std::string(40, ' ');
+    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+    Rinex_Printer::lengthCheck(line);
+    out << line << std::endl;
 
     // -------- Line OBSERVER / AGENCY
     line.clear();

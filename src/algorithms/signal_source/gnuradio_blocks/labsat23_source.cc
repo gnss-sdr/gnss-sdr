@@ -65,6 +65,8 @@ labsat23_source::labsat23_source(const char *signal_file_basename, int channel_s
     d_bits_per_sample = 0;
     d_current_file_number = 0;
     d_labsat_version = 0;
+    d_ref_clock = 0;
+    d_channel_selector = 0;
     d_signal_file_basename = std::string(signal_file_basename);
 
     std::string signal_file;

@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef LABSAT23_SOURCE_H
-#define LABSAT23_SOURCE_H
+#ifndef GNSS_SDR_LABSAT23_SOURCE_H
+#define GNSS_SDR_LABSAT23_SOURCE_H
 
 #include <gnuradio/block.h>
 #include <string>

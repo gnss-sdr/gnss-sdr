@@ -59,6 +59,7 @@
 #include <gnuradio/fft/fft.h>
 #include "gnss_synchro.h"
 #include <glog/logging.h>
+#include <armadillo>
 
 class pcps_acquisition_cc;
 
@@ -81,6 +82,7 @@ pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
 class pcps_acquisition_cc: public gr::block
 {
 private:
+
     friend pcps_acquisition_cc_sptr
     pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
@@ -101,145 +103,143 @@ private:
     void acquisition_core( unsigned long int samp_count );
 
     void send_negative_acquisition();
+
     void send_positive_acquisition();
+
+    bool d_bit_transition_flag;
+    bool d_use_CFAR_algorithm_flag;
+    bool d_active;
+    bool d_dump;
+    bool d_worker_active;
+    bool d_blocking;
+    float d_threshold;
+    float d_mag;
+    float d_input_power;
+    float d_test_statistics;
+    float* d_magnitude;
     long d_fs_in;
     long d_freq;
     int d_samples_per_ms;
     int d_samples_per_code;
-    //unsigned int d_doppler_resolution;
-    float d_threshold;
+    int d_state;
+    unsigned int d_channel;
     unsigned int d_doppler_max;
     unsigned int d_doppler_step;
     unsigned int d_sampled_ms;
     unsigned int d_max_dwells;
     unsigned int d_well_count;
     unsigned int d_fft_size;
+    unsigned int d_num_doppler_bins;
+    unsigned int d_code_phase;
     unsigned long int d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
-    unsigned int d_num_doppler_bins;
     gr_complex* d_fft_codes;
+    gr_complex* d_data_buffer;
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_ifft;
-    Gnss_Synchro *d_gnss_synchro;
-    unsigned int d_code_phase;
-    float d_doppler_freq;
-    float d_mag;
-    float* d_magnitude;
-    float d_input_power;
-    float d_test_statistics;
-    bool d_bit_transition_flag;
-    bool d_use_CFAR_algorithm_flag;
-    std::ofstream d_dump_file;
-    bool d_active;
-    int d_state;
-    bool d_dump;
-    unsigned int d_channel;
+    Gnss_Synchro* d_gnss_synchro;
     std::string d_dump_filename;
-    bool d_worker_active;
-    bool d_blocking;
-    gr_complex *d_data_buffer;
+    arma::fmat grid_;
 
 public:
-    /*!
-     * \brief Default destructor.
-     */
-     ~pcps_acquisition_cc();
+
+    ~pcps_acquisition_cc();
 
      /*!
       * \brief Set acquisition/tracking common Gnss_Synchro object pointer
       * to exchange synchronization data between acquisition and tracking blocks.
       * \param p_gnss_synchro Satellite information shared by the processing blocks.
       */
-     inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-     {
-         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
-         d_gnss_synchro = p_gnss_synchro;
-     }
+    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    {
+        gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
+        d_gnss_synchro = p_gnss_synchro;
+    }
 
-     /*!
-      * \brief Returns the maximum peak of grid search.
-      */
-     inline unsigned int mag() const
-     {
-         return d_mag;
-     }
+    /*!
+     * \brief Returns the maximum peak of grid search.
+     */
+    inline unsigned int mag() const
+    {
+        return d_mag;
+    }
 
      /*!
       * \brief Initializes acquisition algorithm.
       */
-     void init();
+    void init();
 
      /*!
       * \brief Sets local code for PCPS acquisition algorithm.
       * \param code - Pointer to the PRN code.
       */
-     void set_local_code(std::complex<float> * code);
+    void set_local_code(std::complex<float> * code);
 
      /*!
       * \brief Starts acquisition algorithm, turning from standby mode to
       * active mode
       * \param active - bool that activates/deactivates the block.
       */
-     inline void set_active(bool active)
-     {
-         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
-         d_active = active;
-     }
+    inline void set_active(bool active)
+    {
+        gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
+        d_active = active;
+    }
 
      /*!
       * \brief If set to 1, ensures that acquisition starts at the
       * first available sample.
       * \param state - int=1 forces start of acquisition
       */
-     void set_state(int state);
+    void set_state(int state);
 
      /*!
       * \brief Set acquisition channel unique ID
       * \param channel - receiver channel.
       */
-     inline void set_channel(unsigned int channel)
-     {
-         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
-         d_channel = channel;
-     }
+    inline void set_channel(unsigned int channel)
+    {
+        gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
+        d_channel = channel;
+    }
 
      /*!
       * \brief Set statistics threshold of PCPS algorithm.
       * \param threshold - Threshold for signal detection (check \ref Navitec2012,
       * Algorithm 1, for a definition of this threshold).
       */
-     inline void set_threshold(float threshold)
-     {
-         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
-         d_threshold = threshold;
-     }
+    inline void set_threshold(float threshold)
+    {
+        gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
+        d_threshold = threshold;
+    }
 
      /*!
       * \brief Set maximum Doppler grid search
       * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
       */
-     inline void set_doppler_max(unsigned int doppler_max)
-     {
-         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
-         d_doppler_max = doppler_max;
-     }
+    inline void set_doppler_max(unsigned int doppler_max)
+    {
+        gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
+        d_doppler_max = doppler_max;
+    }
 
      /*!
       * \brief Set Doppler steps for the grid search
       * \param doppler_step - Frequency bin of the search grid [Hz].
       */
-     inline void set_doppler_step(unsigned int doppler_step)
-     {
-         gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
-         d_doppler_step = doppler_step;
-     }
+    inline void set_doppler_step(unsigned int doppler_step)
+    {
+        gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
+        d_doppler_step = doppler_step;
+    }
 
      /*!
       * \brief Parallel Code Phase Search Acquisition signal processing.
       */
-     int general_work(int noutput_items, gr_vector_int &ninput_items,
-             gr_vector_const_void_star &input_items,
-             gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+            gr_vector_const_void_star &input_items,
+            gr_vector_void_star &output_items);
 
 };
 

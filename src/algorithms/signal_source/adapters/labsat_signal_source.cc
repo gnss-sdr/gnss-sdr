@@ -61,10 +61,10 @@ LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
             labsat23_source_ = labsat23_make_source(filename_.c_str(),channel_selector);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "labsat23_source_(" << labsat23_source_->unique_id() << ")";
-    }else
+        }
+    else
         {
-            LOG(WARNING) << item_type_
-                    << " unrecognized item type for LabSat source";
+            LOG(WARNING) << item_type_ << " unrecognized item type for LabSat source";
             item_size_ = sizeof(short);
         }
     if (dump_)

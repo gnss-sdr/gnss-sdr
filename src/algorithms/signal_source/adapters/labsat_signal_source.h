@@ -29,8 +29,8 @@
  */
 
 
-#ifndef LABSAT_SIGNAL_SOURCE_H_
-#define LABSAT_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_LABSAT_SIGNAL_SOURCE_H_
+#define GNSS_SDR_LABSAT_SIGNAL_SOURCE_H_
 
 #include <string>
 #include <gnuradio/hier_block2.h>
@@ -42,7 +42,7 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class reads samples from a GN3S USB dongle, a RF front-end signal sampler
+ * \brief This class reads samples stored by a LabSat 2 or LabSat 3 device
  */
 class LabsatSignalSource: public GNSSBlockInterface
 {
@@ -59,7 +59,7 @@ public:
     }
 
     /*!
-     * \brief Returns "LabsatSignalSource".
+     * \brief Returns "Labsat_Signal_Source".
      */
     inline std::string implementation() override
     {
@@ -91,4 +91,4 @@ private:
     boost::shared_ptr<gr::msg_queue> queue_;
 };
 
-#endif /*LABSAT_SIGNAL_SOURCE_H_*/
+#endif /*GNSS_SDR_LABSAT_SIGNAL_SOURCE_H_*/

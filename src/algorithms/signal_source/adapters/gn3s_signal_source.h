@@ -29,8 +29,8 @@
  */
 
 
-#ifndef GN3S_SIGNAL_SOURCE_H_
-#define GN3S_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_GN3S_SIGNAL_SOURCE_H_
+#define GNSS_SDR_GN3S_SIGNAL_SOURCE_H_
 
 #include <string>
 #include <gnuradio/hier_block2.h>
@@ -90,4 +90,4 @@ private:
     boost::shared_ptr<gr::msg_queue> queue_;
 };
 
-#endif /*GN3S_SIGNAL_SOURCE_H_*/
+#endif /*GNSS_SDR_GN3S_SIGNAL_SOURCE_H_*/

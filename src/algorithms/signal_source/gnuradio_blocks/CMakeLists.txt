@@ -24,6 +24,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
      rtl_tcp_signal_source_c.cc
      unpack_2bit_samples.cc
      unpack_spir_gss6450_samples.cc
+     labsat23_source.cc
 )
 
 include_directories(

@@ -1,5 +1,5 @@
 /*!
- * \file glonass_l1_ca_dll_pll_tracking.h
+ * \file glonass_l1_ca_dll_pll_c_aid_tracking.cc
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for Glonass L1 C/A to a TrackingInterface
  * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com

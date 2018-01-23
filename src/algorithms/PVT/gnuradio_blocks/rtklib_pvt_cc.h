@@ -98,6 +98,7 @@ private:
     bool d_dump;
     bool b_rinex_header_written;
     bool b_rinex_header_updated;
+    double d_rinex_version;
     bool b_rtcm_writing_started;
     int d_rtcm_MT1045_rate_ms;    //!< Galileo Broadcast Ephemeris
     int d_rtcm_MT1019_rate_ms;    //!< GPS Broadcast Ephemeris (orbits)

@@ -50,7 +50,7 @@ const double GLONASS_FLATTENING             = 1/29825784;           //!< Flatten
 const double GLONASS_GRAVITY                = 97803284;             //!< Equatorial acceleration of gravity [mGal]
 const double GLONASS_GRAVITY_CORRECTION     = 0.87;                 //!< Correction to acceleration of gravity at sea-level due to Atmosphere[мGal]
 const double GLONASS_J2                     = 1082625.75e-9;        //!< Second zonal harmonic of the geopotential
-const double GLONASS_J4                     = -2370.89e-9;          //!<Fourth zonal harmonic of the geopotential
+const double GLONASS_J4                     = -2370.89e-9;          //!< Fourth zonal harmonic of the geopotential
 const double GLONASS_J6                     = 6.08e-9;              //!< Sixth zonal harmonic of the geopotential
 const double GLONASS_J8                     = 1.40e-11;             //!< Eighth zonal harmonic of the geopotential
 const double GLONASS_U0                     = 62636861.4;           //!< Normal potential at surface of common terrestrial ellipsoid [m^2/s^2]
@@ -89,8 +89,12 @@ const double GLONASS_L1_CA_CHIP_PERIOD       = 1.9569e-06;    //!< GLONASS L1 C/
 const double GLONASS_L1_CA_SYMBOL_RATE_BPS   = 1000;
 const int GLONASS_L1_CA_NBR_SATS             = 24; // STRING DATA WITHOUT PREAMBLE
 
-//FIXME Probably should use leap seconds definitions of rtklib
-const double GLONASS_LEAP_SECONDS[21][7] = { /* leap seconds (y,m,d,h,m,s,utc-gpst) */
+/*!
+ * \brief Record of leap seconds definition for GLOT to GPST conversion and vice versa
+ * \details Each entry is defined by an array of 7 elements consisting of yr,month,day,hr,min,sec,utc-gpst
+ * \note Ideally should use leap seconds definitions of rtklib
+ */
+const double GLONASS_LEAP_SECONDS[19][7] = {
         {2017, 1, 1, 0, 0, 0, -18},
         {2015, 7, 1, 0, 0, 0, -17},
         {2012, 7, 1, 0, 0, 0, -16},
@@ -112,7 +116,7 @@ const double GLONASS_LEAP_SECONDS[21][7] = { /* leap seconds (y,m,d,h,m,s,utc-gp
         {}
 };
 
-// GLONASS SV's orbital slots PRN = (orbital_slot - 1)
+//!< GLONASS SV's orbital slots PRN = (orbital_slot - 1)
 const std::map<unsigned int, int> GLONASS_PRN =
                                                {{ 0, 8,},  //For test
                                                 { 1, 1,},  //Plane 1
@@ -134,7 +138,7 @@ const std::map<unsigned int, int> GLONASS_PRN =
                                                 {17, 4,},  //Plane 3
                                                 {18,-3,},  //Plane 3
                                                 {19, 3,},  //Plane 3
-                                                {20, -5,},  //Plane 3
+                                                {20,-5,},  //Plane 3
                                                 {21, 4,},  //Plane 3
                                                 {22,-3,},  //Plane 3
                                                 {23, 3,},  //Plane 3

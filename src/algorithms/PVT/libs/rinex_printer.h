@@ -116,7 +116,7 @@ public:
     /*!
      *  \brief Generates the GLONASS L1, L2 C/A Navigation Data header
      */
-    void rinex_nav_header(std::fstream & out, const Glonass_Gnav_Utc_Model & utc_model, const Glonass_Gnav_Almanac & glonass_gnav_almanac);
+    void rinex_nav_header(std::fstream & out, const Glonass_Gnav_Utc_Model & utc_model, const Glonass_Gnav_Ephemeris & glonass_gnav_eph);
 
     /*!
      *  \brief Generates the Mixed (Galileo/GLONASS) Navigation Data header
@@ -127,6 +127,11 @@ public:
      *  \brief Generates the Mixed (GPS L1 C/A/GLONASS L1, L2) Navigation Data header
      */
     void rinex_nav_header(std::fstream & out, const Gps_Iono & gps_iono, const Gps_Utc_Model & gps_utc_model, const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model, const Glonass_Gnav_Almanac & glonass_gnav_almanac);
+
+   /*!
+    *  \brief Generates the Mixed (GPS L2C C/A/GLONASS L1, L2) Navigation Data header
+    */
+    void rinex_nav_header(std::fstream & out, const Gps_CNAV_Iono & gps_iono, const Gps_CNAV_Utc_Model & gps_utc_model, const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model, const Glonass_Gnav_Almanac & glonass_gnav_almanac);
 
     /*!
      *  \brief Generates the GPS Observation data header
@@ -156,7 +161,7 @@ public:
     /*!
      *  \brief Generates the GLONASS GNAV Observation data header. Example: bands("1C"), bands("1C 2C"), bands("2C"), ... Default: "1C".
      */
-    void rinex_obs_header(std::fstream & out, const Glonass_Gnav_Ephemeris & eph, const double d_TOW_first_observation, const std::string bands = "1C");
+    void rinex_obs_header(std::fstream & out, const Glonass_Gnav_Ephemeris & eph, const double d_TOW_first_observation, const std::string bands = "1G");
 
     /*!
      *  \brief Generates the Mixed (GPS L1 C/A /GLONASS) Observation data header. Example: galileo_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
@@ -167,6 +172,11 @@ public:
      *  \brief Generates the Mixed (Galileo/GLONASS) Observation data header. Example: galileo_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
     void rinex_obs_header(std::fstream & out, const Galileo_Ephemeris & galileo_eph, const Glonass_Gnav_Ephemeris & glonass_gnav_eph, const double d_TOW_first_observation, const std::string galileo_bands = "1B", const std::string glo_bands = "1C");
+
+    /*!
+     *  \brief Generates the Mixed (GPS L2C/GLONASS) Observation data header. Example: galileo_bands("1G")... Default: "1G".
+     */
+    void rinex_obs_header(std::fstream & out, const Gps_CNAV_Ephemeris & gps_cnav_eph, const Glonass_Gnav_Ephemeris & glonass_gnav_eph, const double d_TOW_first_observation, const std::string glo_bands = "1G");
 
     /*!
      *  \brief Generates the SBAS raw data header
@@ -194,9 +204,20 @@ public:
     boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris & eph, const double obs_time);
 
     /*!
-     *  \brief Computes the GLONASS System Time and returns a boost::posix_time::ptime object
-     */
-    boost::posix_time::ptime compute_GLONASS_time(const Glonass_Gnav_Ephemeris & eph, const double obs_time);
+	 *  \brief Computes the UTC Time and returns a boost::posix_time::ptime object
+	 *  \details Function used as a method to convert the observation time into UTC time which is used
+	 *  as the default time for RINEX files
+	 *  \param eph GLONASS GNAV Ephemeris object
+	 *  \param obs_time Observation time in GPS seconds of week
+	 */
+	boost::posix_time::ptime compute_UTC_time(const Glonass_Gnav_Ephemeris & eph, const double obs_time);
+
+	/*!
+	 *  \brief Computes number of leap seconds of GPS relative to UTC
+	 *  \param eph GLONASS GNAV Ephemeris object
+	 *  \param gps_obs_time Observation time in GPS seconds of week
+	 */
+	double get_leap_second(const Glonass_Gnav_Ephemeris& eph, const double gps_obs_time);
 
     /*!
      *  \brief Writes data from the GPS L1 C/A navigation message into the RINEX file
@@ -227,6 +248,11 @@ public:
      *  \brief Writes data from the Mixed (GPS/GLONASS GNAV) navigation message into the RINEX file
      */
     void log_rinex_nav(std::fstream & out, const std::map<int, Gps_Ephemeris> & gps_eph_map, const std::map<int, Glonass_Gnav_Ephemeris> & glonass_gnav_eph_map);
+
+    /*!
+     *  \brief Writes data from the Mixed (GPS/GLONASS GNAV) navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream & out, const std::map<int, Gps_CNAV_Ephemeris> & gps_cnav_eph_map, const std::map<int, Glonass_Gnav_Ephemeris> & glonass_gnav_eph_map);
 
     /*!
      *  \brief Writes data from the Mixed (Galileo/ GLONASS GNAV) navigation message into the RINEX file
@@ -269,6 +295,11 @@ public:
     void log_rinex_obs(std::fstream & out, const Gps_Ephemeris & gps_eph, const Glonass_Gnav_Ephemeris & glonass_gnav_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro> & observables);
 
     /*!
+     *  \brief Writes Mixed GPS L2C - GLONASS observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream & out, const Gps_CNAV_Ephemeris & gps_cnav_eph, const Glonass_Gnav_Ephemeris & glonass_gnav_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro> & observables);
+
+    /*!
      *  \brief Writes Mixed Galileo/GLONASS observables into the RINEX file
      */
     void log_rinex_obs(std::fstream & out, const Galileo_Ephemeris & galileo_eph, const Glonass_Gnav_Ephemeris & glonass_gnav_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro> & observables);
@@ -294,6 +325,8 @@ public:
     void update_nav_header(std::fstream & out, const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model, const Glonass_Gnav_Almanac & glonass_gnav_almanac);
 
     void update_nav_header(std::fstream & out, const Gps_Iono & gps_iono, const Gps_Utc_Model & gps_utc, const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model, const Glonass_Gnav_Almanac & glonass_gnav_almanac);
+
+    void update_nav_header(std::fstream & out, const Gps_CNAV_Iono & gps_cnav_iono, const Gps_CNAV_Utc_Model & gps_cnav_utc, const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model, const Glonass_Gnav_Almanac & glonass_gnav_almanac);
 
     void update_nav_header(std::fstream & out, const Galileo_Iono & galileo_iono, const Galileo_Utc_Model & galileo_utc_model, const Galileo_Almanac& galileo_almanac, const Glonass_Gnav_Utc_Model & glonass_gnav_utc_model, const Glonass_Gnav_Almanac & glonass_gnav_almanac);
 

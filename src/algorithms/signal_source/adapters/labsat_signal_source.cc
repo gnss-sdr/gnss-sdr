@@ -29,9 +29,6 @@
  */
 
 #include "labsat_signal_source.h"
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/msg_queue.h>
-#include <gflags/gflags.h>
 #include <glog/logging.h>
 #include "labsat23_source.h"
 #include "configuration_interface.h"
@@ -49,7 +46,7 @@ LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    int channel_selector=configuration->property(role + ".selected_channel", 1);
+    int channel_selector = configuration->property(role + ".selected_channel", 1);
     std::string default_filename = "./example_capture.LS3";
 
     samples_ = configuration->property(role + ".samples", 0);

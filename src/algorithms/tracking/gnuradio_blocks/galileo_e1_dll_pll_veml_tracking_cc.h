@@ -53,8 +53,14 @@ galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
                                    std::string dump_filename,
                                    float pll_bw_hz,
                                    float dll_bw_hz,
+                                   float pll_bw_narrow_hz,
+                                   float dll_bw_narrow_hz,
                                    float early_late_space_chips,
-                                   float very_early_late_space_chips);
+                                   float very_early_late_space_chips,
+                                   float early_late_space_narrow_chips,
+                                   float very_early_late_space_narrow_chips,
+                                   int extend_correlation_symbols,
+                                   bool track_pilot);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL VEML (Very Early
@@ -88,8 +94,14 @@ private:
             std::string dump_filename,
             float pll_bw_hz,
             float dll_bw_hz,
+            float pll_bw_narrow_hz,
+            float dll_bw_narrow_hz,
             float early_late_space_chips,
-            float very_early_late_space_chips);
+            float very_early_late_space_chips,
+            float early_late_space_narrow_chips,
+            float very_early_late_space_narrow_chips,
+            int extend_correlation_symbols,
+            bool track_pilot);
 
     galileo_e1_dll_pll_veml_tracking_cc(long if_freq,
             long fs_in, unsigned
@@ -98,12 +110,25 @@ private:
             std::string dump_filename,
             float pll_bw_hz,
             float dll_bw_hz,
+            float pll_bw_narrow_hz,
+            float dll_bw_narrow_hz,
             float early_late_space_chips,
-            float very_early_late_space_chips);
+            float very_early_late_space_chips,
+            float early_late_space_narrow_chips,
+            float very_early_late_space_narrow_chips,
+            int extend_correlation_symbols,
+            bool track_pilot);
 
+    bool cn0_and_tracking_lock_status();
+    void do_correlation_step(const gr_complex* input_samples);
+    void run_dll_pll(bool disable_costas_loop);
     void update_local_code();
-
     void update_local_carrier();
+    bool acquire_secondary();
+
+    void clear_tracking_vars();
+
+    void log_data();
 
     // tracking configuration vars
     unsigned int d_vector_length;
@@ -114,16 +139,29 @@ private:
     long d_if_freq;
     long d_fs_in;
 
+    //tracking state machine
+    int d_state;
+
     //Integration period in samples
     int d_correlation_length_samples;
     int d_n_correlator_taps;
     double d_early_late_spc_chips;
     double d_very_early_late_spc_chips;
 
-    float* d_ca_code;
+    double d_early_late_spc_narrow_chips;
+    double d_very_early_late_spc_narrow_chips;
+
+    float* d_tracking_code;
+    float* d_data_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
     cpu_multicorrelator_real_codes multicorrelator_cpu;
+    //todo: currently the multicorrelator does not support adding extra correlator
+    //with different local code, thus we need extra multicorrelator instance.
+    //Implement this functionality inside multicorrelator class
+    //as an enhancement to increase the performance
+    float* d_local_code_data_shift_chips;
+    cpu_multicorrelator_real_codes correlator_data_cpu; //for data channel
 
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
@@ -131,6 +169,22 @@ private:
     gr_complex *d_Late;
     gr_complex *d_Very_Late;
 
+    int d_extend_correlation_symbols;
+    int d_extend_correlation_symbols_count;
+    bool d_enable_extended_integration;
+    int d_current_symbol;
+
+    gr_complex d_VE_accu;
+    gr_complex d_E_accu;
+    gr_complex d_P_accu;
+    gr_complex d_L_accu;
+    gr_complex d_VL_accu;
+
+    bool d_track_pilot;
+    gr_complex *d_Prompt_Data;
+
+    double d_code_phase_step_chips;
+    double d_carrier_phase_step_rad;
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     double d_rem_carr_phase_rad;
@@ -143,11 +197,24 @@ private:
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
 
+    // tracking parameters
+    float d_dll_bw_hz;
+    float d_pll_bw_hz;
+    float d_dll_bw_narrow_hz;
+    float d_pll_bw_narrow_hz;
     // tracking vars
+    double d_carr_error_hz;
+    double d_carr_error_filt_hz;
+    double d_code_error_chips;
+    double d_code_error_filt_chips;
+
+    double d_K_blk_samples;
+
     double d_code_freq_chips;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;
-    double d_acc_code_phase_secs;
+    double d_rem_code_phase_chips;
+    double d_code_phase_samples;
 
     //PRN period in samples
     int d_current_prn_length_samples;
@@ -158,15 +225,12 @@ private:
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
+    std::deque<gr_complex> d_Prompt_buffer_deque;
     gr_complex* d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
     int d_carrier_lock_fail_counter;
-
-    // control vars
-    bool d_enable_tracking;
-    bool d_pull_in;
 
     // file dump
     std::string d_dump_filename;

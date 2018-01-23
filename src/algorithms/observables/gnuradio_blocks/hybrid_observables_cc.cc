@@ -37,6 +37,8 @@
 #include <utility>
 #include <armadillo>
 #include <gnuradio/io_signature.h>
+#include <gnuradio/block_detail.h>
+#include <gnuradio/buffer.h>
 #include <glog/logging.h>
 #include <matio.h>
 #include "Galileo_E1.h"
@@ -52,8 +54,8 @@ hybrid_observables_cc_sptr hybrid_make_observables_cc(unsigned int nchannels, bo
 
 
 hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history) :
-        gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
-        gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
+                        gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+                                  gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_dump = dump;
@@ -66,11 +68,6 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, 
         {
             d_gnss_synchro_history_queue.push_back(std::deque<Gnss_Synchro>());
         }
-    // todo: this is a gnuradio scheduler hack.
-    // Migrate the queues to gnuradio set_history to see if the scheduler can handle
-    // the multiple output flow
-    d_max_noutputs = 100;
-    this->set_min_noutput_items(100);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -313,7 +310,7 @@ bool Hybrid_valueCompare_gnss_synchro_sample_counter(const Gnss_Synchro& a, unsi
 
 bool Hybrid_valueCompare_gnss_synchro_receiver_time(const Gnss_Synchro& a, double b)
 {
-    return (((double)a.Tracking_sample_counter+a.Code_phase_samples)/(double)a.fs) < (b);
+    return ((static_cast<double>(a.Tracking_sample_counter) + static_cast<double>(a.Code_phase_samples)) / static_cast<double>(a.fs) ) < (b);
 }
 
 
@@ -329,7 +326,27 @@ bool Hybrid_valueCompare_gnss_synchro_d_TOW(const Gnss_Synchro& a, double b)
 }
 
 
-int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused)),
+void hybrid_observables_cc::forecast (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
+{
+    bool zero_samples = true;
+    for(unsigned int i = 0; i < d_nchannels; i++)
+        {
+            int items = detail()->input(i)->items_available();
+            if (items > 0) zero_samples = false;
+            ninput_items_required[i] = items; // set the required available samples in each call
+        }
+
+    if (zero_samples == true)
+        {
+            for(unsigned int i = 0; i < d_nchannels; i++)
+                {
+                    ninput_items_required[i] = 1; // set the required available samples in each call
+                }
+        }
+}
+
+
+int hybrid_observables_cc::general_work (int noutput_items ,
         gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
@@ -353,7 +370,7 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
      */
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
-            n_consume[i] = ninput_items[i];// full throttle
+            n_consume[i] = ninput_items[i]; // full throttle
             for (int j = 0; j < n_consume[i]; j++)
                 {
                     d_gnss_synchro_history_queue[i].push_back(in[i][j]);
@@ -436,6 +453,7 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                                                                     d_gnss_synchro_history_queue[i].at(distance - 1)));
                                                                         }
                                                                 }
+
                                                         }
                                                     else
                                                         {
@@ -461,7 +479,8 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
 
                             // compute interpolated TOW value at T_rx_s
                             int ref_channel_key = gnss_synchro_map_iter->second.Channel_ID;
-                            Gnss_Synchro adj_obs = adjacent_gnss_synchro_map.at(ref_channel_key);
+                            Gnss_Synchro adj_obs;
+                            adj_obs = adjacent_gnss_synchro_map.at(ref_channel_key);
                             double ref_adj_T_rx_s = static_cast<double>(adj_obs.Tracking_sample_counter) / ref_fs_hz + adj_obs.Code_phase_samples / ref_fs_hz;
 
                             double d_TOW_reference = gnss_synchro_map_iter->second.TOW_at_current_symbol_s;
@@ -487,7 +506,12 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                     // two points linear interpolation using adjacent (adj) values: y=y1+(x-x1)*(y2-y1)/(x2-x1)
                                     // TOW at the selected receiver time T_rx_s
                                     int element_key = gnss_synchro_map_iter->second.Channel_ID;
-                                    adj_obs = adjacent_gnss_synchro_map.at(element_key);
+                                    try{
+                                        adj_obs = adjacent_gnss_synchro_map.at(element_key);
+                                    }catch(const std::exception & ex)
+                                    {
+                                        continue;
+                                    }
 
                                     double adj_T_rx_s = static_cast<double>(adj_obs.Tracking_sample_counter) / channel_fs_hz + adj_obs.Code_phase_samples / channel_fs_hz;
 
@@ -561,7 +585,7 @@ int hybrid_observables_cc::general_work (int noutput_items __attribute__((unused
                                 }
                         }
                 }
-        } while(channel_history_ok == true && d_max_noutputs > n_outputs);
+        } while(channel_history_ok == true && noutput_items > n_outputs);
 
     // Multi-rate consume!
     for (unsigned int i = 0; i < d_nchannels; i++)

@@ -63,8 +63,7 @@ public:
     /*!
      * \brief Constructor that initializes the receiver flowgraph
      */
-    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration,
-                  boost::shared_ptr<gr::msg_queue> queue);
+    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue);
 
     /*!
      * \brief Virtual destructor
@@ -119,6 +118,7 @@ private:
     void set_signals_list();
     void set_channels_state(); // Initializes the channels state (start acquisition or keep standby)
                                // using the configuration parameters (number of channels and max channels in acquisition)
+    Gnss_Signal search_next_signal(std::string searched_signal, bool pop);
     bool connected_;
     bool running_;
     int sources_count_;
@@ -139,7 +139,7 @@ private:
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gnss_sdr_sample_counter_sptr ch_out_sample_counter;
     gr::top_block_sptr top_block_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    gr::msg_queue::sptr queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;
     std::vector<unsigned int> channels_state_;
 };

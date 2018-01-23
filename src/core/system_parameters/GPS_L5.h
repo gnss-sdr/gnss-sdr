@@ -35,6 +35,7 @@
 #include <cstdint>
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
+#include "GPS_CNAV.h"
 
 // Physical constants
 const double GPS_L5_C_m_s       = 299792458.0;          //!< The speed of light, [m/s]
@@ -47,19 +48,21 @@ const double GPS_L5_F               = -4.442807633e-10; //!< Constant, [s/(m)^(1
 
 
 // carrier and code frequencies
-const double GPS_L5_FREQ_HZ = FREQ5;           //!< L2 [Hz]
+const double GPS_L5_FREQ_HZ = FREQ5;             //!< L5 [Hz]
 
 const double GPS_L5i_CODE_RATE_HZ = 10.23e6;   //!< GPS L5i code rate [chips/s]
 const int GPS_L5i_CODE_LENGTH_CHIPS = 10230;   //!< GPS L5i  code length [chips]
-const double GPS_L5i_PERIOD = 0.001;           //!< GPS L2 M code period [seconds]
+const double GPS_L5i_PERIOD = 0.001;           //!< GPS L5 code period [seconds]
+const double GPS_L5i_SYMBOL_PERIOD = 0.01;     //!< GPS L5 symbol period [seconds]
 
 const double GPS_L5q_CODE_RATE_HZ = 10.23e6;   //!< GPS L5i code rate [chips/s]
-const int GPS_L5q_CODE_LENGTH_CHIPS = 10230;   //!< GPS L5i  code length [chips]
-const double GPS_L5q_PERIOD = 0.001;           //!< GPS L2 M code period [seconds]
+const int GPS_L5q_CODE_LENGTH_CHIPS = 10230;    //!< GPS L5i code length [chips]
+const double GPS_L5q_PERIOD = 0.001;             //!< GPS L5 code period [seconds]
 
+const int GPS_L5_HISTORY_DEEP = 5;
 
 const int32_t GPS_L5i_INIT_REG[210] =
-        {266,  365, 804, 1138,
+        {266,  365,  804,  1138,
          1509, 1559, 1756, 2084,
          2170, 2303, 2527, 2687,
          2930, 3471, 3940, 4132,
@@ -172,6 +175,12 @@ const int32_t GPS_L5q_INIT_REG[210] =
        2765,  37,   1943, 7977,
        2512,  4451, 4071};
 
-
+const int GPS_L5_CNAV_DATA_PAGE_BITS = 300; //!< GPS L5 CNAV page length, including preamble and CRC [bits]
+const int GPS_L5_SYMBOLS_PER_BIT = 2;
+const int GPS_L5_SAMPLES_PER_SYMBOL = 10;
+const int GPS_L5_CNAV_DATA_PAGE_SYMBOLS = 600;
+const int GPS_L5_CNAV_DATA_PAGE_DURATION_S = 6;
+const int GPS_L5_NH_CODE_LENGTH = 10;
+const int GPS_L5_NH_CODE[10] = {0, 0, 0, 0, 1, 1, 0, 1, 0, 1};
 
 #endif /* GNSS_SDR_GPS_L5_H_ */

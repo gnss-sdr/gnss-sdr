@@ -62,7 +62,7 @@ public:
         return role_;
     }
 
-    //! Returns "GPS_L2_M_DLL_PLL_Tracking"
+    //! Returns "GPS_L5i_DLL_PLL_Tracking"
     inline std::string implementation() override
     {
         return "GPS_L5i_DLL_PLL_Tracking";

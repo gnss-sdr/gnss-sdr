@@ -40,6 +40,7 @@ void Gps_CNAV_Navigation_Message::reset()
     b_flag_ephemeris_1 = false;
     b_flag_ephemeris_2 = false;
     b_flag_iono_valid = false;
+    b_flag_utc_valid = false;
 
     // satellite positions
     d_satpos_X = 0;
@@ -73,11 +74,11 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
 
 
 
-bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     bool value;
 
-    if (bits[GPS_L2_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
+    if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
         {
             value = true;
         }
@@ -89,7 +90,7 @@ bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_L2_CNAV_D
 }
 
 
-unsigned long int Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+unsigned long int Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     unsigned long int value = 0;
     int num_of_slices = parameter.size();
@@ -98,7 +99,7 @@ unsigned long int Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bit
             for (int j = 0; j < parameter[i].second; j++)
                 {
                     value <<= 1; //shift left
-                    if (bits[GPS_L2_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
+                    if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
                         {
                             value += 1; // insert the bit
                         }
@@ -108,7 +109,7 @@ unsigned long int Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bit
 }
 
 
-signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     signed long int value = 0;
     int num_of_slices = parameter.size();
@@ -117,7 +118,7 @@ signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<
     if (long_int_size_bytes == 8) // if a long int takes 8 bytes, we are in a 64 bits system
         {
             // read the MSB and perform the sign extension
-            if (bits[GPS_L2_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
+            if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
                 {
                     value ^= 0xFFFFFFFFFFFFFFFF; //64 bits variable
                 }
@@ -132,7 +133,7 @@ signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<
                         {
                             value <<= 1; //shift left
                             value &= 0xFFFFFFFFFFFFFFFE; //reset the corresponding bit (for the 64 bits variable)
-                            if (bits[GPS_L2_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
+                            if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
                                 {
                                     value += 1; // insert the bit
                                 }
@@ -142,7 +143,7 @@ signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<
     else  // we assume we are in a 32 bits system
         {
             // read the MSB and perform the sign extension
-            if (bits[GPS_L2_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
+            if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
                 {
                     value ^= 0xFFFFFFFF;
                 }
@@ -157,7 +158,7 @@ signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<
                         {
                             value <<= 1; //shift left
                             value &= 0xFFFFFFFE; //reset the corresponding bit
-                            if (bits[GPS_L2_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
+                            if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
                                 {
                                     value += 1; // insert the bit
                                 }
@@ -168,7 +169,7 @@ signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<
 }
 
 
-void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> data_bits)
+void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BITS> data_bits)
 {
     int PRN;
     int page_type;
@@ -188,7 +189,6 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_L2_CNAV_DATA_PAGE_
 
     page_type = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
 
-    //std::cout << "PRN=" << PRN << " TOW=" << d_TOW << " alert_flag=" << alert_flag << " page_type= " << page_type << std::endl;
     switch(page_type)
     {
     case 10: // Ephemeris 1/2

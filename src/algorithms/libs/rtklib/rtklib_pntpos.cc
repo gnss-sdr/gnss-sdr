@@ -97,7 +97,13 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
-    if (NFREQ >= 3 && (sys & (SYS_GAL | SYS_SBS))) j = 2;
+    if (sys & (SYS_GAL | SYS_SBS)) {j = 2;}
+
+    if (sys == SYS_GPS)
+        {
+            if(obs->code[1] != CODE_NONE) {j = 1;}
+            else if(obs->code[2] != CODE_NONE) {j = 2;}
+        }
 
     if (NFREQ<2 || lam[i] == 0.0 || lam[j] == 0.0)
         {
@@ -132,7 +138,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     P2_C2 = nav->cbias[obs->sat-1][2];
 
     /* if no P1-P2 DCB, use TGD instead */
-    if (P1_P2 == 0.0 && (sys & (SYS_GPS | SYS_GAL | SYS_QZS)))
+    if (P1_P2 == 0.0 && (sys & (SYS_GPS | SYS_GAL | SYS_QZS))) //CHECK!
         {
             P1_P2 = (1.0 - gamma_) * gettgd(obs->sat, nav);
         }

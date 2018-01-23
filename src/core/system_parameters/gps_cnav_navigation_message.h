@@ -38,7 +38,7 @@
 #include <string>
 #include <vector>
 #include <utility>
-#include "GPS_L2C.h"
+#include "GPS_CNAV.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
 #include "gps_cnav_utc_model.h"
@@ -55,9 +55,9 @@
 class Gps_CNAV_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    bool read_navigation_bool(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    unsigned long int read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    signed long int read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    bool read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int,int>> parameter);
 
     Gps_CNAV_Ephemeris ephemeris_record;
     Gps_CNAV_Iono iono_record;
@@ -89,7 +89,7 @@ public:
     // public functions
     void reset();
 
-    void decode_page(std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> data_bits);
+    void decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BITS> data_bits);
     /*!
      * \brief Obtain a GPS SV Ephemeris class filled with current SV data
      */

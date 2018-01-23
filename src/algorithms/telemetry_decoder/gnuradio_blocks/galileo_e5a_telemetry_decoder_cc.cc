@@ -297,14 +297,8 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                         d_symbol_counter = 0;
                         flag_bit_start = true;
                         corr_value = 0;
-                        while(d_preamble_init.size() > 0)
-                            {   //Clear preamble correlating queue
-                                d_preamble_init.pop_front();
-                            }
-                        while(d_symbol_history.size() > 0)
-                            {   //Clear symbol queue in order to prevent possible symbol discontinuities
-                                d_symbol_history.pop_front();
-                            }
+                        d_preamble_init.clear();
+                        d_symbol_history.clear();
                         LOG(INFO) << "Bit start sync for Galileo E5a satellite " << d_satellite;
                     }
                 else

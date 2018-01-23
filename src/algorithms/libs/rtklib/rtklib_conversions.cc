@@ -35,7 +35,7 @@ obsd_t insert_obs_to_rtklib(obsd_t & rtklib_obs, const Gnss_Synchro & gnss_synch
 {
     rtklib_obs.D[band] = gnss_synchro.Carrier_Doppler_hz;
     rtklib_obs.P[band] = gnss_synchro.Pseudorange_m;
-    rtklib_obs.L[band] = gnss_synchro.Carrier_phase_rads / (2.0 * PI);
+    rtklib_obs.L[band] = gnss_synchro.Carrier_phase_rads / PI_2;
     switch(band)
     {
         case 0:
@@ -209,8 +209,6 @@ eph_t eph_to_rtklib(const Gps_Ephemeris & gps_eph)
     rtklib_sat.toc = gpst2time(rtklib_sat.week, toc);
     rtklib_sat.ttr = gpst2time(rtklib_sat.week, tow);
 
-    //printf("EPHEMERIS TIME [%i]: %s,%f\n\r",rtklib_sat.sat,time_str(rtklib_sat.toe,3),rtklib_sat.toe.sec);
-
     return rtklib_sat;
 }
 
@@ -227,7 +225,7 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris & gps_cnav_eph)
     rtklib_sat.OMG0 = gps_cnav_eph.d_OMEGA0;
     // Compute the angle between the ascending node and the Greenwich meridian
     const double OMEGA_DOT_REF = -2.6e-9; // semicircles / s, see IS-GPS-200H pp. 164
-    double d_OMEGA_DOT = OMEGA_DOT_REF * GPS_L2_PI + gps_cnav_eph.d_DELTA_OMEGA_DOT;
+    double d_OMEGA_DOT = OMEGA_DOT_REF * PI + gps_cnav_eph.d_DELTA_OMEGA_DOT;
     rtklib_sat.OMGd = d_OMEGA_DOT;
     rtklib_sat.omg = gps_cnav_eph.d_OMEGA;
     rtklib_sat.i0 = gps_cnav_eph.d_i_0;

@@ -462,7 +462,7 @@ TEST(RtcmTest, MSMCell)
              divergence_free,
              more_messages);
     std::string MSM1_bin_2 = rtcm->binary_data_to_bin(MSM1_2);
-    EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010101100")); // check cell mask
+    EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010001100")); // check cell mask
 
     Gnss_Synchro gnss_synchro7;
     gnss_synchro7.PRN = 10;

@@ -356,7 +356,7 @@ TEST(RtcmTest, MSMCell)
     auto rtcm = std::make_shared<Rtcm>();
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
     Galileo_Ephemeris gal_eph = Galileo_Ephemeris();
-    Glonass_Gnav_Ephemeris glo_gnav_eph = Glonass_Gnav_Ephemeris();
+    //Glonass_Gnav_Ephemeris glo_gnav_eph = Glonass_Gnav_Ephemeris();
     std::map<int, Gnss_Synchro> pseudoranges;
 
     Gnss_Synchro gnss_synchro;
@@ -419,7 +419,7 @@ TEST(RtcmTest, MSMCell)
 
     gps_eph.i_satellite_PRN = gnss_synchro2.PRN;
     gal_eph.i_satellite_PRN = gnss_synchro.PRN;
-    glo_gnav_eph.i_satellite_PRN = gnss_synchro.PRN;
+    //glo_gnav_eph.i_satellite_PRN = gnss_synchro.PRN;
 
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
             {},

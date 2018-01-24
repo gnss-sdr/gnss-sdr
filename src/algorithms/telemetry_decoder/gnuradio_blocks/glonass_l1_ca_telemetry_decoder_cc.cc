@@ -150,39 +150,39 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
             chip_acc_counter += 1;
 
             if(chip_acc_counter == (GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT))
-              {
-                if (chip_acc > 0)
-                    {
-                        bi_binary_code.push_back('1');
-                        chip_acc_counter = 0;
-                        chip_acc = 0;
-                    }
-                else
-                    {
-                        bi_binary_code.push_back('0');
-                        chip_acc_counter = 0;
-                        chip_acc = 0;
-                    }
-              }
+                {
+                    if (chip_acc > 0)
+                        {
+                            bi_binary_code.push_back('1');
+                            chip_acc_counter = 0;
+                            chip_acc = 0;
+                        }
+                    else
+                        {
+                            bi_binary_code.push_back('0');
+                            chip_acc_counter = 0;
+                            chip_acc = 0;
+                        }
+                }
         }
     // Convert from bi-binary code to relative code
     for(int i = 0; i < (GLONASS_GNAV_STRING_BITS); i++)
         {
             if(bi_binary_code[2*i] == '1' && bi_binary_code[2*i + 1] == '0')
-              {
-                relative_code.push_back('1');
-              }
+                {
+                    relative_code.push_back('1');
+                }
             else
-              {
-                relative_code.push_back('0');
-              }
+                {
+                    relative_code.push_back('0');
+                }
         }
     // Convert from relative code to data bits
     data_bits.push_back('0');
     for(int i = 1; i < (GLONASS_GNAV_STRING_BITS); i++)
-    {
-        data_bits.push_back(((relative_code[i-1]-'0') ^ (relative_code[i]-'0')) + '0');
-    }
+        {
+            data_bits.push_back(((relative_code[i-1]-'0') ^ (relative_code[i]-'0')) + '0');
+        }
 
     // 2. Call the GLONASS GNAV string decoder
     d_nav.string_decoder(data_bits);
@@ -203,7 +203,6 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
             std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Ephemeris have been received on channel" << d_channel << " from satellite " << d_satellite;
-
         }
     if (d_nav.have_new_utc_model() == true)
         {
@@ -250,20 +249,20 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
     unsigned int required_symbols=GLONASS_GNAV_STRING_SYMBOLS;
 
     if (d_symbol_history.size()>required_symbols)
-    {
-        //******* preamble correlation ********
-        for (int i = 0; i < d_symbols_per_preamble; i++)
-            {
-                if (d_symbol_history.at(i).Prompt_I < 0)    // symbols clipping
-                    {
-                        corr_value -= d_preambles_symbols[i];
-                    }
-                else
-                    {
-                        corr_value += d_preambles_symbols[i];
-                    }
-            }
-    }
+        {
+            //******* preamble correlation ********
+            for (int i = 0; i < d_symbols_per_preamble; i++)
+                {
+                    if (d_symbol_history.at(i).Prompt_I < 0)    // symbols clipping
+                        {
+                            corr_value -= d_preambles_symbols[i];
+                        }
+                    else
+                        {
+                            corr_value += d_preambles_symbols[i];
+                        }
+                }
+        }
 
     //******* frame sync ******************
     if (d_stat == 0) //no preamble information
@@ -276,7 +275,6 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
                     // Enter into frame pre-detection status
                     d_stat = 1;
                     d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter; // record the preamble sample stamp
-
                 }
         }
     else if (d_stat == 1) // posible preamble lock
@@ -294,8 +292,8 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
                             d_preamble_index = d_sample_counter; //record the preamble sample stamp
                             d_stat = 2;
                             // send asynchronous message to tracking to inform of frame sync and extend correlation time
-														pmt::pmt_t value = pmt::from_double(static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) - 0.001);
-														this->message_port_pub(pmt::mp("preamble_timestamp_s"), value);
+                            pmt::pmt_t value = pmt::from_double(static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) - 0.001);
+                            this->message_port_pub(pmt::mp("preamble_timestamp_s"), value);
                         }
                     else
                         {
@@ -309,7 +307,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
         }
     else if (d_stat == 2)
         {
-    				// FIXME: The preamble index marks the first symbol of the string count. Here I just wait for another full string to be received before processing
+            // FIXME: The preamble index marks the first symbol of the string count. Here I just wait for another full string to be received before processing
             if (d_sample_counter == d_preamble_index + GLONASS_GNAV_STRING_SYMBOLS)
                 {
                     // NEW GLONASS string received
@@ -398,14 +396,14 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
             {
-                double tmp_double;
-                unsigned long int tmp_ulong_int;
-                tmp_double = d_TOW_at_current_symbol;
-                d_dump_file.write((char*)&tmp_double, sizeof(double));
-                tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
-                tmp_double = 0;
-                d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    double tmp_double;
+                    unsigned long int tmp_ulong_int;
+                    tmp_double = d_TOW_at_current_symbol;
+                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    tmp_ulong_int = current_symbol.Tracking_sample_counter;
+                    d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
+                    tmp_double = 0;
+                    d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
             catch (const std::ifstream::failure & e)
             {
@@ -415,9 +413,9 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
 
     // remove used symbols from history
     if (d_symbol_history.size()>required_symbols)
-    {
-        d_symbol_history.pop_front();
-    }
+        {
+            d_symbol_history.pop_front();
+        }
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_symbol;
 

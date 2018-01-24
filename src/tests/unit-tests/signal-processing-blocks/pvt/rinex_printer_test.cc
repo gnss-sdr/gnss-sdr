@@ -174,7 +174,7 @@ TEST(RinexPrinterTest, MixedObsHeaderGpsGlo)
 
     std::shared_ptr<Rinex_Printer> rp1;
     rp1 = std::make_shared<Rinex_Printer>();
-    rp1->rinex_obs_header(rp1->obsFile, eph_gps, eph_glo, 0.0, "1C");
+    rp1->rinex_obs_header(rp1->obsFile, eph_gps, eph_glo, 0.0, "1G");
     rp1->obsFile.seekp(0);
     int systems_found = 0;
 
@@ -200,7 +200,7 @@ TEST(RinexPrinterTest, MixedObsHeaderGpsGlo)
         }
 
     std::string expected_str("G    4 C1C L1C D1C S1C                                      SYS / # / OBS TYPES ");
-    std::string expected_str2("R    8 C1C L1C D1C S1C                                      SYS / # / OBS TYPES ");
+    std::string expected_str2("R    4 C1C L1C D1C S1C                                      SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str.compare(line_aux));
     EXPECT_EQ(0, expected_str2.compare(line_aux2));
     if(remove(rp1->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
@@ -627,7 +627,7 @@ TEST(RinexPrinterTest, MixedObsLogGpsGlo)
 
     std::shared_ptr<Rinex_Printer> rp;
     rp = std::make_shared<Rinex_Printer>();
-    rp->rinex_obs_header(rp->obsFile, eph_gps, eph_glo, 0.0, "1C");
+    rp->rinex_obs_header(rp->obsFile, eph_gps, eph_glo, 0.0, "1G");
 
     std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
 
@@ -658,7 +658,7 @@ TEST(RinexPrinterTest, MixedObsLogGpsGlo)
     std::memcpy((void*)gs3.Signal, sig.c_str(), 3);
     std::memcpy((void*)gs4.Signal, sig.c_str(), 3);
 
-    sig = "1C";
+    sig = "1G";
     std::memcpy((void*)gs5.Signal, sig.c_str(), 3);
     std::memcpy((void*)gs6.Signal, sig.c_str(), 3);
     std::memcpy((void*)gs7.Signal, sig.c_str(), 3);
@@ -718,7 +718,8 @@ TEST(RinexPrinterTest, MixedObsLogGpsGlo)
                         }
                 }
         }
-    std::string expected_str("R16  22000000.000 7         0.127 7       -20.000 7        42.000  22000000.000 6         8.292 6      1534.000 6        41.000");
+
+    std::string expected_str("R16  22000000.000 6         8.292 6      1534.000 6        41.000  22000000.000 7         0.127 7       -20.000 7        42.000");
     EXPECT_EQ(0, expected_str.compare(line_aux));
 
     if(remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";

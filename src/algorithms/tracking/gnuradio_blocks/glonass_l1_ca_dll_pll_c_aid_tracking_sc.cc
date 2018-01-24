@@ -220,6 +220,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
     d_carrier_frequency_hz = 0.0;
     d_carrier_doppler_old_hz = 0.0;
 
+    d_glonass_freq_ch = 0;
     //set_min_output_buffer((long int)300);
 }
 

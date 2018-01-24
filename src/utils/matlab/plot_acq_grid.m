@@ -35,7 +35,7 @@
 path = '/home/aramos/signals/GNSS-IN-THE-SPACE/CAPTURES SPIRENT/acq/';
 file = 'acq';
 
-sat = 27;
+sat = 32;
 
 % Signal:
 %     1 GPS  L1
@@ -96,9 +96,11 @@ subplot(2,1,1)
 plot(freq, grid(d_max, :))
 xlim([min(freq) max(freq)])
 xlabel('Doppler shift / Hz')
-ylabel('Test statistics (fixed delay)')
+ylabel('Test statistics')
+title(['Fixed code delay to ' num2str((d_max - 1) / n_fft * n_chips) ' chips'])
 subplot(2,1,2)
 plot(delay, grid(:, f_max))
 xlim([min(delay) max(delay)])
 xlabel('Code delay / chips')
-ylabel('Test statistics (fixed Doppler shift)')
+ylabel('Test statistics')
+title(['Doppler wipe-off = ' num2str((f_max - 1) * doppler_step - doppler_max) ' Hz'])

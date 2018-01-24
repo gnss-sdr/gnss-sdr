@@ -166,7 +166,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
 
     double expected_delay_samples = 31874;
-    double expected_doppler_hz = -9500;
+    double expected_doppler_hz = -8000;
     init();
     std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 1);
 
@@ -181,7 +181,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.0001);
+        acquisition->set_threshold(0.0005);
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW( {
@@ -189,7 +189,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting doppler_max.";
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(250);
+        acquisition->set_doppler_step(500);
     }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW( {

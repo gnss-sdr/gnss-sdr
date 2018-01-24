@@ -420,14 +420,14 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ConnectAndRun)
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test."<< std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     EXPECT_NO_THROW( {
         begin = std::chrono::system_clock::now();
         top_block->run(); // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - begin;
-    }) << "Failure running the top_block."<< std::endl;
+    }) << "Failure running the top_block.";
 
     std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
@@ -446,28 +446,28 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
-    }) << "Failure setting channel."<< std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_max(10000);
-    }) << "Failure setting doppler_max."<< std::endl;
+    }) << "Failure setting doppler_max.";
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_step(500);
-    }) << "Failure setting doppler_step."<< std::endl;
+    }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW( {
         acquisition->set_threshold(0.5);
-    }) << "Failure setting threshold."<< std::endl;
+    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block.";
 
     acquisition->init();
 
@@ -478,7 +478,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
@@ -501,7 +501,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running the top_block."<< std::endl;
+            }) << "Failure running the top_block.";
 
             if (i == 0)
                 {
@@ -519,12 +519,12 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
 #ifdef OLD_BOOST
             ASSERT_NO_THROW( {
                 ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
+            }) << "Failure while waiting the queue to stop.";
 #endif
 #ifndef OLD_BOOST
             ASSERT_NO_THROW( {
                 ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
+            }) << "Failure while waiting the queue to stop";
 #endif
         }
 

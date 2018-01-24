@@ -35,7 +35,6 @@
 
 #include "pcps_acquisition_cc.h"
 #include <sstream>
-#include <boost/filesystem.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
@@ -346,9 +345,6 @@ void pcps_acquisition_cc::acquisition_core( unsigned long int samp_count )
 {
     gr::thread::scoped_lock lk(d_setlock);
 
-    mat_t* matfp = NULL;
-    matvar_t* matvar = NULL;
-
     // initialize acquisition algorithm
     int doppler;
     uint32_t indext = 0;
@@ -442,7 +438,8 @@ void pcps_acquisition_cc::acquisition_core( unsigned long int samp_count )
             // Record results to file if required
             if (d_dump)
             {
-                if(doppler_index == 0)
+                memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
+                if(doppler_index == (d_num_doppler_bins - 1))
                 {
                     std::string filename = d_dump_filename;
                     filename.append("_");
@@ -450,28 +447,31 @@ void pcps_acquisition_cc::acquisition_core( unsigned long int samp_count )
                     filename.append("_sat_");
                     filename.append(std::to_string(d_gnss_synchro->PRN));
                     filename.append(".mat");
+                    mat_t* matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
+                    if(matfp == NULL)
+                    {
+                        std::cout << "Unable to create or open Acquisition dump file" << std::endl;
+                        d_dump = false;
+                    }
+                    else
+                    {
+                        size_t dims[2] = {static_cast<size_t>(effective_fft_size), static_cast<size_t>(d_num_doppler_bins)};
+                        matvar_t* matvar = Mat_VarCreate("grid", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, grid_.memptr(), 0);
+                        Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+                        Mat_VarFree(matvar);
 
-                    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-                }
-                memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
-                if(doppler_index == (d_num_doppler_bins - 1))
-                {
-                    size_t dims[2] = {static_cast<size_t>(effective_fft_size), static_cast<size_t>(d_num_doppler_bins)};
-                    matvar = Mat_VarCreate("grid", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, grid_.memptr(), 0);
-                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
-                    Mat_VarFree(matvar);
+                        dims[0] = static_cast<size_t>(1);
+                        dims[1] = static_cast<size_t>(1);
+                        matvar = Mat_VarCreate("doppler_max", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_max, 0);
+                        Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+                        Mat_VarFree(matvar);
 
-                    dims[0] = static_cast<size_t>(1);
-                    dims[1] = static_cast<size_t>(1);
-                    matvar = Mat_VarCreate("doppler_max", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_max, 0);
-                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
-                    Mat_VarFree(matvar);
+                        matvar = Mat_VarCreate("doppler_step", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
+                        Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+                        Mat_VarFree(matvar);
 
-                    matvar = Mat_VarCreate("doppler_step", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
-                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
-                    Mat_VarFree(matvar);
-
-                    Mat_Close(matfp);
+                        Mat_Close(matfp);
+                    }
                 }
             }
         }

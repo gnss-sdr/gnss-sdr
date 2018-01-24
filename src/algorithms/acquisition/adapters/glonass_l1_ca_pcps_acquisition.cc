@@ -1,3 +1,36 @@
+/*!
+ * \file glonass_l1_ca_pcps_acquisition.cc
+ * \brief  Adapts a PCPS acquisition block to an AcquisitionInterface for
+ * Glonass L1 C/A signals
+ * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
+ * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
+ *
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
+
 #include "glonass_l1_ca_pcps_acquisition.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
@@ -7,10 +40,11 @@
 
 
 using google::LogMessage;
+
 GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams)
+                role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -55,12 +89,14 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
 
-        }else{
-                item_size_ = sizeof(gr_complex);
-                acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
-                        doppler_max_, if_, fs_in_, code_length_, code_length_,
-                        bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_);
-                DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
+        }
+    else
+        {
+            item_size_ = sizeof(gr_complex);
+            acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
+                    doppler_max_, if_, fs_in_, code_length_, code_length_,
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_);
+            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
@@ -260,7 +296,7 @@ float GlonassL1CaPcpsAcquisition::calculate_threshold(float pfa)
         {
             frequency_bins++;
         }
-    */
+     */
 
     frequency_bins = (2*doppler_max_ + doppler_step_)/doppler_step_;
 

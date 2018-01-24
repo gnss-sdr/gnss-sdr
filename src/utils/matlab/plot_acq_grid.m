@@ -31,7 +31,7 @@
 %  */ 
 
 %%%%%%%%% ¡¡¡ CONFIGURE !!! %%%%%%%%%%%%% 
-sat = 30;
+sat = 27;
 n_chips = 1023;
 system = 'G'; % GPS = 'G', Galileo = 'E' 
 %%% True for light grid representation
@@ -51,22 +51,27 @@ delay = (0 : n_fft - 1) / n_fft * n_chips;
 figure(1)
 if(lite_view == false)
     surf(freq, delay, grid)
+    ylim([min(delay) max(delay)])
 else
     delay_interp = (0 : n_samples_per_chip * n_chips - 1) / n_samples_per_chip;
     grid_interp = spline(delay, grid', delay_interp)';
     surf(freq, delay_interp, grid_interp)
+    ylim([min(delay_interp) max(delay_interp)])
 end
 xlabel('Doppler shift / Hz')
+xlim([min(freq) max(freq)])
 ylabel('Code delay / chips')
 zlabel('Test statistics')
 
 figure(2)
 subplot(2,1,1)
 plot(freq, grid(d_max, :))
+xlim([min(freq) max(freq)])
 xlabel('Doppler shift / Hz')
 ylabel('Test statistics (fixed delay)')
 subplot(2,1,2)
 plot(delay, grid(:, f_max))
+xlim([min(delay) max(delay)])
 xlabel('Code delay / chips')
 ylabel('Test statistics (fixed Doppler shift)')
 

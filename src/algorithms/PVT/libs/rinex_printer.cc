@@ -8307,7 +8307,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Glonass_Gnav_Ephe
 {
     double tod = 0.0;
 	double glot2utc = 3*3600;
-	double obs_time_utc = 0.0, obs_time_glot = 0.0;
+	double obs_time_glot = 0.0;
 	int i = 0;
 
 	// Get observation time in nearly GLONASS time. Correction for leap seconds done at the end
@@ -8347,7 +8347,7 @@ double Rinex_Printer::get_leap_second(const Glonass_Gnav_Ephemeris& eph, const d
 {
     double tod = 0.0;
 	double glot2utc = 3*3600;
-	double obs_time_utc = 0.0, obs_time_glot = 0.0;
+	double obs_time_glot = 0.0;
 	int i = 0;
 	double leap_second = 0;
 

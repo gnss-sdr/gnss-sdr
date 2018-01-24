@@ -280,7 +280,6 @@ TEST(RtcmTest, MT1019)
 TEST(RtcmTest, MT1020)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    bool expected_true = true;
 
     // Objects to populate the ephemeris and utc fields
     Glonass_Gnav_Ephemeris gnav_ephemeris = Glonass_Gnav_Ephemeris();
@@ -357,7 +356,7 @@ TEST(RtcmTest, MSMCell)
     auto rtcm = std::make_shared<Rtcm>();
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
     Galileo_Ephemeris gal_eph = Galileo_Ephemeris();
-    Glonass_Gnav_Ephemeris glo_gnav_eph = Glonass_Gnav_Ephemeris();
+    // Glonass_Gnav_Ephemeris glo_gnav_eph = Glonass_Gnav_Ephemeris();
     std::map<int, Gnss_Synchro> pseudoranges;
 
     Gnss_Synchro gnss_synchro;

@@ -31,7 +31,7 @@
 %  */ 
 
 %%%%%%%%% ¡¡¡ CONFIGURE !!! %%%%%%%%%%%%% 
-sat = 27;
+sat = 30;
 n_chips = 1023;
 system = 'G'; % GPS = 'G', Galileo = 'E' 
 %%% True for light grid representation
@@ -40,23 +40,33 @@ lite_view = true;
 n_samples_per_chip = 4;
 
 
-path='/home/aramos/signals/';
+path='/home/aramos/signals/GNSS-IN-THE-SPACE/CAPTURES SPIRENT/acq/';
 file=['acq_' system '_sat_' num2str(sat) '.mat'];
 
 load([path file]);
 [n_fft n_dop_bins] = size(grid);
+[d_max f_max] = find(grid == max(max(grid)));
 freq = (0 : n_dop_bins - 1) * doppler_step - doppler_max;
 delay = (0 : n_fft - 1) / n_fft * n_chips;
 figure(1)
 if(lite_view == false)
-    mesh(freq, delay, grid)
+    surf(freq, delay, grid)
 else
     delay_interp = (0 : n_samples_per_chip * n_chips - 1) / n_samples_per_chip;
     grid_interp = spline(delay, grid', delay_interp)';
-    mesh(freq, delay_interp, grid_interp)
+    surf(freq, delay_interp, grid_interp)
 end
 xlabel('Doppler shift / Hz')
 ylabel('Code delay / chips')
 zlabel('Test statistics')
 
+figure(2)
+subplot(2,1,1)
+plot(freq, grid(d_max, :))
+xlabel('Doppler shift / Hz')
+ylabel('Test statistics (fixed delay)')
+subplot(2,1,2)
+plot(delay, grid(:, f_max))
+xlabel('Code delay / chips')
+ylabel('Test statistics (fixed Doppler shift)')
 

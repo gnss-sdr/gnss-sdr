@@ -522,9 +522,6 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
             bool flag_write_RTCM_1019_output = false;
             bool flag_write_RTCM_1020_output = false;
             bool flag_write_RTCM_1045_output = false;
-            bool flag_write_RTCM_1077_output = false;
-            bool flag_write_RTCM_1087_output = false;
-            bool flag_write_RTCM_1097_output = false;
             bool flag_write_RTCM_MSM_output = false;
             bool flag_write_RINEX_obs_output = false;
             bool flag_write_RINEX_nav_output = false;
@@ -634,7 +631,6 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                                         }
                                     if ((std::fabs(current_RX_time - last_RTCM_1087_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1087_rate_ms)) && (d_rtcm_MT1087_rate_ms != 0) )
                                         {
-                                            flag_write_RTCM_1087_output = true;
                                             last_RTCM_1087_output_time = current_RX_time;
                                         }
                                     if ((std::fabs(current_RX_time - last_RTCM_1097_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1097_rate_ms)) && (d_rtcm_MT1097_rate_ms != 0) )

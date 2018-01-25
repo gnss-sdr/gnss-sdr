@@ -444,6 +444,9 @@ void pcps_acquisition_cc::acquisition_core( unsigned long int samp_count )
                     std::string filename = d_dump_filename;
                     filename.append("_");
                     filename.append(1, d_gnss_synchro->System);
+                    filename.append("_");
+                    filename.append(1, d_gnss_synchro->Signal[0]);
+                    filename.append(1, d_gnss_synchro->Signal[1]);
                     filename.append("_sat_");
                     filename.append(std::to_string(d_gnss_synchro->PRN));
                     filename.append(".mat");

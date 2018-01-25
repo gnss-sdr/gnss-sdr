@@ -32,10 +32,10 @@
 
 %%%%%%%%% ¡¡¡ CONFIGURE !!! %%%%%%%%%%%%% 
 
-path = '/home/aramos/signals/GNSS-IN-THE-SPACE/CAPTURES SPIRENT/acq/';
+path = '/home/aramos/gnss-sdr/install/';
 file = 'acq';
 
-sat = 9;
+sat = 7;
 
 % Signal:
 %     1 GPS  L1
@@ -47,10 +47,10 @@ sat = 9;
 signal_type = 1;
 
 %%% True for light grid representation
-lite_view = false;
+lite_view = true;
 
 %%% If lite_view, it sets the number of samples per chip in the graphical representation
-n_samples_per_chip = 4;
+n_samples_per_chip = 3;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -58,20 +58,25 @@ switch(signal_type)
     case 1
         n_chips = 1023;
         system = 'G';
+        signal = '1C';
     case 2
         n_chips = 10230;
         system = 'G';
+        signal = '2S';
     case 3
         n_chips = 10230;
         system = 'G';
+        signal = 'L5';
     case 4
         n_chips = 4092;
         system = 'E';
+        signal = '1B';
     case 5
         n_chips = 10230;
         system = 'E';
+        signal = '5X';
 end
-filename = [path file '_' system '_sat_' num2str(sat) '.mat'];
+filename = [path file '_' system '_' signal '_sat_' num2str(sat) '.mat'];
 load(filename);
 [n_fft n_dop_bins] = size(grid);
 [d_max f_max] = find(grid == max(max(grid)));

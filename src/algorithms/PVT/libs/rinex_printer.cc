@@ -6485,7 +6485,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             for (std::multimap<unsigned int, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
                 {
                     /// \todo Need to account for pseudorange correction for glonass
-                    double leap_seconds = Rinex_Printer::get_leap_second(glonass_gnav_eph, gps_obs_time);
+                    //double leap_seconds = Rinex_Printer::get_leap_second(glonass_gnav_eph, gps_obs_time);
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
                     //Loss of lock indicator (LLI)
@@ -6723,7 +6723,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
             for (std::multimap<unsigned int, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
                 {
                     /// \todo Need to account for pseudorange correction for glonass
-                    double leap_seconds = Rinex_Printer::get_leap_second(glonass_gnav_eph, gps_obs_time);
+                    //double leap_seconds = Rinex_Printer::get_leap_second(glonass_gnav_eph, gps_obs_time);
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
                     //Loss of lock indicator (LLI)

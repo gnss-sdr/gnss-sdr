@@ -35,7 +35,7 @@
 path = '/home/aramos/signals/GNSS-IN-THE-SPACE/CAPTURES SPIRENT/acq/';
 file = 'acq';
 
-sat = 32;
+sat = 9;
 
 % Signal:
 %     1 GPS  L1
@@ -47,7 +47,7 @@ sat = 32;
 signal_type = 1;
 
 %%% True for light grid representation
-lite_view = true;
+lite_view = false;
 
 %%% If lite_view, it sets the number of samples per chip in the graphical representation
 n_samples_per_chip = 4;
@@ -79,12 +79,12 @@ freq = (0 : n_dop_bins - 1) * doppler_step - doppler_max;
 delay = (0 : n_fft - 1) / n_fft * n_chips;
 figure(1)
 if(lite_view == false)
-    surf(freq, delay, grid)
+    surf(freq, delay, grid, 'FaceColor', 'interp', 'LineStyle', 'none')
     ylim([min(delay) max(delay)])
 else
     delay_interp = (0 : n_samples_per_chip * n_chips - 1) / n_samples_per_chip;
     grid_interp = spline(delay, grid', delay_interp)';
-    surf(freq, delay_interp, grid_interp)
+    surf(freq, delay_interp, grid_interp, 'FaceColor', 'interp', 'LineStyle', 'none')
     ylim([min(delay_interp) max(delay_interp)])
 end
 xlabel('Doppler shift / Hz')

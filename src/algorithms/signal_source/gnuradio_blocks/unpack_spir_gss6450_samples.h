@@ -32,7 +32,6 @@
 #define GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
-#include <vector>
 #include <boost/dynamic_bitset.hpp>
 
 class unpack_spir_gss6450_samples;

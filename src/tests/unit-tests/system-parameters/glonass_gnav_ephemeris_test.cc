@@ -31,8 +31,6 @@
  */
 
 
-#include <complex>
-#include <iostream>
 #include "gnss_signal_processing.h"
 #include "glonass_gnav_ephemeris.h"
 
@@ -63,6 +61,7 @@ TEST(GlonassGnavEphemerisTest, ComputeGlonassTime)
     ASSERT_TRUE(expected_gtime.seconds() -  t.seconds() < FLT_EPSILON );
 }
 
+
 /*!
  * \brief Testing conversion from GLONASST to GPST
  * \test Tests scenario for N_T when greater than 365 days. Possible values here from 1 to 365*4
@@ -88,6 +87,7 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT1)
     ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
 }
 
+
 /*!
  * \brief Testing conversion from GLONASST to GPST
  * \test This version tests the conversion for offsets greater than 30 in a leap year
@@ -112,6 +112,7 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT2)
     ASSERT_TRUE(week - true_week < FLT_EPSILON );
     ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
 }
+
 
 /*!
  * \brief Testing conversion from GLONASST to GPST

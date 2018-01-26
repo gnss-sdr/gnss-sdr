@@ -31,11 +31,6 @@
  * -------------------------------------------------------------------------
  */
 
-
-#include <complex>
-#include <ctime>
-#include <complex>
-#include <ctime>
 #include "gnss_signal_processing.h"
 #include "glonass_gnav_navigation_message.h"
 
@@ -59,6 +54,7 @@ TEST(GlonassGnavNavigationMessageTest, CRCTestSuccess)
     ASSERT_TRUE(test_result);
 }
 
+
 /*!
  * \brief Testing CRC computation for GLONASS GNAV data bits of a string
  * \test The provided string was generated with a version of MATLAB GNSS-SDR that
@@ -79,6 +75,7 @@ TEST(GlonassGnavNavigationMessageTest, CRCTestFailure)
     // Check results in unit test assetions
     ASSERT_FALSE(test_result);
 }
+
 
 /*!
  * \brief Testing string decoding for GLONASS GNAV messages
@@ -111,6 +108,7 @@ TEST(GlonassGnavNavigationMessageTest, String1Decoder)
     ASSERT_TRUE(gnav_ephemeris.d_AXn - gnav_nav_message.gnav_ephemeris.d_AXn < FLT_EPSILON );
     ASSERT_TRUE(gnav_ephemeris.d_Xn -  gnav_nav_message.gnav_ephemeris.d_Xn < FLT_EPSILON );
 }
+
 
 /*!
  * \brief Testing string decoding for GLONASS GNAV messages
@@ -148,6 +146,7 @@ TEST(GlonassGnavNavigationMessageTest, String2Decoder)
     ASSERT_TRUE(gnav_ephemeris.d_Yn -  gnav_nav_message.gnav_ephemeris.d_Yn < FLT_EPSILON );
 }
 
+
 /*!
  * \brief Testing string decoding for GLONASS GNAV messages
  * \test The provided string (str1.....str15) was generated with a version of
@@ -184,6 +183,7 @@ TEST(GlonassGnavNavigationMessageTest, String3Decoder)
     ASSERT_TRUE(gnav_ephemeris.d_AZn -  gnav_nav_message.gnav_ephemeris.d_AZn < FLT_EPSILON );
     ASSERT_TRUE(gnav_ephemeris.d_Zn -  gnav_nav_message.gnav_ephemeris.d_Zn < FLT_EPSILON );
 }
+
 
 /*!
  * \brief Testing string decoding for GLONASS GNAV messages
@@ -223,6 +223,7 @@ TEST(GlonassGnavNavigationMessageTest, String4Decoder)
     ASSERT_TRUE(gnav_ephemeris.d_n -  gnav_nav_message.gnav_ephemeris.d_n < FLT_EPSILON );
     ASSERT_TRUE(gnav_ephemeris.d_M -  gnav_nav_message.gnav_ephemeris.d_M < FLT_EPSILON );
 }
+
 
 /*!
  * \brief Testing string decoding for GLONASS GNAV messages

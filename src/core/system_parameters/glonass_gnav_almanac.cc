@@ -29,30 +29,27 @@
  *
  * -------------------------------------------------------------------------
  */
+
 #include "glonass_gnav_almanac.h"
-#include <cmath>
-#include "GLONASS_L1_CA.h"
-#include "gnss_satellite.h"
 
 Glonass_Gnav_Almanac::Glonass_Gnav_Almanac()
 {
-  i_satellite_freq_channel = 0;
-  i_satellite_PRN = 0;
-  i_satellite_slot_number = 0;
+    i_satellite_freq_channel = 0;
+    i_satellite_PRN = 0;
+    i_satellite_slot_number = 0;
 
-  d_n_A = 0.0;
-  d_H_n_A = 0.0;
-  d_lambda_n_A = 0.0;
-  d_t_lambda_n_A = 0.0;
-  d_Delta_i_n_A = 0.0;
-  d_Delta_T_n_A = 0.0;
-  d_Delta_T_n_A_dot = 0.0;
-  d_epsilon_n_A = 0.0;
-  d_omega_n_A = 0.0;
-  d_M_n_A = 0.0;
-  d_KP = 0.0;
-  d_tau_n_A = 0.0;
-  d_C_n = false;
-  d_l_n = false;
-
+    d_n_A = 0.0;
+    d_H_n_A = 0.0;
+    d_lambda_n_A = 0.0;
+    d_t_lambda_n_A = 0.0;
+    d_Delta_i_n_A = 0.0;
+    d_Delta_T_n_A = 0.0;
+    d_Delta_T_n_A_dot = 0.0;
+    d_epsilon_n_A = 0.0;
+    d_omega_n_A = 0.0;
+    d_M_n_A = 0.0;
+    d_KP = 0.0;
+    d_tau_n_A = 0.0;
+    d_C_n = false;
+    d_l_n = false;
 }

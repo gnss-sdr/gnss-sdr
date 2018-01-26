@@ -72,10 +72,10 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     // Since preamble rate is different than navigation data rate we use a constant
     d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
 
-    memcpy((unsigned short int*)this->d_preambles_bits, (unsigned short int*)preambles_bits, GLONASS_GNAV_PREAMBLE_LENGTH_BITS*sizeof(unsigned short int));
+    memcpy(static_cast<unsigned short int*>(this->d_preambles_bits), static_cast<unsigned short int*>(preambles_bits), GLONASS_GNAV_PREAMBLE_LENGTH_BITS * sizeof(unsigned short int));
 
     // preamble bits to sampled symbols
-    d_preambles_symbols = (signed int*)malloc(sizeof(signed int) * d_symbols_per_preamble);
+    d_preambles_symbols = static_cast<signed int*>(malloc(sizeof(signed int) * d_symbols_per_preamble));
     int n = 0;
     for (int i = 0; i < GLONASS_GNAV_PREAMBLE_LENGTH_BITS; i++)
         {
@@ -229,8 +229,8 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
     int corr_value = 0;
     int preamble_diff = 0;
 
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
-    const Gnss_Synchro **in = (const Gnss_Synchro **)  &input_items[0]; //Get the input samples pointer
+    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);           // Get the output buffer pointer
+    const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]); // Get the input buffer pointer
 
     Gnss_Synchro current_symbol; //structure to save the synchronization information and send the output object to the next block
     //1. Copy the current tracking output
@@ -240,7 +240,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
     consume_each(1);
 
     d_flag_preamble = false;
-    unsigned int required_symbols=GLONASS_GNAV_STRING_SYMBOLS;
+    unsigned int required_symbols = GLONASS_GNAV_STRING_SYMBOLS;
 
     if (d_symbol_history.size()>required_symbols)
         {
@@ -334,7 +334,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
                                 {
                                     d_flag_frame_sync = true;
                                     DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
-                                            << d_symbol_history.at(0).Tracking_sample_counter << " [samples]";
+                                               << d_symbol_history.at(0).Tracking_sample_counter << " [samples]";
                                 }
                         }
                     else
@@ -383,7 +383,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
 
     current_symbol.PRN = this->d_satellite.get_PRN();
     current_symbol.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
-    current_symbol.TOW_at_current_symbol_s -=delta_t; //Galileo to GPS TOW
+    current_symbol.TOW_at_current_symbol_s -= delta_t; // Galileo to GPS TOW
 
     if(d_dump == true)
         {
@@ -393,11 +393,11 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attrib
                     double tmp_double;
                     unsigned long int tmp_ulong_int;
                     tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                     tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                    d_dump_file.write((char*)&tmp_ulong_int, sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_ulong_int), sizeof(unsigned long int));
                     tmp_double = 0;
-                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }
             catch (const std::ifstream::failure & e)
             {
@@ -445,7 +445,7 @@ void glonass_l1_ca_telemetry_decoder_cc::set_channel(int channel)
                     }
                     catch (const std::ifstream::failure& e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
+                            LOG(WARNING) << "channel " << d_channel << ": exception opening Glonass TLM dump file. " << e.what();
                     }
                 }
         }

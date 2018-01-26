@@ -1,3 +1,35 @@
+/*!
+ * \file glonass_l1_ca_pcps_acquisition_test.cc
+ * \brief  Tests a PCPS acquisition block for Glonass L1 C/A signals
+ * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
+ * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
+ *
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
+
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
@@ -181,7 +213,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.0005);
+        acquisition->set_threshold(0.005);
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW( {

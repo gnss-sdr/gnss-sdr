@@ -782,7 +782,7 @@ The user can configure the receiver for reading from a file, setting in the conf
 SignalSource.implementation=File_Signal_Source
 SignalSource.filename=/home/user/gnss-sdr/data/my_capture.dat
 SignalSource.item_type=gr_complex
-SignalSource.sampling_frequency=4000000 ; Sampling frequency in [Hz]
+SignalSource.sampling_frequency=4000000 ; Sampling frequency in samples per second (Sps)
 ~~~~~~  
 
 Type ```gr_complex``` refers to a GNU Radio typedef equivalent to ```std::complex<float>```. In order to save some storage space, you might wanted to store your signal in a more efficient format such as an I/Q interleaved ```short`` integer sample stream. In that case, change the corresponding line to:

@@ -875,7 +875,12 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
     consume_each(d_correlation_length_samples); // this is necessary in gr::block derivates
     d_sample_counter += d_correlation_length_samples; //count for the processed samples
 
-    return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
+    if (d_enable_tracking)
+    {
+        return 1;
+    }else{
+        return 0;
+    }
 }
 
 

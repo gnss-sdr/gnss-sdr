@@ -154,7 +154,7 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
             //* The time of the last input symbol can be computed from the message ToW and
             //* delay by the formulae:
             //* \code
-            //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20
+            //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20 + (12 * 20); 12 symbols of the encoder's transitory
             d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD + 12 * GPS_L2_M_PERIOD;
             d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
             d_flag_valid_word = true;
@@ -169,12 +169,6 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
         }
     current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
     current_synchro_data.Flag_valid_word = d_flag_valid_word;
-
-    //    if (flag_PLL_180_deg_phase_locked == true)
-    //        {
-    //            //correct the accumulated phase for the Costas loop phase shift, if required
-    //            current_synchro_data.Carrier_phase_rads += GPS_PI;
-    //        }
 
     if(d_dump == true)
         {
@@ -192,7 +186,7 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
             }
             catch (const std::ifstream::failure & e)
             {
-                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                    LOG(WARNING) << "Exception writing Telemetry GPS L2 dump file " << e.what();
             }
         }
 
@@ -230,7 +224,7 @@ void gps_l2c_telemetry_decoder_cc::set_channel(int channel)
                     }
                     catch (const std::ifstream::failure &e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening Telemetry GPS L2 dump file " << e.what();
                     }
                 }
         }

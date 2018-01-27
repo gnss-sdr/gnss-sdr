@@ -1,7 +1,6 @@
 /*!
- * \file glonass_l1_ca_dll_pll_tracking.h
- * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for Glonass L1 C/A to a TrackingInterface
+ * \file glonass_l1_ca_dll_pll_tracking_cc.cc
+ * \brief  Implementation of a code DLL + carrier PLL tracking block
  * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
  * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
@@ -580,7 +579,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribu
         carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
         // New carrier Doppler frequency estimation
         d_carrier_frequency_hz += carr_error_filt_hz;
-        d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
+        d_carrier_doppler_hz += carr_error_filt_hz;
         d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GLONASS_L1_CA_CODE_RATE_HZ) / d_glonass_freq_ch);
 
         // ################## DLL ##########################################################

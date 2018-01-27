@@ -1,5 +1,5 @@
 /*!
- * \file gps_l5idll_pll_tracking.cc
+ * \file gps_l5i_dll_pll_tracking.cc
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L5i to a TrackingInterface
  * \author Javier Arribas, 2017. jarribas(at)cttc.es

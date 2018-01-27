@@ -279,103 +279,103 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
         {
             switch ( PRN_ )
             {
-            // info from http://www.navcen.uscg.gov/?Do=constellationStatus
+            // info from https://www.navcen.uscg.gov/?Do=constellationStatus
 
             case 1 :
-                block_ = std::string("IIF");   //Plane D
+                block_ = std::string("IIF");   // Plane D
                 break;
             case 2 :
-                block_ = std::string("IIR");   //Plane D
+                block_ = std::string("IIR");   // Plane D
                 break;
             case 3 :
-                block_ = std::string("IIF");   //Plane E
+                block_ = std::string("IIF");   // Plane E
                 break;
             case 4 :
                 block_ = std::string("Unknown");
                 break;
             case 5 :
-                block_ = std::string("IIR-M"); //Plane E
+                block_ = std::string("IIR-M"); // Plane E
                 break;
             case 6 :
-                block_ = std::string("IIF");   //Plane D
+                block_ = std::string("IIF");   // Plane D
                 break;
             case 7 :
-                block_ = std::string("IIR-M"); //Plane A
+                block_ = std::string("IIR-M"); // Plane A
                 break;
             case 8 :
-                block_ = std::string("IIF");   //Plane C
+                block_ = std::string("IIF");   // Plane C
                 break;
             case 9 :
-                block_ = std::string("IIF");   //Plane F
+                block_ = std::string("IIF");   // Plane F
                 break;
             case 10 :
-                block_ = std::string("IIF");   //Plane E
+                block_ = std::string("IIF");   // Plane E
                 break;
             case 11 :
-                block_ = std::string("IIR");   //Plane D
+                block_ = std::string("IIR");   // Plane D
                 break;
             case 12 :
-                block_ = std::string("IIR-M"); //Plane B
+                block_ = std::string("IIR-M"); // Plane B
                 break;
             case 13 :
-                block_ = std::string("IIR");   //Plane F
+                block_ = std::string("IIR");   // Plane F
                 break;
             case 14 :
-                block_ = std::string("IIR");   //Plane F
+                block_ = std::string("IIR");   // Plane F
                 break;
             case 15 :
-                block_ = std::string("IIR-M"); //Plane F
+                block_ = std::string("IIR-M"); // Plane F
                 break;
             case 16 :
-                block_ = std::string("IIR");   //Plane B
+                block_ = std::string("IIR");   // Plane B
                 break;
             case 17 :
-                block_ = std::string("IIR-M"); //Plane C
+                block_ = std::string("IIR-M"); // Plane C
                 break;
             case 18 :
-                block_ = std::string("IIR");   //Plane E
+                block_ = std::string("IIR");   // Plane E
                 break;
             case 19 :
-                block_ = std::string("IIR");   //Plane D
+                block_ = std::string("IIR");   // Plane D
                 break;
             case 20 :
-                block_ = std::string("IIR");   //Plane B
+                block_ = std::string("IIR");   // Plane B
                 break;
             case 21 :
-                block_ = std::string("IIR");   //Plane D
+                block_ = std::string("IIR");   // Plane D
                 break;
             case 22 :
-                block_ = std::string("IIR");   //Plane E
+                block_ = std::string("IIR");   // Plane E
                 break;
             case 23 :
-                block_ = std::string("IIR");   //Plane F
+                block_ = std::string("IIR");   // Plane F
                 break;
             case 24 :
-                block_ = std::string("IIF");   //Plane A
+                block_ = std::string("IIF");   // Plane A
                 break;
             case 25 :
-                block_ = std::string("IIF");   //Plane B
+                block_ = std::string("IIF");   // Plane B
                 break;
             case 26 :
-                block_ = std::string("IIF");   //Plane B
+                block_ = std::string("IIF");   // Plane B
                 break;
             case 27 :
-                block_ = std::string("IIF");   //Plane C
+                block_ = std::string("IIF");   // Plane C
                 break;
             case 28 :
-                block_ = std::string("IIR");   //Plane B
+                block_ = std::string("IIR");   // Plane B
                 break;
             case 29 :
-                block_ = std::string("IIR-M"); //Plane C
+                block_ = std::string("IIR-M"); // Plane C
                 break;
             case 30 :
-                block_ = std::string("IIF");   //Plane A
+                block_ = std::string("IIF");   // Plane A
                 break;
             case 31 :
-                block_ = std::string("IIR-M"); //Plane A
+                block_ = std::string("IIR-M"); // Plane A
                 break;
             case 32 :
-                block_ = std::string("IIF");   //Plane F
+                block_ = std::string("IIF");   // Plane F
                 break;
             default :
                 block_ = std::string("Unknown");
@@ -387,103 +387,103 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
         {
             switch ( PRN_ )
             {
-            // info from http://www.sdcm.ru/smglo/grupglo?version=eng&site=extern
+            // Info from http://www.sdcm.ru/smglo/grupglo?version=eng&site=extern
             // See also http://www.glonass-center.ru/en/GLONASS/
 
             case 1 :
-                block_ = std::string("1");   //Plane 1
+                block_ = std::string("1");   // Plane 1
                 rf_link = 1;
                 break;
             case 2 :
-                block_ = std::string("-4");  //Plane 1
+                block_ = std::string("-4");  // Plane 1
                 rf_link = -4;
                 break;
             case 3 :
-                block_ = std::string("5");   //Plane 1
+                block_ = std::string("5");   // Plane 1
                 rf_link = 5;
                 break;
             case 4 :
-                block_ = std::string("6");   //Plane 1
+                block_ = std::string("6");   // Plane 1
                 rf_link = 6;
                 break;
             case 5 :
-                block_ = std::string("1");   //Plane 1
+                block_ = std::string("1");   // Plane 1
                 rf_link = 1;
                 break;
             case 6 :
-                block_ = std::string("-4");  //Plane 1
+                block_ = std::string("-4");  // Plane 1
                 rf_link = -4;
                 break;
             case 7 :
-                block_ = std::string("5");   //Plane 1
+                block_ = std::string("5");   // Plane 1
                 rf_link = 5;
                 break;
             case 8 :
-                block_ = std::string("6");   //Plane 1
+                block_ = std::string("6");   // Plane 1
                 rf_link = 6;
                 break;
             case 9 :
-                block_ = std::string("-2");  //Plane 2
+                block_ = std::string("-2");  // Plane 2
                 rf_link = -2;
                 break;
             case 10 :
-                block_ = std::string("-7");  //Plane 2
+                block_ = std::string("-7");  // Plane 2
                 rf_link = -7;
                 break;
             case 11 :
-                block_ = std::string("0");   //Plane 2
+                block_ = std::string("0");   // Plane 2
                 rf_link = 0;
                 break;
             case 12 :
-                block_ = std::string("-1");  //Plane 2
+                block_ = std::string("-1");  // Plane 2
                 rf_link = -1;
                 break;
             case 13 :
-                block_ = std::string("-2");  //Plane 2
+                block_ = std::string("-2");  // Plane 2
                 rf_link = -2;
                 break;
             case 14 :
-                block_ = std::string("-7");  //Plane 2
+                block_ = std::string("-7");  // Plane 2
                 rf_link = -7;
                 break;
             case 15 :
-                block_ = std::string("0");   //Plane 2
+                block_ = std::string("0");   // Plane 2
                 rf_link = 0;
                 break;
             case 16 :
-                block_ = std::string("-1");  //Plane 2
+                block_ = std::string("-1");  // Plane 2
                 rf_link = -1;
                 break;
             case 17 :
-                block_ = std::string("4");   //Plane 3
+                block_ = std::string("4");   // Plane 3
                 rf_link = 4;
                 break;
             case 18 :
-                block_ = std::string("-3");  //Plane 3
+                block_ = std::string("-3");  // Plane 3
                 rf_link = -3;
                 break;
             case 19 :
-                block_ = std::string("3");   //Plane 3
+                block_ = std::string("3");   // Plane 3
                 rf_link = 3;
                 break;
             case 20 :
-                block_ = std::string("2");   //Plane 3
+                block_ = std::string("2");   // Plane 3
                 rf_link = 2;
                 break;
             case 21 :
-                block_ = std::string("4");   //Plane 3
+                block_ = std::string("4");   // Plane 3
                 rf_link = 4;
                 break;
             case 22 :
-                block_ = std::string("-3");  //Plane 3
+                block_ = std::string("-3");  // Plane 3
                 rf_link = -3;
                 break;
             case 23 :
-                block_ = std::string("3");   //Plane 3
+                block_ = std::string("3");   // Plane 3
                 rf_link = 3;
                 break;
             case 24 :
-                block_ = std::string("2");   //Plane 3
+                block_ = std::string("2");   // Plane 3
                 rf_link = 2;
                 break;
             default :
@@ -515,62 +515,74 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
         }
     if (system_.compare("Galileo") == 0)
         {
-            // Check http://en.wikipedia.org/wiki/List_of_Galileo_satellites
+            // Check http://en.wikipedia.org/wiki/List_of_Galileo_satellites and https://www.gsc-europa.eu/system-status/Constellation-Information
             switch ( PRN_ )
             {
             case 1:
-                block_ = std::string("FOC-FM10"); // Galileo Full Operational Capability (FOC) satellite FM10 / GSAT-0210, launched on May 24, 2016
+                block_ = std::string("FOC-FM10");  // Galileo Full Operational Capability (FOC) satellite FM10 / GSAT-0210, launched on May 24, 2016.
                 break;
             case 2:
-                block_ = std::string("FOC-FM11"); // Galileo Full Operational Capability (FOC) satellite FM11 / GSAT-0211, launched on May 24, 2016
+                block_ = std::string("FOC-FM11");  // Galileo Full Operational Capability (FOC) satellite FM11 / GSAT-0211, launched on May 24, 2016.
                 break;
             case 3:
-                block_ = std::string("FOC-FM12"); // Galileo Full Operational Capability (FOC) satellite FM12 / GSAT-0212, launched on November 17, 2016
+                block_ = std::string("FOC-FM12");  // Galileo Full Operational Capability (FOC) satellite FM12 / GSAT-0212, launched on November 17, 2016.
                 break;
             case 4:
-                block_ = std::string("FOC-FM13"); // Galileo Full Operational Capability (FOC) satellite FM13 / GSAT-0213, launched on November 17, 2016
+                block_ = std::string("FOC-FM13");  // Galileo Full Operational Capability (FOC) satellite FM13 / GSAT-0213, launched on November 17, 2016.
                 break;
             case 5:
-                block_ = std::string("FOC-FM14"); // Galileo Full Operational Capability (FOC) satellite FM14 / GSAT-0214, launched on November 17, 2016
+                block_ = std::string("FOC-FM14");  // Galileo Full Operational Capability (FOC) satellite FM14 / GSAT-0214, launched on November 17, 2016.
                 break;
             case 7:
-                block_ = std::string("FOC-FM7"); // Galileo Full Operational Capability (FOC) satellite FM7 / GSAT-0207, launched on November 17, 2016
+                block_ = std::string("FOC-FM7");   // Galileo Full Operational Capability (FOC) satellite FM7 / GSAT-0207, launched on November 17, 2016.
                 break;
             case 8:
-                block_ = std::string("FOC-FM8"); // Galileo Full Operational Capability (FOC) satellite FM8 / GSAT0208, launched on December 17, 2015
+                block_ = std::string("FOC-FM8");   // Galileo Full Operational Capability (FOC) satellite FM8 / GSAT0208, launched on December 17, 2015.
                 break;
             case 9:
-                block_ = std::string("FOC-FM9"); // Galileo Full Operational Capability (FOC) satellite FM9 / GSAT0209, launched on December 17, 2015
+                block_ = std::string("FOC-FM9");   // Galileo Full Operational Capability (FOC) satellite FM9 / GSAT0209, launched on December 17, 2015.
                 break;
             case 11 :
-                block_ = std::string("IOV-PFM"); //  PFM, the ProtoFlight Model / GSAT0101, launched from French Guiana at 10:30 GMT on October 21, 2011
+                block_ = std::string("IOV-PFM");   // PFM, the ProtoFlight Model / GSAT0101, launched from French Guiana at 10:30 GMT on October 21, 2011.
                 break;
             case 12 :
-                block_ = std::string("IOV-FM2**"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011
+                block_ = std::string("IOV-FM2");   // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011.
                 break;
             case 14 :
-                block_ = std::string("FOC-FM2*"); // Galileo Full Operational Capability (FOC) satellite FM2 / GSAT0202, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in March, 2015.
+                block_ = std::string("FOC-FM2*");  // Galileo Full Operational Capability (FOC) satellite FM2 / GSAT0202, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in March, 2015. UNDER TESTING.
                 break;
             case 18 :
-                block_ = std::string("FOC-FM1*"); // Galileo Full Operational Capability (FOC) satellite FM1 / GSAT0201, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in December, 2014.
+                block_ = std::string("FOC-FM1*");  // Galileo Full Operational Capability (FOC) satellite FM1 / GSAT0201, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in December, 2014. UNDER TESTING.
                 break;
             case 19 :
-                block_ = std::string("IOV-FM3"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3) / GSAT0103, launched on October 12, 2012
+                block_ = std::string("IOV-FM3");   // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3) / GSAT0103, launched on October 12, 2012.
                 break;
             case 20 :
-                block_ = std::string("IOV-FM4**"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4) / GSAT0104, launched on October 12, 2012. Partially unavailable: Payload power problem beginning May 27, 2014 led to permanent loss of E5 and E6 transmissions, E1 transmission restored.
+                block_ = std::string("IOV-FM4**"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4) / GSAT0104, launched on October 12, 2012. Payload power problem beginning May 27, 2014 led to permanent loss of E5 and E6 transmissions, E1 transmission restored. UNAVAILABLE FROM 2014-05-27 UNTIL FURTHER NOTICE
+                break;
+            case 21 :
+                block_ = std::string("FOC-FM15");  // Galileo Full Operational Capability (FOC) satellite FM15 / GSAT0215, launched on Dec. 12, 2017. UNDER COMMISIONING.
                 break;
             case 22 :
-                block_ = std::string("FOC-FM4"); // Galileo Full Operational Capability (FOC) satellite FM4 / GSAT0204, launched on March 27, 2015.
+                block_ = std::string("FOC-FM4**"); // Galileo Full Operational Capability (FOC) satellite FM4 / GSAT0204, launched on March 27, 2015. REMOVED FROM ACTIVE SERVICE ON 2017-12-08 UNTIL FURTHER NOTICE FOR CONSTELLATION MANAGEMENT PURPOSES.
                 break;
             case 24 :
-                block_ = std::string("FOC-FM5"); // Galileo Full Operational Capability (FOC) satellite FM5 / GSAT0205, launched on Sept. 11, 2015.
+                block_ = std::string("FOC-FM5");   // Galileo Full Operational Capability (FOC) satellite FM5 / GSAT0205, launched on Sept. 11, 2015.
+                break;
+            case 25 :
+                block_ = std::string("FOC-FM16");  // Galileo Full Operational Capability (FOC) satellite FM16 / GSAT0216, launched on Dec. 12, 2017. UNDER COMMISIONING.
                 break;
             case 26 :
-                block_ = std::string("FOC-FM3"); // Galileo Full Operational Capability (FOC) satellite FM3 / GSAT0203, launched on March 27, 2015.
+                block_ = std::string("FOC-FM3");   // Galileo Full Operational Capability (FOC) satellite FM3 / GSAT0203, launched on March 27, 2015.
+                break;
+            case 27 :
+                block_ = std::string("FOC-FM17");  // Galileo Full Operational Capability (FOC) satellite FM17 / GSAT0217, launched on Dec. 12, 2017. UNDER COMMISIONING.
                 break;
             case 30 :
-                block_ = std::string("FOC-FM6"); // Galileo Full Operational Capability (FOC) satellite FM6 / GSAT0206, launched on Sept. 11, 2015.
+                block_ = std::string("FOC-FM6");   // Galileo Full Operational Capability (FOC) satellite FM6 / GSAT0206, launched on Sept. 11, 2015.
+                break;
+            case 31 :
+                block_ = std::string("FOC-FM18");  // Galileo Full Operational Capability (FOC) satellite FM18 / GSAT0218, launched on Dec. 12, 2017. UNDER COMMISIONING.
                 break;
             default:
                 block_ = std::string("Unknown(Simulated)");

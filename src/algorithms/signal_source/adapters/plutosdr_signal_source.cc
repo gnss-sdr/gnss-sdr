@@ -52,7 +52,6 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     sample_rate_ = configuration->property(role + ".sampling_frequency", 3000000);
     bandwidth_ = configuration->property(role + ".bandwidth", 2000000);
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
-    decimation_ = configuration->property(role + ".decimation", 1);
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);
     bb_dc_ = configuration->property(role + ".bb_dc", true);
@@ -81,7 +80,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     std::cout << "item type: " << item_type_ << std::endl;
 
     plutosdr_source_ = gr::iio::pluto_source::make(uri_, freq_, sample_rate_,
-            decimation_, bandwidth_, buffer_size_, quadrature_, rf_dc_, bb_dc_,
+            bandwidth_, buffer_size_, quadrature_, rf_dc_, bb_dc_,
             gain_mode_.c_str(), rf_gain_,filter_file_.c_str(), filter_auto_);
 
     if (samples_ != 0)

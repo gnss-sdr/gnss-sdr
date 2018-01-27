@@ -1,5 +1,5 @@
 /*!
- * \file code_generation_test.cc
+ * \file glonass_gnav_ephemeris_test.cc.cc
  * \note Code added as part of GSoC 2017 program
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
  * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,9 +31,6 @@
  */
 
 
-#include <complex>
-#include <ctime>
-#include <iostream>
 #include "gnss_signal_processing.h"
 #include "glonass_gnav_ephemeris.h"
 
@@ -49,20 +46,21 @@ TEST(GlonassGnavEphemerisTest, ComputeGlonassTime)
     d = d + d2;
 
     boost::gregorian::date expected_gdate;
-	boost::posix_time::time_duration expected_gtime;
+    boost::posix_time::time_duration expected_gtime;
 
-	boost::posix_time::ptime gtime = gnav_eph.compute_GLONASS_time(7560);
-	expected_gdate = gtime.date();
-	expected_gtime = gtime.time_of_day();
+    boost::posix_time::ptime gtime = gnav_eph.compute_GLONASS_time(7560);
+    expected_gdate = gtime.date();
+    expected_gtime = gtime.time_of_day();
 
     // Perform assertions of decoded fields
-	ASSERT_TRUE(expected_gdate.year() - d.year() < FLT_EPSILON );
-	ASSERT_TRUE(expected_gdate.month() - d.month() < FLT_EPSILON );
-	ASSERT_TRUE(expected_gdate.day() - d.day() < FLT_EPSILON );
-	ASSERT_TRUE(expected_gtime.hours() -  t.hours() < FLT_EPSILON );
-	ASSERT_TRUE(expected_gtime.minutes() -  t.minutes() < FLT_EPSILON );
-	ASSERT_TRUE(expected_gtime.seconds() -  t.seconds() < FLT_EPSILON );
+    ASSERT_TRUE(expected_gdate.year() - d.year() < FLT_EPSILON );
+    ASSERT_TRUE(expected_gdate.month() - d.month() < FLT_EPSILON );
+    ASSERT_TRUE(expected_gdate.day() - d.day() < FLT_EPSILON );
+    ASSERT_TRUE(expected_gtime.hours() -  t.hours() < FLT_EPSILON );
+    ASSERT_TRUE(expected_gtime.minutes() -  t.minutes() < FLT_EPSILON );
+    ASSERT_TRUE(expected_gtime.seconds() -  t.seconds() < FLT_EPSILON );
 }
+
 
 /*!
  * \brief Testing conversion from GLONASST to GPST
@@ -82,12 +80,13 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT1)
     double true_week = 1307;
     double true_tow = 480600+true_leap_sec;
 
-	gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
+    gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
 
     // Perform assertions of decoded fields
-	ASSERT_TRUE(week - true_week < FLT_EPSILON );
-	ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
+    ASSERT_TRUE(week - true_week < FLT_EPSILON );
+    ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
 }
+
 
 /*!
  * \brief Testing conversion from GLONASST to GPST
@@ -107,12 +106,13 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT2)
     double true_week = 1915;
     double true_tow = 518400+true_leap_sec+tod;
 
-	gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
+    gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
 
     // Perform assertions of decoded fields
-	ASSERT_TRUE(week - true_week < FLT_EPSILON );
-	ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
+    ASSERT_TRUE(week - true_week < FLT_EPSILON );
+    ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
 }
+
 
 /*!
  * \brief Testing conversion from GLONASST to GPST
@@ -132,9 +132,9 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT3)
     double true_week = 1886;
     double true_tow = 259200+true_leap_sec+tod;
 
-	gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
+    gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
 
     // Perform assertions of decoded fields
-	ASSERT_TRUE(week - true_week < FLT_EPSILON );
-	ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
+    ASSERT_TRUE(week - true_week < FLT_EPSILON );
+    ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
 }

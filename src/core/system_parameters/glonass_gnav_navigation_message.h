@@ -36,10 +36,6 @@
 
 
 #include <bitset>
-#include <map>
-#include <string>
-#include <utility>
-#include <vector>
 #include "GLONASS_L1_CA.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
@@ -70,16 +66,16 @@ public:
 
     Glonass_Gnav_Ephemeris gnav_ephemeris;    //!< Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model;    //!< UTC model information
-    Glonass_Gnav_Almanac gnav_almanac[GLONASS_L1_CA_NBR_SATS];    //!< Almanac information for all 24 satellites
+    Glonass_Gnav_Almanac gnav_almanac[GLONASS_L1_CA_NBR_SATS];  //!< Almanac information for all 24 satellites
 
-    //!< Ephmeris Flags and control variables
+    // Ephemeris Flags and control variables
     bool flag_all_ephemeris;      //!< Flag indicating that all strings containing ephemeris have been received
     bool flag_ephemeris_str_1;    //!< Flag indicating that ephemeris 1/4 (string 1) have been received
     bool flag_ephemeris_str_2;    //!< Flag indicating that ephemeris 2/4 (string 2) have been received
     bool flag_ephemeris_str_3;    //!< Flag indicating that ephemeris 3/4 (string 3) have been received
     bool flag_ephemeris_str_4;    //!< Flag indicating that ephemeris 4/4 (string 4) have been received
 
-    //!< Almanac Flags
+    // Almanac Flags
     bool flag_all_almanac;        //!< Flag indicating that all almanac have been received
     bool flag_almanac_str_6;      //!< Flag indicating that almanac of string 6 have been received
     bool flag_almanac_str_7;      //!< Flag indicating that almanac of string 7 have been received
@@ -91,23 +87,22 @@ public:
     bool flag_almanac_str_13;     //!< Flag indicating that almanac of string 13 have been received
     bool flag_almanac_str_14;     //!< Flag indicating that almanac of string 14 have been received
     bool flag_almanac_str_15;     //!< Flag indicating that almanac of string 15 have been received
-    unsigned int i_alm_satellite_slot_number;     //!< SV Orbit Slot Number
+    unsigned int i_alm_satellite_slot_number; //!< SV Orbit Slot Number
 
-    //!< UTC and System Clocks Flags
-    bool flag_utc_model_valid;      //!< If set, it indicates that the UTC model parameters are filled
-    bool flag_utc_model_str_5;      //!< Clock info send in string 5 of navigation data
-    bool flag_utc_model_str_15;     //!< Clock info send in string 15 of frame 5 of navigation data
+    // UTC and System Clocks Flags
+    bool flag_utc_model_valid;    //!< If set, it indicates that the UTC model parameters are filled
+    bool flag_utc_model_str_5;    //!< Clock info send in string 5 of navigation data
+    bool flag_utc_model_str_15;   //!< Clock info send in string 15 of frame 5 of navigation data
 
     bool flag_TOW_set;      //!< Flag indicating when the TOW has been set
     bool flag_TOW_new;      //!< Flag indicating when a new TOW has been computed
 
-    double d_satClkCorr;     //!<  Satellite clock error
-    double d_dtr;            //!<  Relativistic clock correction term
-    double d_satClkDrift;    //!<  Satellite clock drift
+    double d_satClkCorr;    //!<  Satellite clock error
+    double d_dtr;           //!<  Relativistic clock correction term
+    double d_satClkDrift;   //!<  Satellite clock drift
 
-    double d_previous_tb;	//!< Previous iode for the Glonass_Gnav_Ephemeris object. Used to determine when new data arrives
-    double d_previous_Na[GLONASS_L1_CA_NBR_SATS];	//!< Previous time for almanac of the Glonass_Gnav_Almanac object
-
+    double d_previous_tb; //!< Previous iode for the Glonass_Gnav_Ephemeris object. Used to determine when new data arrives
+    double d_previous_Na[GLONASS_L1_CA_NBR_SATS]; //!< Previous time for almanac of the Glonass_Gnav_Almanac object
 
     /*!
      * \brief Compute CRC for GLONASS GNAV strings
@@ -116,10 +111,10 @@ public:
     bool CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits);
 
     /*!
-	 * \brief Computes the frame number being decoded given the satellite slot number
-	 * \param satellite_slot_number [in] Satellite slot number identifier
-	 * \returns Frame number being decoded, 0 if operation was not successful.
-	 */
+     * \brief Computes the frame number being decoded given the satellite slot number
+     * \param satellite_slot_number [in] Satellite slot number identifier
+     * \returns Frame number being decoded, 0 if operation was not successful.
+     */
     unsigned int get_frame_number(unsigned int satellite_slot_number);
 
     /*!

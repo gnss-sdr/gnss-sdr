@@ -280,7 +280,6 @@ TEST(RtcmTest, MT1019)
 TEST(RtcmTest, MT1020)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    bool expected_true = true;
 
     // Objects to populate the ephemeris and utc fields
     Glonass_Gnav_Ephemeris gnav_ephemeris = Glonass_Gnav_Ephemeris();
@@ -357,7 +356,7 @@ TEST(RtcmTest, MSMCell)
     auto rtcm = std::make_shared<Rtcm>();
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
     Galileo_Ephemeris gal_eph = Galileo_Ephemeris();
-    Glonass_Gnav_Ephemeris glo_gnav_eph = Glonass_Gnav_Ephemeris();
+    //Glonass_Gnav_Ephemeris glo_gnav_eph = Glonass_Gnav_Ephemeris();
     std::map<int, Gnss_Synchro> pseudoranges;
 
     Gnss_Synchro gnss_synchro;
@@ -420,7 +419,7 @@ TEST(RtcmTest, MSMCell)
 
     gps_eph.i_satellite_PRN = gnss_synchro2.PRN;
     gal_eph.i_satellite_PRN = gnss_synchro.PRN;
-    glo_gnav_eph.i_satellite_PRN = gnss_synchro.PRN;
+    //glo_gnav_eph.i_satellite_PRN = gnss_synchro.PRN;
 
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
             {},
@@ -463,7 +462,7 @@ TEST(RtcmTest, MSMCell)
              divergence_free,
              more_messages);
     std::string MSM1_bin_2 = rtcm->binary_data_to_bin(MSM1_2);
-    EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010101100")); // check cell mask
+    EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010001100")); // check cell mask
 
     Gnss_Synchro gnss_synchro7;
     gnss_synchro7.PRN = 10;

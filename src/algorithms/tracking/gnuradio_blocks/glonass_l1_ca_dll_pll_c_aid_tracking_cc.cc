@@ -1,7 +1,6 @@
 /*!
- * \file glonass_l1_ca_dll_pll_tracking.h
- * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for Glonass L1 C/A to a TrackingInterface
+ * \file glonass_l1_ca_dll_pll_c_aid_tracking_cc.h
+ * \brief  Implementation of a code DLL + carrier PLL tracking block
  * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
  * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
@@ -218,6 +217,9 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
     d_preamble_timestamp_s = 0.0;
 
     d_carrier_frequency_hz = 0.0;
+    d_carrier_doppler_old_hz = 0.0;
+
+    d_glonass_freq_ch = 0;
 
     //set_min_output_buffer((long int)300);
 }
@@ -270,13 +272,13 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     // d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
     // d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     // d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
-    d_carrier_frequency_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    d_carrier_frequency_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO * static_cast<double>(GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN)));
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_frequency_hz / static_cast<double>(d_fs_in);
 
 
     // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); // The carrier loop filter implements the Doppler accumulator
+    d_carrier_loop_filter.initialize(d_carrier_frequency_hz); // The carrier loop filter implements the Doppler accumulator
     d_code_loop_filter.initialize();    // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
@@ -709,6 +711,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __a
                     // ################## PLL ##########################################################
                     // Update PLL discriminator [rads/Ti -> Secs/Ti]
                     d_carr_phase_error_secs_Ti = pll_cloop_two_quadrant_atan(d_correlator_outs[1]) / GLONASS_TWO_PI; // prompt output
+                    d_carrier_doppler_old_hz = d_carrier_doppler_hz;
                     // Carrier discriminator filter
                     // NOTICE: The carrier loop filter includes the Carrier Doppler accumulator, as described in Kaplan
                     // Input [s/Ti] -> output [Hz]
@@ -716,7 +719,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __a
                     // PLL to DLL assistance [Secs/Ti]
                     d_pll_to_dll_assist_secs_Ti = (d_carrier_doppler_hz * CURRENT_INTEGRATION_TIME_S) / d_glonass_freq_ch;
                     // code Doppler frequency update
-                    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GLONASS_L1_CA_CODE_RATE_HZ) / d_glonass_freq_ch);
+                    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ + (((d_carrier_doppler_hz - d_carrier_doppler_old_hz) * GLONASS_L1_CA_CODE_RATE_HZ) / d_glonass_freq_ch);
 
                     // ################## DLL ##########################################################
                     // DLL discriminator

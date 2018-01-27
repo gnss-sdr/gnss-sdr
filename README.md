@@ -375,7 +375,7 @@ $ sudo make install
 
 ###### Build FMCOMMS2 based SDR Hardware support (OPTIONAL):
 
-Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>v0.2) gnuradio block:
+Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>v0.3) gnuradio block:
 
 ~~~~~~
 $ sudo apt-get install libxml2-dev bison flex
@@ -1046,9 +1046,12 @@ Each channel must be assigned to a GNSS signal, according to the following ident
 | **Signal**        | **Identifier**  |
 |:------------------|:---------------:|
 | GPS L1 C/A        |      1C         |
+| Galileo E1b/c     |      1B         |
+| Glonass L1 C/A    |      1G         |
 | GPS L2 L2C(M)     |      2S         |
-| Galileo E1B       |      1B         |
-| Galileo E5a (I+Q) |      5X         |
+| GPS L5            |      L5         |
+| Galileo E5a       |      5X         |
+
 
 
 Example: Eight GPS L1 C/A channels.

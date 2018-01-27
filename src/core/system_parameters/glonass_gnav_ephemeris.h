@@ -35,9 +35,6 @@
 #define GNSS_SDR_GLONASS_GNAV_EPHEMERIS_H_
 
 
-#include <map>
-#include <string>
-#include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -64,7 +61,7 @@ public:
     double d_m;             //!< String number within frame [dimensionless]
     double d_t_k;           //!< GLONASS Time (UTC(SU) + 3 h) referenced to the beginning of the frame within the current day [s]
     double d_t_b;           //!< Reference ephemeris relative time in GLONASS Time (UTC(SU) + 3 h). Index of a time interval within current day according to UTC(SU) + 03 hours 00 min. [s]
-    double d_M;		            //!< Type of satellite transmitting navigation signal [dimensionless]
+    double d_M;             //!< Type of satellite transmitting navigation signal [dimensionless]
     double d_gamma_n;       //!< Relative deviation of predicted carrier frequency value of n- satellite from nominal value at the instant tb [dimensionless]
     double d_tau_n;         //!< Correction to the nth satellite time (tn) relative to GLONASS time (te),
     double d_Xn;            //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
@@ -84,25 +81,25 @@ public:
     double d_Delta_tau_n;   //!< Time difference between navigation RF signal transmitted in L2 sub- band and aviation RF signal transmitted in L1 sub-band by nth satellite. [dimensionless]
     double d_E_n;           //!< Characterises "age" of a current information [days]
     double d_P_1;           //!< Flag of the immediate data updating [minutes]
-    bool d_P_2;	            //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
-    bool d_P_3;	            //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
-    bool d_P_4;		          //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
-    bool d_l3rd_n;        	//!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
-    bool d_l5th_n;        	//!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+    bool d_P_2;             //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
+    bool d_P_3;             //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
+    bool d_P_4;             //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
+    bool d_l3rd_n;          //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is healthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+    bool d_l5th_n;          //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is healthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
 
     // Inmediate deliverables of ephemeris information
     // Satellite Identification Information
-    int i_satellite_freq_channel;  			//!< SV Frequency Channel Number
+    int i_satellite_freq_channel;           //!< SV Frequency Channel Number
     unsigned int i_satellite_PRN;           //!< SV PRN Number, equivalent to slot number for compatibility with GPS
     unsigned int i_satellite_slot_number;   //!< SV Slot Number
     double d_yr;                            //!< Current year
     double d_satClkDrift;                   //!< GLONASS clock error
     double d_dtr;                           //!< relativistic clock correction term
     double d_iode;                          //!< Issue of data, ephemeris (Bit 0-6 of tb)
-    double d_tau_c;							//!< GLONASST 2 UTC correction (todo) may be eliminated
-    double d_TOW; 							//!< GLONASST IN GPST seconds of week
-    double d_WN; 							//!< GLONASST IN GPST week number of the start of frame
-    double d_tod;							//!< Time of Day since ephemeris where decoded
+    double d_tau_c;                         //!< GLONASST 2 UTC correction (todo) may be eliminated
+    double d_TOW;                           //!< GLONASST IN GPST seconds of week
+    double d_WN;                            //!< GLONASST IN GPST week number of the start of frame
+    double d_tod;                           //!< Time of Day since ephemeris where decoded
 
     template<class Archive>
 
@@ -137,14 +134,14 @@ public:
         archive & make_nvp("d_N_T", d_N_T);         //!< Current date, calendar number of day within four-year interval starting from the 1-st of January in a leap year [days]
         archive & make_nvp("d_F_T", d_F_T);         //!< Parameter that provides the predicted satellite user range accuracy at time tb [dimensionless]
         archive & make_nvp("d_n", d_n);             //!< Index of the satellite transmitting given navigation signal. It corresponds to a slot number within GLONASS constellation
-        archive & make_nvp("d_Delta_tau_n", d_Delta_tau_n);//!< Time difference between navigation RF signal transmitted in L2 sub- band and aviation RF signal transmitted in L1 sub-band by nth satellite. [dimensionless]
+        archive & make_nvp("d_Delta_tau_n", d_Delta_tau_n); //!< Time difference between navigation RF signal transmitted in L2 sub- band and aviation RF signal transmitted in L1 sub-band by nth satellite. [dimensionless]
         archive & make_nvp("d_E_n", d_E_n);         //!< Characterises "age" of a current information [days]
         archive & make_nvp("d_P_1", d_P_1);         //!< Flag of the immediate data updating.
         archive & make_nvp("d_P_2", d_P_2);         //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
         archive & make_nvp("d_P_3", d_P_3);         //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
         archive & make_nvp("d_P_4", d_P_4);         //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
-        archive & make_nvp("d_l3rd_n", d_l3rd_n);         //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
-        archive & make_nvp("d_l5th_n", d_l5th_n);         //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+        archive & make_nvp("d_l3rd_n", d_l3rd_n);   //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+        archive & make_nvp("d_l5th_n", d_l5th_n);   //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
     }
 
     /*!

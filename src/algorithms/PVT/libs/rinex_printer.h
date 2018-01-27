@@ -204,20 +204,20 @@ public:
     boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris & eph, const double obs_time);
 
     /*!
-	 *  \brief Computes the UTC Time and returns a boost::posix_time::ptime object
-	 *  \details Function used as a method to convert the observation time into UTC time which is used
-	 *  as the default time for RINEX files
-	 *  \param eph GLONASS GNAV Ephemeris object
-	 *  \param obs_time Observation time in GPS seconds of week
-	 */
-	boost::posix_time::ptime compute_UTC_time(const Glonass_Gnav_Ephemeris & eph, const double obs_time);
+     *  \brief Computes the UTC Time and returns a boost::posix_time::ptime object
+     *  \details Function used as a method to convert the observation time into UTC time which is used
+     *  as the default time for RINEX files
+     *  \param eph GLONASS GNAV Ephemeris object
+     *  \param obs_time Observation time in GPS seconds of week
+     */
+    boost::posix_time::ptime compute_UTC_time(const Glonass_Gnav_Ephemeris & eph, const double obs_time);
 
-	/*!
-	 *  \brief Computes number of leap seconds of GPS relative to UTC
-	 *  \param eph GLONASS GNAV Ephemeris object
-	 *  \param gps_obs_time Observation time in GPS seconds of week
-	 */
-	double get_leap_second(const Glonass_Gnav_Ephemeris& eph, const double gps_obs_time);
+    /*!
+     *  \brief Computes number of leap seconds of GPS relative to UTC
+     *  \param eph GLONASS GNAV Ephemeris object
+     *  \param gps_obs_time Observation time in GPS seconds of week
+     */
+    double get_leap_second(const Glonass_Gnav_Ephemeris& eph, const double gps_obs_time);
 
     /*!
      *  \brief Writes data from the GPS L1 C/A navigation message into the RINEX file

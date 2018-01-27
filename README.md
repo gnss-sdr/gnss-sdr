@@ -607,7 +607,7 @@ The CMake script will create Makefiles that download, build and link Armadillo, 
 
 Other builds
 ---------
-* **Docker container**: A technolofy providing operating-system-level virtualization to build, ship, and run distributed applications, whether on laptops, data center VMs, or the cloud. Visit [https://github.com/carlesfernandez/docker-gnsssdr](https://github.com/carlesfernandez/docker-gnsssdr) or [https://github.com/carlesfernandez/docker-pybombs-gnsssdr](https://github.com/carlesfernandez/docker-pybombs-gnsssdr) for instructions.
+* **Docker container**: A technology providing operating-system-level virtualization to build, ship, and run distributed applications, whether on laptops, data center VMs, or the cloud. Visit [https://github.com/carlesfernandez/docker-gnsssdr](https://github.com/carlesfernandez/docker-gnsssdr) or [https://github.com/carlesfernandez/docker-pybombs-gnsssdr](https://github.com/carlesfernandez/docker-pybombs-gnsssdr) for instructions.
 
 * **Snap packages**: [Snaps](http://snapcraft.io) are universal Linux packages aimed to work on any distribution or device, from IoT devices to servers, desktops to mobile devices. Visit [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox) for instructions.
 
@@ -783,13 +783,12 @@ SignalSource.implementation=File_Signal_Source
 SignalSource.filename=/home/user/gnss-sdr/data/my_capture.dat
 SignalSource.item_type=gr_complex
 SignalSource.sampling_frequency=4000000 ; Sampling frequency in [Hz]
-SignalSource.freq=1575420000 ; RF front-end center frequency in [Hz]
 ~~~~~~  
 
 Type ```gr_complex``` refers to a GNU Radio typedef equivalent to ```std::complex<float>```. In order to save some storage space, you might wanted to store your signal in a more efficient format such as an I/Q interleaved ```short`` integer sample stream. In that case, change the corresponding line to:
 
 ~~~~~~
-SignalSource.item_type=short
+SignalSource.item_type=ishort
 ~~~~~~
 
 In this latter case, you will need to convert the interleaved I/Q samples to a complex stream via Data Type Adapter block (see below).
@@ -889,7 +888,7 @@ SignalSource.freq=1575420000
 SignalSource.rf_gain=40
 SignalSource.if_gain=30
 SignalSource.enable_throttle_control=false
-SignalSource.osmosdr_args=rtl_tcp,offset_tune=1
+SignalSource.osmosdr_args=hackrf,bias=1
 ~~~~~~
 
 In case of using a Zarlink's RTL2832 based DVB-T receiver, you can even use the ```rtl_tcp``` I/Q server in order to use the USB dongle remotely. In a terminal, type:

@@ -16,15 +16,16 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES 
+set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
      gps_l1_ca_telemetry_decoder_cc.cc
      gps_l2c_telemetry_decoder_cc.cc
      gps_l5_telemetry_decoder_cc.cc
      galileo_e1b_telemetry_decoder_cc.cc
      sbas_l1_telemetry_decoder_cc.cc
      galileo_e5a_telemetry_decoder_cc.cc
+     glonass_l1_ca_telemetry_decoder_cc.cc
 )
-      
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters

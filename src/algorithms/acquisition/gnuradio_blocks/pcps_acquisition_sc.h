@@ -103,10 +103,15 @@ private:
 
     void acquisition_core( void );
 
+    void update_grid_doppler_wipeoffs();
+    bool is_fdma();
+
     void send_negative_acquisition();
     void send_positive_acquisition();
+
     long d_fs_in;
     long d_freq;
+    long d_old_freq;
     int d_samples_per_ms;
     int d_samples_per_code;
     //unsigned int d_doppler_resolution;

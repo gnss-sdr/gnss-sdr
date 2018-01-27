@@ -54,15 +54,20 @@ for channelNr = channelList
 
 %% Draw axes ==============================================================
         % Row 1
-        handles(1, 1) = subplot(3, 3, 1);
-        handles(1, 2) = subplot(3, 3, [2 3]);
+        handles(1, 1) = subplot(4, 3, 1);
+        handles(1, 2) = subplot(4, 3, [2 3]);
         % Row 2
-        handles(2, 1) = subplot(3, 3, 4);
-        handles(2, 2) = subplot(3, 3, [5 6]);
+        handles(2, 1) = subplot(4, 3, 4);
+        handles(2, 2) = subplot(4, 3, [5 6]);
         % Row 3
-        handles(3, 1) = subplot(3, 3, 7);
-        handles(3, 2) = subplot(3, 3, 8);
-        handles(3, 3) = subplot(3, 3, 9);
+        handles(3, 1) = subplot(4, 3, 7);
+        handles(3, 2) = subplot(4, 3, 8);
+        handles(3, 3) = subplot(4, 3, 9);
+        % Row 4
+        handles(4, 1) = subplot(4, 3, 10);
+        handles(4, 2) = subplot(4, 3, 11);
+        handles(4, 3) = subplot(4, 3, 12);
+        
 
 %% Plot all figures =======================================================
 
@@ -149,5 +154,36 @@ for channelNr = channelList
         xlabel(handles(3, 3), 'Time (s)');
         ylabel(handles(3, 3), 'Amplitude');
         title (handles(3, 3), 'Filtered DLL discriminator');
+        
+        %----- CNo for signal----------------------------------
+        plot  (handles(4, 1), timeAxisInSeconds, ...
+            trackResults(channelNr).CNo(1:settings.msToProcess), 'b');      
+
+        grid  (handles(4, 1));
+        axis  (handles(4, 1), 'tight');
+        xlabel(handles(4, 1), 'Time (s)');
+        ylabel(handles(4, 1), 'CNo (dB-Hz)');
+        title (handles(4, 1), 'Carrier to Noise Ratio');
+
+        %----- Carrier Frequency --------------------------------
+        plot  (handles(4, 2), timeAxisInSeconds(2:end), ...
+            trackResults(channelNr).carrFreq(2:settings.msToProcess), 'Color',[0.42 0.25 0.39]);    
+
+        grid  (handles(4, 2));
+        axis  (handles(4, 2));
+        xlabel(handles(4, 2), 'Time (s)');
+        ylabel(handles(4, 2), 'Freq (hz)');
+        title (handles(4, 2), 'Carrier Freq');
+
+        %----- Code Frequency----------------------------------
+        %--- Skip sample 0 to help with results display
+        plot  (handles(4, 3), timeAxisInSeconds(2:end), ...
+             trackResults(channelNr).codeFreq(2:settings.msToProcess), 'Color',[0.2 0.3 0.49]);      
+
+        grid  (handles(4, 3));
+        axis  (handles(4, 3), 'tight');
+        xlabel(handles(4, 3), 'Time (s)');
+        ylabel(handles(4, 3), 'Freq (Hz)');
+        title (handles(4, 3), 'Code Freq');        
 
 end % for channelNr = channelList

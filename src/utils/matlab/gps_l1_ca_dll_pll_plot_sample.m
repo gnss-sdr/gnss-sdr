@@ -35,14 +35,14 @@ if ~exist('gps_l1_ca_dll_pll_read_tracking_dump.m','file')
 end
 
 
-samplingFreq = 2600000;     %[Hz]
-channels = 2;
+samplingFreq = 6625000;     %[Hz]
+channels = 5;
 first_channel = 0;
 
-path = '/home/javier/git/gnss-sdr/build/';  %% CHANGE THIS PATH
+path = '/archive/';  %% CHANGE THIS PATH
 
 for N=1:1:channels
-    tracking_log_path = [path 'tracking_ch_' num2str(N+first_channel-1) '.dat']; %% CHANGE epl_tracking_ch_ BY YOUR dump_filename
+    tracking_log_path = [path 'glo_tracking_ch_' num2str(N+first_channel-1) '.dat']; %% CHANGE epl_tracking_ch_ BY YOUR dump_filename
     GNSS_tracking(N)= gps_l1_ca_dll_pll_read_tracking_dump(tracking_log_path);
 end
 
@@ -65,6 +65,7 @@ for N=1:1:channels
         trackResults(N).Q_E = zeros(1,length(GNSS_tracking(N).E));
         trackResults(N).Q_L = zeros(1,length(GNSS_tracking(N).E));
         trackResults(N).PRN = ones(1,length(GNSS_tracking(N).E));
+        trackResults(N).CNo = GNSS_tracking(N).CN0_SNV_dB_Hz.';
         
         % Use original MATLAB tracking plot function
         settings.numberOfChannels = channels;

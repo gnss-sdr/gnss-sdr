@@ -453,6 +453,7 @@ int hybrid_observables_cc::general_work (int noutput_items ,
                                                                                     d_gnss_synchro_history_queue[i].at(distance - 1)));
                                                                         }
                                                                 }
+
                                                         }
                                                     else
                                                         {
@@ -478,7 +479,8 @@ int hybrid_observables_cc::general_work (int noutput_items ,
 
                             // compute interpolated TOW value at T_rx_s
                             int ref_channel_key = gnss_synchro_map_iter->second.Channel_ID;
-                            Gnss_Synchro adj_obs = adjacent_gnss_synchro_map.at(ref_channel_key);
+                            Gnss_Synchro adj_obs;
+                            adj_obs = adjacent_gnss_synchro_map.at(ref_channel_key);
                             double ref_adj_T_rx_s = static_cast<double>(adj_obs.Tracking_sample_counter) / ref_fs_hz + adj_obs.Code_phase_samples / ref_fs_hz;
 
                             double d_TOW_reference = gnss_synchro_map_iter->second.TOW_at_current_symbol_s;
@@ -504,7 +506,12 @@ int hybrid_observables_cc::general_work (int noutput_items ,
                                     // two points linear interpolation using adjacent (adj) values: y=y1+(x-x1)*(y2-y1)/(x2-x1)
                                     // TOW at the selected receiver time T_rx_s
                                     int element_key = gnss_synchro_map_iter->second.Channel_ID;
-                                    adj_obs = adjacent_gnss_synchro_map.at(element_key);
+                                    try{
+                                        adj_obs = adjacent_gnss_synchro_map.at(element_key);
+                                    }catch(const std::exception & ex)
+                                    {
+                                        continue;
+                                    }
 
                                     double adj_T_rx_s = static_cast<double>(adj_obs.Tracking_sample_counter) / channel_fs_hz + adj_obs.Code_phase_samples / channel_fs_hz;
 

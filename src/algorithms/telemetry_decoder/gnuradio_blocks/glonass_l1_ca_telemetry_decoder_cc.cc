@@ -194,7 +194,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols,int
     if (d_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
-    	 	d_nav.gnav_ephemeris.i_satellite_freq_channel = d_satellite.get_rf_link();
+            d_nav.gnav_ephemeris.i_satellite_freq_channel = d_satellite.get_rf_link();
             std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Ephemeris have been received on channel" << d_channel << " from satellite " << d_satellite;

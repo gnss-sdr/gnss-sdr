@@ -223,7 +223,13 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
 }
 
 
-
+signed int Gnss_Satellite::get_rf_link() const
+{
+    // Get satellite's rf link. Identifies the GLONASS Frequency Channel
+    signed int rf_link_;
+    rf_link_ = rf_link;
+    return rf_link_;
+}
 
 
 unsigned int Gnss_Satellite::get_PRN() const

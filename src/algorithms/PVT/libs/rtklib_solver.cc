@@ -150,7 +150,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                                     eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
                                     //convert observation from GNSS-SDR class to RTKLIB structure
                                     obsd_t newobs = {{0,0}, '0', '0', {}, {}, {}, {}, {}, {}};
-                                    obs_data[valid_obs] = insert_obs_to_rtklib(newobs,
+                                    obs_data[valid_obs+glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             galileo_ephemeris_iter->second.WN_5,
                                             0);
@@ -295,7 +295,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                                                     if (eph_data[i].sat == static_cast<int>(gnss_observables_iter->second.PRN))
                                                         {
                                                             eph_data[i] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
-                                                            obs_data[i] = insert_obs_to_rtklib(obs_data[i],
+                                                            obs_data[i+glo_valid_obs] = insert_obs_to_rtklib(obs_data[i],
                                                                     gnss_observables_iter->second,
                                                                     gps_cnav_ephemeris_iter->second.i_GPS_week,
                                                                     2);//Band 3 (L5)
@@ -313,7 +313,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
                                             obsd_t newobs = {{0,0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
-                                            obs_data[valid_obs] = insert_obs_to_rtklib(newobs,
+                                            obs_data[valid_obs+glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     gps_cnav_ephemeris_iter->second.i_GPS_week,
                                                     2);//Band 3 (L5)

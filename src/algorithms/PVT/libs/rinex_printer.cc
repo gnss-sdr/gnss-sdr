@@ -505,7 +505,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
             line += Rinex_Printer::rightJustify(month, 6);
             line += Rinex_Printer::rightJustify(day, 6);
             line += std::string(3, ' ');
-            line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(glonass_gnav_utc_model.d_tau_c, 16, 2), 19);
+            line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(glonass_gnav_utc_model.d_tau_c, 19, 2), 19);
             line += std::string(20, ' ');
             line += Rinex_Printer::leftJustify("CORR TO SYSTEM TIME", 20);
             Rinex_Printer::lengthCheck(line);
@@ -767,7 +767,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
 {
     if(glonass_gnav_almanac.i_satellite_freq_channel){} //Avoid compiler warning
-     //Avoid compiler warning, there is not time system correction between Galileo and GLONASS
+    //Avoid compiler warning, there is not time system correction between Galileo and GLONASS
     if(galileo_almanac.A_0G_10){}
     std::string line;
 
@@ -2991,8 +2991,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int, Galileo
             E1B_DVS = "0"; // *************** CHANGE THIS WHEN GALILEO SIGNAL IS VALID
 
             std::string SVhealth_str = E5B_HS + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E5b_DVS_5)
-                    + "11" + "1" + E1B_DVS +  E1B_HS
-                    + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5);
+                            + "11" + "1" + E1B_DVS +  E1B_HS
+                            + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5);
             SVhealth_str = "000000000"; // *************** CHANGE THIS WHEN GALILEO SIGNAL IS VALID
             int SVhealth = Rinex_Printer::toInt(SVhealth_str, 9);
             line += Rinex_Printer::doub2for(static_cast<double>(SVhealth), 18, 2);
@@ -3319,12 +3319,24 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     out << line << std::endl;
 
     // -------- Line MARKER TYPE
-    line.clear();
-    line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
-    line += std::string(40, ' ');
-    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
+    if (version == 2)
+        {
+            line.clear();
+            line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+            line += std::string(40, ' ');
+            line += Rinex_Printer::leftJustify("MARKER NUMBER", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
+        }
+    if (version == 3)
+        {
+            line.clear();
+            line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+            line += std::string(40, ' ');
+            line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
+        }
 
     // -------- Line OBSERVER / AGENCY
     line.clear();
@@ -3512,48 +3524,48 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     // -------- GLONASS SLOT / FRQ # (On;y version 3)
     if (version == 3)
         {
-			// -------- GLONASS SLOT / FRQ #
-    		// TODO Need to provide system with list of all satellites and update this accordingly
-			line.clear();
-			line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 3); // Number of satellites in list
-			line += std::string(1, ' ');
-			line += satelliteSystem["GLONASS"];
-			line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 2); // Slot Number
-			line += std::string(1, ' ');
-			line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 2); // Frequency Number
-			line += std::string(1, ' ');
-			line += std::string(60-line.size(), ' ');
-			line += Rinex_Printer::leftJustify("GLONASS SLOT / FRQ #", 20);
-			Rinex_Printer::lengthCheck(line);
-			out << line << std::endl;
+            // -------- GLONASS SLOT / FRQ #
+            // TODO Need to provide system with list of all satellites and update this accordingly
+            line.clear();
+            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 3); // Number of satellites in list
+            line += std::string(1, ' ');
+            line += satelliteSystem["GLONASS"];
+            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 2); // Slot Number
+            line += std::string(1, ' ');
+            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(0), 2); // Frequency Number
+            line += std::string(1, ' ');
+            line += std::string(60-line.size(), ' ');
+            line += Rinex_Printer::leftJustify("GLONASS SLOT / FRQ #", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
 
-			// -------- GLONASS CODE/PHS/BIS
-			// No GLONASS Phase bias correction used to align code and phase observations.
-			line.clear();
-			line += std::string(1, ' ');
-			line += observationType["PSEUDORANGE"];
-			line += observationCode["GLONASS_G1_CA"];
-			line += std::string(1, ' ');
-			line += Rinex_Printer::rightJustify(asString(0.0, 3), 8);
-			line += std::string(1, ' ');
-			line += observationType["PSEUDORANGE"];
-			line += observationCode["GLONASS_G1_P"];
-			line += std::string(1, ' ');
-			line += Rinex_Printer::rightJustify(asString(0.0, 3), 8);
-			line += std::string(1, ' ');
-			line += observationType["PSEUDORANGE"];
-			line += observationCode["GLONASS_G2_CA"];
-			line += std::string(1, ' ');
-			line += Rinex_Printer::rightJustify(asString(0.0, 3), 8);
-			line += std::string(1, ' ');
-			line += observationType["PSEUDORANGE"];
-			line += observationCode["GLONASS_G2_P"];
-			line += std::string(1, ' ');
-			line += Rinex_Printer::rightJustify(asString(0.0, 3), 8);
-			line += std::string(60-line.size(), ' ');
-			line += Rinex_Printer::leftJustify("GLONASS COD/PHS/BIS", 20);
-			Rinex_Printer::lengthCheck(line);
-			out << line << std::endl;
+            // -------- GLONASS CODE/PHS/BIS
+            // No GLONASS Phase bias correction used to align code and phase observations.
+            line.clear();
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GLONASS_G1_CA"];
+            line += std::string(1, ' ');
+            line += Rinex_Printer::rightJustify(asString(0.0, 3), 8);
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GLONASS_G1_P"];
+            line += std::string(1, ' ');
+            line += Rinex_Printer::rightJustify(asString(0.0, 3), 8);
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GLONASS_G2_CA"];
+            line += std::string(1, ' ');
+            line += Rinex_Printer::rightJustify(asString(0.0, 3), 8);
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GLONASS_G2_P"];
+            line += std::string(1, ' ');
+            line += Rinex_Printer::rightJustify(asString(0.0, 3), 8);
+            line += std::string(60-line.size(), ' ');
+            line += Rinex_Printer::leftJustify("GLONASS COD/PHS/BIS", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
         }
 
     // -------- END OF HEADER
@@ -3619,12 +3631,25 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
-    // -------- Line MARKER NAME
-    line.clear();
-    line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
-    line += Rinex_Printer::leftJustify("MARKER NAME", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
+    // -------- Line MARKER NAME / TYPE
+    if (version == 2)
+        {
+            line.clear();
+            line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+            line += std::string(40, ' ');
+            line += Rinex_Printer::leftJustify("MARKER NUMBER", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
+        }
+    if (version == 3)
+        {
+            line.clear();
+            line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+            line += std::string(40, ' ');
+            line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
+        }
 
     // -------- Line MARKER TYPE
     line.clear();
@@ -3958,11 +3983,24 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     out << line << std::endl;
 
     // -------- Line MARKER NAME
-    line.clear();
-    line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
-    line += Rinex_Printer::leftJustify("MARKER NAME", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
+    if (version == 2)
+        {
+            line.clear();
+            line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+            line += std::string(40, ' ');
+            line += Rinex_Printer::leftJustify("MARKER NUMBER", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
+        }
+    if (version == 3)
+        {
+            line.clear();
+            line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+            line += std::string(40, ' ');
+            line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
+        }
 
     // -------- Line MARKER TYPE
     line.clear();
@@ -4264,17 +4302,17 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     // -------- Line MARKER NAME
     line.clear();
     line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
-    line += Rinex_Printer::leftJustify("MARKER NAME", 20);
+    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
     // -------- Line MARKER TYPE
-    //line.clear();
-    //line += Rinex_Printer::leftJustify("NON_GEODETIC", 20); // put a flag or a property
-    //line += std::string(40, ' ');
-    //line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
-    //Rinex_Printer::lengthCheck(line);
-    //out << line << std::endl;
+    line.clear();
+    line += Rinex_Printer::leftJustify("NON_GEODETIC", 20); // put a flag or a property
+    line += std::string(40, ' ');
+    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+    Rinex_Printer::lengthCheck(line);
+    out << line << std::endl;
 
     // -------- Line OBSERVER / AGENCY
     line.clear();
@@ -6133,9 +6171,9 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
             double seconds = fmod(glonass_t, 60);
             // Add extra 0 if seconds are < 10
             if (seconds < 10)
-            {
-                line += std::string(1, '0');
-            }
+                {
+                    line += std::string(1, '0');
+                }
             line += Rinex_Printer::asString(seconds, 7);
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event

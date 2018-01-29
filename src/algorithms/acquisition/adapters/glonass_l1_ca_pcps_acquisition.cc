@@ -150,7 +150,6 @@ void GlonassL1CaPcpsAcquisition::set_threshold(float threshold)
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
-
     if (item_type_.compare("cshort") == 0)
         {
             acquisition_sc_->set_threshold(threshold_);
@@ -237,7 +236,6 @@ void GlonassL1CaPcpsAcquisition::init()
 
 void GlonassL1CaPcpsAcquisition::set_local_code()
 {
-
     std::complex<float>* code = new std::complex<float>[code_length_];
 
     glonass_l1_ca_code_gen_complex_sampled(code,/* gnss_synchro_->PRN,*/ fs_in_, 0);

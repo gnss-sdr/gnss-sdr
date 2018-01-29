@@ -42,8 +42,6 @@
 #include "pcps_acquisition_cc.h"
 #include "pcps_acquisition_sc.h"
 #include "complex_byte_to_float_x2.h"
-#include <volk_gnsssdr/volk_gnsssdr.h>
-
 
 
 class ConfigurationInterface;

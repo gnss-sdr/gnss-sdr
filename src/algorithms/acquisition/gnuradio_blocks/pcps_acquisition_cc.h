@@ -99,6 +99,8 @@ private:
             std::string dump_filename);
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
+    void update_grid_doppler_wipeoffs();
+    bool is_fdma();
 
     void acquisition_core( unsigned long int samp_count );
 
@@ -119,6 +121,7 @@ private:
     float* d_magnitude;
     long d_fs_in;
     long d_freq;
+    long d_old_freq;
     int d_samples_per_ms;
     int d_samples_per_code;
     int d_state;

@@ -350,6 +350,12 @@ int decoderaw(rtksvr_t *svr, int index)
 /* decode download file ------------------------------------------------------*/
 void decodefile(rtksvr_t *svr, int index)
 {
+		int i = 0;
+		char glo_fcn[MAXPRNGLO+1];
+
+		// Allocate space for GLONASS frequency channels depending on availability
+		for(i=0; i < MAXPRNGLO+1; i++)
+			glo_fcn[i]='0';
     pcv_t pcvt0[MAXSAT] = { {0, {'0'}, {'0'}, {0, 0.0}, {0, 0.0}, {{0.0},{0.0}}, {{0.0},{0.0}} } };
     sbsfcorr_t sbsfcorr0 = {{0, 0.0}, 0.0, 0.0, 0.0, 0, 0, 0};
     sbslcorr_t sbslcorr0 = { {0, 0.0}, 0, {0.0}, {0.0}, 0.0, 0.0};
@@ -366,7 +372,7 @@ void decodefile(rtksvr_t *svr, int index)
     nav_t nav = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             {0, 0, (erpd_t *){0}}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0},
             {0.0}, {0.0}, {0.0}, {0.0}, 0, {{0.0},{0.0}}, {{0.0},{0.0}}, {{0.0}, {0.0}, {0.0}},
-            {0.0}, {0.0}, {'0'}, {*pcvt0}, sbssat0, {*sbsion0}, {*dgps0},  {*ssr0}, {*lexeph0},
+            {0.0}, {0.0}, {*glo_fcn}, {*pcvt0}, sbssat0, {*sbsion0}, {*dgps0},  {*ssr0}, {*lexeph0},
             {{0,0.0}, 0.0, {0.0}, {{0.0},{0.0}} }, pppcorr0} ;
 
     char file[1024];

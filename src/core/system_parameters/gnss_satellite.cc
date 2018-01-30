@@ -61,9 +61,9 @@ Gnss_Satellite::~Gnss_Satellite()
 
 void Gnss_Satellite::reset()
 {
-    system_set = {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"};
+    system_set = {"GPS", "Glonass", "SBAS", "Galileo", "Beidou"};
     satelliteSystem["GPS"] = "G";
-    satelliteSystem["GLONASS"] = "R";
+    satelliteSystem["Glonass"] = "R";
     satelliteSystem["SBAS"] = "S";
     satelliteSystem["Galileo"] = "E";
     satelliteSystem["Beidou"] = "C";
@@ -120,8 +120,8 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite &rhs) {
 
 void Gnss_Satellite::set_system(const std::string& system_)
 {
-    // Set the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
-    std::set<std::string>::const_iterator it = system_set.find(system_);
+    // Set the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Compass"}
+    std::set<std::string>::iterator it = system_set.find(system_);
 
     if(it != system_set.cend())
         {
@@ -129,12 +129,33 @@ void Gnss_Satellite::set_system(const std::string& system_)
         }
     else
         {
-            DLOG(INFO) << "System " << system_ << " is not defined {GPS, GLONASS, SBAS, Galileo, Beidou}. Initialization?";
+            DLOG(INFO) << "System " << system_ << " is not defined {GPS, Glonass, SBAS, Galileo, Beidou}. Initialization?";
             system =  std::string("");
         }
 }
 
 
+void Gnss_Satellite::update_PRN(unsigned int PRN_)
+{
+    if (system.compare("Glonass") != 0)
+				{
+						DLOG(INFO) << "Trying to update PRN for not GLONASS system";
+						PRN = 0;
+				}
+    else
+    		{
+				 if (PRN_ < 1 or PRN_ > 24)
+						 {
+								 DLOG(INFO) << "This PRN is not defined";
+								 // Adjusting for PRN 26, now used in
+								 PRN = PRN_;
+						 }
+				 else
+						 {
+								 PRN = PRN_;
+						 }
+    		}
+}
 
 
 void Gnss_Satellite::set_PRN(unsigned int PRN_)
@@ -202,7 +223,13 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
 }
 
 
-
+signed int Gnss_Satellite::get_rf_link() const
+{
+    // Get satellite's rf link. Identifies the GLONASS Frequency Channel
+    signed int rf_link_;
+    rf_link_ = rf_link;
+    return rf_link_;
+}
 
 
 unsigned int Gnss_Satellite::get_PRN() const
@@ -220,7 +247,7 @@ unsigned int Gnss_Satellite::get_PRN() const
 
 std::string Gnss_Satellite::get_system() const
 {
-    // Get the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}
+    // Get the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou"}
     std::string system_;
     system_ = system;
     return system_;
@@ -569,6 +596,3 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_)
 {
     block = what_block(system_, PRN_);
 }
-
-
-

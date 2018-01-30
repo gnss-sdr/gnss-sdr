@@ -35,12 +35,15 @@
 
 #include "pcps_acquisition_cc.h"
 #include <sstream>
+#include <cstring>
+#include <boost/filesystem.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "control_message_factory.h"
 #include "GPS_L1_CA.h" //GPS_TWO_PI
+#include "GLONASS_L1_CA.h" //GLONASS_TWO_PI
 #include <matio.h>
 
 
@@ -77,6 +80,7 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_active = false;
     d_state = 0;
     d_freq = freq;
+    d_old_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
@@ -153,6 +157,13 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 
 void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
 {
+    // reset the intermediate frequency
+    d_freq = d_old_freq;
+    // This will check if it's fdma, if yes will update the intermediate frequency and the doppler grid
+    if( is_fdma() )
+        {
+            update_grid_doppler_wipeoffs();
+        }
     // COD
     // Here we want to create a buffer that looks like this:
     // [ 0 0 0 ... 0 c_0 c_1 ... c_L]
@@ -163,14 +174,30 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
             int offset = d_fft_size / 2;
             std::fill_n( d_fft_if->get_inbuf(), offset, gr_complex( 0.0, 0.0 ) );
             memcpy(d_fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * offset);
-        } 
-    else 
+        }
+    else
         {
             memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
         }
 
     d_fft_if->execute(); // We need the FFT of local code
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
+}
+
+
+bool pcps_acquisition_cc::is_fdma()
+{
+    // Dealing with FDMA system
+    if( strcmp(d_gnss_synchro->Signal,"1G") == 0 )
+        {
+            d_freq += DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
+            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
+            return true;
+        }
+    else
+        {
+            return false;
+        }
 }
 
 
@@ -214,6 +241,20 @@ void pcps_acquisition_cc::init()
         unsigned int effective_fft_size = (d_bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
         grid_ = arma::fmat(effective_fft_size, d_num_doppler_bins, arma::fill::zeros);
     }
+}
+
+
+void pcps_acquisition_cc::update_grid_doppler_wipeoffs()
+{
+    // Create the carrier Doppler wipeoff signals
+    d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
+
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+        {
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_freq + doppler);
+        }
 }
 
 

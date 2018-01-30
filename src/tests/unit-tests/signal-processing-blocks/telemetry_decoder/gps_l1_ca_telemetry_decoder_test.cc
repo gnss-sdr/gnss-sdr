@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking_test.cc
- * \brief  This class implements a tracking test for Galileo_E5a_DLL_PLL_Tracking
+ * \brief  This class implements a telemetry decoder test for GPS_L1_CA_Telemetry_Decoder
  *  implementation based on some input parameters.
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
@@ -476,4 +476,3 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     std::cout <<  "Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
-

@@ -131,7 +131,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
 
             if(size > 0)
                 {
-                    samples_ = static_cast<unsigned long long>(floor(static_cast<double>(size - bytes_seek) / (sample_size_byte * static_cast<double>(n_channels_))));
+                    samples_ = static_cast<unsigned long long>(floor(static_cast<double>(static_cast<long>(size) - static_cast<long>(bytes_seek)) / (sample_size_byte * static_cast<double>(n_channels_))));
                     samples_ = samples_- static_cast<unsigned long long>(ceil(0.002 * sampling_frequency_)); //process all the samples available in the file excluding the last 2 ms
                 }
         }

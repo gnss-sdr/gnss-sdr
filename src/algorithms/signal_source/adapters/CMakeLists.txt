@@ -141,6 +141,7 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc
                                   spir_file_signal_source.cc
                                   spir_gss6450_file_signal_source.cc
                                   rtl_tcp_signal_source.cc
+                                  labsat_signal_source.cc
                                   ${OPT_DRIVER_SOURCES}
 )
 

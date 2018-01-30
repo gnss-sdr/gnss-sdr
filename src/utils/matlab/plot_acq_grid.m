@@ -43,6 +43,7 @@ sat = 7;
 %     3 GPS  L5
 %     4 Gal. E1B
 %     5 Gal. E5
+%     6 Glo. 1G
 
 signal_type = 1;
 
@@ -75,6 +76,10 @@ switch(signal_type)
         n_chips = 10230;
         system = 'E';
         signal = '5X';
+    case 6
+        n_chips = 511;
+        system = 'R';
+        signal = '1G';
 end
 filename = [path file '_' system '_' signal '_sat_' num2str(sat) '.mat'];
 load(filename);

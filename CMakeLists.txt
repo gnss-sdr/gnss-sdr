@@ -547,7 +547,7 @@ endif()
 ################################################################################
 find_package(Log4cpp)
 if(NOT LOG4CPP_FOUND)
-    message(FATAL_ERROR "*** Lib4cpp is required to build gnss-sdr")
+    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
 endif()
 
 
@@ -957,7 +957,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'. ")
      set(armadillo_BRANCH ${GNSSSDR_ARMADILLO_LOCAL_VERSION})
      set(armadillo_RELEASE ${armadillo_BRANCH})
-     
+
      #############################################
      # Check if GFORTRAN is found in the system
      #############################################

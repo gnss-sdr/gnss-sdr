@@ -32,7 +32,7 @@
 
 %%%%%%%%% ¡¡¡ CONFIGURE !!! %%%%%%%%%%%%% 
 
-path = '/home/aramos/gnss-sdr/install/';
+path = '/archive/';
 file = 'acq';
 
 sat = 7;

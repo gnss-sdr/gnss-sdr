@@ -39,6 +39,10 @@ set(SYSTEM_PARAMETERS_SOURCES
 	 gps_cnav_iono.cc
 	 gps_cnav_utc_model.cc
 	 rtcm.cc
+   glonass_gnav_ephemeris.cc
+   glonass_gnav_almanac.cc
+   glonass_gnav_utc_model.cc
+   glonass_gnav_navigation_message.cc
 )
 
 
@@ -59,4 +63,3 @@ add_library(gnss_system_parameters ${SYSTEM_PARAMETERS_SOURCES} ${SYSTEM_PARAMET
 source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
 add_dependencies(gnss_system_parameters rtklib_lib glog-${glog_RELEASE})
 target_link_libraries(gnss_system_parameters rtklib_lib ${Boost_LIBRARIES})
-

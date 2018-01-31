@@ -727,6 +727,3 @@ std::string Nmea_Printer::get_GPGGA()
     return sentence_str.str();
     //$GPGGA,104427.591,5920.7009,N,01803.2938,E,1,05,3.3,78.2,M,23.2,M,0.0,0000*4A
 }
-
-
-

@@ -941,7 +941,7 @@ bool Gnuplot::set_GNUPlotPath(const std::string &path)
 void Gnuplot::set_terminal_std(const std::string &type)
 {
 #if defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
-    if (type.find("x11") != std::string::npos && getenv("DISPLAY") == NULL)
+    if (type.find("x11") != std::string::npos && std::getenv("DISPLAY") == NULL)
         {
             throw GnuplotException("Can't find DISPLAY variable");
         }
@@ -1808,7 +1808,7 @@ void Gnuplot::init()
     // whose name is specified as argument.  If the requested variable is not
     // part of the environment list, the function returns a NULL pointer.
 #if ( defined(unix) || defined(__unix) || defined(__unix__) ) && !defined(__APPLE__)
-    if (getenv("DISPLAY") == NULL)
+    if (std::getenv("DISPLAY") == NULL)
         {
             valid = false;
             throw GnuplotException("Can't find DISPLAY variable");
@@ -1885,7 +1885,7 @@ bool Gnuplot::get_program_path()
     //
     char *path;
     // Retrieves a C string containing the value of environment variable PATH
-    path = getenv("PATH");
+    path = std::getenv("PATH");
 
     if (path == NULL)
         {
@@ -1894,7 +1894,7 @@ bool Gnuplot::get_program_path()
     else
         {
             std::list<std::string> ls;
-            std::string path_str = path;
+            std::string path_str(path);
 
             //split path (one long string) into list ls of strings
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
@@ -2007,10 +2007,9 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
         {
             std::ostringstream except;
             except << "Maximum number of temporary files reached ("
-                    << GP_MAX_TMP_FILES << "): cannot open more files" << std::endl;
+                   << GP_MAX_TMP_FILES << "): cannot open more files" << std::endl;
 
             throw GnuplotException( except.str() );
-            return "";
         }
 
     // int mkstemp(char *name);

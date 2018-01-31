@@ -98,11 +98,14 @@ private:
     bool d_dump;
     bool b_rinex_header_written;
     bool b_rinex_header_updated;
+    double d_rinex_version;
     bool b_rtcm_writing_started;
-    int d_rtcm_MT1045_rate_ms;
-    int d_rtcm_MT1019_rate_ms;
-    int d_rtcm_MT1077_rate_ms;
-    int d_rtcm_MT1097_rate_ms;
+    int d_rtcm_MT1045_rate_ms;    //!< Galileo Broadcast Ephemeris
+    int d_rtcm_MT1019_rate_ms;    //!< GPS Broadcast Ephemeris (orbits)
+    int d_rtcm_MT1020_rate_ms;    //!< GLONASS Broadcast Ephemeris (orbits)
+    int d_rtcm_MT1077_rate_ms;    //!< The type 7 Multiple Signal Message format for the USA’s GPS system, popular
+    int d_rtcm_MT1087_rate_ms;    //!< GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system
+    int d_rtcm_MT1097_rate_ms;    //!< Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
     int d_rtcm_MSM_rate_ms;
 
     int d_last_status_print_seg; //for status printer
@@ -122,8 +125,10 @@ private:
     double d_rx_time;
     double last_pvt_display_T_rx_s;
     double last_RTCM_1019_output_time;
+    double last_RTCM_1020_output_time;
     double last_RTCM_1045_output_time;
     double last_RTCM_1077_output_time;
+    double last_RTCM_1087_output_time;
     double last_RTCM_1097_output_time;
     double last_RTCM_MSM_output_time;
     double last_RINEX_obs_output_time;

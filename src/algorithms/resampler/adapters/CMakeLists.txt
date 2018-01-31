@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -16,7 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(RESAMPLER_ADAPTER_SOURCES direct_resampler_conditioner.cc )
+set(RESAMPLER_ADAPTER_SOURCES 
+        direct_resampler_conditioner.cc
+        fractional_resampler_conditioner.cc
+)
 
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}

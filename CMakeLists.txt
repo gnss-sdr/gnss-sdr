@@ -1112,7 +1112,7 @@ if(NOT MATIO_FOUND)
             if(CMAKE_VERSION VERSION_LESS 3.2)
               ExternalProject_Add(
                  matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/mati
+                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
                  GIT_REPOSITORY https://github.com/tbeu/matio
                  GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
                  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}

@@ -48,6 +48,7 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
+     ${MATIO_INCLUDE_DIRS}
 )
 
 
@@ -69,7 +70,7 @@ source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
 if(ENABLE_FPGA)
 	target_link_libraries(acq_gr_blocks acquisition_lib gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES})
 else(ENABLE_FPGA)
-	target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES})
+	target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES} ${MATIO_LIBRARIES})
 endif(ENABLE_FPGA)
 if(NOT VOLK_GNSSSDR_FOUND)
     add_dependencies(acq_gr_blocks volk_gnsssdr_module)

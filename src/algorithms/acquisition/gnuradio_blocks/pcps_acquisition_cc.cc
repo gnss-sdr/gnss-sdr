@@ -44,6 +44,7 @@
 #include "control_message_factory.h"
 #include "GPS_L1_CA.h" //GPS_TWO_PI
 #include "GLONASS_L1_CA.h" //GLONASS_TWO_PI
+#include <matio.h>
 
 
 using google::LogMessage;
@@ -98,9 +99,6 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_code_phase = 0;
     d_test_statistics = 0.0;
     d_channel = 0;
-    d_doppler_freq = 0.0;
-
-    //set_relative_rate( 1.0/d_fft_size );
 
     // COD:
     // Experimenting with the overlap/save technique for handling bit trannsitions
@@ -113,10 +111,10 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     // We can avoid this by doing linear correlation, effectively doubling the
     // size of the input buffer and padding the code with zeros.
     if( d_bit_transition_flag )
-        {
-            d_fft_size *= 2;
-            d_max_dwells = 1; //Activation of d_bit_transition_flag invalidates the value of d_max_dwells
-        }
+    {
+        d_fft_size *= 2;
+        d_max_dwells = 1; //Activation of d_bit_transition_flag invalidates the value of d_max_dwells
+    }
 
     d_fft_codes = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_magnitude = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
@@ -135,6 +133,7 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_blocking = blocking;
     d_worker_active = false;
     d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    grid_ = arma::fmat();
 }
 
 
@@ -148,18 +147,11 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
-
     volk_gnsssdr_free(d_fft_codes);
     volk_gnsssdr_free(d_magnitude);
-
     delete d_ifft;
     delete d_fft_if;
-
-    if (d_dump)
-        {
-            d_dump_file.close();
-        }
-    volk_gnsssdr_free( d_data_buffer );
+    volk_gnsssdr_free(d_data_buffer);
 }
 
 
@@ -243,6 +235,12 @@ void pcps_acquisition_cc::init()
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_freq + doppler);
         }
     d_worker_active = false;
+
+    if(d_dump)
+    {
+        unsigned int effective_fft_size = (d_bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
+        grid_ = arma::fmat(effective_fft_size, d_num_doppler_bins, arma::fill::zeros);
+    }
 }
 
 
@@ -480,26 +478,46 @@ void pcps_acquisition_cc::acquisition_core( unsigned long int samp_count )
                 }
             // Record results to file if required
             if (d_dump)
+            {
+                memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
+                if(doppler_index == (d_num_doppler_bins - 1))
                 {
-                    std::stringstream filename;
-                    std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
-                    filename.str("");
-                    boost::filesystem::path p = d_dump_filename;
-                    filename << p.parent_path().string()
-                            << boost::filesystem::path::preferred_separator
-                            << p.stem().string()
-                            << "_" << d_gnss_synchro->System
-                            <<"_" << d_gnss_synchro->Signal << "_sat_"
-                            << d_gnss_synchro->PRN << "_doppler_"
-                            <<  doppler
-                            << p.extension().string();
+                    std::string filename = d_dump_filename;
+                    filename.append("_");
+                    filename.append(1, d_gnss_synchro->System);
+                    filename.append("_");
+                    filename.append(1, d_gnss_synchro->Signal[0]);
+                    filename.append(1, d_gnss_synchro->Signal[1]);
+                    filename.append("_sat_");
+                    filename.append(std::to_string(d_gnss_synchro->PRN));
+                    filename.append(".mat");
+                    mat_t* matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
+                    if(matfp == NULL)
+                    {
+                        std::cout << "Unable to create or open Acquisition dump file" << std::endl;
+                        d_dump = false;
+                    }
+                    else
+                    {
+                        size_t dims[2] = {static_cast<size_t>(effective_fft_size), static_cast<size_t>(d_num_doppler_bins)};
+                        matvar_t* matvar = Mat_VarCreate("grid", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, grid_.memptr(), 0);
+                        Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+                        Mat_VarFree(matvar);
 
-                    DLOG(INFO) << "Writing ACQ out to " << filename.str();
+                        dims[0] = static_cast<size_t>(1);
+                        dims[1] = static_cast<size_t>(1);
+                        matvar = Mat_VarCreate("doppler_max", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_max, 0);
+                        Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+                        Mat_VarFree(matvar);
 
-                    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                    d_dump_file.write(reinterpret_cast<char*>(d_ifft->get_outbuf()), n); //write directly |abs(x)|^2 in this Doppler bin?
-                    d_dump_file.close();
+                        matvar = Mat_VarCreate("doppler_step", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
+                        Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB); // or MAT_COMPRESSION_NONE
+                        Mat_VarFree(matvar);
+
+                        Mat_Close(matfp);
+                    }
                 }
+            }
         }
     lk.lock();
     if (!d_bit_transition_flag)

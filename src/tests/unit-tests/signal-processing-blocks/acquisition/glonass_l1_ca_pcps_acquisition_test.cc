@@ -141,7 +141,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition_1G.if", "9540000");
     config->set_property("Acquisition_1G.coherent_integration_time_ms", "1");
     config->set_property("Acquisition_1G.dump", "true");
-    config->set_property("Acquisition_1G.dump_filename", "./acquisition.dat");
+    config->set_property("Acquisition_1G.dump_filename", "./acquisition");
     config->set_property("Acquisition_1G.implementation", "Glonass_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition_1G.threshold", "0.001");
     config->set_property("Acquisition_1G.doppler_max", "5000");

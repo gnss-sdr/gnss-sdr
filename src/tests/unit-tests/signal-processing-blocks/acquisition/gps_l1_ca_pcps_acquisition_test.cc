@@ -157,7 +157,7 @@ void GpsL1CaPcpsAcquisitionTest::init()
         {
             config->set_property("Acquisition_1C.dump", "false");
         }
-    config->set_property("Acquisition_1C.dump_filename", "./tmp-acq-gps1/acquisition.dat");
+    config->set_property("Acquisition_1C.dump_filename", "./tmp-acq-gps1/acquisition");
     config->set_property("Acquisition_1C.threshold", "0.00001");
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));

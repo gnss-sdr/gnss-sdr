@@ -32,7 +32,7 @@
 #define GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
-#include <vector>
+#include <boost/dynamic_bitset.hpp>
 
 class unpack_spir_gss6450_samples;
 
@@ -51,14 +51,14 @@ public:
     ~unpack_spir_gss6450_samples();
 
 private:
+    int compute_two_complement(unsigned long data);
+
     unsigned int adc_bits;
     unsigned int samples_per_int;
-    void process_sample(gr_complex& out);
-    void compute_two_complement(int& data);
-    int i_data;
-    int q_data;
-    int mask_data;
-    std::vector<int> map_;
+    int two_compl_thres;
+    int adc_bits_two_pow;
+    boost::dynamic_bitset<> i_data;
+    boost::dynamic_bitset<> q_data;
 };
 
 #endif

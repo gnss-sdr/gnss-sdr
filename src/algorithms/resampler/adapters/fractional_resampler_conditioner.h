@@ -34,7 +34,11 @@
 #define GNSS_SDR_FRACTIONAL_RESAMPLER_CONDITIONER_H_
 
 #include <string>
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/mmse_resampler_cc.h>
+#else
 #include <gnuradio/filter/fractional_resampler_cc.h>
+#endif
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;
@@ -82,7 +86,11 @@ private:
     std::string dump_filename_;
     double sample_freq_in_;
     double sample_freq_out_;
+    #ifdef GR_GREATER_38
+    gr::filter::mmse_resampler_cc::sptr resampler_;
+    #else
     gr::filter::fractional_resampler_cc::sptr resampler_;
+    #endif
     gr::block_sptr file_sink_;
 };
 

@@ -5,7 +5,7 @@
 INCLUDE(FindPkgConfig)
 INCLUDE(FindPackageHandleStandardArgs)
 
-# if GR_REQUIRED_COMPONENTS is not defined, it will be set to the following list 
+# if GR_REQUIRED_COMPONENTS is not defined, it will be set to the following list
 if(NOT GR_REQUIRED_COMPONENTS)
   set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS DIGITAL FFT FILTER PMT FEC TRELLIS UHD)
 endif()
@@ -164,4 +164,17 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
      if(GNURADIO_VERSION_GREATER_THAN_373)
          set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
      endif(GNURADIO_VERSION_GREATER_THAN_373)
+
+     find_file(GNURADIO_VERSION_GREATER_THAN_38
+               NAMES gnuradio/filter/mmse_resampler_cc.h
+               HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
+                     ${CMAKE_INSTALL_PREFIX}/include
+                     ${GNURADIO_INSTALL_PREFIX}/include
+               PATHS /usr/local/include
+                     /usr/include
+                     ${GNURADIO_INSTALL_PREFIX}/include
+               )
+     if(GNURADIO_VERSION_GREATER_THAN_38)
+          set(PC_GNURADIO_RUNTIME_VERSION "3.8.0+")
+     endif(GNURADIO_VERSION_GREATER_THAN_38)
 endif(NOT PC_GNURADIO_RUNTIME_VERSION)

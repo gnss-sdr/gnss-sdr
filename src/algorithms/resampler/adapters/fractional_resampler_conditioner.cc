@@ -65,7 +65,11 @@ FractionalResamplerConditioner::FractionalResamplerConditioner(
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
+            #ifdef GR_GREATER_38
+            resampler_ = gr::filter::mmse_resampler_cc::make(0.0, sample_freq_in_ / sample_freq_out_);
+            #else
             resampler_ = gr::filter::fractional_resampler_cc::make(0.0, sample_freq_in_ / sample_freq_out_);
+            #endif
             DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
             DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
             DLOG(INFO) << "Item size " << item_size_;

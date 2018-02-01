@@ -16,7 +16,7 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(RESAMPLER_ADAPTER_SOURCES 
+set(RESAMPLER_ADAPTER_SOURCES
         direct_resampler_conditioner.cc
         fractional_resampler_conditioner.cc
 )
@@ -30,6 +30,12 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
 )
+
+
+if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.11" )
+     add_definitions( -DGR_GREATER_38=1 )
+endif(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.11" )
+
 
 file(GLOB RESAMPLER_ADAPTER_HEADERS "*.h")
 list(SORT RESAMPLER_ADAPTER_HEADERS)

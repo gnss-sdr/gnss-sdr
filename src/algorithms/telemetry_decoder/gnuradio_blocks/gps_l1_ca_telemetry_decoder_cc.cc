@@ -324,7 +324,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                                          break;
                                      }
                                      d_GPS_FSM.clear_flag_new_subframe();
-                                     d_flag_new_tow_available=true;
+                                     d_flag_new_tow_available = true;
                                  }
 
                              d_flag_parity = true;

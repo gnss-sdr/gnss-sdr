@@ -187,7 +187,7 @@ int decode_sbstype6(const sbsmsg_t *msg, sbssat_t *sbssat)
         }
     for (i = 0; i < sbssat->nsat && i < MAXSAT; i++)
         {
-            if (sbssat->sat[i].fcorr.iodf != iodf[i/22]) continue;
+            if (sbssat->sat[i].fcorr.iodf != iodf[i/23]) continue;
             udre = getbitu(msg->msg, 22+i*4, 4);
             sbssat->sat[i].fcorr.udre = udre+1;
         }

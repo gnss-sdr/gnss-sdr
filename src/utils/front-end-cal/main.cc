@@ -348,6 +348,10 @@ int main(int argc, char** argv)
     {
             std::cout << "Exception caught while capturing samples (too few args)" << std::endl;
     }
+    catch(...)
+    {
+            std::cout << "Unexpected exception" << std::endl;
+    }
 
     // 4. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
     gr::top_block_sptr top_block;

@@ -1,6 +1,6 @@
 /*!
- * \file fractional_resampler_conditioner.cc
- * \brief Implementation of an adapter of a fractional resampler conditioner block
+ * \file mmse_resampler_conditioner.cc
+ * \brief Implementation of an adapter of a MMSE resampler conditioner block
  * to a SignalConditionerInterface
  * \author Antonio Ramos, 2018. antonio.ramos(at)cttc.es
  *
@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "fractional_resampler_conditioner.h"
+#include "mmse_resampler_conditioner.h"
 #include <cmath>
 #include <limits>
 #include <glog/logging.h>
@@ -38,7 +38,7 @@
 
 using google::LogMessage;
 
-FractionalResamplerConditioner::FractionalResamplerConditioner(
+MmseResamplerConditioner::MmseResamplerConditioner(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_stream, unsigned int out_stream) :
         role_(role), in_stream_(in_stream), out_stream_(out_stream)
@@ -89,11 +89,11 @@ FractionalResamplerConditioner::FractionalResamplerConditioner(
 }
 
 
-FractionalResamplerConditioner::~FractionalResamplerConditioner() {}
+MmseResamplerConditioner::~MmseResamplerConditioner() {}
 
 
 
-void FractionalResamplerConditioner::connect(gr::top_block_sptr top_block)
+void MmseResamplerConditioner::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
@@ -107,7 +107,7 @@ void FractionalResamplerConditioner::connect(gr::top_block_sptr top_block)
 }
 
 
-void FractionalResamplerConditioner::disconnect(gr::top_block_sptr top_block)
+void MmseResamplerConditioner::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
@@ -116,13 +116,13 @@ void FractionalResamplerConditioner::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr FractionalResamplerConditioner::get_left_block()
+gr::basic_block_sptr MmseResamplerConditioner::get_left_block()
 {
     return resampler_;
 }
 
 
-gr::basic_block_sptr FractionalResamplerConditioner::get_right_block()
+gr::basic_block_sptr MmseResamplerConditioner::get_right_block()
 {
     return resampler_;
 }

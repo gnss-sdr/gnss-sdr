@@ -1,4 +1,3 @@
-
 /*!
  * \file direct_resampler_conditioner_cc_test.cc
  * \brief  Executes a resampler based on some input parameters.

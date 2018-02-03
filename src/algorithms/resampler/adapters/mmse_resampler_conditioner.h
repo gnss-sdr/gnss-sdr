@@ -1,6 +1,6 @@
 /*!
- * \file fractional_resampler_conditioner.h
- * \brief Interface of an adapter of a fractional resampler conditioner block
+ * \file mmse_resampler_conditioner.h
+ * \brief Interface of an adapter of a mmse resampler conditioner block
  * to a SignalConditionerInterface
  * \author Antonio Ramos, 2018. antonio.ramos(at)cttc.es
  *
@@ -30,8 +30,8 @@
  */
 
 
-#ifndef GNSS_SDR_FRACTIONAL_RESAMPLER_CONDITIONER_H_
-#define GNSS_SDR_FRACTIONAL_RESAMPLER_CONDITIONER_H_
+#ifndef GNSS_SDR_MMSE_RESAMPLER_CONDITIONER_H_
+#define GNSS_SDR_MMSE_RESAMPLER_CONDITIONER_H_
 
 #include <string>
 #ifdef GR_GREATER_38
@@ -44,17 +44,17 @@
 class ConfigurationInterface;
 
 /*!
- * \brief Interface of an adapter of a fractional resampler conditioner block
+ * \brief Interface of a MMSE resampler block adapter
  * to a SignalConditionerInterface
  */
-class FractionalResamplerConditioner: public GNSSBlockInterface
+class MmseResamplerConditioner: public GNSSBlockInterface
 {
 public:
-    FractionalResamplerConditioner(ConfigurationInterface* configuration,
+    MmseResamplerConditioner(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
             unsigned int out_stream);
 
-    virtual ~FractionalResamplerConditioner();
+    virtual ~MmseResamplerConditioner();
 
     inline std::string role() override
     {
@@ -63,7 +63,7 @@ public:
 
     inline std::string implementation() override
     {
-        return "Fractional_Resampler";
+        return "Mmse_Resampler";
     }
 
     inline size_t item_size() override

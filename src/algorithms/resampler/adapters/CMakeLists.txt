@@ -18,7 +18,7 @@
 
 set(RESAMPLER_ADAPTER_SOURCES
         direct_resampler_conditioner.cc
-        fractional_resampler_conditioner.cc
+        mmse_resampler_conditioner.cc
 )
 
 include_directories(

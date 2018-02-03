@@ -62,7 +62,7 @@
 #include "ishort_to_cshort.h"
 #include "ishort_to_complex.h"
 #include "direct_resampler_conditioner.h"
-#include "fractional_resampler_conditioner.h"
+#include "mmse_resampler_conditioner.h"
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
 #include "beamformer_filter.h"
@@ -1171,9 +1171,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
 
-    else if (implementation.compare("Fractional_Resampler") == 0)
+    else if ((implementation.compare("Fractional_Resampler") == 0) || (implementation.compare("Mmse_Resampler") == 0))
         {
-            std::unique_ptr<GNSSBlockInterface> block_(new FractionalResamplerConditioner(configuration.get(), role,
+            std::unique_ptr<GNSSBlockInterface> block_(new MmseResamplerConditioner(configuration.get(), role,
                     in_streams, out_streams));
             block = std::move(block_);
         }

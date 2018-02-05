@@ -66,6 +66,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
     sample_rate_ = configuration->property(role + ".sampling_frequency", 2.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     osmosdr_args_ = configuration->property(role + ".osmosdr_args", std::string( ));
+    antenna_ = configuration->property(role + ".antenna", empty);
 
     if (item_type_.compare("short") == 0)
         {
@@ -76,6 +77,14 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
             item_size_ = sizeof(gr_complex);
             // 1. Make the driver instance
             OsmosdrSignalSource::driver_instance();
+
+			// For LimeSDR: Set RX antenna 
+			if (!antenna_.empty())
+				{
+					osmosdr_source_->set_antenna(antenna_, 0);
+					std::cout << boost::format("Set RX Antenna : %s") % (osmosdr_source_->get_antenna(0)) << std::endl ;
+					LOG(INFO) << boost::format("Set RX Antenna : %s") % (osmosdr_source_->get_antenna(0));
+				}
 
             // 2 set sampling rate
             osmosdr_source_->set_sample_rate(sample_rate_);

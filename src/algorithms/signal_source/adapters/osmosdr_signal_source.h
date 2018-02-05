@@ -104,6 +104,8 @@ private:
 
     osmosdr::source::sptr osmosdr_source_;
     std::string osmosdr_args_;
+    
+    std::string antenna_;
 
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;

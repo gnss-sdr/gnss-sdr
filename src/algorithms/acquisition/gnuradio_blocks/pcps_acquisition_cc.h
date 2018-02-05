@@ -52,14 +52,13 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_ACQUISITION_CC_H_
 
-#include <fstream>
+
 #include <string>
+#include <armadillo>
 #include <gnuradio/block.h>
-#include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
 #include "gnss_synchro.h"
-#include <glog/logging.h>
-#include <armadillo>
+
 
 class pcps_acquisition_cc;
 
@@ -82,7 +81,6 @@ pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
 class pcps_acquisition_cc: public gr::block
 {
 private:
-
     friend pcps_acquisition_cc_sptr
     pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
@@ -145,7 +143,6 @@ private:
     arma::fmat grid_;
 
 public:
-
     ~pcps_acquisition_cc();
 
      /*!

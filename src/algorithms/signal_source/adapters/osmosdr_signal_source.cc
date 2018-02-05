@@ -78,7 +78,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
             // 1. Make the driver instance
             OsmosdrSignalSource::driver_instance();
 
-			// For LimeSDR: Set RX antenna 
+			// For LimeSDR: Set RX antenna
 			if (!antenna_.empty())
 				{
 					osmosdr_source_->set_antenna(antenna_, 0);

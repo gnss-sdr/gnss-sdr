@@ -599,10 +599,12 @@ if(NOT VOLK_GNSSSDR_FOUND)
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif(NOT SIX_FOUND)
 
+    set(READ_ENVIRO "")
     if(ENABLE_PACKAGING)
         if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
             set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON -DCMAKE_VERBOSE_MAKEFILE=ON")
         endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        set(READ_ENVIRO "${CMAKE_COMMAND} -E environment")
     endif(ENABLE_PACKAGING)
 
     set(VOLK_GNSSSDR_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}")
@@ -638,11 +640,11 @@ if(NOT VOLK_GNSSSDR_FOUND)
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-         CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+         CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
          DOWNLOAD_COMMAND ""
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
-         BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+         BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
          INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
          )
     else(CMAKE_VERSION VERSION_LESS 3.2)
@@ -650,11 +652,11 @@ if(NOT VOLK_GNSSSDR_FOUND)
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-         CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+         CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
          DOWNLOAD_COMMAND ""
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
-         BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+         BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                           ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
          INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install

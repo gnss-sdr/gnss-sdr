@@ -51,13 +51,9 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_SC_H_
 #define GNSS_SDR_PCPS_ACQUISITION_SC_H_
 
-#include <fstream>
 #include <string>
-#include <mutex>
-#include <thread>
-#include <condition_variable>
+#include <armadillo>
 #include <gnuradio/block.h>
-#include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gnss_synchro.h"
@@ -101,7 +97,7 @@ private:
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
 
-    void acquisition_core( void );
+    void acquisition_core( unsigned long int samp_count );
 
     void update_grid_doppler_wipeoffs();
     bool is_fdma();
@@ -109,53 +105,42 @@ private:
     void send_negative_acquisition();
     void send_positive_acquisition();
 
+    bool d_bit_transition_flag;
+    bool d_use_CFAR_algorithm_flag;
+    bool d_active;
+    bool d_dump;
+    bool d_worker_active;
+    bool d_blocking;
+    float d_threshold;
+    float d_mag;
+    float d_input_power;
+    float d_test_statistics;
+    float* d_magnitude;
     long d_fs_in;
     long d_freq;
     long d_old_freq;
     int d_samples_per_ms;
     int d_samples_per_code;
-    //unsigned int d_doppler_resolution;
-    float d_threshold;
-    std::string d_satellite_str;
+    int d_state;
+    unsigned int d_channel;
     unsigned int d_doppler_max;
     unsigned int d_doppler_step;
     unsigned int d_sampled_ms;
     unsigned int d_max_dwells;
     unsigned int d_well_count;
     unsigned int d_fft_size;
-    unsigned long int d_sample_counter;
-    gr_complex** d_grid_doppler_wipeoffs;
     unsigned int d_num_doppler_bins;
+    unsigned int d_code_phase;
+    unsigned long int d_sample_counter;
+    lv_16sc_t* d_data_buffer;
+    gr_complex** d_grid_doppler_wipeoffs;
     gr_complex* d_fft_codes;
     gr_complex* d_in_32fc;
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_ifft;
-    Gnss_Synchro *d_gnss_synchro;
-    unsigned int d_code_phase;
-    float d_doppler_freq;
-    float d_mag;
-    float* d_magnitude;
-    float d_input_power;
-    float d_test_statistics;
-    bool d_bit_transition_flag;
-    bool d_use_CFAR_algorithm_flag;
-    std::ofstream d_dump_file;
-    bool d_active;
-    int d_state;
-    bool d_dump;
-    unsigned int d_channel;
+    Gnss_Synchro* d_gnss_synchro;
     std::string d_dump_filename;
-
-    std::thread d_worker_thread;
-    std::mutex  d_mutex;
-
-    std::condition_variable d_cond;
-    bool d_done;
-    bool d_new_data_available;
-    bool d_worker_active;
-    bool d_blocking;
-
-    lv_16sc_t *d_data_buffer;
+    arma::fmat grid_;
 
 public:
     /*!
@@ -259,15 +244,6 @@ public:
              gr_vector_const_void_star &input_items,
              gr_vector_void_star &output_items);
 
-     /*!
-      * Called by the flowgraph when processing is about to start.
-      */
-     bool start( void );
-
-     /*!
-      * Called by the flowgraph when processing is done.
-      */
-     bool stop( void );
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_SC_H_*/

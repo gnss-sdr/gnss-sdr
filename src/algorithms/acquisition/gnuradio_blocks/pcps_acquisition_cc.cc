@@ -39,7 +39,6 @@
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <volk/volk.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "GPS_L1_CA.h" //GPS_TWO_PI
 #include "GLONASS_L1_CA.h" //GLONASS_TWO_PI
 
@@ -53,11 +52,11 @@ pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag, bool use_CFAR_algorithm_flag,
         bool dump, bool blocking,
-        std::string dump_filename)
+        std::string dump_filename, size_t it_size)
 {
     return pcps_acquisition_cc_sptr(
             new pcps_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-                    samples_per_code, bit_transition_flag, use_CFAR_algorithm_flag, dump, blocking, dump_filename));
+                    samples_per_code, bit_transition_flag, use_CFAR_algorithm_flag, dump, blocking, dump_filename, it_size));
 }
 
 
@@ -67,10 +66,10 @@ pcps_acquisition_cc::pcps_acquisition_cc(
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag, bool use_CFAR_algorithm_flag,
         bool dump, bool blocking,
-        std::string dump_filename) :
+        std::string dump_filename, size_t it_size) :
             gr::block("pcps_acquisition_cc",
-                    gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms * ( bit_transition_flag ? 2 : 1 )),
-                    gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms * ( bit_transition_flag ? 2 : 1 )) )
+                    gr::io_signature::make(1, 1, it_size * sampled_ms * samples_per_ms * ( bit_transition_flag ? 2 : 1 )),
+                    gr::io_signature::make(0, 0, it_size * sampled_ms * samples_per_ms * ( bit_transition_flag ? 2 : 1 )) )
 {
     this->message_port_register_out(pmt::mp("events"));
 
@@ -97,6 +96,8 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_code_phase = 0;
     d_test_statistics = 0.0;
     d_channel = 0;
+    if(it_size == sizeof(gr_complex)) { d_cshort = false; }
+    else { d_cshort = true; }
 
     // COD:
     // Experimenting with the overlap/save technique for handling bit trannsitions
@@ -131,6 +132,10 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_blocking = blocking;
     d_worker_active = false;
     d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    if(d_cshort)
+    {
+        d_data_buffer_sc = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(d_fft_size * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    }
     grid_ = arma::fmat();
 }
 
@@ -150,6 +155,7 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
     delete d_ifft;
     delete d_fft_if;
     volk_gnsssdr_free(d_data_buffer);
+    if(d_cshort) { volk_gnsssdr_free(d_data_buffer_sc); }
 }
 
 
@@ -360,7 +366,8 @@ int pcps_acquisition_cc::general_work(int noutput_items __attribute__((unused)),
     case 1:
         {
             // Copy the data to the core and let it know that new data is available
-            memcpy(d_data_buffer, input_items[0], d_fft_size * sizeof(gr_complex));
+            if(d_cshort) { memcpy(d_data_buffer_sc, input_items[0], d_fft_size * sizeof(lv_16sc_t)); }
+            else { memcpy(d_data_buffer, input_items[0], d_fft_size * sizeof(gr_complex)); }
             if(d_blocking)
                 {
                     lk.unlock();
@@ -388,10 +395,9 @@ void pcps_acquisition_cc::acquisition_core( unsigned long int samp_count )
     int doppler;
     uint32_t indext = 0;
     float magt = 0.0;
-    const gr_complex *in = d_data_buffer; //Get the input samples pointer
-
+    const gr_complex* in = d_data_buffer; //Get the input samples pointer
     int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
-
+    if(d_cshort) { volk_gnsssdr_16ic_convert_32fc(d_data_buffer, d_data_buffer_sc, d_fft_size); }
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
     d_input_power = 0.0;

@@ -57,6 +57,7 @@
 #include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gnss_synchro.h"
 
 
@@ -70,7 +71,7 @@ pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag, bool use_CFAR_algorithm_flag,
                          bool dump, bool blocking,
-                         std::string dump_filename);
+                         std::string dump_filename, size_t it_size);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -87,14 +88,14 @@ private:
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
             bool dump, bool blocking,
-            std::string dump_filename);
+            std::string dump_filename, size_t it_size);
 
     pcps_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
             bool dump, bool blocking, 
-            std::string dump_filename);
+            std::string dump_filename, size_t it_size);
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
     void update_grid_doppler_wipeoffs();
@@ -112,6 +113,7 @@ private:
     bool d_dump;
     bool d_worker_active;
     bool d_blocking;
+    bool d_cshort;
     float d_threshold;
     float d_mag;
     float d_input_power;
@@ -136,6 +138,7 @@ private:
     gr_complex** d_grid_doppler_wipeoffs;
     gr_complex* d_fft_codes;
     gr_complex* d_data_buffer;
+    lv_16sc_t* d_data_buffer_sc;
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_ifft;
     Gnss_Synchro* d_gnss_synchro;

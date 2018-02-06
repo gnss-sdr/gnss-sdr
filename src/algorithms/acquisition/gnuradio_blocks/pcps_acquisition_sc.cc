@@ -35,13 +35,11 @@
 
 
 #include "pcps_acquisition_sc.h"
-#include <sstream>
 #include <cstring>
-#include <matio.h>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <matio.h>
 #include <volk/volk.h>
-#include "control_message_factory.h"
 #include "GPS_L1_CA.h" //GPS_TWO_PI
 #include "GLONASS_L1_CA.h" //GLONASS_TWO_PI
 

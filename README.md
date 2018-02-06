@@ -60,9 +60,11 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
        liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
-       libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev \
-       python-mako python-six libmatio-dev
+       libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev \
+       python-mako python-six libmatio-dev googletest
 ~~~~~~
+
+Please note that `googletest` was named `libgtest-dev` in distributions older than Debian 9 Stretch and Ubuntu 17.04 Zesty.
 
 Alternatively, and starting from Ubuntu 16.04 LTS, you can install all the required dependencies by adding the line
 
@@ -76,6 +78,7 @@ to your ```/etc/apt/sources.list``` file and doing:
 $ sudo apt-get update
 $ sudo apt-get build-dep gnss-sdr
 ~~~~~~
+
 
 Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux).
 

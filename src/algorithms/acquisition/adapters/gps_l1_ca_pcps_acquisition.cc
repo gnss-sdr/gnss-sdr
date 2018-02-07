@@ -85,19 +85,15 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     if (item_type_.compare("cshort") == 0 )
         {
             item_size_ = sizeof(lv_16sc_t);
-            acquisition_sc_ = pcps_make_acquisition_sc(sampled_ms_, max_dwells_,
-                    doppler_max_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_);
-            DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
         }
     else
         {
             item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
-                    doppler_max_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_);
-            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
+    acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
+                    doppler_max_, if_, fs_in_, code_length_, code_length_,
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_, item_size_);
+            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
     DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
@@ -124,14 +120,7 @@ GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition()
 void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    if (item_type_.compare("cshort") == 0)
-        {
-            acquisition_sc_->set_channel(channel_);
-        }
-    else
-        {
-            acquisition_cc_->set_channel(channel_);
-        }
+    acquisition_cc_->set_channel(channel_);
 }
 
 
@@ -150,15 +139,7 @@ void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
-
-    if (item_type_.compare("cshort") == 0)
-        {
-            acquisition_sc_->set_threshold(threshold_);
-        }
-    else
-        {
-            acquisition_cc_->set_threshold(threshold_);
-        }
+    acquisition_cc_->set_threshold(threshold_);
 }
 
 
@@ -166,14 +147,7 @@ void GpsL1CaPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
 
-    if (item_type_.compare("cshort") == 0)
-        {
-            acquisition_sc_->set_doppler_max(doppler_max_);
-        }
-    else
-        {
-            acquisition_cc_->set_doppler_max(doppler_max_);
-        }
+    acquisition_cc_->set_doppler_max(doppler_max_);
 }
 
 
@@ -181,14 +155,7 @@ void GpsL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
 
-    if (item_type_.compare("cshort") == 0)
-        {
-            acquisition_sc_->set_doppler_step(doppler_step_);
-        }
-    else
-        {
-            acquisition_cc_->set_doppler_step(doppler_step_);
-        }
+    acquisition_cc_->set_doppler_step(doppler_step_);
 }
 
 
@@ -196,41 +163,19 @@ void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
 
-    if (item_type_.compare("cshort") == 0)
-        {
-            acquisition_sc_->set_gnss_synchro(gnss_synchro_);
-        }
-    else
-        {
-            acquisition_cc_->set_gnss_synchro(gnss_synchro_);
-        }
+    acquisition_cc_->set_gnss_synchro(gnss_synchro_);
 }
 
 
 signed int GpsL1CaPcpsAcquisition::mag()
 {
-    if (item_type_.compare("cshort") == 0)
-        {
-            return acquisition_sc_->mag();
-        }
-    else
-        {
-            return acquisition_cc_->mag();
-        }
+    return acquisition_cc_->mag();
 }
 
 
 void GpsL1CaPcpsAcquisition::init()
 {
-    if (item_type_.compare("cshort") == 0)
-        {
-            acquisition_sc_->init();
-        }
-    else
-        {
-            acquisition_cc_->init();
-        }
-
+    acquisition_cc_->init();
     //set_local_code();
 }
 
@@ -247,42 +192,20 @@ void GpsL1CaPcpsAcquisition::set_local_code()
                     sizeof(gr_complex)*code_length_);
         }
 
-    if (item_type_.compare("cshort") == 0)
-        {
-            acquisition_sc_->set_local_code(code_);
-        }
-    else
-        {
-            acquisition_cc_->set_local_code(code_);
-        }
-
+    acquisition_cc_->set_local_code(code_);
     delete[] code;
 }
 
 
 void GpsL1CaPcpsAcquisition::reset()
 {
-    if (item_type_.compare("cshort") == 0)
-        {
-            acquisition_sc_->set_active(true);
-        }
-    else
-        {
-            acquisition_cc_->set_active(true);
-        }
+    acquisition_cc_->set_active(true);
 }
 
 
 void GpsL1CaPcpsAcquisition::set_state(int state)
 {
-    if (item_type_.compare("cshort") == 0)
-        {
-            acquisition_sc_->set_state(state);
-        }
-    else
-        {
-            acquisition_cc_->set_state(state);
-        }
+    acquisition_cc_->set_state(state);
 }
 
 
@@ -315,7 +238,7 @@ void GpsL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_sc_, 0);
+            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
     else if (item_type_.compare("cbyte") == 0)
         {
@@ -339,7 +262,7 @@ void GpsL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_sc_, 0);
+            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
     else if (item_type_.compare("cbyte") == 0)
         {
@@ -381,13 +304,6 @@ gr::basic_block_sptr GpsL1CaPcpsAcquisition::get_left_block()
 
 gr::basic_block_sptr GpsL1CaPcpsAcquisition::get_right_block()
 {
-    if (item_type_.compare("cshort") == 0)
-        {
-            return acquisition_sc_;
-        }
-    else
-        {
-            return acquisition_cc_;
-        }
+    return acquisition_cc_;
 }
 

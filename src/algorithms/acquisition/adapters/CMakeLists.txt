@@ -31,6 +31,7 @@ set(ACQ_ADAPTER_SOURCES
     galileo_e1_pcps_tong_ambiguous_acquisition.cc
     galileo_e1_pcps_8ms_ambiguous_acquisition.cc
     galileo_e5a_noncoherent_iq_acquisition_caf.cc
+    galileo_e5a_pcps_acquisition.cc
     glonass_l1_ca_pcps_acquisition.cc
 )
 

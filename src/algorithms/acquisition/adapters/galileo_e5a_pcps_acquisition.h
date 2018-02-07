@@ -1,14 +1,11 @@
 /*!
- * \file GPS_L5i_PCPS_Acquisition.h
+ * \file galileo_e5a_pcps_acquisition.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L5i signals
- * \authors <ul>
- *          <li> Javier Arribas, 2017. jarribas(at)cttc.es
- *          </ul>
- *
+ *  Galileo E5a data and pilot Signals
+ * \author Antonio Ramos, 2018. antonio.ramos(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,46 +28,34 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L5i_PCPS_ACQUISITION_H_
-#define GNSS_SDR_GPS_L5i_PCPS_ACQUISITION_H_
+#ifndef GALILEO_E5A_PCPS_ACQUISITION_H_
+#define GALILEO_E5A_PCPS_ACQUISITION_H_
 
 #include <string>
 #include <gnuradio/blocks/stream_to_vector.h>
-#include <gnuradio/blocks/float_to_complex.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "pcps_acquisition.h"
-#include "complex_byte_to_float_x2.h"
-#include <volk_gnsssdr/volk_gnsssdr.h>
-
-
 
 class ConfigurationInterface;
 
-/*!
- * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
- *  for GPS L5i signals
- */
-class GpsL5iPcpsAcquisition: public AcquisitionInterface
+class GalileoE5aPcpsAcquisition: public AcquisitionInterface
 {
 public:
-    GpsL5iPcpsAcquisition(ConfigurationInterface* configuration,
+    GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams);
 
-    virtual ~GpsL5iPcpsAcquisition();
+    virtual ~GalileoE5aPcpsAcquisition();
 
     inline std::string role() override
     {
         return role_;
     }
 
-    /*!
-     * \brief Returns "GPS_L5i_PCPS_Acquisition"
-     */
     inline std::string implementation() override
     {
-        return "GPS_L5i_PCPS_Acquisition";
+        return "Galileo_E5a_Pcps_Acquisition";
     }
 
     inline size_t item_size() override
@@ -116,7 +101,7 @@ public:
     void init() override;
 
     /*!
-     * \brief Sets local code for GPS L2/M PCPS acquisition algorithm.
+     * \brief Sets local Galileo E5a code for PCPS acquisition algorithm.
      */
     void set_local_code() override;
 
@@ -131,39 +116,55 @@ public:
     void reset() override;
 
     /*!
-     * \brief If state = 1, it forces the block to start acquiring from the first sample
+     * \brief If set to 1, ensures that acquisition starts at the
+     * first available sample.
+     * \param state - int=1 forces start of acquisition
      */
     void set_state(int state);
 
 private:
+
+    float calculate_threshold(float pfa);
+
     ConfigurationInterface* configuration_;
+
     pcps_acquisition_sptr acquisition_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
-    gr::blocks::float_to_complex::sptr float_to_complex_;
-    complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
+
     size_t item_size_;
+
     std::string item_type_;
+    std::string dump_filename_;
+    std::string role_;
+
+    bool bit_transition_flag_;
+    bool dump_;
+    bool acq_pilot_;
+    bool use_CFAR_;
+    bool blocking_;
+
     unsigned int vector_length_;
     unsigned int code_length_;
-    bool bit_transition_flag_;
-    bool use_CFAR_algorithm_flag_;
     unsigned int channel_;
-    float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
+    unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
-    long if_;
-    bool dump_;
-    bool blocking_;
-    std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
-    std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 
-    float calculate_threshold(float pfa);
-};
+    long fs_in_;
 
-#endif /* GNSS_SDR_GPS_L5i_PCPS_ACQUISITION_H_ */
+    float threshold_;
+
+    /*
+    std::complex<float>* codeI_;
+    std::complex<float>* codeQ_;
+    */
+
+    gr_complex* code_;
+
+    Gnss_Synchro* gnss_synchro_;
+
+};
+#endif /* GALILEO_E5A_PCPS_ACQUISITION_H_ */

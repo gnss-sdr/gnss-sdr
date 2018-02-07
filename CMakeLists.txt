@@ -449,10 +449,10 @@ if(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
         endif(LIBGTEST_DEV_DIR)
         find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h PATHS ${GTEST_DIR}/include)
     else(GTEST_DIR)
-        find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS /usr/src/gtest /opt/local/src/gtest-1.7.0)
+        find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS /usr/src/googletest/googletest /usr/src/gtest /opt/local/src/gtest-1.7.0 )
         find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h PATHS /usr/include /opt/local/src/gtest-1.7.0/include)
         if(LIBGTEST_DEV_DIR)
-            message (STATUS "Googletest (libgtest-dev package) has been found.")
+            message (STATUS "Googletest package has been found.")
         else(LIBGTEST_DEV_DIR)
             message (STATUS " Googletest has not been found.")
             message (STATUS " Googletest will be downloaded and built automatically ")
@@ -544,11 +544,11 @@ endif()
 
 
 ################################################################################
-# Lib4cpp - http://log4cpp.sourceforge.net/
+# Log4cpp - http://log4cpp.sourceforge.net/
 ################################################################################
 find_package(Log4cpp)
 if(NOT LOG4CPP_FOUND)
-    message(FATAL_ERROR "*** Lib4cpp is required to build gnss-sdr")
+    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
 endif()
 
 
@@ -600,10 +600,12 @@ if(NOT VOLK_GNSSSDR_FOUND)
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif(NOT SIX_FOUND)
 
+    set(READ_ENVIRO "")
     if(ENABLE_PACKAGING)
         if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
             set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON -DCMAKE_VERBOSE_MAKEFILE=ON")
         endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        set(READ_ENVIRO ${CMAKE_COMMAND} -E environment)
     endif(ENABLE_PACKAGING)
 
     set(VOLK_GNSSSDR_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}")
@@ -639,11 +641,11 @@ if(NOT VOLK_GNSSSDR_FOUND)
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-         CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+         CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
          DOWNLOAD_COMMAND ""
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
-         BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+         BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
          INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
          )
     else(CMAKE_VERSION VERSION_LESS 3.2)
@@ -651,11 +653,11 @@ if(NOT VOLK_GNSSSDR_FOUND)
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-         CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+         CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
          DOWNLOAD_COMMAND ""
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
-         BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+         BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                           ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
          INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
@@ -958,7 +960,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'. ")
      set(armadillo_BRANCH ${GNSSSDR_ARMADILLO_LOCAL_VERSION})
      set(armadillo_RELEASE ${armadillo_BRANCH})
-     
+
      #############################################
      # Check if GFORTRAN is found in the system
      #############################################
@@ -1113,7 +1115,7 @@ if(NOT MATIO_FOUND)
             if(CMAKE_VERSION VERSION_LESS 3.2)
               ExternalProject_Add(
                  matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/mati
+                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
                  GIT_REPOSITORY https://github.com/tbeu/matio
                  GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
                  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}

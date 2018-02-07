@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -16,7 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(RESAMPLER_ADAPTER_SOURCES direct_resampler_conditioner.cc )
+set(RESAMPLER_ADAPTER_SOURCES
+        direct_resampler_conditioner.cc
+        mmse_resampler_conditioner.cc
+)
 
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
@@ -27,6 +30,12 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
 )
+
+
+if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13" )
+     add_definitions( -DGR_GREATER_38=1 )
+endif(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13" )
+
 
 file(GLOB RESAMPLER_ADAPTER_HEADERS "*.h")
 list(SORT RESAMPLER_ADAPTER_HEADERS)

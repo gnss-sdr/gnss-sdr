@@ -161,6 +161,10 @@ if(GNUPLOT_FOUND)
     add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")
 endif(GNUPLOT_FOUND)
 
+if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13" )
+     add_definitions( -DGR_GREATER_38=1 )
+endif(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13" )
+
 
 ################################################################################
 # Optional generator
@@ -298,6 +302,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs

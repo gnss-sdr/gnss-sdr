@@ -1,13 +1,12 @@
 /*!
- * \file osmosdr_signal_source.h
- * \brief Signal source wrapper for OsmoSDR-compatible front-ends, such as
- * HackRF or Realtek's RTL2832U-based USB dongle DVB-T receivers
- * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr for more information)
- * \author Javier Arribas, 2012. jarribas(at)cttc.es
+ * \file mmse_resampler_conditioner.h
+ * \brief Interface of an adapter of a mmse resampler conditioner block
+ * to a SignalConditionerInterface
+ * \author Antonio Ramos, 2018. antonio.ramos(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,44 +29,41 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_
-#define GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_
 
-#include <stdexcept>
+#ifndef GNSS_SDR_MMSE_RESAMPLER_CONDITIONER_H_
+#define GNSS_SDR_MMSE_RESAMPLER_CONDITIONER_H_
+
 #include <string>
-#include <boost/shared_ptr.hpp>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <osmosdr/source.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/mmse_resampler_cc.h>
+#else
+#include <gnuradio/filter/fractional_resampler_cc.h>
+#endif
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class reads samples OsmoSDR-compatible front-ends, such as
- * HackRF or Realtek's RTL2832U-based USB dongle DVB-T receivers
- * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr)
+ * \brief Interface of a MMSE resampler block adapter
+ * to a SignalConditionerInterface
  */
-class OsmosdrSignalSource: public GNSSBlockInterface
+class MmseResamplerConditioner: public GNSSBlockInterface
 {
 public:
-    OsmosdrSignalSource(ConfigurationInterface* configuration,
+    MmseResamplerConditioner(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_stream);
 
-    virtual ~OsmosdrSignalSource();
+    virtual ~MmseResamplerConditioner();
 
     inline std::string role() override
     {
         return role_;
     }
 
-    /*!
-     * \brief Returns "Osmosdr_Signal_Source"
-     */
     inline std::string implementation() override
     {
-        return "Osmosdr_Signal_Source";
+        return "Mmse_Resampler";
     }
 
     inline size_t item_size() override
@@ -81,35 +77,21 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    void driver_instance();
     std::string role_;
-
-    // Front-end settings
-    bool AGC_enabled_;
-    double sample_rate_;
-
     unsigned int in_stream_;
     unsigned int out_stream_;
-
-    double freq_;
-    double gain_;
-    double if_gain_;
-    double rf_gain_;
-
     std::string item_type_;
     size_t item_size_;
-    long samples_;
     bool dump_;
     std::string dump_filename_;
-
-    osmosdr::source::sptr osmosdr_source_;
-    std::string osmosdr_args_;
-    
-    std::string antenna_;
-
-    boost::shared_ptr<gr::block> valve_;
-    gr::blocks::file_sink::sptr file_sink_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    double sample_freq_in_;
+    double sample_freq_out_;
+    #ifdef GR_GREATER_38
+    gr::filter::mmse_resampler_cc::sptr resampler_;
+    #else
+    gr::filter::fractional_resampler_cc::sptr resampler_;
+    #endif
+    gr::block_sptr file_sink_;
 };
 
-#endif /*GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_*/
+#endif /*GNSS_SDR_FRACTIONAL_RESAMPLER_CONDITIONER_H_*/

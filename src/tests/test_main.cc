@@ -97,6 +97,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/filter/notch_filter_lite_test.cc"
 
 #include "unit-tests/signal-processing-blocks/resampler/direct_resampler_conditioner_cc_test.cc"
+#include "unit-tests/signal-processing-blocks/resampler/mmse_resampler_test.cc"
 
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"

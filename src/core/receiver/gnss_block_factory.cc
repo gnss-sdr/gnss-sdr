@@ -62,6 +62,7 @@
 #include "ishort_to_cshort.h"
 #include "ishort_to_complex.h"
 #include "direct_resampler_conditioner.h"
+#include "mmse_resampler_conditioner.h"
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
 #include "beamformer_filter.h"
@@ -81,6 +82,7 @@
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
+#include "galileo_e5a_pcps_acquisition.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking.h"
@@ -1170,6 +1172,13 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
 
+    else if ((implementation.compare("Fractional_Resampler") == 0) || (implementation.compare("Mmse_Resampler") == 0))
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new MmseResamplerConditioner(configuration.get(), role,
+                    in_streams, out_streams));
+            block = std::move(block_);
+        }
+
     // ACQUISITION BLOCKS ---------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
@@ -1259,6 +1268,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Galileo_E5a_Noncoherent_IQ_Acquisition_CAF") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aNoncoherentIQAcquisitionCaf(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Galileo_E5a_Pcps_Acquisition") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aPcpsAcquisition(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }
@@ -1532,6 +1547,12 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     else if (implementation.compare("Galileo_E5a_Noncoherent_IQ_Acquisition_CAF") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GalileoE5aNoncoherentIQAcquisitionCaf(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Galileo_E5a_Pcps_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GalileoE5aPcpsAcquisition(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

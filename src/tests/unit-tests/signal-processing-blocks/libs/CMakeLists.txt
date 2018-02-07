@@ -30,6 +30,7 @@ include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
+     ${MATIO_INCLUDE_DIRS}
 )
 
 

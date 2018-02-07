@@ -164,7 +164,7 @@ void GpsL2MPcpsAcquisitionTest::init()
         {
             config->set_property("Acquisition_2S.dump", "false");
         }
-    config->set_property("Acquisition_2S.dump_filename", "./tmp-acq-gps2/acquisition.dat");
+    config->set_property("Acquisition_2S.dump_filename", "./tmp-acq-gps2/acquisition");
     config->set_property("Acquisition_2S.threshold", "0.001");
     config->set_property("Acquisition_2S.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_2S.doppler_step", std::to_string(doppler_step));
@@ -178,9 +178,8 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
     std::string basename = "./tmp-acq-gps2/acquisition_G_2S";
     unsigned int sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
-    unsigned int samples_per_code =  static_cast<unsigned int>(floor(sampling_frequency_hz / (GPS_L2_M_CODE_RATE_HZ / GPS_L2_M_CODE_LENGTH_CHIPS)) - 1000); // !!
+    unsigned int samples_per_code =  static_cast<unsigned int>(floor(static_cast<double>(sampling_frequency_hz) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
     acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
-
     if(!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
 
     std::vector<int> *doppler = &acq_dump.doppler;
@@ -204,7 +203,7 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
                     std::string gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
-                    Gnuplot g1("lines");
+                    Gnuplot g1("impulses");
                     g1.set_title("GPS L2CM signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");

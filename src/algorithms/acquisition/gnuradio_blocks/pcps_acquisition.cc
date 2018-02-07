@@ -1,5 +1,5 @@
 /*!
- * \file pcps_acquisition_cc.cc
+ * \file pcps_acquisition.cc
  * \brief This class implements a Parallel Code Phase Search Acquisition
  * \authors <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
@@ -33,7 +33,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "pcps_acquisition_cc.h"
+#include "pcps_acquisition.h"
 #include <cstring>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -46,7 +46,7 @@
 
 using google::LogMessage;
 
-pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
+pcps_acquisition_sptr pcps_make_acquisition(
         unsigned int sampled_ms, unsigned int max_dwells,
         unsigned int doppler_max, long freq, long fs_in,
         int samples_per_ms, int samples_per_code,
@@ -54,20 +54,20 @@ pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
         bool dump, bool blocking,
         std::string dump_filename, size_t it_size)
 {
-    return pcps_acquisition_cc_sptr(
-            new pcps_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
+    return pcps_acquisition_sptr(
+            new pcps_acquisition(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
                     samples_per_code, bit_transition_flag, use_CFAR_algorithm_flag, dump, blocking, dump_filename, it_size));
 }
 
 
-pcps_acquisition_cc::pcps_acquisition_cc(
+pcps_acquisition::pcps_acquisition(
         unsigned int sampled_ms, unsigned int max_dwells,
         unsigned int doppler_max, long freq, long fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag, bool use_CFAR_algorithm_flag,
         bool dump, bool blocking,
         std::string dump_filename, size_t it_size) :
-            gr::block("pcps_acquisition_cc",
+            gr::block("pcps_acquisition",
                     gr::io_signature::make(1, 1, it_size * sampled_ms * samples_per_ms * ( bit_transition_flag ? 2 : 1 )),
                     gr::io_signature::make(0, 0, it_size * sampled_ms * samples_per_ms * ( bit_transition_flag ? 2 : 1 )) )
 {
@@ -133,14 +133,14 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_worker_active = false;
     d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     if(d_cshort)
-    {
-        d_data_buffer_sc = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(d_fft_size * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
-    }
+        {
+            d_data_buffer_sc = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(d_fft_size * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+        }
     grid_ = arma::fmat();
 }
 
 
-pcps_acquisition_cc::~pcps_acquisition_cc()
+pcps_acquisition::~pcps_acquisition()
 {
     if (d_num_doppler_bins > 0)
         {
@@ -159,7 +159,7 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 }
 
 
-void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
+void pcps_acquisition::set_local_code(std::complex<float> * code)
 {
     // reset the intermediate frequency
     d_freq = d_old_freq;
@@ -189,7 +189,7 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
 }
 
 
-bool pcps_acquisition_cc::is_fdma()
+bool pcps_acquisition::is_fdma()
 {
     // Dealing with FDMA system
     if( strcmp(d_gnss_synchro->Signal,"1G") == 0 )
@@ -205,7 +205,7 @@ bool pcps_acquisition_cc::is_fdma()
 }
 
 
-void pcps_acquisition_cc::update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq)
+void pcps_acquisition::update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq)
 {
     float phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(d_fs_in);
     float _phase[1];
@@ -214,7 +214,7 @@ void pcps_acquisition_cc::update_local_carrier(gr_complex* carrier_vector, int c
 }
 
 
-void pcps_acquisition_cc::init()
+void pcps_acquisition::init()
 {
     d_gnss_synchro->Flag_valid_acquisition = false;
     d_gnss_synchro->Flag_valid_symbol_output = false;
@@ -248,7 +248,7 @@ void pcps_acquisition_cc::init()
 }
 
 
-void pcps_acquisition_cc::update_grid_doppler_wipeoffs()
+void pcps_acquisition::update_grid_doppler_wipeoffs()
 {
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
@@ -262,7 +262,7 @@ void pcps_acquisition_cc::update_grid_doppler_wipeoffs()
 }
 
 
-void pcps_acquisition_cc::set_state(int state)
+void pcps_acquisition::set_state(int state)
 {
     gr::thread::scoped_lock lock(d_setlock); // require mutex with work function called by the scheduler
     d_state = state;
@@ -286,7 +286,7 @@ void pcps_acquisition_cc::set_state(int state)
 }
 
 
-void pcps_acquisition_cc::send_positive_acquisition()
+void pcps_acquisition::send_positive_acquisition()
 {
     // 6.1- Declare positive acquisition using a message port
     //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
@@ -304,7 +304,7 @@ void pcps_acquisition_cc::send_positive_acquisition()
 }
 
 
-void pcps_acquisition_cc::send_negative_acquisition()
+void pcps_acquisition::send_negative_acquisition()
 {
     // 6.2- Declare negative acquisition using a message port
     //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
@@ -322,7 +322,7 @@ void pcps_acquisition_cc::send_negative_acquisition()
 }
 
 
-int pcps_acquisition_cc::general_work(int noutput_items __attribute__((unused)),
+int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items __attribute__((unused)))
 {
@@ -375,7 +375,7 @@ int pcps_acquisition_cc::general_work(int noutput_items __attribute__((unused)),
                 }
             else
                 {
-                    gr::thread::thread d_worker(&pcps_acquisition_cc::acquisition_core, this, d_sample_counter);
+                    gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter);
                     d_worker_active = true;
                 }
             d_sample_counter += d_fft_size;
@@ -387,7 +387,7 @@ int pcps_acquisition_cc::general_work(int noutput_items __attribute__((unused)),
 }
 
 
-void pcps_acquisition_cc::acquisition_core( unsigned long int samp_count )
+void pcps_acquisition::acquisition_core( unsigned long int samp_count )
 {
     gr::thread::scoped_lock lk(d_setlock);
 

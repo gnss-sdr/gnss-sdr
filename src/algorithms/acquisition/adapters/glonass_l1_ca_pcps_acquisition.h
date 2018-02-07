@@ -39,7 +39,7 @@
 #include <gnuradio/blocks/float_to_complex.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
-#include "pcps_acquisition_cc.h"
+#include "pcps_acquisition.h"
 #include "complex_byte_to_float_x2.h"
 
 
@@ -135,7 +135,7 @@ public:
 
 private:
     ConfigurationInterface* configuration_;
-    pcps_acquisition_cc_sptr acquisition_cc_;
+    pcps_acquisition_sptr acquisition_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;

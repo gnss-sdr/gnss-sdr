@@ -1,5 +1,5 @@
 /*!
- * \file pcps_acquisition_cc.h
+ * \file pcps_acquisition.h
  * \brief This class implements a Parallel Code Phase Search Acquisition
  *
  *  Acquisition strategy (Kay Borre book + CFAR threshold).
@@ -49,8 +49,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_ACQUISITION_CC_H_
-#define GNSS_SDR_PCPS_ACQUISITION_CC_H_
+#ifndef GNSS_SDR_PCPS_ACQUISITION_H_
+#define GNSS_SDR_PCPS_ACQUISITION_H_
 
 
 #include <string>
@@ -61,12 +61,12 @@
 #include "gnss_synchro.h"
 
 
-class pcps_acquisition_cc;
+class pcps_acquisition;
 
-typedef boost::shared_ptr<pcps_acquisition_cc> pcps_acquisition_cc_sptr;
+typedef boost::shared_ptr<pcps_acquisition> pcps_acquisition_sptr;
 
-pcps_acquisition_cc_sptr
-pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+pcps_acquisition_sptr
+pcps_make_acquisition(unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag, bool use_CFAR_algorithm_flag,
@@ -79,18 +79,18 @@ pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class pcps_acquisition_cc: public gr::block
+class pcps_acquisition: public gr::block
 {
 private:
-    friend pcps_acquisition_cc_sptr
-    pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+    friend pcps_acquisition_sptr
+    pcps_make_acquisition(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
             bool dump, bool blocking,
             std::string dump_filename, size_t it_size);
 
-    pcps_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+    pcps_acquisition(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
@@ -146,7 +146,7 @@ private:
     arma::fmat grid_;
 
 public:
-    ~pcps_acquisition_cc();
+    ~pcps_acquisition();
 
      /*!
       * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -246,4 +246,4 @@ public:
 
 };
 
-#endif /* GNSS_SDR_PCPS_ACQUISITION_CC_H_*/
+#endif /* GNSS_SDR_PCPS_ACQUISITION_H_*/

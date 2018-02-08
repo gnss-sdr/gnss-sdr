@@ -445,9 +445,8 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             current_synchro_data.Carrier_phase_rads = 0.0;
             current_synchro_data.CN0_dB_hz = 0.0;
             current_synchro_data.fs = d_fs_in;
-            *out[0] = current_synchro_data;
             consume_each(samples_offset); //shift input to perform alignment with local replica
-            return 1;
+            return 0;
             break;
         }
     case 2:
@@ -649,6 +648,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
+                    current_synchro_data.Flag_valid_symbol_output = true;
                 }
             else
                 {
@@ -658,6 +658,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     current_synchro_data.Tracking_sample_counter = d_sample_counter;
                     current_synchro_data.Carrier_phase_rads = 0.0;
                     current_synchro_data.CN0_dB_hz = 0.0;
+                    current_synchro_data.Flag_valid_symbol_output = false;
                 }
 
             break;
@@ -666,7 +667,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
 
     current_synchro_data.fs = d_fs_in;
     current_synchro_data.correlation_length_ms = GALILEO_E5a_CODE_PERIOD_MS;
-    *out[0] = current_synchro_data;
+    if(current_synchro_data.Flag_valid_symbol_output) { *out[0] = current_synchro_data; }
 
     if(d_dump)
         {
@@ -731,15 +732,11 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
         }
 
     d_secondary_delay = (d_secondary_delay + 1) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
-    d_sample_counter += d_current_prn_length_samples; //count for the processed samples
-    consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
+    d_sample_counter += d_current_prn_length_samples;
+    consume_each(d_current_prn_length_samples);
 
-    if (current_synchro_data.Flag_valid_symbol_output)
-    {
-        return 1;
-    }else{
-        return 0;
-    }
+    if(current_synchro_data.Flag_valid_symbol_output) { return 1; }
+    else { return 0; }
 }
 
 

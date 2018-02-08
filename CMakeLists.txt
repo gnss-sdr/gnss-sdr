@@ -543,7 +543,7 @@ endif()
 
 
 ################################################################################
-# Lib4cpp - http://log4cpp.sourceforge.net/
+# Log4cpp - http://log4cpp.sourceforge.net/
 ################################################################################
 find_package(Log4cpp)
 if(NOT LOG4CPP_FOUND)

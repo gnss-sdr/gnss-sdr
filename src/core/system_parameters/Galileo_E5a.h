@@ -47,7 +47,7 @@ const int Galileo_E5a_CODE_LENGTH_CHIPS = 10230;          //!< Galileo E5a prima
 const int Galileo_E5a_I_SECONDARY_CODE_LENGTH = 20;       //!< Galileo E5a-I secondary code length [chips]
 const int Galileo_E5a_Q_SECONDARY_CODE_LENGTH = 100;      //!< Galileo E5a-Q secondary code length [chips]
 const double GALILEO_E5a_CODE_PERIOD = 0.001;             //!< Galileo E1 primary code period [s]
-const int GALILEO_E5a_CODE_PERIOD_MS = 1;              //!< Galileo E1 primary code period [ms]
+const int GALILEO_E5a_CODE_PERIOD_MS = 1;                 //!< Galileo E1 primary code period [ms]
 const int Galileo_E5a_SYMBOL_RATE_BPS = 50;               //!< Galileo E5a symbol rate [bits/second]
 const int Galileo_E5a_NUMBER_OF_CODES = 50;
 

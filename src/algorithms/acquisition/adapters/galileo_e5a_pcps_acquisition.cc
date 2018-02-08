@@ -54,23 +54,11 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
+    acq_iq_ = configuration_->property(role + ".acquire_iq", false);
+    if(acq_iq_) { acq_pilot_ = false; }
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
-    if (sampled_ms_ > 3)
-        {
-            sampled_ms_ = 3;
-            DLOG(INFO) << "Coherent integration time should be 3 ms or less. Changing to 3ms ";
-            std::cout << "Too high coherent integration time. Changing to 3ms" << std::endl;
-        }
-    /*
-    if (Zero_padding > 0)
-        {
-            sampled_ms_ = 2;
-            DLOG(INFO) << "Zero padding activated. Changing to 1ms code + 1ms zero padding ";
-            std::cout << "Zero padding activated. Changing to 1ms code + 1ms zero padding" << std::endl;
-        }
-    */
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
@@ -81,10 +69,6 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     code_length_ = round(static_cast<double>(fs_in_) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS));
     vector_length_ = code_length_ * sampled_ms_;
 
-    /*
-    codeI_= new gr_complex[vector_length_];
-    codeQ_= new gr_complex[vector_length_];
-    */
     code_ = new gr_complex[vector_length_];
 
     if(item_type_.compare("gr_complex") == 0)
@@ -100,10 +84,10 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
             item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type_  << " unknown acquisition item type";
         }
-    // CHANGE PARAMETERS OF MAKE ACQ.!!!!!!!
+
     acquisition_ = pcps_make_acquisition(sampled_ms_, max_dwells_, doppler_max_, 0, fs_in_,
             code_length_, code_length_, bit_transition_flag_, use_CFAR_, dump_, blocking_,
-            dump_filename_,item_size_);
+            dump_filename_, item_size_);
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
     channel_ = 0;
@@ -173,83 +157,27 @@ signed int GalileoE5aPcpsAcquisition::mag()
 void GalileoE5aPcpsAcquisition::init()
 {
     acquisition_->init();
-    //set_local_code();
 }
 
 
 void GalileoE5aPcpsAcquisition::set_local_code()
 {
     gr_complex* code = new gr_complex[code_length_];
-    char a[3];
+    char signal_[3];
 
-    if(acq_pilot_) { strcpy(a,"5Q"); }
-    else { strcpy(a,"5I"); }
-    galileo_e5_a_code_gen_complex_sampled(code, a, gnss_synchro_->PRN, fs_in_, 0);
+    if(acq_iq_) { strcpy(signal_, "5X"); }
+    else if(acq_pilot_) { strcpy(signal_, "5Q"); }
+    else { strcpy(signal_, "5I"); }
+
+    galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, fs_in_, 0);
 
     for(unsigned int i = 0; i < sampled_ms_; i++)
     {
-        memcpy(code_ + i * code_length_, code, sizeof(gr_complex) * code_length_);
+        memcpy(code_ + (i * code_length_), code, sizeof(gr_complex) * code_length_);
     }
+
     acquisition_->set_local_code(code_);
     delete[] code;
-
-
-
-    /*
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            std::complex<float>* codeI = new std::complex<float>[code_length_];
-            std::complex<float>* codeQ = new std::complex<float>[code_length_];
-
-            if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
-                {
-                    char a[3];
-                    strcpy(a,"5I");
-                    galileo_e5_a_code_gen_complex_sampled(codeI, a,
-                            gnss_synchro_->PRN, fs_in_, 0);
-
-                    strcpy(a,"5Q");
-                    galileo_e5_a_code_gen_complex_sampled(codeQ, a,
-                            gnss_synchro_->PRN, fs_in_, 0);
-                }
-            else
-                {
-                    galileo_e5_a_code_gen_complex_sampled(codeI, gnss_synchro_->Signal,
-                            gnss_synchro_->PRN, fs_in_, 0);
-                }
-            // WARNING: 3ms are coherently integrated. Secondary sequence (1,1,1)
-            // is generated, and modulated in the 'block'.
-            if (Zero_padding == 0) // if no zero_padding
-                {
-                    for (unsigned int i = 0; i < sampled_ms_; i++)
-                        {
-                            memcpy(&(codeI_[i*code_length_]), codeI,
-                                    sizeof(gr_complex)*code_length_);
-                            if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
-                                {
-                                    memcpy(&(codeQ_[i*code_length_]), codeQ,
-                                            sizeof(gr_complex)*code_length_);
-                                }
-                        }
-                }
-            else
-                {
-                    // 1ms code + 1ms zero padding
-                    memcpy(&(codeI_[0]), codeI,
-                            sizeof(gr_complex)*code_length_);
-                    if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
-                        {
-                            memcpy(&(codeQ_[0]), codeQ,
-                                    sizeof(gr_complex)*code_length_);
-                        }
-                }
-
-            acquisition_->set_local_code(codeI_,codeQ_);
-            delete[] codeI;
-            delete[] codeQ;
-
-        }
-    */
 }
 
 
@@ -261,7 +189,6 @@ void GalileoE5aPcpsAcquisition::reset()
 
 float GalileoE5aPcpsAcquisition::calculate_threshold(float pfa)
 {
-    //Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {

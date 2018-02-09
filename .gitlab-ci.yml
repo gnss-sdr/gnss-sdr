@@ -12,9 +12,9 @@ run-build:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
+    - apt-get install -y build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev libgnuradio-blocks3.7.5 libgnuradio-runtime3.7.5 libgnuradio-filter3.7.5 libgnuradio-pmt3.7.5 libgnuradio-analog3.7.5 libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
     - cd build
-    - cmake -DENABLE_OSMOSDR=ON ..
+    - cmake ..
     - make -j2
     - make install
   # This stage is only executed for new tags
@@ -31,7 +31,7 @@ run-test:
   stage: test
   script:
     - apt-get update
-    - apt-get install -y build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
+    - apt-get install -y build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev libgnuradio-blocks3.7.5 libgnuradio-runtime3.7.5 libgnuradio-filter3.7.5 libgnuradio-pmt3.7.5 libgnuradio-analog3.7.5  libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
     - mkdir build-test
     - cd build-test
     - cmake ..

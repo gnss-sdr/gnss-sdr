@@ -17,21 +17,50 @@ run-build:
     - cmake ..
     - make -j2
     - make install
-  # This stage is only executed for new tags
-  # only:
-  #  - tags
 
-  # The files which are to be made available in GitLab
-  artifacts:
-    paths:
-      - install/*
+
+run-build-debian-jessie:
+  image: debian:8.10-slim
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - cd build
+    - cmake ..
+    - make -j2
+    - make install
+
 
 run-build-debian-stretch:
   image: debian:9.3-slim
   stage: build
   script:
     - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - cd build
+    - cmake ..
+    - make -j2
+    - make install
+
+
+run-build-ubuntu-16.04:
+  image: ubuntu:xenial
+  stage: build
+  script:
+    - apt-get update
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libhdf5-dev libgtest-dev
+    - cd build
+    - cmake ..
+    - make -j2
+    - make install
+
+
+run-build-ubuntu-18.04:
+  image: ubuntu:bionic
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - cd build
     - cmake ..
     - make -j2

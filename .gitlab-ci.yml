@@ -79,6 +79,20 @@ ubuntu-18.04-build:
     - make -j2
     - make install
 
+docker-gnsssdr:
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - mkdir docker-build
+    - cd docker-build
+    - git clone https://github.com/carlesfernandez/docker-gnsssdr
+    - cd docker-gnsssdr
+    - docker build -t --pull carlesfernandez/docker-gnsssdr .
+    - docker push "$CI_REGISTRY_IMAGE"
+
 
 # Stage "test"
 run-test:

@@ -8,16 +8,6 @@ stages:
   - test
 
 # Stage "build"
-run-build:
-  stage: build
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libhdf5-dev libgtest-dev
-    - cd build
-    - cmake ..
-    - make -j2
-    - make install
-
 
 debian-jessie-build:
   image: debian:8.10-slim
@@ -80,10 +70,11 @@ ubuntu-18.04-build:
 
 # Stage "test"
 run-test:
+  image: debian:9.3-slim
   stage: test
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libhdf5-dev libgtest-dev
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - mkdir build-test
     - cd build-test
     - cmake ..

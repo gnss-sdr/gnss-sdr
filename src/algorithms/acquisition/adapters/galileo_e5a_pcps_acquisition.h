@@ -142,6 +142,7 @@ private:
     bool acq_pilot_;
     bool use_CFAR_;
     bool blocking_;
+    bool acq_iq_;
 
     unsigned int vector_length_;
     unsigned int code_length_;

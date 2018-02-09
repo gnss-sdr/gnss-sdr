@@ -80,6 +80,18 @@ ubuntu-18.04-build:
     - make install
 
 
+get-dockerfile:
+  image: debian:9.3-slim
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends git
+    - git clone https://github.com/carlesfernandez/docker-gnsssdr
+  artifacts:
+    paths:
+    - docker-gnsssdr/
+
+
 docker-gnsssdr:
   image: docker:latest
   stage: build
@@ -90,8 +102,11 @@ docker-gnsssdr:
   script:
     - mkdir docker-build
     - cd docker-build
-    - docker build -t carlesfernandez/docker-gnsssdr github.com/carlesfernandez/docker-gnsssdr
+    - cp ../docker-gnsssdr/Dockerfile .
+    - docker build -t -pull carlesfernandez/docker-gnsssdr .
     - docker push "$CI_REGISTRY_IMAGE"
+  dependencies:
+    - get-dockerfile
 
 
 # Stage "test"

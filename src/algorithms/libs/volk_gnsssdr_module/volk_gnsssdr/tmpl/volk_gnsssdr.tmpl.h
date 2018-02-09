@@ -82,7 +82,7 @@ extern VOLK_API ${kern.pname} ${kern.name}_u;
 //! Call into a specific implementation given by name
 extern VOLK_API void ${kern.name}_manual(${kern.arglist_full}, const char* impl_name);
 
-//! Get description paramaters for this kernel
+//! Get description parameters for this kernel
 extern VOLK_API volk_gnsssdr_func_desc_t ${kern.name}_get_func_desc(void);
 %endfor
 

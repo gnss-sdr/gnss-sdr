@@ -214,7 +214,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t* out, const fl
     _phase = _phase + phase_inc * (sse_iters * 4);
     for(number = sse_iters * 4; number < num_points; number++)
         {
-            *bPtr++ = lv_cmake((float)cos((_phase)), (float)sin((_phase)) );
+            *bPtr++ = lv_cmake((float)cosf((_phase)), (float)sinf((_phase)) );
             _phase += phase_inc;
         }
     (*phase) = _phase;
@@ -371,7 +371,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t* out, const fl
     _phase = _phase + phase_inc * (sse_iters * 4);
     for(number = sse_iters * 4; number < num_points; number++)
         {
-            *bPtr++ = lv_cmake((float)cos(_phase), (float)sin(_phase) );
+            *bPtr++ = lv_cmake((float)cosf(_phase), (float)sinf(_phase) );
             _phase += phase_inc;
         }
     (*phase) = _phase;
@@ -388,7 +388,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic(lv_32fc_t* out, const f
     unsigned int i;
     for(i = 0; i < num_points; i++)
         {
-            *out++ = lv_cmake((float)cos(_phase), (float)sin(_phase) );
+            *out++ = lv_cmake((float)cosf(_phase), (float)sinf(_phase) );
             _phase += phase_inc;
         }
     (*phase) = _phase;
@@ -596,7 +596,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_avx2(lv_32fc_t* out, const fl
     _phase = _phase + phase_inc * (avx_iters * 8);
     for(number = avx_iters * 8; number < num_points; number++)
         {
-            out[number] = lv_cmake((float)cos(_phase), (float)sin(_phase) );
+            out[number] = lv_cmake((float)cosf(_phase), (float)sinf(_phase) );
             _phase += phase_inc;
         }
     (*phase) = _phase;
@@ -764,7 +764,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_avx2(lv_32fc_t* out, const fl
     _phase = _phase + phase_inc * (avx_iters * 8);
     for(number = avx_iters * 8; number < num_points; number++)
         {
-            out[number] = lv_cmake((float)cos(_phase), (float)sin(_phase) );
+            out[number] = lv_cmake((float)cosf(_phase), (float)sinf(_phase) );
             _phase += phase_inc;
         }
     (*phase) = _phase;
@@ -880,7 +880,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t* out, const floa
     _phase = _phase + phase_inc * (neon_iters * 4);
     for(number = neon_iters * 4; number < num_points; number++)
         {
-            *bPtr++ = lv_cmake((float)cos(_phase), (float)sin(_phase) );
+            *bPtr++ = lv_cmake((float)cosf(_phase), (float)sinf(_phase) );
             _phase += phase_inc;
         }
     (*phase) = _phase;

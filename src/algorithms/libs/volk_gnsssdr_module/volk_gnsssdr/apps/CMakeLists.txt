@@ -63,6 +63,7 @@ endif(UNIX)
 add_executable(volk_gnsssdr_profile
     ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_profile.cc
     ${PROJECT_SOURCE_DIR}/lib/qa_utils.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_option_helpers.cc
 )
 
 if(ENABLE_STATIC_LIBS)
@@ -87,26 +88,13 @@ install(
     COMPONENT "volk_gnsssdr"
 )
 
-# Launch volk_gnsssdr_profile if requested to do so
-if(ENABLE_PROFILING)
-   if(DEFINED VOLK_CONFIGPATH)
-        set( VOLK_CONFIG_ARG "-p${VOLK_CONFIGPATH}" )
-        set( VOLK_CONFIG "${VOLK_CONFIGPATH}/volk_gnsssdr_config" )
-   endif()
-   add_custom_command(OUTPUT ${VOLK_CONFIG}
-        COMMAND volk_gnsssdr_profile "${VOLK_CONFIG_ARG}"
-        DEPENDS volk_gnsssdr_profile
-        COMMENT "Launching profiler, this may take a few minutes..."
-    )
-    add_custom_target(volk-gnsssdr-profile-run ALL DEPENDS ${VOLK_CONFIG})
-endif()
 
 # MAKE volk_gnsssdr-config-info
-add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc)
+add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_option_helpers.cc)
 if(ENABLE_STATIC_LIBS)
-   target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr_static ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+   target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr_static ${Clang_required_link} ${orc_lib})
 else(ENABLE_STATIC_LIBS)
-   target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+   target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Clang_required_link} ${orc_lib})
    add_dependencies(volk_gnsssdr-config-info volk_gnsssdr)
 endif(ENABLE_STATIC_LIBS)
 
@@ -122,4 +110,21 @@ install(
     DESTINATION bin
     COMPONENT "volk_gnsssdr"
 )
+
+
+# Launch volk_gnsssdr_profile if requested to do so
+if(ENABLE_PROFILING)
+   if(DEFINED VOLK_CONFIGPATH)
+        set( VOLK_CONFIG_ARG "-p${VOLK_CONFIGPATH}" )
+        set( VOLK_CONFIG "${VOLK_CONFIGPATH}/volk_gnsssdr_config" )
+   endif()
+   add_custom_command(OUTPUT ${VOLK_CONFIG}
+        COMMAND volk_gnsssdr_profile "${VOLK_CONFIG_ARG}"
+        DEPENDS volk_gnsssdr_profile
+        COMMENT "Launching profiler, this may take a few minutes..."
+    )
+    add_custom_target(volk-gnsssdr-profile-run ALL DEPENDS ${VOLK_CONFIG})
+endif()
+
+
 

@@ -1,0 +1,47 @@
+# Is performed before the scripts in the stages step
+before_script:
+  - source /etc/profile
+
+# Defines stages which are to be executed
+stages:
+  - build
+  - test
+
+# Stage "build"
+run-build:
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON ..
+    - make -j2
+    - make install
+  # This stage is only executed for new tags
+  # only:
+  #  - tags
+
+  # The files which are to be made available in GitLab
+  artifacts:
+    paths:
+      - install/*
+
+# Stage "test"
+run-test:
+  stage: test
+  script:
+    - apt-get update
+    - apt-get install -y build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - mkdir build-test
+    - cd build-test
+    - cmake ..
+    - make -j2
+    - make check
+    - ../install/run_tests --gtest_output=xml
+    - mv *.xml ../build/
+    - cd ..
+    - rm -rf build-test
+
+  artifacts:
+    paths:
+      - build/*.xml

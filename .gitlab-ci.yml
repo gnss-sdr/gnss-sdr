@@ -19,7 +19,7 @@ run-build:
     - make install
 
 
-run-build-debian-jessie:
+debian-jessie-build:
   image: debian:8.10-slim
   stage: build
   script:
@@ -31,7 +31,7 @@ run-build-debian-jessie:
     - make install
 
 
-run-build-debian-stretch:
+debian-stretch-build:
   image: debian:9.3-slim
   stage: build
   script:
@@ -43,19 +43,31 @@ run-build-debian-stretch:
     - make install
 
 
-run-build-ubuntu-16.04:
-  image: ubuntu:xenial
+debian-buster-build:
+  image: debian:buster-slim
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libhdf5-dev libgtest-dev
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - cd build
     - cmake ..
     - make -j2
     - make install
 
 
-run-build-ubuntu-18.04:
+ubuntu-16.04-build:
+  image: ubuntu:xenial
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
+    - cd build
+    - cmake ..
+    - make -j2
+    - make install
+
+
+ubuntu-18.04-build:
   image: ubuntu:bionic
   stage: build
   script:

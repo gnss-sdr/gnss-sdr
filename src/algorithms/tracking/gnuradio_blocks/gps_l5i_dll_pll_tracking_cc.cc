@@ -50,16 +50,6 @@
 #include "GPS_L5.h"
 #include "control_message_factory.h"
 
-
-/*!
- * \todo Include in definition header file
- */
-#define GPS_L2M_CN0_ESTIMATION_SAMPLES 10
-#define GPS_L2M_MINIMUM_VALID_CN0 25
-#define GPS_L2M_MAXIMUM_LOCK_FAIL_COUNTER 50
-#define GPS_L2M_CARRIER_LOCK_THRESHOLD 0.75
-
-
 using google::LogMessage;
 
 gps_l5i_dll_pll_tracking_cc_sptr
@@ -160,11 +150,11 @@ gps_l5i_dll_pll_tracking_cc::gps_l5i_dll_pll_tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[GPS_L2M_CN0_ESTIMATION_SAMPLES];
+    d_Prompt_buffer = new gr_complex[GPS_L5_CN0_ESTIMATION_SAMPLES];
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = GPS_L2M_CARRIER_LOCK_THRESHOLD;
+    d_carrier_lock_threshold = GPS_L5_CARRIER_LOCK_THRESHOLD;
 
     systemName["G"] = std::string("GPS");
 
@@ -554,10 +544,9 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.fs = d_fs_in;
-                    current_synchro_data.correlation_length_ms = 20;
-                    *out[0] = current_synchro_data;
+                    current_synchro_data.correlation_length_ms = 1;
                     consume_each(samples_offset); // shift input to perform alignment with local replica
-                    return 1;
+                    return 0;
                 }
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
@@ -587,7 +576,7 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
             code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
             double T_chip_seconds = 1.0 / static_cast<double>(d_code_freq_chips);
             double T_prn_seconds = T_chip_seconds * GPS_L5i_CODE_LENGTH_CHIPS;
-            double code_error_filt_secs = (T_prn_seconds * code_error_filt_chips*T_chip_seconds); //[seconds]
+            double code_error_filt_secs = (T_prn_seconds * code_error_filt_chips * T_chip_seconds); //[seconds]
             //double code_error_filt_secs = (GPS_L5i_PERIOD * code_error_filt_chips) / GPS_L5i_CODE_RATE_HZ; //[seconds]
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
@@ -614,7 +603,7 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
             d_rem_code_phase_chips = d_code_freq_chips * (d_rem_code_phase_samples / static_cast<double>(d_fs_in));
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < GPS_L2M_CN0_ESTIMATION_SAMPLES)
+            if (d_cn0_estimation_counter < GPS_L5_CN0_ESTIMATION_SAMPLES)
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = d_correlator_outs[1];
@@ -624,11 +613,11 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
                 {
                     d_cn0_estimation_counter = 0;
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, GPS_L2M_CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L5i_CODE_LENGTH_CHIPS);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, GPS_L5_CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L5i_CODE_LENGTH_CHIPS);
                     // Carrier lock indicator
-                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, GPS_L2M_CN0_ESTIMATION_SAMPLES);
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, GPS_L5_CN0_ESTIMATION_SAMPLES);
                     // Loss of lock detection
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < GPS_L2M_MINIMUM_VALID_CN0)
+                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < GPS_L5_MINIMUM_VALID_CN0)
                         {
                             d_carrier_lock_fail_counter++;
                         }
@@ -636,7 +625,7 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
                         {
                             if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
                         }
-                    if (d_carrier_lock_fail_counter > GPS_L2M_MAXIMUM_LOCK_FAIL_COUNTER)
+                    if (d_carrier_lock_fail_counter > GPS_L5_MAXIMUM_LOCK_FAIL_COUNTER)
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
@@ -654,7 +643,7 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_symbol_output = true;
-            current_synchro_data.correlation_length_ms = 20;
+            current_synchro_data.correlation_length_ms = 1;
         }
     else
         {
@@ -663,7 +652,7 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
                     d_correlator_outs[n] = gr_complex(0,0);
                 }
             current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
-            current_synchro_data.correlation_length_ms = 20;
+            current_synchro_data.correlation_length_ms = 1;
         }
     //assign the GNURadio block output data
     current_synchro_data.fs = d_fs_in;
@@ -729,14 +718,8 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
         }
     consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
     d_sample_counter += d_current_prn_length_samples; // count for the processed samples
-    if (d_enable_tracking)
-        {
-            return 1;
-        }
-    else
-        {
-            return 0;
-        }
+    if(current_synchro_data.Flag_valid_symbol_output) { return 1; }
+    else { return 0; }
 }
 
 

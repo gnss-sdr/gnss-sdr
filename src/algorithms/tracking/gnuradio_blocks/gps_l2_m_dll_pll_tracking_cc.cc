@@ -50,16 +50,6 @@
 #include "GPS_L2C.h"
 #include "control_message_factory.h"
 
-
-/*!
- * \todo Include in definition header file
- */
-#define GPS_L2M_CN0_ESTIMATION_SAMPLES 10
-#define GPS_L2M_MINIMUM_VALID_CN0 25
-#define GPS_L2M_MAXIMUM_LOCK_FAIL_COUNTER 50
-#define GPS_L2M_CARRIER_LOCK_THRESHOLD 0.75
-
-
 using google::LogMessage;
 
 gps_l2_m_dll_pll_tracking_cc_sptr

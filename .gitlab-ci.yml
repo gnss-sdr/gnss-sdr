@@ -90,7 +90,7 @@ docker-gnsssdr:
   script:
     - mkdir docker-build
     - cd docker-build
-    - docker build -t --pull carlesfernandez/docker-gnsssdr github.com/carlesfernandez/docker-gnsssdr
+    - docker build -t carlesfernandez/docker-gnsssdr github.com/carlesfernandez/docker-gnsssdr
     - docker push "$CI_REGISTRY_IMAGE"
 
 

@@ -94,7 +94,7 @@ get-dockerfile:
 
 docker-gnsssdr:
   image: docker:latest
-  stage: build
+  stage: test
   services:
     - docker:dind
   before_script:

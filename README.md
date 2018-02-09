@@ -58,10 +58,9 @@ If you want to start building and running GNSS-SDR as quick and easy as possible
 ~~~~~~
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
-       libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
-       liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
-       libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev \
-       python-mako python-six libmatio-dev googletest
+       libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
+       libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
+       libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
 ~~~~~~
 
 Please note that `googletest` was named `libgtest-dev` in distributions older than Debian 9 Stretch and Ubuntu 17.04 Zesty.

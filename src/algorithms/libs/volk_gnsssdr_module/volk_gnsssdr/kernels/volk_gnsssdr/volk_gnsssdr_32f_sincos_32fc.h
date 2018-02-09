@@ -148,7 +148,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_u_sse4_1(lv_32fc_t* out, const f
     for(;number < num_points; number++)
         {
             float _in = *aPtr++;
-            *bPtr++ = lv_cmake(cos(_in), sin(_in));
+            *bPtr++ = lv_cmake(cosf(_in), sinf(_in));
         }
 }
 
@@ -242,7 +242,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_a_sse4_1(lv_32fc_t* out, const f
     for(;number < num_points; number++)
         {
             float _in = *aPtr++;
-            *bPtr++ = lv_cmake(cos(_in), sin(_in));
+            *bPtr++ = lv_cmake(cosf(_in), sinf(_in));
         }
 }
 
@@ -395,7 +395,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_a_sse2(lv_32fc_t* out, const flo
     for(number = sse_iters * 4; number < num_points; number++)
         {
             _in = *aPtr++;
-            *bPtr++ = lv_cmake((float)cos(_in), (float)sin(_in) );
+            *bPtr++ = lv_cmake((float)cosf(_in), (float)sinf(_in) );
         }
 
 }
@@ -548,7 +548,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_u_sse2(lv_32fc_t* out, const flo
     for(number = sse_iters * 4; number < num_points; number++)
         {
             _in = *aPtr++;
-            *bPtr++ = lv_cmake((float)cos(_in), (float)sin(_in) );
+            *bPtr++ = lv_cmake((float)cosf(_in), (float)sinf(_in) );
         }
 
 }
@@ -564,7 +564,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_generic(lv_32fc_t* out, const fl
     for(i = 0; i < num_points; i++)
         {
             _in = *in++;
-            *out++ = lv_cmake((float)cos(_in), (float)sin(_in) );
+            *out++ = lv_cmake((float)cosf(_in), (float)sinf(_in) );
         }
 }
 
@@ -709,7 +709,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_neon(lv_32fc_t* out, const float
     for(number = neon_iters * 4; number < num_points; number++)
         {
             _in = *aPtr++;
-            *bPtr++ = lv_cmake((float)cos(_in), (float)sin(_in) );
+            *bPtr++ = lv_cmake((float)cosf(_in), (float)sinf(_in) );
         }
 }
 

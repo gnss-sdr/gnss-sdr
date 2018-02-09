@@ -76,6 +76,13 @@ class volk_gnsssdr_test_params_t {
                            bool benchmark_mode, std::string kernel_regex) :
             _tol(tol), _scalar(scalar), _vlen(vlen), _iter(iter),
             _benchmark_mode(benchmark_mode), _kernel_regex(kernel_regex) {};
+        // setters
+        void set_tol(float tol) {_tol=tol;};
+        void set_scalar(lv_32fc_t scalar) {_scalar=scalar;};
+        void set_vlen(unsigned int vlen) {_vlen=vlen;};
+        void set_iter(unsigned int iter) {_iter=iter;};
+        void set_benchmark(bool benchmark) {_benchmark_mode=benchmark;};
+        void set_regex(std::string regex) {_kernel_regex=regex;};
         // getters
         float tol() {return _tol;};
         lv_32fc_t scalar() {return _scalar;};

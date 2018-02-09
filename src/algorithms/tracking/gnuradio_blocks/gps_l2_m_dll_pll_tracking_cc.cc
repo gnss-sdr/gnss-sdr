@@ -555,9 +555,8 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items __attribute__(
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.fs = d_fs_in;
                     current_synchro_data.correlation_length_ms = 20;
-                    *out[0] = current_synchro_data;
                     consume_each(samples_offset); // shift input to perform alignment with local replica
-                    return 1;
+                    return 0;
                 }
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
@@ -727,14 +726,10 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items __attribute__(
                     LOG(WARNING) << "Exception writing trk dump file " << e.what();
             }
         }
-    consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
-    d_sample_counter += d_current_prn_length_samples; // count for the processed samples
-    if (d_enable_tracking)
-    {
-        return 1;
-    }else{
-        return 0;
-    }
+    consume_each(d_current_prn_length_samples);
+    d_sample_counter += d_current_prn_length_samples;
+    if(current_synchro_data.Flag_valid_symbol_output) { return 1; }
+    else{ return 0; }
 }
 
 

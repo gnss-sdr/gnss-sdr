@@ -81,6 +81,7 @@ ubuntu-18.04-build:
 
 docker-gnsssdr:
   image: docker:latest
+  stage: build
   services:
     - docker:dind
   before_script:

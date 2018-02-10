@@ -94,25 +94,48 @@ get-dockerfile:
 
 
 # Stage "test"
-run-test:
+run-test-amd64:
   image: debian:9.3-slim
   stage: test
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - mkdir build-test
+    - mkdir build64
     - cd build-test
     - cmake ..
     - make -j2
     - make check
     - ../install/run_tests --gtest_output=xml
-    - mv *.xml ../build/
+    - mv *.xml ../build64/
     - cd ..
     - rm -rf build-test
 
   artifacts:
     paths:
-      - build/*.xml
+      - build64/*.xml
+
+
+run-test-i386:
+  image: i386/debian:9.3-slim
+  stage: test
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - mkdir build-test
+    - mkdir build32
+    - cd build-test
+    - cmake ..
+    - make -j2
+    - make check
+    - ../install/run_tests --gtest_output=xml
+    - mv *.xml ../build32/
+    - cd ..
+    - rm -rf build-test
+
+  artifacts:
+    paths:
+      - build32/*.xml
 
 
 # Stage "deploy"

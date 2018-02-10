@@ -85,7 +85,7 @@ get-dockerfile:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends git
+    - apt-get install -y git ca-certificates
     - git clone https://github.com/carlesfernandez/docker-gnsssdr
   artifacts:
     paths:

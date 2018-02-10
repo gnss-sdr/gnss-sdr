@@ -69,7 +69,7 @@ option_list::option_list(std::string program_name) :
     { internal_list = std::vector<option_t>(); }
 }
 
-void option_list::add(option_t opt) { internal_list.push_back(opt); }
+void option_list::add(const option_t & opt) { internal_list.push_back(opt); }
 
 void option_list::parse(int argc, char **argv) {
     for (int arg_number = 0; arg_number < argc; ++arg_number) {
@@ -115,12 +115,15 @@ void option_list::parse(int argc, char **argv) {
                         } catch (std::exception &exc) {
                             throw std::exception();
                         };
+                        break;
                     case STRING:
                         std::cout << this_option->printval << std::endl;
                         break;
+                    default:
+                        this_option->callback();
+                        break;
                 }
             }
-
         }
         if (std::string("--help") == std::string(argv[arg_number]) ||
             std::string("-h") == std::string(argv[arg_number])) {
@@ -131,7 +134,7 @@ void option_list::parse(int argc, char **argv) {
 
 void option_list::help() {
     std::cout << program_name << std::endl;
-    std::cout << "  -h [ --help ] \t\tdisplay this help message" << std::endl;
+    std::cout << "  -h [ --help ] \t\tDisplay this help message" << std::endl;
     for (std::vector<option_t>::iterator this_option = internal_list.begin();
          this_option != internal_list.end();
          this_option++) {
@@ -144,13 +147,19 @@ void option_list::help() {
 
         switch (help_line.size() / 8) {
             case 0:
-                help_line += "\t";
+                help_line += "\t\t\t\t";
+                break;
             case 1:
-                help_line += "\t";
+                help_line += "\t\t\t";
+                break;
             case 2:
-                help_line += "\t";
+                help_line += "\t\t";
+                break;
             case 3:
                 help_line += "\t";
+                break;
+            default:
+                break;
         }
         help_line += this_option->msg;
         std::cout << help_line << std::endl;

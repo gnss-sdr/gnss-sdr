@@ -55,7 +55,7 @@ class option_list
 public:
     option_list(std::string program_name);
 
-    void add(option_t opt);
+    void add(const option_t & opt);
 
     void parse(int argc, char **argv);
 

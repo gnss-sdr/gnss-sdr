@@ -103,7 +103,7 @@ docker-gnsssdr:
     - mkdir docker-build
     - cd docker-build
     - cp ../docker-gnsssdr/Dockerfile .
-    - docker build -t -pull carlesfernandez/docker-gnsssdr .
+    - docker build -t carlesfernandez/docker-gnsssdr .
     - docker push "$CI_REGISTRY_IMAGE"
   dependencies:
     - get-dockerfile

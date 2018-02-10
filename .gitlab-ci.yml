@@ -125,7 +125,7 @@ run-test-i386:
     - mkdir build-test
     - mkdir build32
     - cd build-test
-    - cmake ..
+    - cmake -DENABLE_PACKAGING=ON ..
     - make -j2
     - make check
     - ../install/run_tests --gtest_output=xml

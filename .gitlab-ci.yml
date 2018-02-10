@@ -6,6 +6,7 @@ before_script:
 stages:
   - build
   - test
+  - deploy
 
 # Stage "build"
 debian-jessie-build:
@@ -92,23 +93,6 @@ get-dockerfile:
     - docker-gnsssdr/
 
 
-docker-gnsssdr:
-  image: docker:latest
-  stage: test
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-  script:
-    - mkdir docker-build
-    - cd docker-build
-    - cp ../docker-gnsssdr/Dockerfile .
-    - docker build -t carlesfernandez/docker-gnsssdr .
-    - docker push "$CI_REGISTRY_IMAGE"
-  dependencies:
-    - get-dockerfile
-
-
 # Stage "test"
 run-test:
   image: debian:9.3-slim
@@ -129,3 +113,21 @@ run-test:
   artifacts:
     paths:
       - build/*.xml
+
+
+# Stage "deploy"
+docker-gnsssdr:
+  image: docker:latest
+  stage: deploy
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - mkdir docker-build
+    - cd docker-build
+    - cp ../docker-gnsssdr/Dockerfile .
+    - docker build -t carlesfernandez/docker-gnsssdr .
+    - docker push carlesfernandez/docker-gnsssdr
+  dependencies:
+    - get-dockerfile

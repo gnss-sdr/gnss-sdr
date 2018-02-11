@@ -21,7 +21,7 @@ debian8.10:
     - make install
 
 
-debian9.3-amd64:
+debian9.3:
   image: debian:9.3-slim
   stage: build
   script:
@@ -33,7 +33,7 @@ debian9.3-amd64:
     - make install
 
 
-debian9.3_i386:
+debian9.3-i386:
   image: i386/debian:9.3-slim
   stage: build
   script:
@@ -45,7 +45,7 @@ debian9.3_i386:
     - make install
 
 
-debian-buster:
+debian10:
   image: debian:buster-slim
   stage: build
   script:
@@ -57,7 +57,7 @@ debian-buster:
     - make install
 
 
-ubuntu-16.04-build:
+ubuntu16.04:
   image: ubuntu:xenial
   stage: build
   script:
@@ -69,7 +69,7 @@ ubuntu-16.04-build:
     - make install
 
 
-ubuntu-18.04-build:
+ubuntu18.04:
   image: ubuntu:bionic
   stage: build
   script:
@@ -94,7 +94,7 @@ get-dockerfile:
 
 
 # Stage "test"
-run-test-amd64:
+run-tests-amd64:
   image: debian:9.3-slim
   stage: test
   script:
@@ -116,7 +116,7 @@ run-test-amd64:
       - build64/*.xml
 
 
-run-test-i386:
+run-tests-i386:
   image: i386/debian:9.3-slim
   stage: test
   script:

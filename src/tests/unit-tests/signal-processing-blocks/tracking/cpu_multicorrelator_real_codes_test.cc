@@ -42,7 +42,7 @@
 #include "GPS_L1_CA.h"
 
 
-DEFINE_int32(cpu_multicorrelator_real_codes_iterations_test, 1000, "Number of averaged iterations in CPU multicorrelator test timing test");
+DEFINE_int32(cpu_multicorrelator_real_codes_iterations_test, 100, "Number of averaged iterations in CPU multicorrelator test timing test");
 DEFINE_int32(cpu_multicorrelator_real_codes_max_threads_test, 12, "Number of maximum concurrent correlators in CPU multicorrelator test timing test");
 
 void run_correlator_cpu_real_codes(cpu_multicorrelator_real_codes* correlator,

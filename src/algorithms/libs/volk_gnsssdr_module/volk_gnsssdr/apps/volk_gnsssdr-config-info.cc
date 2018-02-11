@@ -62,7 +62,13 @@ int main(int argc, char **argv)
             print_malloc));
     our_options.add(option_t("version", "v", "print the VOLK_GNSSSDR version", volk_gnsssdr_version()));
 
-    our_options.parse(argc, argv);
-
+    try
+    {
+            our_options.parse(argc, argv);
+    }
+    catch(...)
+    {
+            return 1;
+    }
     return 0;
 }

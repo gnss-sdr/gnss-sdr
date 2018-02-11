@@ -60,7 +60,15 @@ int main(int argc, char *argv[])
     profile_options.add((option_t("dry-run", "n", "Dry run. Respect other options, but don't write to file", set_dryrun)));
     profile_options.add((option_t("json", "j", "Write results to JSON file named as argument value", set_json)));
     profile_options.add((option_t("path", "p", "Specify the volk_config path", set_volk_config)));
-    profile_options.parse(argc, argv);
+
+    try
+    {
+            profile_options.parse(argc, argv);
+    }
+    catch(...)
+    {
+           return 1;
+    }
 
     for (int arg_number = 0; arg_number < argc; ++arg_number) {
             if (std::string("--help") == std::string(argv[arg_number]) ||
@@ -216,20 +224,20 @@ void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool
     // do not overwrite volk_gnsssdr_config when using a regex.
     if (not fs::exists(config_path.branch_path()))
     {
-        std::cout << "Creating " << config_path.branch_path() << "..." << std::endl;
+        std::cout << "Creating " << config_path.branch_path() << " ..." << std::endl;
         fs::create_directories(config_path.branch_path());
     }
 
     std::ofstream config;
     if(update_result) {
-        std::cout << "Updating " << path << "..." << std::endl;
+        std::cout << "Updating " << path << " ..." << std::endl;
         config.open(path.c_str(), std::ofstream::app);
         if (!config.is_open()) { //either we don't have write access or we don't have the dir yet
             std::cout << "Error opening file " << path << std::endl;
         }
     }
     else {
-        std::cout << "Writing " << path << "..." << std::endl;
+        std::cout << "Writing " << path << " ..." << std::endl;
         config.open(path.c_str());
         if (!config.is_open()) { //either we don't have write access or we don't have the dir yet
             std::cout << "Error opening file " << path << std::endl;

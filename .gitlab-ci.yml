@@ -9,7 +9,7 @@ stages:
   - deploy
 
 # Stage "build"
-debian-jessie-build:
+debian8.10:
   image: debian:8.10-slim
   stage: build
   script:
@@ -21,7 +21,7 @@ debian-jessie-build:
     - make install
 
 
-debian-stretch-amd64-build:
+debian9.3-amd64:
   image: debian:9.3-slim
   stage: build
   script:
@@ -33,7 +33,7 @@ debian-stretch-amd64-build:
     - make install
 
 
-debian-stretch-i386-build:
+debian9.3_i386:
   image: i386/debian:9.3-slim
   stage: build
   script:
@@ -45,7 +45,7 @@ debian-stretch-i386-build:
     - make install
 
 
-debian-buster-build:
+debian-buster:
   image: debian:buster-slim
   stage: build
   script:

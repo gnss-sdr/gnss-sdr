@@ -136,6 +136,10 @@ pcps_acquisition::pcps_acquisition(
         {
             d_data_buffer_sc = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(d_fft_size * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
         }
+    else
+        {
+            d_data_buffer_sc = nullptr;
+        }
     grid_ = arma::fmat();
 }
 

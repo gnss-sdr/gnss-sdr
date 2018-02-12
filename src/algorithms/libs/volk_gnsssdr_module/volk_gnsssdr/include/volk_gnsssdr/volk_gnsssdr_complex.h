@@ -73,6 +73,11 @@ template <typename T> inline T lv_conj(const T &x){
 
 #else /* __cplusplus */
 
+#if __STDC_VERSION__ >= 199901L /* C99 check */
+/* this allows us to conj in lv_conj without the double detour for single-precision floats */
+#include <tgmath.h>
+#endif /* C99 check */
+
 #include <complex.h>
 
 typedef char complex         lv_8sc_t;
@@ -96,7 +101,9 @@ typedef double complex       lv_64fc_t;
 #define lv_conj(x) (~(x))
 
 // When not available, use the c99 complex function family,
-// which always returns double regardless of the input type.
+// which always returns double regardless of the input type,
+// unless we have C99 and thus tgmath.h overriding functions
+// with type-generic versions.
 #else /* __GNUC__ */
 
 #define lv_creal(x) (creal(x))

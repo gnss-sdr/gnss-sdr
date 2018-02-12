@@ -138,7 +138,7 @@ class impl_class:
                 arg_type, arg_name = m.groups()
                 self.args.append((arg_type, arg_name))
         except Exception as ex:
-            raise Exception('I cant parse the function prototype from: %s in %s\n%s'%(kern_name, body, ex))
+            raise Exception('I can\'t parse the function prototype from: %s in %s\n%s'%(kern_name, body, ex))
 
         assert self.name
         self.is_aligned = self.name.startswith('a_')

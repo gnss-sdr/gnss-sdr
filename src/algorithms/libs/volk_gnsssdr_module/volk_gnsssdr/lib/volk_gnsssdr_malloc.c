@@ -50,7 +50,7 @@ void *volk_gnsssdr_malloc(size_t size, size_t alignment)
     else
         {
             fprintf(stderr,
-                    "VOLK: Error allocating memory "
+                    "VOLK_GNSSSDR: Error allocating memory "
                     "(posix_memalign: error %d: %s)\n", err, strerror(err));
             return NULL;
         }
@@ -70,7 +70,7 @@ void *volk_gnsssdr_malloc(size_t size, size_t alignment)
     void *ptr = _aligned_malloc(size, alignment);
     if(ptr == NULL)
         {
-            fprintf(stderr, "VOLK: Error allocating memory (_aligned_malloc)\n");
+            fprintf(stderr, "VOLK_GNSSSDR: Error allocating memory (_aligned_malloc)\n");
         }
     return ptr;
 }

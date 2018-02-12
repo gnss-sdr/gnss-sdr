@@ -46,7 +46,7 @@ machine:
 
 ~~~~~~ 
 $ sudo apt-get install cmake python-mako python-six libboost-dev \
-  libboost-filesystem-dev libboost-system-dev libboost-program-options-dev
+  libboost-filesystem-dev libboost-system-dev
 ~~~~~~ 
 
 In order to build and install the library, go to the base folder of the

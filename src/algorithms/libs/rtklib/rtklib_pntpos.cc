@@ -113,7 +113,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
 
     /* test snr mask */
-    if (iter>0)
+    if (iter > 0)
         {
             if (testsnr(0, i, azel[1], obs->SNR[i] * 0.25, &opt->snrmask))
                 {
@@ -145,16 +145,16 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     if (opt->ionoopt == IONOOPT_IFLC)
         { /* dual-frequency */
 
-            if (P1 == 0.0 || P2 == 0.0) return 0.0;
-            if (obs->code[i] == CODE_L1C) P1 += P1_C1; /* C1->P1 */
-            if (obs->code[j] == CODE_L2C) P2 += P2_C2; /* C2->P2 */
+            if (P1 == 0.0 || P2 == 0.0) { return 0.0; }
+            if (obs->code[i] == CODE_L1C) { P1 += P1_C1; } /* C1->P1 */
+            if (obs->code[j] == CODE_L2C) { P2 += P2_C2; } /* C2->P2 */
 
             /* iono-free combination */
             PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
         }
     else
         { /* single-frequency */
-    	    if((obs->code[i] == CODE_NONE) && (obs->code[j] == CODE_NONE)){return 0.0;}
+    	    if((obs->code[i] == CODE_NONE) && (obs->code[j] == CODE_NONE)) { return 0.0; }
 
     	    else if((obs->code[i] != CODE_NONE) && (obs->code[j] == CODE_NONE))
     	        {
@@ -174,7 +174,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     	      	    PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
     	        }
     	}
-    if (opt->sateph == EPHOPT_SBAS) PC -= P1_C1; /* sbas clock based C1 */
+    if (opt->sateph == EPHOPT_SBAS) { PC -= P1_C1; } /* sbas clock based C1 */
 
     *var = std::pow(ERR_CBIAS, 2.0);
 

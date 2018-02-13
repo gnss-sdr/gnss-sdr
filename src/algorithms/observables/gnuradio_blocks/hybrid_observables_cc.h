@@ -44,7 +44,7 @@ class hybrid_observables_cc;
 typedef boost::shared_ptr<hybrid_observables_cc> hybrid_observables_cc_sptr;
 
 hybrid_observables_cc_sptr
-hybrid_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename, unsigned int deep_history);
+hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename, unsigned int deep_history);
 
 /*!
  * \brief This class implements a block that computes Galileo observables
@@ -58,8 +58,8 @@ public:
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 private:
     friend hybrid_observables_cc_sptr
-    hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
-    hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
+    hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename, unsigned int deep_history);
+    hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename, unsigned int deep_history);
 
     //Tracking observable history
     std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history_queue;

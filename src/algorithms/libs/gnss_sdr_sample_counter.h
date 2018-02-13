@@ -31,7 +31,7 @@
 #ifndef GNSS_SDR_sample_counter_H_
 #define GNSS_SDR_sample_counter_H_
 
-#include <gnuradio/sync_block.h>
+#include <gnuradio/sync_decimator.h>
 #include <boost/shared_ptr.hpp>
 
 
@@ -39,14 +39,14 @@ class gnss_sdr_sample_counter;
 
 typedef boost::shared_ptr<gnss_sdr_sample_counter> gnss_sdr_sample_counter_sptr;
 
-gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter ();
+gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter (double _fs);
 
-class gnss_sdr_sample_counter : public gr::sync_block
+class gnss_sdr_sample_counter : public gr::sync_decimator
 {
-    friend gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter();
-    gnss_sdr_sample_counter ();
-    double last_T_rx_s;
-    double report_interval_s;
+    friend gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs);
+    gnss_sdr_sample_counter (double _fs);
+    long long int current_T_rx_ms;
+    int report_interval_ms;
     bool flag_enable_send_msg;
 
 public:

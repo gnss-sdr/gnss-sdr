@@ -33,39 +33,38 @@
 #include "gnss_synchro.h"
 #include <gnuradio/io_signature.h>
 
-gnss_sdr_sample_counter::gnss_sdr_sample_counter () : gr::sync_block("sample_counter",
-                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                gr::io_signature::make(0,0,0))
+gnss_sdr_sample_counter::gnss_sdr_sample_counter (double _fs) : gr::sync_decimator("sample_counter",
+                gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)), floor(_fs*0.001))
 {
     this->message_port_register_out(pmt::mp("sample_counter"));
-    last_T_rx_s = 0;
-    report_interval_s = 1;//default reporting 1 second
+    current_T_rx_ms = 0;
+    report_interval_ms = 1000;//default reporting 1 second
     flag_enable_send_msg = false; //enable it for reporting time with asynchronous message
 }
 
 
-gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter ()
+gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter (double _fs)
 {
-    gnss_sdr_sample_counter_sptr sample_counter_(new gnss_sdr_sample_counter());
+    gnss_sdr_sample_counter_sptr sample_counter_(new gnss_sdr_sample_counter(_fs));
     return sample_counter_;
 }
 
 
-int gnss_sdr_sample_counter::work (int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items __attribute__((unused)))
+int gnss_sdr_sample_counter::work (int noutput_items __attribute__((unused)),
+                            gr_vector_const_void_star &input_items __attribute__((unused)),
+                            gr_vector_void_star &output_items)
 {
-    const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]); // input
-
-    double current_T_rx_s = in[noutput_items - 1].Tracking_sample_counter / static_cast<double>(in[noutput_items - 1].fs);
-    if ((current_T_rx_s - last_T_rx_s) > report_interval_s)
+    Gnss_Synchro* out = reinterpret_cast<Gnss_Synchro*>(output_items[0]);
+    out[0] = Gnss_Synchro();
+    if ((current_T_rx_ms % report_interval_ms) == 0)
+    {
+        std::cout << "Current receiver time: " << static_cast<double>(current_T_rx_ms) / 1000.0 << " [s]" << std::endl;
+        if(flag_enable_send_msg == true)
         {
-            std::cout << "Current receiver time: " << floor(current_T_rx_s) << " [s]" << std::endl;
-            if(flag_enable_send_msg == true)
-                {
-                    this->message_port_pub(pmt::mp("receiver_time"), pmt::from_double(current_T_rx_s));
-                }
-            last_T_rx_s = current_T_rx_s;
+            this->message_port_pub(pmt::mp("receiver_time"), pmt::from_double(static_cast<double>(current_T_rx_ms) / 1000.0));
         }
-    return noutput_items;
+    }
+    current_T_rx_ms++;
+    return 1;
 }

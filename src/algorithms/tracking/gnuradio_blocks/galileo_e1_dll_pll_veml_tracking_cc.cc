@@ -50,17 +50,6 @@
 #include "Galileo_E1.h"
 #include "control_message_factory.h"
 
-
-
-/*!
- * \todo Include in definition header file
- */
-#define CN0_ESTIMATION_SAMPLES 20
-#define MINIMUM_VALID_CN0 25
-#define MAXIMUM_LOCK_FAIL_COUNTER 50
-#define CARRIER_LOCK_THRESHOLD 0.85
-
-
 using google::LogMessage;
 
 galileo_e1_dll_pll_veml_tracking_cc_sptr
@@ -234,11 +223,11 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[CN0_ESTIMATION_SAMPLES];
+    d_Prompt_buffer = new gr_complex[GALILEO_E1_CN0_ESTIMATION_SAMPLES];
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
+    d_carrier_lock_threshold = GALILEO_E1_CARRIER_LOCK_THRESHOLD;
 
     systemName["E"] = std::string("Galileo");
 
@@ -463,7 +452,7 @@ bool galileo_e1_dll_pll_veml_tracking_cc::acquire_secondary()
 bool galileo_e1_dll_pll_veml_tracking_cc::cn0_and_tracking_lock_status()
 {
     // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-    if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
+    if (d_cn0_estimation_counter < GALILEO_E1_CN0_ESTIMATION_SAMPLES)
         {
             // fill buffer with prompt correlator output values
             d_Prompt_buffer[d_cn0_estimation_counter] = d_P_accu;
@@ -474,11 +463,11 @@ bool galileo_e1_dll_pll_veml_tracking_cc::cn0_and_tracking_lock_status()
         {
             d_cn0_estimation_counter = 0;
             // Code lock indicator
-            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, Galileo_E1_B_CODE_LENGTH_CHIPS);
+            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, GALILEO_E1_CN0_ESTIMATION_SAMPLES, d_fs_in, Galileo_E1_B_CODE_LENGTH_CHIPS);
             // Carrier lock indicator
-            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
+            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, GALILEO_E1_CN0_ESTIMATION_SAMPLES);
             // Loss of lock detection
-            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
+            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < GALILEO_E1_MINIMUM_VALID_CN0)
                 {
                     d_carrier_lock_fail_counter++;
                 }
@@ -486,7 +475,7 @@ bool galileo_e1_dll_pll_veml_tracking_cc::cn0_and_tracking_lock_status()
                 {
                     if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
                 }
-            if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+            if (d_carrier_lock_fail_counter > GALILEO_E1_MAXIMUM_LOCK_FAIL_COUNTER)
                 {
                     std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                     LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
@@ -682,7 +671,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
             samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
             current_synchro_data.fs = d_fs_in;
-            *out[0] = current_synchro_data;
             d_sample_counter = d_sample_counter + samples_offset; // count for the processed samples
             consume_each(samples_offset); // shift input to perform alignment with local replica
             d_state = 2; // next state is the symbol synchronization

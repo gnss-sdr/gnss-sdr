@@ -37,6 +37,11 @@
 #include "gnss_frequencies.h"
 #include "GPS_CNAV.h"
 
+#define GPS_L5_CN0_ESTIMATION_SAMPLES 10
+#define GPS_L5_MINIMUM_VALID_CN0 25
+#define GPS_L5_MAXIMUM_LOCK_FAIL_COUNTER 50
+#define GPS_L5_CARRIER_LOCK_THRESHOLD 0.75
+
 // Physical constants
 const double GPS_L5_C_m_s       = 299792458.0;          //!< The speed of light, [m/s]
 const double GPS_L5_C_m_ms      = 299792.4580;          //!< The speed of light, [m/ms]
@@ -56,8 +61,8 @@ const double GPS_L5i_PERIOD = 0.001;           //!< GPS L5 code period [seconds]
 const double GPS_L5i_SYMBOL_PERIOD = 0.01;     //!< GPS L5 symbol period [seconds]
 
 const double GPS_L5q_CODE_RATE_HZ = 10.23e6;   //!< GPS L5i code rate [chips/s]
-const int GPS_L5q_CODE_LENGTH_CHIPS = 10230;    //!< GPS L5i code length [chips]
-const double GPS_L5q_PERIOD = 0.001;             //!< GPS L5 code period [seconds]
+const int GPS_L5q_CODE_LENGTH_CHIPS = 10230;   //!< GPS L5i code length [chips]
+const double GPS_L5q_PERIOD = 0.001;           //!< GPS L5 code period [seconds]
 
 const int GPS_L5_HISTORY_DEEP = 5;
 

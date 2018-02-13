@@ -39,11 +39,18 @@
 #include "gnss_frequencies.h"
 #include "GPS_CNAV.h"
 
+
+#define GPS_L2M_CN0_ESTIMATION_SAMPLES 10
+#define GPS_L2M_MINIMUM_VALID_CN0 25
+#define GPS_L2M_MAXIMUM_LOCK_FAIL_COUNTER 50
+#define GPS_L2M_CARRIER_LOCK_THRESHOLD 0.75
+
+
 // Physical constants
-const double GPS_L2_C_m_s       = 299792458.0;      //!< The speed of light, [m/s]
-const double GPS_L2_C_m_ms      = 299792.4580;      //!< The speed of light, [m/ms]
-const double GPS_L2_PI          = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
-const double GPS_L2_TWO_PI      = 6.283185307179586;//!< 2Pi as defined in IS-GPS-200E
+const double GPS_L2_C_m_s       = 299792458.0;          //!< The speed of light, [m/s]
+const double GPS_L2_C_m_ms      = 299792.4580;          //!< The speed of light, [m/ms]
+const double GPS_L2_PI          = 3.1415926535898;      //!< Pi as defined in IS-GPS-200E
+const double GPS_L2_TWO_PI      = 6.283185307179586;    //!< 2Pi as defined in IS-GPS-200E
 const double GPS_L2_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
 const double GPS_L2_GM              = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
 const double GPS_L2_F               = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]

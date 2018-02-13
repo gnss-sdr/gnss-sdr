@@ -32,10 +32,10 @@
 #ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 
-#define CN0_ESTIMATION_SAMPLES 20
-#define MINIMUM_VALID_CN0 25
-#define MAXIMUM_LOCK_FAIL_COUNTER 50
-#define CARRIER_LOCK_THRESHOLD 0.85
+#define DLL_PLL_CN0_ESTIMATION_SAMPLES 20
+#define DLL_PLL_MINIMUM_VALID_CN0 25
+#define DLL_PLL_MAXIMUM_LOCK_FAIL_COUNTER 50
+#define DLL_PLL_CARRIER_LOCK_THRESHOLD 0.85
 
 #include <fstream>
 #include <string>
@@ -58,7 +58,7 @@ dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(double fs_in, unsigned int
                                    float early_late_space_narrow_chips,
                                    float very_early_late_space_narrow_chips,
                                    int extend_correlation_symbols, bool track_pilot,
-                                   char system, char signal[3]);
+                                   char system, char signal[3], bool veml);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL VEML (Very Early
@@ -91,7 +91,7 @@ private:
                                         float very_early_late_space_chips, float early_late_space_narrow_chips,
                                         float very_early_late_space_narrow_chips,
                                         int extend_correlation_symbols, bool track_pilot,
-                                        char system, char signal[3]);
+                                        char system, char signal[3], bool veml);
 
     dll_pll_veml_tracking(double fs_in, unsigned
             int vector_length,
@@ -107,7 +107,7 @@ private:
             float very_early_late_space_narrow_chips,
             int extend_correlation_symbols,
             bool track_pilot,
-            char system, char signal[3]);
+            char system, char signal[3], bool veml);
 
     bool cn0_and_tracking_lock_status();
     void do_correlation_step(const gr_complex* input_samples);
@@ -123,7 +123,7 @@ private:
     // tracking configuration vars
     unsigned int d_vector_length;
     bool d_dump;
-
+    bool d_veml;
     Gnss_Synchro* d_acquisition_gnss_synchro;
     unsigned int d_channel;
     // long d_fs_in;

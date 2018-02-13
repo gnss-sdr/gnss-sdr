@@ -39,6 +39,11 @@
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 
+#define GALILEO_E1_CN0_ESTIMATION_SAMPLES 20
+#define GALILEO_E1_MINIMUM_VALID_CN0 25
+#define GALILEO_E1_MAXIMUM_LOCK_FAIL_COUNTER 50
+#define GALILEO_E1_CARRIER_LOCK_THRESHOLD 0.85
+
 // Physical constants
 const double GALILEO_PI = 3.1415926535898; //!< Pi as defined in GALILEO ICD
 const double GALILEO_TWO_PI = 6.283185307179600 ; //!< 2*Pi as defined in GALILEO ICD

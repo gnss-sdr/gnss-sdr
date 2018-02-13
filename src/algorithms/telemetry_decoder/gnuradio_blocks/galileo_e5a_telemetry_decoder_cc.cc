@@ -255,9 +255,8 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
     Gnss_Synchro* out = reinterpret_cast<Gnss_Synchro*>(output_items[0]);           // Get the output buffer pointer
     const Gnss_Synchro* in = reinterpret_cast<const Gnss_Synchro*>(input_items[0]); // Get the input buffer pointer
 
-    Gnss_Synchro current_sample; //structure to save the synchronization information and send the output object to the next block
     //1. Copy the current tracking output
-    current_sample = in[0];
+    Gnss_Synchro current_sample = in[0];
     d_symbol_counter++;
     if(flag_bit_start)
     {
@@ -368,14 +367,8 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                     // 0. fetch the symbols into an array
                     int frame_length = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                     double corr_sign = 0.0;
-                    if(corr_value > 0)
-                        {
-                            corr_sign = -1.0;
-                        }
-                    else
-                        {
-                            corr_sign = 1.0;
-                        }
+                    if(corr_value > 0) { corr_sign = -1.0; }
+                    else { corr_sign = 1.0; }
                     for (int i = 0; i < frame_length; i++)
                         {
                             page_symbols[i] = corr_sign * d_symbol_history.at(i + GALILEO_FNAV_PREAMBLE_LENGTH_BITS).Prompt_I; // because last symbol of the preamble is just received now!
@@ -457,7 +450,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
             current_sample.Flag_valid_word = false;
         }
 
-    current_sample.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol*1000.0)/1000.0;
+    current_sample.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
 
     if(d_dump)
         {
@@ -479,13 +472,14 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
             }
         }
     // remove used symbols from history
-    while (d_symbol_history.size() > required_symbols)
-        {
-            d_symbol_history.pop_front();
-        }
+    while (d_symbol_history.size() > required_symbols) { d_symbol_history.pop_front(); }
     //3. Make the output
-    out[0] = current_sample;
-    return 1;
+    if(current_sample.Flag_valid_word)
+        {
+            out[0] = current_sample;
+            return 1;
+        }
+    else { return 0; }
 }
 
 

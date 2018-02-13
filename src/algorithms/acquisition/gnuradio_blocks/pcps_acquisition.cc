@@ -254,9 +254,6 @@ void pcps_acquisition::init()
 
 void pcps_acquisition::update_grid_doppler_wipeoffs()
 {
-    // Create the carrier Doppler wipeoff signals
-    d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
-
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));

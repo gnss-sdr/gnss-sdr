@@ -83,6 +83,7 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
                     catch (const std::ifstream::failure & e)
                     {
                             LOG(WARNING) << "Exception opening observables dump file " << e.what();
+                            d_dump = false;
                     }
                 }
         }
@@ -105,7 +106,7 @@ hybrid_observables_cc::~hybrid_observables_cc()
     if(d_dump == true)
         {
             std::cout << "Writing observables .mat files ...";
-            hybrid_observables_cc::save_matfile();
+            save_matfile();
             std::cout << " done." << std::endl;
         }
 }
@@ -509,12 +510,7 @@ int hybrid_observables_cc::general_work(int noutput_items, gr_vector_int &ninput
                     // two points linear interpolation using adjacent (adj) values: y=y1+(x-x1)*(y2-y1)/(x2-x1)
                     // TOW at the selected receiver time T_rx_s
                     int element_key = gnss_synchro_map_iter->second.Channel_ID;
-                    try{
-                        adj_obs = adjacent_gnss_synchro_map.at(element_key);
-                    }catch(const std::exception & ex)
-                    {
-                        continue;
-                    }
+                    adj_obs = adjacent_gnss_synchro_map.at(element_key);
 
                     double adj_T_rx_s = static_cast<double>(adj_obs.Tracking_sample_counter) / channel_fs_hz + adj_obs.Code_phase_samples / channel_fs_hz;
 
@@ -566,6 +562,7 @@ int hybrid_observables_cc::general_work(int noutput_items, gr_vector_int &ninput
                     catch (const std::ifstream::failure& e)
                     {
                         LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                        d_dump = false;
                     }
                 }
 
@@ -593,15 +590,17 @@ int hybrid_observables_cc::general_work(int noutput_items, gr_vector_int &ninput
         }
 
     }// End of try{...}
-    catch(std::out_of_range& e)
+    catch(const std::out_of_range& e)
     {
         LOG(WARNING) << "Out of range exception thrown by Hybrid Observables block. Exception message: " << e.what();
         std::cout << "Out of range exception thrown by Hybrid Observables block. Exception message: " << e.what() << std::endl;
+        return gr::block::WORK_DONE;
     }
-    catch(...)
+    catch(const std::exception& e)
     {
-        LOG(WARNING) << "Undefined exception thrown by Hybrid Observables block.";
-        std::cout << "Undefined exception thrown by Hybrid Observables block." << std::endl;
+        LOG(WARNING) << "Exception thrown by Hybrid Observables block. Exception message: " << e.what();
+        std::cout << "Exception thrown by Hybrid Observables block. Exception message: " << e.what() << std::endl;
+        return gr::block::WORK_DONE;
     }
 
     }while(channel_history_ok == true && noutput_items > n_outputs);

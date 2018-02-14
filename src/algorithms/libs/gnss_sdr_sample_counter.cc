@@ -33,9 +33,10 @@
 #include "gnss_synchro.h"
 #include <gnuradio/io_signature.h>
 
-gnss_sdr_sample_counter::gnss_sdr_sample_counter (double _fs) : gr::sync_decimator("sample_counter",
+gnss_sdr_sample_counter::gnss_sdr_sample_counter(double _fs) : gr::sync_decimator("sample_counter",
                 gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)), floor(_fs*0.001))
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                static_cast<unsigned int>(floor(_fs * 0.001)))
 {
     this->message_port_register_out(pmt::mp("sample_counter"));
     current_T_rx_ms = 0;
@@ -44,14 +45,14 @@ gnss_sdr_sample_counter::gnss_sdr_sample_counter (double _fs) : gr::sync_decimat
 }
 
 
-gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter (double _fs)
+gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs)
 {
     gnss_sdr_sample_counter_sptr sample_counter_(new gnss_sdr_sample_counter(_fs));
     return sample_counter_;
 }
 
 
-int gnss_sdr_sample_counter::work (int noutput_items __attribute__((unused)),
+int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
                             gr_vector_const_void_star &input_items __attribute__((unused)),
                             gr_vector_void_star &output_items)
 {
@@ -60,7 +61,7 @@ int gnss_sdr_sample_counter::work (int noutput_items __attribute__((unused)),
     if ((current_T_rx_ms % report_interval_ms) == 0)
     {
         std::cout << "Current receiver time: " << static_cast<double>(current_T_rx_ms) / 1000.0 << " [s]" << std::endl;
-        if(flag_enable_send_msg == true)
+        if(flag_enable_send_msg)
         {
             this->message_port_pub(pmt::mp("receiver_time"), pmt::from_double(static_cast<double>(current_T_rx_ms) / 1000.0));
         }

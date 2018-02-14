@@ -326,7 +326,7 @@ bool Hybrid_valueCompare_gnss_synchro_d_TOW(const Gnss_Synchro& a, double b)
 }
 
 
-void hybrid_observables_cc::forecast (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
+void hybrid_observables_cc::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
     for(unsigned int i = 0; i < d_nchannels; i++)
     {
@@ -338,13 +338,11 @@ void hybrid_observables_cc::forecast (int noutput_items __attribute__((unused)),
 }
 
 
-int hybrid_observables_cc::general_work (int noutput_items ,
-        gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+int hybrid_observables_cc::general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]); // Get the input buffer pointer
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);           // Get the output buffer pointer
+    const Gnss_Synchro** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]); // Get the input buffer pointer
+    Gnss_Synchro** out = reinterpret_cast<Gnss_Synchro**>(&output_items[0]);           // Get the output buffer pointer
     int n_outputs = 0;
     int n_consume[d_nchannels];
     double past_history_s = 100e-3;
@@ -363,19 +361,24 @@ int hybrid_observables_cc::general_work (int noutput_items ,
     for (unsigned int i = 0; i < d_nchannels; i++)
     {
         n_consume[i] = ninput_items[i]; // full throttle
-        for (int j = 0; j < n_consume[i]; j++)
+        for(int j = 0; j < n_consume[i]; j++)
         {
             d_gnss_synchro_history_queue[i].push_back(in[i][j]);
         }
     }
 
     bool channel_history_ok;
+
     do
     {
+
+    try
+    {
+
         channel_history_ok = true;
-        for (unsigned int i = 0; i < d_nchannels; i++)
+        for(unsigned int i = 0; i < d_nchannels; i++)
         {
-            if (d_gnss_synchro_history_queue[i].size() < history_deep && !d_gnss_synchro_history_queue[i].empty())
+            if (d_gnss_synchro_history_queue.at(i).size() < history_deep && !d_gnss_synchro_history_queue.at(i).empty())
             {
                 channel_history_ok = false;
             }
@@ -392,15 +395,15 @@ int hybrid_observables_cc::general_work (int noutput_items ,
                 std::map<int,Gnss_Synchro> gnss_synchro_map;
                 for (unsigned int i = 0; i < d_nchannels; i++)
                 {
-                    if (!d_gnss_synchro_history_queue[i].empty())
+                    if (!d_gnss_synchro_history_queue.at(i).empty())
                     {
-                        gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue[i].front().Channel_ID,
-                                d_gnss_synchro_history_queue[i].front()));
+                        gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue.at(i).front().Channel_ID,
+                                d_gnss_synchro_history_queue.at(i).front()));
                     }
                 }
-                if (gnss_synchro_map.empty()) break;
+                if(gnss_synchro_map.empty()) { break; } // Breaks the do-while loop
 
-                gnss_synchro_map_iter = min_element(gnss_synchro_map.cbegin(),
+                gnss_synchro_map_iter = std::min_element(gnss_synchro_map.cbegin(),
                         gnss_synchro_map.cend(),
                         Hybrid_pairCompare_gnss_synchro_sample_counter);
                 T_rx_s = static_cast<double>(gnss_synchro_map_iter->second.Tracking_sample_counter) / static_cast<double>(gnss_synchro_map_iter->second.fs);
@@ -414,13 +417,13 @@ int hybrid_observables_cc::general_work (int noutput_items ,
             // shift channels history to match the reference TOW
             for (unsigned int i = 0; i < d_nchannels; i++)
             {
-                if (!d_gnss_synchro_history_queue[i].empty())
+                if (!d_gnss_synchro_history_queue.at(i).empty())
                 {
-                    gnss_synchro_deque_iter = std::lower_bound(d_gnss_synchro_history_queue[i].cbegin(),
-                            d_gnss_synchro_history_queue[i].cend(),
+                    gnss_synchro_deque_iter = std::lower_bound(d_gnss_synchro_history_queue.at(i).cbegin(),
+                            d_gnss_synchro_history_queue.at(i).cend(),
                             T_rx_s,
                             Hybrid_valueCompare_gnss_synchro_receiver_time);
-                    if (gnss_synchro_deque_iter != d_gnss_synchro_history_queue[i].cend())
+                    if (gnss_synchro_deque_iter != d_gnss_synchro_history_queue.at(i).cend())
                     {
                         if (gnss_synchro_deque_iter->Flag_valid_word == true)
                         {
@@ -432,24 +435,24 @@ int hybrid_observables_cc::general_work (int noutput_items ,
                             {
                                 // record the word structure in a map for pseudorange computation
                                 // save the previous observable
-                                int distance = std::distance(d_gnss_synchro_history_queue[i].cbegin(), gnss_synchro_deque_iter);
+                                int distance = std::distance(d_gnss_synchro_history_queue.at(i).cbegin(), gnss_synchro_deque_iter);
                                 if (distance > 0)
                                 {
-                                    if (d_gnss_synchro_history_queue[i].at(distance - 1).Flag_valid_word)
+                                    if (d_gnss_synchro_history_queue.at(i).at(distance - 1).Flag_valid_word)
                                     {
-                                        double T_rx_channel_prev = static_cast<double>(d_gnss_synchro_history_queue[i].at(distance - 1).Tracking_sample_counter) / static_cast<double>(gnss_synchro_deque_iter->fs);
+                                        double T_rx_channel_prev = static_cast<double>(d_gnss_synchro_history_queue.at(i).at(distance - 1).Tracking_sample_counter) / static_cast<double>(gnss_synchro_deque_iter->fs);
                                         double delta_T_rx_s_prev = T_rx_channel_prev - T_rx_s;
                                         if (fabs(delta_T_rx_s_prev) < fabs(delta_T_rx_s))
                                         {
-                                            realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue[i].at(distance - 1).Channel_ID,
-                                                    d_gnss_synchro_history_queue[i].at(distance - 1)));
+                                            realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue.at(i).at(distance - 1).Channel_ID,
+                                                    d_gnss_synchro_history_queue.at(i).at(distance - 1)));
                                             adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
                                         }
                                         else
                                         {
                                             realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
-                                            adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue[i].at(distance - 1).Channel_ID,
-                                                    d_gnss_synchro_history_queue[i].at(distance - 1)));
+                                            adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue.at(i).at(distance - 1).Channel_ID,
+                                                    d_gnss_synchro_history_queue.at(i).at(distance - 1)));
                                         }
                                     }
 
@@ -472,7 +475,7 @@ int hybrid_observables_cc::general_work (int noutput_items ,
                  *  common RX time algorithm
                  */
                 // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
-                gnss_synchro_map_iter = max_element(realigned_gnss_synchro_map.cbegin(),
+                gnss_synchro_map_iter = std::max_element(realigned_gnss_synchro_map.cbegin(),
                         realigned_gnss_synchro_map.cend(),
                         Hybrid_pairCompare_gnss_synchro_d_TOW);
                 double ref_fs_hz = static_cast<double>(gnss_synchro_map_iter->second.fs);
@@ -575,20 +578,33 @@ int hybrid_observables_cc::general_work (int noutput_items ,
             }
 
             // Move RX time
-            T_rx_s = T_rx_s + T_rx_step_s;
+            T_rx_s += T_rx_step_s;
             // pop old elements from queue
             for (unsigned int i = 0; i < d_nchannels; i++)
             {
-                if (!d_gnss_synchro_history_queue[i].empty())
+                if (!d_gnss_synchro_history_queue.at(i).empty())
                 {
-                    while (static_cast<double>(d_gnss_synchro_history_queue[i].front().Tracking_sample_counter) / static_cast<double>(d_gnss_synchro_history_queue[i].front().fs) < (T_rx_s - past_history_s))
+                    while (static_cast<double>(d_gnss_synchro_history_queue.at(i).front().Tracking_sample_counter) / static_cast<double>(d_gnss_synchro_history_queue.at(i).front().fs) < (T_rx_s - past_history_s))
                     {
-                        d_gnss_synchro_history_queue[i].pop_front();
+                        d_gnss_synchro_history_queue.at(i).pop_front();
                     }
                 }
             }
         }
-    } while(channel_history_ok == true && noutput_items > n_outputs);
+
+    }// End of try{...}
+    catch(std::out_of_range& e)
+    {
+        LOG(WARNING) << "Out of range exception thrown by Hybrid Observables block. Exception message: " << e.what();
+        std::cout << "Out of range exception thrown by Hybrid Observables block. Exception message: " << e.what() << std::endl;
+    }
+    catch(...)
+    {
+        LOG(WARNING) << "Undefined exception thrown by Hybrid Observables block.";
+        std::cout << "Undefined exception thrown by Hybrid Observables block." << std::endl;
+    }
+
+    }while(channel_history_ok == true && noutput_items > n_outputs);
 
     // Multi-rate consume!
     for (unsigned int i = 0; i < d_nchannels; i++)

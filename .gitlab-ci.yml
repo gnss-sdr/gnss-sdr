@@ -134,9 +134,7 @@ docker-gnsssdr:
   services:
     - docker:dind
   script:
-    - apt-get update
-    - apt-get install -y git ca-certificates
-    - git clone https://github.com/carlesfernandez/docker-gnsssdr
+    - wget https://github.com/carlesfernandez/docker-gnsssdr/blob/master/Dockerfile
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
     - mkdir docker-build
     - cd docker-build

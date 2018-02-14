@@ -165,7 +165,7 @@ run-experiment:
     - apt-get update
     - apt-get upgrade -y
     # Grab analysis and representation tools
-    - apt-get install -y octave epstool
+    - apt-get install -y octave epstool slang-xfig transfig
     # Grab the data set
     - apt-get install -y curl
     - cd data

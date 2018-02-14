@@ -159,7 +159,7 @@ docker-gnsssdr:
 
 # Stage "experiment"
 run-experiment:
-  image: debian:9.3-slim
+  image: carlesfernandez/docker-gnsssdr:latest
   stage: build
   script:
     - apt-get update

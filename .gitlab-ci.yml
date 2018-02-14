@@ -167,7 +167,8 @@ run-experiment:
     # Grab analysis and representation tools
     - apt-get install -y octave
     # Grab the data set
-    - apt-get install -y curl xz-utils
+    - mkdir data
+    - apt-get install -y curl
     - curl https://zenodo.org/record/1172670/files/L2_signal_samples.tar.xz --output L2_signal_samples.tar.xz
     - tar xvfJ L2_signal_samples.tar.xz ./data/
     - cd data

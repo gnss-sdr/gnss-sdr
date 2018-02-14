@@ -163,6 +163,7 @@ run-experiment:
   stage: build
   script:
     - apt-get update
+    - apt-get upgrade
     # Grab analysis and representation tools
     - apt-get install -y openjdk-8-jre-headless default-jre-headless ca-certificates-java
     - apt-get install -y octave

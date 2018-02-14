@@ -164,7 +164,7 @@ run-experiment:
   script:
     - apt-get update
     # Grab analysis and representation tools
-    - apt-get octave
+    - apt-get install -y octave
     # Grab the data set
     - apt-get install -y curl
     - curl https://zenodo.org/record/1172670/files/L2_signal_samples.tar.xz --output L2_signal_samples.tar.xz

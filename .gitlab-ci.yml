@@ -165,7 +165,6 @@ run-experiment:
     - apt-get update
     - apt-get upgrade -y
     # Grab analysis and representation tools
-    - apt-get install -y openjdk-8-jre-headless default-jre-headless ca-certificates-java
     - apt-get install -y octave
     # Grab the data set
     - apt-get install -y curl

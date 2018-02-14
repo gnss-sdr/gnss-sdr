@@ -175,8 +175,8 @@ run-experiment:
     - md5sum -c data.md5
     - cd ..
     # Execute the experiment (example)
-    - echo " x = 0:0.01:3; hf = figure (\"visible\", \"off\"); plot (x, erf (x)); hold on; plot (x, x, \"r\"); axis ([0, 3, 0, 1]); text (0.65, 0.6175, ['$\displaystyle\leftarrow x = {2\over\sqrt{\pi}}' '\int_{0}^{x}e^{-t^2} dt = 0.6175$']); xlabel (\"x\"); ylabel (\"erf (x)\"); title (\"erf (x) with text annotation\"); print (hf, \"results.pdf\", \"-dpdflatexstandalone\"); " >>  my_test_file.m
-    - octave my_test_file.m
+    - echo " x = 0:0.01:3; hf = figure (\"visible\", \"off\"); plot (x, erf (x)); hold on; plot (x, x, \"r\"); axis ([0, 3, 0, 1]); text (0.65, 0.6175, ['$\displaystyle\leftarrow x = {2\over\sqrt{\pi}}' '\int_{0}^{x}e^{-t^2} dt = 0.6175$']); xlabel (\"x\"); ylabel (\"erf (x)\"); title (\"erf (x) with text annotation\"); print (hf, \"results.pdf\", \"-pdf\"); " >>  my_test_file.m
+    - octave --no-gui my_test_file.m
     - mkdir results
     - cp results.pdf results/
 

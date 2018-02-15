@@ -134,13 +134,16 @@ docker-gnsssdr:
   services:
     - docker:dind
   script:
-    - wget https://github.com/carlesfernandez/docker-gnsssdr/blob/master/Dockerfile
+    - wget https://raw.githubusercontent.com/carlesfernandez/docker-gnsssdr/master/Dockerfile
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
     - mkdir docker-build
     - cd docker-build
     - cp ../Dockerfile .
     - docker build -t carlesfernandez/docker-gnsssdr .
     - docker push carlesfernandez/docker-gnsssdr
+  only:
+    - next
+  allow_failure: true
 
 
 # Stage "experiment"
@@ -150,7 +153,7 @@ run-experiment:
   script:
     - apt-get update
     # Grab analysis and representation tools
-    - apt-get install -y octave texlive-latex-base texlive-fonts-recommended texlive-latex-extra epstool transfig octave
+    - apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-latex-extra epstool transfig octave
     # Grab the data set
     - apt-get install -y curl
     - cd data

@@ -146,7 +146,7 @@ docker-gnsssdr:
   allow_failure: true
 
 
-docker-ieee-access18:
+docker-access18:
   image: docker:latest
   stage: deploy
   services:
@@ -158,13 +158,13 @@ docker-ieee-access18:
     - cd docker-build
     - cp ../Dockerfile .
     - docker build -t carlesfernandez/docker-gnsssdr .
-    - docker tag carlesfernandez/docker-gnsssdr:latest carlesfernandez/docker-gnsssdr:ieee-access18
-    - docker push carlesfernandez/docker-gnsssdr:ieee-access18
+    - docker tag carlesfernandez/docker-gnsssdr:latest carlesfernandez/docker-gnsssdr:access18
+    - docker push carlesfernandez/docker-gnsssdr:access18
 
 
 # Stage "experiment"
-run-ieee-access18:
-  image: carlesfernandez/docker-gnsssdr:ieee-access18
+run-access18:
+  image: carlesfernandez/docker-gnsssdr:access18
   stage: experiment
   script:
     - apt-get update
@@ -182,9 +182,9 @@ run-ieee-access18:
     - echo " x = 0:0.01:3; hf = figure (\"visible\", \"off\"); plot (x, erf (x)); hold on; plot (x, x, \"r\"); axis ([0, 3, 0, 1]); text (0.65, 0.6175, ['$ \leftarrow x = \frac{2}{\sqrt{\pi}} \int_{0}^{x}e^{-t^2} dt = 0.6175 $']); xlabel (\"x\"); ylabel (\"erf (x)\"); title (\"erf (x) with text annotation\"); print (hf, \"results.eps\", \"-depsc\"); " >  my_test_file.m
     - octave --no-gui my_test_file.m
     - epspdf results.eps results.pdf
-    - mkdir ieee-access18
-    - cp results.pdf ieee-access18/
+    - mkdir access18
+    - cp results.pdf access18/
 
   artifacts:
     paths:
-      - ieee-access18/*.pdf
+      - access18/*.pdf

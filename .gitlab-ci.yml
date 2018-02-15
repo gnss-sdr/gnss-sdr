@@ -146,10 +146,26 @@ docker-gnsssdr:
   allow_failure: true
 
 
+docker-experiment:
+  image: docker:latest
+  stage: deploy
+  services:
+    - docker:dind
+  script:
+    - wget https://raw.githubusercontent.com/carlesfernandez/docker-gnsssdr/master/Dockerfile
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - mkdir docker-build
+    - cd docker-build
+    - cp ../Dockerfile .
+    - docker build -t carlesfernandez/docker-gnsssdr .
+    - docker tag carlesfernandez/docker-gnsssdr:latest carlesfernandez/docker-gnsssdr:test
+    - docker push carlesfernandez/docker-gnsssdr:test
+
+
 # Stage "experiment"
 run-experiment:
-  image: carlesfernandez/docker-gnsssdr:latest
-  stage: build
+  image: carlesfernandez/docker-gnsssdr:test
+  stage: experiment
   script:
     - apt-get update
     # Grab analysis and representation tools

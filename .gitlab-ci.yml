@@ -7,7 +7,7 @@ stages:
   - build
   - test
   - deploy
-#  - experiment
+  - experiment
 
 # Stage "build"
 debian8.10:

@@ -2,9 +2,6 @@
 before_script:
   - source /etc/profile
 
-variables:
-  EXPERIMENT_NAME: "ieee-access18"
-
 # Defines stages which are to be executed
 stages:
   - build
@@ -149,7 +146,7 @@ docker-gnsssdr:
   allow_failure: true
 
 
-docker-$EXPERIMENT_NAME:
+docker-ieee-access18:
   image: docker:latest
   stage: deploy
   services:
@@ -161,13 +158,13 @@ docker-$EXPERIMENT_NAME:
     - cd docker-build
     - cp ../Dockerfile .
     - docker build -t carlesfernandez/docker-gnsssdr .
-    - docker tag carlesfernandez/docker-gnsssdr:latest carlesfernandez/docker-gnsssdr:$EXPERIMENT_NAME
-    - docker push carlesfernandez/docker-gnsssdr:$EXPERIMENT_NAME
+    - docker tag carlesfernandez/docker-gnsssdr:latest carlesfernandez/docker-gnsssdr:ieee-access18
+    - docker push carlesfernandez/docker-gnsssdr:ieee-access18
 
 
 # Stage "experiment"
-run-$EXPERIMENT_NAME:
-  image: carlesfernandez/docker-gnsssdr:$EXPERIMENT_NAME
+run-ieee-access18:
+  image: carlesfernandez/docker-gnsssdr:ieee-access18
   stage: experiment
   script:
     - apt-get update
@@ -185,9 +182,9 @@ run-$EXPERIMENT_NAME:
     - echo " x = 0:0.01:3; hf = figure (\"visible\", \"off\"); plot (x, erf (x)); hold on; plot (x, x, \"r\"); axis ([0, 3, 0, 1]); text (0.65, 0.6175, ['$ \leftarrow x = \frac{2}{\sqrt{\pi}} \int_{0}^{x}e^{-t^2} dt = 0.6175 $']); xlabel (\"x\"); ylabel (\"erf (x)\"); title (\"erf (x) with text annotation\"); print (hf, \"results.eps\", \"-depsc\"); " >  my_test_file.m
     - octave --no-gui my_test_file.m
     - epspdf results.eps results.pdf
-    - mkdir $EXPERIMENT_NAME
-    - cp results.pdf $EXPERIMENT_NAME/
+    - mkdir ieee-access18
+    - cp results.pdf ieee-access18/
 
   artifacts:
     paths:
-      - $EXPERIMENT_NAME/*.pdf
+      - ieee-access18/*.pdf

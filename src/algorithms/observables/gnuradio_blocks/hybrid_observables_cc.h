@@ -35,6 +35,9 @@
 
 #include <fstream>
 #include <string>
+#include <utility> //std::pair
+#include <vector>  //std::vector
+#include <boost/dynamic_bitset.hpp>
 #include <gnuradio/block.h>
 #include "gnss_synchro.h"
 
@@ -44,7 +47,7 @@ class hybrid_observables_cc;
 typedef boost::shared_ptr<hybrid_observables_cc> hybrid_observables_cc_sptr;
 
 hybrid_observables_cc_sptr
-hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename, unsigned int deep_history);
+hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
 
 /*!
  * \brief This class implements a block that computes Galileo observables
@@ -58,17 +61,18 @@ public:
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 private:
     friend hybrid_observables_cc_sptr
-    hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename, unsigned int deep_history);
-    hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename, unsigned int deep_history);
+    hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
+    hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
 
     //Tracking observable history
-    std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history_queue;
-
+    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>> d_gnss_synchro_history;
+    boost::dynamic_bitset<> valid_channels;
     double T_rx_s;
     double T_rx_step_s;
+    double max_extrapol_time_s;
     bool d_dump;
     unsigned int d_nchannels;
-    unsigned int history_deep;
+    unsigned int d_num_valid_channels;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 

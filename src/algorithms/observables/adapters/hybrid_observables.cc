@@ -46,17 +46,8 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
     DLOG(INFO) << "role " << role;
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-    unsigned int default_depth = 0;
-    if (GPS_L1_CA_HISTORY_DEEP == GALILEO_E1_HISTORY_DEEP)
-        {
-            default_depth = GPS_L1_CA_HISTORY_DEEP;
-        }
-    else
-        {
-            default_depth = 100;
-        }
-    unsigned int history_deep = configuration->property(role + ".history_depth", default_depth);
-    observables_ = hybrid_make_observables_cc(in_streams_, out_streams_, dump_, dump_filename_, history_deep);
+
+    observables_ = hybrid_make_observables_cc(in_streams_, out_streams_, dump_, dump_filename_);
     DLOG(INFO) << "Observables block ID (" << observables_->unique_id() << ")";
 }
 

@@ -38,7 +38,9 @@ gnss_sdr_sample_counter::gnss_sdr_sample_counter(double _fs) : gr::sync_decimato
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                 static_cast<unsigned int>(floor(_fs * 0.001)))
 {
-    this->message_port_register_out(pmt::mp("sample_counter"));
+    message_port_register_out(pmt::mp("sample_counter"));
+    set_max_noutput_items(1);
+    set_max_output_buffer(1);
     current_T_rx_ms = 0;
     report_interval_ms = 1000;//default reporting 1 second
     flag_enable_send_msg = false; //enable it for reporting time with asynchronous message
@@ -63,7 +65,7 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
         std::cout << "Current receiver time: " << static_cast<double>(current_T_rx_ms) / 1000.0 << " [s]" << std::endl;
         if(flag_enable_send_msg)
         {
-            this->message_port_pub(pmt::mp("receiver_time"), pmt::from_double(static_cast<double>(current_T_rx_ms) / 1000.0));
+            message_port_pub(pmt::mp("receiver_time"), pmt::from_double(static_cast<double>(current_T_rx_ms) / 1000.0));
         }
     }
     current_T_rx_ms++;

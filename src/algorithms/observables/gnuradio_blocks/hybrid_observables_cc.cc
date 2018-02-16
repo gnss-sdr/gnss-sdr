@@ -32,10 +32,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <map>
-#include <vector>
-#include <utility>
-#include <armadillo>
+#include <limits>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/block_detail.h>
 #include <gnuradio/buffer.h>
@@ -47,63 +44,66 @@
 using google::LogMessage;
 
 
-hybrid_observables_cc_sptr hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename, unsigned int deep_history)
+hybrid_observables_cc_sptr hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename)
 {
-    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels_in, nchannels_out, dump, dump_filename, deep_history));
+    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels_in, nchannels_out, dump, dump_filename));
 }
 
 
-hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename, unsigned int deep_history) :
-                        gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
-                                  gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
+hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename) :
+                        gr::block("hybrid_observables_cc",
+                                gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
+                                gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
 {
-    // initialize internal vars
+    set_max_noutput_items(1);
+    set_max_output_buffer(1);
     d_dump = dump;
     d_nchannels = nchannels_out;
     d_dump_filename = dump_filename;
-    history_deep = deep_history;
     T_rx_s = 0.0;
-    T_rx_step_s = 1e-3; // todo: move to gnss-sdr config
+    T_rx_step_s = 0.001; // 1 ms
+    max_extrapol_time_s = 0.1; // 100 ms
+    valid_channels.resize(d_nchannels, false);
+    d_num_valid_channels = 0;
     for (unsigned int i = 0; i < d_nchannels; i++)
-        {
-            d_gnss_synchro_history_queue.push_back(std::deque<Gnss_Synchro>());
-        }
+    {
+        d_gnss_synchro_history.push_back(std::pair<Gnss_Synchro,Gnss_Synchro>());
+        d_gnss_synchro_history.at(i).first.Flag_valid_word = false;
+        d_gnss_synchro_history.at(i).second.Flag_valid_word = false;
+    }
 
     // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
+    if (d_dump)
+    {
+        if (!d_dump_file.is_open())
         {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                    {
-                            d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str();
-                    }
-                    catch (const std::ifstream::failure & e)
-                    {
-                            LOG(WARNING) << "Exception opening observables dump file " << e.what();
-                            d_dump = false;
-                    }
-                }
+            try
+            {
+                d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
+                d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str();
+            }
+            catch (const std::ifstream::failure & e)
+            {
+                LOG(WARNING) << "Exception opening observables dump file " << e.what();
+                d_dump = false;
+            }
         }
+    }
 }
 
 
 hybrid_observables_cc::~hybrid_observables_cc()
 {
-    if (d_dump_file.is_open() == true)
+    if (d_dump_file.is_open())
         {
-            try
-            {
-                    d_dump_file.close();
-            }
+            try { d_dump_file.close(); }
             catch(const std::exception & ex)
             {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
             }
         }
-    if(d_dump == true)
+    if(d_dump)
         {
             std::cout << "Writing observables .mat files ...";
             save_matfile();
@@ -120,14 +120,11 @@ int hybrid_observables_cc::save_matfile()
     int epoch_size_bytes = sizeof(double) * number_of_double_vars * d_nchannels;
     std::ifstream dump_file;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    try
-    {
-            dump_file.open(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
-    }
+    try { dump_file.open(d_dump_filename.c_str(), std::ios::binary | std::ios::ate); }
     catch(const std::ifstream::failure &e)
     {
-            std::cerr << "Problem opening dump file:" <<  e.what() << std::endl;
-            return 1;
+        std::cerr << "Problem opening dump file:" <<  e.what() << std::endl;
+        return 1;
     }
     // count number of epochs and rewind
     long int num_epoch = 0;
@@ -137,10 +134,7 @@ int hybrid_observables_cc::save_matfile()
             num_epoch = static_cast<long int>(size) / static_cast<long int>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
         }
-    else
-        {
-            return 1;
-        }
+    else { return 1; }
     double ** RX_time = new double * [d_nchannels];
     double ** TOW_at_current_symbol_s = new double * [d_nchannels];
     double ** Carrier_Doppler_hz = new double * [d_nchannels];
@@ -296,323 +290,505 @@ int hybrid_observables_cc::save_matfile()
     return 0;
 }
 
-
-bool Hybrid_pairCompare_gnss_synchro_sample_counter(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
+double Hybrid_Interpolate_data(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const double& ti, int parameter)
 {
-    return (a.second.Tracking_sample_counter) < (b.second.Tracking_sample_counter);
+    // x(ti) = m * ti + c
+    // m = [x(t2) - x(t1)] / [t2 - t1]
+    // c = x(t1) - m * t1
+
+    double m = 0.0;
+    double c = 0.0;
+
+    if(!a.first.Flag_valid_word or !a.second.Flag_valid_word) { return 0.0; }
+
+    switch(parameter)
+    {
+    case 0:// Doppler
+        m = (a.first.Carrier_Doppler_hz - a.second.Carrier_Doppler_hz) / (a.first.RX_time - a.second.RX_time);
+        c = a.second.Carrier_Doppler_hz - m * a.second.RX_time;
+        break;
+
+    case 1:// Carrier phase
+        m = (a.first.Carrier_phase_rads - a.second.Carrier_phase_rads) / (a.first.RX_time - a.second.RX_time);
+        c = a.second.Carrier_phase_rads - m * a.second.RX_time;
+        break;
+
+    case 2:// TOW
+        m = (a.first.TOW_at_current_symbol_s - a.second.TOW_at_current_symbol_s) / (a.first.RX_time - a.second.RX_time);
+        c = a.second.TOW_at_current_symbol_s - m * a.second.RX_time;
+        break;
+
+    case 3:// Code phase samples
+        m = (a.first.Code_phase_samples - a.second.Code_phase_samples) / (a.first.RX_time - a.second.RX_time);
+        c = a.second.Code_phase_samples - m * a.second.RX_time;
+        break;
+    }
+    return(m * ti + c);
+}
+
+double Hybrid_Compute_T_rx_s(const Gnss_Synchro& a)
+{
+    if(a.Flag_valid_word)
+    {
+        return((static_cast<double>(a.Tracking_sample_counter) + a.Code_phase_samples) / static_cast<double>(a.fs));
+    }
+    else { return 0.0; }
+}
+
+/*
+bool Hybrid_pairCompare_gnss_synchro_T_rx(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const std::pair<Gnss_Synchro, Gnss_Synchro>& b)
+{
+    if(a.second.Flag_valid_word and !b.second.Flag_valid_word) { return true; }
+    else if(!a.second.Flag_valid_word and b.second.Flag_valid_word) { return false; }
+    else if(!a.second.Flag_valid_word and !b.second.Flag_valid_word) {return false; }
+    else
+    {
+        return(Hybrid_Compute_T_rx_s(a.second) < Hybrid_Compute_T_rx_s(b.second));
+    }
+}
+
+
+bool Hybrid_pairCompare_gnss_synchro_sample_counter(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const std::pair<Gnss_Synchro, Gnss_Synchro>& b)
+{
+    if(a.second.Flag_valid_word and !b.second.Flag_valid_word) { return true; }
+    else if(!a.second.Flag_valid_word and b.second.Flag_valid_word) { return false; }
+    else if(!a.second.Flag_valid_word and !b.second.Flag_valid_word) {return false; }
+    else
+    {
+        return(a.second.Tracking_sample_counter < b.second.Tracking_sample_counter);
+    }
 }
 
 
 bool Hybrid_valueCompare_gnss_synchro_sample_counter(const Gnss_Synchro& a, unsigned long int b)
 {
-    return (a.Tracking_sample_counter) < (b);
+    return(a.Tracking_sample_counter < b);
 }
 
 
 bool Hybrid_valueCompare_gnss_synchro_receiver_time(const Gnss_Synchro& a, double b)
 {
-    return ((static_cast<double>(a.Tracking_sample_counter) + static_cast<double>(a.Code_phase_samples)) / static_cast<double>(a.fs) ) < (b);
+    return((static_cast<double>(a.Tracking_sample_counter) + static_cast<double>(a.Code_phase_samples)) / static_cast<double>(a.fs) ) < (b);
 }
 
 
-bool Hybrid_pairCompare_gnss_synchro_d_TOW(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
+bool Hybrid_pairCompare_gnss_synchro_TOW(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const std::pair<Gnss_Synchro, Gnss_Synchro>& b)
 {
-    return (a.second.TOW_at_current_symbol_s) < (b.second.TOW_at_current_symbol_s);
+    if(a.first.Flag_valid_word and !b.first.Flag_valid_word) { return true; }
+    else if(!a.first.Flag_valid_word and b.first.Flag_valid_word) { return false; }
+    else if(!a.first.Flag_valid_word and !b.first.Flag_valid_word) {return false; }
+    else
+    {
+        return(a.first.TOW_at_current_symbol_s < b.second.TOW_at_current_symbol_s);
+    }
 }
 
 
 bool Hybrid_valueCompare_gnss_synchro_d_TOW(const Gnss_Synchro& a, double b)
 {
-    return (a.TOW_at_current_symbol_s) < (b);
+    return(a.TOW_at_current_symbol_s < b);
 }
+*/
 
-
-void hybrid_observables_cc::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
+void hybrid_observables_cc::forecast(int noutput_items __attribute__((unused)),
+        gr_vector_int &ninput_items_required)
 {
+    bool available_items = false;
     for(unsigned int i = 0; i < d_nchannels; i++)
     {
         ninput_items_required[i] = 0;
-        //std::cout << "IN buffer "<< i << ". Number of items " << detail()->input(i)->items_available() << std::endl;
+        if(detail()->input(i)->items_available() > 0) { available_items = true; }
     }
-    //std::cout << "SC buffer. Number of items " << detail()->input(d_nchannels)->items_available() << std::endl;
-    ninput_items_required[d_nchannels] = 1; // set the required available samples in each call
+    if(available_items) { ninput_items_required[d_nchannels] = 0; }
+    else { ninput_items_required[d_nchannels] = 1; }
 }
 
 
-int hybrid_observables_cc::general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)),
+        gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items)
 {
-    const Gnss_Synchro** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]); // Get the input buffer pointer
-    Gnss_Synchro** out = reinterpret_cast<Gnss_Synchro**>(&output_items[0]);           // Get the output buffer pointer
-    int n_outputs = 0;
-    int n_consume[d_nchannels];
-    double past_history_s = 100e-3;
+    const Gnss_Synchro** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);
+    Gnss_Synchro** out = reinterpret_cast<Gnss_Synchro**>(&output_items[0]);
 
-    Gnss_Synchro current_gnss_synchro[d_nchannels];
-    Gnss_Synchro aux = Gnss_Synchro();
-    for(unsigned int i = 0; i < d_nchannels; i++)
+    unsigned int i;
+    int total_input_items = 0;
+    for(i = 0; i < d_nchannels; i++) { total_input_items += ninput_items[i]; }
+    bool compute_output = false;
+
+    //////////////////////////////////////////////////////////////////////////
+    if((total_input_items == 0) and (ninput_items[d_nchannels] == 0))
     {
-        current_gnss_synchro[i] = aux;
+        return 0;
     }
-    /*
-     * 1. Read the GNSS SYNCHRO objects from available channels.
-     *  Multi-rate GNURADIO Block. Read how many input items are avaliable in each channel
-     *  Record all synchronization data into queues
-     */
-    for (unsigned int i = 0; i < d_nchannels; i++)
+    else if((total_input_items == 0) and (ninput_items[d_nchannels] > 0) and (d_num_valid_channels == 0))
     {
-        n_consume[i] = ninput_items[i]; // full throttle
-        for(int j = 0; j < n_consume[i]; j++)
+        T_rx_s += T_rx_step_s;
+        consume(d_nchannels, 1);
+        return 0;
+    }
+    else if((total_input_items == 0) and (ninput_items[d_nchannels] > 0) and (d_num_valid_channels > 0))
+    {
+        T_rx_s += T_rx_step_s;
+        compute_output = true;
+        consume(d_nchannels, 1);
+    }
+    else if((total_input_items > 0) and (ninput_items[d_nchannels] == 0))
+    {}
+    else if((total_input_items > 0) and (ninput_items[d_nchannels] > 0))
+    {
+        T_rx_s += T_rx_step_s;
+        compute_output = true;
+        consume(d_nchannels, 1);
+    }
+    else
+    {}
+    //////////////////////////////////////////////////////////////////////////
+
+
+    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>>::iterator it;
+    if (total_input_items > 0)
+    {
+        i = 0;
+        for (it = d_gnss_synchro_history.begin(); it != d_gnss_synchro_history.end(); it++)
         {
-            d_gnss_synchro_history_queue[i].push_back(in[i][j]);
+            if (ninput_items[i] > 0 and (Hybrid_Compute_T_rx_s(in[i][0]) < T_rx_s))
+            {
+                it->second = it->first; // second is the older Gnss_Synchro
+                it->first = in[i][0];   // first is the newest Gnss_Synchro
+                it->first.RX_time = Hybrid_Compute_T_rx_s(it->first);
+                consume(i, 1);
+            }
+            if (it->first.Flag_valid_word and it->second.Flag_valid_word) { valid_channels[i] = true; }
+            else { valid_channels[i] = false; }
+            i++;
         }
     }
+    d_num_valid_channels = valid_channels.count();
+    // Check if there is any valid channel after reading the new incoming Gnss_Synchro data
+    if(d_num_valid_channels == 0) { return 0; }
 
-    bool channel_history_ok;
-
-    do
+    for(i = 0; i < d_nchannels; i++) //Discard observables with T_rx higher than the extrapolation threshold
     {
-
-    try
-    {
-
-        channel_history_ok = true;
-        for(unsigned int i = 0; i < d_nchannels; i++)
+        if(valid_channels[i])
         {
-            if (d_gnss_synchro_history_queue.at(i).size() < history_deep && !d_gnss_synchro_history_queue.at(i).empty())
-            {
-                channel_history_ok = false;
-            }
+            double delta_t = T_rx_s - d_gnss_synchro_history.at(i).second.RX_time;
+            //std::cout << "Sat " << d_gnss_synchro_history.at(i).second.PRN << ". Dt = " << delta_t * 1000.0 <<". Rx 2 "<< d_gnss_synchro_history.at(i).second.RX_time<<". Rx 1 "<< d_gnss_synchro_history.at(i).first.RX_time<<std::endl;
+            if(std::fabs(T_rx_s - d_gnss_synchro_history.at(i).second.RX_time) > max_extrapol_time_s)
+            { valid_channels[i] = false; }
         }
-        if (channel_history_ok == true)
+    }
+    d_num_valid_channels = valid_channels.count();
+
+    // Check if there is any valid channel after computing the time distance between the Gnss_Synchro data and the receiver time
+    if((d_num_valid_channels == 0) or !compute_output) { return 0; }
+
+    it = d_gnss_synchro_history.begin();
+    double TOW_ref = std::numeric_limits<double>::max();
+    for(i = 0; i < d_nchannels; i++)
+    {
+        if(!valid_channels[i]) { out[i][0] = Gnss_Synchro(); }
+        else
         {
-            std::map<int,Gnss_Synchro>::const_iterator gnss_synchro_map_iter;
-            std::deque<Gnss_Synchro>::const_iterator gnss_synchro_deque_iter;
-
-            // 1. If the RX time is not set, set the Rx time
-            if (T_rx_s == 0)
-            {
-                // 0. Read a gnss_synchro snapshot from the queue and store it in a map
-                std::map<int,Gnss_Synchro> gnss_synchro_map;
-                for (unsigned int i = 0; i < d_nchannels; i++)
-                {
-                    if (!d_gnss_synchro_history_queue.at(i).empty())
-                    {
-                        gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue.at(i).front().Channel_ID,
-                                d_gnss_synchro_history_queue.at(i).front()));
-                    }
-                }
-                if(gnss_synchro_map.empty()) { break; } // Breaks the do-while loop
-
-                gnss_synchro_map_iter = std::min_element(gnss_synchro_map.cbegin(),
-                        gnss_synchro_map.cend(),
-                        Hybrid_pairCompare_gnss_synchro_sample_counter);
-                T_rx_s = static_cast<double>(gnss_synchro_map_iter->second.Tracking_sample_counter) / static_cast<double>(gnss_synchro_map_iter->second.fs);
-                T_rx_s = floor(T_rx_s * 1000.0) / 1000.0; // truncate to ms
-                T_rx_s += past_history_s; // increase T_rx to have a minimum past history to interpolate
-            }
-
-            // 2. Realign RX time in all valid channels
-            std::map<int,Gnss_Synchro> realigned_gnss_synchro_map; // container for the aligned set of observables for the selected T_rx
-            std::map<int,Gnss_Synchro> adjacent_gnss_synchro_map;  // container for the previous observable values to interpolate
-            // shift channels history to match the reference TOW
-            for (unsigned int i = 0; i < d_nchannels; i++)
-            {
-                if (!d_gnss_synchro_history_queue.at(i).empty())
-                {
-                    gnss_synchro_deque_iter = std::lower_bound(d_gnss_synchro_history_queue.at(i).cbegin(),
-                            d_gnss_synchro_history_queue.at(i).cend(),
-                            T_rx_s,
-                            Hybrid_valueCompare_gnss_synchro_receiver_time);
-                    if (gnss_synchro_deque_iter != d_gnss_synchro_history_queue.at(i).cend())
-                    {
-                        if (gnss_synchro_deque_iter->Flag_valid_word == true)
-                        {
-                            double T_rx_channel = static_cast<double>(gnss_synchro_deque_iter->Tracking_sample_counter) / static_cast<double>(gnss_synchro_deque_iter->fs);
-                            double delta_T_rx_s = T_rx_channel - T_rx_s;
-
-                            // check that T_rx difference is less than a threshold (the correlation interval)
-                            if (delta_T_rx_s * 1000.0 < static_cast<double>(gnss_synchro_deque_iter->correlation_length_ms))
-                            {
-                                // record the word structure in a map for pseudorange computation
-                                // save the previous observable
-                                int distance = std::distance(d_gnss_synchro_history_queue.at(i).cbegin(), gnss_synchro_deque_iter);
-                                if (distance > 0)
-                                {
-                                    if (d_gnss_synchro_history_queue.at(i).at(distance - 1).Flag_valid_word)
-                                    {
-                                        double T_rx_channel_prev = static_cast<double>(d_gnss_synchro_history_queue.at(i).at(distance - 1).Tracking_sample_counter) / static_cast<double>(gnss_synchro_deque_iter->fs);
-                                        double delta_T_rx_s_prev = T_rx_channel_prev - T_rx_s;
-                                        if (fabs(delta_T_rx_s_prev) < fabs(delta_T_rx_s))
-                                        {
-                                            realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue.at(i).at(distance - 1).Channel_ID,
-                                                    d_gnss_synchro_history_queue.at(i).at(distance - 1)));
-                                            adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
-                                        }
-                                        else
-                                        {
-                                            realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
-                                            adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue.at(i).at(distance - 1).Channel_ID,
-                                                    d_gnss_synchro_history_queue.at(i).at(distance - 1)));
-                                        }
-                                    }
-
-                                }
-                                else
-                                {
-                                    realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
-                                }
-
-                            }
-                        }
-                    }
-                }
-            }
-
-            if(!realigned_gnss_synchro_map.empty())
-            {
-                /*
-                 *  2.1 Use CURRENT set of measurements and find the nearest satellite
-                 *  common RX time algorithm
-                 */
-                // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
-                gnss_synchro_map_iter = std::max_element(realigned_gnss_synchro_map.cbegin(),
-                        realigned_gnss_synchro_map.cend(),
-                        Hybrid_pairCompare_gnss_synchro_d_TOW);
-                double ref_fs_hz = static_cast<double>(gnss_synchro_map_iter->second.fs);
-
-                // compute interpolated TOW value at T_rx_s
-                int ref_channel_key = gnss_synchro_map_iter->second.Channel_ID;
-                Gnss_Synchro adj_obs;
-                adj_obs = adjacent_gnss_synchro_map.at(ref_channel_key);
-                double ref_adj_T_rx_s = static_cast<double>(adj_obs.Tracking_sample_counter) / ref_fs_hz + adj_obs.Code_phase_samples / ref_fs_hz;
-
-                double d_TOW_reference = gnss_synchro_map_iter->second.TOW_at_current_symbol_s;
-                double d_ref_T_rx_s = static_cast<double>(gnss_synchro_map_iter->second.Tracking_sample_counter) / ref_fs_hz + gnss_synchro_map_iter->second.Code_phase_samples / ref_fs_hz;
-
-                double selected_T_rx_s = T_rx_s;
-                // two points linear interpolation using adjacent (adj) values: y=y1+(x-x1)*(y2-y1)/(x2-x1)
-                double ref_TOW_at_T_rx_s = adj_obs.TOW_at_current_symbol_s +
-                        (selected_T_rx_s - ref_adj_T_rx_s) * (d_TOW_reference - adj_obs.TOW_at_current_symbol_s) / (d_ref_T_rx_s - ref_adj_T_rx_s);
-
-                // Now compute RX time differences due to the PRN alignment in the correlators
-                double traveltime_ms;
-                double pseudorange_m;
-                double channel_T_rx_s;
-                double channel_fs_hz;
-                double channel_TOW_s;
-                for(gnss_synchro_map_iter = realigned_gnss_synchro_map.cbegin(); gnss_synchro_map_iter != realigned_gnss_synchro_map.cend(); gnss_synchro_map_iter++)
-                {
-                    channel_fs_hz = static_cast<double>(gnss_synchro_map_iter->second.fs);
-                    channel_TOW_s = gnss_synchro_map_iter->second.TOW_at_current_symbol_s;
-                    channel_T_rx_s = static_cast<double>(gnss_synchro_map_iter->second.Tracking_sample_counter) / channel_fs_hz + gnss_synchro_map_iter->second.Code_phase_samples / channel_fs_hz;
-                    // compute interpolated observation values
-                    // two points linear interpolation using adjacent (adj) values: y=y1+(x-x1)*(y2-y1)/(x2-x1)
-                    // TOW at the selected receiver time T_rx_s
-                    int element_key = gnss_synchro_map_iter->second.Channel_ID;
-                    adj_obs = adjacent_gnss_synchro_map.at(element_key);
-
-                    double adj_T_rx_s = static_cast<double>(adj_obs.Tracking_sample_counter) / channel_fs_hz + adj_obs.Code_phase_samples / channel_fs_hz;
-
-                    double channel_TOW_at_T_rx_s = adj_obs.TOW_at_current_symbol_s + (selected_T_rx_s - adj_T_rx_s) * (channel_TOW_s - adj_obs.TOW_at_current_symbol_s) / (channel_T_rx_s - adj_T_rx_s);
-
-                    // Doppler and Accumulated carrier phase
-                    double Carrier_phase_lin_rads = adj_obs.Carrier_phase_rads + (selected_T_rx_s - adj_T_rx_s) * (gnss_synchro_map_iter->second.Carrier_phase_rads - adj_obs.Carrier_phase_rads) / (channel_T_rx_s - adj_T_rx_s);
-                    double Carrier_Doppler_lin_hz = adj_obs.Carrier_Doppler_hz + (selected_T_rx_s - adj_T_rx_s) * (gnss_synchro_map_iter->second.Carrier_Doppler_hz - adj_obs.Carrier_Doppler_hz) / (channel_T_rx_s - adj_T_rx_s);
-
-                    // compute the pseudorange (no rx time offset correction)
-                    traveltime_ms = (ref_TOW_at_T_rx_s - channel_TOW_at_T_rx_s) * 1000.0 + GPS_STARTOFFSET_ms;
-                    // convert to meters
-                    pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
-                    // update the pseudorange object
-                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID] = gnss_synchro_map_iter->second;
-                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
-                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-                    // Save the estimated RX time (no RX clock offset correction yet!)
-                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID].RX_time = ref_TOW_at_T_rx_s + GPS_STARTOFFSET_ms / 1000.0;
-
-                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID].Carrier_phase_rads = Carrier_phase_lin_rads;
-                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID].Carrier_Doppler_hz = Carrier_Doppler_lin_hz;
-                }
-
-                if(d_dump == true)
-                {
-                    // MULTIPLEXED FILE RECORDING - Record results to file
-                    try
-                    {
-                        double tmp_double;
-                        for (unsigned int i = 0; i < d_nchannels; i++)
-                        {
-                            tmp_double = current_gnss_synchro[i].RX_time;
-                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                            tmp_double = current_gnss_synchro[i].TOW_at_current_symbol_s;
-                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                            tmp_double = current_gnss_synchro[i].Carrier_Doppler_hz;
-                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                            tmp_double = current_gnss_synchro[i].Carrier_phase_rads / GPS_TWO_PI;
-                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                            tmp_double = current_gnss_synchro[i].Pseudorange_m;
-                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                            tmp_double = current_gnss_synchro[i].PRN;
-                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                            tmp_double = static_cast<double>(current_gnss_synchro[i].Flag_valid_pseudorange);
-                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                        }
-                    }
-                    catch (const std::ifstream::failure& e)
-                    {
-                        LOG(WARNING) << "Exception writing observables dump file " << e.what();
-                        d_dump = false;
-                    }
-                }
-
-                for (unsigned int i = 0; i < d_nchannels; i++)
-                {
-                    out[i][n_outputs] = current_gnss_synchro[i];
-                }
-
-                n_outputs++;
-            }
-
-            // Move RX time
-            T_rx_s += T_rx_step_s;
-            // pop old elements from queue
-            for (unsigned int i = 0; i < d_nchannels; i++)
-            {
-                if (!d_gnss_synchro_history_queue.at(i).empty())
-                {
-                    while (static_cast<double>(d_gnss_synchro_history_queue.at(i).front().Tracking_sample_counter) / static_cast<double>(d_gnss_synchro_history_queue.at(i).front().fs) < (T_rx_s - past_history_s))
-                    {
-                        d_gnss_synchro_history_queue.at(i).pop_front();
-                    }
-                }
-            }
+            out[i][0] = it->first;
+            out[i][0].Flag_valid_pseudorange = true;
+            out[i][0].Carrier_Doppler_hz = Hybrid_Interpolate_data(*it, T_rx_s, 0);
+            out[i][0].Carrier_phase_rads = Hybrid_Interpolate_data(*it, T_rx_s, 1);
+            out[i][0].RX_time = Hybrid_Interpolate_data(*it, T_rx_s, 2);
+            out[i][0].Code_phase_samples = Hybrid_Interpolate_data(*it, T_rx_s, 3);
+            //std::cout<<"T2: "<< it->first.RX_time<<". T1: "<< it->second.RX_time <<" T i: " << T_rx_s <<std::endl;
+            //std::cout<<"Doppler origin: "<< it->first.Carrier_Doppler_hz<<","<< it->second.Carrier_Doppler_hz<<" Doppler interp: " << out[i][0].Carrier_Doppler_hz <<std::endl;
+            if(out[i][0].RX_time < TOW_ref) { TOW_ref = out[i][0].RX_time; }
         }
-
-    }// End of try{...}
-    catch(const std::out_of_range& e)
-    {
-        LOG(WARNING) << "Out of range exception thrown by Hybrid Observables block. Exception message: " << e.what();
-        std::cout << "Out of range exception thrown by Hybrid Observables block. Exception message: " << e.what() << std::endl;
-        return gr::block::WORK_DONE;
+        it++;
     }
-    catch(const std::exception& e)
+    for(i = 0; i < d_nchannels; i++)
     {
-        LOG(WARNING) << "Exception thrown by Hybrid Observables block. Exception message: " << e.what();
-        std::cout << "Exception thrown by Hybrid Observables block. Exception message: " << e.what() << std::endl;
-        return gr::block::WORK_DONE;
+        if(valid_channels[i])
+        {
+            double traveltime_ms = (out[i][0].RX_time - TOW_ref)*1000.0 + GPS_STARTOFFSET_ms;
+            out[i][0].Pseudorange_m = traveltime_ms * GPS_C_m_ms;
+            out[i][0].RX_time = TOW_ref + GPS_STARTOFFSET_ms / 1000.0;
+            //std::cout << "Sat " << out[i][0].PRN << ". Prang = " << out[i][0].Pseudorange_m << ". TOW = " << out[i][0].RX_time << std::endl;
+        }
     }
+    return 1;
 
-    }while(channel_history_ok == true && noutput_items > n_outputs);
+    /*******************************                 OLD ALGORITHM            ********************************/
 
-    // Multi-rate consume!
-    for (unsigned int i = 0; i < d_nchannels; i++)
-    {
-        consume(i, n_consume[i]); // which input, how many items
-    }
-
-    //consume monitor channel always
-    consume(d_nchannels, 1);
-    return n_outputs;
+//    const Gnss_Synchro** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]); // Get the input buffer pointer
+//    Gnss_Synchro** out = reinterpret_cast<Gnss_Synchro**>(&output_items[0]);           // Get the output buffer pointer
+//    int n_outputs = 0;
+//    int n_consume[d_nchannels];
+//    double past_history_s = 100e-3;
+//
+//    Gnss_Synchro current_gnss_synchro[d_nchannels];
+//    Gnss_Synchro aux = Gnss_Synchro();
+//    for(unsigned int i = 0; i < d_nchannels; i++)
+//    {
+//        current_gnss_synchro[i] = aux;
+//    }
+//    /*
+//     * 1. Read the GNSS SYNCHRO objects from available channels.
+//     *  Multi-rate GNURADIO Block. Read how many input items are avaliable in each channel
+//     *  Record all synchronization data into queues
+//     */
+//    for (unsigned int i = 0; i < d_nchannels; i++)
+//    {
+//        n_consume[i] = ninput_items[i]; // full throttle
+//        for(int j = 0; j < n_consume[i]; j++)
+//        {
+//            d_gnss_synchro_history_queue[i].push_back(in[i][j]);
+//        }
+//    }
+//
+//    bool channel_history_ok;
+//
+//    do
+//    {
+//
+//    try
+//    {
+//
+//        channel_history_ok = true;
+//        for(unsigned int i = 0; i < d_nchannels; i++)
+//        {
+//            if (d_gnss_synchro_history_queue.at(i).size() < history_deep && !d_gnss_synchro_history_queue.at(i).empty())
+//            {
+//                channel_history_ok = false;
+//            }
+//        }
+//        if (channel_history_ok == true)
+//        {
+//            std::map<int,Gnss_Synchro>::const_iterator gnss_synchro_map_iter;
+//            std::deque<Gnss_Synchro>::const_iterator gnss_synchro_deque_iter;
+//
+//            // 1. If the RX time is not set, set the Rx time
+//            if (T_rx_s == 0)
+//            {
+//                // 0. Read a gnss_synchro snapshot from the queue and store it in a map
+//                std::map<int,Gnss_Synchro> gnss_synchro_map;
+//                for (unsigned int i = 0; i < d_nchannels; i++)
+//                {
+//                    if (!d_gnss_synchro_history_queue.at(i).empty())
+//                    {
+//                        gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue.at(i).front().Channel_ID,
+//                                d_gnss_synchro_history_queue.at(i).front()));
+//                    }
+//                }
+//                if(gnss_synchro_map.empty()) { break; } // Breaks the do-while loop
+//
+//                gnss_synchro_map_iter = std::min_element(gnss_synchro_map.cbegin(),
+//                        gnss_synchro_map.cend(),
+//                        Hybrid_pairCompare_gnss_synchro_sample_counter);
+//                T_rx_s = static_cast<double>(gnss_synchro_map_iter->second.Tracking_sample_counter) / static_cast<double>(gnss_synchro_map_iter->second.fs);
+//                T_rx_s = floor(T_rx_s * 1000.0) / 1000.0; // truncate to ms
+//                T_rx_s += past_history_s; // increase T_rx to have a minimum past history to interpolate
+//            }
+//
+//            // 2. Realign RX time in all valid channels
+//            std::map<int,Gnss_Synchro> realigned_gnss_synchro_map; // container for the aligned set of observables for the selected T_rx
+//            std::map<int,Gnss_Synchro> adjacent_gnss_synchro_map;  // container for the previous observable values to interpolate
+//            // shift channels history to match the reference TOW
+//            for (unsigned int i = 0; i < d_nchannels; i++)
+//            {
+//                if (!d_gnss_synchro_history_queue.at(i).empty())
+//                {
+//                    gnss_synchro_deque_iter = std::lower_bound(d_gnss_synchro_history_queue.at(i).cbegin(),
+//                            d_gnss_synchro_history_queue.at(i).cend(),
+//                            T_rx_s,
+//                            Hybrid_valueCompare_gnss_synchro_receiver_time);
+//                    if (gnss_synchro_deque_iter != d_gnss_synchro_history_queue.at(i).cend())
+//                    {
+//                        if (gnss_synchro_deque_iter->Flag_valid_word == true)
+//                        {
+//                            double T_rx_channel = static_cast<double>(gnss_synchro_deque_iter->Tracking_sample_counter) / static_cast<double>(gnss_synchro_deque_iter->fs);
+//                            double delta_T_rx_s = T_rx_channel - T_rx_s;
+//
+//                            // check that T_rx difference is less than a threshold (the correlation interval)
+//                            if (delta_T_rx_s * 1000.0 < static_cast<double>(gnss_synchro_deque_iter->correlation_length_ms))
+//                            {
+//                                // record the word structure in a map for pseudorange computation
+//                                // save the previous observable
+//                                int distance = std::distance(d_gnss_synchro_history_queue.at(i).cbegin(), gnss_synchro_deque_iter);
+//                                if (distance > 0)
+//                                {
+//                                    if (d_gnss_synchro_history_queue.at(i).at(distance - 1).Flag_valid_word)
+//                                    {
+//                                        double T_rx_channel_prev = static_cast<double>(d_gnss_synchro_history_queue.at(i).at(distance - 1).Tracking_sample_counter) / static_cast<double>(gnss_synchro_deque_iter->fs);
+//                                        double delta_T_rx_s_prev = T_rx_channel_prev - T_rx_s;
+//                                        if (fabs(delta_T_rx_s_prev) < fabs(delta_T_rx_s))
+//                                        {
+//                                            realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue.at(i).at(distance - 1).Channel_ID,
+//                                                    d_gnss_synchro_history_queue.at(i).at(distance - 1)));
+//                                            adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
+//                                        }
+//                                        else
+//                                        {
+//                                            realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
+//                                            adjacent_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(d_gnss_synchro_history_queue.at(i).at(distance - 1).Channel_ID,
+//                                                    d_gnss_synchro_history_queue.at(i).at(distance - 1)));
+//                                        }
+//                                    }
+//
+//                                }
+//                                else
+//                                {
+//                                    realigned_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(gnss_synchro_deque_iter->Channel_ID, *gnss_synchro_deque_iter));
+//                                }
+//
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if(!realigned_gnss_synchro_map.empty())
+//            {
+//                /*
+//                 *  2.1 Use CURRENT set of measurements and find the nearest satellite
+//                 *  common RX time algorithm
+//                 */
+//                // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
+//                gnss_synchro_map_iter = std::max_element(realigned_gnss_synchro_map.cbegin(),
+//                        realigned_gnss_synchro_map.cend(),
+//                        Hybrid_pairCompare_gnss_synchro_d_TOW);
+//                double ref_fs_hz = static_cast<double>(gnss_synchro_map_iter->second.fs);
+//
+//                // compute interpolated TOW value at T_rx_s
+//                int ref_channel_key = gnss_synchro_map_iter->second.Channel_ID;
+//                Gnss_Synchro adj_obs;
+//                adj_obs = adjacent_gnss_synchro_map.at(ref_channel_key);
+//                double ref_adj_T_rx_s = static_cast<double>(adj_obs.Tracking_sample_counter) / ref_fs_hz + adj_obs.Code_phase_samples / ref_fs_hz;
+//
+//                double d_TOW_reference = gnss_synchro_map_iter->second.TOW_at_current_symbol_s;
+//                double d_ref_T_rx_s = static_cast<double>(gnss_synchro_map_iter->second.Tracking_sample_counter) / ref_fs_hz + gnss_synchro_map_iter->second.Code_phase_samples / ref_fs_hz;
+//
+//                double selected_T_rx_s = T_rx_s;
+//                // two points linear interpolation using adjacent (adj) values: y=y1+(x-x1)*(y2-y1)/(x2-x1)
+//                double ref_TOW_at_T_rx_s = adj_obs.TOW_at_current_symbol_s +
+//                        (selected_T_rx_s - ref_adj_T_rx_s) * (d_TOW_reference - adj_obs.TOW_at_current_symbol_s) / (d_ref_T_rx_s - ref_adj_T_rx_s);
+//
+//                // Now compute RX time differences due to the PRN alignment in the correlators
+//                double traveltime_ms;
+//                double pseudorange_m;
+//                double channel_T_rx_s;
+//                double channel_fs_hz;
+//                double channel_TOW_s;
+//                for(gnss_synchro_map_iter = realigned_gnss_synchro_map.cbegin(); gnss_synchro_map_iter != realigned_gnss_synchro_map.cend(); gnss_synchro_map_iter++)
+//                {
+//                    channel_fs_hz = static_cast<double>(gnss_synchro_map_iter->second.fs);
+//                    channel_TOW_s = gnss_synchro_map_iter->second.TOW_at_current_symbol_s;
+//                    channel_T_rx_s = static_cast<double>(gnss_synchro_map_iter->second.Tracking_sample_counter) / channel_fs_hz + gnss_synchro_map_iter->second.Code_phase_samples / channel_fs_hz;
+//                    // compute interpolated observation values
+//                    // two points linear interpolation using adjacent (adj) values: y=y1+(x-x1)*(y2-y1)/(x2-x1)
+//                    // TOW at the selected receiver time T_rx_s
+//                    int element_key = gnss_synchro_map_iter->second.Channel_ID;
+//                    adj_obs = adjacent_gnss_synchro_map.at(element_key);
+//
+//                    double adj_T_rx_s = static_cast<double>(adj_obs.Tracking_sample_counter) / channel_fs_hz + adj_obs.Code_phase_samples / channel_fs_hz;
+//
+//                    double channel_TOW_at_T_rx_s = adj_obs.TOW_at_current_symbol_s + (selected_T_rx_s - adj_T_rx_s) * (channel_TOW_s - adj_obs.TOW_at_current_symbol_s) / (channel_T_rx_s - adj_T_rx_s);
+//
+//                    // Doppler and Accumulated carrier phase
+//                    double Carrier_phase_lin_rads = adj_obs.Carrier_phase_rads + (selected_T_rx_s - adj_T_rx_s) * (gnss_synchro_map_iter->second.Carrier_phase_rads - adj_obs.Carrier_phase_rads) / (channel_T_rx_s - adj_T_rx_s);
+//                    double Carrier_Doppler_lin_hz = adj_obs.Carrier_Doppler_hz + (selected_T_rx_s - adj_T_rx_s) * (gnss_synchro_map_iter->second.Carrier_Doppler_hz - adj_obs.Carrier_Doppler_hz) / (channel_T_rx_s - adj_T_rx_s);
+//
+//                    // compute the pseudorange (no rx time offset correction)
+//                    traveltime_ms = (ref_TOW_at_T_rx_s - channel_TOW_at_T_rx_s) * 1000.0 + GPS_STARTOFFSET_ms;
+//                    // convert to meters
+//                    pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
+//                    // update the pseudorange object
+//                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID] = gnss_synchro_map_iter->second;
+//                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
+//                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID].Flag_valid_pseudorange = true;
+//                    // Save the estimated RX time (no RX clock offset correction yet!)
+//                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID].RX_time = ref_TOW_at_T_rx_s + GPS_STARTOFFSET_ms / 1000.0;
+//
+//                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID].Carrier_phase_rads = Carrier_phase_lin_rads;
+//                    current_gnss_synchro[gnss_synchro_map_iter->second.Channel_ID].Carrier_Doppler_hz = Carrier_Doppler_lin_hz;
+//                }
+//
+//                if(d_dump == true)
+//                {
+//                    // MULTIPLEXED FILE RECORDING - Record results to file
+//                    try
+//                    {
+//                        double tmp_double;
+//                        for (unsigned int i = 0; i < d_nchannels; i++)
+//                        {
+//                            tmp_double = current_gnss_synchro[i].RX_time;
+//                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+//                            tmp_double = current_gnss_synchro[i].TOW_at_current_symbol_s;
+//                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+//                            tmp_double = current_gnss_synchro[i].Carrier_Doppler_hz;
+//                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+//                            tmp_double = current_gnss_synchro[i].Carrier_phase_rads / GPS_TWO_PI;
+//                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+//                            tmp_double = current_gnss_synchro[i].Pseudorange_m;
+//                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+//                            tmp_double = current_gnss_synchro[i].PRN;
+//                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+//                            tmp_double = static_cast<double>(current_gnss_synchro[i].Flag_valid_pseudorange);
+//                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+//                        }
+//                    }
+//                    catch (const std::ifstream::failure& e)
+//                    {
+//                        LOG(WARNING) << "Exception writing observables dump file " << e.what();
+//                        d_dump = false;
+//                    }
+//                }
+//
+//                for (unsigned int i = 0; i < d_nchannels; i++)
+//                {
+//                    out[i][n_outputs] = current_gnss_synchro[i];
+//                }
+//
+//                n_outputs++;
+//            }
+//
+//            // Move RX time
+//            T_rx_s += T_rx_step_s;
+//            // pop old elements from queue
+//            for (unsigned int i = 0; i < d_nchannels; i++)
+//            {
+//                if (!d_gnss_synchro_history_queue.at(i).empty())
+//                {
+//                    while (static_cast<double>(d_gnss_synchro_history_queue.at(i).front().Tracking_sample_counter) / static_cast<double>(d_gnss_synchro_history_queue.at(i).front().fs) < (T_rx_s - past_history_s))
+//                    {
+//                        d_gnss_synchro_history_queue.at(i).pop_front();
+//                    }
+//                }
+//            }
+//        }
+//
+//    }// End of try{...}
+//    catch(const std::out_of_range& e)
+//    {
+//        LOG(WARNING) << "Out of range exception thrown by Hybrid Observables block. Exception message: " << e.what();
+//        std::cout << "Out of range exception thrown by Hybrid Observables block. Exception message: " << e.what() << std::endl;
+//        return gr::block::WORK_DONE;
+//    }
+//    catch(const std::exception& e)
+//    {
+//        LOG(WARNING) << "Exception thrown by Hybrid Observables block. Exception message: " << e.what();
+//        std::cout << "Exception thrown by Hybrid Observables block. Exception message: " << e.what() << std::endl;
+//        return gr::block::WORK_DONE;
+//    }
+//
+//    }while(channel_history_ok == true && noutput_items > n_outputs);
+//
+//    // Multi-rate consume!
+//    for (unsigned int i = 0; i < d_nchannels; i++)
+//    {
+//        consume(i, n_consume[i]); // which input, how many items
+//    }
+//
+//    //consume monitor channel always
+//    consume(d_nchannels, 1);
+//    return n_outputs;
+//
+//
 }
 

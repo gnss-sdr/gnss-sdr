@@ -137,8 +137,6 @@ coverity-scan:
     - apt-get update
     - apt-get install -y wget
     - wget -O ./cov-analysis-linux64.tgz https://scan.coverity.com/download/linux64 --post-data "project=$COVERITY_SCAN_USER%2Fgnss-sdr&token=$COVERITY_SCAN_TOKEN"
-    - wget -O coverity_tool.md5 https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_USER%2Fgnss-sdr&md5=1"
-    - md5sum -c coverity_tool.md5
     - tar xvzf cov-analysis-linux64.tgz
     - export PATH=$PATH:$(pwd)/cov-analysis-linux64-2017.07/bin
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev

@@ -130,6 +130,26 @@ ubuntu18.04:
     - make install
 
 
+coverity-scan:
+  image: ubuntu:xenial
+  stage: build
+  script:
+    - apt-get update
+    - wget -O ./cov-analysis-linux64.tgz https://scan.coverity.com/download/linux64 --post-data "project=$COVERITY_SCAN_USER%2Fgnss-sdr&token=$COVERITY_SCAN_TOKEN"
+    - wget -O coverity_tool.md5 https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_USER%2Fgnss-sdr&md5=1"
+    - md5sum -c coverity_tool.md5
+    - tar xvzf cov-analysis-linux64.tgz
+    - export PATH=$PATH:$(pwd)/cov-analysis-linux64-2017.07/bin
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
+    - cd build
+    - cmake ..
+    - cov-build --dir cov-int make -j2
+    - tar cvzf gnss-sdr.tgz cov-int
+    - curl --form token=$COVERITY_SCAN_TOKEN --form email=$COVERITY_SCAN_EMAIL --form file=@$(pwd)/gnss-sdr.tgz --form version="0.0.9-next" --form description=" " https://scan.coverity.com/builds?project=$COVERITY_SCAN_USER%2Fgnss-sdr --progress-bar | tee -a "log_upload.txt" ; test ${PIPESTATUS[0]} -eq 0
+  when: manual
+  allow_failure: true
+
+
 # Stage "test"
 run-tests:
   image: debian:9.3-slim

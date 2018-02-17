@@ -135,7 +135,7 @@ coverity-scan:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y wget
+    - apt-get install -y wget curl
     - wget -O ./cov-analysis-linux64.tgz https://scan.coverity.com/download/linux64 --post-data "project=$COVERITY_SCAN_USER%2Fgnss-sdr&token=$COVERITY_SCAN_TOKEN"
     - tar xvzf cov-analysis-linux64.tgz
     - export PATH=$PATH:$(pwd)/cov-analysis-linux64-2017.07/bin

@@ -135,6 +135,7 @@ coverity-scan:
   stage: build
   script:
     - apt-get update
+    - apt-get install -y wget
     - wget -O ./cov-analysis-linux64.tgz https://scan.coverity.com/download/linux64 --post-data "project=$COVERITY_SCAN_USER%2Fgnss-sdr&token=$COVERITY_SCAN_TOKEN"
     - wget -O coverity_tool.md5 https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_USER%2Fgnss-sdr&md5=1"
     - md5sum -c coverity_tool.md5

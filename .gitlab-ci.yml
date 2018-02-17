@@ -30,9 +30,10 @@
 # DOCKER_HUB_REPO = docker-gnsssdr
 # DOCKER_HUB_PASSWORD = ********************
 #
-# If you want to make changes in the source code, please branch-off from the
-# 'next' branch of your forked repository and, if needed, add new jobs in this
-# file at the 'deploy' and 'experiment' stages.
+# If you want to make changes in the source code, branch-off from the 'next'
+# branch of your forked repository and, if needed, add new jobs in this
+# file at the 'deploy' and 'experiment' stages. Please do not use the next
+# branch for your changes, always open a new branch from next and work there.
 #
 # Feel free to delete the docker-gnsssdr and docker-pybombs-gnsssdr jobs,
 # they are for developers' team only. Actually, this is their CI/CD system.
@@ -213,7 +214,7 @@ docker-pybombs-gnsssdr:
 
 docker-access18:
   image: docker:latest
-  stage: build
+  stage: deploy
   services:
     - docker:dind
   script:

@@ -30,11 +30,61 @@
 
 
 #include <gnss_sdr_flags.h>
+#include <cstdint>
 #include <iostream>
 
-static bool ValidateDopplerMax(const char* flagname, gflags::int32 value)
+
+static bool ValidateDopplerMax(const char* flagname, int32_t value)
 {
-    if (value >= 0.0 && value < 1000000.0)   // value is ok
+    if (value >= 0 && value < 1000000)   // value is ok
+        return true;
+    std::cout << "Invalid value for " << flagname << ": " << value << std::endl;
+    return false;
+}
+
+static bool ValidateCn0Samples(const char* flagname, int32_t value)
+{
+    if (value > 0 && value < 10000)   // value is ok
+        return true;
+    std::cout << "Invalid value for " << flagname << ": " << value << std::endl;
+    return false;
+}
+
+static bool ValidateCn0Min(const char* flagname, int32_t value)
+{
+    if (value > 0 && value < 100)   // value is ok
+        return true;
+    std::cout << "Invalid value for " << flagname << ": " << value << std::endl;
+    return false;
+}
+
+static bool ValidateMaxLockFail(const char* flagname, int32_t value)
+{
+    if (value > 0 && value < 10000)   // value is ok
+        return true;
+    std::cout << "Invalid value for " << flagname << ": " << value << std::endl;
+    return false;
+}
+
+static bool ValidateCarrierLockTh(const char* flagname, double value)
+{
+    if (value > 0.0 && value < 1.508)   // value is ok
+        return true;
+    std::cout << "Invalid value for " << flagname << ": " << value << std::endl;
+    return false;
+}
+
+static bool ValidateDllBw(const char* flagname, double value)
+{
+    if (value >= 0.0 && value < 10000.0)   // value is ok
+        return true;
+    std::cout << "Invalid value for " << flagname << ": " << value << std::endl;
+    return false;
+}
+
+static bool ValidatePllBw(const char* flagname, double value)
+{
+    if (value >= 0.0 && value < 10000.0)   // value is ok
         return true;
     std::cout << "Invalid value for " << flagname << ": " << value << std::endl;
     return false;
@@ -53,15 +103,21 @@ DEFINE_int32(doppler_max, 0, "If defined, maximum Doppler value in the search gr
 DEFINE_validator(doppler_max, &ValidateDopplerMax);
 
 DEFINE_int32(cn0_samples, 20, "Number of correlator outputs used for CN0 estimation");
+DEFINE_validator(cn0_samples, &ValidateCn0Samples);
 
 DEFINE_int32(cn0_min, 25, "Minimum valid CN0 (in dB-Hz)");
+DEFINE_validator(cn0_min, &ValidateCn0Min);
 
 DEFINE_int32(max_lock_fail, 50, "Number number of lock failures before dropping satellite");
+DEFINE_validator(max_lock_fail, &ValidateMaxLockFail);
 
 DEFINE_double(carrier_lock_th, 0.85, "Carrier lock threshold (in rad)");
+DEFINE_validator(carrier_lock_th, &ValidateCarrierLockTh);
 
 DEFINE_string(RINEX_version, "3.02", "Specifies the RINEX version (2.11 or 3.02)");
 
 DEFINE_double(dll_bw_hz, 0.0, "If defined, bandwidth of the DLL low pass filter, in Hz (overrides the configuration file)");
+DEFINE_validator(dll_bw_hz, &ValidateDllBw);
 
 DEFINE_double(pll_bw_hz, 0.0, "If defined, bandwidth of the PLL low pass filter, in Hz (overrides the configuration file)");
+DEFINE_validator(pll_bw_hz, &ValidatePllBw);

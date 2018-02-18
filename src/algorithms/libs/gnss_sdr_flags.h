@@ -44,6 +44,9 @@ DECLARE_string(log_dir);            //<! Path to the folder in which logging wil
 DECLARE_string(s);                  //<! Path to the file containing the signal samples
 DECLARE_string(signal_source);      //<! Path to the file containing the signal samples
 
+// Declare flags for acquisition blocks
+DECLARE_uint32(doppler_max);        //<!If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file)
+
 // Declare flags for tracking blocks
 DECLARE_uint32(cn0_samples);        //<! Number of correlator outputs used for CN0 estimation
 DECLARE_uint32(cn0_min);            //<! Minimum valid CN0 (in dB-Hz)

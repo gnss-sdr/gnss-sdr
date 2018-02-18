@@ -40,6 +40,8 @@ DEFINE_string(s, "-",
 DEFINE_string(signal_source, "-",
         "If defined, path to the file containing the signal samples (overrides the configuration file)");
 
+DEFINE_uint32(doppler_max, 0, "If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file)");
+
 DEFINE_uint32(cn0_samples, 20, "Number of correlator outputs used for CN0 estimation");
 
 DEFINE_uint32(cn0_min, 25, "Minimum valid CN0 (in dB-Hz)");

@@ -35,16 +35,22 @@
 #include <gflags/gflags.h>
 
 
-DECLARE_string(c);                  //<! path to the configuration file
-DECLARE_string(config_file);        //<! path to the configuration file
+DECLARE_string(c);                  //<! Path to the configuration file
+DECLARE_string(config_file);        //<! Path to the configuration file
 
-DECLARE_string(log_dir);            //<! path to the folder in which logging will be stored
+DECLARE_string(log_dir);            //<! Path to the folder in which logging will be stored
 
 // Declare flags for signal sources
-DECLARE_string(s);                  //<! path to the file containing the signal samples
-DECLARE_string(signal_source);      //<! path to the file containing the signal samples
+DECLARE_string(s);                  //<! Path to the file containing the signal samples
+DECLARE_string(signal_source);      //<! Path to the file containing the signal samples
 
-//PVT
+// Declare flags for tracking blocks
+DECLARE_uint32(cn0_samples);        //<! Number of correlator outputs used for CN0 estimation
+DECLARE_uint32(cn0_min);            //<! Minimum valid CN0 (in dB-Hz)
+DECLARE_uint32(max_lock_fail);      //<! Number number of lock failures before dropping satellite
+DECLARE_double(carrier_lock_th);    //<! Carrier lock threshold (in rad)
+
+// Declare flags for PVT
 DECLARE_string(RINEX_version);      //<! RINEX version
 
 

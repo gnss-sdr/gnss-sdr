@@ -49,6 +49,7 @@
 #include "Galileo_E5a.h"
 #include "Galileo_E1.h"
 #include "control_message_factory.h"
+#include "gnss_sdr_flags.h"
 
 
 using google::LogMessage;
@@ -150,7 +151,7 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     multicorrelator_cpu_Q.init(2 * d_vector_length, d_n_correlator_taps);
 
     // correlator I single output for data (scalar)
-    d_Single_Prompt_data=static_cast<gr_complex*>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_Single_Prompt_data = static_cast<gr_complex*>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     *d_Single_Prompt_data = gr_complex(0,0);
     multicorrelator_cpu_I.init(2 * d_vector_length, 1); // single correlator for data channel
 
@@ -176,11 +177,11 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[GALILEO_E5A_CN0_ESTIMATION_SAMPLES];
+    d_Prompt_buffer = new gr_complex[FLAGS_cn0_samples];
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = GALILEO_E5A_CARRIER_LOCK_THRESHOLD;
+    d_carrier_lock_threshold = FLAGS_carrier_lock_th;
 
     d_acquisition_gnss_synchro = 0;
     d_channel = 0;
@@ -347,8 +348,8 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::acquire_secondary()
                 }
         }
     // 2. Transform buffer to 1 and -1
-    int in_corr[GALILEO_E5A_CN0_ESTIMATION_SAMPLES];
-    for (unsigned int i = 0; i < GALILEO_E5A_CN0_ESTIMATION_SAMPLES; i++)
+    int in_corr[FLAGS_cn0_samples];
+    for (unsigned int i = 0; i < FLAGS_cn0_samples; i++)
         {
             if (d_Prompt_buffer[i].real() >0)
                 {
@@ -365,7 +366,7 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::acquire_secondary()
     for (unsigned int i = 0; i < Galileo_E5a_Q_SECONDARY_CODE_LENGTH; i++)
         {
             out_corr = 0;
-            for (unsigned int j = 0; j < GALILEO_E5A_CN0_ESTIMATION_SAMPLES; j++)
+            for (unsigned int j = 0; j < FLAGS_cn0_samples; j++)
                 {
                     //reverse replica sign since i*i=-1 (conjugated complex)
                     out_corr += in_corr[j] * -sec_code_signed[(j + i) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH];
@@ -376,10 +377,10 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::acquire_secondary()
                     d_secondary_delay = i;
                 }
         }
-    if (current_best_ == GALILEO_E5A_CN0_ESTIMATION_SAMPLES) // all bits correlate
+    if (current_best_ == FLAGS_cn0_samples) // all bits correlate
         {
             d_secondary_lock = true;
-            d_secondary_delay = (d_secondary_delay + GALILEO_E5A_CN0_ESTIMATION_SAMPLES - 1) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
+            d_secondary_delay = (d_secondary_delay + FLAGS_cn0_samples - 1) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
         }
 }
 
@@ -560,7 +561,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < GALILEO_E5A_CN0_ESTIMATION_SAMPLES-1)
+            if (d_cn0_estimation_counter < FLAGS_cn0_samples-1)
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = d_Prompt;
@@ -587,7 +588,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                                 {
                                     //std::cout << "Secondary code delay couldn't be resolved." << std::endl;
                                     d_carrier_lock_fail_counter++;
-                                    if (d_carrier_lock_fail_counter > GALILEO_E5A_MAXIMUM_LOCK_FAIL_COUNTER)
+                                    if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                                         {
                                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
@@ -600,11 +601,11 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     else // Secondary lock achieved, monitor carrier lock.
                         {
                             // Code lock indicator
-                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, GALILEO_E5A_CN0_ESTIMATION_SAMPLES, d_fs_in,d_current_ti_ms * Galileo_E5a_CODE_LENGTH_CHIPS);
+                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, d_fs_in,d_current_ti_ms * Galileo_E5a_CODE_LENGTH_CHIPS);
                             // Carrier lock indicator
-                            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, GALILEO_E5A_CN0_ESTIMATION_SAMPLES);
+                            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
                             // Loss of lock detection
-                            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < GALILEO_E5A_MINIMUM_VALID_CN0)
+                            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                                 {
                                     d_carrier_lock_fail_counter++;
                                 }
@@ -612,7 +613,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                                 {
                                     if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
 
-                                    if (d_carrier_lock_fail_counter > GALILEO_E5A_MAXIMUM_LOCK_FAIL_COUNTER)
+                                    if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                                         {
                                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";

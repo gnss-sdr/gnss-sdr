@@ -49,16 +49,10 @@
 #include "lock_detectors.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
+#include "gnss_sdr_flags.h"
 #include "tcp_communication.h"
 #include "tcp_packet_data.h"
 
-/*!
- * \todo Include in definition header file
- */
-#define CN0_ESTIMATION_SAMPLES 20
-#define MINIMUM_VALID_CN0 25
-#define MAXIMUM_LOCK_FAIL_COUNTER 50
-#define CARRIER_LOCK_THRESHOLD 0.85
 
 using google::LogMessage;
 
@@ -165,11 +159,11 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[CN0_ESTIMATION_SAMPLES];
+    d_Prompt_buffer = new gr_complex[FLAGS_cn0_samples];
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
+    d_carrier_lock_threshold = FLAGS_carrier_lock_th;
 
     systemName["G"] = std::string("GPS");
     systemName["R"] = std::string("GLONASS");
@@ -419,7 +413,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
              * \todo Improve the lock detection algorithm!
              */
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
+            if (d_cn0_estimation_counter < FLAGS_cn0_samples)
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
@@ -428,11 +422,11 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
             else
                 {
                     d_cn0_estimation_counter = 0;
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
-                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
 
                     // ###### TRACKING UNLOCK NOTIFICATION #####
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
+                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                         {
                             d_carrier_lock_fail_counter++;
                         }
@@ -440,7 +434,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
                         {
                             if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
                         }
-                    if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+                    if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";

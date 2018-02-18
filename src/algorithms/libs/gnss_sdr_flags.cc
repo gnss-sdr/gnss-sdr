@@ -40,4 +40,13 @@ DEFINE_string(s, "-",
 DEFINE_string(signal_source, "-",
         "If defined, path to the file containing the signal samples (overrides the configuration file)");
 
+DEFINE_uint32(cn0_samples, 20, "Number of correlator outputs used for CN0 estimation");
+
+DEFINE_uint32(cn0_min, 25, "Minimum valid CN0 (in dB-Hz)");
+
+DEFINE_uint32(max_lock_fail, 50, "Number number of lock failures before dropping satellite");
+
+DEFINE_double(carrier_lock_th, 0.85, "Carrier lock threshold (in rad)");
+
 DEFINE_string(RINEX_version, "3.02", "Specifies the RINEX version (2.11 or 3.02)");
+

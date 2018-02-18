@@ -34,7 +34,6 @@
 
 #include <gflags/gflags.h>
 
-
 DECLARE_string(c);                  //<! Path to the configuration file
 DECLARE_string(config_file);        //<! Path to the configuration file
 
@@ -45,12 +44,12 @@ DECLARE_string(s);                  //<! Path to the file containing the signal 
 DECLARE_string(signal_source);      //<! Path to the file containing the signal samples
 
 // Declare flags for acquisition blocks
-DECLARE_uint32(doppler_max);        //<!If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file)
+DECLARE_int32(doppler_max);        //<!If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file)
 
 // Declare flags for tracking blocks
-DECLARE_uint32(cn0_samples);        //<! Number of correlator outputs used for CN0 estimation
-DECLARE_uint32(cn0_min);            //<! Minimum valid CN0 (in dB-Hz)
-DECLARE_uint32(max_lock_fail);      //<! Number number of lock failures before dropping satellite
+DECLARE_int32(cn0_samples);        //<! Number of correlator outputs used for CN0 estimation
+DECLARE_int32(cn0_min);            //<! Minimum valid CN0 (in dB-Hz)
+DECLARE_int32(max_lock_fail);      //<! Number number of lock failures before dropping satellite
 DECLARE_double(carrier_lock_th);    //<! Carrier lock threshold (in rad)
 DECLARE_double(dll_bw_hz);          //<! Bandwidth of the DLL low pass filter, in Hz (overrides the configuration file)
 DECLARE_double(pll_bw_hz);          //<! Bandwidth of the PLL low pass filter, in Hz (overrides the configuration file)

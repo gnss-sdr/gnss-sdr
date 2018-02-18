@@ -30,6 +30,15 @@
 
 
 #include <gnss_sdr_flags.h>
+#include <iostream>
+
+static bool ValidateDopplerMax(const char* flagname, gflags::int32 value)
+{
+    if (value >= 0.0 && value < 1000000.0)   // value is ok
+        return true;
+    std::cout << "Invalid value for " << flagname << ": " << value << std::endl;
+    return false;
+}
 
 
 DEFINE_string(c, "-", "Path to the configuration file (if set, overrides --config_file)");
@@ -40,13 +49,14 @@ DEFINE_string(s, "-",
 DEFINE_string(signal_source, "-",
         "If defined, path to the file containing the signal samples (overrides the configuration file)");
 
-DEFINE_uint32(doppler_max, 0, "If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file)");
+DEFINE_int32(doppler_max, 0, "If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file)");
+DEFINE_validator(doppler_max, &ValidateDopplerMax);
 
-DEFINE_uint32(cn0_samples, 20, "Number of correlator outputs used for CN0 estimation");
+DEFINE_int32(cn0_samples, 20, "Number of correlator outputs used for CN0 estimation");
 
-DEFINE_uint32(cn0_min, 25, "Minimum valid CN0 (in dB-Hz)");
+DEFINE_int32(cn0_min, 25, "Minimum valid CN0 (in dB-Hz)");
 
-DEFINE_uint32(max_lock_fail, 50, "Number number of lock failures before dropping satellite");
+DEFINE_int32(max_lock_fail, 50, "Number number of lock failures before dropping satellite");
 
 DEFINE_double(carrier_lock_th, 0.85, "Carrier lock threshold (in rad)");
 

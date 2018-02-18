@@ -377,7 +377,7 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::acquire_secondary()
                     d_secondary_delay = i;
                 }
         }
-    if (current_best_ == static_cast<unsigned int>(FLAGS_cn0_samples)) // all bits correlate
+    if (current_best_ == FLAGS_cn0_samples) // all bits correlate
         {
             d_secondary_lock = true;
             d_secondary_delay = (d_secondary_delay + static_cast<unsigned int>(FLAGS_cn0_samples) - 1) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
@@ -561,7 +561,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < static_cast<unsigned int>(FLAGS_cn0_samples)-1)
+            if (d_cn0_estimation_counter < FLAGS_cn0_samples - 1)
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = d_Prompt;

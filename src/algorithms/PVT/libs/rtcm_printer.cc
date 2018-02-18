@@ -37,7 +37,6 @@
 #include <fcntl.h>    // for O_RDWR
 #include <termios.h>  // for tcgetattr
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <gflags/gflags.h>
 #include <glog/logging.h>
 
 using google::LogMessage;

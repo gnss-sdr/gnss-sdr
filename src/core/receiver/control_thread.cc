@@ -57,6 +57,7 @@
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "gnss_flowgraph.h"
+#include "gnss_sdr_flags.h"
 #include "file_configuration.h"
 #include "control_message_factory.h"
 
@@ -66,11 +67,18 @@ extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 using google::LogMessage;
 
 DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"),
-        "File containing the configuration parameters");
+        "Path to the configuration file");
 
 ControlThread::ControlThread()
 {
+    if(!FLAGS_c.compare("-"))
+        {
     configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
+        }
+    else
+        {
+            configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
+        }
     delete_configuration_ = false;
     init();
 }

@@ -177,7 +177,7 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[FLAGS_cn0_samples];
+    d_Prompt_buffer = new gr_complex[static_cast<unsigned int>(FLAGS_cn0_samples)];
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
@@ -348,8 +348,8 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::acquire_secondary()
                 }
         }
     // 2. Transform buffer to 1 and -1
-    int in_corr[FLAGS_cn0_samples];
-    for (unsigned int i = 0; i < FLAGS_cn0_samples; i++)
+    int in_corr[static_cast<unsigned int>(FLAGS_cn0_samples)];
+    for (unsigned int i = 0; i < static_cast<unsigned int>(FLAGS_cn0_samples); i++)
         {
             if (d_Prompt_buffer[i].real() >0)
                 {
@@ -366,7 +366,7 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::acquire_secondary()
     for (unsigned int i = 0; i < Galileo_E5a_Q_SECONDARY_CODE_LENGTH; i++)
         {
             out_corr = 0;
-            for (unsigned int j = 0; j < FLAGS_cn0_samples; j++)
+            for (unsigned int j = 0; j < static_cast<unsigned int>(FLAGS_cn0_samples); j++)
                 {
                     //reverse replica sign since i*i=-1 (conjugated complex)
                     out_corr += in_corr[j] * -sec_code_signed[(j + i) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH];
@@ -377,10 +377,10 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::acquire_secondary()
                     d_secondary_delay = i;
                 }
         }
-    if (current_best_ == FLAGS_cn0_samples) // all bits correlate
+    if (current_best_ == static_cast<unsigned int>(FLAGS_cn0_samples)) // all bits correlate
         {
             d_secondary_lock = true;
-            d_secondary_delay = (d_secondary_delay + FLAGS_cn0_samples - 1) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
+            d_secondary_delay = (d_secondary_delay + static_cast<unsigned int>(FLAGS_cn0_samples) - 1) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
         }
 }
 
@@ -561,7 +561,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < FLAGS_cn0_samples-1)
+            if (d_cn0_estimation_counter < static_cast<unsigned int>(FLAGS_cn0_samples)-1)
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = d_Prompt;
@@ -601,9 +601,9 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     else // Secondary lock achieved, monitor carrier lock.
                         {
                             // Code lock indicator
-                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, d_fs_in,d_current_ti_ms * Galileo_E5a_CODE_LENGTH_CHIPS);
+                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, static_cast<unsigned int>(FLAGS_cn0_samples), d_fs_in,d_current_ti_ms * Galileo_E5a_CODE_LENGTH_CHIPS);
                             // Carrier lock indicator
-                            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
+                            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, static_cast<unsigned int>(FLAGS_cn0_samples));
                             // Loss of lock detection
                             if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                                 {

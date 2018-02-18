@@ -93,6 +93,10 @@ if(NOT VOLK_GNSSSDR_FOUND)
     add_dependencies(gnss_sp_libs volk_gnsssdr_module)
 endif(NOT VOLK_GNSSSDR_FOUND)
 
+if(${GFLAGS_GREATER_20})
+   add_definitions(-DGFLAGS_GREATER_2_0=1)
+endif(${GFLAGS_GREATER_20})
+
 add_library(gnss_sdr_flags gnss_sdr_flags.cc gnss_sdr_flags.h)
 source_group(Headers FILES gnss_sdr_flags.h)
 target_link_libraries(gnss_sdr_flags ${GFlags_LIBS})

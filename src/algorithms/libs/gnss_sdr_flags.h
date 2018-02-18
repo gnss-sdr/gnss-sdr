@@ -52,6 +52,8 @@ DECLARE_uint32(cn0_samples);        //<! Number of correlator outputs used for C
 DECLARE_uint32(cn0_min);            //<! Minimum valid CN0 (in dB-Hz)
 DECLARE_uint32(max_lock_fail);      //<! Number number of lock failures before dropping satellite
 DECLARE_double(carrier_lock_th);    //<! Carrier lock threshold (in rad)
+DECLARE_double(dll_bw_hz);          //<! Bandwidth of the DLL low pass filter, in Hz (overrides the configuration file)
+DECLARE_double(pll_bw_hz)           //<! Bandwidth of the PLL low pass filter, in Hz (overrides the configuration file)
 
 // Declare flags for PVT
 DECLARE_string(RINEX_version);      //<! RINEX version

@@ -63,13 +63,13 @@ galileo_e5a_dll_pll_make_tracking_cc(
         std::string dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
-        float pll_bw_init_hz,
-        float dll_bw_init_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
         int ti_ms,
         float early_late_space_chips)
 {
     return galileo_e5a_dll_pll_tracking_cc_sptr(new Galileo_E5a_Dll_Pll_Tracking_cc(if_freq,
-            fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_init_hz, dll_bw_init_hz, ti_ms, early_late_space_chips));
+            fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz, ti_ms, early_late_space_chips));
 }
 
 
@@ -91,8 +91,8 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
         std::string dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
-        float pll_bw_init_hz,
-        float dll_bw_init_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
         int ti_ms,
         float early_late_space_chips) :
         gr::block("Galileo_E5a_Dll_Pll_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
@@ -114,12 +114,12 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     d_ti_ms = ti_ms;
     d_dll_bw_hz = dll_bw_hz;
     d_pll_bw_hz = pll_bw_hz;
-    d_dll_bw_init_hz = dll_bw_init_hz;
-    d_pll_bw_init_hz = pll_bw_init_hz;
+    d_dll_bw_narrow_hz = dll_bw_narrow_hz;
+    d_pll_bw_narrow_hz = pll_bw_narrow_hz;
 
     // Initialize tracking  ==========================================
-    d_code_loop_filter.set_DLL_BW(d_dll_bw_init_hz);
-    d_carrier_loop_filter.set_PLL_BW(d_pll_bw_init_hz);
+    d_code_loop_filter.set_DLL_BW(d_dll_bw_hz);
+    d_carrier_loop_filter.set_PLL_BW(d_pll_bw_hz);
 
     //--- DLL variables --------------------------------------------------------
     d_early_late_spc_chips = early_late_space_chips; // Define early-late offset (in chips)
@@ -214,7 +214,7 @@ Galileo_E5a_Dll_Pll_Tracking_cc::~Galileo_E5a_Dll_Pll_Tracking_cc()
             }
             catch(const std::exception & ex)
             {
-                    LOG(WARNING)<<"Exception in destructor "<<ex.what();
+                    LOG(WARNING) << "Exception in destructor " << ex.what();
             }
         }
 
@@ -266,7 +266,7 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
     //doppler effect
     // Fd=(C/(C+Vr))*F
     double radial_velocity;
-    radial_velocity = (Galileo_E5a_FREQ_HZ + d_acq_carrier_doppler_hz)/Galileo_E5a_FREQ_HZ;
+    radial_velocity = (Galileo_E5a_FREQ_HZ + d_acq_carrier_doppler_hz) / Galileo_E5a_FREQ_HZ;
     // new chip and prn sequence periods based on acq Doppler
     double T_chip_mod_seconds;
     double T_prn_mod_seconds;
@@ -581,8 +581,8 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                                     // Change loop parameters ==========================================
                                     d_code_loop_filter.set_pdi(d_current_ti_ms * GALILEO_E5a_CODE_PERIOD);
                                     d_carrier_loop_filter.set_pdi(d_current_ti_ms * GALILEO_E5a_CODE_PERIOD);
-                                    d_code_loop_filter.set_DLL_BW(d_dll_bw_hz);
-                                    d_carrier_loop_filter.set_PLL_BW(d_pll_bw_hz);
+                                    d_code_loop_filter.set_DLL_BW(d_dll_bw_narrow_hz);
+                                    d_carrier_loop_filter.set_PLL_BW(d_pll_bw_narrow_hz);
                                 }
                             else
                                 {

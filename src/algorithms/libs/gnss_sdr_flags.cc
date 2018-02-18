@@ -52,3 +52,6 @@ DEFINE_double(carrier_lock_th, 0.85, "Carrier lock threshold (in rad)");
 
 DEFINE_string(RINEX_version, "3.02", "Specifies the RINEX version (2.11 or 3.02)");
 
+DEFINE_double(dll_bw_hz, 0.0, "If defined, bandwidth of the DLL low pass filter, in Hz (overrides the configuration file)");
+
+DEFINE_double(pll_bw_hz, 0.0, "If defined, bandwidth of the PLL low pass filter, in Hz (overrides the configuration file)");

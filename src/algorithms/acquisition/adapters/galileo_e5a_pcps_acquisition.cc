@@ -36,6 +36,7 @@
 #include "galileo_e5_signal_processing.h"
 #include "Galileo_E5a.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 
 using google::LogMessage;
 
@@ -58,6 +59,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     if(acq_iq_) { acq_pilot_ = false; }
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
+    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);

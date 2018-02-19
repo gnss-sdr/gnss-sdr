@@ -31,7 +31,6 @@
 #include "gn3s_signal_source.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
-#include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gn3s/gn3s_source_cc.h>
 #include "configuration_interface.h"

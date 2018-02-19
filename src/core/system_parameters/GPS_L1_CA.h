@@ -37,11 +37,6 @@
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 
-#define GPS_L1_CA_CN0_ESTIMATION_SAMPLES 20
-#define GPS_L1_CA_MINIMUM_VALID_CN0 25
-#define GPS_L1_CA_MAXIMUM_LOCK_FAIL_COUNTER 50
-#define GPS_L1_CA_CARRIER_LOCK_THRESHOLD 0.85
-
 // Physical constants
 const double GPS_C_m_s       = SPEED_OF_LIGHT;   //!< The speed of light, [m/s]
 const double GPS_C_m_ms      = 299792.4580;      //!< The speed of light, [m/ms]

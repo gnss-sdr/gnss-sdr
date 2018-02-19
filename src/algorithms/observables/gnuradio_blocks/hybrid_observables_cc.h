@@ -35,8 +35,9 @@
 
 #include <fstream>
 #include <string>
-#include <utility> //std::pair
+//#include <utility> //std::pair
 #include <vector>  //std::vector
+#include <deque>
 #include <boost/dynamic_bitset.hpp>
 #include <gnuradio/block.h>
 #include "gnss_synchro.h"
@@ -65,7 +66,7 @@ private:
     hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
 
     //Tracking observable history
-    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>> d_gnss_synchro_history;
+    std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history;
     boost::dynamic_bitset<> valid_channels;
     double T_rx_s;
     double T_rx_step_s;

@@ -55,8 +55,8 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
                                 gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
                                 gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
 {
-    set_max_noutput_items(1);
-    set_max_output_buffer(1);
+    //set_max_noutput_items(1);
+    //set_max_output_buffer(1);
     d_dump = dump;
     d_nchannels = nchannels_out;
     d_dump_filename = dump_filename;
@@ -65,12 +65,7 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
     max_extrapol_time_s = 0.1; // 100 ms
     valid_channels.resize(d_nchannels, false);
     d_num_valid_channels = 0;
-    for (unsigned int i = 0; i < d_nchannels; i++)
-    {
-        d_gnss_synchro_history.push_back(std::pair<Gnss_Synchro,Gnss_Synchro>());
-        d_gnss_synchro_history.at(i).first.Flag_valid_word = false;
-        d_gnss_synchro_history.at(i).second.Flag_valid_word = false;
-    }
+
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)
@@ -335,6 +330,11 @@ double Hybrid_Compute_T_rx_s(const Gnss_Synchro& a)
     else { return 0.0; }
 }
 
+bool Hybrid_find_trx(const Gnss_Synchro&a)
+{
+    return(std::fabs(T_rx_s - a.RX_time) > trx_comp_thres);
+}
+
 /*
 bool Hybrid_pairCompare_gnss_synchro_T_rx(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const std::pair<Gnss_Synchro, Gnss_Synchro>& b)
 {
@@ -446,20 +446,26 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     //////////////////////////////////////////////////////////////////////////
 
 
-    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>>::iterator it;
+    std::vector<std::deque<Gnss_Synchro>>::iterator it;
     if (total_input_items > 0)
     {
         i = 0;
         for (it = d_gnss_synchro_history.begin(); it != d_gnss_synchro_history.end(); it++)
         {
-            if (ninput_items[i] > 0 and (Hybrid_Compute_T_rx_s(in[i][0]) < T_rx_s))
+            if (ninput_items[i] > 0)
             {
-                it->second = it->first; // second is the older Gnss_Synchro
-                it->first = in[i][0];   // first is the newest Gnss_Synchro
-                it->first.RX_time = Hybrid_Compute_T_rx_s(it->first);
-                consume(i, 1);
+                for(int aux = 0; aux < ninput_items[i]; aux++)
+                {
+                  it->push_back(in[i][aux]);
+                  it->at(it->size() - 1).RX_time = Hybrid_Compute_T_rx_s(in[i][aux]);
+                }
+                consume(ninput_items[i], 1);
             }
-            if (it->first.Flag_valid_word and it->second.Flag_valid_word) { valid_channels[i] = true; }
+            while(std::find(d_gnss_synchro_history.begin(), d_gnss_synchro_history.end(), Hybrid_compare_trx) != d_gnss_synchro_history.end())
+            {
+
+            }
+            if (it->size() > 2) { valid_channels[i] = true; }
             else { valid_channels[i] = false; }
             i++;
         }
@@ -506,7 +512,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     {
         if(valid_channels[i])
         {
-            double traveltime_ms = (out[i][0].RX_time - TOW_ref)*1000.0 + GPS_STARTOFFSET_ms;
+            double traveltime_ms = (out[i][0].RX_time - TOW_ref) * 1000.0 + GPS_STARTOFFSET_ms;
             out[i][0].Pseudorange_m = traveltime_ms * GPS_C_m_ms;
             out[i][0].RX_time = TOW_ref + GPS_STARTOFFSET_ms / 1000.0;
             //std::cout << "Sat " << out[i][0].PRN << ". Prang = " << out[i][0].Pseudorange_m << ". TOW = " << out[i][0].RX_time << std::endl;

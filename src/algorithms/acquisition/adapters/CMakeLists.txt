@@ -63,5 +63,5 @@ file(GLOB ACQ_ADAPTER_HEADERS "*.h")
 list(SORT ACQ_ADAPTER_HEADERS)
 add_library(acq_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
 source_group(Headers FILES ${ACQ_ADAPTER_HEADERS}) 
-target_link_libraries(acq_adapters gnss_sp_libs acq_gr_blocks ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+target_link_libraries(acq_adapters gnss_sp_libs gnss_sdr_flags acq_gr_blocks ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
 

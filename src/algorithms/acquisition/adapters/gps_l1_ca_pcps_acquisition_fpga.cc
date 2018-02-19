@@ -37,6 +37,7 @@
 #include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 
 using google::LogMessage;
 
@@ -71,6 +72,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     ifreq = configuration_->property(role + ".if", 0);
     dump = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
+    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
     sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     // note : the FPGA is implemented according to bit transition flag = 0. Setting bit transition flag to 1 has no effect.

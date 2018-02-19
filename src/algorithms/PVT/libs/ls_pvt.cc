@@ -33,7 +33,6 @@
 #include <exception>
 #include <stdexcept>
 #include "GPS_L1_CA.h"
-#include <gflags/gflags.h>
 #include <glog/logging.h>
 
 

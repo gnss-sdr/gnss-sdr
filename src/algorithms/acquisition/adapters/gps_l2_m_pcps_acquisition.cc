@@ -37,6 +37,7 @@
 #include "gps_l2c_signal.h"
 #include "GPS_L2C.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 
 
 using google::LogMessage;
@@ -61,6 +62,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     dump_ = configuration_->property(role + ".dump", false);
     blocking_ = configuration_->property(role + ".blocking", true);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
+    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     use_CFAR_algorithm_flag_=configuration_->property(role + ".use_CFAR_algorithm", true); //will be false in future versions

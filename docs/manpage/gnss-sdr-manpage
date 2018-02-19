@@ -18,6 +18,20 @@
 .TP 
 \fB\-log_dir=\fR\fI<path\-to\-directory>\fR If defined, overrides the default directory where logs are saved.
 .TP
+\fB\-doppler_max=\fR\fIdoppler\fR If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file),
+.TP
+\fB\-cn0_samples=\fR\fIsamples\fR Number of correlator outputs used for CN0 estimation.
+.TP
+\fB\-cn0_min=\fR\fIcn0_min\fR Minimum valid CN0 (in dB-Hz).
+.TP
+\fB\-max_lock_fail=\fR\fImax_lock_fail\fR Number number of lock failures before dropping satellite.
+.TP
+\fB\-carrier_lock_th=\fR\fIcarrier_lock_th\fR Carrier lock threshold (in rad).
+.TP
+\fB\-dll_bw_hz=\fR\fIdll_bw_hz\fR If defined, bandwidth of the DLL low pass filter, in Hz (overrides the configuration file).
+.TP
+\fB\-pll_bw_hz=\fR\fIpll_bw_hz\fR If defined, bandwidth of the PLL low pass filter, in Hz (overrides the configuration file).
+.TP
 \fB\-RINEX_version=\fI<version>\fR Specifies the RINEX version (2.11 or 3.02). Default: "3.02".
 .TP
 \fB\-version\fR Print program version and exit.

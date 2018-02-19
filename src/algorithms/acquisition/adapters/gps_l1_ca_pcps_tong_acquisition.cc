@@ -35,6 +35,7 @@
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 
 
 using google::LogMessage;
@@ -57,6 +58,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
+    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     tong_init_val_ = configuration->property(role + ".tong_init_val", 1);

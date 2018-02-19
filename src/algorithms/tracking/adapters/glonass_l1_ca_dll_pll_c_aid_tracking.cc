@@ -41,6 +41,7 @@
 #include <glog/logging.h>
 #include "GLONASS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 
 
 using google::LogMessage;
@@ -70,7 +71,9 @@ GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
+    if(FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    if(FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 20.0);
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
     int extend_correlation_ms;

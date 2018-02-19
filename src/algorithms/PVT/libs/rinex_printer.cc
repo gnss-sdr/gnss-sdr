@@ -42,13 +42,11 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <gflags/gflags.h>
 #include <glog/logging.h>
+#include "gnss_sdr_flags.h"
 
 
 using google::LogMessage;
-
-DEFINE_string(RINEX_version, "3.02", "Specifies the RINEX version (2.11 or 3.02)");
 
 
 Rinex_Printer::Rinex_Printer(int conf_version)

@@ -40,7 +40,6 @@ gnss_sdr_sample_counter::gnss_sdr_sample_counter(double _fs) : gr::sync_decimato
 {
     message_port_register_out(pmt::mp("sample_counter"));
     set_max_noutput_items(1);
-    set_max_output_buffer(1);
     current_T_rx_ms = 0;
     report_interval_ms = 1000;//default reporting 1 second
     flag_enable_send_msg = false; //enable it for reporting time with asynchronous message

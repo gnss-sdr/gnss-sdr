@@ -35,7 +35,7 @@
 
 #include <fstream>
 #include <string>
-//#include <utility> //std::pair
+#include <utility> //std::pair
 #include <vector>  //std::vector
 #include <deque>
 #include <boost/dynamic_bitset.hpp>
@@ -64,14 +64,21 @@ private:
     friend hybrid_observables_cc_sptr
     hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
     hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
+    void clean_history(std::deque<Gnss_Synchro>& data);
+    double compute_T_rx_s(const Gnss_Synchro& a);
+    double interpolate_data(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const double& ti, int parameter);
+    double find_min_RX_time();
+    unsigned int find_closest(std::deque<Gnss_Synchro>& data);
+    void correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data);
 
     //Tracking observable history
     std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history;
     boost::dynamic_bitset<> valid_channels;
     double T_rx_s;
     double T_rx_step_s;
-    double max_extrapol_time_s;
+    double max_delta;
     bool d_dump;
+    bool set_T_rx_s;
     unsigned int d_nchannels;
     unsigned int d_num_valid_channels;
     std::string d_dump_filename;

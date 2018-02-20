@@ -114,6 +114,7 @@ TEST_F(ControlThreadTest, InstantiateRunControlMessages)
     config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.item_type", "gr_complex");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
 
@@ -174,6 +175,7 @@ TEST_F(ControlThreadTest, InstantiateRunControlMessages2)
     config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.item_type", "gr_complex");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
 
     std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
 
@@ -238,6 +240,7 @@ TEST_F(ControlThreadTest, StopReceiverProgrammatically)
     config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.item_type", "gr_complex");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
     gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);

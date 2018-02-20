@@ -49,6 +49,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     config->set_property("SignalSource.item_type", "gr_complex");
@@ -82,7 +83,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
 TEST(GNSSFlowgraph, InstantiateConnectStartStop)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
-
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     config->set_property("SignalSource.item_type", "gr_complex");
@@ -116,7 +117,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
 TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
-
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     config->set_property("SignalSource.item_type", "gr_complex");
@@ -151,7 +152,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
 TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
-
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     config->set_property("SignalSource.item_type", "gr_complex");

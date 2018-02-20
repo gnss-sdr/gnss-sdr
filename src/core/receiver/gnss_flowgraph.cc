@@ -253,6 +253,12 @@ void GNSSFlowgraph::connect()
     try
     {
         double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
+        if(fs == 0.0)
+        {
+            LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
+            std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
+            throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
+        }
         ch_out_sample_counter = gnss_sdr_make_sample_counter(fs);
         top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
         top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_); //extra port for the sample counter pulse

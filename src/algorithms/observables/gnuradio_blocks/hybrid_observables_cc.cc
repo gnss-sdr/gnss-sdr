@@ -1,11 +1,12 @@
 /*!
  * \file hybrid_observables_cc.cc
- * \brief Implementation of the pseudorange computation block for Galileo E1
+ * \brief Implementation of the pseudorange computation block
  * \author Javier Arribas 2017. jarribas(at)cttc.es
+ * \author Antonio Ramos  2018. antonio.ramos(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

@@ -1,12 +1,13 @@
 /*!
  * \file hybrid_observables_cc.h
- * \brief Interface of the observables computation block for Galileo E1
+ * \brief Interface of the observables computation block
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * \author Javier Arribas 2013. jarribas(at)cttc.es
+ * \author Antonio Ramos 2018. antonio.ramos(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -51,7 +52,7 @@ hybrid_observables_cc_sptr
 hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
 
 /*!
- * \brief This class implements a block that computes Galileo observables
+ * \brief This class implements a block that computes observables
  */
 class hybrid_observables_cc : public gr::block
 {

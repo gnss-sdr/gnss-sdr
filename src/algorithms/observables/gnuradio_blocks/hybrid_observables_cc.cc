@@ -369,21 +369,30 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
         }
         aux++;
     }
-    delta_t = T_rx_s - data.at(index).RX_time;
-    if((index == (data.size() - 1)) or (delta_t < 0.0))
+    try
     {
-        result.first = data.at(index);
-        result.second = data.at(index - 1);
+        delta_t = T_rx_s - data.at(index).RX_time;
+        if(index == 0)
+        {
+            result.first = data.at(1);
+            result.second = data.at(0);
+        }
+        else if((index == (data.size() - 1)) or (delta_t < 0.0))
+        {
+            result.first = data.at(index);
+            result.second = data.at(index - 1);
+        }
+        else
+        {
+            result.first = data.at(index + 1);
+            result.second = data.at(index);
+        }
     }
-    else if(index == 0)
+    catch(const std::exception& e)
     {
-        result.first = data.at(1);
-        result.second = data.at(0);
-    }
-    else
-    {
-        result.first = data.at(index + 1);
-        result.second = data.at(index);
+        result.first = Gnss_Synchro();
+        result.second = Gnss_Synchro();
+        LOG(WARNING) << e.what();
     }
     return result;
 }

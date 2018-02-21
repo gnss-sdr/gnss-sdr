@@ -498,15 +498,15 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
             unsigned int index_closest = find_closest(*it);
             unsigned int index1;
             unsigned int index2;
-            if(index_closest == (it->size() - 1))
+            if(index_closest > 0)
             {
                 index1 = index_closest - 1;
                 index2 = index_closest;
             }
             else
             {
-                index1 = index_closest;
-                index2 = index_closest + 1;
+                index1 = 0;
+                index2 = 1;
             }
             Gnss_Synchro interpolated_gnss_synchro = it->at(index1);
             std::pair<Gnss_Synchro, Gnss_Synchro> gnss_pair(it->at(index2), it->at(index1));

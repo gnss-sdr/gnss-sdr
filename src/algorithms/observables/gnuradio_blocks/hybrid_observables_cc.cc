@@ -514,6 +514,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
             interpolated_gnss_synchro.Carrier_Doppler_hz = interpolate_data(gnss_pair, T_rx_s, 0);
             interpolated_gnss_synchro.Carrier_phase_rads = interpolate_data(gnss_pair, T_rx_s, 1);
             interpolated_gnss_synchro.RX_time = interpolate_data(gnss_pair, T_rx_s, 2);
+            interpolated_gnss_synchro.TOW_at_current_symbol_s = interpolated_gnss_synchro.RX_time;
 
             epoch_data.push_back(interpolated_gnss_synchro);
         }

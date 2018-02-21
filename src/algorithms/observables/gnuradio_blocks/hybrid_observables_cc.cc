@@ -61,6 +61,7 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
     set_T_rx_s = false;
     d_nchannels = nchannels_out;
     d_dump_filename = dump_filename;
+    d_dump_filename_in = d_dump_filename;
     T_rx_s = 0.0;
     T_rx_step_s = 0.001; // 1 ms
     max_delta = 0.1; // 100 ms
@@ -80,7 +81,23 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
             try
             {
                 d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
+                d_dump_filename.append(".bin");
                 d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str();
+            }
+            catch (const std::ifstream::failure & e)
+            {
+                LOG(WARNING) << "Exception opening observables dump file " << e.what();
+                d_dump = false;
+            }
+        }
+        if (!d_dump_in.is_open())
+        {
+            try
+            {
+                d_dump_in.exceptions (std::ifstream::failbit | std::ifstream::badbit );
+                d_dump_filename_in.append("_in.bin");
+                d_dump_in.open(d_dump_filename_in.c_str(), std::ios::out | std::ios::binary);
                 LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str();
             }
             catch (const std::ifstream::failure & e)
@@ -98,6 +115,14 @@ hybrid_observables_cc::~hybrid_observables_cc()
     if (d_dump_file.is_open())
     {
         try { d_dump_file.close(); }
+        catch(const std::exception & ex)
+        {
+            LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+        }
+    }
+    if (d_dump_in.is_open())
+    {
+        try { d_dump_in.close(); }
         catch(const std::exception & ex)
         {
             LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
@@ -225,7 +250,6 @@ int hybrid_observables_cc::save_matfile()
     mat_t *matfp;
     matvar_t *matvar;
     std::string filename = d_dump_filename;
-    filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
     if(reinterpret_cast<long*>(matfp) != NULL)
@@ -392,7 +416,7 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
     {
         result.first = Gnss_Synchro();
         result.second = Gnss_Synchro();
-        LOG(WARNING) << e.what();
+        LOG(WARNING) << "Exception computing observables " << e.what();
     }
     return result;
 }
@@ -420,11 +444,11 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
     std::vector<Gnss_Synchro>::iterator it;
     for(it = data.begin(); it != data.end(); it++)
     {
-        if(it->RX_time > TOW_ref) { TOW_ref = it->RX_time; }
+        if(it->TOW_at_current_symbol_s > TOW_ref) { TOW_ref = it->TOW_at_current_symbol_s; }
     }
     for(it = data.begin(); it != data.end(); it++)
     {
-        double traveltime_s = TOW_ref - it->RX_time + GPS_STARTOFFSET_ms / 1000.0;
+        double traveltime_s = TOW_ref - it->TOW_at_current_symbol_s + GPS_STARTOFFSET_ms / 1000.0;
         it->RX_time = TOW_ref + GPS_STARTOFFSET_ms / 1000.0;
         it->Pseudorange_m = traveltime_s * SPEED_OF_LIGHT;
     }
@@ -465,12 +489,31 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                 {
                     if(in[i][aux].Flag_valid_word)
                     {
+                        bool __dump = false;
                         it->push_back(in[i][aux]);
                         it->back().RX_time = compute_T_rx_s(in[i][aux]);
+                        __dump = true;
                         // Check if the last Gnss_Synchro comes from the same satellite as the previous ones
                         if(it->size() > 1)
                         {
-                            if(it->front().PRN != it->back().PRN) { it->clear(); }
+                            if(it->front().PRN != it->back().PRN) { it->clear(); __dump = false; }
+                        }
+                        if(d_dump && __dump)
+                        {
+                            // MULTIPLEXED FILE RECORDING - Record results to file
+                            try
+                            {
+                                int tmp_int = static_cast<int>(it->back().PRN);
+                                d_dump_in.write(reinterpret_cast<char*>(&tmp_int), sizeof(int));
+                                d_dump_in.write(reinterpret_cast<char*>(&it->back().RX_time), sizeof(double));
+                                d_dump_in.write(reinterpret_cast<char*>(&it->back().TOW_at_current_symbol_s), sizeof(double));
+                                d_dump_in.write(it->back().Signal, 3 * sizeof(char));
+                            }
+                            catch (const std::ifstream::failure& e)
+                            {
+                                LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                                d_dump = false;
+                            }
                         }
                     }
                 }
@@ -524,10 +567,9 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
             std::pair<Gnss_Synchro, Gnss_Synchro> gnss_pair = find_closest(*it);
             Gnss_Synchro interpolated_gnss_synchro = gnss_pair.second;
 
-            interpolated_gnss_synchro.Carrier_Doppler_hz = interpolate_data(gnss_pair, T_rx_s, 0);
-            interpolated_gnss_synchro.Carrier_phase_rads = interpolate_data(gnss_pair, T_rx_s, 1);
-            interpolated_gnss_synchro.RX_time = interpolate_data(gnss_pair, T_rx_s, 2);
-            interpolated_gnss_synchro.TOW_at_current_symbol_s = interpolated_gnss_synchro.RX_time;
+            interpolated_gnss_synchro.Carrier_Doppler_hz      = interpolate_data(gnss_pair, T_rx_s, 0);
+            interpolated_gnss_synchro.Carrier_phase_rads      = interpolate_data(gnss_pair, T_rx_s, 1);
+            interpolated_gnss_synchro.TOW_at_current_symbol_s = interpolate_data(gnss_pair, T_rx_s, 2);
 
             epoch_data.push_back(interpolated_gnss_synchro);
         }

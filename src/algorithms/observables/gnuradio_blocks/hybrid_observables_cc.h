@@ -83,7 +83,9 @@ private:
     unsigned int d_nchannels;
     unsigned int d_num_valid_channels;
     std::string d_dump_filename;
+    std::string d_dump_filename_in;
     std::ofstream d_dump_file;
+    std::ofstream d_dump_in;
 
     int save_matfile();
 };

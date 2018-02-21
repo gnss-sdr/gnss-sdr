@@ -352,21 +352,38 @@ void hybrid_observables_cc::clean_history(std::deque<Gnss_Synchro>& data)
     }
 }
 
-unsigned int hybrid_observables_cc::find_closest(std::deque<Gnss_Synchro>& data)
+std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::deque<Gnss_Synchro>& data)
 {
-    unsigned int result = 0;
+    std::pair<Gnss_Synchro, Gnss_Synchro> result;
+    unsigned int index = 0;
     double delta_t = std::numeric_limits<double>::max();
     std::deque<Gnss_Synchro>::iterator it;
     unsigned int aux = 0;
     for(it = data.begin(); it != data.end(); it++)
     {
-        double instant_delta = T_rx_s - it->RX_time;
-        if((instant_delta > 0) and (instant_delta < delta_t))
+        double instant_delta = std::fabs(T_rx_s - it->RX_time);
+        if(instant_delta < delta_t)
         {
             delta_t = instant_delta;
-            result = aux;
+            index = aux;
         }
         aux++;
+    }
+    delta_t = T_rx_s - data.at(index).RX_time;
+    if((index == (data.size() - 1)) or (delta_t < 0.0))
+    {
+        result.first = data.at(index);
+        result.second = data.at(index - 1);
+    }
+    else if(index == 0)
+    {
+        result.first = data.at(1);
+        result.second = data.at(0);
+    }
+    else
+    {
+        result.first = data.at(index + 1);
+        result.second = data.at(index);
     }
     return result;
 }
@@ -495,21 +512,8 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     {
         if(valid_channels[i])
         {
-            unsigned int index_closest = find_closest(*it);
-            unsigned int index1;
-            unsigned int index2;
-            if(index_closest > 0)
-            {
-                index1 = index_closest - 1;
-                index2 = index_closest;
-            }
-            else
-            {
-                index1 = 0;
-                index2 = 1;
-            }
-            Gnss_Synchro interpolated_gnss_synchro = it->at(index1);
-            std::pair<Gnss_Synchro, Gnss_Synchro> gnss_pair(it->at(index2), it->at(index1));
+            std::pair<Gnss_Synchro, Gnss_Synchro> gnss_pair = find_closest(*it);
+            Gnss_Synchro interpolated_gnss_synchro = gnss_pair.second;
 
             interpolated_gnss_synchro.Carrier_Doppler_hz = interpolate_data(gnss_pair, T_rx_s, 0);
             interpolated_gnss_synchro.Carrier_phase_rads = interpolate_data(gnss_pair, T_rx_s, 1);

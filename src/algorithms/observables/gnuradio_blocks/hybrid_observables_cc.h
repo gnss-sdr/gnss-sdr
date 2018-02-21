@@ -69,7 +69,7 @@ private:
     double compute_T_rx_s(const Gnss_Synchro& a);
     double interpolate_data(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const double& ti, int parameter);
     double find_min_RX_time();
-    unsigned int find_closest(std::deque<Gnss_Synchro>& data);
+    std::pair<Gnss_Synchro, Gnss_Synchro> find_closest(std::deque<Gnss_Synchro>& data);
     void correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data);
 
     //Tracking observable history

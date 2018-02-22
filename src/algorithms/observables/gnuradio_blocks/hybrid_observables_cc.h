@@ -68,8 +68,7 @@ private:
     void clean_history(std::deque<Gnss_Synchro>& data);
     double compute_T_rx_s(const Gnss_Synchro& a);
     double interpolate_data(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const double& ti, int parameter);
-    double find_min_RX_time();
-    std::pair<Gnss_Synchro, Gnss_Synchro> find_closest(std::deque<Gnss_Synchro>& data);
+    std::pair<Gnss_Synchro, Gnss_Synchro> find_closest(std::deque<Gnss_Synchro>& data, const double& ti);
     void correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data);
 
     //Tracking observable history
@@ -79,13 +78,17 @@ private:
     double T_rx_step_s;
     double max_delta;
     bool d_dump;
-    bool set_T_rx_s;
     unsigned int d_nchannels;
     unsigned int d_num_valid_channels;
     std::string d_dump_filename;
     std::string d_dump_filename_in;
     std::ofstream d_dump_file;
     std::ofstream d_dump_in;
+
+    std::string text_red   = "\033[31m";
+    std::string text_green = "\033[32m";
+    std::string text_reset = "\033[0m";
+
 
     int save_matfile();
 };

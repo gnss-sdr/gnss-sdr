@@ -58,7 +58,6 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
 {
     set_max_noutput_items(1);
     d_dump = dump;
-    set_T_rx_s = false;
     d_nchannels = nchannels_out;
     d_dump_filename = dump_filename;
     d_dump_filename_in = d_dump_filename;
@@ -376,7 +375,7 @@ void hybrid_observables_cc::clean_history(std::deque<Gnss_Synchro>& data)
     }
 }
 
-std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::deque<Gnss_Synchro>& data)
+std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::deque<Gnss_Synchro>& data, const double& ti)
 {
     std::pair<Gnss_Synchro, Gnss_Synchro> result;
     unsigned int index = 0;
@@ -385,7 +384,7 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
     unsigned int aux = 0;
     for(it = data.begin(); it != data.end(); it++)
     {
-        double instant_delta = std::fabs(T_rx_s - it->RX_time);
+        double instant_delta = std::fabs(ti - it->RX_time);
         if(instant_delta < delta_t)
         {
             delta_t = instant_delta;
@@ -393,50 +392,31 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
         }
         aux++;
     }
-    try
+    delta_t = ti - data.at(index).RX_time;
+    if( (index == 0) or (index == (data.size() - 1)) )
     {
-        delta_t = T_rx_s - data.at(index).RX_time;
-        if(index == 0)
-        {
-            result.first = data.at(1);
-            result.second = data.at(0);
-        }
-        else if((index == (data.size() - 1)) or (delta_t < 0.0))
-        {
-            result.first = data.at(index);
-            result.second = data.at(index - 1);
-        }
-        else
-        {
-            result.first = data.at(index + 1);
-            result.second = data.at(index);
-        }
+        Gnss_Synchro invalid_data;
+        invalid_data.Flag_valid_pseudorange = false;
+        result.first  = invalid_data;
+        result.second = invalid_data;
     }
-    catch(const std::exception& e)
+    else if(delta_t < 0.0)
     {
-        result.first = Gnss_Synchro();
-        result.second = Gnss_Synchro();
-        LOG(WARNING) << "Exception computing observables " << e.what();
+        result.first  = data.at(index);
+        result.first.Flag_valid_pseudorange = true;
+        result.second = data.at(index - 1);
+        result.second.Flag_valid_pseudorange = true;
+    }
+    else
+    {
+        result.first  = data.at(index + 1);
+        result.first.Flag_valid_pseudorange = true;
+        result.second = data.at(index);
+        result.second.Flag_valid_pseudorange = true;
     }
     return result;
 }
 
-double hybrid_observables_cc::find_min_RX_time()
-{
-    if(d_num_valid_channels == 0) { return 0.0; }
-
-    std::vector<std::deque<Gnss_Synchro>>::iterator it = d_gnss_synchro_history.begin();
-    double result = std::numeric_limits<double>::max();
-    for(unsigned int i = 0; i < d_nchannels; i++)
-    {
-        if(valid_channels[i])
-        {
-            if(it->front().RX_time < result) { result = it->front().RX_time; }
-        }
-        it++;
-    }
-    return(floor(result * 1000.0) / 1000.0);
-}
 
 void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data)
 {
@@ -466,15 +446,14 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     int total_input_items = 0;
     for(i = 0; i < d_nchannels; i++) { total_input_items += ninput_items[i]; }
     consume(d_nchannels, 1);
+    T_rx_s += T_rx_step_s;
 
     //////////////////////////////////////////////////////////////////////////
     if((total_input_items == 0) and (d_num_valid_channels == 0))
     {
         return 0;
     }
-    if(set_T_rx_s) { T_rx_s += T_rx_step_s; }
     //////////////////////////////////////////////////////////////////////////
-
 
     std::vector<std::deque<Gnss_Synchro>>::iterator it;
     if (total_input_items > 0)
@@ -498,7 +477,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                         {
                             if(it->front().PRN != it->back().PRN) { it->clear(); __dump = false; }
                         }
-                        if(d_dump && __dump)
+                        if(d_dump and __dump)
                         {
                             // MULTIPLEXED FILE RECORDING - Record results to file
                             try
@@ -529,17 +508,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     }
     d_num_valid_channels = valid_channels.count();
     // Check if there is any valid channel after reading the new incoming Gnss_Synchro data
-    if(d_num_valid_channels == 0)
-    {
-        set_T_rx_s = false;
-        return 0;
-    }
-
-    if(!set_T_rx_s) //Find the lowest RX_time among the valid observables in the history
-    {
-        T_rx_s = find_min_RX_time();
-        set_T_rx_s = true;
-    }
+    if(d_num_valid_channels == 0) { return 0; }
 
     for(i = 0; i < d_nchannels; i++) //Discard observables with T_rx higher than the threshold
     {
@@ -552,11 +521,8 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
 
     // Check if there is any valid channel after computing the time distance between the Gnss_Synchro data and the receiver time
     d_num_valid_channels = valid_channels.count();
-    if(d_num_valid_channels == 0)
-    {
-        set_T_rx_s = false;
-        return 0;
-    }
+    double T_rx_s_out = T_rx_s - (max_delta / 2.0);
+    if((d_num_valid_channels == 0) or (T_rx_s_out < 0.0)) { return 0; }
 
     std::vector<Gnss_Synchro> epoch_data;
     i = 0;
@@ -564,14 +530,17 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     {
         if(valid_channels[i])
         {
-            std::pair<Gnss_Synchro, Gnss_Synchro> gnss_pair = find_closest(*it);
+            std::pair<Gnss_Synchro, Gnss_Synchro> gnss_pair = find_closest(*it, T_rx_s_out);
             Gnss_Synchro interpolated_gnss_synchro = gnss_pair.second;
+            if(interpolated_gnss_synchro.Flag_valid_pseudorange)
+            {
+                interpolated_gnss_synchro.Carrier_Doppler_hz      = interpolate_data(gnss_pair, T_rx_s_out, 0);
+                interpolated_gnss_synchro.Carrier_phase_rads      = interpolate_data(gnss_pair, T_rx_s_out, 1);
+                interpolated_gnss_synchro.TOW_at_current_symbol_s = interpolate_data(gnss_pair, T_rx_s_out, 2);
 
-            interpolated_gnss_synchro.Carrier_Doppler_hz      = interpolate_data(gnss_pair, T_rx_s, 0);
-            interpolated_gnss_synchro.Carrier_phase_rads      = interpolate_data(gnss_pair, T_rx_s, 1);
-            interpolated_gnss_synchro.TOW_at_current_symbol_s = interpolate_data(gnss_pair, T_rx_s, 2);
-
-            epoch_data.push_back(interpolated_gnss_synchro);
+                epoch_data.push_back(interpolated_gnss_synchro);
+            }
+            else { valid_channels[i] = false; }
         }
         i++;
     }

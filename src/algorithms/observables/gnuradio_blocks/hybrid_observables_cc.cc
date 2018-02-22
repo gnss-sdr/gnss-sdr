@@ -399,6 +399,7 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
         invalid_data.Flag_valid_pseudorange = false;
         result.first  = invalid_data;
         result.second = invalid_data;
+        std::cout << text_red << data.at(index).Signal << text_reset << std::endl;
     }
     else if(delta_t < 0.0)
     {
@@ -406,6 +407,7 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
         result.first.Flag_valid_pseudorange = true;
         result.second = data.at(index - 1);
         result.second.Flag_valid_pseudorange = true;
+        std::cout << text_green << data.at(index).Signal << text_reset << std::endl;
     }
     else
     {
@@ -413,6 +415,7 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
         result.first.Flag_valid_pseudorange = true;
         result.second = data.at(index);
         result.second.Flag_valid_pseudorange = true;
+        std::cout << text_green << data.at(index).Signal << text_reset << std::endl;
     }
     return result;
 }

@@ -350,11 +350,19 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
             //double decoder_latency_ms=(double)(current_symbol.Tracking_sample_counter-d_symbol_history.at(0).Tracking_sample_counter)
             //        /(double)current_symbol.fs;
             // update TOW at the preamble instant (account with decoder latency)
-            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 2 * GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
+            double tmp_tow = d_TOW_at_current_symbol + GPS_L1_CA_CODE_PERIOD;
 
+            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 2 * GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
             d_TOW_at_current_symbol = floor(d_TOW_at_Preamble * 1000.0) / 1000.0;
             flag_TOW_set = true;
             d_flag_new_tow_available = false;
+            double tmp_diff = std::fabs(tmp_tow - d_TOW_at_current_symbol);
+            if ((tmp_tow != 0) or (tmp_diff > 0.0))
+            {
+                std::cout << TEXT_RED <<
+                        "GPS L1 C/A. TOW incoherence on channel: "<< d_channel << ". TOW difference = " <<
+                        tmp_diff * 1000.0 << " [ms]" << TEXT_RESET << std::endl;
+            }
         }
     else
         {

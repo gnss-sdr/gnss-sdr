@@ -1713,11 +1713,9 @@ int rtklib_pvt_cc::work (int noutput_items, gr_vector_const_void_star &input_ite
                     // DEBUG MESSAGE: Display position in console output
                     if( (d_ls_pvt->is_valid_position() == true) && (flag_display_pvt == true) )
                         {
-                            std::string text_green = "\033[32m";
-                            std::string text_reset = "\033[0m";
-                            std::cout << text_green << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
+                            std::cout << TEXT_GREEN << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
                                       << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
-                                      << " [deg], Height= " << d_ls_pvt->get_height() << " [m]" << text_reset << std::endl;
+                                      << " [deg], Height= " << d_ls_pvt->get_height() << " [m]" << TEXT_RESET << std::endl;
 
                             LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
                                       << " UTC using "<< d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()

@@ -85,11 +85,6 @@ private:
     std::ofstream d_dump_file;
     std::ofstream d_dump_in;
 
-    std::string text_red   = "\033[31m";
-    std::string text_green = "\033[32m";
-    std::string text_reset = "\033[0m";
-
-
     int save_matfile();
 };
 

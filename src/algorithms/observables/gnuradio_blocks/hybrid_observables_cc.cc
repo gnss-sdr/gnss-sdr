@@ -63,7 +63,7 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
     d_dump_filename_in = d_dump_filename;
     T_rx_s = 0.0;
     T_rx_step_s = 0.001; // 1 ms
-    max_delta = 0.1; // 100 ms
+    max_delta = 0.15; // 150 ms
     valid_channels.resize(d_nchannels, false);
     d_num_valid_channels = 0;
 
@@ -399,7 +399,6 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
         invalid_data.Flag_valid_pseudorange = false;
         result.first  = invalid_data;
         result.second = invalid_data;
-        std::cout << text_red << data.at(index).Signal << text_reset << std::endl;
     }
     else if(delta_t < 0.0)
     {
@@ -407,7 +406,6 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
         result.first.Flag_valid_pseudorange = true;
         result.second = data.at(index - 1);
         result.second.Flag_valid_pseudorange = true;
-        std::cout << text_green << data.at(index).Signal << text_reset << std::endl;
     }
     else
     {
@@ -415,7 +413,6 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
         result.first.Flag_valid_pseudorange = true;
         result.second = data.at(index);
         result.second.Flag_valid_pseudorange = true;
-        std::cout << text_green << data.at(index).Signal << text_reset << std::endl;
     }
     return result;
 }

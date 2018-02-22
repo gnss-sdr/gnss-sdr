@@ -544,6 +544,8 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
         }
         i++;
     }
+    d_num_valid_channels = valid_channels.count();
+    if(d_num_valid_channels == 0) { return 0; }
 
     correct_TOW_and_compute_prange(epoch_data);
     std::vector<Gnss_Synchro>::iterator it2 = epoch_data.begin();

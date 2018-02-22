@@ -357,7 +357,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
             flag_TOW_set = true;
             d_flag_new_tow_available = false;
             double tmp_diff = std::fabs(tmp_tow - d_TOW_at_current_symbol);
-            if ((tmp_tow != 0) or (tmp_diff > 0.0))
+            if (tmp_diff > 0.0)
             {
                 std::cout << TEXT_RED <<
                         "GPS L1 C/A. TOW incoherence on channel: "<< d_channel << ". TOW difference = " <<

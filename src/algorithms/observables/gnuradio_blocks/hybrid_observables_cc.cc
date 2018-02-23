@@ -60,7 +60,6 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
     d_dump = dump;
     d_nchannels = nchannels_out;
     d_dump_filename = dump_filename;
-    d_dump_filename_in = d_dump_filename;
     T_rx_s = 0.0;
     T_rx_step_s = 0.001; // 1 ms
     max_delta = 0.15; // 150 ms
@@ -90,21 +89,6 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
                 d_dump = false;
             }
         }
-        if (!d_dump_in.is_open())
-        {
-            try
-            {
-                d_dump_in.exceptions (std::ifstream::failbit | std::ifstream::badbit );
-                d_dump_filename_in.append("_in.bin");
-                d_dump_in.open(d_dump_filename_in.c_str(), std::ios::out | std::ios::binary);
-                LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str();
-            }
-            catch (const std::ifstream::failure & e)
-            {
-                LOG(WARNING) << "Exception opening observables dump file " << e.what();
-                d_dump = false;
-            }
-        }
     }
 }
 
@@ -114,14 +98,6 @@ hybrid_observables_cc::~hybrid_observables_cc()
     if (d_dump_file.is_open())
     {
         try { d_dump_file.close(); }
-        catch(const std::exception & ex)
-        {
-            LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
-        }
-    }
-    if (d_dump_in.is_open())
-    {
-        try { d_dump_in.close(); }
         catch(const std::exception & ex)
         {
             LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
@@ -425,25 +401,30 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
 
 
 /////////////////////// DEBUG //////////////////////////
+#ifndef NDEBUG
     std::vector<Gnss_Synchro>::iterator it2;
-    double thr_ = 250.0 / 3e8;
+    double thr_ = 250.0 / 3e8; // Maximum pseudorange difference = 250 meters
     for(it = data.begin(); it != (data.end() - 1); it++)
     {
         for(it2 = it + 1; it2 != data.end(); it2++)
         {
-            if(it->PRN == it2->PRN)
+            if(it->PRN == it2->PRN and it->System == it2->System)
             {
                 double tow_dif_ = std::fabs(it->TOW_at_current_symbol_s - it2->TOW_at_current_symbol_s);
                 if(tow_dif_ > thr_)
                 {
-                    std::cout << TEXT_RED << "L1 - L2 TOW difference in PRN " << it->PRN <<
-                            " = " << tow_dif_ << "[ms]. Equivalent to " << tow_dif_ * 3e8 << " meters in pseudorange"
-                            << TEXT_RESET << std::endl;
+                    DLOG(INFO) << "System " << it->System << ". Signals " << it->Signal << " and " << it2->Signal
+                               << ". TOW difference in PRN " << it->PRN
+                               << " = " << tow_dif_ * 1e3 << "[ms]. Equivalent to " << tow_dif_ * 3e8
+                               << " meters in pseudorange";
                 }
             }
         }
     }
+#endif
 ///////////////////////////////////////////////////////////
+
+
     for(it = data.begin(); it != data.end(); it++)
     {
         if(it->TOW_at_current_symbol_s > TOW_ref) { TOW_ref = it->TOW_at_current_symbol_s; }
@@ -490,31 +471,12 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                 {
                     if(in[i][aux].Flag_valid_word)
                     {
-                        bool __dump = false;
                         it->push_back(in[i][aux]);
                         it->back().RX_time = compute_T_rx_s(in[i][aux]);
-                        __dump = true;
                         // Check if the last Gnss_Synchro comes from the same satellite as the previous ones
                         if(it->size() > 1)
                         {
-                            if(it->front().PRN != it->back().PRN) { it->clear(); __dump = false; }
-                        }
-                        if(d_dump and __dump)
-                        {
-                            // MULTIPLEXED FILE RECORDING - Record results to file
-                            try
-                            {
-                                int tmp_int = static_cast<int>(it->back().PRN);
-                                d_dump_in.write(reinterpret_cast<char*>(&tmp_int), sizeof(int));
-                                d_dump_in.write(reinterpret_cast<char*>(&it->back().RX_time), sizeof(double));
-                                d_dump_in.write(reinterpret_cast<char*>(&it->back().TOW_at_current_symbol_s), sizeof(double));
-                                d_dump_in.write(it->back().Signal, 3 * sizeof(char));
-                            }
-                            catch (const std::ifstream::failure& e)
-                            {
-                                LOG(WARNING) << "Exception writing observables dump file " << e.what();
-                                d_dump = false;
-                            }
+                            if(it->front().PRN != it->back().PRN) { it->clear(); }
                         }
                     }
                 }

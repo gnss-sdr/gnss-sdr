@@ -155,17 +155,8 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
             //* delay by the formulae:
             //* \code
             //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20 + (12 * 20); 12 symbols of the encoder's transitory
-            double tmp_tow = d_TOW_at_current_symbol + GPS_L2_M_PERIOD;
             d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD + 12 * GPS_L2_M_PERIOD;
-
             //d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
-            double tmp_diff = std::fabs(tmp_tow - d_TOW_at_current_symbol);
-            if (tmp_diff > 0.000001)
-            {
-                std::cout << TEXT_RED <<
-                        "GPS L2C. TOW incoherence on PRN: "<< current_synchro_data.PRN << ". TOW difference = " <<
-                        tmp_diff * 1000.0 << " [ms]" << TEXT_RESET << std::endl;
-            }
             d_flag_valid_word = true;
         }
     else

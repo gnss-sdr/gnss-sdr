@@ -70,6 +70,7 @@ private:
     double interpolate_data(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const double& ti, int parameter);
     std::pair<Gnss_Synchro, Gnss_Synchro> find_closest(std::deque<Gnss_Synchro>& data, const double& ti);
     void correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data);
+    int save_matfile();
 
     //Tracking observable history
     std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history;
@@ -81,11 +82,8 @@ private:
     unsigned int d_nchannels;
     unsigned int d_num_valid_channels;
     std::string d_dump_filename;
-    std::string d_dump_filename_in;
     std::ofstream d_dump_file;
-    std::ofstream d_dump_in;
 
-    int save_matfile();
 };
 
 #endif

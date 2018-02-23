@@ -700,6 +700,22 @@ else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(gnuradio_block_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL})
 
+add_executable(matio_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+                          ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/arithmetic/matio_test.cc )
+
+target_link_libraries(matio_test ${Boost_LIBRARIES}
+                                 ${GFlags_LIBS}
+                                 ${GLOG_LIBRARIES}
+                                 ${GTEST_LIBRARIES}
+                                 ${MATIO_LIBRARIES}
+                                 gnss_system_parameters )
+add_test(matio_test matio_test)
+if(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(matio_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
+else(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(matio_test gtest)
+endif(NOT ${GTEST_DIR_LOCAL})
+                                          
 add_executable(acq_test
       ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
       ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc
@@ -757,4 +773,4 @@ endif(NOT ${GTEST_DIR_LOCAL})
 
 
 add_dependencies(check control_thread_test flowgraph_test gnss_block_test
-                       gnuradio_block_test acq_test trk_test)
+                       gnuradio_block_test acq_test trk_test matio_test)

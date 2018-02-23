@@ -822,9 +822,9 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
      # Ensure that aclocal and libtool are present
      if(OS_IS_LINUX)
          if(EXISTS "/usr/bin/libtoolize")
-             if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                  # Everything ok, we can move on
-             else(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             else(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                  message(" aclocal has not been found.")
                  message(" You can try to install it by typing:")
                  if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -835,7 +835,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
                       message(" sudo apt-get install automake")
                  endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                  message(FATAL_ERROR "aclocal is required to build glog from source")
-             endif(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             endif(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
          else(EXISTS "/usr/bin/libtoolize")
              message(" libtool has not been found.")
              message(" You can try to install it by typing:")

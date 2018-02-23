@@ -34,16 +34,13 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <gflags/gflags.h>
 #include <glog/logging.h>
-#include "gnss_sdr_valve.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gnss_sdr_valve.h"
 
 
 using google::LogMessage;
-
-DEFINE_string(spir_signal_source, "-",
-        "If defined, path to the file containing the NSR (byte to 2-bit packed) signal samples (overrides the configuration file)");
 
 
 SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration,
@@ -60,7 +57,8 @@ SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_spir_signal_source.compare("-") != 0) filename_= FLAGS_spir_signal_source;
+    if (FLAGS_signal_source.compare("-") != 0) filename_= FLAGS_signal_source;
+    if (FLAGS_s.compare("-") != 0) filename_= FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);

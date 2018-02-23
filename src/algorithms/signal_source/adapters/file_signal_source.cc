@@ -35,16 +35,14 @@
 #include <fstream>
 #include <iomanip>
 #include <exception>
-#include <gflags/gflags.h>
 #include <glog/logging.h>
-#include "gnss_sdr_valve.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gnss_sdr_valve.h"
+
+
 
 using google::LogMessage;
-
-
-DEFINE_string(signal_source, "-",
-        "If defined, path to the file containing the signal samples (overrides the configuration file)");
 
 
 FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
@@ -64,6 +62,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
     // override value with commandline flag, if present
     if (FLAGS_signal_source.compare("-") != 0) filename_= FLAGS_signal_source;
+    if (FLAGS_s.compare("-") != 0) filename_= FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);

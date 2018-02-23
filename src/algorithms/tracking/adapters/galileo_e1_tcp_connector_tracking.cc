@@ -39,6 +39,7 @@
 #include <glog/logging.h>
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 
 
 using google::LogMessage;
@@ -68,7 +69,9 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
+    if(FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    if(FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.15);
     very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", 0.6);
     port_ch0 = configuration->property(role + ".port_ch0", 2060);

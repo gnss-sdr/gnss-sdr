@@ -57,6 +57,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
@@ -95,6 +96,7 @@ target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
                                ${VOLK_GNSSSDR_LIBRARIES}
                                ${GNSS_SDR_OPTIONAL_LIBS}
                                gnss_sp_libs
+                               gnss_sdr_flags
                                gnss_rx
                                )
 

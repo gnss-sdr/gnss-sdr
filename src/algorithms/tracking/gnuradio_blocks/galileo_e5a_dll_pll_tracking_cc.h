@@ -59,8 +59,8 @@ galileo_e5a_dll_pll_make_tracking_cc(long if_freq,
                                    std::string dump_filename,
                                    float pll_bw_hz,
                                    float dll_bw_hz,
-                                   float pll_bw_init_hz,
-                                   float dll_bw_init_hz,
+                                   float pll_bw_narrow_narrowhz,
+                                   float dll_bw_narrow_hz,
                                    int ti_ms,
                                    float early_late_space_chips);
 
@@ -92,8 +92,8 @@ private:
             std::string dump_filename,
             float pll_bw_hz,
             float dll_bw_hz,
-            float pll_bw_init_hz,
-            float dll_bw_init_hz,
+            float pll_bw_narrow_hz,
+            float dll_bw_narrow_hz,
             int ti_ms,
             float early_late_space_chips);
 
@@ -104,8 +104,8 @@ private:
             std::string dump_filename,
             float pll_bw_hz,
             float dll_bw_hz,
-            float pll_bw_init_hz,
-            float dll_bw_init_hz,
+            float pll_bw_narrow_hz,
+            float dll_bw_narrow_hz,
             int ti_ms,
             float early_late_space_chips);
     void acquire_secondary();
@@ -124,8 +124,8 @@ private:
     double d_early_late_spc_chips;
     double d_dll_bw_hz;
     double d_pll_bw_hz;
-    double d_dll_bw_init_hz;
-    double d_pll_bw_init_hz;
+    double d_dll_bw_narrow_hz;
+    double d_pll_bw_narrow_hz;
 
     gr_complex* d_codeQ;
     gr_complex* d_codeI;

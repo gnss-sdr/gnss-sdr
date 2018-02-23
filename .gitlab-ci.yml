@@ -67,6 +67,7 @@ debian8.10:
     - cd build
     - cmake ..
     - make -j2
+    - make check
     - make install
 
 
@@ -79,6 +80,7 @@ debian9.3:
     - cd build
     - cmake ..
     - make -j2
+    - make check
     - make install
 
 
@@ -91,6 +93,7 @@ debian9.3-i386:
     - cd build
     - cmake ..
     - make -j2
+    - make check
     - make install
 
 
@@ -103,6 +106,26 @@ debian10:
     - cd build
     - cmake ..
     - make -j2
+    - make check
+    - make install
+
+
+
+ubuntu14.04:
+  image: ubuntu:trusty
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y apt-file
+    - apt-file update
+    - apt-get install -y software-properties-common
+    - add-apt-repository -y ppa:myriadrf/gnuradio
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libtool automake libhdf5-dev libgtest-dev
+    - cd build
+    - cmake ..
+    - make -j2
+    - make check
     - make install
 
 
@@ -115,6 +138,7 @@ ubuntu16.04:
     - cd build
     - cmake ..
     - make -j2
+    - make check
     - make install
 
 
@@ -127,6 +151,7 @@ ubuntu18.04:
     - cd build
     - cmake ..
     - make -j2
+    - make check
     - make install
 
 
@@ -198,7 +223,7 @@ centos7:
     - yum install -y wget
     - wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     - rpm -Uvh epel-release-latest-7.noarch.rpm
-    - yum install -y make automake gcc gcc-c++ kernel-devel libtool cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel blas-devel lapack-devel armadillo-devel gnutls-devel openssl-devel python-mako python-six matio-devel
+    - yum install -y make automake gcc gcc-c++ kernel-devel libtool automake hdf5-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel blas-devel lapack-devel armadillo-devel gnutls-devel openssl-devel python-mako python-six
     - cd build
     - cmake ..
     - make -j2

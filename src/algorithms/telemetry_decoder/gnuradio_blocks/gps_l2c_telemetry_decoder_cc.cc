@@ -150,9 +150,7 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
                 }
 
             //update TOW at the preamble instant
-            std::cout<<"delta tow at preamble: "<<static_cast<double>(msg.tow) * 6.0-d_TOW_at_Preamble*6.0<<std::endl;
             d_TOW_at_Preamble = static_cast<double>(msg.tow);
-            //std::cout<<"["<<(int)msg.prn<<"] deco delay: "<<delay<<"[symbols]"<<std::endl;
             //* The time of the last input symbol can be computed from the message ToW and
             //* delay by the formulae:
             //* \code

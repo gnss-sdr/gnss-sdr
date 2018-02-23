@@ -422,6 +422,28 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
 {
     double TOW_ref = std::numeric_limits<double>::lowest();
     std::vector<Gnss_Synchro>::iterator it;
+
+
+/////////////////////// DEBUG //////////////////////////
+    std::vector<Gnss_Synchro>::iterator it2;
+    double thr_ = 250.0 / 3e8;
+    for(it = data.begin(); it != (data.end() - 1); it++)
+    {
+        for(it2 = it + 1; it2 != data.end(); it2++)
+        {
+            if(it->PRN == it2->PRN)
+            {
+                double tow_dif_ = std::fabs(it->TOW_at_current_symbol_s - it2->TOW_at_current_symbol_s);
+                if(tow_dif_ > thr_)
+                {
+                    std::cout << TEXT_RED << "L1 - L2 TOW difference in PRN " << it->PRN <<
+                            " = " << tow_dif_ << "[ms]. Equivalent to " << tow_dif_ * 3e8 << " meters in pseudorange"
+                            << TEXT_RESET << std::endl;
+                }
+            }
+        }
+    }
+///////////////////////////////////////////////////////////
     for(it = data.begin(); it != data.end(); it++)
     {
         if(it->TOW_at_current_symbol_s > TOW_ref) { TOW_ref = it->TOW_at_current_symbol_s; }

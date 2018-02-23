@@ -43,11 +43,6 @@
         ONE_PI_TWO_PX = (1/Pi)*2^X
 */
 
-const std::string TEXT_RED   = "\033[31m";
-const std::string TEXT_GREEN = "\033[32m";
-const std::string TEXT_RESET = "\033[0m";
-
-
 const double PI = 3.1415926535897932;             //!<  pi
 const double PI_2 = 2.0 * PI;                     //!<  2 * pi
 

@@ -50,6 +50,7 @@
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "gnss_sdr_flags.h"
+#include "display.h"
 
 #if CUDA_GPU_ACCEL
     // For the CUDA runtime routines (prefixed with "cuda_")

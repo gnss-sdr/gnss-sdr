@@ -396,14 +396,15 @@ std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::d
 
 void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data)
 {
-    double TOW_ref = std::numeric_limits<double>::lowest();
     std::vector<Gnss_Synchro>::iterator it;
 
-
 /////////////////////// DEBUG //////////////////////////
+//   Logs if there is a pseudorange difference between
+//   signals of the same satellite higher than a threshold
+////////////////////////////////////////////////////////
 #ifndef NDEBUG
     std::vector<Gnss_Synchro>::iterator it2;
-    double thr_ = 250.0 / 3e8; // Maximum pseudorange difference = 250 meters
+    double thr_ = 250.0 / SPEED_OF_LIGHT; // Maximum pseudorange difference = 250 meters
     for(it = data.begin(); it != (data.end() - 1); it++)
     {
         for(it2 = it + 1; it2 != data.end(); it2++)
@@ -415,7 +416,7 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
                 {
                     DLOG(INFO) << "System " << it->System << ". Signals " << it->Signal << " and " << it2->Signal
                                << ". TOW difference in PRN " << it->PRN
-                               << " = " << tow_dif_ * 1e3 << "[ms]. Equivalent to " << tow_dif_ * 3e8
+                               << " = " << tow_dif_ * 1e3 << "[ms]. Equivalent to " << tow_dif_ * SPEED_OF_LIGHT
                                << " meters in pseudorange";
                 }
             }
@@ -424,7 +425,7 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
 #endif
 ///////////////////////////////////////////////////////////
 
-
+    double TOW_ref = std::numeric_limits<double>::lowest();
     for(it = data.begin(); it != data.end(); it++)
     {
         if(it->TOW_at_current_symbol_s > TOW_ref) { TOW_ref = it->TOW_at_current_symbol_s; }

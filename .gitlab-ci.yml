@@ -130,6 +130,65 @@ ubuntu18.04:
     - make install
 
 
+fedora26:
+  image: fedora:26
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
+    - cd build
+    - cmake ..
+    - make -j2
+    - make check
+    - make install
+
+
+fedora27:
+  image: fedora:27
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
+    - cd build
+    - cmake ..
+    - make -j2
+    - make check
+    - make install
+
+
+fedora-rawhide:
+  image: fedora:rawhide
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - yum install -y automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
+    - cd build
+    - cmake ..
+    - make -j2
+    - make check
+    - make install
+  allow_failure: true
+
+
+archlinux:
+  image: base/devel:latest
+  stage: build
+  before_script:
+    - pwd
+  script:
+    - pacman -Syu
+    - pacman -S --noconfirm cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr blas lapack gflags google-glog gnutls openssl python2-mako python2-six libmatio gtest
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON ..
+    - make -j2
+    - make check
+    - make install
+  allow_failure: true
+
+
 coverity-scan:
   image: ubuntu:xenial
   stage: build

@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -23,13 +23,14 @@
 #define _DARWIN_C_SOURCE
 #endif
 
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <map>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <volk_gnsssdr/volk_gnsssdr_common.h>
+#include <cstdbool>       // for bool, false
+#include <cstdlib>        // for NULL
+#include <map>            // for map
+#include <string>         // for string, basic_string
+#include <vector>         // for vector
+#include <volk_gnsssdr/volk_gnsssdr.h>          // for volk_gnsssdr_func_desc_t
+#include "volk_gnsssdr/volk_gnsssdr_complex.h"  // for lv_32fc_t
+
 
 /************************************************
  * VOLK QA type definitions                     *

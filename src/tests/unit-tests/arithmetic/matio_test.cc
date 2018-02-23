@@ -33,6 +33,7 @@
 #include <matio.h>
 #include <cstdio>
 #include <gnuradio/gr_complex.h>
+#include <gtest/gtest.h>
 
 TEST(MatioTest, WriteAndReadDoubles)
 {

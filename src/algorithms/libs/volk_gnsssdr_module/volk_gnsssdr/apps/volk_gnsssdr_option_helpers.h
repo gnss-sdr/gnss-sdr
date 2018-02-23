@@ -19,8 +19,12 @@
 #ifndef VOLK_VOLK_OPTION_HELPERS_H
 #define VOLK_VOLK_OPTION_HELPERS_H
 
+#include <climits>
+#include <cstring>
+#include <map>
 #include <string>
 #include <vector>
+
 
 typedef enum
 {

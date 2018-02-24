@@ -160,9 +160,9 @@ fedora26:
   before_script:
     - source ~/.bash_profile
   script:
-    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
+    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
     - cd build
-    - cmake ..
+    - cmake -DENABLE_OSMOSDR=ON ..
     - make -j2
     - make check
     - make install
@@ -174,9 +174,9 @@ fedora27:
   before_script:
     - source ~/.bash_profile
   script:
-    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
+    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
     - cd build
-    - cmake ..
+    - cmake -DENABLE_OSMOSDR=ON ..
     - make -j2
     - make check
     - make install
@@ -188,9 +188,9 @@ fedora-rawhide:
   before_script:
     - source ~/.bash_profile
   script:
-    - yum install -y automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
+    - yum install -y automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
     - cd build
-    - cmake ..
+    - cmake -DENABLE_OSMOSDR=ON ..
     - make -j2
     - make check
     - make install

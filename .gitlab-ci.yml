@@ -91,7 +91,7 @@ debian9.3-i386:
     - apt-get update
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - cd build
-    - cmake ..
+    - cmake -DENABLE_PACKAGING=ON ..
     - make -j2
     - make check
     - make install

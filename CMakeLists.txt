@@ -317,6 +317,7 @@ set(GNSSSDR_BOOST_MIN_VERSION "1.45")
 set(GNSSSDR_PYTHON_MIN_VERSION "2.7")
 set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_ARMADILLO_MIN_VERSION "4.200.0")
+set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 
 
 
@@ -1094,7 +1095,7 @@ endif(NOT GNUTLS_OPENSSL_LIBRARY)
 # Matio - https://github.com/tbeu/matio
 ########################################################################
 find_package(MATIO)
-if(NOT MATIO_FOUND)
+if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
     find_package(ZLIB)
     if(ZLIB_FOUND)
         get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
@@ -1182,7 +1183,7 @@ if(NOT MATIO_FOUND)
     else(ZLIB_FOUND)
         message(FATAL_ERROR "*** The zlib library is required to build gnss-sdr")
     endif(ZLIB_FOUND)
-endif(NOT MATIO_FOUND)
+endif(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
 
 
 

@@ -63,9 +63,9 @@ debian8.10:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential libtool automake libhdf5-dev cmake git ca-certificates libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
+    - apt-get install -y --no-install-recommends build-essential libtool automake libhdf5-dev cmake git ca-certificates libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
     - cd build
-    - cmake ..
+    - cmake -DENABLE_OSMOSDR=ON ..
     - make -j2
     - make check
     - make install
@@ -102,9 +102,9 @@ debian10:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - cd build
-    - cmake ..
+    - cmake -DENABLE_PACKAGING=ON ..
     - make -j2
     - make check
     - make install
@@ -133,9 +133,9 @@ ubuntu16.04:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
     - cd build
-    - cmake ..
+    - cmake -DENABLE_PACKAGING=ON ..
     - make -j2
     - make check
     - make install
@@ -146,9 +146,9 @@ ubuntu18.04:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - cd build
-    - cmake ..
+    - cmake -DENABLE_PACKAGING=ON ..
     - make -j2
     - make check
     - make install
@@ -222,9 +222,9 @@ centos7:
     - yum install -y wget
     - wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     - rpm -Uvh epel-release-latest-7.noarch.rpm
-    - yum install -y make automake gcc gcc-c++ kernel-devel libtool automake hdf5-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel blas-devel lapack-devel armadillo-devel gnutls-devel openssl-devel python-mako python-six
+    - yum install -y make automake gcc gcc-c++ kernel-devel libtool automake hdf5-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gnutls-devel openssl-devel python-mako python-six
     - cd build
-    - cmake ..
+    - cmake -DENABLE_OSMOSDR=ON ..
     - make -j2
     - make check
     - make install

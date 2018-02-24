@@ -255,21 +255,25 @@ run-tests:
   stage: test
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - mkdir build-test
     - mkdir build64
     - cd build-test
-    - cmake ..
+    - cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
     - make -j2
-    - make check
+    # Execute Unit Tests
     - ../install/run_tests --gtest_output=xml
     - mv *.xml ../build64/
+    # Execute System Tests
+    - ../install/position_test
+    - mv position_test*.txt ../build64/
     - cd ..
     - rm -rf build-test
 
   artifacts:
     paths:
       - build64/*.xml
+      - build64/*.txt
 
 
 run-tests-i386:
@@ -277,21 +281,25 @@ run-tests-i386:
   stage: test
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - mkdir build-test
     - mkdir build32
     - cd build-test
-    - cmake -DENABLE_PACKAGING=ON ..
+    - cmake -DENABLE_PACKAGING=ON -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
     - make -j2
-    - make check
+    # Execute Unit Tests
     - ../install/run_tests --gtest_output=xml
     - mv *.xml ../build32/
+    # Execute System Tests
+    - ../install/position_test
+    - mv position_test*.txt ../build32/
     - cd ..
     - rm -rf build-test
 
   artifacts:
     paths:
       - build32/*.xml
+      - build32/*.txt
 
 
 # Stage "deploy"

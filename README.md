@@ -66,11 +66,11 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
 ~~~~~~
 
-Please note that `googletest` was named `libgtest-dev` in distributions older than Debian 9 Stretch and Ubuntu 17.04 Zesty.
+Please note that `googletest` was named `libgtest-dev` in distributions older than Debian 9 "stretch" and Ubuntu 17.04 "zesty".
 
-Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev` and `gr-osmosdr` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04 cames with 1.5.2 and the minimum required version is 1.5.3. Please do not install the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev` instead. A recent version of the library will be downloaded and built automatically if CMake does not find it installed.
+**Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev` and `gr-osmosdr` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04 cames with 1.5.2 and the minimum required version is 1.5.3. Please do not install the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev` instead. A recent version of the library will be downloaded and built automatically if CMake does not find it installed.
 
-Note for Debian 8 "jessie" users: please see the note about `libmatio-dev` above. Install `libtool`, `automake` and `libhdf5-dev` instead.
+**Note for Debian 8 "jessie" users:** please see the note about `libmatio-dev` above. Install `libtool`, `automake` and `libhdf5-dev` instead.
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 

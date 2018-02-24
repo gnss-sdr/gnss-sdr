@@ -110,7 +110,6 @@ debian10:
     - make install
 
 
-
 ubuntu14.04:
   image: ubuntu:trusty
   stage: build
@@ -204,7 +203,6 @@ archlinux:
   before_script:
     - pwd
   script:
-    - pacman -Syu
     - pacman -S --noconfirm cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr blas lapack gflags google-glog gnutls openssl python2-mako python2-six libmatio gtest
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..

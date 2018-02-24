@@ -369,7 +369,7 @@ run-access18:
     - md5sum -c data.md5
     - cd ..
     # Execute the experiment (example)
-    - run_tests --gtest_filter==Multi*
+    - run_tests --gtest_filter=Multi*
     - echo " x = 0:0.01:3; hf = figure (\"visible\", \"off\"); plot (x, erf (x), \"linewidth\", 2); hold on; plot (x, x, \"r\", \"linewidth\", 2); axis ([0, 3, 0, 1]); text (0.65, 0.6175, ['\leftarrow x = \pi \int_{0}^{x}e^{-t^2} dt = 0.6175']); xlabel (\"x\"); ylabel (\"erf (x)\"); title (\"erf (x) with text annotation\"); hh=findall(hf,\"-property\",\"FontName\"); set(hh,\"FontName\",\"Times\"); hh2=findall(hf,\"-property\",\"interpreter\"); set(hh2, \"interpreter\", \"tex\"); hh3=findall(hf,\"-property\",\"FontSize\"); set(hh3, \"FontSize\", 22); print (hf, \"results.eps\", \"-depsc\"); " >  my_test_file.m
     - octave --no-gui my_test_file.m
     - epspdf results.eps results.pdf

@@ -78,13 +78,13 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
             // 1. Make the driver instance
             OsmosdrSignalSource::driver_instance();
 
-			// For LimeSDR: Set RX antenna
-			if (!antenna_.empty())
-				{
-					osmosdr_source_->set_antenna(antenna_, 0);
-					std::cout << boost::format("Set RX Antenna : %s") % (osmosdr_source_->get_antenna(0)) << std::endl ;
-					LOG(INFO) << boost::format("Set RX Antenna : %s") % (osmosdr_source_->get_antenna(0));
-				}
+            // For LimeSDR: Set RX antenna
+            if (!antenna_.empty())
+                {
+                    osmosdr_source_->set_antenna(antenna_, 0);
+                    std::cout << boost::format("Set RX Antenna : %s") % (osmosdr_source_->get_antenna(0)) << std::endl ;
+                    LOG(INFO) << boost::format("Set RX Antenna : %s") % (osmosdr_source_->get_antenna(0));
+                }
 
             // 2 set sampling rate
             osmosdr_source_->set_sample_rate(sample_rate_);
@@ -97,7 +97,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
             LOG(INFO) << boost::format("Actual RX Freq: %f [Hz]...") % (osmosdr_source_->get_center_freq());
 
             // TODO: Assign the remnant IF from the PLL tune error
-            std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (osmosdr_source_->get_center_freq() - freq_) ;
+            std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (osmosdr_source_->get_center_freq() - freq_) << std::endl;
             LOG(INFO) <<  boost::format("PLL Frequency tune error %f [Hz]...") % (osmosdr_source_->get_center_freq() - freq_) ;
 
             // 4. set rx gain
@@ -113,9 +113,22 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
                     osmosdr_source_->set_gain(gain_, 0);
                     osmosdr_source_->set_if_gain(rf_gain_, 0);
                     osmosdr_source_->set_bb_gain(if_gain_, 0);
-                    std::cout << boost::format("Actual RX Gain: %f dB...") % osmosdr_source_->get_gain() << std::endl;
-                    LOG(INFO) << boost::format("Actual RX Gain: %f dB...") % osmosdr_source_->get_gain();
+                    if (!osmosdr_args_.empty() && (osmosdr_args_.find("bladerf") != std::string::npos))
+                        {
+                            std::cout << boost::format("Actual LNA Gain: %f dB...") % osmosdr_source_->get_gain("LNA",0) << std::endl;
+                            std::cout << boost::format("Actual VGA1 Gain: %f dB...") % osmosdr_source_->get_gain("VGA1",0) << std::endl;
+                            std::cout << boost::format("Actual VGA2 Gain: %f dB...") % osmosdr_source_->get_gain("VGA2",0) << std::endl;
+    
+                        }
+                    else
+                        {
+                            std::cout << boost::format("Actual RX Gain: %f dB...") % osmosdr_source_->get_gain() << std::endl;
+                            LOG(INFO) << boost::format("Actual RX Gain: %f dB...") % osmosdr_source_->get_gain();
+                        }
                 }
+            
+            // Get actual bandwidth
+            std::cout << boost::format("Actual Bandwidth: %f [Hz]...") % osmosdr_source_->get_bandwidth(0) << std::endl;
         }
     else
         {

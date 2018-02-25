@@ -366,7 +366,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
     int counter = 0;
 
     float fftFreqBins[fft_size_extended];
-    memset(fftFreqBins, 0, fft_size_extended * sizeof(float));
+    std::fill_n(fftFreqBins, fft_size_extended, 0.0);
 
     for (int k = 0; k < (fft_size_extended / 2); k++)
         {

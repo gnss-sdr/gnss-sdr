@@ -31,7 +31,7 @@
  */
 
 #include "pcps_acquisition_fine_doppler_cc.h"
-#include <algorithm>    // std::rotate
+#include <algorithm>    // std::rotate, std::fill_n
 #include <sstream>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -331,7 +331,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
     gr::fft::fft_complex *fft_operator = new gr::fft::fft_complex(fft_size_extended, true);
 
     //zero padding the entire vector
-    memset(fft_operator->get_inbuf(), 0, fft_size_extended * sizeof(gr_complex));
+    std::fill_n(fft_operator->get_inbuf(), fft_size_extended, gr_complex(0.0, 0.0));
 
     //1. generate local code aligned with the acquisition code phase estimation
     gr_complex *code_replica = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));

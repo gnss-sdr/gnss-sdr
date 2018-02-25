@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-
+#include <algorithm>
 #include <chrono>
 #include <complex>
 #include <armadillo>
@@ -44,7 +44,7 @@ TEST(ConjugateTest, StandardCComplexImplementation)
 {
     std::complex<float>* input = new std::complex<float>[FLAGS_size_conjugate_test];
     std::complex<float>* output = new std::complex<float>[FLAGS_size_conjugate_test];
-    memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_conjugate_test);
+    std::fill_n(input, FLAGS_size_conjugate_test, std::complex<float>(0.0, 0.0));
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
@@ -118,7 +118,7 @@ TEST(ConjugateTest, VolkComplexImplementation)
 {
     std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     std::complex<float>* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
-    memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_conjugate_test);
+    std::fill_n(input, FLAGS_size_conjugate_test, std::complex<float>(0.0, 0.0));
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();

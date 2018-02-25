@@ -21,29 +21,32 @@ If defined, path to the file containing the signal samples (overrides the data f
 \fB\-log_dir=\fR\fI<path\-to\-directory>\fR
 If defined, overrides the default directory where logs are saved.
 .TP
-\fB\-doppler_max=\fR\fIdoppler\fR
+\fB\-doppler_max=\fR\fI<doppler_max>\fR
 If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file).
 .TP
-\fB\-cn0_samples=\fR\fIsamples\fR
-Number of correlator outputs used for CN0 estimation.
+\fB\-doppler_step=\fR\fI<doppler_step>\fR
+If defined, sets the frequency step in the search grid, in Hz (overrides the configuration file).
 .TP
-\fB\-cn0_min=\fR\fIcn0_min\fR
-Minimum valid CN0 (in dB-Hz).
+\fB\-cn0_samples=\fR\fI<samples>\fR
+Number of correlators outputs (one per integration time) used for CN0 estimation. It defaults to 20 outputs.
 .TP
-\fB\-max_lock_fail=\fR\fImax_lock_fail\fR
-Number number of lock failures before dropping satellite.
+\fB\-cn0_min=\fR\fI<cn0_min>\fR
+Minimum valid CN0 (in dB-Hz). It defaults to 25 dB-Hz.
 .TP
-\fB\-carrier_lock_th=\fR\fIcarrier_lock_th\fR
-Carrier lock threshold (in rad).
+\fB\-max_lock_fail=\fR\fI<max_lock_fail>\fR
+Number of lock failures before dropping satellite. It defaults to 50 failures.
 .TP
-\fB\-dll_bw_hz=\fR\fIdll_bw_hz\fR
+\fB\-carrier_lock_th=\fR\fI<carrier_lock_th>\fR
+Carrier lock error threshold (in rad). It defaults to 0.85 rad (48.7 degrees).
+.TP
+\fB\-dll_bw_hz=\fR\fI<dll_bw_hz>\fR
 If defined, bandwidth of the DLL low pass filter, in Hz (overrides the configuration file).
 .TP
-\fB\-pll_bw_hz=\fR\fIpll_bw_hz\fR
+\fB\-pll_bw_hz=\fR\fI<pll_bw_hz>\fR
 If defined, bandwidth of the PLL low pass filter, in Hz (overrides the configuration file).
 .TP
 \fB\-RINEX_version=\fI<version>\fR
-Specifies the RINEX version (2.11 or 3.02). Default: "3.02".
+If defined, specifies the RINEX version (2.11 or 3.02). Default: "3.02". Overrides the configuration file.
 .TP
 \fB\-version\fR
 Print program version and exit.

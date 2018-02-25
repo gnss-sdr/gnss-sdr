@@ -43,7 +43,6 @@
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
-#include "gnss_sdr_flags.h"
 
 
 using google::LogMessage;
@@ -143,55 +142,15 @@ Rinex_Printer::Rinex_Printer(int conf_version)
     observationCode["GPS_L1_CA_v2"] = "1";
     observationCode["GLONASS_G1_CA_v2"] = "1";
 
-    if ( FLAGS_RINEX_version.compare("3.01") == 0 )
-        {
-            version = 3;
-            stringVersion = "3.01";
-        }
-    else if ( FLAGS_RINEX_version.compare("3.02") == 0 )
-        {
-            version = 3;
-            stringVersion = "3.02";
-        }
-    else if ( FLAGS_RINEX_version.compare("3") == 0 )
-        {
-            version = 3;
-            stringVersion = "3.02";
-        }
-    else if ( FLAGS_RINEX_version.compare("2.11") == 0 )
-        {
-            version = 2;
-            stringVersion = "2.11";
-        }
-    else if ( FLAGS_RINEX_version.compare("2.10") == 0 )
-        {
-            version = 2;
-            stringVersion = "2.10";
-        }
-    else if ( FLAGS_RINEX_version.compare("2") == 0 )
+    if(conf_version == 2)
         {
             version = 2;
             stringVersion = "2.11";
         }
     else
         {
-            LOG(WARNING) << "Unknown RINEX version " << FLAGS_RINEX_version << " (must be 2.11 or 3.02). Using 3.02";
             version = 3;
             stringVersion = "3.02";
-        }
-
-    if(conf_version != 0)
-        {
-            if(conf_version == 2)
-                {
-                    version = 2;
-                    stringVersion = "2.11";
-                }
-            if(conf_version == 3)
-                {
-                    version = 3;
-                    stringVersion = "3.02";
-                }
         }
 
     numberTypesObservations = 4; // Number of available types of observable in the system

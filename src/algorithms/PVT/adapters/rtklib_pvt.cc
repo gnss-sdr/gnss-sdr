@@ -36,7 +36,7 @@
 #include <boost/math/common_factor_rt.hpp>
 #include <boost/serialization/map.hpp>
 #include "configuration_interface.h"
-
+#include "gnss_sdr_flags.h"
 
 using google::LogMessage;
 
@@ -70,10 +70,29 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     // RINEX version
     int rinex_version = configuration->property(role + ".rinex_version", 3);
-    if( (rinex_version < 2) || (rinex_version > 3) )
+    if ( FLAGS_RINEX_version.compare("3.01") == 0 )
         {
-            //warn user and set the default
             rinex_version = 3;
+        }
+    else if ( FLAGS_RINEX_version.compare("3.02") == 0 )
+        {
+            rinex_version = 3;
+        }
+    else if ( FLAGS_RINEX_version.compare("3") == 0 )
+        {
+            rinex_version = 3;
+        }
+    else if ( FLAGS_RINEX_version.compare("2.11") == 0 )
+        {
+            rinex_version = 2;
+        }
+    else if ( FLAGS_RINEX_version.compare("2.10") == 0 )
+        {
+            rinex_version = 2;
+        }
+    else if ( FLAGS_RINEX_version.compare("2") == 0 )
+        {
+            rinex_version = 2;
         }
 
     // RTCM Printer settings

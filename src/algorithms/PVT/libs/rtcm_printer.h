@@ -35,7 +35,6 @@
 #define GNSS_SDR_RTCM_PRINTER_H_
 
 #include <fstream>  // std::ofstream
-#include <iostream> // std::cout
 #include <memory>   // std::shared_ptr
 #include "rtcm.h"
 

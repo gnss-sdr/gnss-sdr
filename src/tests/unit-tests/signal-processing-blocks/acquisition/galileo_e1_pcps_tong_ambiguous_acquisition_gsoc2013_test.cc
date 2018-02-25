@@ -30,11 +30,7 @@
  * -------------------------------------------------------------------------
  */
 
-
-
-
 #include <chrono>
-#include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <gnuradio/top_block.h>

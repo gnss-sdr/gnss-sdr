@@ -33,7 +33,6 @@
 
 
 #include <chrono>
-#include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 #include <gnuradio/top_block.h>

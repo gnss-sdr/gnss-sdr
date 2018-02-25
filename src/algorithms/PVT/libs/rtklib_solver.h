@@ -55,7 +55,6 @@
 #define GNSS_SDR_RTKLIB_SOLVER_H_
 
 #include <fstream>
-#include <iostream>
 #include <map>
 #include <string>
 #include "rtklib_rtkpos.h"

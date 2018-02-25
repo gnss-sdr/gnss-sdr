@@ -32,7 +32,6 @@
  */
 
 #include "rtcm_printer.h"
-#include <iostream>
 #include <iomanip>
 #include <fcntl.h>    // for O_RDWR
 #include <termios.h>  // for tcgetattr

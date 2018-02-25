@@ -33,7 +33,6 @@
 #define GNSS_SDR_HYBRID_LS_PVT_H_
 
 #include <fstream>
-#include <iostream>
 #include <map>
 #include <string>
 #include "ls_pvt.h"

@@ -34,7 +34,7 @@
 
 #include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
-#include <iostream>
+
 
 /*!
  * \brief This class is a storage for the GPS UTC MODEL data as described in in IS-GPS-200H

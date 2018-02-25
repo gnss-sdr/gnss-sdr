@@ -31,7 +31,6 @@
  */
 
 #include <chrono>
-#include <iostream>
 #include <unistd.h>
 #include <vector>
 #include <armadillo>

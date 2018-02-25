@@ -34,7 +34,6 @@
 #ifndef GNSS_SDR_SUPL_CLIENT_H_
 #define GNSS_SDR_SUPL_CLIENT_H_
 
-#include <iostream>
 #include <fstream>
 #include <map>
 #include <string>

@@ -32,7 +32,6 @@
 
 
 #include <chrono>
-#include <iostream>
 #include <boost/make_shared.hpp>
 #include <glog/logging.h>
 #include <gnuradio/top_block.h>

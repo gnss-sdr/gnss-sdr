@@ -33,7 +33,6 @@
 
 #include <chrono>
 #include <fcntl.h>
-#include <iostream>
 #include <unistd.h>
 #include <armadillo>
 #include <boost/thread.hpp>// to test the FPGA we have to create a simultaneous task to send the samples using the DMA and stop the test

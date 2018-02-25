@@ -30,8 +30,7 @@
 
 #include <chrono>
 #include <complex>
-#include <iostream>
-#include <stdint.h>
+#include <cstdint>
 #include <gflags/gflags.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>

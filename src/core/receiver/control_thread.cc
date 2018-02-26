@@ -66,8 +66,6 @@ extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 using google::LogMessage;
 
-DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"),
-        "Path to the configuration file");
 
 ControlThread::ControlThread()
 {

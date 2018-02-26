@@ -33,10 +33,10 @@
 #ifndef GNSS_SDR_GEOJSON_PRINTER_H_
 #define GNSS_SDR_GEOJSON_PRINTER_H_
 
+#include "pvt_solution.h"
 #include <fstream>
 #include <memory>
 #include <string>
-#include "pvt_solution.h"
 
 
 /*!

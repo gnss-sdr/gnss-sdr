@@ -33,9 +33,8 @@
  */
 
 #include "cpu_multicorrelator.h"
-#include <cmath>
-#include <iostream>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>
 
 
 cpu_multicorrelator::cpu_multicorrelator()

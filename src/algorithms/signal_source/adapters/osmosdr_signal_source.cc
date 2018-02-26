@@ -30,13 +30,14 @@
  */
 
 #include "osmosdr_signal_source.h"
-#include <iostream>
-#include <boost/format.hpp>
-#include <glog/logging.h>
-#include <gnuradio/blocks/file_sink.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include "GPS_L1_CA.h"
+#include <boost/format.hpp>
+#include <glog/logging.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <iostream>
+
 
 
 using google::LogMessage;

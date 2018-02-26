@@ -31,11 +31,12 @@
 #ifndef GALILEO_E5A_PCPS_ACQUISITION_H_
 #define GALILEO_E5A_PCPS_ACQUISITION_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
-#include "gnss_synchro.h"
+
 #include "acquisition_interface.h"
+#include "gnss_synchro.h"
 #include "pcps_acquisition.h"
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <string>
 
 class ConfigurationInterface;
 

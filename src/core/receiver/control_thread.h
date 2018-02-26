@@ -35,12 +35,12 @@
 #ifndef GNSS_SDR_CONTROL_THREAD_H_
 #define GNSS_SDR_CONTROL_THREAD_H_
 
-#include <memory>
-#include <vector>
-#include <boost/thread.hpp>
-#include <gnuradio/msg_queue.h>
 #include "control_message_factory.h"
 #include "gnss_sdr_supl_client.h"
+#include <boost/thread.hpp>
+#include <gnuradio/msg_queue.h>
+#include <memory>
+#include <vector>
 
 class GNSSFlowgraph;
 class ConfigurationInterface;

@@ -33,12 +33,11 @@
 #ifndef GNSS_SDR_NOTCH_FILTER_LITE_H_
 #define GNSS_SDR_NOTCH_FILTER_LITE_H_
 
-#include <string>
-#include <vector>
-#include <gnuradio/blocks/file_sink.h>
 #include "gnss_block_interface.h"
 #include "notch_lite_cc.h"
-
+#include <gnuradio/blocks/file_sink.h>
+#include <string>
+#include <vector>
 
 class ConfigurationInterface;
 

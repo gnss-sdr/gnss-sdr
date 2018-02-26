@@ -30,11 +30,11 @@
  */
 
 #include "notch_filter_lite.h"
-#include <cmath>
-#include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "notch_lite_cc.h"
+#include <boost/lexical_cast.hpp>
+#include <glog/logging.h>
+#include <cmath>
 
 using google::LogMessage;
 

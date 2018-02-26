@@ -33,15 +33,16 @@
 #define GNSS_SDR_GPS_CNAV_NAVIGATION_MESSAGE_H_
 
 
+#include "GPS_CNAV.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "gps_cnav_utc_model.h"
 #include <bitset>
 #include <map>
 #include <string>
 #include <vector>
 #include <utility>
-#include "GPS_CNAV.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
-#include "gps_cnav_utc_model.h"
+
 //TODO: Create GPS CNAV almanac
 //#include "gps_almanac.h"
 

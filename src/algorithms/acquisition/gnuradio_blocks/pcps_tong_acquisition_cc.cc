@@ -49,13 +49,13 @@
  */
 
 #include "pcps_tong_acquisition_cc.h"
-#include <sstream>
+#include "control_message_factory.h"
+#include "GPS_L1_CA.h" // for GPS_TWO_PI
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "control_message_factory.h"
-#include "GPS_L1_CA.h" //GPS_TWO_PI
+#include <sstream>
 
 using google::LogMessage;
 

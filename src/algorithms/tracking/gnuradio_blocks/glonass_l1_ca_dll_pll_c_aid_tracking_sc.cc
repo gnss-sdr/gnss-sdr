@@ -37,17 +37,6 @@
  */
 
 #include "glonass_l1_ca_dll_pll_c_aid_tracking_sc.h"
-#include <cmath>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
-#include <matio.h>
-#include <pmt/pmt.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <glog/logging.h>
 #include "gnss_synchro.h"
 #include "glonass_l1_signal_processing.h"
 #include "tracking_discriminators.h"
@@ -55,6 +44,17 @@
 #include "GLONASS_L1_CA.h"
 #include "gnss_sdr_flags.h"
 #include "control_message_factory.h"
+#include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
+#include <gnuradio/io_signature.h>
+#include <matio.h>
+#include <pmt/pmt.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <glog/logging.h>
+#include <cmath>
+#include <iostream>
+#include <memory>
+#include <sstream>
 
 
 using google::LogMessage;

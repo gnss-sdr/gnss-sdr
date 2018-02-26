@@ -30,10 +30,11 @@
  */
 
 #include "channel.h"
-#include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include <boost/lexical_cast.hpp>
+#include <glog/logging.h>
+
 
 using google::LogMessage;
 

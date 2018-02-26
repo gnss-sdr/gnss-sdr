@@ -30,6 +30,17 @@
  * -------------------------------------------------------------------------
  */
 
+#include "concurrent_map.h"
+#include "concurrent_queue.h"
+#include "control_thread.h"
+#include "file_configuration.h"
+#include "in_memory_configuration.h"
+#include "gnss_flowgraph.h"
+#include "gps_acq_assist.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gtest/gtest.h>
 #include <cerrno>
 #include <chrono>
 #include <cmath>
@@ -41,17 +52,6 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <thread>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gtest/gtest.h>
-#include "concurrent_map.h"
-#include "concurrent_queue.h"
-#include "control_thread.h"
-#include "file_configuration.h"
-#include "in_memory_configuration.h"
-#include "gnss_flowgraph.h"
-#include "gps_acq_assist.h"
 
 
 DEFINE_int32(fs_in, 4000000, "Sampling rate, in Samples/s");

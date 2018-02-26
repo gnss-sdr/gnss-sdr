@@ -34,11 +34,11 @@
 #ifndef GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_H_
 #define GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_H_
 
-#include <string>
+
 #include "telemetry_decoder_interface.h"
 #include "galileo_e1b_telemetry_decoder_cc.h"
 #include "gnss_satellite.h"
-
+#include <string>
 
 
 class ConfigurationInterface;

@@ -31,9 +31,10 @@
 
 
 #include "in_memory_configuration.h"
+#include "string_converter.h"
 #include <memory>
 #include <utility>
-#include "string_converter.h"
+
 
 InMemoryConfiguration::InMemoryConfiguration()
 {

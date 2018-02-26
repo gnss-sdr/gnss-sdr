@@ -29,8 +29,9 @@
  */
 
 #include "byte_to_short.h"
-#include <glog/logging.h>
 #include "configuration_interface.h"
+#include <glog/logging.h>
+
 
 using google::LogMessage;
 

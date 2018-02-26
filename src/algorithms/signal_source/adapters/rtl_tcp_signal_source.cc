@@ -31,12 +31,13 @@
  */
 
 #include "rtl_tcp_signal_source.h"
-#include <glog/logging.h>
-#include <iostream>
-#include <boost/format.hpp>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include "GPS_L1_CA.h"
+#include <boost/format.hpp>
+#include <glog/logging.h>
+#include <iostream>
+
 
 using google::LogMessage;
 

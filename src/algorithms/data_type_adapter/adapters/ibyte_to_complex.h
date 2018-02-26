@@ -31,13 +31,12 @@
 #ifndef GNSS_SDR_IBYTE_TO_COMPLEX_H_
 #define GNSS_SDR_IBYTE_TO_COMPLEX_H_
 
-#include <string>
-#include <gnuradio/blocks/interleaved_char_to_complex.h>
-#include <gnuradio/blocks/file_sink.h>
 #include "conjugate_cc.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
-
+#include <gnuradio/blocks/interleaved_char_to_complex.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <string>
 
 class ConfigurationInterface;
 

@@ -33,17 +33,17 @@
  */
 
 #include "gnss_flowgraph.h"
-#include <algorithm>
-#include <exception>
-#include <iostream>
-#include <set>
-#include <boost/lexical_cast.hpp>
-#include <boost/tokenizer.hpp>
-#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "gnss_block_interface.h"
 #include "channel_interface.h"
 #include "gnss_block_factory.h"
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+#include <glog/logging.h>
+#include <algorithm>
+#include <exception>
+#include <iostream>
+#include <set>
 
 
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8

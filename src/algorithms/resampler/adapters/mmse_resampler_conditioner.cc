@@ -30,11 +30,11 @@
  */
 
 #include "mmse_resampler_conditioner.h"
-#include <cmath>
-#include <limits>
+#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
-#include "configuration_interface.h"
+#include <cmath>
+#include <limits>
 
 using google::LogMessage;
 

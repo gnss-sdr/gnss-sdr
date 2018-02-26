@@ -31,11 +31,11 @@
  */
 
 #include "gnss_sdr_valve.h"
-#include <algorithm> // for min
-#include <cstring>  // for memcpy
-#include <gnuradio/io_signature.h>
 #include "control_message_factory.h"
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <algorithm> // for min
+#include <cstring>  // for memcpy
 
 gnss_sdr_valve::gnss_sdr_valve (size_t sizeof_stream_item,
         unsigned long long nitems,

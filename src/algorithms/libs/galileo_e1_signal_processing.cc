@@ -31,9 +31,9 @@
  */
 
 #include "galileo_e1_signal_processing.h"
-#include <string>
 #include "Galileo_E1.h"
 #include "gnss_signal_processing.h"
+#include <string>
 
 
 void galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn)

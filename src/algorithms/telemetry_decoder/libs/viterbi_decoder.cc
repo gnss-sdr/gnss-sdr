@@ -30,7 +30,6 @@
  */
 
 #include "viterbi_decoder.h"
-#include <iostream>
 #include <glog/logging.h>
 
 // logging

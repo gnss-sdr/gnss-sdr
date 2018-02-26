@@ -31,13 +31,14 @@
 #ifndef GNSS_SDR_SIGNAL_GENERATOR_C_H
 #define GNSS_SDR_SIGNAL_GENERATOR_C_H
 
-#include <string>
-#include <vector>
-#include <random>
+#include "gnss_signal.h"
 #include <boost/scoped_array.hpp>
 #include <gnuradio/random.h>
 #include <gnuradio/block.h>
-#include "gnss_signal.h"
+#include <string>
+#include <vector>
+#include <random>
+
 
 class signal_generator_c;
 

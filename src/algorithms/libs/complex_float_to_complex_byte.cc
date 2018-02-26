@@ -31,9 +31,7 @@
 
 #include "complex_float_to_complex_byte.h"
 #include <gnuradio/io_signature.h>
-#include <volk/volk.h>
-#include "volk_gnsssdr/volk_gnsssdr.h"
-
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 
 complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte()
@@ -47,7 +45,7 @@ complex_float_to_complex_byte::complex_float_to_complex_byte() : sync_block("com
                         gr::io_signature::make (1, 1, sizeof(gr_complex)),
                         gr::io_signature::make (1, 1, sizeof(lv_8sc_t))) // lv_8sc_t is a Volk's typedef for std::complex<signed char>
 {
-    const int alignment_multiple = volk_get_alignment() / sizeof(lv_8sc_t);
+    const int alignment_multiple = volk_gnsssdr_get_alignment() / sizeof(lv_8sc_t);
     set_alignment(std::max(1, alignment_multiple));
 }
 

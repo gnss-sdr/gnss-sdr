@@ -33,10 +33,10 @@
 #ifndef GNSS_SDR_GEN_SIGNAL_SOURCE_H_
 #define GNSS_SDR_GEN_SIGNAL_SOURCE_H_
 
-#include <string>
-#include <gnuradio/msg_queue.h>
-#include "gnss_block_interface.h"
 
+#include "gnss_block_interface.h"
+#include <gnuradio/msg_queue.h>
+#include <string>
 
 /*!
  * \brief This class wraps blocks that generates synthesized GNSS signal and

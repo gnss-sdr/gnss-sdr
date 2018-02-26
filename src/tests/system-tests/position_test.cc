@@ -29,16 +29,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include <algorithm>
-#include <chrono>
-#include <cmath>
-#include <fstream>
-#include <numeric>
-#include <thread>
-#include <boost/filesystem.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gtest/gtest.h>
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"
@@ -48,6 +38,15 @@
 #include "gnuplot_i.h"
 #include "test_flags.h"
 #include "signal_generator_flags.h"
+#include <boost/filesystem.hpp>
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <fstream>
+#include <numeric>
+#include <thread>
 
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing the configuration parameters for the position test.");

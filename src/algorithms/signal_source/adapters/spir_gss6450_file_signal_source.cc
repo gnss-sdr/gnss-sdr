@@ -30,13 +30,13 @@
  */
 
 #include "spir_gss6450_file_signal_source.h"
+#include "configuration_interface.h"
+#include <glog/logging.h>
 #include <exception>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <cstdio>
-#include <glog/logging.h>
-#include "configuration_interface.h"
+
 
 using google::LogMessage;
 

@@ -51,12 +51,6 @@
 #ifndef GNSS_SDR_RINEX_PRINTER_H_
 #define GNSS_SDR_RINEX_PRINTER_H_
 
-#include <string>
-#include <fstream>
-#include <sstream>  // for stringstream
-#include <iomanip>  // for setprecision
-#include <map>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "galileo_navigation_message.h"
@@ -65,6 +59,12 @@
 #include "Galileo_E1.h"
 #include "GLONASS_L1_CA.h"
 #include "gnss_synchro.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <string>
+#include <fstream>
+#include <sstream>  // for stringstream
+#include <iomanip>  // for setprecision
+#include <map>
 
 class Sbas_Raw_Msg;
 

@@ -32,14 +32,13 @@
 #ifndef GNSS_SDR_GPS_L1_CA_SUBFRAME_FSM_H_
 #define GNSS_SDR_GPS_L1_CA_SUBFRAME_FSM_H_
 
-#include <boost/statechart/state_machine.hpp>
-#include "concurrent_queue.h"
 #include "GPS_L1_CA.h"
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_almanac.h"
 #include "gps_utc_model.h"
+#include <boost/statechart/state_machine.hpp>
 
 namespace sc = boost::statechart;
 namespace mpl = boost::mpl;

@@ -30,9 +30,9 @@
  */
 
 #include "pvt_solution.h"
-#include <exception>
 #include "GPS_L1_CA.h"
 #include <glog/logging.h>
+#include <exception>
 
 
 using google::LogMessage;

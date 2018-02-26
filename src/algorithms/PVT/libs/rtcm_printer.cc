@@ -32,11 +32,12 @@
  */
 
 #include "rtcm_printer.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <glog/logging.h>
 #include <iomanip>
 #include <fcntl.h>    // for O_RDWR
 #include <termios.h>  // for tcgetattr
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/logging.h>
+
 
 using google::LogMessage;
 

@@ -32,19 +32,18 @@
 #ifndef GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_CC_H
 #define GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_CC_H
 
-#include <fstream>
-#include <string>
-#include <gnuradio/block.h>
+
 #include "Galileo_E1.h"
-#include "concurrent_queue.h"
-#include "gnss_satellite.h"
 #include "galileo_navigation_message.h"
 #include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
+#include "gnss_satellite.h"
 #include "gnss_synchro.h"
-
+#include <gnuradio/block.h>
+#include <fstream>
+#include <string>
 
 
 class galileo_e1b_telemetry_decoder_cc;

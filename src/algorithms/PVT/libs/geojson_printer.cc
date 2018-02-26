@@ -31,10 +31,11 @@
 
 
 #include "geojson_printer.h"
-#include <iomanip>
-#include <sstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
+#include <iomanip>
+#include <sstream>
+
 
 GeoJSON_Printer::GeoJSON_Printer()
 {

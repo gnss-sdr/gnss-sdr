@@ -20,11 +20,11 @@
 #include <config.h>
 #endif
 
+#include "volk_gnsssdr/volk_gnsssdr.h"   // for volk_gnsssdr_get_alignment, volk_gnsssdr_get_machine
+#include "volk_gnsssdr_option_helpers.h" // for option_list, option_t
 #include <volk_gnsssdr/constants.h>      // for volk_gnsssdr_available_machines, volk_gnsssdr_c_compiler ...
 #include <iostream>                      // for operator<<, endl, cout, ostream
 #include <string>                        // for string
-#include "volk_gnsssdr/volk_gnsssdr.h"   // for volk_gnsssdr_get_alignment, volk_gnsssdr_get_machine
-#include "volk_gnsssdr_option_helpers.h" // for option_list, option_t
 
 void print_alignment()
 {

@@ -32,7 +32,7 @@
 #ifndef GNSS_SDR_GPS_CNAV_UTC_MODEL_H_
 #define GNSS_SDR_GPS_CNAV_UTC_MODEL_H_
 
-#include "boost/assign.hpp"
+#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
 
 

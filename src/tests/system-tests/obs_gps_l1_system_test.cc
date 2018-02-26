@@ -29,6 +29,19 @@
  * -------------------------------------------------------------------------
  */
 
+#include "concurrent_map.h"
+#include "concurrent_queue.h"
+#include "control_thread.h"
+#include "in_memory_configuration.h"
+#include "signal_generator_flags.h"
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+#include <gpstk/RinexUtilities.hpp>
+#include <gpstk/Rinex3ObsBase.hpp>
+#include <gpstk/Rinex3ObsData.hpp>
+#include <gpstk/Rinex3ObsHeader.hpp>
+#include <gpstk/Rinex3ObsStream.hpp>
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
@@ -38,19 +51,6 @@
 #include <string>
 #include <thread>
 #include <unistd.h>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gtest/gtest.h>
-#include <gpstk/RinexUtilities.hpp>
-#include <gpstk/Rinex3ObsBase.hpp>
-#include <gpstk/Rinex3ObsData.hpp>
-#include <gpstk/Rinex3ObsHeader.hpp>
-#include <gpstk/Rinex3ObsStream.hpp>
-#include "concurrent_map.h"
-#include "concurrent_queue.h"
-#include "control_thread.h"
-#include "in_memory_configuration.h"
-#include "signal_generator_flags.h"
 
 
 // For GPS NAVIGATION (L1)

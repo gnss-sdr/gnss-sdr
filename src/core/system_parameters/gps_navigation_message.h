@@ -33,17 +33,16 @@
 #define GNSS_SDR_GPS_NAVIGATION_MESSAGE_H_
 
 
-#include <bitset>
-#include <map>
-#include <string>
-#include <utility>
-#include <vector>
 #include "GPS_L1_CA.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_almanac.h"
 #include "gps_utc_model.h"
-
+#include <bitset>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
 
 
 /*!

@@ -31,12 +31,11 @@
 #ifndef GNSS_SDR_ISHORT_TO_CSHORT_H_
 #define GNSS_SDR_ISHORT_TO_CSHORT_H_
 
-#include <string>
-#include <gnuradio/blocks/file_sink.h>
 #include "conjugate_sc.h"
 #include "gnss_block_interface.h"
 #include "interleaved_short_to_complex_short.h"
-
+#include <gnuradio/blocks/file_sink.h>
+#include <string>
 
 
 class ConfigurationInterface;

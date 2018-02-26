@@ -35,11 +35,6 @@
 
 
 #include "gnss_block_factory.h"
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_block_interface.h"
@@ -144,6 +139,12 @@
 #if CUDA_GPU_ACCEL
 #include "gps_l1_ca_dll_pll_tracking_gpu.h"
 #endif
+
+#include <boost/lexical_cast.hpp>
+#include <glog/logging.h>
+#include <string>
+#include <sstream>
+#include <iostream>
 
 
 using google::LogMessage;

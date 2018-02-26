@@ -33,8 +33,6 @@
 
 
 #include "direct_resampler_conditioner_cb.h"
-#include <algorithm>
-#include <iostream>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 

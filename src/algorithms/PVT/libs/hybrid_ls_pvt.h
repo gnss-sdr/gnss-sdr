@@ -32,15 +32,15 @@
 #ifndef GNSS_SDR_HYBRID_LS_PVT_H_
 #define GNSS_SDR_HYBRID_LS_PVT_H_
 
-#include <fstream>
-#include <map>
-#include <string>
 #include "ls_pvt.h"
 #include "galileo_navigation_message.h"
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "gnss_synchro.h"
 #include "rtklib_rtkcmn.h"
+#include <fstream>
+#include <map>
+#include <string>
 
 /*!
  * \brief This class implements a simple PVT Least Squares solution

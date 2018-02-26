@@ -29,17 +29,18 @@
  */
 
 #include "rtklib_pvt_cc.h"
-#include <algorithm>
-#include <iostream>
-#include <map>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/math/common_factor_rt.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/serialization/map.hpp>
+#include <glog/logging.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
-#include <glog/logging.h>
+#include <algorithm>
+#include <iostream>
+#include <map>
+
 
 using google::LogMessage;
 

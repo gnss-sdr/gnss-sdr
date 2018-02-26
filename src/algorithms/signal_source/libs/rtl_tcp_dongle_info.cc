@@ -32,8 +32,8 @@
  */
 
 #include "rtl_tcp_dongle_info.h"
-#include <string>
 #include <boost/foreach.hpp>
+#include <string>
 
 using boost::asio::ip::tcp;
 

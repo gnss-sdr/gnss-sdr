@@ -37,10 +37,9 @@
 #ifndef GNSS_SDR_gps_l5i_dll_pll_tracking_H_
 #define GNSS_SDR_gps_l5i_dll_pll_tracking_H_
 
-#include <string>
 #include "tracking_interface.h"
 #include "gps_l5i_dll_pll_tracking_cc.h"
-
+#include <string>
 
 class ConfigurationInterface;
 

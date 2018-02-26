@@ -34,6 +34,7 @@
 
 #include "labsat23_source.h"
 #include <gnuradio/io_signature.h>
+#include <iostream>
 #include <sstream>
 
 

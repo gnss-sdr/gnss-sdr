@@ -29,14 +29,15 @@
  */
 
 #include "galileo_e5a_pcps_acquisition.h"
+#include "configuration_interface.h"
+#include "galileo_e5_signal_processing.h"
+#include "Galileo_E5a.h"
+#include "gnss_sdr_flags.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
-#include "galileo_e5_signal_processing.h"
-#include "Galileo_E5a.h"
-#include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
+
 
 using google::LogMessage;
 

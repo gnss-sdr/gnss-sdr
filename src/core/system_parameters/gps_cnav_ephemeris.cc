@@ -32,7 +32,6 @@
 
 #include "gps_cnav_ephemeris.h"
 #include <cmath>
-#include <iostream>
 
 Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
 {
@@ -120,8 +119,8 @@ double Gps_CNAV_Ephemeris::sv_clock_drift(double transmitTime)
     dt = check_t(transmitTime - d_Toc);
     d_satClkDrift = d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt) + sv_clock_relativistic_term(transmitTime);
 
-    //Correct satellite group delay
-    d_satClkDrift-=d_TGD;
+    // Correct satellite group delay
+    d_satClkDrift -= d_TGD;
 
     return d_satClkDrift;
 }
@@ -201,7 +200,6 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     const double A_REF = 26559710.0; // See IS-GPS-200H,  pp. 170
     double d_sqrt_A = sqrt(A_REF + d_DELTA_A);
 
-
     const double GM = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
     const double OMEGA_DOT_REF = -2.6e-9; // semicircles / s, see IS-GPS-200H pp. 164
     const double OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
@@ -218,7 +216,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
 
     // Mean motion difference from computed value
 
-    double delta_n_a=d_Delta_n+0.5*d_DELTA_DOT_N*tk;
+    double delta_n_a = d_Delta_n + 0.5 * d_DELTA_DOT_N * tk;
 
     // Corrected mean motion
     n = n0 + delta_n_a;

@@ -34,12 +34,13 @@
  */
 
 #include "gps_l1_ca_pcps_acquisition.h"
-#include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
+#include "configuration_interface.h"
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
-#include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include <boost/math/distributions/exponential.hpp>
+#include <glog/logging.h>
+
 
 
 using google::LogMessage;

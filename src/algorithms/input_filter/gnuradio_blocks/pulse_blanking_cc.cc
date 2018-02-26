@@ -29,12 +29,11 @@
  */
 
 #include "pulse_blanking_cc.h"
-#include <cmath>
 #include <boost/math/distributions/chi_squared.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-
+#include <cmath>
 
 using google::LogMessage;
 

@@ -29,9 +29,10 @@
  */
 
 #include "labsat_signal_source.h"
-#include <glog/logging.h>
-#include "labsat23_source.h"
 #include "configuration_interface.h"
+#include "labsat23_source.h"
+#include <glog/logging.h>
+
 
 
 using google::LogMessage;

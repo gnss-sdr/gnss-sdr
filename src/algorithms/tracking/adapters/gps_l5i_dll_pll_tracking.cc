@@ -36,10 +36,10 @@
 
 
 #include "gps_l5i_dll_pll_tracking.h"
-#include <glog/logging.h>
-#include "GPS_L5.h"
 #include "configuration_interface.h"
+#include "GPS_L5.h"
 #include "gnss_sdr_flags.h"
+#include <glog/logging.h>
 
 
 using google::LogMessage;

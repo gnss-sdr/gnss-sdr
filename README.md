@@ -31,8 +31,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux
 ----------
 
- * Tested distributions: Ubuntu 14.04 LTS and [above](http://packages.ubuntu.com/search?keywords=gnss-sdr), Debian 8.0 "jessie" and [above](https://packages.debian.org/search?searchon=names&keywords=gnss-sdr), Linaro 15.03
- * Known to work but not continually tested: Arch Linux, Fedora, and openSUSE
+ * Tested distributions: Ubuntu 14.04 LTS and above; Debian 8.0 "jessie" and above; Fedora 26 and above; CentOS 7; Arch Linux.
  * Supported microprocessor architectures:
    * i386: Intel x86 instruction set (32-bit microprocessors).
    * amd64: also known as x86-64, the 64-bit version of the x86 instruction set, originally created by AMD and implemented by AMD, Intel, VIA and others.
@@ -53,7 +52,11 @@ Before building GNSS-SDR, you need to install all the required dependencies. The
 
 ### Alternative 1: Install dependencies using software packages
 
-If you want to start building and running GNSS-SDR as quick and easy as possible, the best option is to install all the required dependencies as binary packages. If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
+If you want to start building and running GNSS-SDR as quick and easy as possible, the best option is to install all the required dependencies as binary packages. 
+
+#### Debian / Ubuntu
+
+If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
 
 ~~~~~~
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
@@ -63,26 +66,57 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
 ~~~~~~
 
-Please note that `googletest` was named `libgtest-dev` in distributions older than Debian 9 Stretch and Ubuntu 17.04 Zesty.
+Please note that `googletest` was named `libgtest-dev` in distributions older than Debian 9 "stretch" and Ubuntu 17.04 "zesty".
 
-Alternatively, and starting from Ubuntu 16.04 LTS, you can install all the required dependencies by adding the line
+**Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev` and `gr-osmosdr` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04 came with 1.5.2 and the minimum required version is 1.5.3. Please do not install the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev` instead. A recent version of the library will be downloaded and built automatically if CMake does not find it installed.
+
+**Note for Debian 8 "jessie" users:** please see the note about `libmatio-dev` above. Install `libtool`, `automake` and `libhdf5-dev` instead.
+
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+
+#### Fedora
+
+If you are using Fedora 26 or above, the required software dependencies can be installed by doing:
 
 ~~~~~~
-deb-src http://us.archive.ubuntu.com/ubuntu/ xenial universe
+$ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel \
+       boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
+       boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
+       blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
+       glog-devel gnutls-devel openssl-devel python-mako python-six 
 ~~~~~~
 
-to your ```/etc/apt/sources.list``` file and doing:
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+#### CentOS
+
+If you are using CentOS 7, you can install the dependencies via Extra Packages for Enterprise Linux ([EPEL](https://fedoraproject.org/wiki/EPEL)):
 
 ~~~~~~
-$ sudo apt-get update
-$ sudo apt-get build-dep gnss-sdr
+$ sudo yum install wget
+$ wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+$ sudo rpm -Uvh epel-release-latest-7.noarch.rpm
+$ sudo yum install make automake gcc gcc-c++ kernel-devel libtool automake \
+       hdf5-devel cmake git boost-devel boost-date-time boost-system \
+       boost-filesystem boost-thread boost-chrono boost-serialization \
+       log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel \
+       armadillo-devel gnutls-devel openssl-devel python-mako python-six
 ~~~~~~
 
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 
-Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux).
+#### Arch Linux
 
-Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT ```libuhd-dev```, ```gnuradio-dev``` and ```gr-osmosdr``` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS.
+If you are using Arch Linux (with base-devel group installed):
 
+~~~~~~
+$ pacman -S cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr \
+       blas lapack gflags google-glog gnutls openssl python2-mako python2-six \
+       libmatio gtest
+~~~~~~
+
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 
 ### Alternative 2: Install dependencies using PyBOMBS
 

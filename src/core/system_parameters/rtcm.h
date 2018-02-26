@@ -33,6 +33,14 @@
 #define GNSS_SDR_RTCM_H_
 
 
+#include "concurrent_queue.h"
+#include "gnss_synchro.h"
+#include "galileo_fnav_message.h"
+#include "gps_navigation_message.h"
+#include "gps_cnav_navigation_message.h"
+#include "glonass_gnav_navigation_message.h"
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <bitset>
 #include <deque>
 #include <map>
@@ -42,14 +50,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-#include <boost/asio.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include "concurrent_queue.h"
-#include "gnss_synchro.h"
-#include "galileo_fnav_message.h"
-#include "gps_navigation_message.h"
-#include "gps_cnav_navigation_message.h"
-#include "glonass_gnav_navigation_message.h"
 
 
 /*!

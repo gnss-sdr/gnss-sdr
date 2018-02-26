@@ -31,9 +31,9 @@ m * \file gps_navigation_message.cc
  */
 
 #include "gps_navigation_message.h"
+#include "gnss_satellite.h"
 #include <cmath>
 #include <iostream>
-#include <gnss_satellite.h>
 
 
 void Gps_Navigation_Message::reset()

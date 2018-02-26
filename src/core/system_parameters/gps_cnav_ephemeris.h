@@ -33,7 +33,7 @@
 #define GNSS_SDR_GPS_CNAV_EPHEMERIS_H_
 
 #include "GPS_CNAV.h"
-#include "boost/assign.hpp"
+#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
 
 

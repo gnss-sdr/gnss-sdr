@@ -31,7 +31,7 @@
  */
 
 #include "glonass_gnav_navigation_message.h"
-#include <gnss_satellite.h>
+#include "gnss_satellite.h"
 #include <glog/logging.h>
 
 

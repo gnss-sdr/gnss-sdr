@@ -30,7 +30,7 @@
  * -------------------------------------------------------------------------
  */
 
-
+#include <algorithm>
 #include <chrono>
 #include <complex>
 #include <numeric>
@@ -45,7 +45,7 @@ TEST(MultiplyTest, StandardCDoubleImplementation)
 {
     double* input = new double[FLAGS_size_multiply_test];
     double* output = new double[FLAGS_size_multiply_test];
-    memset(input, 0, sizeof(double) * FLAGS_size_multiply_test);
+    std::fill_n(input, FLAGS_size_multiply_test, 0.0);
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
@@ -98,7 +98,7 @@ TEST(MultiplyTest, StandardCComplexImplementation)
 {
     std::complex<float>* input = new std::complex<float>[FLAGS_size_multiply_test];
     std::complex<float>* output = new std::complex<float>[FLAGS_size_multiply_test];
-    memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_multiply_test);
+    std::fill_n(input, FLAGS_size_multiply_test, std::complex<float>(0.0, 0.0));
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
@@ -180,7 +180,7 @@ TEST(MultiplyTest, VolkComplexImplementation)
 {
     std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     std::complex<float>* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
-    memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_multiply_test);
+    std::fill_n(input, FLAGS_size_multiply_test, std::complex<float>(0.0, 0.0));
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();

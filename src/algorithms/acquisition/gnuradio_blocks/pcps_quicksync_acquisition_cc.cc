@@ -29,14 +29,14 @@
  */
 
 #include "pcps_quicksync_acquisition_cc.h"
-#include <cmath>
-#include <sstream>
+#include "control_message_factory.h"
+#include "GPS_L1_CA.h"
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "control_message_factory.h"
-#include "GPS_L1_CA.h"
+#include <cmath>
+#include <sstream>
 
 
 using google::LogMessage;

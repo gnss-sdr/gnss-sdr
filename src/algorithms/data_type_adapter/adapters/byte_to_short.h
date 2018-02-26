@@ -31,11 +31,10 @@
 #ifndef GNSS_SDR_BYTE_TO_SHORT_H_
 #define GNSS_SDR_BYTE_TO_SHORT_H_
 
-#include <string>
+#include "gnss_block_interface.h"
 #include <gnuradio/blocks/char_to_short.h>
 #include <gnuradio/blocks/file_sink.h>
-#include "gnss_block_interface.h"
-
+#include <string>
 
 class ConfigurationInterface;
 

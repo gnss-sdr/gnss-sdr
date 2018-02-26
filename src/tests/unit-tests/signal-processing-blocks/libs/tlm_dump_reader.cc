@@ -29,6 +29,7 @@
  */
 
 #include "tlm_dump_reader.h"
+#include <iostream>
 
 bool tlm_dump_reader::read_binary_obs()
 {

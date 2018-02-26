@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -16,19 +16,24 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qa_utils.h"
-#include "kernel_tests.h"
-#include "volk_gnsssdr_option_helpers.h"
+#include "kernel_tests.h"                      // for init_test_list
+#include "qa_utils.h"                          // for volk_gnsssdr_test_results_t
+#include "volk_gnsssdr/volk_gnsssdr_complex.h" // for lv_32fc_t
+#include "volk_gnsssdr_option_helpers.h"       // for option_list, option_t
 #include "volk_gnsssdr_profile.h"
+#include "volk_gnsssdr/volk_gnsssdr_prefs.h"   // for volk_gnsssdr_get_config_path
+#include <boost/filesystem/operations.hpp>     // for create_directories, exists
+#include <boost/filesystem/path.hpp>           // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>    // for filesystem
+#include <sys/stat.h>                          // for stat
+#include <cstddef>                             // for size_t
+#include <iostream>                            // for operator<<, basic_ostream
+#include <fstream>                             // IWYU pragma: keep
+#include <map>                                 // for map, map<>::iterator
+#include <utility>                             // for pair
+#include <vector>                              // for vector, vector<>::const_..
 
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <volk_gnsssdr/volk_gnsssdr_prefs.h>
 
-#include <vector>
-#include <boost/filesystem.hpp>
-#include <iostream>
-#include <fstream>
-#include <sys/stat.h>
 
 namespace fs = boost::filesystem;
 
@@ -222,7 +227,7 @@ void write_results(const std::vector<volk_gnsssdr_test_results_t> *results, bool
     const fs::path config_path(path);
     // Until we can update the config on a kernel by kernel basis
     // do not overwrite volk_gnsssdr_config when using a regex.
-    if (not fs::exists(config_path.branch_path()))
+    if (! fs::exists(config_path.branch_path()))
     {
         std::cout << "Creating " << config_path.branch_path() << " ..." << std::endl;
         fs::create_directories(config_path.branch_path());

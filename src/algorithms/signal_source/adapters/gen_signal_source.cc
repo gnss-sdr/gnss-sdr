@@ -31,13 +31,12 @@
  */
 
 #include "gen_signal_source.h"
-#include <iostream>
-#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/message.h>
 #include <glog/logging.h>
+#include <sstream>
 
 using google::LogMessage;
 

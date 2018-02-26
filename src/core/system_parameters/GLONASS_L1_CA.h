@@ -32,11 +32,12 @@
 #ifndef GNSS_SDR_GLONASS_L1_CA_H_
 #define GNSS_SDR_GLONASS_L1_CA_H_
 
+#include "gnss_frequencies.h"
+#include "MATH_CONSTANTS.h"
 #include <map>
 #include <vector>
 #include <utility> // std::pair
-#include "MATH_CONSTANTS.h"
-#include "gnss_frequencies.h"
+
 
 // Physical constants
 const double GLONASS_C_m_s                  = SPEED_OF_LIGHT;       //!< The speed of light, [m/s]

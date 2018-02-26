@@ -30,10 +30,10 @@
  */
 
 #include "ls_pvt.h"
-#include <exception>
-#include <stdexcept>
 #include "GPS_L1_CA.h"
 #include <glog/logging.h>
+#include <exception>
+#include <stdexcept>
 
 
 using google::LogMessage;

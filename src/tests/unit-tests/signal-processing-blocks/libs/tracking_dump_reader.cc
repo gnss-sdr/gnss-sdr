@@ -29,6 +29,7 @@
  */
 
 #include "tracking_dump_reader.h"
+#include <iostream>
 
 bool tracking_dump_reader::read_binary_obs()
 {

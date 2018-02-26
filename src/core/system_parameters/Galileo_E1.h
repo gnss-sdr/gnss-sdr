@@ -33,11 +33,11 @@
 #ifndef GNSS_SDR_GALILEO_E1_H_
 #define GNSS_SDR_GALILEO_E1_H_
 
+#include "gnss_frequencies.h"
+#include "MATH_CONSTANTS.h"
 #include <string>
 #include <vector>
 #include <utility> // std::pair
-#include "MATH_CONSTANTS.h"
-#include "gnss_frequencies.h"
 
 
 // Physical constants
@@ -65,7 +65,7 @@ const double GALILEO_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (
 
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
-const int GALILEO_E1_HISTORY_DEEP=100;
+const int GALILEO_E1_HISTORY_DEEP = 100;
 
 // Galileo INAV Telemetry structure
 

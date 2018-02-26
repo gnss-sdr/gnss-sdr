@@ -31,9 +31,9 @@
  */
 
 #include "gps_ephemeris.h"
-#include <cmath>
-#include "GPS_L1_CA.h"
 #include "gnss_satellite.h"
+#include "GPS_L1_CA.h"
+#include <cmath>
 
 Gps_Ephemeris::Gps_Ephemeris()
 {

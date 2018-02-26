@@ -28,13 +28,13 @@
  * -------------------------------------------------------------------------
  */
 
+#include "pulse_blanking_filter.h"
+#include "configuration_interface.h"
 #include <boost/lexical_cast.hpp>
-#include <vector>
-#include <cmath>
 #include <glog/logging.h>
 #include <gnuradio/filter/firdes.h>
-#include "configuration_interface.h"
-#include "pulse_blanking_filter.h"
+#include <vector>
+#include <cmath>
 
 using google::LogMessage;
 

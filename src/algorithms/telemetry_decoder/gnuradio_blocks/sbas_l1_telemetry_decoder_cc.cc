@@ -28,14 +28,14 @@
  * -------------------------------------------------------------------------
  */
 
-#include <iostream>
-#include <sstream>
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
-#include <boost/lexical_cast.hpp>
+#include "sbas_l1_telemetry_decoder_cc.h"
 #include "control_message_factory.h"
 #include "gnss_synchro.h"
-#include "sbas_l1_telemetry_decoder_cc.h"
+#include <boost/lexical_cast.hpp>
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <sstream>
+
 
 using google::LogMessage;
 
@@ -44,7 +44,6 @@ using google::LogMessage;
 #define FLOW 3      // logs the function calls of block processing functions
 #define SAMP_SYNC 4 // about 1 log entry per sample -> high output
 #define LMORE 5     //
-
 
 
 sbas_l1_telemetry_decoder_cc_sptr

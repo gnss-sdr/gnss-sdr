@@ -33,17 +33,18 @@
 #ifndef GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H_
 #define GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H_
 
-#include <bitset>
-#include <map>
-#include <string>
-#include <utility>
-#include <vector>
-#include <boost/cstdint.hpp>  // for boost::uint32_t
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_almanac.h"
 #include "galileo_utc_model.h"
 #include "Galileo_E1.h"
+#include <boost/cstdint.hpp>  // for boost::uint32_t
+#include <bitset>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
 
 /*!
  * \brief This class handles the Galileo I/NAV Data message, as described in the

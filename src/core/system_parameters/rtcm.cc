@@ -29,19 +29,19 @@
  */
 
 #include "rtcm.h"
+#include "Galileo_E1.h"
+#include "GPS_L2C.h"
+#include <boost/algorithm/string.hpp>  // for to_upper_copy
+#include <boost/crc.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/dynamic_bitset.hpp>
+#include <glog/logging.h>
 #include <algorithm>  // for std::reverse
 #include <chrono>     // std::chrono::seconds
 #include <cmath>      // for std::fmod
 #include <cstdlib>    // for strtol
 #include <sstream>    // for std::stringstream
 #include <thread>
-#include <boost/algorithm/string.hpp>  // for to_upper_copy
-#include <boost/crc.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/dynamic_bitset.hpp>
-#include <glog/logging.h>
-#include "Galileo_E1.h"
-#include "GPS_L2C.h"
 
 using google::LogMessage;
 

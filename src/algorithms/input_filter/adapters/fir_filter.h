@@ -33,9 +33,11 @@
 #ifndef GNSS_SDR_FIR_FILTER_H_
 #define GNSS_SDR_FIR_FILTER_H_
 
-#include <cmath>
-#include <string>
-#include <vector>
+#include "gnss_block_interface.h"
+#include "complex_byte_to_float_x2.h"
+#include "byte_x2_to_complex_byte.h"
+#include "short_x2_to_cshort.h"
+#include "cshort_to_float_x2.h"
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_char.h>
@@ -43,11 +45,9 @@
 #include <gnuradio/blocks/float_to_short.h>
 #include <gnuradio/filter/fir_filter_ccf.h>
 #include <gnuradio/filter/fir_filter_fff.h>
-#include "gnss_block_interface.h"
-#include "complex_byte_to_float_x2.h"
-#include "byte_x2_to_complex_byte.h"
-#include "short_x2_to_cshort.h"
-#include "cshort_to_float_x2.h"
+#include <cmath>
+#include <string>
+#include <vector>
 
 class ConfigurationInterface;
 

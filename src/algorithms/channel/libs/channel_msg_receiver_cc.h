@@ -31,8 +31,8 @@
 #ifndef GNSS_SDR_CHANNEL_MSG_RECEIVER_CC_H
 #define GNSS_SDR_CHANNEL_MSG_RECEIVER_CC_H
 
-#include <gnuradio/block.h>
 #include "channel_fsm.h"
+#include <gnuradio/block.h>
 
 class channel_msg_receiver_cc;
 

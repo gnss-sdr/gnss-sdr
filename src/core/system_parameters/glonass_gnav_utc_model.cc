@@ -31,7 +31,6 @@
  */
 
 #include "glonass_gnav_utc_model.h"
-#include <cmath>
 
 Glonass_Gnav_Utc_Model::Glonass_Gnav_Utc_Model()
 {
@@ -43,6 +42,7 @@ Glonass_Gnav_Utc_Model::Glonass_Gnav_Utc_Model()
     d_B1 = 0.0;
     d_B2 = 0.0;
 }
+
 
 double Glonass_Gnav_Utc_Model::utc_time(double glonass_time_corrected)
 {

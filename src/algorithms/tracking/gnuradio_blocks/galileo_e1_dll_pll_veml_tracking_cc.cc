@@ -35,21 +35,21 @@
  */
 
 #include "galileo_e1_dll_pll_veml_tracking_cc.h"
-#include <cmath>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
-#include <matio.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "galileo_e1_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
 #include "Galileo_E1.h"
 #include "control_message_factory.h"
 #include "gnss_sdr_flags.h"
+#include <boost/lexical_cast.hpp>
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
+#include <matio.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>
+#include <iostream>
+#include <memory>
+#include <sstream>
 
 using google::LogMessage;
 

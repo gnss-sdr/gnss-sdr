@@ -30,12 +30,12 @@
  * -------------------------------------------------------------------------
  */
 
-#include <iostream>
-#include <deque>
-#include <cmath>
-#include <cinttypes>
-#include <complex>
+#include "gps_l5_signal.h"
 #include "GPS_L5.h"
+#include <cinttypes>
+#include <cmath>
+#include <complex>
+#include <deque>
 
 
 std::deque<bool> l5i_xa_shift(std::deque<bool> xa)

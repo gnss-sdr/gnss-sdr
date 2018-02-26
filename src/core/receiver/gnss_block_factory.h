@@ -37,10 +37,11 @@
 #ifndef GNSS_SDR_BLOCK_FACTORY_H_
 #define GNSS_SDR_BLOCK_FACTORY_H_
 
+#include <gnuradio/msg_queue.h>
 #include <memory>
 #include <string>
 #include <vector>
-#include <gnuradio/msg_queue.h>
+
 
 class ConfigurationInterface;
 class GNSSBlockInterface;

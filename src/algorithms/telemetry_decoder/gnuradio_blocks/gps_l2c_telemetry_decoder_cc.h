@@ -31,18 +31,19 @@
 #ifndef GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_CC_H
 #define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_CC_H
 
+
+#include "gnss_satellite.h"
+#include "gps_cnav_navigation_message.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include <gnuradio/block.h>
 #include <algorithm> // for copy
 #include <deque>
 #include <fstream>
 #include <string>
 #include <utility> // for pair
 #include <vector>
-#include <gnuradio/block.h>
-#include "gnss_satellite.h"
-#include "gps_cnav_navigation_message.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
-#include "concurrent_queue.h"
+
 
 extern "C" {
     #include "cnav_msg.h"

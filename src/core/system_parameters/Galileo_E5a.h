@@ -31,11 +31,11 @@
 #ifndef GNSS_SDR_GALILEO_E5A_H_
 #define GNSS_SDR_GALILEO_E5A_H_
 
+#include "gnss_frequencies.h"
+#include "MATH_CONSTANTS.h"
 #include <string>
 #include <vector>
 #include <utility> // std::pair
-#include "MATH_CONSTANTS.h"
-#include "gnss_frequencies.h"
 
 
 // Carrier and code frequencies

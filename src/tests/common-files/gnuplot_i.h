@@ -56,6 +56,7 @@
 #include <stdexcept>
 #include <cstdio>
 #include <cstdlib>              // for getenv()
+#include <cmath>
 #include <list>                 // for std::list
 
 
@@ -1887,7 +1888,7 @@ bool Gnuplot::get_program_path()
     // Retrieves a C string containing the value of environment variable PATH
     path = std::getenv("PATH");
 
-    if (path == NULL)
+    if (path == NULL || std::char_traits<char>::length(path) > 4096 * sizeof(char))
         {
             throw GnuplotException("Path is not set");
         }

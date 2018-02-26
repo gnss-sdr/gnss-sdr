@@ -32,13 +32,13 @@
 
 
 #include "glonass_l1_ca_telemetry_decoder.h"
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
-#include "concurrent_queue.h"
+#include "configuration_interface.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_utc_model.h"
-#include "configuration_interface.h"
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
+
 
 using google::LogMessage;
 
@@ -46,9 +46,9 @@ GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface*
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams)
+                role_(role),
+                in_streams_(in_streams),
+                out_streams_(out_streams)
 {
     std::string default_dump_filename = "./navigation.dat";
     DLOG(INFO) << "role " << role;
@@ -57,8 +57,6 @@ GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface*
     // make telemetry decoder object
     telemetry_decoder_ = glonass_l1_ca_make_telemetry_decoder_cc(satellite_, dump_);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-
-    DLOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
 }
 

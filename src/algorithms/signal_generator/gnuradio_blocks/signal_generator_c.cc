@@ -29,10 +29,6 @@
 */
 
 #include "signal_generator_c.h"
-#include <iostream>
-#include <fstream>
-#include <gnuradio/io_signature.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gps_sdr_signal_processing.h"
 #include "glonass_l1_signal_processing.h"
 #include "galileo_e1_signal_processing.h"
@@ -41,6 +37,9 @@
 #include "Galileo_E5a.h"
 #include "GPS_L1_CA.h"
 #include "GLONASS_L1_CA.h"
+#include <gnuradio/io_signature.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <fstream>
 
 /*
 * Create a new instance of signal_generator_c and return

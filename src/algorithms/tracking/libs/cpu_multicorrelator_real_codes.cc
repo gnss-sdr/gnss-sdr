@@ -34,9 +34,9 @@
  */
 
 #include "cpu_multicorrelator_real_codes.h"
-#include <cmath>
-#include <iostream>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>
+
 
 
 cpu_multicorrelator_real_codes::cpu_multicorrelator_real_codes()

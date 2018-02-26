@@ -33,7 +33,6 @@
 #include <unistd.h>
 #include <chrono>
 #include <exception>
-#include <iostream>
 #include <string>
 #include <armadillo>
 #include <gnuradio/top_block.h>

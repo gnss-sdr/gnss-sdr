@@ -36,11 +36,9 @@
 #ifndef GNSS_SDR_NMEA_PRINTER_H_
 #define GNSS_SDR_NMEA_PRINTER_H_
 
-
-#include <iostream>
+#include "pvt_solution.h"
 #include <fstream>
 #include <string>
-#include "pvt_solution.h"
 
 
 /*!

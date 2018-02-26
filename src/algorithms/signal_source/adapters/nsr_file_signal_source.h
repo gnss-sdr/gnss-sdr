@@ -35,15 +35,14 @@
 #ifndef GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H_
 #define GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H_
 
-#include <string>
+#include "gnss_block_interface.h"
+#include "unpack_byte_2bit_samples.h"
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_block_interface.h"
-#include "unpack_byte_2bit_samples.h"
-
+#include <string>
 
 class ConfigurationInterface;
 

@@ -39,18 +39,20 @@
 #define GOOGLE_STRIP_LOG 0
 #endif
 
+#include "concurrent_map.h"
+#include "concurrent_queue.h"
+#include "control_thread.h"
+#include "gnss_sdr_flags.h"
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception_ptr.hpp>
+#include <boost/filesystem/operations.hpp>     // for create_directories, exists
+#include <boost/filesystem/path.hpp>           // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>    // for filesystem
+#include <glog/logging.h>
 #include <chrono>
 #include <iostream>
 #include <memory>
-#include <boost/exception/diagnostic_information.hpp>
-#include <boost/exception_ptr.hpp>
-#include <boost/filesystem.hpp>
-#include <glog/logging.h>
-#include "control_thread.h"
-#include "concurrent_queue.h"
-#include "concurrent_map.h"
-#include "gnss_sdr_flags.h"
-#include "display.h"
+
 
 #if CUDA_GPU_ACCEL
     // For the CUDA runtime routines (prefixed with "cuda_")

@@ -28,7 +28,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include <iostream>
 #include <string>
 #include "rinex_printer.h"
 

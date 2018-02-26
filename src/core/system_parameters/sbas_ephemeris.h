@@ -32,6 +32,8 @@
 #ifndef GNSS_SDR_SBAS_EPHEMERIS_H_
 #define GNSS_SDR_SBAS_EPHEMERIS_H_
 
+#include <ostream>
+
 /*!
  * \brief This class stores SBAS SV ephemeris data
  *

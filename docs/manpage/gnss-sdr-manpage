@@ -1,42 +1,70 @@
 .\" Manpage for gnss\-sdr.
 .\" Contact carles.fernandez@cttc.es to correct errors or typos.
-.TH gnss\-sdr 1 "05 Feb 2017" "0.0.9" "gnss\-sdr man page"
+.TH gnss\-sdr 1 "24 Feb 2018" "0.0.9" "gnss\-sdr man page"
 .SH NAME
 \fBgnss\-sdr\fR \- GNSS Software Defined Receiver.
 .SH SYNOPSIS
-\fBgnss\-sdr \-config_file=\fR\fI<path\-to\-configuration\-file>\fR [OPTION]...
+\fBgnss\-sdr \-c=\fR\fI<path\-to\-configuration\-file>\fR [OPTION]...
 .SH DESCRIPTION
 \fBgnss\-sdr\fR is a Global Navigation Satellite Systems Software Defined Receiver written in C++. It implements all the signal processing chain, taking as input raw samples coming from the output of an Analog\-to\-Digital Converter, and processing them up to the computation of the Position\-Velocity\-Time solution, including the generation of code and phase measurements. 
 \.TP
 \fBgnss\-sdr\fR is able to work with raw data files or, if there is computational power enough, in real time with suitable radio frequency front\-ends. The whole receiver is defined in a single configuration file, and therefore users can define theirs.
+\.TP
+There is some flexibility in how flags may be specified. The following examples are equivalent:
+\.RS 8
+\.TP
+gnss\-sdr \-c=/home/user/rx.conf
+\.TP
+gnss\-sdr \-\-c=/home/user/rx.conf
+\.TP
+gnss\-sdr \-c /home/user/rx.conf
+\.TP
+gnss\-sdr \-\-c /home/user/rx.conf
+\.RE
 .SH OPTIONS
 \fBgnss\-sdr\fR takes the following options:
 .TP
-\fB\-config_file=\fR\fI<path\-to\-configuration\-file>\fR Set the configuration file.
+\fB\-c=\fR\fI<path\-to\-configuration\-file>\fR or \fB\-config_file=\fR\fI<path\-to\-configuration\-file>\fR
+Set the configuration file. This flag is mandatory.
 .TP 
-\fB\-signal_source=\fR\fI<path\-to\-raw\-signal\-file>\fR If defined, path to the file containing the signal samples (overrides the data file specified in the configuration file).
+\fB\-s=\fR\fI<path\-to\-raw\-signal\-file>\fR or \fB\-signal_source=\fR\fI<path\-to\-raw\-signal\-file>\fR 
+If defined, path to the file containing the signal samples (overrides the data file specified in the configuration file).
 .TP 
-\fB\-log_dir=\fR\fI<path\-to\-directory>\fR If defined, overrides the default directory where logs are saved.
+\fB\-log_dir=\fR\fI<path\-to\-directory>\fR
+If defined, overrides the default directory where logs are saved.
 .TP
-\fB\-doppler_max=\fR\fIdoppler\fR If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file),
+\fB\-doppler_max=\fR\fI<doppler_max>\fR
+If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file).
 .TP
-\fB\-cn0_samples=\fR\fIsamples\fR Number of correlator outputs used for CN0 estimation.
+\fB\-doppler_step=\fR\fI<doppler_step>\fR
+If defined, sets the frequency step in the search grid, in Hz (overrides the configuration file).
 .TP
-\fB\-cn0_min=\fR\fIcn0_min\fR Minimum valid CN0 (in dB-Hz).
+\fB\-cn0_samples=\fR\fI<samples>\fR
+Number of correlators outputs (one per integration time) used for CN0 estimation. It defaults to 20 outputs.
 .TP
-\fB\-max_lock_fail=\fR\fImax_lock_fail\fR Number number of lock failures before dropping satellite.
+\fB\-cn0_min=\fR\fI<cn0_min>\fR
+Minimum valid CN0 (in dB-Hz). It defaults to 25 dB-Hz.
 .TP
-\fB\-carrier_lock_th=\fR\fIcarrier_lock_th\fR Carrier lock threshold (in rad).
+\fB\-max_lock_fail=\fR\fI<max_lock_fail>\fR
+Number of lock failures before dropping satellite. It defaults to 50 failures.
 .TP
-\fB\-dll_bw_hz=\fR\fIdll_bw_hz\fR If defined, bandwidth of the DLL low pass filter, in Hz (overrides the configuration file).
+\fB\-carrier_lock_th=\fR\fI<carrier_lock_th>\fR
+Carrier lock error threshold (in rad). It defaults to 0.85 rad (48.7 degrees).
 .TP
-\fB\-pll_bw_hz=\fR\fIpll_bw_hz\fR If defined, bandwidth of the PLL low pass filter, in Hz (overrides the configuration file).
+\fB\-dll_bw_hz=\fR\fI<dll_bw_hz>\fR
+If defined, bandwidth of the DLL low pass filter, in Hz (overrides the configuration file).
 .TP
-\fB\-RINEX_version=\fI<version>\fR Specifies the RINEX version (2.11 or 3.02). Default: "3.02".
+\fB\-pll_bw_hz=\fR\fI<pll_bw_hz>\fR
+If defined, bandwidth of the PLL low pass filter, in Hz (overrides the configuration file).
 .TP
-\fB\-version\fR Print program version and exit.
+\fB\-RINEX_version=\fI<version>\fR
+If defined, specifies the RINEX version (2.11 or 3.02). Default: "3.02". Overrides the configuration file.
 .TP
-\fB\-help\fR Print all the available commandline flags and exit.
+\fB\-version\fR
+Print program version and exit.
+.TP
+\fB\-help\fR
+Print all the available commandline flags and exit.
 .SH SEE ALSO
 .BR volk_gnsssdr_profile (1)
 \.TP

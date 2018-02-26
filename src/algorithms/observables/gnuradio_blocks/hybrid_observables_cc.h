@@ -34,6 +34,8 @@
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 #define GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 
+#include "gnss_synchro.h"
+#include <gnuradio/block.h>
 #include <fstream>
 #include <string>
 #include <utility> //std::pair

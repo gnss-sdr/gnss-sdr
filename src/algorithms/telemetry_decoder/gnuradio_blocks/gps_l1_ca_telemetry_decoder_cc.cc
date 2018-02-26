@@ -30,11 +30,11 @@
  */
 
 #include "gps_l1_ca_telemetry_decoder_cc.h"
-#include <iostream>
+#include "control_message_factory.h"
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include "control_message_factory.h"
+
 
 #ifndef _rotl
 #define _rotl(X,N)  ((X << N) ^ (X >> (32-N)))  // Used in the parity check algorithm

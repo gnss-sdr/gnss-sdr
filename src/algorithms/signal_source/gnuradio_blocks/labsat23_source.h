@@ -32,10 +32,10 @@
 #define GNSS_SDR_LABSAT23_SOURCE_H
 
 #include <gnuradio/block.h>
-#include <string>
-#include <iostream>
+#include <cstdint>
 #include <fstream>
-#include <stdint.h>
+#include <string>
+
 
 class labsat23_source;
 

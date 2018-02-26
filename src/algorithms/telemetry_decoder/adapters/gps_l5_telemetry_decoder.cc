@@ -31,10 +31,9 @@
 
 
 #include "gps_l5_telemetry_decoder.h"
+#include "configuration_interface.h"
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include "concurrent_queue.h"
-#include "configuration_interface.h"
 
 
 using google::LogMessage;
@@ -43,9 +42,9 @@ GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(ConfigurationInterface* configurati
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams)
+                role_(role),
+                in_streams_(in_streams),
+                out_streams_(out_streams)
 {
     std::string default_dump_filename = "./navigation.dat";
     DLOG(INFO) << "role " << role;
@@ -54,8 +53,6 @@ GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(ConfigurationInterface* configurati
     // make telemetry decoder object
     telemetry_decoder_ = gps_l5_make_telemetry_decoder_cc(satellite_, dump_);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-
-    LOG(INFO) << "global navigation message queue assigned to telemetry_decoder (" << telemetry_decoder_->unique_id() << ")" << "role " << role;
     channel_ = 0;
 }
 

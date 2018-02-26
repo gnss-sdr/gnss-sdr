@@ -35,12 +35,11 @@
 #define GNSS_SDR_GLONASS_GNAV_NAVIGATION_MESSAGE_H_
 
 
-#include <bitset>
 #include "GLONASS_L1_CA.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_utc_model.h"
-
+#include <bitset>
 
 
 /*!

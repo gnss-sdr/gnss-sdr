@@ -35,14 +35,14 @@
  */
 
 #include "galileo_e5a_telemetry_decoder.h"
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
-#include "concurrent_queue.h"
+#include "configuration_interface.h"
 #include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include "configuration_interface.h"
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
+
 
 
 using google::LogMessage;
@@ -51,9 +51,9 @@ GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* c
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams)
+                role_(role),
+                in_streams_(in_streams),
+                out_streams_(out_streams)
 {
     std::string default_dump_filename = "./navigation.dat";
     DLOG(INFO) << "role " << role;
@@ -62,7 +62,6 @@ GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* c
     // make telemetry decoder object
     telemetry_decoder_ = galileo_e5a_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-    DLOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
 }
 

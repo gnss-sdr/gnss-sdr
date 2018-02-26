@@ -30,17 +30,19 @@
  */
 
 #include "hybrid_observables_cc.h"
+#include "Galileo_E1.h"
+#include "GPS_L1_CA.h"
+#include <armadillo>
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <gnuradio/block_detail.h>
+#include <gnuradio/buffer.h>
+#include <matio.h>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
-#include <gnuradio/io_signature.h>
-#include <gnuradio/block_detail.h>
-#include <gnuradio/buffer.h>
-#include <glog/logging.h>
-#include <matio.h>
-#include "Galileo_E1.h"
-#include "GPS_L1_CA.h"
+
 
 using google::LogMessage;
 

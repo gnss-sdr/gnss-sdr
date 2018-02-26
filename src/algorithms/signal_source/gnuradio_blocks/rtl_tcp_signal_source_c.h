@@ -40,12 +40,12 @@
 
 #include "rtl_tcp_dongle_info.h"
 #include <boost/asio.hpp>
-#include <gnuradio/sync_block.h>
-#include <string>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 #include <boost/array.hpp>
 #include <boost/circular_buffer.hpp>
+#include <gnuradio/sync_block.h>
+#include <string>
 
 class rtl_tcp_signal_source_c;
 

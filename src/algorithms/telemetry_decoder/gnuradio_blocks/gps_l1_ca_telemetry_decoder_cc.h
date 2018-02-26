@@ -31,16 +31,14 @@
 #ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
 #define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
 
-#include <fstream>
-#include <string>
-#include <gnuradio/block.h>
-#include <deque>
 #include "GPS_L1_CA.h"
 #include "gps_l1_ca_subframe_fsm.h"
-#include "concurrent_queue.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
-
+#include <gnuradio/block.h>
+#include <deque>
+#include <fstream>
+#include <string>
 
 class gps_l1_ca_telemetry_decoder_cc;
 

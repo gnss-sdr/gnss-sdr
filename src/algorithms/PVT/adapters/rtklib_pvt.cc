@@ -30,13 +30,14 @@
 
 
 #include "rtklib_pvt.h"
-#include <glog/logging.h>
+#include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/math/common_factor_rt.hpp>
 #include <boost/serialization/map.hpp>
-#include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
+#include <glog/logging.h>
+
 
 using google::LogMessage;
 

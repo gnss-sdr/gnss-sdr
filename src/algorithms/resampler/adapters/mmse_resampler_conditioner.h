@@ -33,13 +33,13 @@
 #ifndef GNSS_SDR_MMSE_RESAMPLER_CONDITIONER_H_
 #define GNSS_SDR_MMSE_RESAMPLER_CONDITIONER_H_
 
-#include <string>
+#include "gnss_block_interface.h"
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/mmse_resampler_cc.h>
 #else
 #include <gnuradio/filter/fractional_resampler_cc.h>
 #endif
-#include "gnss_block_interface.h"
+#include <string>
 
 class ConfigurationInterface;
 

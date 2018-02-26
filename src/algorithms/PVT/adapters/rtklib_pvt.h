@@ -33,9 +33,9 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_H_
 #define GNSS_SDR_RTKLIB_PVT_H_
 
-#include <string>
 #include "pvt_interface.h"
 #include "rtklib_pvt_cc.h"
+#include <string>
 
 
 class ConfigurationInterface;

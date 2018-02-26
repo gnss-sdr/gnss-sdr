@@ -52,13 +52,12 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_H_
 #define GNSS_SDR_PCPS_ACQUISITION_H_
 
-
-#include <string>
+#include "gnss_synchro.h"
 #include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "gnss_synchro.h"
+#include <string>
 
 
 class pcps_acquisition;

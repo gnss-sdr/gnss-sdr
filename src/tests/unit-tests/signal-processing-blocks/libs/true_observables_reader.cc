@@ -29,6 +29,7 @@
  */
 
 #include "true_observables_reader.h"
+#include <iostream>
 
 bool true_observables_reader::read_binary_obs()
 {

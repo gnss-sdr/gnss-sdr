@@ -32,7 +32,6 @@
 
 
 #include <chrono>
-#include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>

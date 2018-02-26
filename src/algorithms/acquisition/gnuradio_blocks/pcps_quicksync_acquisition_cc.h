@@ -51,15 +51,15 @@
 #ifndef GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H_
 
+#include "gnss_synchro.h"
+#include <gnuradio/block.h>
+#include <gnuradio/gr_complex.h>
+#include <gnuradio/fft/fft.h>
 #include <fstream>
 #include <string>
 #include <algorithm>
 #include <functional>
-#include <assert.h>
-#include <gnuradio/block.h>
-#include <gnuradio/gr_complex.h>
-#include <gnuradio/fft/fft.h>
-#include "gnss_synchro.h"
+#include <cassert>
 
 class pcps_quicksync_acquisition_cc;
 

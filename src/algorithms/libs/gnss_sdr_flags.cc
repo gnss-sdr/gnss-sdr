@@ -29,7 +29,7 @@
  */
 
 
-#include <gnss_sdr_flags.h>
+#include "gnss_sdr_flags.h"
 #include <cstdint>
 #include <iostream>
 

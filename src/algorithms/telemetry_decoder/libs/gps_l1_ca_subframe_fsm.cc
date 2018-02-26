@@ -29,13 +29,13 @@
  */
 
 #include "gps_l1_ca_subframe_fsm.h"
-#include <string>
+#include "gnss_satellite.h"
 #include <boost/statechart/simple_state.hpp>
 #include <boost/statechart/state.hpp>
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/custom_reaction.hpp>
 #include <boost/mpl/list.hpp>
-#include "gnss_satellite.h"
+#include <string>
 
 
 //************ GPS WORD TO SUBFRAME DECODER STATE MACHINE **********

@@ -46,9 +46,9 @@
  */
 
 #include "INIReader.h"
+#include "ini.h"
 #include <cctype> // for tolower
 #include <cstdlib> // for strol
-#include "ini.h"
 
 
 INIReader::INIReader(std::string filename)

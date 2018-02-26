@@ -34,10 +34,10 @@
  */
 
 #include "nmea_printer.h"
-#include <fcntl.h>
-#include <termios.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
+#include <fcntl.h>
+#include <termios.h>
 
 
 using google::LogMessage;

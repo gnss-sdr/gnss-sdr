@@ -31,7 +31,6 @@
  */
 
 #include "gps_cnav_navigation_message.h"
-#include <iostream>
 #include "gnss_satellite.h"
 
 

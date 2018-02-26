@@ -29,10 +29,10 @@
  */
 
 #include "beamformer_filter.h"
-#include <glog/logging.h>
-#include <gnuradio/blocks/file_sink.h>
 #include "beamformer.h"
 #include "configuration_interface.h"
+#include <glog/logging.h>
+#include <gnuradio/blocks/file_sink.h>
 
 
 using google::LogMessage;

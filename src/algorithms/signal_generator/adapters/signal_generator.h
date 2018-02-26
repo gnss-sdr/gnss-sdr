@@ -33,15 +33,14 @@
 #ifndef GNSS_SDR_SIGNAL_GENERATOR_H_
 #define GNSS_SDR_SIGNAL_GENERATOR_H_
 
-
-#include <string>
-#include <vector>
+#include "gnss_block_interface.h"
+#include "signal_generator_c.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/vector_to_stream.h>
-#include "gnss_block_interface.h"
-#include "signal_generator_c.h"
+#include <string>
+#include <vector>
 
 class ConfigurationInterface;
 

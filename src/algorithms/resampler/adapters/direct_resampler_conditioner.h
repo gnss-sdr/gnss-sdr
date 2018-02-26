@@ -33,9 +33,9 @@
 #ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_
 #define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_
 
-#include <string>
-#include <gnuradio/hier_block2.h>
 #include "gnss_block_interface.h"
+#include <gnuradio/hier_block2.h>
+#include <string>
 
 class ConfigurationInterface;
 

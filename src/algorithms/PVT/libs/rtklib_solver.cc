@@ -52,11 +52,11 @@
  * -----------------------------------------------------------------------*/
 
 #include "rtklib_solver.h"
-#include <glog/logging.h>
 #include "rtklib_conversions.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "GLONASS_L1_CA.h"
+#include <glog/logging.h>
 
 
 using google::LogMessage;

@@ -30,10 +30,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include <gps_l2c_signal.h>
+#include "gps_l2c_signal.h"
+#include "GPS_L2C.h"
 #include <cstdint>
 #include <cmath>
-#include "GPS_L2C.h"
 
 
 int32_t gps_l2c_m_shift(int32_t x)

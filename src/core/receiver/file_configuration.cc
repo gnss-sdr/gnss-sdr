@@ -34,11 +34,12 @@
  */
 
 #include "file_configuration.h"
-#include <string>
-#include <glog/logging.h>
+#include "in_memory_configuration.h"
 #include "INIReader.h"
 #include "string_converter.h"
-#include "in_memory_configuration.h"
+#include <glog/logging.h>
+#include <string>
+
 
 using google::LogMessage;
 

@@ -29,17 +29,6 @@
 * -------------------------------------------------------------------------
 */
 
-#include <cmath>
-#include <iostream>
-#include <queue>
-#include <memory>
-#include <boost/thread.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/filesystem.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
-#include <gtest/gtest.h>
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "control_thread.h"
@@ -62,6 +51,19 @@
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_utc_model.h"
+
+#include <boost/thread.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/filesystem.hpp>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
+#include <cmath>
+#include <iostream>
+#include <queue>
+#include <memory>
+
 
 using google::LogMessage;
 

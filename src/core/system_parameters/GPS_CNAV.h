@@ -32,10 +32,11 @@
 #ifndef GNSS_SDR_GPS_CNAV_H_
 #define GNSS_SDR_GPS_CNAV_H_
 
+#include "MATH_CONSTANTS.h"
 #include <cstdint>
 #include <vector>
 #include <utility> // std::pair
-#include "MATH_CONSTANTS.h"
+
 
 // CNAV GPS NAVIGATION MESSAGE STRUCTURE
 // NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200E Appendix III)

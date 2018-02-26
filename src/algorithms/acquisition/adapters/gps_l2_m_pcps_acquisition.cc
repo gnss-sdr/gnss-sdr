@@ -32,12 +32,12 @@
  */
 
 #include "gps_l2_m_pcps_acquisition.h"
-#include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
+#include "configuration_interface.h"
 #include "gps_l2c_signal.h"
 #include "GPS_L2C.h"
-#include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include <boost/math/distributions/exponential.hpp>
+#include <glog/logging.h>
 
 
 using google::LogMessage;

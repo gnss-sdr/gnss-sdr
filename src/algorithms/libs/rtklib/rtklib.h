@@ -53,6 +53,9 @@
 #ifndef GNSS_SDR_RTKLIB_H_
 #define GNSS_SDR_RTKLIB_H_
 
+#include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
+#include "gnss_obs_codes.h"
 #include <pthread.h>
 #include <netinet/in.h>
 #include <cctype>
@@ -60,9 +63,6 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
-#include "MATH_CONSTANTS.h"
-#include "gnss_frequencies.h"
-#include "gnss_obs_codes.h"
 
 
 /* macros --------------------------------------------------------------------*/

@@ -30,9 +30,9 @@
 
 
 #include "beamformer.h"
-#include <iostream>
-#include <sstream>
 #include <gnuradio/io_signature.h>
+#include <sstream>
+
 
 #define GNSS_SDR_BEAMFORMER_CHANNELS 8
 
@@ -53,7 +53,7 @@ beamformer::beamformer()
 
     for (int i = 0; i< GNSS_SDR_BEAMFORMER_CHANNELS; i++)
         {
-            weight_vector[i]=gr_complex(1,0);
+            weight_vector[i] = gr_complex(1,0);
         }
 }
 

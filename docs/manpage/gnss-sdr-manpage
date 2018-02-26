@@ -9,11 +9,23 @@
 \fBgnss\-sdr\fR is a Global Navigation Satellite Systems Software Defined Receiver written in C++. It implements all the signal processing chain, taking as input raw samples coming from the output of an Analog\-to\-Digital Converter, and processing them up to the computation of the Position\-Velocity\-Time solution, including the generation of code and phase measurements. 
 \.TP
 \fBgnss\-sdr\fR is able to work with raw data files or, if there is computational power enough, in real time with suitable radio frequency front\-ends. The whole receiver is defined in a single configuration file, and therefore users can define theirs.
+\.TP
+There is some flexibility in how flags may be specified. The following examples are equivalent:
+\.RS 8
+\.TP
+gnss\-sdr \-c=/home/user/rx.conf
+\.TP
+gnss\-sdr \-\-c=/home/user/rx.conf
+\.TP
+gnss\-sdr \-c /home/user/rx.conf
+\.TP
+gnss\-sdr \-\-c /home/user/rx.conf
+\.RE
 .SH OPTIONS
 \fBgnss\-sdr\fR takes the following options:
 .TP
 \fB\-c=\fR\fI<path\-to\-configuration\-file>\fR or \fB\-config_file=\fR\fI<path\-to\-configuration\-file>\fR
-Set the configuration file.
+Set the configuration file. This flag is mandatory.
 .TP 
 \fB\-s=\fR\fI<path\-to\-raw\-signal\-file>\fR or \fB\-signal_source=\fR\fI<path\-to\-raw\-signal\-file>\fR 
 If defined, path to the file containing the signal samples (overrides the data file specified in the configuration file).

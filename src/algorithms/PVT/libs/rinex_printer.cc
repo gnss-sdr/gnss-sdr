@@ -29,6 +29,11 @@
  */
 
 #include "rinex_printer.h"
+#include <boost/date_time/time_zone_base.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/local_time/local_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <glog/logging.h>
 #include <unistd.h>  // for getlogin_r()
 #include <algorithm> // for min and max
 #include <cmath>     // for floor
@@ -38,11 +43,6 @@
 #include <set>
 #include <utility>
 #include <vector>
-#include <boost/date_time/time_zone_base.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/date_time/local_time/local_time.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/logging.h>
 
 
 using google::LogMessage;

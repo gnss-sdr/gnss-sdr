@@ -68,9 +68,8 @@
 #ifndef GNSS_SDR_UNPACK_2BIT_SAMPLES_H
 #define GNSS_SDR_UNPACK_2BIT_SAMPLES_H
 
-#include <cstdint>
 #include <gnuradio/sync_interpolator.h>
-
+#include <cstdint>
 
 class unpack_2bit_samples;
 

@@ -31,7 +31,6 @@
 
 
 #include <chrono>
-#include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>

@@ -32,15 +32,13 @@
 #ifndef GNSS_SDR_GPS_L2C_H_
 #define GNSS_SDR_GPS_L2C_H_
 
+
+#include "gnss_frequencies.h"
+#include "GPS_CNAV.h"
+#include "MATH_CONSTANTS.h"
 #include <cstdint>
 #include <vector>
 #include <utility> // std::pair
-#include "MATH_CONSTANTS.h"
-#include "gnss_frequencies.h"
-#include "GPS_CNAV.h"
-
-
-
 
 
 // Physical constants

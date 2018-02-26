@@ -31,9 +31,10 @@
 #ifndef GNSS_SDR_CONCURRENT_MAP_H
 #define GNSS_SDR_CONCURRENT_MAP_H
 
+#include <boost/thread/mutex.hpp>
 #include <map>
 #include <utility>
-#include <boost/thread/mutex.hpp>
+
 
 template<typename Data>
 

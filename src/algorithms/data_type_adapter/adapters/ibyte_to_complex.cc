@@ -29,8 +29,8 @@
  */
 
 #include "ibyte_to_complex.h"
-#include <glog/logging.h>
 #include "configuration_interface.h"
+#include <glog/logging.h>
 
 using google::LogMessage;
 

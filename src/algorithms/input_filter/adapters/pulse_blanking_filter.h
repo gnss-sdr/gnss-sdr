@@ -32,11 +32,11 @@
 #ifndef GNSS_SDR_PULSE_BLANKING_FILTER_H_
 #define GNSS_SDR_PULSE_BLANKING_FILTER_H_
 
-#include <string>
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
 #include "gnss_block_interface.h"
 #include "pulse_blanking_cc.h"
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
+#include <string>
 
 class ConfigurationInterface;
 

@@ -32,10 +32,10 @@
 #ifndef GNSS_SDR_GPS_L5_H_
 #define GNSS_SDR_GPS_L5_H_
 
-#include <cstdint>
-#include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include "GPS_CNAV.h"
+#include "MATH_CONSTANTS.h"
+#include <cstdint>
 
 
 // Physical constants

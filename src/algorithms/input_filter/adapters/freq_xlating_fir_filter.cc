@@ -30,13 +30,13 @@
  */
 
 #include "freq_xlating_fir_filter.h"
+#include "configuration_interface.h"
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/filter/pm_remez.h>
 #include <gnuradio/filter/firdes.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
-#include "configuration_interface.h"
 
 using google::LogMessage;
 

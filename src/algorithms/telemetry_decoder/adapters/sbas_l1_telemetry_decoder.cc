@@ -31,12 +31,12 @@
 
 
 #include "sbas_l1_telemetry_decoder.h"
+#include "configuration_interface.h"
+#include "sbas_ephemeris.h"
+#include "sbas_l1_telemetry_decoder_cc.h"
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include "concurrent_queue.h"
-#include "sbas_ephemeris.h"
-#include "configuration_interface.h"
-#include "sbas_l1_telemetry_decoder_cc.h"
+
 
 using google::LogMessage;
 

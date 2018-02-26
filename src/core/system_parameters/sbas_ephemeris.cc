@@ -30,7 +30,6 @@
  */
 
 
-#include <iostream>
 #include "sbas_ephemeris.h"
 
 void Sbas_Ephemeris::print(std::ostream &out)

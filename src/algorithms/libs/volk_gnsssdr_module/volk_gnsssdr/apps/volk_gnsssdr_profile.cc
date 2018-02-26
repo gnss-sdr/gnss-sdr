@@ -16,23 +16,23 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "kernel_tests.h"                      // for init_test_list
+#include "qa_utils.h"                          // for volk_gnsssdr_test_results_t
+#include "volk_gnsssdr/volk_gnsssdr_complex.h" // for lv_32fc_t
+#include "volk_gnsssdr_option_helpers.h"       // for option_list, option_t
+#include "volk_gnsssdr_profile.h"
+#include "volk_gnsssdr/volk_gnsssdr_prefs.h"   // for volk_gnsssdr_get_config_path
+#include <boost/filesystem/operations.hpp>     // for create_directories, exists
+#include <boost/filesystem/path.hpp>           // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>    // for filesystem
 #include <sys/stat.h>                          // for stat
 #include <cstddef>                             // for size_t
 #include <iostream>                            // for operator<<, basic_ostream
 #include <fstream>                             // IWYU pragma: keep
 #include <map>                                 // for map, map<>::iterator
 #include <utility>                             // for pair
-#include <vector>                              // for vector, vector<>::const_...
-#include <boost/filesystem/operations.hpp>     // for create_directories, exists
-#include <boost/filesystem/path.hpp>           // for path, operator<<
-#include <boost/filesystem/path_traits.hpp>    // for filesystem
-#include <volk_gnsssdr/volk_gnsssdr_prefs.h>   // for volk_gnsssdr_get_config_path
-#include "kernel_tests.h"                      // for init_test_list
-#include "qa_utils.h"                          // for volk_gnsssdr_test_results_t
-#include "volk_gnsssdr/volk_gnsssdr_complex.h" // for lv_32fc_t
-#include "volk_gnsssdr_option_helpers.h"       // for option_list, option_t
-#include "volk_gnsssdr_profile.h"
+#include <vector>                              // for vector, vector<>::const_..
+
 
 
 namespace fs = boost::filesystem;

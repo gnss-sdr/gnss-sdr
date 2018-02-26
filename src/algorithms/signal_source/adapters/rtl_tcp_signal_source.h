@@ -32,15 +32,16 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 
-#include <stdexcept>
-#include <string>
+#include "rtl_tcp_signal_source_c.h"
+#include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/deinterleave.h>
 #include <gnuradio/blocks/float_to_complex.h>
-#include "rtl_tcp_signal_source_c.h"
-#include "gnss_block_interface.h"
+#include <stdexcept>
+#include <string>
+
 
 class ConfigurationInterface;
 

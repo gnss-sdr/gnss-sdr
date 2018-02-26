@@ -39,8 +39,6 @@ Gnss_Satellite::Gnss_Satellite()
 }
 
 
-
-
 Gnss_Satellite::Gnss_Satellite(const std::string& system_, unsigned int PRN_)
 {
     Gnss_Satellite::reset();
@@ -50,13 +48,8 @@ Gnss_Satellite::Gnss_Satellite(const std::string& system_, unsigned int PRN_)
 }
 
 
-
-
 Gnss_Satellite::~Gnss_Satellite()
 {}
-
-
-
 
 
 void Gnss_Satellite::reset()
@@ -72,7 +65,6 @@ void Gnss_Satellite::reset()
     block = std::string("");
     rf_link = 0;
 }
-
 
 
 std::ostream& operator<<(std::ostream &out, const Gnss_Satellite &sat) // output
@@ -138,23 +130,23 @@ void Gnss_Satellite::set_system(const std::string& system_)
 void Gnss_Satellite::update_PRN(unsigned int PRN_)
 {
     if (system.compare("Glonass") != 0)
-				{
-						DLOG(INFO) << "Trying to update PRN for not GLONASS system";
-						PRN = 0;
-				}
+        {
+            DLOG(INFO) << "Trying to update PRN for not GLONASS system";
+            PRN = 0;
+        }
     else
-    		{
-				 if (PRN_ < 1 or PRN_ > 24)
-						 {
-								 DLOG(INFO) << "This PRN is not defined";
-								 // Adjusting for PRN 26, now used in
-								 PRN = PRN_;
-						 }
-				 else
-						 {
-								 PRN = PRN_;
-						 }
-    		}
+        {
+            if (PRN_ < 1 or PRN_ > 24)
+                {
+                    DLOG(INFO) << "This PRN is not defined";
+                    // Adjusting for PRN 26, now used in
+                    PRN = PRN_;
+                }
+            else
+                {
+                    PRN = PRN_;
+                }
+        }
 }
 
 
@@ -179,17 +171,17 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
                 }
         }
     else if (system.compare("Glonass") == 0)
-           {
-               if (PRN_ < 1 or PRN_ > 24)
-                   {
-                       DLOG(INFO) << "This PRN is not defined";
-                       PRN = 0;
-                   }
-               else
-                   {
-                       PRN = PRN_;
-                   }
-           }
+        {
+            if (PRN_ < 1 or PRN_ > 24)
+                {
+                    DLOG(INFO) << "This PRN is not defined";
+                    PRN = 0;
+                }
+            else
+                {
+                    PRN = PRN_;
+                }
+        }
     else if (system.compare("SBAS") == 0)
         {
             if (PRN_ == 122){ PRN = PRN_; }        // WAAS Inmarsat 3F4 (AOR-W)
@@ -205,15 +197,15 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
         }
     else if (system.compare("Galileo") == 0)
         {
-        if (PRN_ < 1 or PRN_ > 36)
-            {
-                DLOG(INFO) << "This PRN is not defined";
-                PRN = 0;
-            }
-        else
-            {
-                PRN = PRN_;
-            }
+            if (PRN_ < 1 or PRN_ > 36)
+                {
+                    DLOG(INFO) << "This PRN is not defined";
+                    PRN = 0;
+                }
+            else
+                {
+                    PRN = PRN_;
+                }
         }
     else
         {
@@ -241,10 +233,6 @@ unsigned int Gnss_Satellite::get_PRN() const
 }
 
 
-
-
-
-
 std::string Gnss_Satellite::get_system() const
 {
     // Get the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou"}
@@ -253,13 +241,12 @@ std::string Gnss_Satellite::get_system() const
     return system_;
 }
 
+
 std::string Gnss_Satellite::get_system_short() const
 {
     // Get the satellite system {"G", "R", "S", "E", "C"}
     return satelliteSystem.at(system);
 }
-
-
 
 
 std::string Gnss_Satellite::get_block() const
@@ -271,16 +258,14 @@ std::string Gnss_Satellite::get_block() const
 }
 
 
-
 std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int PRN_)
 {
     std::string block_ = "Unknown";
     if (system_.compare("GPS") == 0)
         {
+            // info from https://www.navcen.uscg.gov/?Do=constellationStatus
             switch ( PRN_ )
             {
-            // info from https://www.navcen.uscg.gov/?Do=constellationStatus
-
             case 1 :
                 block_ = std::string("IIF");   // Plane D
                 break;
@@ -382,14 +367,12 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
             }
         }
 
-
     if (system_.compare("Glonass") == 0)
         {
-            switch ( PRN_ )
-            {
             // Info from http://www.sdcm.ru/smglo/grupglo?version=eng&site=extern
             // See also http://www.glonass-center.ru/en/GLONASS/
-
+            switch ( PRN_ )
+            {
             case 1 :
                 block_ = std::string("1");   // Plane 1
                 rf_link = 1;

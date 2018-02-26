@@ -31,14 +31,14 @@
 
 
 #include "gps_l1_ca_telemetry_decoder.h"
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
-#include "concurrent_queue.h"
+#include "configuration_interface.h"
 #include "gps_ephemeris.h"
 #include "gps_almanac.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
-#include "configuration_interface.h"
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
+
 
 using google::LogMessage;
 
@@ -46,9 +46,9 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams)
+                role_(role),
+                in_streams_(in_streams),
+                out_streams_(out_streams)
 {
     std::string default_dump_filename = "./navigation.dat";
     DLOG(INFO) << "role " << role;
@@ -57,8 +57,6 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
     // make telemetry decoder object
     telemetry_decoder_ = gps_l1_ca_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-
-    DLOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
 }
 

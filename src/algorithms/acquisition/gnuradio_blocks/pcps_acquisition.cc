@@ -34,14 +34,13 @@
  */
 
 #include "pcps_acquisition.h"
-#include <cstring>
+#include "GPS_L1_CA.h"     // for GPS_TWO_PI
+#include "GLONASS_L1_CA.h" // for GLONASS_TWO_PI
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <volk/volk.h>
-#include "GPS_L1_CA.h" //GPS_TWO_PI
-#include "GLONASS_L1_CA.h" //GLONASS_TWO_PI
-
+#include <cstring>
 
 
 using google::LogMessage;

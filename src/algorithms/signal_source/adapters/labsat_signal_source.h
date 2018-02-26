@@ -32,12 +32,11 @@
 #ifndef GNSS_SDR_LABSAT_SIGNAL_SOURCE_H_
 #define GNSS_SDR_LABSAT_SIGNAL_SOURCE_H_
 
-#include <string>
+#include "gnss_block_interface.h"
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
-#include "gnss_block_interface.h"
-
+#include <string>
 
 class ConfigurationInterface;
 

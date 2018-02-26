@@ -31,16 +31,16 @@
  */
 
 #include "pcps_acquisition_fine_doppler_cc.h"
-#include <algorithm>    // std::rotate, std::fill_n
-#include <sstream>
+#include "gps_sdr_signal_processing.h"
+#include "control_message_factory.h"
+#include "GPS_L1_CA.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "concurrent_map.h"
-#include "gps_sdr_signal_processing.h"
-#include "control_message_factory.h"
-#include "GPS_L1_CA.h"
+#include <algorithm>    // std::rotate, std::fill_n
+#include <sstream>
+
 
 using google::LogMessage;
 

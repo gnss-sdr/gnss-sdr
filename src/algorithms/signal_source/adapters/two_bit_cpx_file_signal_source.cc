@@ -30,14 +30,14 @@
  */
 
 #include "two_bit_cpx_file_signal_source.h"
+#include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gnss_sdr_valve.h"
+#include <glog/logging.h>
 #include <exception>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <glog/logging.h>
-#include "gnss_sdr_flags.h"
-#include "gnss_sdr_valve.h"
-#include "configuration_interface.h"
 
 
 using google::LogMessage;

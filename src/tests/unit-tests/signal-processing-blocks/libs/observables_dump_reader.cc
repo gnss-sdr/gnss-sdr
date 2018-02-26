@@ -29,6 +29,7 @@
  */
 
 #include "observables_dump_reader.h"
+#include <iostream>
 
 bool observables_dump_reader::read_binary_obs()
 {

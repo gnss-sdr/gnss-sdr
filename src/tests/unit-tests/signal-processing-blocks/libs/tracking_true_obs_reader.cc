@@ -29,6 +29,7 @@
  */
 
 #include "tracking_true_obs_reader.h"
+#include <iostream>
 
 bool tracking_true_obs_reader::read_binary_obs()
 {

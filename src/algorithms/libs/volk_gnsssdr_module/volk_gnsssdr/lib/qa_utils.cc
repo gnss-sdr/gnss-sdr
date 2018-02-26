@@ -17,6 +17,13 @@
  */
 
 #include "qa_utils.h"
+#include "volk_gnsssdr/volk_gnsssdr.h"              // for volk_gnsssdr_func_desc_t
+#include "volk_gnsssdr/volk_gnsssdr_malloc.h"       // for volk_gnsssdr_free, volk_gnsssdr_malloc
+#include <boost/foreach.hpp>                        // for auto_any_base
+#include <boost/lexical_cast.hpp>                   // for lexical_cast
+#include <boost/token_functions.hpp>                // for char_separator
+#include <boost/token_iterator.hpp>                 // for token_iterator
+#include <boost/tokenizer.hpp>                      // for tokenizer
 #include <cassert>                                  // for assert
 #include <chrono>                                   // for system_clock, duration,...
 #include <cmath>                                    // for sqrt, fabs, abs
@@ -28,13 +35,6 @@
 #include <map>                                      // for map
 #include <random>                                   // for random_device, default_random_engine, uniform_real_distribution
 #include <vector>                                   // for vector
-#include <boost/foreach.hpp>                        // for auto_any_base
-#include <boost/lexical_cast.hpp>                   // for lexical_cast
-#include <boost/token_functions.hpp>                // for char_separator
-#include <boost/token_iterator.hpp>                 // for token_iterator
-#include <boost/tokenizer.hpp>                      // for tokenizer
-#include <volk_gnsssdr/volk_gnsssdr.h>              // for volk_gnsssdr_func_desc_t
-#include <volk_gnsssdr/volk_gnsssdr_malloc.h>       // for volk_gnsssdr_free, volk_gnsssdr_malloc
 
 
 float uniform() {

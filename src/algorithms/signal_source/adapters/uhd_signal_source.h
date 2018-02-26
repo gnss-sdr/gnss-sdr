@@ -31,14 +31,15 @@
 #ifndef GNSS_SDR_UHD_SIGNAL_SOURCE_H_
 #define GNSS_SDR_UHD_SIGNAL_SOURCE_H_
 
-#include <string>
-#include <vector>
+#include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/uhd/usrp_source.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_block_interface.h"
+#include <string>
+#include <vector>
+
 
 class ConfigurationInterface;
 

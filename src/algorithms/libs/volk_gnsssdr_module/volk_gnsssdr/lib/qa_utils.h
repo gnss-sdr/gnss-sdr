@@ -23,13 +23,13 @@
 #define _DARWIN_C_SOURCE
 #endif
 
+#include "volk_gnsssdr/volk_gnsssdr_complex.h"  // for lv_32fc_t
+#include "volk_gnsssdr/volk_gnsssdr.h"          // for volk_gnsssdr_func_desc_t
 #include <cstdbool>       // for bool, false
 #include <cstdlib>        // for NULL
 #include <map>            // for map
 #include <string>         // for string, basic_string
 #include <vector>         // for vector
-#include <volk_gnsssdr/volk_gnsssdr.h>          // for volk_gnsssdr_func_desc_t
-#include "volk_gnsssdr/volk_gnsssdr_complex.h"  // for lv_32fc_t
 
 
 /************************************************

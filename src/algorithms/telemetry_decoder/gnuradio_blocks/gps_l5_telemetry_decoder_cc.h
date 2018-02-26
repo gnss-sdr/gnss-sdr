@@ -31,16 +31,16 @@
 #ifndef GNSS_SDR_GPS_L5_TELEMETRY_DECODER_CC_H
 #define GNSS_SDR_GPS_L5_TELEMETRY_DECODER_CC_H
 
+
+#include "gnss_satellite.h"
+#include "gps_cnav_navigation_message.h"
+#include <gnuradio/block.h>
 #include <algorithm>
 #include <deque>
 #include <fstream>
 #include <string>
 #include <utility>
 #include <vector>
-#include <gnuradio/block.h>
-#include "gnss_satellite.h"
-#include "gps_cnav_navigation_message.h"
-#include "concurrent_queue.h"
 
 extern "C" {
     #include "cnav_msg.h"

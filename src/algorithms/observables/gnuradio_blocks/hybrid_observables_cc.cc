@@ -29,20 +29,21 @@
  */
 
 #include "hybrid_observables_cc.h"
+#include "Galileo_E1.h"
+#include "GPS_L1_CA.h"
+#include <armadillo>
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <gnuradio/block_detail.h>
+#include <gnuradio/buffer.h>
+#include <matio.h>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <map>
 #include <vector>
 #include <utility>
-#include <armadillo>
-#include <gnuradio/io_signature.h>
-#include <gnuradio/block_detail.h>
-#include <gnuradio/buffer.h>
-#include <glog/logging.h>
-#include <matio.h>
-#include "Galileo_E1.h"
-#include "GPS_L1_CA.h"
+
 
 using google::LogMessage;
 
@@ -506,11 +507,13 @@ int hybrid_observables_cc::general_work (int noutput_items ,
                                     // two points linear interpolation using adjacent (adj) values: y=y1+(x-x1)*(y2-y1)/(x2-x1)
                                     // TOW at the selected receiver time T_rx_s
                                     int element_key = gnss_synchro_map_iter->second.Channel_ID;
-                                    try{
-                                        adj_obs = adjacent_gnss_synchro_map.at(element_key);
-                                    }catch(const std::exception & ex)
+                                    try
                                     {
-                                        continue;
+                                            adj_obs = adjacent_gnss_synchro_map.at(element_key);
+                                    }
+                                    catch(const std::exception & ex)
+                                    {
+                                            continue;
                                     }
 
                                     double adj_T_rx_s = static_cast<double>(adj_obs.Tracking_sample_counter) / channel_fs_hz + adj_obs.Code_phase_samples / channel_fs_hz;

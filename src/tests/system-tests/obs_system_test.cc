@@ -30,6 +30,20 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnuplot_i.h"
+#include "test_flags.h"
+#include "concurrent_map.h"
+#include "concurrent_queue.h"
+#include "control_thread.h"
+#include "file_configuration.h"
+#include <armadillo>
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+#include <gpstk/RinexUtilities.hpp>
+#include <gpstk/Rinex3ObsBase.hpp>
+#include <gpstk/Rinex3ObsData.hpp>
+#include <gpstk/Rinex3ObsHeader.hpp>
+#include <gpstk/Rinex3ObsStream.hpp>
 #include <algorithm>
 #include <chrono>
 #include <boost/filesystem.hpp>
@@ -40,21 +54,7 @@
 #include <string>
 #include <thread>
 #include <unistd.h>
-#include <armadillo>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gtest/gtest.h>
-#include <gpstk/RinexUtilities.hpp>
-#include <gpstk/Rinex3ObsBase.hpp>
-#include <gpstk/Rinex3ObsData.hpp>
-#include <gpstk/Rinex3ObsHeader.hpp>
-#include <gpstk/Rinex3ObsStream.hpp>
-#include "gnuplot_i.h"
-#include "test_flags.h"
-#include "concurrent_map.h"
-#include "concurrent_queue.h"
-#include "control_thread.h"
-#include "file_configuration.h"
+
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

@@ -32,12 +32,11 @@
 #ifndef GNSS_SDR_IBYTE_TO_CBYTE_H_
 #define GNSS_SDR_IBYTE_TO_CBYTE_H_
 
-#include <string>
-#include <gnuradio/blocks/file_sink.h>
 #include "conjugate_ic.h"
 #include "gnss_block_interface.h"
 #include "interleaved_byte_to_complex_byte.h"
-
+#include <gnuradio/blocks/file_sink.h>
+#include <string>
 
 class ConfigurationInterface;
 

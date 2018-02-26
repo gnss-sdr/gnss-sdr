@@ -33,10 +33,10 @@
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 #define GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 
+#include "gnss_synchro.h"
+#include <gnuradio/block.h>
 #include <fstream>
 #include <string>
-#include <gnuradio/block.h>
-#include "gnss_synchro.h"
 
 
 class hybrid_observables_cc;

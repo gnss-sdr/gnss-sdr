@@ -55,7 +55,6 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
         gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    set_max_noutput_items(1);
     // Telemetry Bit transition synchronization port out
     this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
     // Ephemeris data port out
@@ -95,8 +94,8 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_GPS_frame_4bytes = 0;
     d_prev_GPS_frame_4bytes = 0;
     d_flag_parity = false;
-    d_TOW_at_Preamble = 0;
-    d_TOW_at_current_symbol = 0;
+    d_TOW_at_Preamble = 0.0;
+    d_TOW_at_current_symbol = 0.0;
     flag_TOW_set = false;
     d_average_count = 0;
     d_flag_preamble = false;
@@ -106,6 +105,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_channel = 0;
     flag_PLL_180_deg_phase_locked = false;
     d_preamble_time_samples = 0;
+    d_TOW_at_current_symbol_ms = 0;
 }
 
 
@@ -206,7 +206,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
             else if (d_stat == 1) //check 6 seconds of preamble separation
                 {
                     preamble_diff_ms = round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
-                    if (abs(preamble_diff_ms - GPS_SUBFRAME_MS) < 1)
+                    if (abs(preamble_diff_ms - GPS_SUBFRAME_MS) == 0)
                         {
                             DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;
                             d_GPS_FSM.Event_gps_word_preamble();
@@ -351,17 +351,21 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
             //        /(double)current_symbol.fs;
             // update TOW at the preamble instant (account with decoder latency)
 
-            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 2 * GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
-            d_TOW_at_current_symbol = floor(d_TOW_at_Preamble * 1000.0) / 1000.0;
+            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 1.0 * GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
+            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_GPS_FSM.d_nav.d_TOW) * 1000 + 161;
+            //d_TOW_at_current_symbol = floor(d_TOW_at_Preamble * 1000.0) / 1000.0;
+            d_TOW_at_current_symbol = d_TOW_at_Preamble;
             flag_TOW_set = true;
             d_flag_new_tow_available = false;
         }
     else
         {
-            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GPS_L1_CA_CODE_PERIOD;
+            d_TOW_at_current_symbol += GPS_L1_CA_CODE_PERIOD;
+            d_TOW_at_current_symbol_ms++;
         }
 
-     current_symbol.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
+     current_symbol.TOW_at_current_symbol_s = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
+     //current_symbol.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
      current_symbol.Flag_valid_word = flag_TOW_set;
 
      if (flag_PLL_180_deg_phase_locked == true)

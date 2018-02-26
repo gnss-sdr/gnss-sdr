@@ -39,6 +39,7 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include "display.h"
 
 
 using google::LogMessage;
@@ -55,7 +56,6 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
                                 gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
                                 gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
 {
-    set_max_noutput_items(1);
     d_dump = dump;
     d_nchannels = nchannels_out;
     d_dump_filename = dump_filename;
@@ -78,7 +78,6 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned
             try
             {
                 d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
-                d_dump_filename.append(".bin");
                 d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                 LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str();
             }
@@ -224,6 +223,7 @@ int hybrid_observables_cc::save_matfile()
     mat_t *matfp;
     matvar_t *matvar;
     std::string filename = d_dump_filename;
+    if(filename.size() > 4) { filename.erase(filename.end() - 4, filename.end()); }
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
     if(reinterpret_cast<long*>(matfp) != NULL)
@@ -288,40 +288,36 @@ int hybrid_observables_cc::save_matfile()
     return 0;
 }
 
-double hybrid_observables_cc::interpolate_data(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const double& ti, int parameter)
+bool hybrid_observables_cc::interpolate_data(Gnss_Synchro& out, std::deque<Gnss_Synchro>& data, const double& ti)
 {
-    // x(ti) = m * ti + c
-    // m = [x(t2) - x(t1)] / [t2 - t1]
-    // c = x(t1) - m * t1
+    std::deque<Gnss_Synchro>::iterator it;
 
-    double m = 0.0;
-    double c = 0.0;
+    arma::vec t      = arma::vec(data.size());
+    arma::vec dop    = t;
+    arma::vec cph    = t;
+    arma::vec tow    = t;
+    arma::vec tiv    = arma::vec(1);
+    arma::vec result;
+    tiv(0) = ti;
 
-    if(!a.first.Flag_valid_word or !a.second.Flag_valid_word) { return 0.0; }
-
-    switch(parameter)
+    unsigned int aux = 0;
+    for(it = data.begin(); it != data.end(); it++)
     {
-    case 0:// Doppler
-        m = (a.first.Carrier_Doppler_hz - a.second.Carrier_Doppler_hz) / (a.first.RX_time - a.second.RX_time);
-        c = a.second.Carrier_Doppler_hz - m * a.second.RX_time;
-        break;
+        t(aux)   = it->RX_time;
+        dop(aux) = it->Carrier_Doppler_hz;
+        cph(aux) = it->Carrier_phase_rads;
+        tow(aux) = it->TOW_at_current_symbol_s;
 
-    case 1:// Carrier phase
-        m = (a.first.Carrier_phase_rads - a.second.Carrier_phase_rads) / (a.first.RX_time - a.second.RX_time);
-        c = a.second.Carrier_phase_rads - m * a.second.RX_time;
-        break;
-
-    case 2:// TOW
-        m = (a.first.TOW_at_current_symbol_s - a.second.TOW_at_current_symbol_s) / (a.first.RX_time - a.second.RX_time);
-        c = a.second.TOW_at_current_symbol_s - m * a.second.RX_time;
-        break;
-
-    case 3:// Code phase samples
-        m = (a.first.Code_phase_samples - a.second.Code_phase_samples) / (a.first.RX_time - a.second.RX_time);
-        c = a.second.Code_phase_samples - m * a.second.RX_time;
-        break;
+        aux++;
     }
-    return(m * ti + c);
+    arma::interp1(t, dop, tiv, result);
+    out.Carrier_Doppler_hz      = result(0);
+    arma::interp1(t, cph, tiv, result);
+    out.Carrier_phase_rads      = result(0);
+    arma::interp1(t, tow, tiv, result);
+    out.TOW_at_current_symbol_s = result(0);
+
+    return result.is_finite();
 }
 
 double hybrid_observables_cc::compute_T_rx_s(const Gnss_Synchro& a)
@@ -350,49 +346,6 @@ void hybrid_observables_cc::clean_history(std::deque<Gnss_Synchro>& data)
     }
 }
 
-std::pair<Gnss_Synchro, Gnss_Synchro> hybrid_observables_cc::find_closest(std::deque<Gnss_Synchro>& data, const double& ti)
-{
-    std::pair<Gnss_Synchro, Gnss_Synchro> result;
-    unsigned int index = 0;
-    double delta_t = std::numeric_limits<double>::max();
-    std::deque<Gnss_Synchro>::iterator it;
-    unsigned int aux = 0;
-    for(it = data.begin(); it != data.end(); it++)
-    {
-        double instant_delta = std::fabs(ti - it->RX_time);
-        if(instant_delta < delta_t)
-        {
-            delta_t = instant_delta;
-            index = aux;
-        }
-        aux++;
-    }
-    delta_t = ti - data.at(index).RX_time;
-    if( (index == 0) or (index == (data.size() - 1)) )
-    {
-        Gnss_Synchro invalid_data;
-        invalid_data.Flag_valid_pseudorange = false;
-        result.first  = invalid_data;
-        result.second = invalid_data;
-    }
-    else if(delta_t < 0.0)
-    {
-        result.first  = data.at(index);
-        result.first.Flag_valid_pseudorange = true;
-        result.second = data.at(index - 1);
-        result.second.Flag_valid_pseudorange = true;
-    }
-    else
-    {
-        result.first  = data.at(index + 1);
-        result.first.Flag_valid_pseudorange = true;
-        result.second = data.at(index);
-        result.second.Flag_valid_pseudorange = true;
-    }
-    return result;
-}
-
-
 void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data)
 {
     std::vector<Gnss_Synchro>::iterator it;
@@ -417,6 +370,10 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
                                << ". TOW difference in PRN " << it->PRN
                                << " = " << tow_dif_ * 1e3 << "[ms]. Equivalent to " << tow_dif_ * SPEED_OF_LIGHT
                                << " meters in pseudorange";
+                    std::cout << TEXT_RED << "System " << it->System << ". Signals " << it->Signal << " and " << it2->Signal
+                              << ". TOW difference in PRN " << it->PRN
+                              << " = " << tow_dif_ * 1e3 << "[ms]. Equivalent to " << tow_dif_ * SPEED_OF_LIGHT
+                              << " meters in pseudorange" << TEXT_RESET << std::endl;
                 }
             }
         }
@@ -514,17 +471,15 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     {
         if(valid_channels[i])
         {
-            std::pair<Gnss_Synchro, Gnss_Synchro> gnss_pair = find_closest(*it, T_rx_s_out);
-            Gnss_Synchro interpolated_gnss_synchro = gnss_pair.second;
-            if(interpolated_gnss_synchro.Flag_valid_pseudorange)
+            Gnss_Synchro interpolated_gnss_synchro;
+            if(interpolate_data(interpolated_gnss_synchro, *it, T_rx_s_out))
             {
-                interpolated_gnss_synchro.Carrier_Doppler_hz      = interpolate_data(gnss_pair, T_rx_s_out, 0);
-                interpolated_gnss_synchro.Carrier_phase_rads      = interpolate_data(gnss_pair, T_rx_s_out, 1);
-                interpolated_gnss_synchro.TOW_at_current_symbol_s = interpolate_data(gnss_pair, T_rx_s_out, 2);
-
                 epoch_data.push_back(interpolated_gnss_synchro);
             }
-            else { valid_channels[i] = false; }
+            else
+            {
+                valid_channels[i] = false;
+            }
         }
         i++;
     }

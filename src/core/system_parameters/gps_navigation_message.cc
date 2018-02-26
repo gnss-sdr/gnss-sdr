@@ -39,7 +39,7 @@ m * \file gps_navigation_message.cc
 void Gps_Navigation_Message::reset()
 {
     b_valid_ephemeris_set_flag = false;
-    d_TOW = 0;
+    d_TOW = 0.0;
     d_TOW_SF1 = 0;
     d_TOW_SF2 = 0;
     d_TOW_SF3 = 0;
@@ -70,7 +70,7 @@ void Gps_Navigation_Message::reset()
     i_SV_accuracy = 0;
     i_SV_health = 0;
     d_TGD = 0;
-    d_IODC = -1;
+    d_IODC = -1.0;
     i_AODO = 0;
 
     b_fit_interval_flag = false;
@@ -298,7 +298,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         //TOW = bin2dec(subframe(31:47)) * 6;
         d_TOW_SF1 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
         //we are in the first subframe (the transmitted TOW is the start time of the next subframe) !
-        d_TOW_SF1 = d_TOW_SF1 * 6;
+        d_TOW_SF1 = d_TOW_SF1 * 6.0;
         d_TOW = d_TOW_SF1; // Set transmission time
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
@@ -324,7 +324,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
 
     case 2:  //--- It is subframe 2 -------------------
         d_TOW_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF2 = d_TOW_SF2 * 6;
+        d_TOW_SF2 = d_TOW_SF2 * 6.0;
         d_TOW = d_TOW_SF2; // Set transmission time
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
@@ -354,7 +354,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
 
     case 3: // --- It is subframe 3 -------------------------------------
         d_TOW_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF3 = d_TOW_SF3 * 6;
+        d_TOW_SF3 = d_TOW_SF3 * 6.0;
         d_TOW = d_TOW_SF3; // Set transmission time
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
@@ -383,7 +383,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         int SV_data_ID;
         int SV_page;
         d_TOW_SF4 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF4 = d_TOW_SF4 * 6;
+        d_TOW_SF4 = d_TOW_SF4 * 6.0;
         d_TOW = d_TOW_SF4; // Set transmission time
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
@@ -459,7 +459,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         int SV_data_ID_5;
         int SV_page_5;
         d_TOW_SF5 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF5 = d_TOW_SF5 * 6;
+        d_TOW_SF5 = d_TOW_SF5 * 6.0;
         d_TOW = d_TOW_SF5; // Set transmission time
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
@@ -679,9 +679,9 @@ bool Gps_Navigation_Message::satellite_validation()
     // First Step:
     // check Issue Of Ephemeris Data (IODE IODC..) to find a possible interrupted reception
     // and check if the data have been filled (!=0)
-    if (d_TOW_SF1 != 0 and d_TOW_SF2 != 0 and d_TOW_SF3 != 0)
+    if (d_TOW_SF1 != 0.0 and d_TOW_SF2 != 0.0 and d_TOW_SF3 != 0.0)
         {
-            if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!= -1)
+            if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC != -1.0)
                 {
                     flag_data_valid = true;
                     b_valid_ephemeris_set_flag = true;

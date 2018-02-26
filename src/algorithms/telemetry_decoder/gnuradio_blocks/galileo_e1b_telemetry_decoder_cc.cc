@@ -107,7 +107,6 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
                    gr::block("galileo_e1b_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                            gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    set_max_noutput_items(1);
     // Telemetry Bit transition synchronization port out
     this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
     // Ephemeris data port out

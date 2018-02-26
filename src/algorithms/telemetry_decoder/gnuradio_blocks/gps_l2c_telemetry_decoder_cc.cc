@@ -32,6 +32,7 @@
 
 #include "gps_l2c_telemetry_decoder_cc.h"
 #include "gnss_synchro.h"
+#include "display.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -54,7 +55,6 @@ gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    set_max_noutput_items(1);
     // Telemetry Bit transition synchronization port out
     this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
     // Ephemeris data port out
@@ -133,21 +133,21 @@ int gps_l2c_telemetry_decoder_cc::general_work (int noutput_items __attribute__(
                 {
                     // get ephemeris object for this SV
                     std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                    std::cout << "New GPS CNAV message received: ephemeris from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received: ephemeris from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
 
                 }
             if (d_CNAV_Message.have_new_iono() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                    std::cout << "New GPS CNAV message received: iono model parameters from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received: iono model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
             if (d_CNAV_Message.have_new_utc_model() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                    std::cout << "New GPS CNAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received: UTC model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 

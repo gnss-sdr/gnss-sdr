@@ -38,7 +38,6 @@
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
-#include <utility> //std::pair
 #include <vector>  //std::vector
 #include <deque>
 #include <boost/dynamic_bitset.hpp>
@@ -67,8 +66,7 @@ private:
     hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
     void clean_history(std::deque<Gnss_Synchro>& data);
     double compute_T_rx_s(const Gnss_Synchro& a);
-    double interpolate_data(const std::pair<Gnss_Synchro, Gnss_Synchro>& a, const double& ti, int parameter);
-    std::pair<Gnss_Synchro, Gnss_Synchro> find_closest(std::deque<Gnss_Synchro>& data, const double& ti);
+    bool interpolate_data(Gnss_Synchro& out, std::deque<Gnss_Synchro>& data, const double& ti);
     void correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data);
     int save_matfile();
 

@@ -42,8 +42,6 @@
 #include <vector>  //std::vector
 #include <deque>
 #include <boost/dynamic_bitset.hpp>
-#include <gnuradio/block.h>
-#include "gnss_synchro.h"
 
 
 class hybrid_observables_cc;

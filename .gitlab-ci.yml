@@ -222,7 +222,7 @@ centos7:
     - yum install -y wget
     - wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     - rpm -Uvh epel-release-latest-7.noarch.rpm
-    - yum install -y make automake gcc gcc-c++ kernel-devel libtool automake hdf5-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gnutls-devel openssl-devel python-mako python-six
+    - yum install -y make automake gcc gcc-c++ kernel-devel libtool automake hdf5-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-develgnutls-devel openssl-devel python-mako python-six
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..
     - make -j2

@@ -605,6 +605,7 @@ if(NOT ${ENABLE_PACKAGING})
      target_link_libraries(control_thread_test ${Boost_LIBRARIES}
                                                ${GFlags_LIBS}
                                                ${GLOG_LIBRARIES}
+                                               ${GNURADIO_RUNTIME_LIBRARIES}
                                                ${GTEST_LIBRARIES}
                                                gnss_sp_libs
                                                gnss_system_parameters
@@ -628,6 +629,7 @@ if(NOT ${ENABLE_PACKAGING})
      target_link_libraries(flowgraph_test ${Boost_LIBRARIES}
                                           ${GFlags_LIBS}
                                           ${GLOG_LIBRARIES}
+                                          ${GNURADIO_RUNTIME_LIBRARIES}
                                           ${GTEST_LIBRARIES}
                                           gnss_sp_libs
                                           gnss_rx

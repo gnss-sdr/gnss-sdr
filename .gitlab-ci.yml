@@ -152,6 +152,7 @@ ubuntu18.04:
     - make -j2
     - make check
     - make install
+  allow_failure: true
 
 
 fedora26:

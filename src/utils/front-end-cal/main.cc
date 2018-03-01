@@ -32,26 +32,7 @@
 #define FRONT_END_CAL_VERSION "0.0.1"
 #endif
 
-#include <stdlib.h>
-#include <chrono>
-#include <ctime> // for ctime
-#include <exception>
-#include <memory>
-#include <queue>
-#include <vector>
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/exception/detail/exception_ptr.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/blocks/head.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/file_sink.h>
+#include "front_end_cal.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "file_configuration.h"
@@ -72,20 +53,31 @@
 #include "galileo_utc_model.h"
 #include "sbas_ephemeris.h"
 #include "gnss_sdr_supl_client.h"
+#include "gnss_sdr_flags.h"
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
+#include <boost/exception/detail/exception_ptr.hpp>
+#include <glog/logging.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/blocks/head.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <stdlib.h>
+#include <chrono>
+#include <ctime> // for ctime
+#include <exception>
+#include <memory>
+#include <queue>
+#include <vector>
 
-
-#include "front_end_cal.h"
 
 using google::LogMessage;
 
 DECLARE_string(log_dir);
-
-std::string s1_(GNSSSDR_INSTALL_DIR);
-std::string s2_("/share/gnss-sdr/conf/front-end-cal.conf");
-std::string s3_ = s1_ + s2_;
-
-DEFINE_string(config_file, s3_,
-        "Path to the file containing the configuration parameters");
 
 concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 concurrent_map<Gps_Iono> global_gps_iono_map;

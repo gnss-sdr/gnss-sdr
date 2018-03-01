@@ -97,7 +97,7 @@ If you are using CentOS 7, you can install the dependencies via Extra Packages f
 $ sudo yum install wget
 $ wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 $ sudo rpm -Uvh epel-release-latest-7.noarch.rpm
-$ sudo yum install make automake gcc gcc-c++ kernel-devel libtool automake \
+$ sudo yum install make automake gcc gcc-c++ kernel-devel libtool \
        hdf5-devel cmake git boost-devel boost-date-time boost-system \
        boost-filesystem boost-thread boost-chrono boost-serialization \
        log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel \

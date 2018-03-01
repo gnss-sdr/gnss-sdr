@@ -30,10 +30,10 @@
  */
 
 #include "hybrid_ls_pvt.h"
-#include <glog/logging.h>
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
+#include <glog/logging.h>
 
 
 using google::LogMessage;

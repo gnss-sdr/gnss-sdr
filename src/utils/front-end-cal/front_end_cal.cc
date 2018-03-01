@@ -34,7 +34,6 @@
 #include <memory>
 #include <exception>
 #include <boost/filesystem.hpp>
-#include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>

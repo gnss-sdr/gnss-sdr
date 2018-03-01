@@ -30,14 +30,14 @@
  */
 
 #include "two_bit_cpx_file_signal_source.h"
+#include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gnss_sdr_valve.h"
+#include <glog/logging.h>
 #include <exception>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include "gnss_sdr_valve.h"
-#include "configuration_interface.h"
 
 
 using google::LogMessage;
@@ -57,7 +57,8 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    //if (FLAGS_nsr_signal_source.compare("-") != 0) filename_= FLAGS_nsr_signal_source;
+    if (FLAGS_signal_source.compare("-") != 0) filename_= FLAGS_signal_source;
+    if (FLAGS_s.compare("-") != 0) filename_= FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);

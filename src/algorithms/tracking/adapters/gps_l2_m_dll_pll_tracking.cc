@@ -36,9 +36,10 @@
 
 
 #include "gps_l2_m_dll_pll_tracking.h"
-#include <glog/logging.h>
-#include "GPS_L2C.h"
 #include "configuration_interface.h"
+#include "GPS_L2C.h"
+#include "gnss_sdr_flags.h"
+#include <glog/logging.h>
 
 
 using google::LogMessage;
@@ -66,7 +67,9 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
+    if(FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    if(FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",

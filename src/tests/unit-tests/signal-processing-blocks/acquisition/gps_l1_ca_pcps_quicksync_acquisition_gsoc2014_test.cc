@@ -33,7 +33,6 @@
 
 
 #include <chrono>
-#include <iostream>
 #include <stdexcept>
 #include <glog/logging.h>
 #include <gnuradio/top_block.h>

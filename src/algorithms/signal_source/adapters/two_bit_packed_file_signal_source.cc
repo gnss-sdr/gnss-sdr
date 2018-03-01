@@ -31,15 +31,15 @@
  */
 
 #include "two_bit_packed_file_signal_source.h"
+#include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gnss_sdr_valve.h"
+#include <glog/logging.h>
+#include <gnuradio/blocks/char_to_float.h>
 #include <exception>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include "gnss_sdr_valve.h"
-#include "configuration_interface.h"
-#include <gnuradio/blocks/char_to_float.h>
 
 
 using google::LogMessage;
@@ -61,7 +61,8 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    //if (FLAGS_nsr_signal_source.compare("-") != 0) filename_= FLAGS_nsr_signal_source;
+    if (FLAGS_signal_source.compare("-") != 0) filename_= FLAGS_signal_source;
+    if (FLAGS_s.compare("-") != 0) filename_= FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     big_endian_items_ = configuration->property(role + ".big_endian_items", true);

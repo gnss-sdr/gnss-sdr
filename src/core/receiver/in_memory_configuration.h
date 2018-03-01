@@ -36,10 +36,11 @@
 #ifndef GNSS_SDR_IN_MEMORY_CONFIGURATION_H_
 #define GNSS_SDR_IN_MEMORY_CONFIGURATION_H_
 
+#include "configuration_interface.h"
 #include <map>
 #include <memory>
 #include <string>
-#include "configuration_interface.h"
+
 
 class StringConverter;
 

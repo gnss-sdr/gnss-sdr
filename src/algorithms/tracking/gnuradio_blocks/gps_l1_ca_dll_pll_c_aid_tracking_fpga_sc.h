@@ -38,18 +38,18 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_FPGA_SC_H
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_FPGA_SC_H
 
-#include <fstream>
-#include <map>
-#include <string>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
-#include <gnuradio/block.h>
-#include <volk/volk.h>
 #include "gps_sdr_signal_processing.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
 #include "fpga_multicorrelator_8sc.h"
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
+#include <gnuradio/block.h>
+#include <volk/volk.h>
+#include <fstream>
+#include <map>
+#include <string>
 
 class gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc;
 

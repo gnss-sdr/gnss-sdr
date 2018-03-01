@@ -31,7 +31,6 @@
 #ifndef GNSS_SDR_TLM_DUMP_READER_H
 #define GNSS_SDR_TLM_DUMP_READER_H
 
-#include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>

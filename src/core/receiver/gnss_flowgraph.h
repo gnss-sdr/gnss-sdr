@@ -36,16 +36,17 @@
 #ifndef GNSS_SDR_GNSS_FLOWGRAPH_H_
 #define GNSS_SDR_GNSS_FLOWGRAPH_H_
 
+#include "GPS_L1_CA.h"
+#include "gnss_signal.h"
+#include "gnss_sdr_sample_counter.h"
+#include <gnuradio/top_block.h>
+#include <gnuradio/msg_queue.h>
 #include <list>
 #include <memory>
 #include <queue>
 #include <string>
 #include <vector>
-#include <gnuradio/top_block.h>
-#include <gnuradio/msg_queue.h>
-#include "GPS_L1_CA.h"
-#include "gnss_signal.h"
-#include "gnss_sdr_sample_counter.h"
+
 
 class GNSSBlockInterface;
 class ChannelInterface;

@@ -42,6 +42,7 @@
 #include "galileo_e5_signal_processing.h"
 #include "Galileo_E5a.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 
 using google::LogMessage;
 
@@ -63,6 +64,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
+    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
     CAF_window_hz_ = configuration_->property(role + ".CAF_window_hz",0);
     Zero_padding = configuration_->property(role + ".Zero_padding",0);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);

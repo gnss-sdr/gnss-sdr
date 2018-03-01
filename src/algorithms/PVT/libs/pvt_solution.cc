@@ -30,15 +30,13 @@
  */
 
 #include "pvt_solution.h"
-#include <exception>
 #include "GPS_L1_CA.h"
-#include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <exception>
 
 
 using google::LogMessage;
 
-DEFINE_bool(tropo, true, "Apply tropospheric correction");
 
 Pvt_Solution::Pvt_Solution()
 {

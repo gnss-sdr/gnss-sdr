@@ -40,11 +40,10 @@
 #ifndef GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_H_
 #define GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_H_
 
-#include <string>
 #include "tracking_interface.h"
 #include "glonass_l1_ca_dll_pll_c_aid_tracking_cc.h"
 #include "glonass_l1_ca_dll_pll_c_aid_tracking_sc.h"
-
+#include <string>
 
 class ConfigurationInterface;
 

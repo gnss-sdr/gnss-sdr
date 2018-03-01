@@ -24,6 +24,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
@@ -34,4 +35,4 @@ file(GLOB CHANNEL_ADAPTER_HEADERS "*.h")
 list(SORT CHANNEL_ADAPTER_HEADERS)
 add_library(channel_adapters ${CHANNEL_ADAPTER_SOURCES} ${CHANNEL_ADAPTER_HEADERS})
 source_group(Headers FILES ${CHANNEL_ADAPTER_HEADERS})
-target_link_libraries(channel_adapters channel_fsm ${GNURADIO_RUNTIME_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(channel_adapters channel_fsm ${GNURADIO_RUNTIME_LIBRARIES} ${Boost_LIBRARIES} gnss_sdr_flags)

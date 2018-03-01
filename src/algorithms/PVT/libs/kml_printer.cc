@@ -30,9 +30,9 @@
  */
 
 #include "kml_printer.h"
-#include <sstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
+#include <sstream>
 
 using google::LogMessage;
 

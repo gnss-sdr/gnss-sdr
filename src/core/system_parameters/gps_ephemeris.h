@@ -33,12 +33,11 @@
 #define GNSS_SDR_GPS_EPHEMERIS_H_
 
 
-#include <map>
-#include <string>
-#include "boost/assign.hpp"
+#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-
+#include <map>
+#include <string>
 
 
 /*!

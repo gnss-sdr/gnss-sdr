@@ -34,11 +34,13 @@
  */
 
 #include "gps_l1_ca_pcps_acquisition.h"
-#include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
+#include "configuration_interface.h"
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
-#include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include <boost/math/distributions/exponential.hpp>
+#include <glog/logging.h>
+
 
 
 using google::LogMessage;
@@ -61,6 +63,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     dump_ = configuration_->property(role + ".dump", false);
     blocking_ = configuration_->property(role + ".blocking", true);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
+    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);

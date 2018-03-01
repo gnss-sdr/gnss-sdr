@@ -8,7 +8,7 @@
 *
 * -------------------------------------------------------------------------
 *
-* Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
+* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
 *
 * GNSS-SDR is a software defined Global Navigation
 * Satellite Systems receiver
@@ -30,6 +30,7 @@
 *
 * -------------------------------------------------------------------------
 */
+
 #ifndef GNSS_SDR_VERSION
 #define GNSS_SDR_VERSION "0.0.9"
 #endif
@@ -38,17 +39,20 @@
 #define GOOGLE_STRIP_LOG 0
 #endif
 
+#include "concurrent_map.h"
+#include "concurrent_queue.h"
+#include "control_thread.h"
+#include "gnss_sdr_flags.h"
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception_ptr.hpp>
+#include <boost/filesystem/operations.hpp>     // for create_directories, exists
+#include <boost/filesystem/path.hpp>           // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>    // for filesystem
+#include <glog/logging.h>
 #include <chrono>
 #include <iostream>
 #include <memory>
-#include <boost/exception/diagnostic_information.hpp>
-#include <boost/exception_ptr.hpp>
-#include <boost/filesystem.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include "control_thread.h"
-#include "concurrent_queue.h"
-#include "concurrent_map.h"
+
 
 #if CUDA_GPU_ACCEL
     // For the CUDA runtime routines (prefixed with "cuda_")
@@ -58,7 +62,6 @@
 
 using google::LogMessage;
 
-DECLARE_string(log_dir);
 
 /*
 * Concurrent queues that communicates the Telemetry Decoder
@@ -74,7 +77,7 @@ int main(int argc, char** argv)
     const std::string intro_help(
             std::string("\nGNSS-SDR is an Open Source GNSS Software Defined Receiver\n")
     +
-    "Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)\n"
+    "Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)\n"
     +
     "This program comes with ABSOLUTELY NO WARRANTY;\n"
     +

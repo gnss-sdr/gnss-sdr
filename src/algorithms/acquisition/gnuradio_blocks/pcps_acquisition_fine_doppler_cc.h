@@ -48,12 +48,12 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
 #define GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
 
-#include <fstream>
-#include <string>
+#include "gnss_synchro.h"
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include "gnss_synchro.h"
+#include <fstream>
+#include <string>
 
 class pcps_acquisition_fine_doppler_cc;
 

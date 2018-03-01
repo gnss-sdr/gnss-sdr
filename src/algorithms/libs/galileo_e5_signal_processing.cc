@@ -32,9 +32,9 @@
  */
 
 #include "galileo_e5_signal_processing.h"
-#include <gnuradio/math.h>
 #include "Galileo_E5a.h"
 #include "gnss_signal_processing.h"
+#include <gnuradio/gr_complex.h>
 
 
 

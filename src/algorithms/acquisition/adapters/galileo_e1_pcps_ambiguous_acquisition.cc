@@ -30,12 +30,14 @@
  */
 
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
+#include "configuration_interface.h"
+#include "galileo_e1_signal_processing.h"
+#include "Galileo_E1.h"
+#include "gnss_sdr_flags.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include "galileo_e1_signal_processing.h"
-#include "Galileo_E1.h"
-#include "configuration_interface.h"
+
 
 using google::LogMessage;
 
@@ -58,6 +60,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     dump_ = configuration_->property(role + ".dump", false);
     blocking_ = configuration_->property(role + ".blocking", true);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
+    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
 
     if (sampled_ms_ % 4 != 0)

@@ -33,10 +33,9 @@
 #ifndef GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_H_
 #define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_H_
 
-#include <string>
-#include "telemetry_decoder_interface.h"
 #include "gps_l2c_telemetry_decoder_cc.h"
-
+#include "telemetry_decoder_interface.h"
+#include <string>
 
 class ConfigurationInterface;
 

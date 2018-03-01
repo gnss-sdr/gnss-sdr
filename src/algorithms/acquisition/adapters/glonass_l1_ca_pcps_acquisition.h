@@ -34,14 +34,13 @@
 #ifndef GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H_
 #define GNSS_SDR_GLONASS_L1_CA_PCPS_ACQUISITION_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
-#include <gnuradio/blocks/float_to_complex.h>
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
+#include "gnss_synchro.h"
 #include "pcps_acquisition.h"
 #include "complex_byte_to_float_x2.h"
-
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <gnuradio/blocks/float_to_complex.h>
+#include <string>
 
 class ConfigurationInterface;
 

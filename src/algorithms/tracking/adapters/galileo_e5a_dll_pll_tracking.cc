@@ -37,10 +37,10 @@
  */
 
 #include "galileo_e5a_dll_pll_tracking.h"
-#include <glog/logging.h>
-#include "Galileo_E5a.h"
 #include "configuration_interface.h"
-
+#include "Galileo_E5a.h"
+#include "gnss_sdr_flags.h"
+#include <glog/logging.h>
 
 using google::LogMessage;
 
@@ -60,8 +60,8 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     std::string default_item_type = "gr_complex";
     float pll_bw_hz;
     float dll_bw_hz;
-    float pll_bw_init_hz;
-    float dll_bw_init_hz;
+    float pll_bw_narrow_hz;
+    float dll_bw_narrow_hz;
     int ti_ms;
     float early_late_space_chips;
     item_type = configuration->property(role + ".item_type", default_item_type);
@@ -70,10 +70,12 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
-    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
-    pll_bw_init_hz = configuration->property(role + ".pll_bw_init_hz", 20.0);
-    dll_bw_init_hz = configuration->property(role + ".dll_bw_init_hz", 20.0);
+    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 20.0);
+    if(FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 20.0);
+    if(FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+    pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 5.0);
+    dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
     ti_ms = configuration->property(role + ".ti_ms", 3);
 
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
@@ -94,8 +96,8 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
                     dump_filename,
                     pll_bw_hz,
                     dll_bw_hz,
-                    pll_bw_init_hz,
-                    dll_bw_init_hz,
+                    pll_bw_narrow_hz,
+                    dll_bw_narrow_hz,
                     ti_ms,
                     early_late_space_chips);
         }

@@ -29,19 +29,19 @@
  */
 
 #include "rtcm.h"
+#include "Galileo_E1.h"
+#include "GPS_L2C.h"
+#include <boost/algorithm/string.hpp>  // for to_upper_copy
+#include <boost/crc.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/dynamic_bitset.hpp>
+#include <glog/logging.h>
 #include <algorithm>  // for std::reverse
 #include <chrono>     // std::chrono::seconds
 #include <cmath>      // for std::fmod
 #include <cstdlib>    // for strtol
 #include <sstream>    // for std::stringstream
 #include <thread>
-#include <boost/algorithm/string.hpp>  // for to_upper_copy
-#include <boost/crc.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/dynamic_bitset.hpp>
-#include <glog/logging.h>
-#include "Galileo_E1.h"
-#include "GPS_L2C.h"
 
 using google::LogMessage;
 
@@ -3630,9 +3630,9 @@ int Rtcm::set_DF008(short int smoothing_interval)
 int Rtcm::set_DF009(const Gnss_Synchro & gnss_synchro)
 {
     unsigned int prn_ = gnss_synchro.PRN;
-    if(prn_ > 31)
+    if(prn_ > 32)
         {
-            LOG(WARNING) << "GPS satellite ID must be between 0 and 31, but PRN " << prn_ << " was found";
+            LOG(WARNING) << "GPS satellite ID must be between 1 and 32, but PRN " << prn_ << " was found";
         }
     DF009 = std::bitset<6>(prn_);
     return 0;
@@ -3642,9 +3642,9 @@ int Rtcm::set_DF009(const Gnss_Synchro & gnss_synchro)
 int Rtcm::set_DF009(const Gps_Ephemeris & gps_eph)
 {
     unsigned int prn_ = gps_eph.i_satellite_PRN;
-    if(prn_ > 31)
+    if(prn_ > 32)
         {
-            LOG(WARNING) << "GPS satellite ID must be between 0 and 31, but PRN " << prn_ << " was found";
+            LOG(WARNING) << "GPS satellite ID must be between 1 and 32, but PRN " << prn_ << " was found";
         }
     DF009 = std::bitset<6>(prn_);
     return 0;

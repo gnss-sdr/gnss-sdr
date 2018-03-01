@@ -30,62 +30,62 @@
  * -------------------------------------------------------------------------
  */
 
-#include <iostream>
-#include <cmath>
-#include <matio.h>
 #include "acquisition_dump_reader.h"
+#include <matio.h>
+#include <cmath>
+#include <iostream>
 
 bool acquisition_dump_reader::read_binary_acq()
 {
     mat_t* matfile = Mat_Open(d_dump_filename.c_str(), MAT_ACC_RDONLY);
     if( matfile == NULL)
-    {
-        std::cout << "¡¡¡Unreachable Acquisition dump file!!!" << std::endl;
-        return false;
-    }
+        {
+            std::cout << "¡¡¡Unreachable Acquisition dump file!!!" << std::endl;
+            return false;
+        }
     matvar_t* var_= Mat_VarRead(matfile, "grid");
     if( var_ == NULL)
-    {
-        std::cout << "¡¡¡Unreachable grid variable into Acquisition dump file!!!" << std::endl;
-        Mat_Close(matfile);
-        return false;
-    }
+        {
+            std::cout << "¡¡¡Unreachable grid variable into Acquisition dump file!!!" << std::endl;
+            Mat_Close(matfile);
+            return false;
+        }
     if(var_->rank != 2)
-    {
-        std::cout << "Invalid Acquisition dump file: rank error" << std::endl;
-        Mat_VarFree(var_);
-        Mat_Close(matfile);
-        return false;
-    }
+        {
+            std::cout << "Invalid Acquisition dump file: rank error" << std::endl;
+            Mat_VarFree(var_);
+            Mat_Close(matfile);
+            return false;
+        }
     if((var_->dims[0] != d_samples_per_code) or (var_->dims[1] != d_num_doppler_bins))
-    {
-        std::cout << "Invalid Acquisition dump file: dimension matrix error" << std::endl;
-        if(var_->dims[0] != d_samples_per_code) std::cout << "Expected " << d_samples_per_code << " samples per code. Obtained " << var_->dims[0] << std::endl;
-        if(var_->dims[1] != d_num_doppler_bins) std::cout << "Expected " << d_num_doppler_bins << " Doppler bins. Obtained " << var_->dims[1] << std::endl;
-        Mat_VarFree(var_);
-        Mat_Close(matfile);
-        return false;
-    }
+        {
+            std::cout << "Invalid Acquisition dump file: dimension matrix error" << std::endl;
+            if(var_->dims[0] != d_samples_per_code) std::cout << "Expected " << d_samples_per_code << " samples per code. Obtained " << var_->dims[0] << std::endl;
+            if(var_->dims[1] != d_num_doppler_bins) std::cout << "Expected " << d_num_doppler_bins << " Doppler bins. Obtained " << var_->dims[1] << std::endl;
+            Mat_VarFree(var_);
+            Mat_Close(matfile);
+            return false;
+        }
     if(var_->data_type != MAT_T_SINGLE)
-    {
-        std::cout << "Invalid Acquisition dump file: data type error" << std::endl;
-        Mat_VarFree(var_);
-        Mat_Close(matfile);
-        return false;
-    }
+        {
+            std::cout << "Invalid Acquisition dump file: data type error" << std::endl;
+            Mat_VarFree(var_);
+            Mat_Close(matfile);
+            return false;
+        }
     std::vector<std::vector<float> >::iterator it1;
     std::vector<float>::iterator it2;
     float* aux = static_cast<float*>(var_->data);
     int k = 0;
     float normalization_factor = std::pow(d_samples_per_code, 2);
     for(it1 = mag.begin(); it1 != mag.end(); it1++)
-    {
-        for(it2 = it1->begin(); it2 != it1->end(); it2++)
         {
-            *it2 = static_cast<float>(std::sqrt(aux[k])) / normalization_factor;
-            k++;
+            for(it2 = it1->begin(); it2 != it1->end(); it2++)
+                {
+                    *it2 = static_cast<float>(std::sqrt(aux[k])) / normalization_factor;
+                    k++;
+                }
         }
-    }
     Mat_VarFree(var_);
     Mat_Close(matfile);
 

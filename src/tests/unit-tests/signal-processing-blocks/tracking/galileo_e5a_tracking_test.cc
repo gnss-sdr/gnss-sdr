@@ -32,7 +32,6 @@
 
 
 #include <chrono>
-#include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -92,10 +91,10 @@ void GalileoE5aTrackingTest::init()
     config->set_property("Tracking_5X.dump_filename", "../data/e5a_tracking_ch_");
     config->set_property("Tracking_5X.early_late_space_chips", "0.5");
     config->set_property("Tracking_5X.order", "2");
-    config->set_property("Tracking_5X.pll_bw_hz_init","20.0");
-    config->set_property("Tracking_5X.pll_bw_hz", "5");
-    config->set_property("Tracking_5X.dll_bw_hz_init","2.0");
-    config->set_property("Tracking_5X.dll_bw_hz", "2");
+    config->set_property("Tracking_5X.pll_bw_hz","20.0");
+    config->set_property("Tracking_5X.dll_bw_hz", "5.0");
+    config->set_property("Tracking_5X.pll_bw_narrow_hz","2.0");
+    config->set_property("Tracking_5X.pll_bw_narrow_hz", "2.0");
     config->set_property("Tracking_5X.ti_ms", "1");
 }
 

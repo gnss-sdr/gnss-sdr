@@ -35,20 +35,22 @@
  */
 
 #include "gps_l5i_dll_pll_tracking_cc.h"
-#include <cmath>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
-#include <matio.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gps_l5_signal.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
 #include "GPS_L5.h"
 #include "control_message_factory.h"
+#include "gnss_sdr_flags.h"
+#include <boost/lexical_cast.hpp>
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
+#include <matio.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>
+#include <iostream>
+#include <memory>
+#include <sstream>
+
 
 using google::LogMessage;
 
@@ -150,11 +152,11 @@ gps_l5i_dll_pll_tracking_cc::gps_l5i_dll_pll_tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[GPS_L5_CN0_ESTIMATION_SAMPLES];
+    d_Prompt_buffer = new gr_complex[FLAGS_cn0_samples];
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = GPS_L5_CARRIER_LOCK_THRESHOLD;
+    d_carrier_lock_threshold = FLAGS_carrier_lock_th;
 
     systemName["G"] = std::string("GPS");
 
@@ -603,7 +605,7 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
             d_rem_code_phase_chips = d_code_freq_chips * (d_rem_code_phase_samples / static_cast<double>(d_fs_in));
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < GPS_L5_CN0_ESTIMATION_SAMPLES)
+            if (d_cn0_estimation_counter < FLAGS_cn0_samples)
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = d_correlator_outs[1];
@@ -613,11 +615,11 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
                 {
                     d_cn0_estimation_counter = 0;
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, GPS_L5_CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L5i_CODE_LENGTH_CHIPS);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, d_fs_in, GPS_L5i_CODE_LENGTH_CHIPS);
                     // Carrier lock indicator
-                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, GPS_L5_CN0_ESTIMATION_SAMPLES);
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
                     // Loss of lock detection
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < GPS_L5_MINIMUM_VALID_CN0)
+                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                         {
                             d_carrier_lock_fail_counter++;
                         }
@@ -625,7 +627,7 @@ int gps_l5i_dll_pll_tracking_cc::general_work (int noutput_items __attribute__((
                         {
                             if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
                         }
-                    if (d_carrier_lock_fail_counter > GPS_L5_MAXIMUM_LOCK_FAIL_COUNTER)
+                    if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";

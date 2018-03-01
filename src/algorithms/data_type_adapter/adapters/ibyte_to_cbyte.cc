@@ -30,9 +30,9 @@
  */
 
 #include "ibyte_to_cbyte.h"
-#include <volk/volk.h>
-#include <glog/logging.h>
 #include "configuration_interface.h"
+#include <glog/logging.h>
+#include <volk/volk.h>
 
 using google::LogMessage;
 

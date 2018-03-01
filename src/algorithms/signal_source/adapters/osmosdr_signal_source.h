@@ -33,13 +33,13 @@
 #ifndef GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_
 #define GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_
 
-#include <stdexcept>
-#include <string>
+#include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <osmosdr/source.h>
-#include "gnss_block_interface.h"
+#include <stdexcept>
+#include <string>
 
 class ConfigurationInterface;
 

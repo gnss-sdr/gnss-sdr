@@ -34,17 +34,14 @@
  */
 
 #include "nmea_printer.h"
-#include <fcntl.h>
-#include <termios.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
-#include <gflags/gflags.h>
-
+#include <fcntl.h>
+#include <termios.h>
 
 
 using google::LogMessage;
 
-//DEFINE_string(NMEA_version, "2.1", "Specifies the NMEA version (2.1)");
 
 Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_tty_port, std::string nmea_dump_devname)
 {
@@ -72,8 +69,6 @@ Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_tty_port, std::s
 }
 
 
-
-
 Nmea_Printer::~Nmea_Printer()
 {
     if (nmea_file_descriptor.is_open())
@@ -82,8 +77,6 @@ Nmea_Printer::~Nmea_Printer()
         }
     close_serial();
 }
-
-
 
 
 int Nmea_Printer::init_serial (std::string serial_device)
@@ -121,7 +114,6 @@ int Nmea_Printer::init_serial (std::string serial_device)
     tcsetattr(fd, TCSANOW, &options);
     return fd;
 }
-
 
 
 void Nmea_Printer::close_serial ()
@@ -200,7 +192,6 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data
 }
 
 
-
 char Nmea_Printer::checkSum(std::string sentence)
 {
     char check = 0;
@@ -212,7 +203,6 @@ char Nmea_Printer::checkSum(std::string sentence)
     // return the result
     return check;
 }
-
 
 
 std::string Nmea_Printer::latitude_to_hm(double lat)
@@ -253,7 +243,6 @@ std::string Nmea_Printer::latitude_to_hm(double lat)
 }
 
 
-
 std::string Nmea_Printer::longitude_to_hm(double longitude)
 {
     bool east;
@@ -289,7 +278,6 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
         }
     return out_string.str();
 }
-
 
 
 std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_UTC_time)
@@ -334,7 +322,6 @@ std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_
         }
     return sentence_str.str();
 }
-
 
 
 std::string Nmea_Printer::get_GPRMC()
@@ -438,7 +425,6 @@ std::string Nmea_Printer::get_GPRMC()
 }
 
 
-
 std::string Nmea_Printer::get_GPGSA()
 {
     //$GPGSA,A,3,07,02,26,27,09,04,15, , , , , ,1.8,1.0,1.5*33
@@ -521,8 +507,6 @@ std::string Nmea_Printer::get_GPGSA()
     sentence_str << "\r\n";
     return sentence_str.str();
 }
-
-
 
 
 std::string Nmea_Printer::get_GPGSV()
@@ -611,9 +595,6 @@ std::string Nmea_Printer::get_GPGSV()
     return sentence_str.str();
     //$GPGSV,2,1,07,07,79,048,42,02,51,062,43,26,36,256,42,27,27,138,42*71
 }
-
-
-
 
 
 std::string Nmea_Printer::get_GPGGA()
@@ -727,3 +708,4 @@ std::string Nmea_Printer::get_GPGGA()
     return sentence_str.str();
     //$GPGGA,104427.591,5920.7009,N,01803.2938,E,1,05,3.3,78.2,M,23.2,M,0.0,0000*4A
 }
+

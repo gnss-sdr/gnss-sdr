@@ -54,10 +54,7 @@
 #ifndef GNSS_SDR_RTKLIB_SOLVER_H_
 #define GNSS_SDR_RTKLIB_SOLVER_H_
 
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <string>
+
 #include "rtklib_rtkpos.h"
 #include "galileo_navigation_message.h"
 #include "gps_navigation_message.h"
@@ -65,6 +62,10 @@
 #include "glonass_gnav_navigation_message.h"
 #include "gnss_synchro.h"
 #include "pvt_solution.h"
+#include <fstream>
+#include <map>
+#include <string>
+
 
 /*!
  * \brief This class implements a simple PVT Least Squares solution

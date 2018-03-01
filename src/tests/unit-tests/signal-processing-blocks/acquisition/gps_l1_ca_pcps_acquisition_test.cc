@@ -33,9 +33,9 @@
 
 
 #include <chrono>
-#include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
+#include <glog/logging.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -49,6 +49,7 @@
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
+#include "GPS_L1_CA.h"
 #include "test_flags.h"
 #include "acquisition_dump_reader.h"
 #include "gps_l1_ca_pcps_acquisition.h"

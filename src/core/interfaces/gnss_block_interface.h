@@ -37,9 +37,10 @@
 #ifndef GNSS_SDR_GNSS_BLOCK_INTERFACE_H_
 #define GNSS_SDR_GNSS_BLOCK_INTERFACE_H_
 
+#include <gnuradio/top_block.h>
 #include <cassert>
 #include <string>
-#include <gnuradio/top_block.h>
+
 
 /*!
  * \brief This abstract class represents an interface to GNSS blocks.

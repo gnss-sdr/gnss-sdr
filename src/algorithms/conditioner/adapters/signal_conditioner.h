@@ -32,9 +32,8 @@
 #ifndef GNSS_SDR_SIGNAL_CONDITIONER_H_
 #define GNSS_SDR_SIGNAL_CONDITIONER_H_
 
-#include <string>
 #include "gnss_block_interface.h"
-
+#include <string>
 
 class ConfigurationInterface;
 class AcquisitionInterface;

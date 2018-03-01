@@ -28,13 +28,9 @@
  * -------------------------------------------------------------------------
  */
 
-//#include <fstream>
-//#include <map>
+
 #include <string>
-//#include <boost/archive/xml_iarchive.hpp>
-//#include <boost/serialization/nvp.hpp>
 #include "rtcm_printer.h"
-//#include "gps_ephemeris.h"
 
 
 TEST(RtcmPrinterTest, Instantiate)
@@ -51,22 +47,6 @@ TEST(RtcmPrinterTest, Instantiate)
 
 TEST(RtcmPrinterTest, Run)
 {
-    //    std::string file_name = "./gps_ephemeris_rx.xml";
-    //    std::map<int,Gps_Ephemeris> gps_ephemeris_map;
-    //    try
-    //    {
-    //            std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
-    //            boost::archive::xml_iarchive xml(ifs);
-    //            gps_ephemeris_map.clear();
-    //            xml >> boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", gps_ephemeris_map);
-    //            ifs.close();
-    //    }
-    //    catch (const std::exception& e)
-    //    {
-    //            //LOG(WARNING) << e.what() << "File: " << file_name;
-    //            //std::cout << "File not found" << std::endl;
-    //    }
-
     std::string filename = "test.rtcm";
     bool flag_rtcm_tty_port = false;
     std::string rtcm_dump_devname = "/dev/pts/4";

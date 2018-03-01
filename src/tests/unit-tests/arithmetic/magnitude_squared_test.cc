@@ -30,7 +30,7 @@
  * -------------------------------------------------------------------------
  */
 
-
+#include <algorithm>
 #include <chrono>
 #include <complex>
 #include <armadillo>
@@ -115,7 +115,7 @@ TEST(MagnitudeSquaredTest, ArmadilloComplexImplementation)
 TEST(MagnitudeSquaredTest, VolkComplexImplementation)
 {
     std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_magnitude_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
-    memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_magnitude_test);
+    std::fill_n(input, FLAGS_size_magnitude_test, std::complex<float>(0.0, 0.0));
     float* output = static_cast<float*>(volk_gnsssdr_malloc(FLAGS_size_magnitude_test * sizeof(float), volk_gnsssdr_get_alignment()));
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();

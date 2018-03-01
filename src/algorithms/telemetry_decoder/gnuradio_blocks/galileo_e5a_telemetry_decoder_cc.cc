@@ -35,13 +35,13 @@
  */
 
 #include "galileo_e5a_telemetry_decoder_cc.h"
-#include <iostream>
+#include "control_message_factory.h"
+#include "convolutional.h"
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <cmath>
-#include "control_message_factory.h"
-#include "convolutional.h"
+#include <iostream>
 
 
 #define GALILEO_E5a_CRC_ERROR_LIMIT 6

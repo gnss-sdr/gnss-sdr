@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -17,13 +17,25 @@
  */
 
 #include "qa_utils.h"
-#include <chrono>
-#include <random>
-#include <boost/foreach.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/lexical_cast.hpp>
-#include <volk_gnsssdr/volk_gnsssdr_cpu.h>
-#include <volk_gnsssdr/volk_gnsssdr_malloc.h>
+#include "volk_gnsssdr/volk_gnsssdr.h"              // for volk_gnsssdr_func_desc_t
+#include "volk_gnsssdr/volk_gnsssdr_malloc.h"       // for volk_gnsssdr_free, volk_gnsssdr_malloc
+#include <boost/foreach.hpp>                        // for auto_any_base
+#include <boost/lexical_cast.hpp>                   // for lexical_cast
+#include <boost/token_functions.hpp>                // for char_separator
+#include <boost/token_iterator.hpp>                 // for token_iterator
+#include <boost/tokenizer.hpp>                      // for tokenizer
+#include <cassert>                                  // for assert
+#include <chrono>                                   // for system_clock, duration,...
+#include <cmath>                                    // for sqrt, fabs, abs
+#include <cstdint>                                  // for uint16_t, uint64_t,int16_t, int32_t
+#include <cstring>                                  // for memcpy, memset
+#include <fstream>                                  // for operator<<
+#include <iostream>                                 // for cout, cerr
+#include <limits>                                   // for numeric_limits
+#include <map>                                      // for map
+#include <random>                                   // for random_device, default_random_engine, uniform_real_distribution
+#include <vector>                                   // for vector
+
 
 float uniform() {
     std::random_device r;

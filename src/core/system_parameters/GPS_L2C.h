@@ -32,18 +32,13 @@
 #ifndef GNSS_SDR_GPS_L2C_H_
 #define GNSS_SDR_GPS_L2C_H_
 
+
+#include "gnss_frequencies.h"
+#include "GPS_CNAV.h"
+#include "MATH_CONSTANTS.h"
 #include <cstdint>
 #include <vector>
 #include <utility> // std::pair
-#include "MATH_CONSTANTS.h"
-#include "gnss_frequencies.h"
-#include "GPS_CNAV.h"
-
-
-#define GPS_L2M_CN0_ESTIMATION_SAMPLES 10
-#define GPS_L2M_MINIMUM_VALID_CN0 25
-#define GPS_L2M_MAXIMUM_LOCK_FAIL_COUNTER 50
-#define GPS_L2M_CARRIER_LOCK_THRESHOLD 0.75
 
 
 // Physical constants

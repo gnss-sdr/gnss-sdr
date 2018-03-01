@@ -35,9 +35,10 @@
  */
 
 #include "galileo_e1_dll_pll_veml_tracking.h"
-#include <glog/logging.h>
-#include "Galileo_E1.h"
 #include "configuration_interface.h"
+#include "Galileo_E1.h"
+#include "gnss_sdr_flags.h"
+#include <glog/logging.h>
 
 
 using google::LogMessage;
@@ -71,7 +72,9 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
+    if(FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 0.5);
+    if(FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 2.0);
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 0.25);
     int extend_correlation_symbols;

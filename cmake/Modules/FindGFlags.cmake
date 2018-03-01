@@ -74,7 +74,11 @@ IF(GFlags_ROOT_DIR)
      SET(GFlags_LIBRARY_DIRS ${GFlags_ROOT_DIR})
 
      FIND_LIBRARY(GFlags_lib gflags ${GFlags_LIBRARY_DIRS})
-
+     if(EXISTS ${GFlags_INCLUDE_DIRS}/gflags/gflags_gflags.h)
+         set(GFLAGS_GREATER_20 TRUE)
+     else(EXISTS ${GFlags_INCLUDE_DIRS}/gflags/gflags_gflags.h)
+         set(GFLAGS_GREATER_20 FALSE)
+     endif(EXISTS ${GFlags_INCLUDE_DIRS}/gflags/gflags_gflags.h)
      # set up include and link directory
      include_directories(${GFlags_INCLUDE_DIRS})
      link_directories(${GFlags_LIBRARY_DIRS})

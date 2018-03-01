@@ -34,9 +34,8 @@
 #ifndef GNSS_SDR_GLONASS_GNAV_UTC_MODEL_H_
 #define GNSS_SDR_GLONASS_GNAV_UTC_MODEL_H_
 
-#include "boost/assign.hpp"
+#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
-#include <iostream>
 
 /*!
  * \brief This class is a storage for the GLONASS GNAV UTC MODEL data as described in GLONASS ICD (Edition 5.1)

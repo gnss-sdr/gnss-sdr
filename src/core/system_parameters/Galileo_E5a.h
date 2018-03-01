@@ -31,16 +31,11 @@
 #ifndef GNSS_SDR_GALILEO_E5A_H_
 #define GNSS_SDR_GALILEO_E5A_H_
 
+#include "gnss_frequencies.h"
+#include "MATH_CONSTANTS.h"
 #include <string>
 #include <vector>
 #include <utility> // std::pair
-#include "MATH_CONSTANTS.h"
-#include "gnss_frequencies.h"
-
-#define GALILEO_E5A_CN0_ESTIMATION_SAMPLES 20
-#define GALILEO_E5A_MINIMUM_VALID_CN0 25
-#define GALILEO_E5A_MAXIMUM_LOCK_FAIL_COUNTER 50
-#define GALILEO_E5A_CARRIER_LOCK_THRESHOLD 0.85
 
 
 // Carrier and code frequencies

@@ -29,14 +29,15 @@
  */
 
 #include "uhd_signal_source.h"
-#include <iostream>
-#include <uhd/types/device_addr.hpp>
-#include <uhd/exception.hpp>
-#include <volk/volk.h>
-#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include "GPS_L1_CA.h"
+#include <glog/logging.h>
+#include <uhd/types/device_addr.hpp>
+#include <uhd/exception.hpp>
+#include <volk/volk.h>
+#include <iostream>
+
 
 using google::LogMessage;
 

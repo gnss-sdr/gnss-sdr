@@ -31,16 +31,17 @@
 #ifndef GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_CC_H
 #define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_CC_H
 
+#include "gnss_satellite.h"
+#include "viterbi_decoder.h"
+#include <boost/crc.hpp>
+#include <gnuradio/block.h>
 #include <algorithm> // for copy
 #include <deque>
 #include <fstream>
 #include <string>
 #include <utility> // for pair
 #include <vector>
-#include <boost/crc.hpp>
-#include <gnuradio/block.h>
-#include "gnss_satellite.h"
-#include "viterbi_decoder.h"
+
 
 class sbas_l1_telemetry_decoder_cc;
 

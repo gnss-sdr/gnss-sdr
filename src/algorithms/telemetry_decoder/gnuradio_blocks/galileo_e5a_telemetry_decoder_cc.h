@@ -37,12 +37,7 @@
 #ifndef GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_CC_H_
 #define GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_CC_H_
 
-#include <fstream>
-#include <string>
-#include <deque>
-#include <gnuradio/block.h>
 #include "Galileo_E5a.h"
-#include "concurrent_queue.h"
 #include "gnss_satellite.h"
 #include "galileo_fnav_message.h"
 #include "galileo_ephemeris.h"
@@ -50,6 +45,11 @@
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 #include "gnss_synchro.h"
+#include <gnuradio/block.h>
+#include <deque>
+#include <fstream>
+#include <string>
+
 
 class galileo_e5a_telemetry_decoder_cc;
 

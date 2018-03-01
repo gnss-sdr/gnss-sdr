@@ -37,6 +37,8 @@
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+
 
 using google::LogMessage;
 
@@ -56,7 +58,8 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     if_ = configuration->property(role + ".if", 0);
     dump_ = configuration->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
-    doppler_min_ = configuration->property(role + ".doppler_min", -5000);
+    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
+    doppler_min_ = configuration->property(role + ".doppler_min", -doppler_max_);
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
     max_dwells_= configuration->property(role + ".max_dwells", 1);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);

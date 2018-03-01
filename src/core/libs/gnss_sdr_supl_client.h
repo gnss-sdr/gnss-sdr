@@ -34,14 +34,6 @@
 #ifndef GNSS_SDR_SUPL_CLIENT_H_
 #define GNSS_SDR_SUPL_CLIENT_H_
 
-#include <iostream>
-#include <fstream>
-#include <map>
-#include <string>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/serialization/map.hpp>
-#include <glog/logging.h>
 extern "C" {
 #include "supl.h"
 }
@@ -53,6 +45,13 @@ extern "C" {
 #include "gps_acq_assist.h"
 #include "gps_ref_time.h"
 #include "gps_ref_location.h"
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/serialization/map.hpp>
+#include <glog/logging.h>
+#include <fstream>
+#include <map>
+#include <string>
 
 /*!
  * \brief class that implements a C++ interface to external Secure User Location Protocol (SUPL) client library..

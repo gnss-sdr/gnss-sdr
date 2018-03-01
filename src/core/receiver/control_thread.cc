@@ -33,44 +33,50 @@
  */
 
 #include "control_thread.h"
+#include "concurrent_queue.h"
+#include "concurrent_map.h"
+#include "control_message_factory.h"
+#include "file_configuration.h"
+#include "gnss_flowgraph.h"
+#include "gnss_sdr_flags.h"
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
+#include "galileo_almanac.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
+#include "gps_almanac.h"
+#include <boost/lexical_cast.hpp>
+#include <boost/chrono.hpp>
+#include <glog/logging.h>
+#include <gnuradio/message.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <string>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <boost/lexical_cast.hpp>
-#include <boost/chrono.hpp>
-#include <gnuradio/message.h>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include "gps_ephemeris.h"
-#include "gps_iono.h"
-#include "gps_utc_model.h"
-#include "gps_almanac.h"
-#include "galileo_ephemeris.h"
-#include "galileo_iono.h"
-#include "galileo_utc_model.h"
-#include "galileo_almanac.h"
-#include "concurrent_queue.h"
-#include "concurrent_map.h"
-#include "gnss_flowgraph.h"
-#include "file_configuration.h"
-#include "control_message_factory.h"
+
 
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 using google::LogMessage;
 
-DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"),
-        "File containing the configuration parameters");
 
 ControlThread::ControlThread()
 {
+    if(!FLAGS_c.compare("-"))
+        {
     configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
+        }
+    else
+        {
+            configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
+        }
     delete_configuration_ = false;
     init();
 }

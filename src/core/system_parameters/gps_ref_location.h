@@ -32,7 +32,7 @@
 #ifndef GNSS_SDR_GPS_REF_LOCATION_H_
 #define GNSS_SDR_GPS_REF_LOCATION_H_
 
-#include "boost/assign.hpp"
+#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
 
 

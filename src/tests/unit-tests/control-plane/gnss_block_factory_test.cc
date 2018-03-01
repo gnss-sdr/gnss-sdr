@@ -160,7 +160,7 @@ TEST(GNSSBlockFactoryTest, InstantiatePulseBlankingFilter)
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     configuration->set_property("InputFilter.implementation", "Pulse_Blanking_Filter");
-    
+
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<GNSSBlockInterface> input_filter = factory->GetBlock(configuration, "InputFilter", "Pulse_Blanking_Filter", 1, 1);
 
@@ -173,7 +173,7 @@ TEST(GNSSBlockFactoryTest, InstantiateNotchFilter)
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     configuration->set_property("InputFilter.implementation", "Notch_Filter");
-    
+
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<GNSSBlockInterface> input_filter = factory->GetBlock(configuration, "InputFilter", "Notch_Filter", 1, 1);
 
@@ -186,7 +186,7 @@ TEST(GNSSBlockFactoryTest, InstantiateNotchFilterLite)
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     configuration->set_property("InputFilter.implementation", "Notch_Filter_Lite");
-    
+
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<GNSSBlockInterface> input_filter = factory->GetBlock(configuration, "InputFilter", "Notch_Filter_Lite", 1, 1);
 
@@ -351,23 +351,10 @@ TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaObservables)
 }
 
 
-
-
-TEST(GNSSBlockFactoryTest, InstantiatePvt)
+TEST(GNSSBlockFactoryTest, InstantiateRTKLIBPvt)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("PVT.implementation", "Pass_Through");
-    std::unique_ptr<GNSSBlockFactory> factory;
-    auto pvt_ = factory->GetPVT(configuration);
-    EXPECT_STREQ("PVT", pvt_->role().c_str());
-    EXPECT_STREQ("Pass_Through", pvt_->implementation().c_str());
-}
-
-
-TEST(GNSSBlockFactoryTest, InstantiateGpsL1CaPvt)
-{
-    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("PVT.implementation", "Hybrid_PVT");
+    configuration->set_property("PVT.implementation", "RTKLIB_PVT");
     std::unique_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<GNSSBlockInterface> pvt_ = factory->GetPVT(configuration);
     std::shared_ptr<PvtInterface> pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);

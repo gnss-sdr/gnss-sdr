@@ -328,8 +328,8 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/tests/common-files
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
@@ -605,12 +605,8 @@ if(NOT ${ENABLE_PACKAGING})
      target_link_libraries(control_thread_test ${Boost_LIBRARIES}
                                                ${GFlags_LIBS}
                                                ${GLOG_LIBRARIES}
-                                               ${GNURADIO_RUNTIME_LIBRARIES}
                                                ${GTEST_LIBRARIES}
-                                               gnss_sp_libs
-                                               gnss_system_parameters
                                                gnss_rx
-                                               ${VOLK_GNSSSDR_LIBRARIES}
                           )
      add_test(control_thread_test control_thread_test)
      if(NOT ${GTEST_DIR_LOCAL})
@@ -722,10 +718,10 @@ else(NOT ${GTEST_DIR_LOCAL})
    if(MATIO_FOUND)
         add_dependencies(matio_test gtest)
     else(MATIO_FOUND)
-        add_dependencies(matio_test gtest matio-${GNSSSDR_MATIO_LOCAL_VERSION}) 
+        add_dependencies(matio_test gtest matio-${GNSSSDR_MATIO_LOCAL_VERSION})
     endif(MATIO_FOUND)
 endif(NOT ${GTEST_DIR_LOCAL})
-                                          
+
 add_executable(acq_test
       ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
       ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc

@@ -206,7 +206,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
             else if (d_stat == 1) //check 6 seconds of preamble separation
                 {
                     preamble_diff_ms = round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
-                    if (abs(preamble_diff_ms - GPS_SUBFRAME_MS) == 0)
+                    if (abs(preamble_diff_ms - GPS_SUBFRAME_MS) < 1)
                         {
                             DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;
                             d_GPS_FSM.Event_gps_word_preamble();
@@ -351,7 +351,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
             //        /(double)current_symbol.fs;
             // update TOW at the preamble instant (account with decoder latency)
 
-            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 1.0 * GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
+            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 2.0 * GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
             d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_GPS_FSM.d_nav.d_TOW) * 1000 + 161;
             //d_TOW_at_current_symbol = floor(d_TOW_at_Preamble * 1000.0) / 1000.0;
             d_TOW_at_current_symbol = d_TOW_at_Preamble;

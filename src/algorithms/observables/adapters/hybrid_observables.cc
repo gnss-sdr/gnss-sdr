@@ -32,8 +32,6 @@
 
 #include "hybrid_observables.h"
 #include "configuration_interface.h"
-#include "Galileo_E1.h"
-#include "GPS_L1_CA.h"
 #include <glog/logging.h>
 
 

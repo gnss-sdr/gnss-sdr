@@ -472,7 +472,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     {
         if(valid_channels[i])
         {
-            Gnss_Synchro interpolated_gnss_synchro;
+            Gnss_Synchro interpolated_gnss_synchro = it->back();
             if(interpolate_data(interpolated_gnss_synchro, *it, T_rx_s_out))
             {
                 epoch_data.push_back(interpolated_gnss_synchro);
@@ -486,7 +486,6 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     }
     d_num_valid_channels = valid_channels.count();
     if(d_num_valid_channels == 0) { return 0; }
-
     correct_TOW_and_compute_prange(epoch_data);
     std::vector<Gnss_Synchro>::iterator it2 = epoch_data.begin();
     for(i = 0; i < d_nchannels; i++)

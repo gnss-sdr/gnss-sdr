@@ -139,6 +139,7 @@ ubuntu16.04:
     - make -j2
     # - make check
     - make install
+  allow_failure: true
 
 
 ubuntu18.04:
@@ -152,6 +153,7 @@ ubuntu18.04:
     - make -j2
     # - make check
     - make install
+  allow_failure: true
 
 
 fedora26:
@@ -347,7 +349,7 @@ docker-access18:
   script:
     - mkdir docker-build
     - cd docker-build
-    - echo -e "FROM phusion/baseimage:0.10.0\nMAINTAINER carles.fernandez@cttc.es\nCMD [\"/sbin/my_init\"]\nWORKDIR /home/src\nRUN apt-get update && apt-get install -y build-essential cmake libarmadillo-dev libblas-dev libboost-chrono-dev libboost-dev libboost-date-time-dev libboost-filesystem-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev libgflags-dev libgoogle-glog-dev libgtest-dev libgnutls-openssl-dev liblapack-dev liblog4cpp5-dev libmatio-dev libuhd-dev git ca-certificates gnuradio-dev gr-osmosdr python-mako python-six texlive-latex-base texlive-fonts-recommended texlive-latex-extra epstool transfig octave && rm -rf /var/lib/apt/lists/*\nRUN git clone https://gitlab.com/gnss-sdr/gnss-sdr && cd gnss-sdr/build && git checkout $CI_COMMIT_SHA && cmake -DENABLE_PACKAGING=ON -DENABLE_INSTALL_TESTS=ON .. && make -j2 && make install\nRUN /usr/bin/volk_profile -v 8111\nRUN /usr/local/bin/volk_gnsssdr_profile\nRUN apt-get clean && rm -rf /tmp/* /var/tmp/*\nRUN rm -rf /home/src\nWORKDIR /home\nCMD [\"bash\"]" > Dockerfile
+    - echo -e "FROM phusion/baseimage:0.10.0\nMAINTAINER carles.fernandez@cttc.es\nCMD [\"/sbin/my_init\"]\nWORKDIR /home/src\nRUN apt-get update && apt-get install -y build-essential cmake curl nano libarmadillo-dev libblas-dev libboost-chrono-dev libboost-dev libboost-date-time-dev libboost-filesystem-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev libgflags-dev libgoogle-glog-dev libgtest-dev libgnutls-openssl-dev liblapack-dev liblog4cpp5-dev libmatio-dev libuhd-dev git ca-certificates gnuradio-dev gr-osmosdr python-mako python-six texlive-latex-base texlive-fonts-recommended texlive-font-utils epstool transfig octave && rm -rf /var/lib/apt/lists/*\nRUN git clone https://gitlab.com/gnss-sdr/gnss-sdr && cd gnss-sdr/build && git checkout $CI_COMMIT_SHA && cmake -DENABLE_PACKAGING=ON -DENABLE_INSTALL_TESTS=ON .. && make -j2 && make install\nRUN /usr/bin/volk_profile -v 8111\nRUN /usr/local/bin/volk_gnsssdr_profile\nRUN apt-get clean && rm -rf /tmp/* /var/tmp/*\nRUN rm -rf /home/src\nWORKDIR /home\nCMD [\"bash\"]" > Dockerfile
     - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
     - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO .
     - docker tag $DOCKER_HUB_USER/$DOCKER_HUB_REPO:latest $DOCKER_HUB_USER/$DOCKER_HUB_REPO:access18
@@ -361,20 +363,23 @@ run-access18:
   script:
     - apt-get update
     # Grab the data set
-    - apt-get install -y curl
-    - cd data
-    - curl https://zenodo.org/record/1172670/files/L2_signal_samples.tar.xz --output L2_signal_samples.tar.xz
+    - mkdir -p exp-access18/data
+    - cd exp-access18/data
+    - curl https://zenodo.org/record/1184601/files/L2_signal_samples.tar.xz --output L2_signal_samples.tar.xz
     - tar xvfJ L2_signal_samples.tar.xz
-    - echo "2090ad3dfb3f461314252a1e6243d714  L2_signal_samples.tar.xz" > data.md5
+    - echo "3a04c1eeb970776bb77f5e3b7eaff2df  L2_signal_samples.tar.xz" > data.md5
     - md5sum -c data.md5
     - cd ..
-    # Execute the experiment (example)
-    - run_tests --gtest_filter=Multi*
-    - echo " x = 0:0.01:3; hf = figure (\"visible\", \"off\"); plot (x, erf (x), \"linewidth\", 2); hold on; plot (x, x, \"r\", \"linewidth\", 2); axis ([0, 3, 0, 1]); text (0.65, 0.6175, ['\leftarrow x = \pi \int_{0}^{x}e^{-t^2} dt = 0.6175']); xlabel (\"x\"); ylabel (\"erf (x)\"); title (\"erf (x) with text annotation\"); hh=findall(hf,\"-property\",\"FontName\"); set(hh,\"FontName\",\"Times\"); hh2=findall(hf,\"-property\",\"interpreter\"); set(hh2, \"interpreter\", \"tex\"); hh3=findall(hf,\"-property\",\"FontSize\"); set(hh3, \"FontSize\", 22); print (hf, \"results.eps\", \"-depsc\"); " >  my_test_file.m
-    - octave --no-gui my_test_file.m
-    - epspdf results.eps results.pdf
+    # Execute the experiment
+    - cp ../src/utils/reproducibility/ieee-access18/L2-access18.conf .
+    - cp ../src/utils/reproducibility/ieee-access18/plot_dump.m .
+    - cp -r ../src/utils/matlab/libs/geoFunctions .
+    - gnss-sdr --c=L2-access18.conf
+    - octave --no-gui plot_dump.m
+    - epspdf Figure2.eps Figure2.pdf
+    - cd ..
     - mkdir access18
-    - cp results.pdf access18/
+    - cp exp-access18/*.pdf access18/
 
   artifacts:
     paths:

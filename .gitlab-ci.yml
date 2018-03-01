@@ -137,7 +137,7 @@ ubuntu16.04:
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..
     - make -j2
-    - make check
+    # - make check
     - make install
 
 
@@ -150,7 +150,7 @@ ubuntu18.04:
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..
     - make -j2
-    - make check
+    # - make check
     - make install
 
 

@@ -619,7 +619,7 @@ set_property(TEST control_thread_test PROPERTY TIMEOUT 30)
 
 add_executable(flowgraph_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
                                    ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_flowgraph_test.cc )
-set_property(TARGET flowgraph_test PROPERTY EXCLUDE_FROM_ALL TRUE)
+
 target_link_libraries(flowgraph_test ${Boost_LIBRARIES}
                                      ${GFlags_LIBS}
                                      ${GLOG_LIBRARIES}

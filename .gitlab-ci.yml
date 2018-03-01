@@ -139,7 +139,6 @@ ubuntu16.04:
     - make -j2
     - make check
     - make install
-  allow_failure: true
 
 
 ubuntu18.04:

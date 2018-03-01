@@ -290,6 +290,7 @@ int hybrid_observables_cc::save_matfile()
 
 bool hybrid_observables_cc::interpolate_data(Gnss_Synchro& out, std::deque<Gnss_Synchro>& data, const double& ti)
 {
+    if((ti < data.front().RX_time) or (ti > data.back().RX_time)) { return false; }
     std::deque<Gnss_Synchro>::iterator it;
 
     arma::vec t      = arma::vec(data.size());

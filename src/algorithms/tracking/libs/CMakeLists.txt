@@ -47,6 +47,7 @@ set(TRACKING_LIB_SOURCES
 
 if(ENABLE_FPGA)
     SET(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} fpga_multicorrelator_8sc.cc)
+    SET(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} fpga_multicorrelator_real_codes_8sc.cc)
 endif(ENABLE_FPGA)
 
 include_directories(
@@ -54,6 +55,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${VOLK_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}

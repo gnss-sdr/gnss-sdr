@@ -100,8 +100,8 @@
 #include "rtklib_pvt.h"
 
 #if ENABLE_FPGA
-#include "gps_l1_ca_dll_pll_c_aid_tracking_fpga.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
+#include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #endif
 
 #if OPENCL_BLOCKS
@@ -1318,9 +1318,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
 #if ENABLE_FPGA
-    else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga") == 0)
+    else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllCAidTrackingFpga(configuration.get(), role, in_streams,
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllTrackingFpga(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }
@@ -1607,9 +1607,9 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
             block = std::move(block_);
         }
 #if ENABLE_FPGA
-    else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga") == 0)
+    else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-        std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllCAidTrackingFpga(configuration.get(), role, in_streams,
+        std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllTrackingFpga(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

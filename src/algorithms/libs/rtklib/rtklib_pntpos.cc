@@ -54,7 +54,6 @@
 #include "rtklib_ephemeris.h"
 #include "rtklib_ionex.h"
 #include "rtklib_sbas.h"
-#include <iostream>
 
 /* pseudorange measurement error variance ------------------------------------*/
 double varerr(const prcopt_t *opt, double el, int sys)
@@ -91,47 +90,52 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     *var = 0.0;
 
     if (!(sys = satsys(obs->sat, NULL)))
-        {
-            trace(4, "prange: satsys NULL\n");
-            return 0.0;
-        }
+    {
+        trace(4, "prange: satsys NULL\n");
+        return 0.0;
+    }
 
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
     if (sys & (SYS_GAL | SYS_SBS)) {j = 2;}
 
     if (sys == SYS_GPS)
-        {
-            if(obs->code[1] != CODE_NONE) {j = 1;}
-            else if(obs->code[2] != CODE_NONE) {j = 2;}
-        }
+    {
+        if(obs->code[1] != CODE_NONE) {j = 1;}
+        else if(obs->code[2] != CODE_NONE) {j = 2;}
+    }
 
     if (NFREQ<2 || lam[i] == 0.0 || lam[j] == 0.0)
-        {
-            trace(4, "prange: NFREQ<2||lam[i]==0.0||lam[j]==0.0\n");
-            printf("i: %d j:%d, lam[i]: %f lam[j] %f\n", i, j, lam[i], lam[j]);
-            return 0.0;
-        }
+    {
+        trace(4, "prange: NFREQ<2||lam[i]==0.0||lam[j]==0.0\n");
+        printf("i: %d j:%d, lam[i]: %f lam[j] %f\n", i, j, lam[i], lam[j]);
+        return 0.0;
+    }
 
     /* test snr mask */
     if (iter > 0)
+    {
+        if (testsnr(0, i, azel[1], obs->SNR[i] * 0.25, &opt->snrmask))
         {
-            if (testsnr(0, i, azel[1], obs->SNR[i] * 0.25, &opt->snrmask))
-                {
-                    trace(4, "snr mask: %s sat=%2d el=%.1f snr=%.1f\n",
-                            time_str(obs->time, 0), obs->sat, azel[1] * R2D, obs->SNR[i] * 0.25);
-                    return 0.0;
-                }
-            if (opt->ionoopt == IONOOPT_IFLC)
-                {
-                    if (testsnr(0, j, azel[1], obs->SNR[j] * 0.25, &opt->snrmask))
-                        {
-                            trace(4, "prange: testsnr error\n");
-                            return 0.0;
-                        }
-                }
+            trace(4, "snr mask: %s sat=%2d el=%.1f snr=%.1f\n",
+                    time_str(obs->time, 0), obs->sat, azel[1] * R2D, obs->SNR[i] * 0.25);
+            return 0.0;
         }
-    gamma_ = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0); /* f1^2/f2^2 */
+        if (opt->ionoopt == IONOOPT_IFLC)
+        {
+            if (testsnr(0, j, azel[1], obs->SNR[j] * 0.25, &opt->snrmask))
+            {
+                trace(4, "prange: testsnr error\n");
+                return 0.0;
+            }
+        }
+    }
+    /* fL1^2 / fL2(orL5)^2 . See IS-GPS-200, p. 103 and Galileo ICD p. 48 */
+    if(sys == SYS_GPS or sys == SYS_GAL)
+    {
+        gamma_ = std::pow(lam[i], 2.0) / std::pow(lam[j], 2.0);
+    }
+
     P1 = obs->P[i];
     P2 = obs->P[j];
     P1_P2 = nav->cbias[obs->sat-1][0];
@@ -139,42 +143,61 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     P2_C2 = nav->cbias[obs->sat-1][2];
 
     /* if no P1-P2 DCB, use TGD instead */
-    if (P1_P2 == 0.0 && (sys & (SYS_GPS | SYS_GAL | SYS_QZS))) //CHECK!
-        {
-            P1_P2 = (1.0 - gamma_) * gettgd(obs->sat, nav);
-        }
+    if(P1_P2 == 0.0 and sys == SYS_GPS)
+    {
+        P1_P2 = (gamma_ - 1.0) * gettgd(obs->sat, nav);
+    }
+    else if(P1_P2 == 0.0 and sys == SYS_GAL)
+    {
+        //TODO
+    }
+
     if (opt->ionoopt == IONOOPT_IFLC)
-        { /* dual-frequency */
+    { /* dual-frequency */
 
-            if (P1 == 0.0 || P2 == 0.0) { return 0.0; }
-            if (obs->code[i] == CODE_L1C) { P1 += P1_C1; } /* C1->P1 */
-            if (obs->code[j] == CODE_L2C) { P2 += P2_C2; } /* C2->P2 */
+        if (P1 == 0.0 || P2 == 0.0) { return 0.0; }
+        if (obs->code[i] == CODE_L1C) { P1 += P1_C1; } /* C1->P1 */
+        if (obs->code[j] == CODE_L2C) { P2 += P2_C2; } /* C2->P2 */
 
-            /* iono-free combination */
-            PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
-        }
+        /* iono-free combination */
+        PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
+    }
     else
-        { /* single-frequency */
-    	    if((obs->code[i] == CODE_NONE) && (obs->code[j] == CODE_NONE)) { return 0.0; }
+    { /* single-frequency */
+        if((obs->code[i] == CODE_NONE) && (obs->code[j] == CODE_NONE)) { return 0.0; }
 
-    	    else if((obs->code[i] != CODE_NONE) && (obs->code[j] == CODE_NONE))
-    	        {
-                    P1 += P1_C1; /* C1->P1 */
-                    PC = P1 - P1_P2 / (1.0 - gamma_);
-    	        }
-    	    else if((obs->code[i] == CODE_NONE) && (obs->code[j] != CODE_NONE))
-    	        {
-    	            P2 += P2_C2; /* C2->P2 */
-    	    	    PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
-    	        }
-    	    /* dual-frequency */
-    	    else
-    	        {
-    	      	    P1 += P1_C1;
-    	      	    P2 += P2_C2;
-    	      	    PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
-    	        }
-    	}
+        else if((obs->code[i] != CODE_NONE) && (obs->code[j] == CODE_NONE))
+        {//CHECK!!
+            P1 += P1_C1; /* C1->P1 */
+            PC = P1 - P1_P2 / (1.0 - gamma_);
+        }
+        else if((obs->code[i] == CODE_NONE) && (obs->code[j] != CODE_NONE))
+        {
+            if(sys == SYS_GPS)
+            {//CHECK!!
+                P2 += P2_C2; /* C2->P2 */
+                PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+            }
+            else if(sys == SYS_GAL)
+            {
+                //TODO
+            }
+        }
+        /* dual-frequency */
+        else
+        {
+            if(sys == SYS_GPS) /* See IS-GPS-200 p. 179 */
+            {
+                P1 += P1_C1;
+                P2 += P2_C2;
+                PC = (P2 - gamma_ * P1) / (1 - gamma_) - P1_P2 / (gamma_ - 1);
+            }
+            else if(sys == SYS_GAL)
+            {
+                //TODO
+            }
+        }
+    }
     if (opt->sateph == EPHOPT_SBAS) { PC -= P1_C1; } /* sbas clock based C1 */
 
     *var = std::pow(ERR_CBIAS, 2.0);

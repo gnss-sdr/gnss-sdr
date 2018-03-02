@@ -164,8 +164,6 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     	        }
     	    else if((obs->code[i] == CODE_NONE) && (obs->code[j] != CODE_NONE))
     	        {
-    	            std::cout << "P1_P2 = " << P1_P2 << std::endl;
-    	            std::cout << "P2_C2 = " << P2_C2 << std::endl;
     	            P2 += P2_C2; /* C2->P2 */
     	    	    PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
     	        }

@@ -258,6 +258,9 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
         ephemeris_record.d_A_f2 = ephemeris_record.d_A_f2 * CNAV_AF2_LSB;
         //group delays
         ephemeris_record.d_TGD = static_cast<double>(read_navigation_signed(data_bits, CNAV_TGD));
+        //Check if the grup delay value is not available. See IS-GPS-200, Table 30-IV.
+        //Bit string "1000000000000" is -4096 in 2 complement
+        if(ephemeris_record.d_TGD < -4095.9) { ephemeris_record.d_TGD = 0.0; }
         ephemeris_record.d_TGD = ephemeris_record.d_TGD * CNAV_TGD_LSB;
         ephemeris_record.d_ISCL1 = static_cast<double>(read_navigation_signed(data_bits, CNAV_ISCL1));
         ephemeris_record.d_ISCL1 = ephemeris_record.d_ISCL1 * CNAV_ISCL1_LSB;

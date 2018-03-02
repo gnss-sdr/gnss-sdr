@@ -57,11 +57,11 @@
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include "fft_internal.h"
+#include "opencl/fft_internal.h"
 #include "gnss_synchro.h"
 
 #ifdef __APPLE__
-   #include "cl.hpp"
+   #include "opencl/cl.hpp"
 #else
     #include <CL/cl.hpp>
 #endif

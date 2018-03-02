@@ -58,8 +58,8 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "control_message_factory.h"
-#include "fft_base_kernels.h"
-#include "fft_internal.h"
+#include "opencl/fft_base_kernels.h"
+#include "opencl/fft_internal.h"
 #include "GPS_L1_CA.h" //GPS_TWO_PI
 
 

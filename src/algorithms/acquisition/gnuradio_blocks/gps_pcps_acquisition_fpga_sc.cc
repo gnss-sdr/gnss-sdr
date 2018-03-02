@@ -39,7 +39,10 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "control_message_factory.h"
-#include "GPS_L1_CA.h" //GPS_TWO_PI
+#include "GPS_L1_CA.h" 
+
+#include <boost/thread.hpp>
+
 using google::LogMessage;
 
 void wait3(int seconds)
@@ -74,12 +77,13 @@ gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
         unsigned int select_queue_Fpga, std::string device_name, bool dump,
         std::string dump_filename) :
 
-        gr::block("pcps_acquisition_fpga_sc",
+        //gr::block("pcps_acquisition_fpga_sc",
+        gr::block("gps_pcps_acquisition_fpga_sc",
                 gr::io_signature::make(0, 0, sizeof(lv_16sc_t)),
                 gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0; // SAMPLE COUNTER
+    d_sample_counter = 0; // sample counter
     d_active = false;
     d_state = 0;
     d_samples_per_code = samples_per_code;
@@ -94,16 +98,13 @@ gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
     d_threshold = 0.0;
     d_doppler_step = 250;
     d_channel = 0;
-
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;
-
     d_gnss_synchro = 0;
-
     // instantiate HW accelerator class
     acquisition_fpga_8sc = std::make_shared < gps_fpga_acquisition_8sc>
-          (device_name, vector_length, d_fft_size, nsamples_total, fs_in, freq, sampled_ms, select_queue_Fpga);
+          (device_name, vector_length, d_fft_size, doppler_max, nsamples_total, fs_in, freq, sampled_ms, select_queue_Fpga);
 }
 
 
@@ -113,7 +114,6 @@ gps_pcps_acquisition_fpga_sc::~gps_pcps_acquisition_fpga_sc()
         {
             d_dump_file.close();
         }
-
     acquisition_fpga_8sc->free();
 }
 
@@ -134,14 +134,11 @@ void gps_pcps_acquisition_fpga_sc::init()
     d_gnss_synchro->Acq_doppler_hz = 0.0;
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_mag = 0.0;
-
     d_num_doppler_bins = ceil(
             static_cast<double>(static_cast<int>(d_doppler_max)
                     - static_cast<int>(-d_doppler_max))
                     / static_cast<double>(d_doppler_step));
-
-    acquisition_fpga_8sc->open_device();
-
+    //acquisition_fpga_8sc->open_device();
     acquisition_fpga_8sc->init();
 }
 
@@ -167,34 +164,28 @@ void gps_pcps_acquisition_fpga_sc::set_state(int state)
 }
 
 
+
+
 void gps_pcps_acquisition_fpga_sc::set_active(bool active)
 {
     float temp_peak_to_noise_level = 0.0;
     float peak_to_noise_level = 0.0;
     float input_power;
     float test_statistics = 0.0;
-    acquisition_fpga_8sc->block_samples(); // block the samples to run the acquisition this is only necessary for the tests
-
+    //printf("ACQ : Block samples for PRN %d\n", d_gnss_synchro->PRN);
+//    acquisition_fpga_8sc->block_samples(); // block the samples to run the acquisition this is only necessary for the tests
     d_active = active;
-
     int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
-
     d_state = 1;
-
     // initialize acquisition algorithm
     int doppler;
     uint32_t indext = 0;
     float magt = 0.0;
     //int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
     int effective_fft_size = d_fft_size;
-    //float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
-
     d_mag = 0.0;
-
     unsigned int initial_sample;
-
     d_well_count++;
-
     DLOG(INFO) << "Channel: " << d_channel
             << " , doing acquisition of satellite: " << d_gnss_synchro->System
             << " " << d_gnss_synchro->PRN << " ,sample stamp: "
@@ -207,26 +198,20 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
             doppler_index++)
         {
 
-            doppler = -static_cast<int>(d_doppler_max)
-                    + d_doppler_step * doppler_index;
+            doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
             acquisition_fpga_8sc->set_phase_step(doppler_index);
             acquisition_fpga_8sc->run_acquisition(); // runs acquisition and waits until it is finished
-
             acquisition_fpga_8sc->read_acquisition_results(&indext, &magt,
                     &initial_sample, &input_power);
-
             d_sample_counter = initial_sample;
-
             temp_peak_to_noise_level = static_cast<float>(magt) / static_cast<float>(input_power);
             if (peak_to_noise_level < temp_peak_to_noise_level)
                 {
                     peak_to_noise_level = temp_peak_to_noise_level;
                     d_mag = magt;
-
                     input_power = (input_power - d_mag)
                             / (effective_fft_size - 1);
-
                     d_gnss_synchro->Acq_delay_samples =
                             static_cast<double>(indext % d_samples_per_code);
                     d_gnss_synchro->Acq_doppler_hz =
@@ -234,14 +219,12 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
                     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
                     test_statistics = d_mag / input_power;
                 }
-
             // Record results to file if required
             if (d_dump)
                 {
                     std::stringstream filename;
                     //std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
                     filename.str("");
-
                     boost::filesystem::path p = d_dump_filename;
                     filename << p.parent_path().string()
                             << boost::filesystem::path::preferred_separator
@@ -250,19 +233,21 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
                             << d_gnss_synchro->Signal << "_sat_"
                             << d_gnss_synchro->PRN << "_doppler_" << doppler
                             << p.extension().string();
-
                     DLOG(INFO) << "Writing ACQ out to " << filename.str();
-
                     d_dump_file.open(filename.str().c_str(),
                             std::ios::out | std::ios::binary);
                     d_dump_file.close();
                 }
+
         }
 
+
+	//printf("ACQ : unblocking samples for satellite %d\n", d_gnss_synchro->PRN);
+//    acquisition_fpga_8sc->unblock_samples();    // unblock samples before sending positive or negative acquisition message to let the samples flow when the
+                                                // set local code function is called
     if (test_statistics > d_threshold)
         {
             d_state = 2; // Positive acquisition
-
             // 6.1- Declare positive acquisition using a message port
             DLOG(INFO) << "positive acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " "
@@ -274,10 +259,8 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
             DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
             DLOG(INFO) << "magnitude " << d_mag;
             DLOG(INFO) << "input signal power " << input_power;
-
             d_active = false;
             d_state = 0;
-
             acquisition_message = 1;
             this->message_port_pub(pmt::mp("events"),
                     pmt::from_long(acquisition_message));
@@ -285,7 +268,6 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
     else
         {
             d_state = 3; // Negative acquisition
-
             // 6.2- Declare negative acquisition using a message port
             DLOG(INFO) << "negative acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " "
@@ -297,25 +279,18 @@ void gps_pcps_acquisition_fpga_sc::set_active(bool active)
             DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
             DLOG(INFO) << "magnitude " << d_mag;
             DLOG(INFO) << "input signal power " << input_power;
-
             d_active = false;
             d_state = 0;
-
             acquisition_message = 2;
             this->message_port_pub(pmt::mp("events"),
                     pmt::from_long(acquisition_message));
         }
-
-    acquisition_fpga_8sc->unblock_samples();
-
-    acquisition_fpga_8sc->close_device();
-
     DLOG(INFO) << "Done. Consumed 1 item.";
 }
 
 
 int gps_pcps_acquisition_fpga_sc::general_work(int noutput_items,
-        gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
+        gr_vector_int &ninput_items __attribute__((unused)), gr_vector_const_void_star &input_items __attribute__((unused)),
         gr_vector_void_star &output_items __attribute__((unused)))
 {
     // general work not used with the acquisition

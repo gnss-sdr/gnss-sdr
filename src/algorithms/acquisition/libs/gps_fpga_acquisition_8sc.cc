@@ -60,8 +60,10 @@
 // logging
 #include <glog/logging.h>
 
+// volk
 #include <volk/volk.h>
 
+// GPS L1
 #include "GPS_L1_CA.h"
 
 #define PAGE_SIZE 0x10000
@@ -78,15 +80,15 @@ bool gps_fpga_acquisition_8sc::init()
 
 bool gps_fpga_acquisition_8sc::set_local_code(unsigned int PRN)
 {
-
     // select the code with the chosen PRN
     gps_fpga_acquisition_8sc::fpga_configure_acquisition_local_code(
-            &d_all_fft_codes[d_vector_length * PRN]);
+            &d_all_fft_codes[d_nsamples_total * (PRN - 1)]);
     return true;
 }
 
 gps_fpga_acquisition_8sc::gps_fpga_acquisition_8sc(std::string device_name,
         unsigned int vector_length, unsigned int nsamples,
+        unsigned int doppler_max,
         unsigned int nsamples_total, long fs_in, long freq,
         unsigned int sampled_ms, unsigned select_queue)
 {
@@ -97,48 +99,33 @@ gps_fpga_acquisition_8sc::gps_fpga_acquisition_8sc(std::string device_name,
     d_vector_length = vector_length;
     d_nsamples = nsamples; // number of samples not including padding
     d_select_queue = select_queue;
-
-    d_doppler_max = 0;
+    d_nsamples_total = nsamples_total;
+    d_doppler_max = doppler_max;
     d_doppler_step = 0;
     d_fd = 0; // driver descriptor
     d_map_base = nullptr; // driver memory map
-
-    // compute all the possible code ffts
-
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(vector_length, true);
-
     // allocate memory to compute all the PRNs
     // and compute all the possible codes
     std::complex<float>* code = new std::complex<float>[nsamples_total]; // buffer for the local code
-    std::complex<float> * code_total = new gr_complex[vector_length]; // buffer for the local code repeate every number of ms
-
-    gr_complex* d_fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-
-    d_all_fft_codes = new lv_16sc_t[vector_length * NUM_PRNs]; // memory containing all the possible fft codes for PRN 0 to 32
-
+    gr_complex* d_fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_all_fft_codes = new lv_16sc_t[nsamples_total * NUM_PRNs]; // memory containing all the possible fft codes for PRN 0 to 32
     float max; // temporary maxima search
-
-    for (unsigned int PRN = 0; PRN < NUM_PRNs; PRN++)
+    for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in, 0); // generate PRN code
-
-            for (unsigned int i = 0; i < sampled_ms; i++)
+            // fill in zero padding
+            for (int s=nsamples;s<nsamples_total;s++)
                 {
-                    memcpy(&(code_total[i * nsamples_total]), code, sizeof(gr_complex) * nsamples_total); // repeat for each ms
+                    code[s] = 0;
                 }
-
             int offset = 0;
-
-            memcpy(d_fft_if->get_inbuf() + offset, code_total, sizeof(gr_complex) * vector_length); // copy to FFT buffer
-
+            memcpy(d_fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * nsamples_total); // copy to FFT buffer
             d_fft_if->execute(); // Run the FFT of local code
-
-            volk_32fc_conjugate_32fc(d_fft_codes_padded, d_fft_if->get_outbuf(), vector_length); // conjugate values
-
+            volk_32fc_conjugate_32fc(d_fft_codes_padded, d_fft_if->get_outbuf(), nsamples_total); // conjugate values
             max = 0; // initialize maximum value
-
-            for (unsigned int i = 0; i < vector_length; i++) // search for maxima
+            for (unsigned int i = 0; i < nsamples_total; i++) // search for maxima
                 {
                     if (std::abs(d_fft_codes_padded[i].real()) > max)
                         {
@@ -149,34 +136,64 @@ gps_fpga_acquisition_8sc::gps_fpga_acquisition_8sc(std::string device_name,
                             max = std::abs(d_fft_codes_padded[i].imag());
                         }
                 }
-
-            for (unsigned int i = 0; i < vector_length; i++) // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
+            for (unsigned int i = 0; i < nsamples_total; i++) // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
                 {
-                    d_all_fft_codes[i + vector_length * PRN] = lv_16sc_t(static_cast<int>(d_fft_codes_padded[i].real() * (pow(2, 7) - 1) / max),
+                    d_all_fft_codes[i + nsamples_total * (PRN -1)] = lv_16sc_t(static_cast<int>(d_fft_codes_padded[i].real() * (pow(2, 7) - 1) / max),
                             static_cast<int>(d_fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max));
+
                 }
-
+            }
+    // open communication with HW accelerator
+    //printf("opening device %s\n", d_device_name.c_str());
+    if ((d_fd = open(d_device_name.c_str(), O_RDWR | O_SYNC)) == -1)
+        {
+            LOG(WARNING) << "Cannot open deviceio" << d_device_name;
+            //std::cout << "acquisition cannot open deviceio";
         }
-
+    d_map_base = reinterpret_cast<volatile unsigned *>(mmap(NULL, PAGE_SIZE,
+            PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0));
+    if (d_map_base == reinterpret_cast<void*>(-1))
+        {
+            LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
+            //std::cout << "acquisition : could not map the fpga registers to the driver" << std::endl;
+        }
+    // sanity check : check test register
+    // we only nee to do this when the class is created
+    // but the device is not opened yet when the class is create
+    // because we need to open and close the device every time we run an acquisition
+    // since the same device may be used by more than one class (gps acquisition, galileo
+    // acquisition, etc ..)
+    unsigned writeval = TEST_REGISTER_ACQ_WRITEVAL;
+    unsigned readval;
+    readval = gps_fpga_acquisition_8sc::fpga_acquisition_test_register(writeval);
+    if (writeval != readval)
+        {
+            LOG(WARNING) << "Acquisition test register sanity check failed";
+            //std:: cout << "Acquisition test register sanity check failed" << std::endl;
+        }
+    else
+        {
+            //std::cout << "Acquisition test register sanity check success !" << std::endl;
+            LOG(INFO) << "Acquisition test register sanity check success !";
+        }
+    gps_fpga_acquisition_8sc::reset_acquisition();
+    DLOG(INFO) << "Acquisition FPGA class created";
     // temporary buffers that we can delete
     delete[] code;
-    delete[] code_total;
     delete d_fft_if;
     delete[] d_fft_codes_padded;
 }
 
-
 gps_fpga_acquisition_8sc::~gps_fpga_acquisition_8sc()
 {
+    close_device();
     delete[] d_all_fft_codes;
 }
-
 
 bool gps_fpga_acquisition_8sc::free()
 {
     return true;
 }
-
 
 unsigned gps_fpga_acquisition_8sc::fpga_acquisition_test_register(unsigned writeval)
 {
@@ -189,31 +206,31 @@ unsigned gps_fpga_acquisition_8sc::fpga_acquisition_test_register(unsigned write
     return readval;
 }
 
-
 void gps_fpga_acquisition_8sc::fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[])
 {
-    short int local_code;
+    unsigned short local_code;
     unsigned int k, tmp, tmp2;
-
+    unsigned int fft_data;
     // clear memory address counter
     d_map_base[4] = 0x10000000;
+    // write local code
     for (k = 0; k < d_vector_length; k++)
         {
             tmp = fft_local_code[k].real();
             tmp2 = fft_local_code[k].imag();
             local_code = (tmp & 0xFF) | ((tmp2 * 256) & 0xFF00); // put together the real part and the imaginary part
-            d_map_base[4] = 0x0C000000 | (local_code & 0xFFFF);
+            fft_data = 0x0C000000 | (local_code & 0xFFFF);
+            d_map_base[4] = fft_data;
         }
 }
-
 
 void gps_fpga_acquisition_8sc::run_acquisition(void)
 {
     // enable interrupts
     int reenable = 1;
     write(d_fd, reinterpret_cast<void*>(&reenable), sizeof(int));
-
-    d_map_base[5] = 0; // writing anything to reg 4 launches the acquisition process
+    // launch the acquisition process
+    d_map_base[6] = 1; // writing anything to reg 6 launches the acquisition process
 
     int irq_count;
     ssize_t nb;
@@ -221,26 +238,24 @@ void gps_fpga_acquisition_8sc::run_acquisition(void)
     nb = read(d_fd, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
-            printf("Tracking_module Read failed to retrieve 4 bytes!\n");
-            printf("Tracking_module Interrupt number %d\n", irq_count);
+            printf("acquisition module Read failed to retrieve 4 bytes!\n");
+            printf("acquisition module Interrupt number %d\n", irq_count);
         }
 }
-
 
 void gps_fpga_acquisition_8sc::configure_acquisition()
 {
     d_map_base[0] = d_select_queue;
     d_map_base[1] = d_vector_length;
     d_map_base[2] = d_nsamples;
+    d_map_base[5] = (int) log2((float) d_vector_length); // log2 FFTlength
 }
-
 
 void gps_fpga_acquisition_8sc::set_phase_step(unsigned int doppler_index)
 {
     float phase_step_rad_real;
     float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
-
     int doppler = static_cast<int>(-d_doppler_max) + d_doppler_step * doppler_index;
     float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
@@ -250,22 +265,19 @@ void gps_fpga_acquisition_8sc::set_phase_step(unsigned int doppler_index)
     phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
     // avoid saturation of the fixed point representation in the fpga
     // (only the positive value can saturate due to the 2's complement representation)
-    if (phase_step_rad_real == 1.0)
+    if (phase_step_rad_real >= 1.0)
         {
             phase_step_rad_real = MAX_PHASE_STEP_RAD;
         }
     phase_step_rad_int_temp = phase_step_rad_real * 4; // * 2^2
     phase_step_rad_int = (int32_t) (phase_step_rad_int_temp * (536870912)); // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
-
     d_map_base[3] = phase_step_rad_int;
 }
-
 
 void gps_fpga_acquisition_8sc::read_acquisition_results(uint32_t* max_index,
         float* max_magnitude, unsigned *initial_sample, float *power_sum)
 {
     unsigned readval = 0;
-    readval = d_map_base[0];
     readval = d_map_base[1];
     *initial_sample = readval;
     readval = d_map_base[2];
@@ -275,7 +287,6 @@ void gps_fpga_acquisition_8sc::read_acquisition_results(uint32_t* max_index,
     readval = d_map_base[3];
     *max_index = readval;
 }
-
 
 void gps_fpga_acquisition_8sc::block_samples()
 {
@@ -288,44 +299,6 @@ void gps_fpga_acquisition_8sc::unblock_samples()
     d_map_base[14] = 0; // unblock the samples
 }
 
-
-void gps_fpga_acquisition_8sc::open_device()
-{
-
-    if ((d_fd = open(d_device_name.c_str(), O_RDWR | O_SYNC)) == -1)
-        {
-            LOG(WARNING) << "Cannot open deviceio" << d_device_name;
-        }
-
-    d_map_base = reinterpret_cast<volatile unsigned *>(mmap(NULL, PAGE_SIZE,
-            PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0));
-
-    if (d_map_base == reinterpret_cast<void*>(-1))
-        {
-            LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
-        }
-
-    // sanity check : check test register
-    // we only nee to do this when the class is created
-    // but the device is not opened yet when the class is create
-    // because we need to open and close the device every time we run an acquisition
-    // since the same device may be used by more than one class (gps acquisition, galileo
-    // acquisition, etc ..)
-    unsigned writeval = TEST_REGISTER_ACQ_WRITEVAL;
-    unsigned readval;
-    readval = gps_fpga_acquisition_8sc::fpga_acquisition_test_register(writeval);
-
-    if (writeval != readval)
-        {
-            LOG(WARNING) << "Acquisition test register sanity check failed";
-        }
-    else
-        {
-            LOG(INFO) << "Acquisition test register sanity check success !";
-        }
-}
-
-
 void gps_fpga_acquisition_8sc::close_device()
 {
     unsigned * aux = const_cast<unsigned*>(d_map_base);
@@ -336,3 +309,7 @@ void gps_fpga_acquisition_8sc::close_device()
     close(d_fd);
 }
 
+void gps_fpga_acquisition_8sc::reset_acquisition(void)
+{
+    d_map_base[6] = 2; // writing a 2 to d_map_base[6] resets the multicorrelator
+}

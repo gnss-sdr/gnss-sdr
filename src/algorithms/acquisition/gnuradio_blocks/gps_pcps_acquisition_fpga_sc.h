@@ -46,8 +46,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_ACQUISITION_FPGA_SC_H_
-#define GNSS_SDR_PCPS_ACQUISITION_FPGA_SC_H_
+#ifndef GNSS_SDR_GPS_PCPS_ACQUISITION_FPGA_SC_H_
+#define GNSS_SDR_GPS_PCPS_ACQUISITION_FPGA_SC_H_
 
 #include <fstream>
 #include <string>
@@ -56,6 +56,8 @@
 #include <gnuradio/fft/fft.h>
 #include "gnss_synchro.h"
 #include "gps_fpga_acquisition_8sc.h"
+
+#include <boost/thread.hpp>
 
 class gps_pcps_acquisition_fpga_sc;
 
@@ -95,7 +97,6 @@ private:
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
             unsigned int select_queue_Fpga, std::string device_name, bool dump,
             std::string dump_filename);
-
     int d_samples_per_code;
     float d_threshold;
     unsigned int d_doppler_max;
@@ -105,15 +106,16 @@ private:
     unsigned int d_fft_size;
     unsigned long int d_sample_counter;
     unsigned int d_num_doppler_bins;
-
     Gnss_Synchro *d_gnss_synchro;
     float d_mag;bool d_bit_transition_flag;bool d_use_CFAR_algorithm_flag;
-    std::ofstream d_dump_file;bool d_active;
+    std::ofstream d_dump_file;
+    bool d_active;
     int d_state;bool d_dump;
     unsigned int d_channel;
     std::string d_dump_filename;
-
     std::shared_ptr<gps_fpga_acquisition_8sc> acquisition_fpga_8sc;
+    //void set_active2(bool active);
+    boost::thread d_acq_thread;
 
 public:
     /*!
@@ -155,6 +157,8 @@ public:
      * active mode
      * \param active - bool that activates/deactivates the block.
      */
+
+
     void set_active(bool active);
 
     /*!
@@ -212,4 +216,4 @@ public:
 
 };
 
-#endif /* GNSS_SDR_PCPS_ACQUISITION_SC_H_*/
+#endif /* GNSS_SDR_GPS_PCPS_ACQUISITION_SC_H_*/

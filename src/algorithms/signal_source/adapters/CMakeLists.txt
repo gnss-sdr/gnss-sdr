@@ -35,6 +35,20 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
 endif(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
 
+if(ENABLE_AD9361)
+   find_package(libiio REQUIRED)
+   if(NOT LIBIIO_FOUND)
+      message(STATUS "gnuradio-iio not found, its installation is required.")
+      message(STATUS "Please build and install the following projects:")
+      message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
+      message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
+      message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
+      message(FATAL_ERROR "gnuradio-iio required for building gnss-sdr with this option enabled")
+   endif(NOT LIBIIO_FOUND)
+   set(OPT_LIBRARIES ${OPT_LIBRARIES} ${LIBIIO_LIBRARIES})
+   set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${LIBIIO_INCLUDE_DIRS})
+endif(ENABLE_AD9361)
+
 
 if(ENABLE_PLUTOSDR)
     ##############################################
@@ -54,6 +68,16 @@ if(ENABLE_FMCOMMS2)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} fmcomms2_signal_source.cc)
     endif(IIO_FOUND)
 endif(ENABLE_FMCOMMS2)
+
+if(ENABLE_AD9361)
+    ###############################################
+    # AD9361 DIRECT TO FPGA Hardware
+    ###############################################
+    if(LIBIIO_FOUND)
+        set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad9361_fpga_signal_source.cc)
+    endif(LIBIIO_FOUND)
+endif(ENABLE_AD9361)
+
 
 
 if(ENABLE_GN3S)

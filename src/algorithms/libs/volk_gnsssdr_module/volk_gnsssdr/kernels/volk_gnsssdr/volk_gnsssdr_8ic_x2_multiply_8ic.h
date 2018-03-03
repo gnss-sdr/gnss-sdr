@@ -75,7 +75,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse2(lv_8sc_t* cVector, co
 
     mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             x = _mm_loadu_si128((__m128i*)a);
             y = _mm_loadu_si128((__m128i*)b);
@@ -133,7 +133,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse4_1(lv_8sc_t* cVector, 
     _mm_setzero_si128();
     mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             x = _mm_lddqu_si128((__m128i*)a);
             y = _mm_lddqu_si128((__m128i*)b);
@@ -181,7 +181,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_generic(lv_8sc_t* cVector, c
     const lv_8sc_t* bPtr = bVector;
     unsigned int number;
 
-    for(number = 0; number < num_points; number++)
+    for (number = 0; number < num_points; number++)
         {
             *cPtr++ = (*aPtr++) * (*bPtr++);
         }
@@ -204,7 +204,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse2(lv_8sc_t* cVector, co
 
     mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);
@@ -228,7 +228,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse2(lv_8sc_t* cVector, co
             imagc = _mm_and_si128(imagc, mult1);
             imagc = _mm_slli_si128(imagc, 1);
 
-            totalc = _mm_or_si128 (realc, imagc);
+            totalc = _mm_or_si128(realc, imagc);
 
             _mm_store_si128((__m128i*)c, totalc);
 
@@ -262,7 +262,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse4_1(lv_8sc_t* cVector, 
     _mm_setzero_si128();
     mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);

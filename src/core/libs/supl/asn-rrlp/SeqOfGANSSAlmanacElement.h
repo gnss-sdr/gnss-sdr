@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfGANSSAlmanacElement_H_
-#define	_SeqOfGANSSAlmanacElement_H_
+#ifndef _SeqOfGANSSAlmanacElement_H_
+#define _SeqOfGANSSAlmanacElement_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct GANSSAlmanacElement;
 
 /* SeqOfGANSSAlmanacElement */
-typedef struct SeqOfGANSSAlmanacElement {
-	A_SEQUENCE_OF(struct GANSSAlmanacElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SeqOfGANSSAlmanacElement
+{
+    A_SEQUENCE_OF(struct GANSSAlmanacElement)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SeqOfGANSSAlmanacElement_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSAlmanacElement;
 /* Referred external types */
 #include "GANSSAlmanacElement.h"
 
-#endif	/* _SeqOfGANSSAlmanacElement_H_ */
+#endif /* _SeqOfGANSSAlmanacElement_H_ */
 #include <asn_internal.h>

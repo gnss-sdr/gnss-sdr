@@ -51,15 +51,15 @@ typedef boost::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc> galileo_
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr
 galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(unsigned int sampled_ms,
-             unsigned int max_dwells,
-                         unsigned int doppler_max, long freq, long fs_in,
-                         int samples_per_ms, int samples_per_code,
-                         bool bit_transition_flag,
-                         bool dump,
-                         std::string dump_filename,
-                         bool both_signal_components_,
-                         int CAF_window_hz_,
-                         int Zero_padding_);
+    unsigned int max_dwells,
+    unsigned int doppler_max, long freq, long fs_in,
+    int samples_per_ms, int samples_per_code,
+    bool bit_transition_flag,
+    bool dump,
+    std::string dump_filename,
+    bool both_signal_components_,
+    int CAF_window_hz_,
+    int Zero_padding_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -67,37 +67,37 @@ galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(unsigned int sampled_ms,
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class galileo_e5a_noncoherentIQ_acquisition_caf_cc: public gr::block
+class galileo_e5a_noncoherentIQ_acquisition_caf_cc : public gr::block
 {
 private:
     friend galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr
     galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
-            unsigned int sampled_ms,
-            unsigned int max_dwells,
-            unsigned int doppler_max, long freq, long fs_in,
-            int samples_per_ms, int samples_per_code,
-            bool bit_transition_flag,
-            bool dump,
-            std::string dump_filename,
-            bool both_signal_components_,
-            int CAF_window_hz_,
-            int Zero_padding_);
+        unsigned int sampled_ms,
+        unsigned int max_dwells,
+        unsigned int doppler_max, long freq, long fs_in,
+        int samples_per_ms, int samples_per_code,
+        bool bit_transition_flag,
+        bool dump,
+        std::string dump_filename,
+        bool both_signal_components_,
+        int CAF_window_hz_,
+        int Zero_padding_);
 
     galileo_e5a_noncoherentIQ_acquisition_caf_cc(
-            unsigned int sampled_ms,
-            unsigned int max_dwells,
-            unsigned int doppler_max, long freq, long fs_in,
-            int samples_per_ms, int samples_per_code,
-            bool bit_transition_flag,
-            bool dump,
-            std::string dump_filename,
-            bool both_signal_components_,
-            int CAF_window_hz_,
-            int Zero_padding_);
+        unsigned int sampled_ms,
+        unsigned int max_dwells,
+        unsigned int doppler_max, long freq, long fs_in,
+        int samples_per_ms, int samples_per_code,
+        bool bit_transition_flag,
+        bool dump,
+        std::string dump_filename,
+        bool both_signal_components_,
+        int CAF_window_hz_,
+        int Zero_padding_);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-            int doppler_offset);
-    float estimate_input_power(gr_complex *in );
+        int doppler_offset);
+    float estimate_input_power(gr_complex* in);
 
     long d_fs_in;
     long d_freq;
@@ -122,7 +122,7 @@ private:
     gr_complex* d_inbuffer;
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_ifft;
-    Gnss_Synchro *d_gnss_synchro;
+    Gnss_Synchro* d_gnss_synchro;
     unsigned int d_code_phase;
     float d_doppler_freq;
     float d_mag;
@@ -138,14 +138,14 @@ private:
     int d_state;
     bool d_dump;
     bool d_both_signal_components;
-//    bool d_CAF_filter;
+    //    bool d_CAF_filter;
     int d_CAF_window_hz;
     float* d_CAF_vector;
     float* d_CAF_vector_I;
     float* d_CAF_vector_Q;
-//    double* d_CAF_vector;
-//    double* d_CAF_vector_I;
-//    double* d_CAF_vector_Q;
+    //    double* d_CAF_vector;
+    //    double* d_CAF_vector_I;
+    //    double* d_CAF_vector_Q;
     unsigned int d_channel;
     std::string d_dump_filename;
     unsigned int d_buffer_count;
@@ -155,97 +155,96 @@ public:
     /*!
      * \brief Default destructor.
      */
-     ~galileo_e5a_noncoherentIQ_acquisition_caf_cc();
+    ~galileo_e5a_noncoherentIQ_acquisition_caf_cc();
 
-     /*!
+    /*!
       * \brief Set acquisition/tracking common Gnss_Synchro object pointer
       * to exchange synchronization data between acquisition and tracking blocks.
       * \param p_gnss_synchro Satellite information shared by the processing blocks.
       */
-     inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-     {
-         d_gnss_synchro = p_gnss_synchro;
-     }
+    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    {
+        d_gnss_synchro = p_gnss_synchro;
+    }
 
-     /*!
+    /*!
       * \brief Returns the maximum peak of grid search.
       */
-     inline unsigned int mag() const
-     {
-         return d_mag;
-     }
+    inline unsigned int mag() const
+    {
+        return d_mag;
+    }
 
-     /*!
+    /*!
       * \brief Initializes acquisition algorithm.
       */
-     void init();
+    void init();
 
-     /*!
+    /*!
       * \brief Sets local code for PCPS acquisition algorithm.
       * \param code - Pointer to the PRN code.
       */
-     void set_local_code(std::complex<float> * code, std::complex<float> * codeQ);
+    void set_local_code(std::complex<float>* code, std::complex<float>* codeQ);
 
-     /*!
+    /*!
       * \brief Starts acquisition algorithm, turning from standby mode to
       * active mode
       * \param active - bool that activates/deactivates the block.
       */
-     inline void set_active(bool active)
-     {
-         d_active = active;
-     }
+    inline void set_active(bool active)
+    {
+        d_active = active;
+    }
 
-     /*!
+    /*!
       * \brief If set to 1, ensures that acquisition starts at the
       * first available sample.
       * \param state - int=1 forces start of acquisition
       */
-     void set_state(int state);
+    void set_state(int state);
 
-     /*!
+    /*!
       * \brief Set acquisition channel unique ID
       * \param channel - receiver channel.
       */
-     inline void set_channel(unsigned int channel)
-     {
-         d_channel = channel;
-     }
+    inline void set_channel(unsigned int channel)
+    {
+        d_channel = channel;
+    }
 
-     /*!
+    /*!
       * \brief Set statistics threshold of PCPS algorithm.
       * \param threshold - Threshold for signal detection (check \ref Navitec2012,
       * Algorithm 1, for a definition of this threshold).
       */
-     inline void set_threshold(float threshold)
-     {
-         d_threshold = threshold;
-     }
+    inline void set_threshold(float threshold)
+    {
+        d_threshold = threshold;
+    }
 
-     /*!
+    /*!
       * \brief Set maximum Doppler grid search
       * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
       */
-     inline void set_doppler_max(unsigned int doppler_max)
-     {
-         d_doppler_max = doppler_max;
-     }
+    inline void set_doppler_max(unsigned int doppler_max)
+    {
+        d_doppler_max = doppler_max;
+    }
 
-     /*!
+    /*!
       * \brief Set Doppler steps for the grid search
       * \param doppler_step - Frequency bin of the search grid [Hz].
       */
-     inline void set_doppler_step(unsigned int doppler_step)
-     {
-         d_doppler_step = doppler_step;
-     }
+    inline void set_doppler_step(unsigned int doppler_step)
+    {
+        d_doppler_step = doppler_step;
+    }
 
-     /*!
+    /*!
       * \brief Parallel Code Phase Search Acquisition signal processing.
       */
-     int general_work(int noutput_items, gr_vector_int &ninput_items,
-             gr_vector_const_void_star &input_items,
-             gr_vector_void_star &output_items);
-
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);
 };
 #endif /* GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_ */

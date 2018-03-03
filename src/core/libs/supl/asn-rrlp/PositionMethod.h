@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_PositionMethod_H_
-#define	_PositionMethod_H_
+#ifndef _PositionMethod_H_
+#define _PositionMethod_H_
 
 
 #include <asn_application.h>
@@ -19,13 +19,13 @@ extern "C" {
 
 /* Dependencies */
 typedef enum PositionMethod {
-	PositionMethod_eotd	= 0,
-	PositionMethod_gps	= 1,
-	PositionMethod_gpsOrEOTD	= 2
+    PositionMethod_eotd = 0,
+    PositionMethod_gps = 1,
+    PositionMethod_gpsOrEOTD = 2
 } e_PositionMethod;
 
 /* PositionMethod */
-typedef ENUMERATED_t	 PositionMethod_t;
+typedef ENUMERATED_t PositionMethod_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_PositionMethod;
@@ -43,5 +43,5 @@ per_type_encoder_f PositionMethod_encode_uper;
 }
 #endif
 
-#endif	/* _PositionMethod_H_ */
+#endif /* _PositionMethod_H_ */
 #include <asn_internal.h>

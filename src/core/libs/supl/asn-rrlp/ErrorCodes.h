@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ErrorCodes_H_
-#define	_ErrorCodes_H_
+#ifndef _ErrorCodes_H_
+#define _ErrorCodes_H_
 
 
 #include <asn_application.h>
@@ -19,19 +19,19 @@ extern "C" {
 
 /* Dependencies */
 typedef enum ErrorCodes {
-	ErrorCodes_unDefined	= 0,
-	ErrorCodes_missingComponet	= 1,
-	ErrorCodes_incorrectData	= 2,
-	ErrorCodes_missingIEorComponentElement	= 3,
-	ErrorCodes_messageTooShort	= 4,
-	ErrorCodes_unknowReferenceNumber	= 5
-	/*
+    ErrorCodes_unDefined = 0,
+    ErrorCodes_missingComponet = 1,
+    ErrorCodes_incorrectData = 2,
+    ErrorCodes_missingIEorComponentElement = 3,
+    ErrorCodes_messageTooShort = 4,
+    ErrorCodes_unknowReferenceNumber = 5
+    /*
 	 * Enumeration is extensible
 	 */
 } e_ErrorCodes;
 
 /* ErrorCodes */
-typedef ENUMERATED_t	 ErrorCodes_t;
+typedef ENUMERATED_t ErrorCodes_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_ErrorCodes;
@@ -49,5 +49,5 @@ per_type_encoder_f ErrorCodes_encode_uper;
 }
 #endif
 
-#endif	/* _ErrorCodes_H_ */
+#endif /* _ErrorCodes_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_AlertFlag_H_
-#define	_AlertFlag_H_
+#ifndef _AlertFlag_H_
+#define _AlertFlag_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* AlertFlag */
-typedef long	 AlertFlag_t;
+typedef long AlertFlag_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_AlertFlag;
@@ -36,5 +36,5 @@ per_type_encoder_f AlertFlag_encode_uper;
 }
 #endif
 
-#endif	/* _AlertFlag_H_ */
+#endif /* _AlertFlag_H_ */
 #include <asn_internal.h>

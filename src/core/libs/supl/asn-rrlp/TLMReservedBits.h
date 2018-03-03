@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_TLMReservedBits_H_
-#define	_TLMReservedBits_H_
+#ifndef _TLMReservedBits_H_
+#define _TLMReservedBits_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* TLMReservedBits */
-typedef long	 TLMReservedBits_t;
+typedef long TLMReservedBits_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_TLMReservedBits;
@@ -36,5 +36,5 @@ per_type_encoder_f TLMReservedBits_encode_uper;
 }
 #endif
 
-#endif	/* _TLMReservedBits_H_ */
+#endif /* _TLMReservedBits_H_ */
 #include <asn_internal.h>

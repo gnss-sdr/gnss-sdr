@@ -42,12 +42,12 @@ class ConfigurationInterface;
  * \brief Adapts an 8-bits sample stream (IF) to a short int stream (IF)
  *
  */
-class ByteToShort: public GNSSBlockInterface
+class ByteToShort : public GNSSBlockInterface
 {
 public:
     ByteToShort(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~ByteToShort();
 

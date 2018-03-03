@@ -116,10 +116,10 @@ private:
     //SUPL assistance classes
     gnss_sdr_supl_client supl_client_acquisition_;
     gnss_sdr_supl_client supl_client_ephemeris_;
-    int supl_mcc; // Current network MCC (Mobile country code), 3 digits.
-    int supl_mns; // Current network MNC (Mobile Network code), 2 or 3 digits.
-    int supl_lac; // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
-    int supl_ci;  // Cell Identity (16 bits, 0-65535 are valid values).
+    int supl_mcc;  // Current network MCC (Mobile country code), 3 digits.
+    int supl_mns;  // Current network MNC (Mobile Network code), 2 or 3 digits.
+    int supl_lac;  // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
+    int supl_ci;   // Cell Identity (16 bits, 0-65535 are valid values).
 
     void init();
 
@@ -137,12 +137,12 @@ private:
      * Blocking function that reads the GPS assistance queue
      */
     void gps_acq_assist_data_collector();
-    
+
     /*
      * Read initial GNSS assistance from SUPL server or local XML files
      */
     void assist_GNSS();
-    
+
     void apply_action(unsigned int what);
     std::shared_ptr<GNSSFlowgraph> flowgraph_;
     std::shared_ptr<ConfigurationInterface> configuration_;
@@ -156,7 +156,7 @@ private:
     boost::thread keyboard_thread_;
     boost::thread sysv_queue_thread_;
     boost::thread gps_acq_assist_data_collector_thread_;
-    
+
     void keyboard_listener();
     void sysv_queue_listener();
     int msqid;

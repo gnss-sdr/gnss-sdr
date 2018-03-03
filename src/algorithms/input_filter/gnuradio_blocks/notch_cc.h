@@ -40,8 +40,8 @@ class Notch;
 
 typedef boost::shared_ptr<Notch> notch_sptr;
 
-notch_sptr make_notch_filter(float pfa, float p_c_factor, 
-                             int length_, int n_segments_est, int n_segments_reset);
+notch_sptr make_notch_filter(float pfa, float p_c_factor,
+    int length_, int n_segments_est, int n_segments_reset);
 
 /*!
  * \brief This class implements a real-time software-defined multi state notch filter
@@ -50,7 +50,6 @@ notch_sptr make_notch_filter(float pfa, float p_c_factor,
 class Notch : public gr::block
 {
 private:
-    
     float pfa;
     float noise_pow_est;
     float thres_;
@@ -63,22 +62,21 @@ private:
     gr_complex last_out;
     gr_complex z_0;
     gr_complex p_c_factor;
-    gr_complex* c_samples;
-    float* angle_;
-    float* power_spect;
+    gr_complex *c_samples;
+    float *angle_;
+    float *power_spect;
     std::unique_ptr<gr::fft::fft_complex> d_fft;
-    
+
 public:
-        
     Notch(float pfa, float p_c_factor, int length_, int n_segments_est, int n_segments_reset);
-    
+
     ~Notch();
-    
+
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
-    
-    int general_work (int noutput_items, gr_vector_int &ninput_items, 
-                      gr_vector_const_void_star &input_items,
-                      gr_vector_void_star &output_items);
+
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
-#endif //GNSS_SDR_NOTCH_H_
+#endif  //GNSS_SDR_NOTCH_H_

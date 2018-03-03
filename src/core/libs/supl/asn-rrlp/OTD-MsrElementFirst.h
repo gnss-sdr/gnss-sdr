@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_OTD_MsrElementFirst_H_
-#define	_OTD_MsrElementFirst_H_
+#ifndef _OTD_MsrElementFirst_H_
+#define _OTD_MsrElementFirst_H_
 
 
 #include <asn_application.h>
@@ -25,16 +25,17 @@ struct TOA_MeasurementsOfRef;
 struct SeqOfOTD_FirstSetMsrs;
 
 /* OTD-MsrElementFirst */
-typedef struct OTD_MsrElementFirst {
-	long	 refFrameNumber;
-	ModuloTimeSlot_t	 referenceTimeSlot;
-	struct TOA_MeasurementsOfRef	*toaMeasurementsOfRef	/* OPTIONAL */;
-	StdResolution_t	 stdResolution;
-	long	*taCorrection	/* OPTIONAL */;
-	struct SeqOfOTD_FirstSetMsrs	*otd_FirstSetMsrs	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct OTD_MsrElementFirst
+{
+    long refFrameNumber;
+    ModuloTimeSlot_t referenceTimeSlot;
+    struct TOA_MeasurementsOfRef *toaMeasurementsOfRef /* OPTIONAL */;
+    StdResolution_t stdResolution;
+    long *taCorrection /* OPTIONAL */;
+    struct SeqOfOTD_FirstSetMsrs *otd_FirstSetMsrs /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } OTD_MsrElementFirst_t;
 
 /* Implementation */
@@ -48,5 +49,5 @@ extern asn_TYPE_descriptor_t asn_DEF_OTD_MsrElementFirst;
 #include "TOA-MeasurementsOfRef.h"
 #include "SeqOfOTD-FirstSetMsrs.h"
 
-#endif	/* _OTD_MsrElementFirst_H_ */
+#endif /* _OTD_MsrElementFirst_H_ */
 #include <asn_internal.h>

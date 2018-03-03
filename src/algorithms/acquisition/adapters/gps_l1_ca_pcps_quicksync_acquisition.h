@@ -41,19 +41,18 @@
 #include "configuration_interface.h"
 
 
-
 class ConfigurationInterface;
 
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GPS L1 C/A signals
  */
-class GpsL1CaPcpsQuickSyncAcquisition: public AcquisitionInterface
+class GpsL1CaPcpsQuickSyncAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsQuickSyncAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsQuickSyncAcquisition();
 
@@ -131,6 +130,7 @@ public:
      * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
     void set_state(int state);
+
 private:
     ConfigurationInterface* configuration_;
     pcps_quicksync_acquisition_cc_sptr acquisition_cc_;
@@ -151,14 +151,13 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float>* code_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 
     float calculate_threshold(float pfa);
-
 };
 
 #endif /* GNSS_SDR_GPS_L1_CA_PCPS_QUICKSYNC_ACQUISITION_H_ */

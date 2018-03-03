@@ -40,19 +40,18 @@
 #include "pcps_acquisition_fine_doppler_cc.h"
 
 
-
 class ConfigurationInterface;
 
 /*!
  * \brief This class Adapts a PCPS acquisition block with fine Doppler estimation to an AcquisitionInterface for
  *  GPS L1 C/A signals
  */
-class GpsL1CaPcpsAcquisitionFineDoppler: public AcquisitionInterface
+class GpsL1CaPcpsAcquisitionFineDoppler : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAcquisitionFineDoppler(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsAcquisitionFineDoppler();
 
@@ -139,8 +138,8 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float>* code_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

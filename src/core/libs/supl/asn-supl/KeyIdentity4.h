@@ -4,8 +4,8 @@
  * 	found in "../supl-response.asn"
  */
 
-#ifndef	_KeyIdentity4_H_
-#define	_KeyIdentity4_H_
+#ifndef _KeyIdentity4_H_
+#define _KeyIdentity4_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* KeyIdentity4 */
-typedef BIT_STRING_t	 KeyIdentity4_t;
+typedef BIT_STRING_t KeyIdentity4_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_KeyIdentity4;
@@ -36,5 +36,5 @@ per_type_encoder_f KeyIdentity4_encode_uper;
 }
 #endif
 
-#endif	/* _KeyIdentity4_H_ */
+#endif /* _KeyIdentity4_H_ */
 #include <asn_internal.h>

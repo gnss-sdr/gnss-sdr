@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_Rel_5_MsrPosition_Rsp_Extension_H_
-#define	_Rel_5_MsrPosition_Rsp_Extension_H_
+#ifndef _Rel_5_MsrPosition_Rsp_Extension_H_
+#define _Rel_5_MsrPosition_Rsp_Extension_H_
 
 
 #include <asn_application.h>
@@ -23,17 +23,18 @@ struct Extended_reference;
 struct SeqOfOTD_MsrElementRest;
 
 /* Rel-5-MsrPosition-Rsp-Extension */
-typedef struct Rel_5_MsrPosition_Rsp_Extension {
-	struct Extended_reference	*extended_reference	/* OPTIONAL */;
-	struct SeqOfOTD_MsrElementRest	*otd_MeasureInfo_5_Ext	/* OPTIONAL */;
-	UlPseudoSegInd_t	*ulPseudoSegInd	/* OPTIONAL */;
-	/*
+typedef struct Rel_5_MsrPosition_Rsp_Extension
+{
+    struct Extended_reference *extended_reference /* OPTIONAL */;
+    struct SeqOfOTD_MsrElementRest *otd_MeasureInfo_5_Ext /* OPTIONAL */;
+    UlPseudoSegInd_t *ulPseudoSegInd /* OPTIONAL */;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } Rel_5_MsrPosition_Rsp_Extension_t;
 
 /* Implementation */
@@ -47,5 +48,5 @@ extern asn_TYPE_descriptor_t asn_DEF_Rel_5_MsrPosition_Rsp_Extension;
 #include "Extended-reference.h"
 #include "OTD-MeasureInfo-5-Ext.h"
 
-#endif	/* _Rel_5_MsrPosition_Rsp_Extension_H_ */
+#endif /* _Rel_5_MsrPosition_Rsp_Extension_H_ */
 #include <asn_internal.h>

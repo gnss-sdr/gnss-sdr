@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_AssistanceData_H_
-#define	_AssistanceData_H_
+#ifndef _AssistanceData_H_
+#define _AssistanceData_H_
 
 
 #include <asn_application.h>
@@ -28,22 +28,23 @@ struct Rel98_AssistanceData_Extension;
 struct Rel5_AssistanceData_Extension;
 
 /* AssistanceData */
-typedef struct AssistanceData {
-	struct ReferenceAssistData	*referenceAssistData	/* OPTIONAL */;
-	struct MsrAssistData	*msrAssistData	/* OPTIONAL */;
-	struct SystemInfoAssistData	*systemInfoAssistData	/* OPTIONAL */;
-	struct GPS_AssistData	*gps_AssistData	/* OPTIONAL */;
-	MoreAssDataToBeSent_t	*moreAssDataToBeSent	/* OPTIONAL */;
-	ExtensionContainer_t	*extensionContainer	/* OPTIONAL */;
-	/*
+typedef struct AssistanceData
+{
+    struct ReferenceAssistData *referenceAssistData /* OPTIONAL */;
+    struct MsrAssistData *msrAssistData /* OPTIONAL */;
+    struct SystemInfoAssistData *systemInfoAssistData /* OPTIONAL */;
+    struct GPS_AssistData *gps_AssistData /* OPTIONAL */;
+    MoreAssDataToBeSent_t *moreAssDataToBeSent /* OPTIONAL */;
+    ExtensionContainer_t *extensionContainer /* OPTIONAL */;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	struct Rel98_AssistanceData_Extension	*rel98_AssistanceData_Extension	/* OPTIONAL */;
-	struct Rel5_AssistanceData_Extension	*rel5_AssistanceData_Extension	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+    struct Rel98_AssistanceData_Extension *rel98_AssistanceData_Extension /* OPTIONAL */;
+    struct Rel5_AssistanceData_Extension *rel5_AssistanceData_Extension /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } AssistanceData_t;
 
 /* Implementation */
@@ -61,5 +62,5 @@ extern asn_TYPE_descriptor_t asn_DEF_AssistanceData;
 #include "Rel98-AssistanceData-Extension.h"
 #include "Rel5-AssistanceData-Extension.h"
 
-#endif	/* _AssistanceData_H_ */
+#endif /* _AssistanceData_H_ */
 #include <asn_internal.h>

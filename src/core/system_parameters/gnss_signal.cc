@@ -49,7 +49,8 @@ Gnss_Signal::Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& si
 
 
 Gnss_Signal::~Gnss_Signal()
-{}
+{
+}
 
 
 std::string Gnss_Signal::get_signal_str() const
@@ -64,14 +65,14 @@ Gnss_Satellite Gnss_Signal::get_satellite() const
 }
 
 
-std::ostream& operator<<(std::ostream &out, const Gnss_Signal &sig) // output
+std::ostream& operator<<(std::ostream& out, const Gnss_Signal& sig)  // output
 {
     out << sig.get_satellite() << " Signal " << sig.get_signal_str();
     return out;
 }
 
 
-bool operator==(const Gnss_Signal &sig1, const Gnss_Signal &sig2)
+bool operator==(const Gnss_Signal& sig1, const Gnss_Signal& sig2)
 {
     bool equal = false;
 
@@ -84,4 +85,3 @@ bool operator==(const Gnss_Signal &sig1, const Gnss_Signal &sig2)
         }
     return equal;
 }
-

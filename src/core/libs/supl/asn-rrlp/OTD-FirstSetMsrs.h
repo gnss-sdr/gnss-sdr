@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_OTD_FirstSetMsrs_H_
-#define	_OTD_FirstSetMsrs_H_
+#ifndef _OTD_FirstSetMsrs_H_
+#define _OTD_FirstSetMsrs_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* OTD-FirstSetMsrs */
-typedef OTD_MeasurementWithID_t	 OTD_FirstSetMsrs_t;
+typedef OTD_MeasurementWithID_t OTD_FirstSetMsrs_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_OTD_FirstSetMsrs;
@@ -36,5 +36,5 @@ per_type_encoder_f OTD_FirstSetMsrs_encode_uper;
 }
 #endif
 
-#endif	/* _OTD_FirstSetMsrs_H_ */
+#endif /* _OTD_FirstSetMsrs_H_ */
 #include <asn_internal.h>

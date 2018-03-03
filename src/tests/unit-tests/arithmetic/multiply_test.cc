@@ -49,7 +49,7 @@ TEST(MultiplyTest, StandardCDoubleImplementation)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    for(int i = 0; i < FLAGS_size_multiply_test; i++)
+    for (int i = 0; i < FLAGS_size_multiply_test; i++)
         {
             output[i] = input[i] * input[i];
         }
@@ -62,7 +62,7 @@ TEST(MultiplyTest, StandardCDoubleImplementation)
 
     double acc = 0;
     double expected = 0;
-    for(int i = 0; i < FLAGS_size_multiply_test; i++)
+    for (int i = 0; i < FLAGS_size_multiply_test; i++)
         {
             acc += output[i];
         }
@@ -89,9 +89,8 @@ TEST(MultiplyTest, ArmadilloImplementation)
               << "-length double Armadillo vectors finished in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
-    ASSERT_EQ(0, arma::norm(output,2));
+    ASSERT_EQ(0, arma::norm(output, 2));
 }
-
 
 
 TEST(MultiplyTest, StandardCComplexImplementation)
@@ -102,7 +101,7 @@ TEST(MultiplyTest, StandardCComplexImplementation)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    for(int i = 0; i < FLAGS_size_multiply_test; i++)
+    for (int i = 0; i < FLAGS_size_multiply_test; i++)
         {
             output[i] = input[i] * input[i];
         }
@@ -113,18 +112,17 @@ TEST(MultiplyTest, StandardCComplexImplementation)
               << " complex<float> in standard C finished in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
 
-    std::complex<float> expected(0,0);
-    std::complex<float> result(0,0);
-    for(int i = 0; i < FLAGS_size_multiply_test; i++)
-         {
-             result += output[i];
-         }
+    std::complex<float> expected(0, 0);
+    std::complex<float> result(0, 0);
+    for (int i = 0; i < FLAGS_size_multiply_test; i++)
+        {
+            result += output[i];
+        }
     delete[] input;
     delete[] output;
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     ASSERT_EQ(expected, result);
 }
-
 
 
 TEST(MultiplyTest, C11ComplexImplementation)
@@ -136,7 +134,7 @@ TEST(MultiplyTest, C11ComplexImplementation)
     start = std::chrono::system_clock::now();
 
     // Trying a range-based for
-    for (const auto &item : input)
+    for (const auto& item : input)
         {
             output[pos++] = item * item;
         }
@@ -148,7 +146,7 @@ TEST(MultiplyTest, C11ComplexImplementation)
               << " microseconds" << std::endl;
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 
-    std::complex<float> expected(0,0);
+    std::complex<float> expected(0, 0);
     auto result = std::inner_product(output.begin(), output.end(), output.begin(), expected);
     ASSERT_EQ(expected, result);
 }
@@ -170,10 +168,8 @@ TEST(MultiplyTest, ArmadilloComplexImplementation)
               << "-length complex float Armadillo vectors finished in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
-    ASSERT_EQ(0, arma::norm(output,2));
+    ASSERT_EQ(0, arma::norm(output, 2));
 }
-
-
 
 
 TEST(MultiplyTest, VolkComplexImplementation)
@@ -208,4 +204,3 @@ TEST(MultiplyTest, VolkComplexImplementation)
     volk_gnsssdr_free(output);
     volk_gnsssdr_free(mag);
 }
-

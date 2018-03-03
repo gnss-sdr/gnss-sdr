@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_BadSignalElement_H_
-#define	_BadSignalElement_H_
+#ifndef _BadSignalElement_H_
+#define _BadSignalElement_H_
 
 
 #include <asn_application.h>
@@ -20,12 +20,13 @@ extern "C" {
 #endif
 
 /* BadSignalElement */
-typedef struct BadSignalElement {
-	SVID_t	 badSVID;
-	long	*badSignalID	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct BadSignalElement
+{
+    SVID_t badSVID;
+    long *badSignalID /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } BadSignalElement_t;
 
 /* Implementation */
@@ -35,5 +36,5 @@ extern asn_TYPE_descriptor_t asn_DEF_BadSignalElement;
 }
 #endif
 
-#endif	/* _BadSignalElement_H_ */
+#endif /* _BadSignalElement_H_ */
 #include <asn_internal.h>

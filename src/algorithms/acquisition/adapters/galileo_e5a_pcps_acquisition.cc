@@ -42,8 +42,7 @@
 using google::LogMessage;
 
 GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams, unsigned int out_streams) :
-                role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -57,10 +56,13 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
     acq_iq_ = configuration_->property(role + ".acquire_iq", false);
-    if(acq_iq_) { acq_pilot_ = false; }
+    if (acq_iq_)
+        {
+            acq_pilot_ = false;
+        }
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
@@ -74,23 +76,23 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
 
     code_ = new gr_complex[vector_length_];
 
-    if(item_type_.compare("gr_complex") == 0)
+    if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
         }
-    else if(item_type_.compare("cshort") == 0)
+    else if (item_type_.compare("cshort") == 0)
         {
             item_size_ = sizeof(lv_16sc_t);
         }
     else
         {
             item_size_ = sizeof(gr_complex);
-            LOG(WARNING) << item_type_  << " unknown acquisition item type";
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
     acquisition_ = pcps_make_acquisition(sampled_ms_, max_dwells_, doppler_max_, 0, fs_in_,
-            code_length_, code_length_, bit_transition_flag_, use_CFAR_, dump_, blocking_,
-            dump_filename_, item_size_);
+        code_length_, code_length_, bit_transition_flag_, use_CFAR_, dump_, blocking_,
+        dump_filename_, item_size_);
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
     channel_ = 0;
@@ -115,14 +117,22 @@ void GalileoE5aPcpsAcquisition::set_channel(unsigned int channel)
 
 void GalileoE5aPcpsAcquisition::set_threshold(float threshold)
 {
+    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-    float pfa = configuration_->property(role_+ boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    if (pfa == 0.0)
+        {
+            pfa = configuration_->property(role_ + ".pfa", 0.0);
+        }
 
-    if(pfa == 0.0) { pfa = configuration_->property(role_ + ".pfa", 0.0); }
+    if (pfa == 0.0)
+        {
+            threshold_ = threshold;
+        }
 
-    if(pfa == 0.0) { threshold_ = threshold; }
-
-    else { threshold_ = calculate_threshold(pfa); }
+    else
+        {
+            threshold_ = calculate_threshold(pfa);
+        }
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
@@ -168,16 +178,25 @@ void GalileoE5aPcpsAcquisition::set_local_code()
     gr_complex* code = new gr_complex[code_length_];
     char signal_[3];
 
-    if(acq_iq_) { strcpy(signal_, "5X"); }
-    else if(acq_pilot_) { strcpy(signal_, "5Q"); }
-    else { strcpy(signal_, "5I"); }
+    if (acq_iq_)
+        {
+            strcpy(signal_, "5X");
+        }
+    else if (acq_pilot_)
+        {
+            strcpy(signal_, "5Q");
+        }
+    else
+        {
+            strcpy(signal_, "5I");
+        }
 
     galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, fs_in_, 0);
 
-    for(unsigned int i = 0; i < sampled_ms_; i++)
-    {
-        memcpy(code_ + (i * code_length_), code, sizeof(gr_complex) * code_length_);
-    }
+    for (unsigned int i = 0; i < sampled_ms_; i++)
+        {
+            memcpy(code_ + (i * code_length_), code, sizeof(gr_complex) * code_length_);
+        }
 
     acquisition_->set_local_code(code_);
     delete[] code;
@@ -202,8 +221,8 @@ float GalileoE5aPcpsAcquisition::calculate_threshold(float pfa)
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
-    boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = static_cast<float>(quantile(mydist,val));
+    boost::math::exponential_distribution<double> mydist(lambda);
+    float threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }

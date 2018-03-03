@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_OTD_MsrElementFirst_R98_Ext_H_
-#define	_OTD_MsrElementFirst_R98_Ext_H_
+#ifndef _OTD_MsrElementFirst_R98_Ext_H_
+#define _OTD_MsrElementFirst_R98_Ext_H_
 
 
 #include <asn_application.h>
@@ -21,11 +21,12 @@ extern "C" {
 struct SeqOfOTD_FirstSetMsrs_R98_Ext;
 
 /* OTD-MsrElementFirst-R98-Ext */
-typedef struct OTD_MsrElementFirst_R98_Ext {
-	struct SeqOfOTD_FirstSetMsrs_R98_Ext	*otd_FirstSetMsrs_R98_Ext	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct OTD_MsrElementFirst_R98_Ext
+{
+    struct SeqOfOTD_FirstSetMsrs_R98_Ext *otd_FirstSetMsrs_R98_Ext /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } OTD_MsrElementFirst_R98_Ext_t;
 
 /* Implementation */
@@ -38,5 +39,5 @@ extern asn_TYPE_descriptor_t asn_DEF_OTD_MsrElementFirst_R98_Ext;
 /* Referred external types */
 #include "SeqOfOTD-FirstSetMsrs-R98-Ext.h"
 
-#endif	/* _OTD_MsrElementFirst_R98_Ext_H_ */
+#endif /* _OTD_MsrElementFirst_R98_Ext_H_ */
 #include <asn_internal.h>

@@ -50,12 +50,11 @@ class ConfigurationInterface;
  */
 class GpsL1CaTcpConnectorTracking : public TrackingInterface
 {
-
 public:
-  GpsL1CaTcpConnectorTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+    GpsL1CaTcpConnectorTracking(ConfigurationInterface* configuration,
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaTcpConnectorTracking();
 
@@ -94,7 +93,6 @@ public:
     void start_tracking() override;
 
 private:
-
     gps_l1_ca_tcp_connector_tracking_cc_sptr tracking_;
     size_t item_size_;
 
@@ -105,4 +103,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif // GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_H_
+#endif  // GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_H_

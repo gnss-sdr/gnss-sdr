@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_AlmanacElement_H_
-#define	_AlmanacElement_H_
+#ifndef _AlmanacElement_H_
+#define _AlmanacElement_H_
 
 
 #include <asn_application.h>
@@ -20,22 +20,23 @@ extern "C" {
 #endif
 
 /* AlmanacElement */
-typedef struct AlmanacElement {
-	SatelliteID_t	 satelliteID;
-	long	 almanacE;
-	long	 alamanacToa;
-	long	 almanacKsii;
-	long	 almanacOmegaDot;
-	long	 almanacSVhealth;
-	long	 almanacAPowerHalf;
-	long	 almanacOmega0;
-	long	 almanacW;
-	long	 almanacM0;
-	long	 almanacAF0;
-	long	 almanacAF1;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct AlmanacElement
+{
+    SatelliteID_t satelliteID;
+    long almanacE;
+    long alamanacToa;
+    long almanacKsii;
+    long almanacOmegaDot;
+    long almanacSVhealth;
+    long almanacAPowerHalf;
+    long almanacOmega0;
+    long almanacW;
+    long almanacM0;
+    long almanacAF0;
+    long almanacAF1;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } AlmanacElement_t;
 
 /* Implementation */
@@ -45,5 +46,5 @@ extern asn_TYPE_descriptor_t asn_DEF_AlmanacElement;
 }
 #endif
 
-#endif	/* _AlmanacElement_H_ */
+#endif /* _AlmanacElement_H_ */
 #include <asn_internal.h>

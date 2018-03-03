@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSTODUncertainty_H_
-#define	_GANSSTODUncertainty_H_
+#ifndef _GANSSTODUncertainty_H_
+#define _GANSSTODUncertainty_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* GANSSTODUncertainty */
-typedef long	 GANSSTODUncertainty_t;
+typedef long GANSSTODUncertainty_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_GANSSTODUncertainty;
@@ -36,5 +36,5 @@ per_type_encoder_f GANSSTODUncertainty_encode_uper;
 }
 #endif
 
-#endif	/* _GANSSTODUncertainty_H_ */
+#endif /* _GANSSTODUncertainty_H_ */
 #include <asn_internal.h>

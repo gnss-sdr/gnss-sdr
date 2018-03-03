@@ -75,7 +75,6 @@
 float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, double code_length);
 
 
-
 /*! \brief A carrier lock detector
  *
  * The Carrier Phase Lock Detector block uses the estimate of the cosine of twice the carrier phase error is given by

@@ -44,7 +44,7 @@
 #include <cstdlib>  // for calloc
 
 /* define constants used throughout the library */
-const float MAXLOG = 1e7;  /* Define infinity */
+const float MAXLOG = 1e7; /* Define infinity */
 
 
 /*!
@@ -62,12 +62,12 @@ inline static int parity_counter(int symbol, int length)
     int counter;
     int temp_parity = 0;
 
-    for (counter = 0; counter <  length; counter++)
+    for (counter = 0; counter < length; counter++)
         {
-            temp_parity = temp_parity^(symbol & 1);
+            temp_parity = temp_parity ^ (symbol & 1);
             symbol = symbol >> 1;
         }
-    return(temp_parity);
+    return (temp_parity);
 }
 
 
@@ -86,18 +86,18 @@ inline static int parity_counter(int symbol, int length)
  * This function is used by nsc_transit()
  */
 inline static int nsc_enc_bit(int state_out_p[],
-                       int input,
-                       int state_in,
-                       int g[],
-                       int KK,
-                       int nn)
+    int input,
+    int state_in,
+    int g[],
+    int KK,
+    int nn)
 {
     /* declare variables */
     int state, i;
     int out_ = 0;
 
     /* create a word made up of state and new input */
-    state = (input << (KK - 1))^state_in;
+    state = (input << (KK - 1)) ^ state_in;
 
     /* AND the word with the generators */
     for (i = 0; i < nn; i++)
@@ -108,7 +108,7 @@ inline static int nsc_enc_bit(int state_out_p[],
 
     /* shift the state to make the new state */
     state_out_p[0] = state >> 1;
-    return(out_);
+    return (out_);
 }
 
 
@@ -116,21 +116,21 @@ inline static int nsc_enc_bit(int state_out_p[],
  * \brief Function that creates the transit and output vectors
  */
 inline static void nsc_transit(int output_p[],
-                        int trans_p[],
-                        int input,
-                        int g[],
-                        int KK,
-                        int nn)
+    int trans_p[],
+    int input,
+    int g[],
+    int KK,
+    int nn)
 {
     int nextstate[1];
     int state, states;
-    states = (1 << (KK - 1));  /* The number of states: 2^mm */
+    states = (1 << (KK - 1)); /* The number of states: 2^mm */
 
     /* Determine the output and next state for each possible starting state */
-    for(state = 0; state < states; state++)
+    for (state = 0; state < states; state++)
         {
-            output_p[state]  = nsc_enc_bit(nextstate, input, state, g, KK, nn);
-            trans_p[state]  = nextstate[0];
+            output_p[state] = nsc_enc_bit(nextstate, input, state, g, KK, nn);
+            trans_p[state] = nextstate[0];
         }
     return;
 }
@@ -144,9 +144,9 @@ inline static void nsc_transit(int output_p[],
  *  \param[in] nn            The length of the received vector
  *
  */
-inline static float Gamma(float  rec_array[],
-                   int symbol,
-                   int nn)
+inline static float Gamma(float rec_array[],
+    int symbol,
+    int nn)
 {
     float rm = 0;
     int i;
@@ -158,7 +158,7 @@ inline static float Gamma(float  rec_array[],
                 rm += rec_array[nn - i - 1];
             mask = mask << 1;
         }
-    return(rm);
+    return (rm);
 }
 
 
@@ -175,14 +175,14 @@ inline static float Gamma(float  rec_array[],
  *
  */
 inline static void Viterbi(int output_u_int[],
-                    int out0[],
-                    int state0[],
-                    int out1[],
-                    int state1[],
-                    double input_c[],
-                    int KK,
-                    int nn,
-                    int LL)
+    int out0[],
+    int state0[],
+    int out1[],
+    int state1[],
+    double input_c[],
+    int KK,
+    int nn,
+    int LL)
 {
     int i, t, state, mm, states;
     int number_symbols;
@@ -190,22 +190,22 @@ inline static void Viterbi(int output_u_int[],
     float *prev_section, *next_section;
     int *prev_bit;
     int *prev_state;
-    float *metric_c;    /* Set of all possible branch metrics */
-    float *rec_array;   /* Received values for one trellis section */
+    float *metric_c;  /* Set of all possible branch metrics */
+    float *rec_array; /* Received values for one trellis section */
     float max_val;
 
     /* some derived constants */
     mm = KK - 1;
-    states = 1 << mm;          /* 2^mm */
-    number_symbols = 1 << nn;  /* 2^nn */
+    states = 1 << mm;         /* 2^mm */
+    number_symbols = 1 << nn; /* 2^nn */
 
     /* dynamically allocate memory */
-    prev_section = static_cast<float*>(calloc( states, sizeof(float) ));
-    next_section = static_cast<float*>(calloc( states, sizeof(float) ));
-    prev_bit = static_cast<int*>(calloc( states*(LL + mm), sizeof(int) ));
-    prev_state = static_cast<int*>(calloc( states*(LL + mm), sizeof(int) ));
-    rec_array = static_cast<float*>(calloc( nn, sizeof(float) ));
-    metric_c = static_cast<float*>(calloc( number_symbols, sizeof(float) ));
+    prev_section = static_cast<float *>(calloc(states, sizeof(float)));
+    next_section = static_cast<float *>(calloc(states, sizeof(float)));
+    prev_bit = static_cast<int *>(calloc(states * (LL + mm), sizeof(int)));
+    prev_state = static_cast<int *>(calloc(states * (LL + mm), sizeof(int)));
+    rec_array = static_cast<float *>(calloc(nn, sizeof(float)));
+    metric_c = static_cast<float *>(calloc(number_symbols, sizeof(float)));
 
     /* initialize trellis */
     for (state = 0; state < states; state++)
@@ -219,35 +219,35 @@ inline static void Viterbi(int output_u_int[],
     for (t = 0; t < LL + mm; t++)
         {
             for (i = 0; i < nn; i++)
-                rec_array[i] = static_cast<float>(input_c[nn*t + i]);
+                rec_array[i] = static_cast<float>(input_c[nn * t + i]);
 
             /* precompute all possible branch metrics */
             for (i = 0; i < number_symbols; i++)
-                metric_c[i] = Gamma( rec_array, i, nn );
+                metric_c[i] = Gamma(rec_array, i, nn);
 
             /* step through all states */
             for (state = 0; state < states; state++)
                 {
                     /* hypothesis: info bit is a zero */
-                    metric = prev_section[state] + metric_c[ out0[ state ] ];
+                    metric = prev_section[state] + metric_c[out0[state]];
 
                     /* store new metric if more than metric in storage */
-                    if ( metric > next_section[state0[state]] )
+                    if (metric > next_section[state0[state]])
                         {
                             next_section[state0[state]] = metric;
-                            prev_state[t*states + state0[state]] = state;
-                            prev_bit[t*states + state0[state]] = 0;
+                            prev_state[t * states + state0[state]] = state;
+                            prev_bit[t * states + state0[state]] = 0;
                         }
 
                     /* hypothesis: info bit is a one */
-                    metric = prev_section[state] + metric_c[ out1[ state ] ];
+                    metric = prev_section[state] + metric_c[out1[state]];
 
                     /* store new metric if more than metric in storage */
-                    if ( metric > next_section[state1[state]] )
+                    if (metric > next_section[state1[state]])
                         {
                             next_section[state1[state]] = metric;
-                            prev_state[t*states + state1[state]] = state;
-                            prev_bit[t*states + state1[state]] = 1;
+                            prev_state[t * states + state1[state]] = state;
+                            prev_bit[t * states + state1[state]] = 1;
                         }
                 }
 
@@ -273,13 +273,13 @@ inline static void Viterbi(int output_u_int[],
     /* tail, no need to output */
     for (t = LL + mm - 1; t >= LL; t--)
         {
-            state = prev_state[t*states + state];
+            state = prev_state[t * states + state];
         }
 
     for (t = LL - 1; t >= 0; t--)
         {
-            output_u_int[t] = prev_bit[t*states + state];
-            state = prev_state[t*states + state];
+            output_u_int[t] = prev_bit[t * states + state];
+            state = prev_state[t * states + state];
         }
 
     /* free the dynamically allocated memory */

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_RequiredResponseTime_H_
-#define	_RequiredResponseTime_H_
+#ifndef _RequiredResponseTime_H_
+#define _RequiredResponseTime_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* RequiredResponseTime */
-typedef long	 RequiredResponseTime_t;
+typedef long RequiredResponseTime_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_RequiredResponseTime;
@@ -36,5 +36,5 @@ per_type_encoder_f RequiredResponseTime_encode_uper;
 }
 #endif
 
-#endif	/* _RequiredResponseTime_H_ */
+#endif /* _RequiredResponseTime_H_ */
 #include <asn_internal.h>

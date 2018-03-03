@@ -42,9 +42,8 @@
 using google::LogMessage;
 
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     unsigned int code_length;
     bool bit_transition_flag;
@@ -72,7 +71,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     ifreq = configuration_->property(role + ".if", 0);
     dump = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     // note : the FPGA is implemented according to bit transition flag = 0. Setting bit transition flag to 1 has no effect.
@@ -88,7 +87,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     //--- Find number of samples per spreading code -------------------------
     code_length = round(
-            fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+        fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     // code length has the same value as d_fft_size
     float nbits;
@@ -112,17 +111,17 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
         {
             item_size_ = sizeof(lv_16sc_t);
             gps_acquisition_fpga_sc_ = gps_pcps_make_acquisition_fpga_sc(
-                    sampled_ms, max_dwells_, doppler_max_, ifreq, fs_in,
-                    code_length, code_length, vector_length_, nsamples_total,
-                    bit_transition_flag, use_CFAR_algorithm_flag,
-                    select_queue_Fpga, device_name, dump, dump_filename);
+                sampled_ms, max_dwells_, doppler_max_, ifreq, fs_in,
+                code_length, code_length, vector_length_, nsamples_total,
+                bit_transition_flag, use_CFAR_algorithm_flag,
+                select_queue_Fpga, device_name, dump, dump_filename);
             DLOG(INFO) << "acquisition("
-                    << gps_acquisition_fpga_sc_->unique_id() << ")";
+                       << gps_acquisition_fpga_sc_->unique_id() << ")";
         }
     else
         {
             LOG(WARNING) << "item_type configured to " << item_type_ << "but FPGA implementation only accepts cshort";
-            throw std::invalid_argument( "Wrong input_type configuration. Should be cshort" );
+            throw std::invalid_argument("Wrong input_type configuration. Should be cshort");
         }
 
     channel_ = 0;
@@ -219,7 +218,7 @@ float GpsL1CaPcpsAcquisitionFpga::calculate_threshold(float pfa)
     //Calculate the threshold
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_);
-            doppler += doppler_step_)
+         doppler += doppler_step_)
         {
             frequency_bins++;
         }

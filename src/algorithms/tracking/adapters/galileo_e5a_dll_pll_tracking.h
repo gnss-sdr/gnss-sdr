@@ -52,9 +52,9 @@ class GalileoE5aDllPllTracking : public TrackingInterface
 {
 public:
     GalileoE5aDllPllTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GalileoE5aDllPllTracking();
 

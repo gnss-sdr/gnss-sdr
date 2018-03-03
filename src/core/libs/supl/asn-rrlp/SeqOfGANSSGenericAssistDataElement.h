@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfGANSSGenericAssistDataElement_H_
-#define	_SeqOfGANSSGenericAssistDataElement_H_
+#ifndef _SeqOfGANSSGenericAssistDataElement_H_
+#define _SeqOfGANSSGenericAssistDataElement_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct GANSSGenericAssistDataElement;
 
 /* SeqOfGANSSGenericAssistDataElement */
-typedef struct SeqOfGANSSGenericAssistDataElement {
-	A_SEQUENCE_OF(struct GANSSGenericAssistDataElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SeqOfGANSSGenericAssistDataElement
+{
+    A_SEQUENCE_OF(struct GANSSGenericAssistDataElement)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SeqOfGANSSGenericAssistDataElement_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSGenericAssistDataElement;
 /* Referred external types */
 #include "GANSSGenericAssistDataElement.h"
 
-#endif	/* _SeqOfGANSSGenericAssistDataElement_H_ */
+#endif /* _SeqOfGANSSGenericAssistDataElement_H_ */
 #include <asn_internal.h>

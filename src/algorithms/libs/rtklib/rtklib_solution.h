@@ -55,8 +55,8 @@
 
 #include "rtklib.h"
 
-#define COMMENTH    "%"                 /* comment line indicator for solution */
-#define MSG_DISCONN "$_DISCONNECT\r\n"  /* disconnect message */
+#define COMMENTH "%"                   /* comment line indicator for solution */
+#define MSG_DISCONN "$_DISCONNECT\r\n" /* disconnect message */
 
 const char *opt2sep(const solopt_t *opt);
 
@@ -99,17 +99,17 @@ void decode_solopt(char *buff, solopt_t *opt);
 void readsolopt(FILE *fp, solopt_t *opt);
 
 int inputsol(unsigned char data, gtime_t ts, gtime_t te, double tint,
-        int qflag, const solopt_t *opt, solbuf_t *solbuf);
+    int qflag, const solopt_t *opt, solbuf_t *solbuf);
 
 int readsoldata(FILE *fp, gtime_t ts, gtime_t te, double tint, int qflag,
-        const solopt_t *opt, solbuf_t *solbuf);
+    const solopt_t *opt, solbuf_t *solbuf);
 
 int cmpsol(const void *p1, const void *p2);
 
 int sort_solbuf(solbuf_t *solbuf);
 
 int readsolt(char *files[], int nfile, gtime_t ts, gtime_t te,
-        double tint, int qflag, solbuf_t *solbuf);
+    double tint, int qflag, solbuf_t *solbuf);
 
 int readsol(char *files[], int nfile, solbuf_t *sol);
 
@@ -132,51 +132,50 @@ int decode_solstat(char *buff, solstat_t *stat);
 void addsolstat(solstatbuf_t *statbuf, const solstat_t *stat);
 
 int readsolstatdata(FILE *fp, gtime_t ts, gtime_t te, double tint,
-        solstatbuf_t *statbuf);
+    solstatbuf_t *statbuf);
 
 int readsolstatt(char *files[], int nfile, gtime_t ts, gtime_t te,
-        double tint, solstatbuf_t *statbuf);
+    double tint, solstatbuf_t *statbuf);
 
 int readsolstat(char *files[], int nfile, solstatbuf_t *statbuf);
 
 int outecef(unsigned char *buff, const char *s, const sol_t *sol,
-        const solopt_t *opt);
+    const solopt_t *opt);
 
 int outpos(unsigned char *buff, const char *s, const sol_t *sol, const solopt_t *opt);
 
 int outenu(unsigned char *buff, const char *s, const sol_t *sol,
-        const double *rb, const solopt_t *opt);
+    const double *rb, const solopt_t *opt);
 
 int outnmea_rmc(unsigned char *buff, const sol_t *sol);
 
 int outnmea_gga(unsigned char *buff, const sol_t *sol);
 
 int outnmea_gsa(unsigned char *buff, const sol_t *sol,
-        const ssat_t *ssat);
+    const ssat_t *ssat);
 
 int outnmea_gsv(unsigned char *buff, const sol_t *sol,
-        const ssat_t *ssat);
+    const ssat_t *ssat);
 
 int outprcopts(unsigned char *buff, const prcopt_t *opt);
 
 int outsolheads(unsigned char *buff, const solopt_t *opt);
 
 int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
-        const solopt_t *opt);
+    const solopt_t *opt);
 
 int outsolexs(unsigned char *buff, const sol_t *sol, const ssat_t *ssat,
-        const solopt_t *opt);
+    const solopt_t *opt);
 
 void outprcopt(FILE *fp, const prcopt_t *opt);
 
 void outsolhead(FILE *fp, const solopt_t *opt);
 
 void outsol(FILE *fp, const sol_t *sol, const double *rb,
-        const solopt_t *opt);
+    const solopt_t *opt);
 
 void outsolex(FILE *fp, const sol_t *sol, const ssat_t *ssat,
-        const solopt_t *opt);
-
+    const solopt_t *opt);
 
 
 #endif

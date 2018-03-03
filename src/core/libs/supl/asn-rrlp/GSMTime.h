@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GSMTime_H_
-#define	_GSMTime_H_
+#ifndef _GSMTime_H_
+#define _GSMTime_H_
 
 
 #include <asn_application.h>
@@ -23,15 +23,16 @@ extern "C" {
 #endif
 
 /* GSMTime */
-typedef struct GSMTime {
-	BCCHCarrier_t	 bcchCarrier;
-	BSIC_t	 bsic;
-	FrameNumber_t	 frameNumber;
-	TimeSlot_t	 timeSlot;
-	BitNumber_t	 bitNumber;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GSMTime
+{
+    BCCHCarrier_t bcchCarrier;
+    BSIC_t bsic;
+    FrameNumber_t frameNumber;
+    TimeSlot_t timeSlot;
+    BitNumber_t bitNumber;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GSMTime_t;
 
 /* Implementation */
@@ -41,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GSMTime;
 }
 #endif
 
-#endif	/* _GSMTime_H_ */
+#endif /* _GSMTime_H_ */
 #include <asn_internal.h>

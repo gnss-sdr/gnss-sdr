@@ -48,7 +48,7 @@
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.
  */
-class ChannelInterface: public GNSSBlockInterface
+class ChannelInterface : public GNSSBlockInterface
 {
 public:
     virtual Gnss_Signal get_signal() const = 0;

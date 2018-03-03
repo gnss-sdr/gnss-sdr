@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_MultipleSets_H_
-#define	_MultipleSets_H_
+#ifndef _MultipleSets_H_
+#define _MultipleSets_H_
 
 
 #include <asn_application.h>
@@ -20,13 +20,14 @@ extern "C" {
 #endif
 
 /* MultipleSets */
-typedef struct MultipleSets {
-	long	 nbrOfSets;
-	long	 nbrOfReferenceBTSs;
-	ReferenceRelation_t	*referenceRelation	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct MultipleSets
+{
+    long nbrOfSets;
+    long nbrOfReferenceBTSs;
+    ReferenceRelation_t *referenceRelation /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } MultipleSets_t;
 
 /* Implementation */
@@ -36,5 +37,5 @@ extern asn_TYPE_descriptor_t asn_DEF_MultipleSets;
 }
 #endif
 
-#endif	/* _MultipleSets_H_ */
+#endif /* _MultipleSets_H_ */
 #include <asn_internal.h>

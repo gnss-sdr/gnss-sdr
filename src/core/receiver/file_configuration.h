@@ -33,7 +33,6 @@
  */
 
 
-
 #ifndef GNSS_SDR_FILE_CONFIGURATION_H_
 #define GNSS_SDR_FILE_CONFIGURATION_H_
 
@@ -60,7 +59,7 @@ public:
     FileConfiguration(std::string filename);
     FileConfiguration();
     //! Virtual destructor
-     ~FileConfiguration();
+    ~FileConfiguration();
     std::string property(std::string property_name, std::string default_value);
     bool property(std::string property_name, bool default_value);
     long property(std::string property_name, long default_value);
@@ -70,6 +69,7 @@ public:
     float property(std::string property_name, float default_value);
     double property(std::string property_name, double default_value);
     void set_property(std::string property_name, std::string value);
+
 private:
     void init();
     std::string filename_;

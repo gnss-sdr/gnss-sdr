@@ -34,19 +34,17 @@
 #include <sstream>
 
 
-StringConverter::StringConverter()
-{}
+StringConverter::StringConverter() {}
 
-StringConverter::~StringConverter()
-{}
+StringConverter::~StringConverter() {}
 
 bool StringConverter::convert(const std::string& value, bool default_value)
 {
-    if(value.compare("true") == 0)
+    if (value.compare("true") == 0)
         {
             return true;
         }
-    else if(value.compare("false") == 0)
+    else if (value.compare("false") == 0)
         {
             return false;
         }
@@ -64,7 +62,7 @@ long StringConverter::convert(const std::string& value, long default_value)
     long result;
     stream >> result;
 
-    if(stream.fail())
+    if (stream.fail())
         {
             return default_value;
         }
@@ -77,13 +75,12 @@ long StringConverter::convert(const std::string& value, long default_value)
 
 int StringConverter::convert(const std::string& value, int default_value)
 {
-
     std::stringstream stream(value);
 
     int result;
     stream >> result;
 
-    if(stream.fail())
+    if (stream.fail())
         {
             return default_value;
         }
@@ -94,7 +91,6 @@ int StringConverter::convert(const std::string& value, int default_value)
 }
 
 
-
 unsigned int StringConverter::convert(const std::string& value, unsigned int default_value)
 {
     std::stringstream stream(value);
@@ -102,7 +98,7 @@ unsigned int StringConverter::convert(const std::string& value, unsigned int def
     unsigned int result;
     stream >> result;
 
-    if(stream.fail())
+    if (stream.fail())
         {
             return default_value;
         }
@@ -120,7 +116,7 @@ unsigned short StringConverter::convert(const std::string& value, unsigned short
     unsigned short result;
     stream >> result;
 
-    if(stream.fail())
+    if (stream.fail())
         {
             return default_value;
         }
@@ -133,13 +129,12 @@ unsigned short StringConverter::convert(const std::string& value, unsigned short
 
 float StringConverter::convert(const std::string& value, float default_value)
 {
-
     std::stringstream stream(value);
 
     float result;
     stream >> result;
 
-    if(stream.fail())
+    if (stream.fail())
         {
             return default_value;
         }
@@ -150,17 +145,14 @@ float StringConverter::convert(const std::string& value, float default_value)
 }
 
 
-
-
 double StringConverter::convert(const std::string& value, double default_value)
 {
-
     std::stringstream stream(value);
 
     double result;
     stream >> result;
 
-    if(stream.fail())
+    if (stream.fail())
         {
             return default_value;
         }
@@ -169,5 +161,3 @@ double StringConverter::convert(const std::string& value, double default_value)
             return result;
         }
 }
-
-

@@ -46,13 +46,12 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples from a UHD device (see http://code.ettus.com/redmine/ettus/projects/uhd/wiki)
  */
-class UhdSignalSource: public GNSSBlockInterface
+class UhdSignalSource : public GNSSBlockInterface
 {
-
 public:
     UhdSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~UhdSignalSource();
 

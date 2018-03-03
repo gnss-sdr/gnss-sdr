@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ExtensionContainer_H_
-#define	_ExtensionContainer_H_
+#ifndef _ExtensionContainer_H_
+#define _ExtensionContainer_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* ExtensionContainer */
-typedef INTEGER_t	 ExtensionContainer_t;
+typedef INTEGER_t ExtensionContainer_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_ExtensionContainer;
@@ -36,5 +36,5 @@ per_type_encoder_f ExtensionContainer_encode_uper;
 }
 #endif
 
-#endif	/* _ExtensionContainer_H_ */
+#endif /* _ExtensionContainer_H_ */
 #include <asn_internal.h>

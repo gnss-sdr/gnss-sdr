@@ -146,8 +146,8 @@ TEST(GNSSBlockFactoryTest, InstantiateFreqXlatingFIRFilter)
     configuration->set_property("InputFilter.filter_type", "bandpass");
     configuration->set_property("InputFilter.grid_density", "16");
 
-    configuration->set_property("InputFilter.sampling_frequency","4000000");
-    configuration->set_property("InputFilter.IF","34000");
+    configuration->set_property("InputFilter.sampling_frequency", "4000000");
+    configuration->set_property("InputFilter.IF", "34000");
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<GNSSBlockInterface> input_filter = factory->GetBlock(configuration, "InputFilter", "Freq_Xlating_Fir_Filter", 1, 1);
 
@@ -316,8 +316,8 @@ TEST(GNSSBlockFactoryTest, InstantiateChannels)
     configuration->set_property("Channels_1C.count", "2");
     configuration->set_property("Channels_1E.count", "0");
     configuration->set_property("Channels.in_acquisition", "2");
-    configuration->set_property("Tracking_1C.implementation","GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
-    configuration->set_property("TelemetryDecoder_1C.implementation","GPS_L1_CA_Telemetry_Decoder");
+    configuration->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
+    configuration->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     configuration->set_property("Channel0.item_type", "gr_complex");
     configuration->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
     configuration->set_property("Channel1.item_type", "gr_complex");

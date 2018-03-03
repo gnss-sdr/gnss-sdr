@@ -59,14 +59,14 @@ class ConfigurationInterface;
  * given a set of band edges, the desired response on those bands, and the weight given
  * to the error in those bands.
  */
-class FirFilter: public GNSSBlockInterface
+class FirFilter : public GNSSBlockInterface
 {
 public:
     //! Constructor
     FirFilter(ConfigurationInterface* configuration,
-              std::string role,
-              unsigned int in_streams,
-              unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     //! Destructor
     virtual ~FirFilter();
@@ -100,7 +100,7 @@ private:
     std::string input_item_type_;
     std::string output_item_type_;
     std::string taps_item_type_;
-    std::vector <float> taps_;
+    std::vector<float> taps_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

@@ -2,8 +2,8 @@
  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	_CONSTR_SEQUENCE_H_
-#define	_CONSTR_SEQUENCE_H_
+#ifndef _CONSTR_SEQUENCE_H_
+#define _CONSTR_SEQUENCE_H_
 
 #include <asn_application.h>
 
@@ -11,32 +11,33 @@
 extern "C" {
 #endif
 
-typedef struct asn_SEQUENCE_specifics_s {
-	/*
+typedef struct asn_SEQUENCE_specifics_s
+{
+    /*
 	 * Target structure description.
 	 */
-	int struct_size;	/* Size of the target structure. */
-	int ctx_offset;		/* Offset of the asn_struct_ctx_t member */
+    int struct_size; /* Size of the target structure. */
+    int ctx_offset;  /* Offset of the asn_struct_ctx_t member */
 
-	/*
+    /*
 	 * Tags to members mapping table (sorted).
 	 */
-	asn_TYPE_tag2member_t *tag2el;
-	int tag2el_count;
+    asn_TYPE_tag2member_t *tag2el;
+    int tag2el_count;
 
-	/*
+    /*
 	 * Optional members of the extensions root (roms) or additions (aoms).
 	 * Meaningful for PER.
 	 */
-	int *oms;		/* Optional MemberS */
-	int  roms_count;	/* Root optional members count */
-	int  aoms_count;	/* Additions optional members count */
+    int *oms;       /* Optional MemberS */
+    int roms_count; /* Root optional members count */
+    int aoms_count; /* Additions optional members count */
 
-	/*
+    /*
 	 * Description of an extensions group.
 	 */
-	int ext_after;		/* Extensions start after this member */
-	int ext_before;		/* Extensions stop before this member */
+    int ext_after;  /* Extensions start after this member */
+    int ext_before; /* Extensions stop before this member */
 } asn_SEQUENCE_specifics_t;
 
 
@@ -57,4 +58,4 @@ per_type_encoder_f SEQUENCE_encode_uper;
 }
 #endif
 
-#endif	/* _CONSTR_SEQUENCE_H_ */
+#endif /* _CONSTR_SEQUENCE_H_ */

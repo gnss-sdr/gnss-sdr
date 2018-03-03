@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ReferenceRelation_H_
-#define	_ReferenceRelation_H_
+#ifndef _ReferenceRelation_H_
+#define _ReferenceRelation_H_
 
 
 #include <asn_application.h>
@@ -19,13 +19,13 @@ extern "C" {
 
 /* Dependencies */
 typedef enum ReferenceRelation {
-	ReferenceRelation_secondBTSThirdSet	= 0,
-	ReferenceRelation_secondBTSSecondSet	= 1,
-	ReferenceRelation_firstBTSFirstSet	= 2
+    ReferenceRelation_secondBTSThirdSet = 0,
+    ReferenceRelation_secondBTSSecondSet = 1,
+    ReferenceRelation_firstBTSFirstSet = 2
 } e_ReferenceRelation;
 
 /* ReferenceRelation */
-typedef ENUMERATED_t	 ReferenceRelation_t;
+typedef ENUMERATED_t ReferenceRelation_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_ReferenceRelation;
@@ -43,5 +43,5 @@ per_type_encoder_f ReferenceRelation_encode_uper;
 }
 #endif
 
-#endif	/* _ReferenceRelation_H_ */
+#endif /* _ReferenceRelation_H_ */
 #include <asn_internal.h>

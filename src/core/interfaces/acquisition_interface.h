@@ -41,7 +41,8 @@
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 
-template<typename Data>class concurrent_queue;
+template <typename Data>
+class concurrent_queue;
 
 /*! \brief This abstract class represents an interface to an acquisition GNSS block.
  *
@@ -50,7 +51,7 @@ template<typename Data>class concurrent_queue;
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.
  */
-class AcquisitionInterface: public GNSSBlockInterface
+class AcquisitionInterface : public GNSSBlockInterface
 {
 public:
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;

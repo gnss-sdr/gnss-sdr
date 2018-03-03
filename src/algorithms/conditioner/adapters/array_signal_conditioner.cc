@@ -37,19 +37,22 @@ using google::LogMessage;
 
 // Constructor
 ArraySignalConditioner::ArraySignalConditioner(ConfigurationInterface *configuration,
-        std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
-        std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation) :
-                data_type_adapt_(data_type_adapt),
-                in_filt_(in_filt), res_(res), role_(role), implementation_(implementation)
+    std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
+    std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation) : data_type_adapt_(data_type_adapt),
+                                                                                             in_filt_(in_filt),
+                                                                                             res_(res),
+                                                                                             role_(role),
+                                                                                             implementation_(implementation)
 {
     connected_ = false;
-    if(configuration){ };
+    if (configuration)
+        {
+        };
 }
 
 
 // Destructor
-ArraySignalConditioner::~ArraySignalConditioner()
-{}
+ArraySignalConditioner::~ArraySignalConditioner() {}
 
 
 void ArraySignalConditioner::connect(gr::top_block_sptr top_block)
@@ -68,13 +71,12 @@ void ArraySignalConditioner::connect(gr::top_block_sptr top_block)
     //DLOG(INFO) << "data_type_adapter -> input_filter";
 
     top_block->connect(in_filt_->get_right_block(), 0,
-                       res_->get_left_block(), 0);
+        res_->get_left_block(), 0);
 
     DLOG(INFO) << "Array input_filter -> resampler";
 
     connected_ = true;
 }
-
 
 
 void ArraySignalConditioner::disconnect(gr::top_block_sptr top_block)
@@ -88,7 +90,7 @@ void ArraySignalConditioner::disconnect(gr::top_block_sptr top_block)
     //top_block->disconnect(data_type_adapt_->get_right_block(), 0,
     //                      in_filt_->get_left_block(), 0);
     top_block->disconnect(in_filt_->get_right_block(), 0,
-                          res_->get_left_block(), 0);
+        res_->get_left_block(), 0);
 
     //data_type_adapt_->disconnect(top_block);
     in_filt_->disconnect(top_block);
@@ -105,9 +107,7 @@ gr::basic_block_sptr ArraySignalConditioner::get_left_block()
 }
 
 
-
 gr::basic_block_sptr ArraySignalConditioner::get_right_block()
 {
     return res_->get_right_block();
 }
-

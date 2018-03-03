@@ -65,8 +65,7 @@ private:
 
 public:
     int rx_message;
-    ~GlonassL1CaDllPllTrackingTest_msg_rx(); //!< Default destructor
-
+    ~GlonassL1CaDllPllTrackingTest_msg_rx();  //!< Default destructor
 };
 
 GlonassL1CaDllPllTrackingTest_msg_rx_sptr GlonassL1CaDllPllTrackingTest_msg_rx_make()
@@ -77,19 +76,18 @@ GlonassL1CaDllPllTrackingTest_msg_rx_sptr GlonassL1CaDllPllTrackingTest_msg_rx_m
 void GlonassL1CaDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
-    {
+        {
             long int message = pmt::to_long(msg);
             rx_message = message;
-    }
-    catch(boost::bad_any_cast& e)
-    {
+        }
+    catch (boost::bad_any_cast& e)
+        {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
-    }
+        }
 }
 
-GlonassL1CaDllPllTrackingTest_msg_rx::GlonassL1CaDllPllTrackingTest_msg_rx() :
-            gr::block("GlonassL1CaDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+GlonassL1CaDllPllTrackingTest_msg_rx::GlonassL1CaDllPllTrackingTest_msg_rx() : gr::block("GlonassL1CaDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GlonassL1CaDllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
@@ -97,13 +95,14 @@ GlonassL1CaDllPllTrackingTest_msg_rx::GlonassL1CaDllPllTrackingTest_msg_rx() :
 }
 
 GlonassL1CaDllPllTrackingTest_msg_rx::~GlonassL1CaDllPllTrackingTest_msg_rx()
-{}
+{
+}
 
 
 // ###########################################################
 
 
-class GlonassL1CaDllPllTrackingTest: public ::testing::Test
+class GlonassL1CaDllPllTrackingTest : public ::testing::Test
 {
 protected:
     GlonassL1CaDllPllTrackingTest()
@@ -115,7 +114,8 @@ protected:
     }
 
     ~GlonassL1CaDllPllTrackingTest()
-    {}
+    {
+    }
 
     void init();
 
@@ -153,7 +153,7 @@ TEST_F(GlonassL1CaDllPllTrackingTest, ValidationOfResults)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     int fs_in = 6625000;
-    int nsamples = fs_in*4e-3*2;
+    int nsamples = fs_in * 4e-3 * 2;
 
     init();
     queue = gr::msg_queue::make(0);
@@ -166,23 +166,23 @@ TEST_F(GlonassL1CaDllPllTrackingTest, ValidationOfResults)
     // gnss_synchro.Acq_doppler_hz = -2750;
     gnss_synchro.Acq_samplestamp_samples = 0;
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         tracking->set_channel(gnss_synchro.Channel_ID);
     }) << "Failure setting channel.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         tracking->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         tracking->connect(top_block);
     }) << "Failure connecting tracking to the top_block.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         gr::analog::sig_source_c::sptr sin_source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
         std::string path = std::string(TEST_PATH);
-        std::string file =  path + "signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin";
-        const char * file_name = file.c_str();
+        std::string file = path + "signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin";
+        const char* file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
@@ -194,13 +194,13 @@ TEST_F(GlonassL1CaDllPllTrackingTest, ValidationOfResults)
 
     tracking->start_tracking();
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
-        top_block->run(); // Start threads and wait
+        top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
     // TODO: Verify tracking results
-    std::cout <<  "Tracked " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Tracked " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }

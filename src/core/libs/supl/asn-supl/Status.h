@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_Status_H_
-#define	_Status_H_
+#ifndef _Status_H_
+#define _Status_H_
 
 
 #include <asn_application.h>
@@ -19,16 +19,16 @@ extern "C" {
 
 /* Dependencies */
 typedef enum Status {
-	Status_stale	= 0,
-	Status_current	= 1,
-	Status_unknown	= 2
-	/*
+    Status_stale = 0,
+    Status_current = 1,
+    Status_unknown = 2
+    /*
 	 * Enumeration is extensible
 	 */
 } e_Status;
 
 /* Status */
-typedef ENUMERATED_t	 Status_t;
+typedef ENUMERATED_t Status_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_Status;
@@ -46,5 +46,5 @@ per_type_encoder_f Status_encode_uper;
 }
 #endif
 
-#endif	/* _Status_H_ */
+#endif /* _Status_H_ */
 #include <asn_internal.h>

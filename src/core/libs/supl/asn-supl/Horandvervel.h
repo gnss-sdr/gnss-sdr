@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_Horandvervel_H_
-#define	_Horandvervel_H_
+#ifndef _Horandvervel_H_
+#define _Horandvervel_H_
 
 
 #include <asn_application.h>
@@ -19,18 +19,19 @@ extern "C" {
 #endif
 
 /* Horandvervel */
-typedef struct Horandvervel {
-	BIT_STRING_t	 verdirect;
-	BIT_STRING_t	 bearing;
-	BIT_STRING_t	 horspeed;
-	BIT_STRING_t	 verspeed;
-	/*
+typedef struct Horandvervel
+{
+    BIT_STRING_t verdirect;
+    BIT_STRING_t bearing;
+    BIT_STRING_t horspeed;
+    BIT_STRING_t verspeed;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } Horandvervel_t;
 
 /* Implementation */
@@ -40,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_Horandvervel;
 }
 #endif
 
-#endif	/* _Horandvervel_H_ */
+#endif /* _Horandvervel_H_ */
 #include <asn_internal.h>

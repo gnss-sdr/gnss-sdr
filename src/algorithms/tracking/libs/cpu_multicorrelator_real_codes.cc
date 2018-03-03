@@ -38,7 +38,6 @@
 #include <cmath>
 
 
-
 cpu_multicorrelator_real_codes::cpu_multicorrelator_real_codes()
 {
     d_sig_in = nullptr;
@@ -53,7 +52,7 @@ cpu_multicorrelator_real_codes::cpu_multicorrelator_real_codes()
 
 cpu_multicorrelator_real_codes::~cpu_multicorrelator_real_codes()
 {
-    if(d_local_codes_resampled != nullptr)
+    if (d_local_codes_resampled != nullptr)
         {
             cpu_multicorrelator_real_codes::free();
         }
@@ -61,8 +60,8 @@ cpu_multicorrelator_real_codes::~cpu_multicorrelator_real_codes()
 
 
 bool cpu_multicorrelator_real_codes::init(
-        int max_signal_length_samples,
-        int n_correlators)
+    int max_signal_length_samples,
+    int n_correlators)
 {
     // ALLOCATE MEMORY FOR INTERNAL vectors
     size_t size = max_signal_length_samples * sizeof(float);
@@ -77,11 +76,10 @@ bool cpu_multicorrelator_real_codes::init(
 }
 
 
-
 bool cpu_multicorrelator_real_codes::set_local_code_and_taps(
-        int code_length_chips,
-        const float* local_code_in,
-        float *shifts_chips)
+    int code_length_chips,
+    const float* local_code_in,
+    float* shifts_chips)
 {
     d_local_code_in = local_code_in;
     d_shifts_chips = shifts_chips;
@@ -102,29 +100,29 @@ bool cpu_multicorrelator_real_codes::set_input_output_vectors(std::complex<float
 void cpu_multicorrelator_real_codes::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
 {
     volk_gnsssdr_32f_xn_resampler_32f_xn(d_local_codes_resampled,
-            d_local_code_in,
-            rem_code_phase_chips,
-            code_phase_step_chips,
-            d_shifts_chips,
-            d_code_length_chips,
-            d_n_correlators,
-            correlator_length_samples);
+        d_local_code_in,
+        rem_code_phase_chips,
+        code_phase_step_chips,
+        d_shifts_chips,
+        d_code_length_chips,
+        d_n_correlators,
+        correlator_length_samples);
 }
 
 
 bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
-        float rem_carrier_phase_in_rad,
-        float phase_step_rad,
-        float rem_code_phase_chips,
-        float code_phase_step_chips,
-        int signal_length_samples)
+    float rem_carrier_phase_in_rad,
+    float phase_step_rad,
+    float rem_code_phase_chips,
+    float code_phase_step_chips,
+    int signal_length_samples)
 {
     update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
     // Regenerate phase at each call in order to avoid numerical issues
     lv_32fc_t phase_offset_as_complex[1];
     phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
     // call VOLK_GNSSSDR kernel
-    volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0, - phase_step_rad)), phase_offset_as_complex, (const float**)d_local_codes_resampled, d_n_correlators, signal_length_samples);
+    volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0, -phase_step_rad)), phase_offset_as_complex, (const float**)d_local_codes_resampled, d_n_correlators, signal_length_samples);
     return true;
 }
 
@@ -143,5 +141,3 @@ bool cpu_multicorrelator_real_codes::free()
         }
     return true;
 }
-
-

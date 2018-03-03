@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSS_ControlHeader_H_
-#define	_GANSS_ControlHeader_H_
+#ifndef _GANSS_ControlHeader_H_
+#define _GANSS_ControlHeader_H_
 
 
 #include <asn_application.h>
@@ -22,12 +22,13 @@ struct GANSSCommonAssistData;
 struct SeqOfGANSSGenericAssistDataElement;
 
 /* GANSS-ControlHeader */
-typedef struct GANSS_ControlHeader {
-	struct GANSSCommonAssistData	*ganssCommonAssistData	/* OPTIONAL */;
-	struct SeqOfGANSSGenericAssistDataElement	*ganssGenericAssistDataList	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GANSS_ControlHeader
+{
+    struct GANSSCommonAssistData *ganssCommonAssistData /* OPTIONAL */;
+    struct SeqOfGANSSGenericAssistDataElement *ganssGenericAssistDataList /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GANSS_ControlHeader_t;
 
 /* Implementation */
@@ -41,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSS_ControlHeader;
 #include "GANSSCommonAssistData.h"
 #include "SeqOfGANSSGenericAssistDataElement.h"
 
-#endif	/* _GANSS_ControlHeader_H_ */
+#endif /* _GANSS_ControlHeader_H_ */
 #include <asn_internal.h>

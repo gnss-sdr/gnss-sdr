@@ -47,23 +47,22 @@ gnss_sdr_supl_client::gnss_sdr_supl_client()
     request = 0;
 }
 
-gnss_sdr_supl_client::~gnss_sdr_supl_client()
-{}
+gnss_sdr_supl_client::~gnss_sdr_supl_client() {}
 
 void gnss_sdr_supl_client::print_assistance()
 {
     if (assist.set & SUPL_RRLP_ASSIST_REFTIME)
         {
             fprintf(stdout, "T %ld %ld %ld %ld\n", assist.time.gps_week, assist.time.gps_tow,
-                    assist.time.stamp.tv_sec, static_cast<long>(assist.time.stamp.tv_usec));
+                assist.time.stamp.tv_sec, static_cast<long>(assist.time.stamp.tv_usec));
         }
 
     if (assist.set & SUPL_RRLP_ASSIST_UTC)
         {
             fprintf(stdout, "U %d %d %d %d %d %d %d %d\n",
-                    assist.utc.a0, assist.utc.a1, assist.utc.delta_tls,
-                    assist.utc.tot, assist.utc.wnt, assist.utc.wnlsf,
-                    assist.utc.dn, assist.utc.delta_tlsf);
+                assist.utc.a0, assist.utc.a1, assist.utc.delta_tls,
+                assist.utc.tot, assist.utc.wnt, assist.utc.wnlsf,
+                assist.utc.dn, assist.utc.delta_tlsf);
         }
 
     if (assist.set & SUPL_RRLP_ASSIST_REFLOC)
@@ -74,8 +73,8 @@ void gnss_sdr_supl_client::print_assistance()
     if (assist.set & SUPL_RRLP_ASSIST_IONO)
         {
             fprintf(stdout, "I %d %d %d %d %d %d %d %d\n",
-                    assist.iono.a0, assist.iono.a1, assist.iono.a2, assist.iono.a3,
-                    assist.iono.b0, assist.iono.b1, assist.iono.b2, assist.iono.b3);
+                assist.iono.a0, assist.iono.a1, assist.iono.a2, assist.iono.a3,
+                assist.iono.b0, assist.iono.b1, assist.iono.b2, assist.iono.b3);
         }
 
     if (assist.cnt_eph)
@@ -86,16 +85,16 @@ void gnss_sdr_supl_client::print_assistance()
 
             for (i = 0; i < assist.cnt_eph; i++)
                 {
-                    struct supl_ephemeris_s *e = &assist.eph[i];
+                    struct supl_ephemeris_s* e = &assist.eph[i];
 
                     fprintf(stdout, "e %d %d %d %d %d %d %d %d %d %d",
-                            e->prn, e->delta_n, e->M0, e->A_sqrt, e->OMEGA_0, e->i0, e->w, e->OMEGA_dot, e->i_dot, e->e);
+                        e->prn, e->delta_n, e->M0, e->A_sqrt, e->OMEGA_0, e->i0, e->w, e->OMEGA_dot, e->i_dot, e->e);
                     fprintf(stdout, " %d %d %d %d %d %d",
-                            e->Cuc, e->Cus, e->Crc, e->Crs, e->Cic, e->Cis);
+                        e->Cuc, e->Cus, e->Crc, e->Crs, e->Cic, e->Cis);
                     fprintf(stdout, " %d %d %d %d %d %d",
-                            e->toe, e->IODC, e->toc, e->AF0, e->AF1, e->AF2);
+                        e->toe, e->IODC, e->toc, e->AF0, e->AF1, e->AF2);
                     fprintf(stdout, " %d %d %d %d %d\n",
-                            e->bits, e->ura, e->health, e->tgd, e->AODA);
+                        e->bits, e->ura, e->health, e->tgd, e->AODA);
                 }
         }
 
@@ -106,12 +105,12 @@ void gnss_sdr_supl_client::print_assistance()
             fprintf(stdout, "A %d\n", assist.cnt_alm);
             for (i = 0; i < assist.cnt_alm; i++)
                 {
-                    struct supl_almanac_s *a = &assist.alm[i];
+                    struct supl_almanac_s* a = &assist.alm[i];
 
                     fprintf(stdout, "a %d %d %d %d %d ",
-                            a->prn, a->e, a->toa, a->Ksii, a->OMEGA_dot);
+                        a->prn, a->e, a->toa, a->Ksii, a->OMEGA_dot);
                     fprintf(stdout, "%d %d %d %d %d %d\n",
-                            a->A_sqrt, a->OMEGA_0, a->w, a->M0, a->AF0, a->AF1);
+                        a->A_sqrt, a->OMEGA_0, a->w, a->M0, a->AF0, a->AF1);
                 }
         }
 
@@ -122,10 +121,10 @@ void gnss_sdr_supl_client::print_assistance()
             fprintf(stdout, "Q %d %d\n", assist.cnt_acq, assist.acq_time);
             for (i = 0; i < assist.cnt_acq; i++)
                 {
-                    struct supl_acquis_s *q = &assist.acq[i];
+                    struct supl_acquis_s* q = &assist.acq[i];
 
                     fprintf(stdout, "q %d %d %d ",
-                            q->prn, q->parts, q->doppler0);
+                        q->prn, q->parts, q->doppler0);
                     if (q->parts & SUPL_ACQUIS_DOPPLER)
                         {
                             fprintf(stdout, "%d %d ", q->doppler1, q->d_win);
@@ -135,7 +134,7 @@ void gnss_sdr_supl_client::print_assistance()
                             fprintf(stdout, "0 0 ");
                         }
                     fprintf(stdout, "%d %d %d %d ",
-                            q->code_ph, q->code_ph_int, q->bit_num, q->code_ph_win);
+                        q->code_ph, q->code_ph_int, q->bit_num, q->code_ph_win);
                     if (q->parts & SUPL_ACQUIS_ANGLE)
                         {
                             fprintf(stdout, "%d %d\n", q->az, q->el);
@@ -157,32 +156,36 @@ int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
     mns = i_mns;
     lac = i_lac;
     ci = i_ci;
-    if (supl_ctx_new(&ctx)) {} // clean it before using
+    if (supl_ctx_new(&ctx))
+        {
+        }  // clean it before using
     supl_set_gsm_cell(&ctx, mcc, mns, lac, ci);
 
     // PERFORM SUPL COMMUNICATION
-    char *cstr = new char[server_name.length() + 1];
+    char* cstr = new char[server_name.length() + 1];
     strcpy(cstr, server_name.c_str());
 
     int err;
-    ctx.p.request = request; // select assistance info request from a pre-defined set
+    ctx.p.request = request;  // select assistance info request from a pre-defined set
 
     //std::cout<<"mcc="<<mcc<<"mns="<<mns<<"lac="<<lac<<"ci="<<ci<<std::endl;
     err = supl_get_assist(&ctx, cstr, &assist);
     if (err == 0)
         {
             read_supl_data();
-	    if (supl_ctx_free(&ctx)) {} // clean it up before leaving
+            if (supl_ctx_free(&ctx))
+                {
+                }  // clean it up before leaving
         }
     else
         {
-	  /*
+            /*
 	   * If supl_get_assist() fails, the connection remains open
 	   * and the memory/files are not released.
 	   */
-	  supl_close(&ctx);
+            supl_close(&ctx);
         }
-    delete [] cstr;
+    delete[] cstr;
     return err;
 }
 
@@ -215,7 +218,7 @@ void gnss_sdr_supl_client::read_supl_data()
             gps_utc.d_A1 = static_cast<double>(assist.utc.a1) * pow(2.0, -50);
             gps_utc.d_DeltaT_LS = static_cast<double>(assist.utc.delta_tls);
             gps_utc.d_DeltaT_LSF = static_cast<double>(assist.utc.delta_tlsf);
-            gps_utc.d_t_OT = static_cast<double>(assist.utc.tot) * pow(2.0,12);
+            gps_utc.d_t_OT = static_cast<double>(assist.utc.tot) * pow(2.0, 12);
             gps_utc.i_DN = static_cast<double>(assist.utc.dn);
             gps_utc.i_WN_T = static_cast<double>(assist.utc.wnt);
             gps_utc.i_WN_LSF = static_cast<double>(assist.utc.wnlsf);
@@ -240,14 +243,14 @@ void gnss_sdr_supl_client::read_supl_data()
     // READ SV ALMANAC
     if (assist.cnt_alm)
         {
-            std::map<int,Gps_Almanac>::iterator gps_almanac_iterator;
+            std::map<int, Gps_Almanac>::iterator gps_almanac_iterator;
             for (int i = 0; i < assist.cnt_alm; i++)
                 {
-                    struct supl_almanac_s *a = &assist.alm[i];
+                    struct supl_almanac_s* a = &assist.alm[i];
                     // Check if the SV is present in the map
                     gps_almanac_iterator = this->gps_almanac_map.find(a->prn);
                     // the SV is not present in the almanac data -> insert new SV register
-                    if (gps_almanac_iterator==gps_almanac_map.end())
+                    if (gps_almanac_iterator == gps_almanac_map.end())
                         {
                             Gps_Almanac gps_almanac_entry;
                             gps_almanac_map.insert(std::pair<int, Gps_Almanac>(a->prn, gps_almanac_entry));
@@ -271,17 +274,17 @@ void gnss_sdr_supl_client::read_supl_data()
     // READ SV EPHEMERIS
     if (assist.cnt_eph)
         {
-            std::map<int,Gps_Ephemeris>::iterator gps_eph_iterator;
+            std::map<int, Gps_Ephemeris>::iterator gps_eph_iterator;
             for (int i = 0; i < assist.cnt_eph; i++)
                 {
-                    struct supl_ephemeris_s *e = &assist.eph[i];
+                    struct supl_ephemeris_s* e = &assist.eph[i];
                     // Check if the SV is present in the map
                     gps_eph_iterator = this->gps_ephemeris_map.find(e->prn);
                     // the SV is not present in the assistance data -> insert new SV register
                     if (gps_eph_iterator == gps_ephemeris_map.end())
                         {
                             Gps_Ephemeris gps_eph;
-                            gps_ephemeris_map.insert(std::pair<int,Gps_Ephemeris>(e->prn, gps_eph));
+                            gps_ephemeris_map.insert(std::pair<int, Gps_Ephemeris>(e->prn, gps_eph));
                             gps_eph_iterator = this->gps_ephemeris_map.find(e->prn);
                         }
                     if (gps_time.valid)
@@ -298,7 +301,7 @@ void gnss_sdr_supl_client::read_supl_data()
                     gps_eph_iterator->second.i_satellite_PRN = e->prn;
                     // SV navigation model
                     gps_eph_iterator->second.i_code_on_L2 = e->bits;
-                    gps_eph_iterator->second.i_SV_accuracy = e->ura; //User Range Accuracy (URA)
+                    gps_eph_iterator->second.i_SV_accuracy = e->ura;  //User Range Accuracy (URA)
                     gps_eph_iterator->second.i_SV_health = e->health;
                     gps_eph_iterator->second.d_IODC = static_cast<double>(e->IODC);
                     //miss P flag (1 bit)
@@ -333,17 +336,17 @@ void gnss_sdr_supl_client::read_supl_data()
 
     if (assist.cnt_acq)
         {
-            std::map<int,Gps_Acq_Assist>::iterator gps_acq_iterator;
+            std::map<int, Gps_Acq_Assist>::iterator gps_acq_iterator;
             for (int i = 0; i < assist.cnt_acq; i++)
                 {
-                    struct supl_acquis_s *e = &assist.acq[i];
+                    struct supl_acquis_s* e = &assist.acq[i];
                     // Check if the SV is present in the map
-                    gps_acq_iterator=this->gps_acq_map.find(e->prn);
+                    gps_acq_iterator = this->gps_acq_map.find(e->prn);
                     // the SV is not present in the assistance data -> insert new SV register
                     if (gps_acq_iterator == gps_acq_map.end())
                         {
                             Gps_Acq_Assist gps_acq_assist;
-                            gps_acq_map.insert(std::pair<int,Gps_Acq_Assist>(e->prn, gps_acq_assist));
+                            gps_acq_map.insert(std::pair<int, Gps_Acq_Assist>(e->prn, gps_acq_assist));
                             gps_acq_iterator = this->gps_acq_map.find(e->prn);
                         }
                     // fill the acquisition assistance structure
@@ -366,19 +369,19 @@ void gnss_sdr_supl_client::read_supl_data()
 bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string file_name)
 {
     try
-    {
+        {
             std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
             gps_ephemeris_map.clear();
             xml >> boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", this->gps_ephemeris_map);
             ifs.close();
-            LOG(INFO) << "Loaded Ephemeris map data with "<<this->gps_ephemeris_map.size()<<" satellites";
-    }
+            LOG(INFO) << "Loaded Ephemeris map data with " << this->gps_ephemeris_map.size() << " satellites";
+        }
     catch (std::exception& e)
-    {
+        {
             LOG(WARNING) << e.what() << "File: " << file_name;
             return false;
-    }
+        }
     return true;
 }
 
@@ -411,18 +414,18 @@ bool gnss_sdr_supl_client::save_ephemeris_map_xml(const std::string file_name, s
 bool gnss_sdr_supl_client::load_utc_xml(const std::string file_name)
 {
     try
-    {
-        std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
-        boost::archive::xml_iarchive xml(ifs);
-        xml >> boost::serialization::make_nvp("GNSS-SDR_utc_map", this->gps_utc);
-        ifs.close();
-        LOG(INFO) << "Loaded UTC model data";
-    }
+        {
+            std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_utc_map", this->gps_utc);
+            ifs.close();
+            LOG(INFO) << "Loaded UTC model data";
+        }
     catch (std::exception& e)
-    {
-        LOG(WARNING) << e.what() << "File: " << file_name;
-        return false;
-    }
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
     return true;
 }
 
@@ -499,18 +502,18 @@ bool gnss_sdr_supl_client::save_iono_map_xml(const std::string file_name, std::m
 bool gnss_sdr_supl_client::load_ref_time_xml(const std::string file_name)
 {
     try
-    {
-        std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
-        boost::archive::xml_iarchive xml(ifs);
-        xml >> boost::serialization::make_nvp("GNSS-SDR_ref_time_map", this->gps_time);
-        ifs.close();
-        LOG(INFO) << "Loaded Ref Time data";
-    }
+        {
+            std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_time_map", this->gps_time);
+            ifs.close();
+            LOG(INFO) << "Loaded Ref Time data";
+        }
     catch (std::exception& e)
-    {
-        LOG(WARNING) << e.what() << "File: " << file_name;
-        return false;
-    }
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
     return true;
 }
 
@@ -543,18 +546,18 @@ bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, st
 bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
 {
     try
-    {
+        {
             std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
             xml >> boost::serialization::make_nvp("GNSS-SDR_ref_location_map", this->gps_ref_loc);
             ifs.close();
             LOG(INFO) << "Loaded Ref Location data";
-    }
+        }
     catch (std::exception& e)
-    {
+        {
             LOG(WARNING) << e.what() << "File: " << file_name;
             return false;
-    }
+        }
     return true;
 }
 

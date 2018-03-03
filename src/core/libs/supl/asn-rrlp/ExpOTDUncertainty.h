@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ExpOTDUncertainty_H_
-#define	_ExpOTDUncertainty_H_
+#ifndef _ExpOTDUncertainty_H_
+#define _ExpOTDUncertainty_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* ExpOTDUncertainty */
-typedef long	 ExpOTDUncertainty_t;
+typedef long ExpOTDUncertainty_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_ExpOTDUncertainty;
@@ -36,5 +36,5 @@ per_type_encoder_f ExpOTDUncertainty_encode_uper;
 }
 #endif
 
-#endif	/* _ExpOTDUncertainty_H_ */
+#endif /* _ExpOTDUncertainty_H_ */
 #include <asn_internal.h>

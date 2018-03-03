@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SgnTypeElement_H_
-#define	_SgnTypeElement_H_
+#ifndef _SgnTypeElement_H_
+#define _SgnTypeElement_H_
 
 
 #include <asn_application.h>
@@ -21,13 +21,14 @@ extern "C" {
 #endif
 
 /* SgnTypeElement */
-typedef struct SgnTypeElement {
-	GANSSSignalID_t	*ganssSignalID	/* OPTIONAL */;
-	long	 ganssStatusHealth;
-	SeqOfDGANSSSgnElement_t	 dganssSgnList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SgnTypeElement
+{
+    GANSSSignalID_t *ganssSignalID /* OPTIONAL */;
+    long ganssStatusHealth;
+    SeqOfDGANSSSgnElement_t dganssSgnList;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SgnTypeElement_t;
 
 /* Implementation */
@@ -37,5 +38,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SgnTypeElement;
 }
 #endif
 
-#endif	/* _SgnTypeElement_H_ */
+#endif /* _SgnTypeElement_H_ */
 #include <asn_internal.h>

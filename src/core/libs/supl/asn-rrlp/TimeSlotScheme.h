@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_TimeSlotScheme_H_
-#define	_TimeSlotScheme_H_
+#ifndef _TimeSlotScheme_H_
+#define _TimeSlotScheme_H_
 
 
 #include <asn_application.h>
@@ -19,12 +19,12 @@ extern "C" {
 
 /* Dependencies */
 typedef enum TimeSlotScheme {
-	TimeSlotScheme_equalLength	= 0,
-	TimeSlotScheme_variousLength	= 1
+    TimeSlotScheme_equalLength = 0,
+    TimeSlotScheme_variousLength = 1
 } e_TimeSlotScheme;
 
 /* TimeSlotScheme */
-typedef ENUMERATED_t	 TimeSlotScheme_t;
+typedef ENUMERATED_t TimeSlotScheme_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_TimeSlotScheme;
@@ -42,5 +42,5 @@ per_type_encoder_f TimeSlotScheme_encode_uper;
 }
 #endif
 
-#endif	/* _TimeSlotScheme_H_ */
+#endif /* _TimeSlotScheme_H_ */
 #include <asn_internal.h>

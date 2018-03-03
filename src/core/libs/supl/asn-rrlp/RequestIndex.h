@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_RequestIndex_H_
-#define	_RequestIndex_H_
+#ifndef _RequestIndex_H_
+#define _RequestIndex_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* RequestIndex */
-typedef long	 RequestIndex_t;
+typedef long RequestIndex_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_RequestIndex;
@@ -36,5 +36,5 @@ per_type_encoder_f RequestIndex_encode_uper;
 }
 #endif
 
-#endif	/* _RequestIndex_H_ */
+#endif /* _RequestIndex_H_ */
 #include <asn_internal.h>

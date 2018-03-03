@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_RelativeAlt_H_
-#define	_RelativeAlt_H_
+#ifndef _RelativeAlt_H_
+#define _RelativeAlt_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* RelativeAlt */
-typedef long	 RelativeAlt_t;
+typedef long RelativeAlt_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_RelativeAlt;
@@ -36,5 +36,5 @@ per_type_encoder_f RelativeAlt_encode_uper;
 }
 #endif
 
-#endif	/* _RelativeAlt_H_ */
+#endif /* _RelativeAlt_H_ */
 #include <asn_internal.h>

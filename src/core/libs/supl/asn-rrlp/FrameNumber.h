@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_FrameNumber_H_
-#define	_FrameNumber_H_
+#ifndef _FrameNumber_H_
+#define _FrameNumber_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* FrameNumber */
-typedef long	 FrameNumber_t;
+typedef long FrameNumber_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_FrameNumber;
@@ -36,5 +36,5 @@ per_type_encoder_f FrameNumber_encode_uper;
 }
 #endif
 
-#endif	/* _FrameNumber_H_ */
+#endif /* _FrameNumber_H_ */
 #include <asn_internal.h>

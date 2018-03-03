@@ -80,15 +80,15 @@ private:
     bool d_flag_dump_enabled;
     int d_nchannels;  // Number of available channels for positioning
 public:
-    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, rtk_t & rtk);
+    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, rtk_t& rtk);
     ~rtklib_solver();
 
-    bool get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_map, double Rx_time, bool flag_averaging);
+    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double Rx_time, bool flag_averaging);
 
-    std::map<int,Galileo_Ephemeris> galileo_ephemeris_map;   //!< Map storing new Galileo_Ephemeris
-    std::map<int,Gps_Ephemeris> gps_ephemeris_map;           //!< Map storing new GPS_Ephemeris
-    std::map<int,Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map; //!< Map storing new GPS_CNAV_Ephemeris
-    std::map<int,Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;    //!< Map storing new GLONASS GNAV Ephmeris
+    std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Map storing new Galileo_Ephemeris
+    std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
+    std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
+    std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephmeris
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
@@ -100,8 +100,8 @@ public:
     Gps_CNAV_Iono gps_cnav_iono;
     Gps_CNAV_Utc_Model gps_cnav_utc_model;
 
-    Glonass_Gnav_Utc_Model glonass_gnav_utc_model;    //!< Map storing GLONASS GNAV UTC Model
-    Glonass_Gnav_Almanac glonass_gnav_almanac;        //!< Map storing GLONASS GNAV Almanac Model
+    Glonass_Gnav_Utc_Model glonass_gnav_utc_model;  //!< Map storing GLONASS GNAV UTC Model
+    Glonass_Gnav_Almanac glonass_gnav_almanac;      //!< Map storing GLONASS GNAV Almanac Model
 
     int count_valid_position;
 };

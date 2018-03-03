@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfGANSS_MsrSetElement_H_
-#define	_SeqOfGANSS_MsrSetElement_H_
+#ifndef _SeqOfGANSS_MsrSetElement_H_
+#define _SeqOfGANSS_MsrSetElement_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct GANSS_MsrSetElement;
 
 /* SeqOfGANSS-MsrSetElement */
-typedef struct SeqOfGANSS_MsrSetElement {
-	A_SEQUENCE_OF(struct GANSS_MsrSetElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SeqOfGANSS_MsrSetElement
+{
+    A_SEQUENCE_OF(struct GANSS_MsrSetElement)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SeqOfGANSS_MsrSetElement_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSS_MsrSetElement;
 /* Referred external types */
 #include "GANSS-MsrSetElement.h"
 
-#endif	/* _SeqOfGANSS_MsrSetElement_H_ */
+#endif /* _SeqOfGANSS_MsrSetElement_H_ */
 #include <asn_internal.h>

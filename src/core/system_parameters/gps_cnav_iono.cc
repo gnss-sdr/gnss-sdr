@@ -44,4 +44,3 @@ Gps_CNAV_Iono::Gps_CNAV_Iono()
     d_beta2 = 0.0;
     d_beta3 = 0.0;
 }
-

@@ -50,12 +50,12 @@
 class rtl_tcp_signal_source_c;
 
 typedef boost::shared_ptr<rtl_tcp_signal_source_c>
-        rtl_tcp_signal_source_c_sptr;
+    rtl_tcp_signal_source_c_sptr;
 
 rtl_tcp_signal_source_c_sptr
 rtl_tcp_make_signal_source_c(const std::string &address,
-                             short port,
-                             bool flip_iq = false);
+    short port,
+    bool flip_iq = false);
 
 /*!
  * \brief This class reads interleaved I/Q samples
@@ -66,27 +66,27 @@ class rtl_tcp_signal_source_c : public gr::sync_block
 public:
     ~rtl_tcp_signal_source_c();
 
-    int work (int noutput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+    int work(int noutput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 
-    void set_frequency (int frequency);
-    void set_sample_rate (int sample_rate);
-    void set_agc_mode (bool agc);
-    void set_gain (int gain);
-    void set_if_gain (int gain);
+    void set_frequency(int frequency);
+    void set_sample_rate(int sample_rate);
+    void set_agc_mode(bool agc);
+    void set_gain(int gain);
+    void set_if_gain(int gain);
 
 private:
     typedef boost::circular_buffer_space_optimized<float> buffer_type;
 
     friend rtl_tcp_signal_source_c_sptr
     rtl_tcp_make_signal_source_c(const std::string &address,
-            short port,
-            bool flip_iq);
+        short port,
+        bool flip_iq);
 
     rtl_tcp_signal_source_c(const std::string &address,
-            short port,
-            bool flip_iq);
+        short port,
+        bool flip_iq);
 
     rtl_tcp_dongle_info info_;
 
@@ -107,18 +107,18 @@ private:
     boost::array<float, 0xff> lookup_;
 
     // async read callback
-    void handle_read (const boost::system::error_code &ec,
-            size_t bytes_transferred);
+    void handle_read(const boost::system::error_code &ec,
+        size_t bytes_transferred);
 
-    inline bool not_full ( ) const
+    inline bool not_full() const
     {
-        return unread_ < buffer_.capacity( );
+        return unread_ < buffer_.capacity();
     }
 
-    inline bool not_empty ( ) const
+    inline bool not_empty() const
     {
-        return unread_ > 0 || io_service_.stopped ();
+        return unread_ > 0 || io_service_.stopped();
     }
 };
 
-#endif // GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
+#endif  // GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H

@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_TGSN_H_
-#define	_TGSN_H_
+#ifndef _TGSN_H_
+#define _TGSN_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* TGSN */
-typedef long	 TGSN_t;
+typedef long TGSN_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_TGSN;
@@ -36,5 +36,5 @@ per_type_encoder_f TGSN_encode_uper;
 }
 #endif
 
-#endif	/* _TGSN_H_ */
+#endif /* _TGSN_H_ */
 #include <asn_internal.h>

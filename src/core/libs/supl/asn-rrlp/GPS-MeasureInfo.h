@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GPS_MeasureInfo_H_
-#define	_GPS_MeasureInfo_H_
+#ifndef _GPS_MeasureInfo_H_
+#define _GPS_MeasureInfo_H_
 
 
 #include <asn_application.h>
@@ -19,11 +19,12 @@ extern "C" {
 #endif
 
 /* GPS-MeasureInfo */
-typedef struct GPS_MeasureInfo {
-	SeqOfGPS_MsrSetElement_t	 gpsMsrSetList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GPS_MeasureInfo
+{
+    SeqOfGPS_MsrSetElement_t gpsMsrSetList;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GPS_MeasureInfo_t;
 
 /* Implementation */
@@ -33,5 +34,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GPS_MeasureInfo;
 }
 #endif
 
-#endif	/* _GPS_MeasureInfo_H_ */
+#endif /* _GPS_MeasureInfo_H_ */
 #include <asn_internal.h>

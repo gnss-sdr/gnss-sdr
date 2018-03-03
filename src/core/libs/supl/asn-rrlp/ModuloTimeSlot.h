@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ModuloTimeSlot_H_
-#define	_ModuloTimeSlot_H_
+#ifndef _ModuloTimeSlot_H_
+#define _ModuloTimeSlot_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* ModuloTimeSlot */
-typedef long	 ModuloTimeSlot_t;
+typedef long ModuloTimeSlot_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_ModuloTimeSlot;
@@ -36,5 +36,5 @@ per_type_encoder_f ModuloTimeSlot_encode_uper;
 }
 #endif
 
-#endif	/* _ModuloTimeSlot_H_ */
+#endif /* _ModuloTimeSlot_H_ */
 #include <asn_internal.h>

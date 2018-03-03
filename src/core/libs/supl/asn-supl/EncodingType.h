@@ -4,8 +4,8 @@
  * 	found in "../supl-init.asn"
  */
 
-#ifndef	_EncodingType_H_
-#define	_EncodingType_H_
+#ifndef _EncodingType_H_
+#define _EncodingType_H_
 
 
 #include <asn_application.h>
@@ -19,16 +19,16 @@ extern "C" {
 
 /* Dependencies */
 typedef enum EncodingType {
-	EncodingType_ucs2	= 0,
-	EncodingType_gsmDefault	= 1,
-	EncodingType_utf8	= 2
-	/*
+    EncodingType_ucs2 = 0,
+    EncodingType_gsmDefault = 1,
+    EncodingType_utf8 = 2
+    /*
 	 * Enumeration is extensible
 	 */
 } e_EncodingType;
 
 /* EncodingType */
-typedef ENUMERATED_t	 EncodingType_t;
+typedef ENUMERATED_t EncodingType_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_EncodingType;
@@ -46,5 +46,5 @@ per_type_encoder_f EncodingType_encode_uper;
 }
 #endif
 
-#endif	/* _EncodingType_H_ */
+#endif /* _EncodingType_H_ */
 #include <asn_internal.h>

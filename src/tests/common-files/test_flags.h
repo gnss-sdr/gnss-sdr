@@ -34,9 +34,9 @@
 #include <gflags/gflags.h>
 
 #if defined GNUPLOT_EXECUTABLE
-  DEFINE_string(gnuplot_executable, std::string(GNUPLOT_EXECUTABLE), "Gnuplot binary path");
+DEFINE_string(gnuplot_executable, std::string(GNUPLOT_EXECUTABLE), "Gnuplot binary path");
 #elif !defined GNUPLOT_EXECUTABLE
-  DEFINE_string(gnuplot_executable, "", "Gnuplot binary path");
+DEFINE_string(gnuplot_executable, "", "Gnuplot binary path");
 #endif
 
 DEFINE_bool(plot_acq_grid, false, "Plots acquisition grid with gnuplot");

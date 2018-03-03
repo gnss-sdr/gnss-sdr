@@ -62,36 +62,34 @@ double var_urassr(int ura);
 void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts);
 double eph2clk(gtime_t time, const eph_t *eph);
 void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
-                    double *var);
+    double *var);
 void deq(const double *x, double *xdot, const double *acc);
 void glorbit(double t, double *x, const double *acc);
 double geph2clk(gtime_t time, const geph_t *geph);
 
 void geph2pos(gtime_t time, const geph_t *geph, double *rs, double *dts,
-                     double *var);
+    double *var);
 double seph2clk(gtime_t time, const seph_t *seph);
 void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
-                     double *var);
+    double *var);
 eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav);
 geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav);
 seph_t *selseph(gtime_t time, int sat, const nav_t *nav);
 int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-                  double *dts);
+    double *dts);
 //satellite position and clock by broadcast ephemeris
 int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-                  int iode, double *rs, double *dts, double *var, int *svh);
+    int iode, double *rs, double *dts, double *var, int *svh);
 int satpos_sbas(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-                        double *rs, double *dts, double *var, int *svh);
+    double *rs, double *dts, double *var, int *svh);
 int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-                      int opt, double *rs, double *dts, double *var, int *svh);
+    int opt, double *rs, double *dts, double *var, int *svh);
 
 int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
-                  const nav_t *nav, double *rs, double *dts, double *var,
-                  int *svh);
+    const nav_t *nav, double *rs, double *dts, double *var,
+    int *svh);
 void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
-                    int ephopt, double *rs, double *dts, double *var, int *svh);
-
-
+    int ephopt, double *rs, double *dts, double *var, int *svh);
 
 
 #endif /* GNSS_SDR_RTKLIB_EPHEMERIS_H_ */

@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_Ver_H_
-#define	_Ver_H_
+#ifndef _Ver_H_
+#define _Ver_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* Ver */
-typedef BIT_STRING_t	 Ver_t;
+typedef BIT_STRING_t Ver_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_Ver;
@@ -36,5 +36,5 @@ per_type_encoder_f Ver_encode_uper;
 }
 #endif
 
-#endif	/* _Ver_H_ */
+#endif /* _Ver_H_ */
 #include <asn_internal.h>

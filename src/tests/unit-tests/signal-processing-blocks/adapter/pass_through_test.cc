@@ -36,7 +36,6 @@
 #include "in_memory_configuration.h"
 
 
-
 TEST(PassThroughTest, Instantiate)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();

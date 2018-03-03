@@ -32,7 +32,7 @@
 #ifndef GNSS_SDR_VITERBI_DECODER_H_
 #define GNSS_SDR_VITERBI_DECODER_H_
 
-#include <cstddef> // for size_t
+#include <cstddef>  // for size_t
 #include <deque>
 
 /*!
@@ -56,7 +56,7 @@ public:
     float decode_block(const double input_c[], int* output_u_int, const int LL);
 
     float decode_continuous(const double sym[], const int traceback_depth, int output_u_int[],
-            const int nbits_requested, int &nbits_decoded);
+        const int nbits_requested, int& nbits_decoded);
 
 private:
     class Prev
@@ -78,10 +78,10 @@ private:
 
     private:
         int t;
-        int * state;
-        int * bit;
-        float * metric;
-        int * refcount;
+        int* state;
+        int* bit;
+        float* metric;
+        int* refcount;
     };
 
     // code properties
@@ -100,10 +100,10 @@ private:
     int* d_state1;
 
     // trellis state
-    float *d_pm_t;
+    float* d_pm_t;
     std::deque<Prev> d_trellis_paths;
-    float *d_metric_c; /* Set of all possible branch metrics */
-    float *d_rec_array; /* Received values for one trellis section */
+    float* d_metric_c;  /* Set of all possible branch metrics */
+    float* d_rec_array; /* Received values for one trellis section */
     bool d_trellis_state_is_initialised;
 
     // measures

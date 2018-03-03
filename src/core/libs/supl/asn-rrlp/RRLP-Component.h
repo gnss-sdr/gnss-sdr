@@ -4,8 +4,8 @@
  * 	found in "../rrlp-messages.asn"
  */
 
-#ifndef	_RRLP_Component_H_
-#define	_RRLP_Component_H_
+#ifndef _RRLP_Component_H_
+#define _RRLP_Component_H_
 
 
 #include <asn_application.h>
@@ -24,33 +24,35 @@ extern "C" {
 
 /* Dependencies */
 typedef enum RRLP_Component_PR {
-	RRLP_Component_PR_NOTHING,	/* No components present */
-	RRLP_Component_PR_msrPositionReq,
-	RRLP_Component_PR_msrPositionRsp,
-	RRLP_Component_PR_assistanceData,
-	RRLP_Component_PR_assistanceDataAck,
-	RRLP_Component_PR_protocolError,
-	/* Extensions may appear below */
-	
+    RRLP_Component_PR_NOTHING, /* No components present */
+    RRLP_Component_PR_msrPositionReq,
+    RRLP_Component_PR_msrPositionRsp,
+    RRLP_Component_PR_assistanceData,
+    RRLP_Component_PR_assistanceDataAck,
+    RRLP_Component_PR_protocolError,
+    /* Extensions may appear below */
+
 } RRLP_Component_PR;
 
 /* RRLP-Component */
-typedef struct RRLP_Component {
-	RRLP_Component_PR present;
-	union RRLP_Component_u {
-		MsrPosition_Req_t	 msrPositionReq;
-		MsrPosition_Rsp_t	 msrPositionRsp;
-		AssistanceData_t	 assistanceData;
-		NULL_t	 assistanceDataAck;
-		ProtocolError_t	 protocolError;
-		/*
+typedef struct RRLP_Component
+{
+    RRLP_Component_PR present;
+    union RRLP_Component_u
+    {
+        MsrPosition_Req_t msrPositionReq;
+        MsrPosition_Rsp_t msrPositionRsp;
+        AssistanceData_t assistanceData;
+        NULL_t assistanceDataAck;
+        ProtocolError_t protocolError;
+        /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+    } choice;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } RRLP_Component_t;
 
 /* Implementation */
@@ -60,5 +62,5 @@ extern asn_TYPE_descriptor_t asn_DEF_RRLP_Component;
 }
 #endif
 
-#endif	/* _RRLP_Component_H_ */
+#endif /* _RRLP_Component_H_ */
 #include <asn_internal.h>

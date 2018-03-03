@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_MethodType_H_
-#define	_MethodType_H_
+#ifndef _MethodType_H_
+#define _MethodType_H_
 
 
 #include <asn_application.h>
@@ -21,25 +21,27 @@ extern "C" {
 
 /* Dependencies */
 typedef enum MethodType_PR {
-	MethodType_PR_NOTHING,	/* No components present */
-	MethodType_PR_msAssisted,
-	MethodType_PR_msBased,
-	MethodType_PR_msBasedPref,
-	MethodType_PR_msAssistedPref
+    MethodType_PR_NOTHING, /* No components present */
+    MethodType_PR_msAssisted,
+    MethodType_PR_msBased,
+    MethodType_PR_msBasedPref,
+    MethodType_PR_msAssistedPref
 } MethodType_PR;
 
 /* MethodType */
-typedef struct MethodType {
-	MethodType_PR present;
-	union MethodType_u {
-		AccuracyOpt_t	 msAssisted;
-		Accuracy_t	 msBased;
-		Accuracy_t	 msBasedPref;
-		Accuracy_t	 msAssistedPref;
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct MethodType
+{
+    MethodType_PR present;
+    union MethodType_u
+    {
+        AccuracyOpt_t msAssisted;
+        Accuracy_t msBased;
+        Accuracy_t msBasedPref;
+        Accuracy_t msAssistedPref;
+    } choice;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } MethodType_t;
 
 /* Implementation */
@@ -49,5 +51,5 @@ extern asn_TYPE_descriptor_t asn_DEF_MethodType;
 }
 #endif
 
-#endif	/* _MethodType_H_ */
+#endif /* _MethodType_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_MoreAssDataToBeSent_H_
-#define	_MoreAssDataToBeSent_H_
+#ifndef _MoreAssDataToBeSent_H_
+#define _MoreAssDataToBeSent_H_
 
 
 #include <asn_application.h>
@@ -19,12 +19,12 @@ extern "C" {
 
 /* Dependencies */
 typedef enum MoreAssDataToBeSent {
-	MoreAssDataToBeSent_noMoreMessages	= 0,
-	MoreAssDataToBeSent_moreMessagesOnTheWay	= 1
+    MoreAssDataToBeSent_noMoreMessages = 0,
+    MoreAssDataToBeSent_moreMessagesOnTheWay = 1
 } e_MoreAssDataToBeSent;
 
 /* MoreAssDataToBeSent */
-typedef ENUMERATED_t	 MoreAssDataToBeSent_t;
+typedef ENUMERATED_t MoreAssDataToBeSent_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_MoreAssDataToBeSent;
@@ -42,5 +42,5 @@ per_type_encoder_f MoreAssDataToBeSent_encode_uper;
 }
 #endif
 
-#endif	/* _MoreAssDataToBeSent_H_ */
+#endif /* _MoreAssDataToBeSent_H_ */
 #include <asn_internal.h>

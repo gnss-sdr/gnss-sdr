@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_CellParametersID_H_
-#define	_CellParametersID_H_
+#ifndef _CellParametersID_H_
+#define _CellParametersID_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* CellParametersID */
-typedef long	 CellParametersID_t;
+typedef long CellParametersID_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_CellParametersID;
@@ -36,5 +36,5 @@ per_type_encoder_f CellParametersID_encode_uper;
 }
 #endif
 
-#endif	/* _CellParametersID_H_ */
+#endif /* _CellParametersID_H_ */
 #include <asn_internal.h>

@@ -46,9 +46,8 @@
 using google::LogMessage;
 
 GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -72,9 +71,9 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
-    if(FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+    if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
-    if(FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 20.0);
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
     int extend_correlation_ms;
@@ -94,19 +93,18 @@ GpsL1CaDllPllCAidTrackingFpga::GpsL1CaDllPllCAidTrackingFpga(
         {
             item_size_ = sizeof(lv_16sc_t);
             tracking_fpga_sc = gps_l1_ca_dll_pll_c_aid_make_tracking_fpga_sc(
-                    f_if, fs_in, vector_length, dump, dump_filename, pll_bw_hz,
-                    dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz,
-                    extend_correlation_ms, early_late_space_chips, device_name,
-                    device_base);
+                f_if, fs_in, vector_length, dump, dump_filename, pll_bw_hz,
+                dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz,
+                extend_correlation_ms, early_late_space_chips, device_name,
+                device_base);
             DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
         }
     else
         {
-
             item_size_ = sizeof(lv_16sc_t);
             //  LOG(WARNING) << item_type_ << " unknown tracking item type";
             LOG(WARNING) << item_type_
-                    << " the tracking item type for the FPGA tracking test has to be cshort";
+                         << " the tracking item type for the FPGA tracking test has to be cshort";
         }
 
     channel_ = 0;
@@ -129,7 +127,7 @@ void GpsL1CaDllPllCAidTrackingFpga::start_tracking()
         {
             // LOG(WARNING) << item_type_ << " unknown tracking item type";
             LOG(WARNING) << item_type_
-                    << " the tracking item type for the FPGA tracking test has to be cshort";
+                         << " the tracking item type for the FPGA tracking test has to be cshort";
         }
 }
 
@@ -149,13 +147,13 @@ void GpsL1CaDllPllCAidTrackingFpga::set_channel(unsigned int channel)
         {
             // LOG(WARNING) << item_type_ << " unknown tracking item type";
             LOG(WARNING) << item_type_
-                    << " the tracking item type for the FPGA tracking test has to be cshort";
+                         << " the tracking item type for the FPGA tracking test has to be cshort";
         }
 }
 
 
 void GpsL1CaDllPllCAidTrackingFpga::set_gnss_synchro(
-        Gnss_Synchro* p_gnss_synchro)
+    Gnss_Synchro* p_gnss_synchro)
 {
     if (item_type_.compare("cshort") == 0)
         {
@@ -165,7 +163,7 @@ void GpsL1CaDllPllCAidTrackingFpga::set_gnss_synchro(
         {
             // LOG(WARNING) << item_type_ << " unknown tracking item type";
             LOG(WARNING) << item_type_
-                    << " the tracking item type for the FPGA tracking test has to be cshort";
+                         << " the tracking item type for the FPGA tracking test has to be cshort";
         }
 }
 
@@ -199,7 +197,7 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_left_block()
         {
             //LOG(WARNING) << item_type_ << " unknown tracking item type";
             LOG(WARNING) << item_type_
-                    << " the tracking item type for the FPGA tracking test has to be cshort";
+                         << " the tracking item type for the FPGA tracking test has to be cshort";
             return nullptr;
         }
 }
@@ -215,7 +213,7 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTrackingFpga::get_right_block()
         {
             //LOG(WARNING) << item_type_ << " unknown tracking item type";
             LOG(WARNING) << item_type_
-                    << " the tracking item type for the FPGA tracking test has to be cshort";
+                         << " the tracking item type for the FPGA tracking test has to be cshort";
             return nullptr;
         }
 }
@@ -225,4 +223,3 @@ void GpsL1CaDllPllCAidTrackingFpga::reset(void)
 {
     tracking_fpga_sc->reset();
 }
-

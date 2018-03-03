@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_UseMultipleSets_H_
-#define	_UseMultipleSets_H_
+#ifndef _UseMultipleSets_H_
+#define _UseMultipleSets_H_
 
 
 #include <asn_application.h>
@@ -19,12 +19,12 @@ extern "C" {
 
 /* Dependencies */
 typedef enum UseMultipleSets {
-	UseMultipleSets_multipleSets	= 0,
-	UseMultipleSets_oneSet	= 1
+    UseMultipleSets_multipleSets = 0,
+    UseMultipleSets_oneSet = 1
 } e_UseMultipleSets;
 
 /* UseMultipleSets */
-typedef ENUMERATED_t	 UseMultipleSets_t;
+typedef ENUMERATED_t UseMultipleSets_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_UseMultipleSets;
@@ -42,5 +42,5 @@ per_type_encoder_f UseMultipleSets_encode_uper;
 }
 #endif
 
-#endif	/* _UseMultipleSets_H_ */
+#endif /* _UseMultipleSets_H_ */
 #include <asn_internal.h>

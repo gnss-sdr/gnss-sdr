@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SatStatus_H_
-#define	_SatStatus_H_
+#ifndef _SatStatus_H_
+#define _SatStatus_H_
 
 
 #include <asn_application.h>
@@ -21,29 +21,31 @@ extern "C" {
 
 /* Dependencies */
 typedef enum SatStatus_PR {
-	SatStatus_PR_NOTHING,	/* No components present */
-	SatStatus_PR_newSatelliteAndModelUC,
-	SatStatus_PR_oldSatelliteAndModel,
-	SatStatus_PR_newNaviModelUC,
-	/* Extensions may appear below */
-	
+    SatStatus_PR_NOTHING, /* No components present */
+    SatStatus_PR_newSatelliteAndModelUC,
+    SatStatus_PR_oldSatelliteAndModel,
+    SatStatus_PR_newNaviModelUC,
+    /* Extensions may appear below */
+
 } SatStatus_PR;
 
 /* SatStatus */
-typedef struct SatStatus {
-	SatStatus_PR present;
-	union SatStatus_u {
-		UncompressedEphemeris_t	 newSatelliteAndModelUC;
-		NULL_t	 oldSatelliteAndModel;
-		UncompressedEphemeris_t	 newNaviModelUC;
-		/*
+typedef struct SatStatus
+{
+    SatStatus_PR present;
+    union SatStatus_u
+    {
+        UncompressedEphemeris_t newSatelliteAndModelUC;
+        NULL_t oldSatelliteAndModel;
+        UncompressedEphemeris_t newNaviModelUC;
+        /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+    } choice;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SatStatus_t;
 
 /* Implementation */
@@ -53,5 +55,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SatStatus;
 }
 #endif
 
-#endif	/* _SatStatus_H_ */
+#endif /* _SatStatus_H_ */
 #include <asn_internal.h>

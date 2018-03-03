@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_CPICH_RSCP_H_
-#define	_CPICH_RSCP_H_
+#ifndef _CPICH_RSCP_H_
+#define _CPICH_RSCP_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* CPICH-RSCP */
-typedef long	 CPICH_RSCP_t;
+typedef long CPICH_RSCP_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_CPICH_RSCP;
@@ -36,5 +36,5 @@ per_type_encoder_f CPICH_RSCP_encode_uper;
 }
 #endif
 
-#endif	/* _CPICH_RSCP_H_ */
+#endif /* _CPICH_RSCP_H_ */
 #include <asn_internal.h>

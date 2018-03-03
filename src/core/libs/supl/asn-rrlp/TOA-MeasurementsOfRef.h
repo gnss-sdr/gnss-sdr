@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_TOA_MeasurementsOfRef_H_
-#define	_TOA_MeasurementsOfRef_H_
+#ifndef _TOA_MeasurementsOfRef_H_
+#define _TOA_MeasurementsOfRef_H_
 
 
 #include <asn_application.h>
@@ -20,12 +20,13 @@ extern "C" {
 #endif
 
 /* TOA-MeasurementsOfRef */
-typedef struct TOA_MeasurementsOfRef {
-	RefQuality_t	 refQuality;
-	NumOfMeasurements_t	 numOfMeasurements;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct TOA_MeasurementsOfRef
+{
+    RefQuality_t refQuality;
+    NumOfMeasurements_t numOfMeasurements;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } TOA_MeasurementsOfRef_t;
 
 /* Implementation */
@@ -35,5 +36,5 @@ extern asn_TYPE_descriptor_t asn_DEF_TOA_MeasurementsOfRef;
 }
 #endif
 
-#endif	/* _TOA_MeasurementsOfRef_H_ */
+#endif /* _TOA_MeasurementsOfRef_H_ */
 #include <asn_internal.h>

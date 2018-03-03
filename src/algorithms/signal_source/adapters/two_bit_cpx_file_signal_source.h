@@ -51,12 +51,12 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class TwoBitCpxFileSignalSource: public GNSSBlockInterface
+class TwoBitCpxFileSignalSource : public GNSSBlockInterface
 {
 public:
     TwoBitCpxFileSignalSource(ConfigurationInterface* configuration, std::string role,
-            unsigned int in_streams, unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+        unsigned int in_streams, unsigned int out_streams,
+        boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~TwoBitCpxFileSignalSource();
     inline std::string role() override
@@ -123,7 +123,7 @@ private:
     gr::blocks::interleaved_short_to_complex::sptr inter_shorts_to_cpx_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
-    gr::blocks::throttle::sptr  throttle_;
+    gr::blocks::throttle::sptr throttle_;
     boost::shared_ptr<gr::msg_queue> queue_;
     size_t item_size_;
     // Throttle control

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GPSWeek_H_
-#define	_GPSWeek_H_
+#ifndef _GPSWeek_H_
+#define _GPSWeek_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* GPSWeek */
-typedef long	 GPSWeek_t;
+typedef long GPSWeek_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_GPSWeek;
@@ -36,5 +36,5 @@ per_type_encoder_f GPSWeek_encode_uper;
 }
 #endif
 
-#endif	/* _GPSWeek_H_ */
+#endif /* _GPSWeek_H_ */
 #include <asn_internal.h>

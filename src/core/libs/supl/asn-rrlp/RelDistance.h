@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_RelDistance_H_
-#define	_RelDistance_H_
+#ifndef _RelDistance_H_
+#define _RelDistance_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* RelDistance */
-typedef long	 RelDistance_t;
+typedef long RelDistance_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_RelDistance;
@@ -36,5 +36,5 @@ per_type_encoder_f RelDistance_encode_uper;
 }
 #endif
 
-#endif	/* _RelDistance_H_ */
+#endif /* _RelDistance_H_ */
 #include <asn_internal.h>

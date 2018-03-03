@@ -42,7 +42,7 @@ TEST(NmeaPrinterTest, PrintLine)
     std::shared_ptr<Pvt_Solution> pvt_solution = std::make_shared<Pvt_Solution>();
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
-            boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46)); // example from http://aprs.gids.nl/nmea/#rmc
+        boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));  // example from http://aprs.gids.nl/nmea/#rmc
     pvt_solution->set_position_UTC_time(pt);
 
     arma::vec pos = {49.27416667, -123.18533333, 0};
@@ -50,17 +50,17 @@ TEST(NmeaPrinterTest, PrintLine)
 
     pvt_solution->set_valid_position(true);
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, false, "");
         nmea_printer->Print_Nmea_Line(pvt_solution, false);
-    } ) << "Failure printing NMEA messages.";
+    }) << "Failure printing NMEA messages.";
 
     std::ifstream test_file(filename);
     std::string line;
     std::string GPRMC("$GPRMC");
-    if(test_file.is_open())
+    if (test_file.is_open())
         {
-            while(getline (test_file,line))
+            while (getline(test_file, line))
                 {
                     std::size_t found = line.find(GPRMC);
                     if (found != std::string::npos)
@@ -74,7 +74,6 @@ TEST(NmeaPrinterTest, PrintLine)
 }
 
 
-
 TEST(NmeaPrinterTest, PrintLineLessthan10min)
 {
     std::string filename("nmea_test.nmea");
@@ -82,7 +81,7 @@ TEST(NmeaPrinterTest, PrintLineLessthan10min)
     std::shared_ptr<Pvt_Solution> pvt_solution = std::make_shared<Pvt_Solution>();
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
-            boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46)); // example from http://aprs.gids.nl/nmea/#rmc
+        boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));  // example from http://aprs.gids.nl/nmea/#rmc
     pvt_solution->set_position_UTC_time(pt);
 
     arma::vec pos = {49.07416667, -123.02527778, 0};
@@ -90,17 +89,17 @@ TEST(NmeaPrinterTest, PrintLineLessthan10min)
 
     pvt_solution->set_valid_position(true);
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, false, "");
         nmea_printer->Print_Nmea_Line(pvt_solution, false);
-    } ) << "Failure printing NMEA messages.";
+    }) << "Failure printing NMEA messages.";
 
     std::ifstream test_file(filename);
     std::string line;
     std::string GPRMC("$GPRMC");
-    if(test_file.is_open())
+    if (test_file.is_open())
         {
-            while(getline (test_file,line))
+            while (getline(test_file, line))
                 {
                     std::size_t found = line.find(GPRMC);
                     if (found != std::string::npos)

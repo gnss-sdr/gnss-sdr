@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_EnvironmentCharacter_H_
-#define	_EnvironmentCharacter_H_
+#ifndef _EnvironmentCharacter_H_
+#define _EnvironmentCharacter_H_
 
 
 #include <asn_application.h>
@@ -19,16 +19,16 @@ extern "C" {
 
 /* Dependencies */
 typedef enum EnvironmentCharacter {
-	EnvironmentCharacter_badArea	= 0,
-	EnvironmentCharacter_notBadArea	= 1,
-	EnvironmentCharacter_mixedArea	= 2
-	/*
+    EnvironmentCharacter_badArea = 0,
+    EnvironmentCharacter_notBadArea = 1,
+    EnvironmentCharacter_mixedArea = 2
+    /*
 	 * Enumeration is extensible
 	 */
 } e_EnvironmentCharacter;
 
 /* EnvironmentCharacter */
-typedef ENUMERATED_t	 EnvironmentCharacter_t;
+typedef ENUMERATED_t EnvironmentCharacter_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_EnvironmentCharacter;
@@ -46,5 +46,5 @@ per_type_encoder_f EnvironmentCharacter_encode_uper;
 }
 #endif
 
-#endif	/* _EnvironmentCharacter_H_ */
+#endif /* _EnvironmentCharacter_H_ */
 #include <asn_internal.h>

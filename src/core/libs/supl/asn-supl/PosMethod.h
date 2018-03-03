@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_PosMethod_H_
-#define	_PosMethod_H_
+#ifndef _PosMethod_H_
+#define _PosMethod_H_
 
 
 #include <asn_application.h>
@@ -19,23 +19,23 @@ extern "C" {
 
 /* Dependencies */
 typedef enum PosMethod {
-	PosMethod_agpsSETassisted	= 0,
-	PosMethod_agpsSETbased	= 1,
-	PosMethod_agpsSETassistedpref	= 2,
-	PosMethod_agpsSETbasedpref	= 3,
-	PosMethod_autonomousGPS	= 4,
-	PosMethod_aFLT	= 5,
-	PosMethod_eCID	= 6,
-	PosMethod_eOTD	= 7,
-	PosMethod_oTDOA	= 8,
-	PosMethod_noPosition	= 9
-	/*
+    PosMethod_agpsSETassisted = 0,
+    PosMethod_agpsSETbased = 1,
+    PosMethod_agpsSETassistedpref = 2,
+    PosMethod_agpsSETbasedpref = 3,
+    PosMethod_autonomousGPS = 4,
+    PosMethod_aFLT = 5,
+    PosMethod_eCID = 6,
+    PosMethod_eOTD = 7,
+    PosMethod_oTDOA = 8,
+    PosMethod_noPosition = 9
+    /*
 	 * Enumeration is extensible
 	 */
 } e_PosMethod;
 
 /* PosMethod */
-typedef ENUMERATED_t	 PosMethod_t;
+typedef ENUMERATED_t PosMethod_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_PosMethod;
@@ -53,5 +53,5 @@ per_type_encoder_f PosMethod_encode_uper;
 }
 #endif
 
-#endif	/* _PosMethod_H_ */
+#endif /* _PosMethod_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_NumOfMeasurements_H_
-#define	_NumOfMeasurements_H_
+#ifndef _NumOfMeasurements_H_
+#define _NumOfMeasurements_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* NumOfMeasurements */
-typedef long	 NumOfMeasurements_t;
+typedef long NumOfMeasurements_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_NumOfMeasurements;
@@ -36,5 +36,5 @@ per_type_encoder_f NumOfMeasurements_encode_uper;
 }
 #endif
 
-#endif	/* _NumOfMeasurements_H_ */
+#endif /* _NumOfMeasurements_H_ */
 #include <asn_internal.h>

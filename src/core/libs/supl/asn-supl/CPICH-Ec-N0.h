@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_CPICH_Ec_N0_H_
-#define	_CPICH_Ec_N0_H_
+#ifndef _CPICH_Ec_N0_H_
+#define _CPICH_Ec_N0_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* CPICH-Ec-N0 */
-typedef long	 CPICH_Ec_N0_t;
+typedef long CPICH_Ec_N0_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_CPICH_Ec_N0;
@@ -36,5 +36,5 @@ per_type_encoder_f CPICH_Ec_N0_encode_uper;
 }
 #endif
 
-#endif	/* _CPICH_Ec_N0_H_ */
+#endif /* _CPICH_Ec_N0_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_BTSPosition_H_
-#define	_BTSPosition_H_
+#ifndef _BTSPosition_H_
+#define _BTSPosition_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* BTSPosition */
-typedef Ext_GeographicalInformation_t	 BTSPosition_t;
+typedef Ext_GeographicalInformation_t BTSPosition_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_BTSPosition;
@@ -36,5 +36,5 @@ per_type_encoder_f BTSPosition_encode_uper;
 }
 #endif
 
-#endif	/* _BTSPosition_H_ */
+#endif /* _BTSPosition_H_ */
 #include <asn_internal.h>

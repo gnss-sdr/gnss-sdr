@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_Rel5_MsrPosition_Req_Extension_H_
-#define	_Rel5_MsrPosition_Req_Extension_H_
+#ifndef _Rel5_MsrPosition_Req_Extension_H_
+#define _Rel5_MsrPosition_Req_Extension_H_
 
 
 #include <asn_application.h>
@@ -19,15 +19,16 @@ extern "C" {
 #endif
 
 /* Rel5-MsrPosition-Req-Extension */
-typedef struct Rel5_MsrPosition_Req_Extension {
-	Extended_reference_t	 extended_reference;
-	/*
+typedef struct Rel5_MsrPosition_Req_Extension
+{
+    Extended_reference_t extended_reference;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } Rel5_MsrPosition_Req_Extension_t;
 
 /* Implementation */
@@ -37,5 +38,5 @@ extern asn_TYPE_descriptor_t asn_DEF_Rel5_MsrPosition_Req_Extension;
 }
 #endif
 
-#endif	/* _Rel5_MsrPosition_Req_Extension_H_ */
+#endif /* _Rel5_MsrPosition_Req_Extension_H_ */
 #include <asn_internal.h>

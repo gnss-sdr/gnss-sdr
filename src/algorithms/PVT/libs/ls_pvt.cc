@@ -41,7 +41,6 @@ using google::LogMessage;
 
 Ls_Pvt::Ls_Pvt() : Pvt_Solution()
 {
-
 }
 
 arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
@@ -70,7 +69,7 @@ arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
     //             6995655.459  -23537808.269   -9927906.485  24222112.972 ];
     //  Solution:     596902.683   -4847843.316    4088216.740
 
-    arma::vec pos = arma::zeros(4,1);
+    arma::vec pos = arma::zeros(4, 1);
     arma::mat B_pass = arma::zeros(obs.size(), 4);
     B_pass.submat(0, 0, obs.size() - 1, 2) = satpos;
     B_pass.col(3) = obs;
@@ -81,27 +80,27 @@ arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
     for (int iter = 0; iter < 2; iter++)
         {
             B = B_pass;
-            int m = arma::size(B,0);
+            int m = arma::size(B, 0);
             for (int i = 0; i < m; i++)
                 {
-                    int x = B(i,0);
-                    int y = B(i,1);
+                    int x = B(i, 0);
+                    int y = B(i, 1);
                     if (iter == 0)
                         {
                             traveltime = 0.072;
                         }
                     else
                         {
-                            int z = B(i,2);
+                            int z = B(i, 2);
                             double rho = (x - pos(0)) * (x - pos(0)) + (y - pos(1)) * (y - pos(1)) + (z - pos(2)) * (z - pos(2));
                             traveltime = sqrt(rho) / GPS_C_m_s;
                         }
                     double angle = traveltime * 7.292115147e-5;
                     double cosa = cos(angle);
                     double sina = sin(angle);
-                    B(i,0) =  cosa * x + sina * y;
-                    B(i,1) = -sina * x + cosa * y;
-                }// % i-loop
+                    B(i, 0) = cosa * x + sina * y;
+                    B(i, 1) = -sina * x + cosa * y;
+                }  // % i-loop
 
             if (m > 3)
                 {
@@ -111,8 +110,8 @@ arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
                 {
                     BBB = arma::inv(B);
                 }
-            arma::vec e = arma::ones(m,1);
-            arma::vec alpha = arma::zeros(m,1);
+            arma::vec e = arma::ones(m, 1);
+            arma::vec alpha = arma::zeros(m, 1);
             for (int i = 0; i < m; i++)
                 {
                     alpha(i) = lorentz(B.row(i).t(), B.row(i).t()) / 2.0;
@@ -124,24 +123,24 @@ arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
             double c = lorentz(BBBalpha, BBBalpha);
             double root = sqrt(b * b - a * c);
             arma::vec r = {(-b - root) / a, (-b + root) / a};
-            arma::mat possible_pos = arma::zeros(4,2);
+            arma::mat possible_pos = arma::zeros(4, 2);
             for (int i = 0; i < 2; i++)
                 {
                     possible_pos.col(i) = r(i) * BBBe + BBBalpha;
-                    possible_pos(3,i) = -possible_pos(3,i);
+                    possible_pos(3, i) = -possible_pos(3, i);
                 }
 
-            arma::vec abs_omc = arma::zeros(2,1);
+            arma::vec abs_omc = arma::zeros(2, 1);
             for (int j = 0; j < m; j++)
                 {
                     for (int i = 0; i < 2; i++)
                         {
-                            double c_dt = possible_pos(3,i);
-                            double calc = arma::norm(satpos.row(i).t() - possible_pos.col(i).rows(0,2)) + c_dt;
+                            double c_dt = possible_pos(3, i);
+                            double calc = arma::norm(satpos.row(i).t() - possible_pos.col(i).rows(0, 2)) + c_dt;
                             double omc = obs(j) - calc;
                             abs_omc(i) = std::abs(omc);
                         }
-                } // % j-loop
+                }  // % j-loop
 
             // discrimination between roots
             if (abs_omc(0) > abs_omc(1))
@@ -152,7 +151,7 @@ arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
                 {
                     pos = possible_pos.col(0);
                 }
-        } // % iter loop
+        }  // % iter loop
     return pos;
 }
 
@@ -167,11 +166,11 @@ double Ls_Pvt::lorentz(const arma::vec& x, const arma::vec& y)
     //  M = diag([1 1 1 -1]);
     //  p = x'*M*y;
 
-    return(x(0) * y(0) + x(1) * y(1) + x(2) * y(2) - x(3) * y(3));
+    return (x(0) * y(0) + x(1) * y(1) + x(2) * y(2) - x(3) * y(3));
 }
 
 
-arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs, const arma::vec & w_vec)
+arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, const arma::vec& w_vec)
 {
     /* Computes the Least Squares Solution.
      *   Inputs:
@@ -185,14 +184,14 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
      */
 
     //=== Initialization =======================================================
-    int nmbOfIterations = 10; // TODO: include in config
+    int nmbOfIterations = 10;  // TODO: include in config
     int nmbOfSatellites;
-    nmbOfSatellites = satpos.n_cols;    // Armadillo
+    nmbOfSatellites = satpos.n_cols;  // Armadillo
     arma::mat w = arma::zeros(nmbOfSatellites, nmbOfSatellites);
-    w.diag() = w_vec; //diagonal weight matrix
+    w.diag() = w_vec;  //diagonal weight matrix
 
     arma::vec rx_pos = this->get_rx_pos();
-    arma::vec pos = {rx_pos(0), rx_pos(1), rx_pos(2), 0}; // time error in METERS (time x speed)
+    arma::vec pos = {rx_pos(0), rx_pos(1), rx_pos(2), 0};  // time error in METERS (time x speed)
     arma::mat A;
     arma::mat omc;
     A = arma::zeros(nmbOfSatellites, 4);
@@ -215,31 +214,33 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
                     if (iter == 0)
                         {
                             //--- Initialize variables at the first iteration --------------
-                            Rot_X = X.col(i); //Armadillo
+                            Rot_X = X.col(i);  //Armadillo
                             trop = 0.0;
                         }
                     else
                         {
                             //--- Update equations -----------------------------------------
                             rho2 = (X(0, i) - pos(0)) *
-                                   (X(0, i) - pos(0)) + (X(1, i) - pos(1)) *
-                                   (X(1, i) - pos(1)) + (X(2, i) - pos(2)) *
-                                   (X(2, i) - pos(2));
+                                       (X(0, i) - pos(0)) +
+                                   (X(1, i) - pos(1)) *
+                                       (X(1, i) - pos(1)) +
+                                   (X(2, i) - pos(2)) *
+                                       (X(2, i) - pos(2));
                             traveltime = sqrt(rho2) / GPS_C_m_s;
 
                             //--- Correct satellite position (do to earth rotation) --------
-                            Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i)); //armadillo
+                            Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i));  //armadillo
 
                             //--- Find DOA and range of satellites
-                            double * azim = 0;
-                            double * elev = 0;
-                            double * dist = 0;
-                            Ls_Pvt::topocent(azim, elev, dist, pos.subvec(0,2), Rot_X - pos.subvec(0, 2));
+                            double* azim = 0;
+                            double* elev = 0;
+                            double* dist = 0;
+                            Ls_Pvt::topocent(azim, elev, dist, pos.subvec(0, 2), Rot_X - pos.subvec(0, 2));
                             this->set_visible_satellites_Az(i, *azim);
                             this->set_visible_satellites_El(i, *elev);
                             this->set_visible_satellites_Distance(i, *dist);
 
-                            if(traveltime < 0.1 && nmbOfSatellites > 3)
+                            if (traveltime < 0.1 && nmbOfSatellites > 3)
                                 {
                                     //--- Find receiver's height
                                     Ls_Pvt::togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
@@ -253,29 +254,29 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
                                         {
                                             //--- Find delay due to troposphere (in meters)
                                             Ls_Pvt::tropo(&trop, sin(this->get_visible_satellites_El(i) * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
-                                            if(trop > 5.0 ) trop = 0.0; //check for erratic values
+                                            if (trop > 5.0) trop = 0.0;  //check for erratic values
                                         }
                                 }
                         }
                     //--- Apply the corrections ----------------------------------------
-                    omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0, 2), 2) - pos(3) - trop); // Armadillo
+                    omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0, 2), 2) - pos(3) - trop);  // Armadillo
 
                     //--- Construct the A matrix ---------------------------------------
                     //Armadillo
-                    A(i,0) = (-(Rot_X(0) - pos(0))) / obs(i);
-                    A(i,1) = (-(Rot_X(1) - pos(1))) / obs(i);
-                    A(i,2) = (-(Rot_X(2) - pos(2))) / obs(i);
-                    A(i,3) = 1.0;
+                    A(i, 0) = (-(Rot_X(0) - pos(0))) / obs(i);
+                    A(i, 1) = (-(Rot_X(1) - pos(1))) / obs(i);
+                    A(i, 2) = (-(Rot_X(2) - pos(2))) / obs(i);
+                    A(i, 3) = 1.0;
                 }
 
             //--- Find position update ---------------------------------------------
-            x = arma::solve(w*A, w*omc); // Armadillo
+            x = arma::solve(w * A, w * omc);  // Armadillo
 
             //--- Apply position update --------------------------------------------
             pos = pos + x;
-            if (arma::norm(x,2) < 1e-4)
+            if (arma::norm(x, 2) < 1e-4)
                 {
-                    break; // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
+                    break;  // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
                 }
         }
 
@@ -290,5 +291,3 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs
         }
     return pos;
 }
-
-

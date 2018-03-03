@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_LAC_H_
-#define	_LAC_H_
+#ifndef _LAC_H_
+#define _LAC_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* LAC */
-typedef long	 LAC_t;
+typedef long LAC_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_LAC;
@@ -36,5 +36,5 @@ per_type_encoder_f LAC_encode_uper;
 }
 #endif
 
-#endif	/* _LAC_H_ */
+#endif /* _LAC_H_ */
 #include <asn_internal.h>

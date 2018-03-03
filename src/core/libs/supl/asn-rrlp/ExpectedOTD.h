@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ExpectedOTD_H_
-#define	_ExpectedOTD_H_
+#ifndef _ExpectedOTD_H_
+#define _ExpectedOTD_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* ExpectedOTD */
-typedef long	 ExpectedOTD_t;
+typedef long ExpectedOTD_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_ExpectedOTD;
@@ -36,5 +36,5 @@ per_type_encoder_f ExpectedOTD_encode_uper;
 }
 #endif
 
-#endif	/* _ExpectedOTD_H_ */
+#endif /* _ExpectedOTD_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSRefMeasurementAssist_H_
-#define	_GANSSRefMeasurementAssist_H_
+#ifndef _GANSSRefMeasurementAssist_H_
+#define _GANSSRefMeasurementAssist_H_
 
 
 #include <asn_application.h>
@@ -20,12 +20,13 @@ extern "C" {
 #endif
 
 /* GANSSRefMeasurementAssist */
-typedef struct GANSSRefMeasurementAssist {
-	long	*ganssSignalID	/* OPTIONAL */;
-	SeqOfGANSSRefMeasurementElement_t	 ganssRefMeasAssitList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GANSSRefMeasurementAssist
+{
+    long *ganssSignalID /* OPTIONAL */;
+    SeqOfGANSSRefMeasurementElement_t ganssRefMeasAssitList;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GANSSRefMeasurementAssist_t;
 
 /* Implementation */
@@ -35,5 +36,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSSRefMeasurementAssist;
 }
 #endif
 
-#endif	/* _GANSSRefMeasurementAssist_H_ */
+#endif /* _GANSSRefMeasurementAssist_H_ */
 #include <asn_internal.h>

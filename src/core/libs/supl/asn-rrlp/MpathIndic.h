@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_MpathIndic_H_
-#define	_MpathIndic_H_
+#ifndef _MpathIndic_H_
+#define _MpathIndic_H_
 
 
 #include <asn_application.h>
@@ -19,14 +19,14 @@ extern "C" {
 
 /* Dependencies */
 typedef enum MpathIndic {
-	MpathIndic_notMeasured	= 0,
-	MpathIndic_low	= 1,
-	MpathIndic_medium	= 2,
-	MpathIndic_high	= 3
+    MpathIndic_notMeasured = 0,
+    MpathIndic_low = 1,
+    MpathIndic_medium = 2,
+    MpathIndic_high = 3
 } e_MpathIndic;
 
 /* MpathIndic */
-typedef ENUMERATED_t	 MpathIndic_t;
+typedef ENUMERATED_t MpathIndic_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_MpathIndic;
@@ -44,5 +44,5 @@ per_type_encoder_f MpathIndic_encode_uper;
 }
 #endif
 
-#endif	/* _MpathIndic_H_ */
+#endif /* _MpathIndic_H_ */
 #include <asn_internal.h>

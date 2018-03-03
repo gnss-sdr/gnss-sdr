@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_OTD_MeasureInfo_H_
-#define	_OTD_MeasureInfo_H_
+#ifndef _OTD_MeasureInfo_H_
+#define _OTD_MeasureInfo_H_
 
 
 #include <asn_application.h>
@@ -22,12 +22,13 @@ extern "C" {
 struct SeqOfOTD_MsrElementRest;
 
 /* OTD-MeasureInfo */
-typedef struct OTD_MeasureInfo {
-	OTD_MsrElementFirst_t	 otdMsrFirstSets;
-	struct SeqOfOTD_MsrElementRest	*otdMsrRestSets	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct OTD_MeasureInfo
+{
+    OTD_MsrElementFirst_t otdMsrFirstSets;
+    struct SeqOfOTD_MsrElementRest *otdMsrRestSets /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } OTD_MeasureInfo_t;
 
 /* Implementation */
@@ -40,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasureInfo;
 /* Referred external types */
 #include "SeqOfOTD-MsrElementRest.h"
 
-#endif	/* _OTD_MeasureInfo_H_ */
+#endif /* _OTD_MeasureInfo_H_ */
 #include <asn_internal.h>

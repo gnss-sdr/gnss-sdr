@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_MeasureResponseTime_H_
-#define	_MeasureResponseTime_H_
+#ifndef _MeasureResponseTime_H_
+#define _MeasureResponseTime_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* MeasureResponseTime */
-typedef long	 MeasureResponseTime_t;
+typedef long MeasureResponseTime_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_MeasureResponseTime;
@@ -36,5 +36,5 @@ per_type_encoder_f MeasureResponseTime_encode_uper;
 }
 #endif
 
-#endif	/* _MeasureResponseTime_H_ */
+#endif /* _MeasureResponseTime_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SystemInfoAssistBTS_H_
-#define	_SystemInfoAssistBTS_H_
+#ifndef _SystemInfoAssistBTS_H_
+#define _SystemInfoAssistBTS_H_
 
 
 #include <asn_application.h>
@@ -21,21 +21,23 @@ extern "C" {
 
 /* Dependencies */
 typedef enum SystemInfoAssistBTS_PR {
-	SystemInfoAssistBTS_PR_NOTHING,	/* No components present */
-	SystemInfoAssistBTS_PR_notPresent,
-	SystemInfoAssistBTS_PR_present
+    SystemInfoAssistBTS_PR_NOTHING, /* No components present */
+    SystemInfoAssistBTS_PR_notPresent,
+    SystemInfoAssistBTS_PR_present
 } SystemInfoAssistBTS_PR;
 
 /* SystemInfoAssistBTS */
-typedef struct SystemInfoAssistBTS {
-	SystemInfoAssistBTS_PR present;
-	union SystemInfoAssistBTS_u {
-		NULL_t	 notPresent;
-		AssistBTSData_t	 present;
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SystemInfoAssistBTS
+{
+    SystemInfoAssistBTS_PR present;
+    union SystemInfoAssistBTS_u
+    {
+        NULL_t notPresent;
+        AssistBTSData_t present;
+    } choice;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SystemInfoAssistBTS_t;
 
 /* Implementation */
@@ -45,5 +47,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SystemInfoAssistBTS;
 }
 #endif
 
-#endif	/* _SystemInfoAssistBTS_H_ */
+#endif /* _SystemInfoAssistBTS_H_ */
 #include <asn_internal.h>

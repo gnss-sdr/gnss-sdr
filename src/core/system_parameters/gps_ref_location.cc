@@ -38,4 +38,3 @@ Gps_Ref_Location::Gps_Ref_Location()
     lon = 0.0;
     uncertainty = 0.0;
 }
-

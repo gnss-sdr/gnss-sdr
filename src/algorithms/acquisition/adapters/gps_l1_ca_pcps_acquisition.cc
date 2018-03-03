@@ -42,13 +42,11 @@
 #include <glog/logging.h>
 
 
-
 using google::LogMessage;
 
 GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -63,11 +61,11 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     dump_ = configuration_->property(role + ".dump", false);
     blocking_ = configuration_->property(role + ".blocking", true);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
-    use_CFAR_algorithm_flag_=configuration_->property(role + ".use_CFAR_algorithm", true); //will be false in future versions
+    use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
 
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
 
@@ -78,14 +76,14 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 
     vector_length_ = code_length_ * sampled_ms_;
 
-    if( bit_transition_flag_ )
+    if (bit_transition_flag_)
         {
             vector_length_ *= 2;
         }
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("cshort") == 0 )
+    if (item_type_.compare("cshort") == 0)
         {
             item_size_ = sizeof(lv_16sc_t);
         }
@@ -94,8 +92,8 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
             item_size_ = sizeof(gr_complex);
         }
     acquisition_ = pcps_make_acquisition(sampled_ms_, max_dwells_,
-            doppler_max_, if_, fs_in_, code_length_, code_length_,
-            bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_, item_size_);
+        doppler_max_, if_, fs_in_, code_length_, code_length_,
+        bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_, dump_filename_, item_size_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
@@ -131,7 +129,7 @@ void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 {
     float pfa = configuration_->property(role_ + ".pfa", 0.0);
 
-    if(pfa == 0.0)
+    if (pfa == 0.0)
         {
             threshold_ = threshold;
         }
@@ -191,8 +189,8 @@ void GpsL1CaPcpsAcquisition::set_local_code()
 
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
-            memcpy(&(code_[i*code_length_]), code,
-                    sizeof(gr_complex)*code_length_);
+            memcpy(&(code_[i * code_length_]), code,
+                sizeof(gr_complex) * code_length_);
         }
 
     acquisition_->set_local_code(code_);
@@ -212,7 +210,6 @@ void GpsL1CaPcpsAcquisition::set_state(int state)
 }
 
 
-
 float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
 {
     //Calculate the threshold
@@ -226,8 +223,8 @@ float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
-    boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = static_cast<float>(quantile(mydist,val));
+    boost::math::exponential_distribution<double> mydist(lambda);
+    float threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }
@@ -309,4 +306,3 @@ gr::basic_block_sptr GpsL1CaPcpsAcquisition::get_right_block()
 {
     return acquisition_;
 }
-

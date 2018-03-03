@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_MeasuredResultsList_H_
-#define	_MeasuredResultsList_H_
+#ifndef _MeasuredResultsList_H_
+#define _MeasuredResultsList_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct MeasuredResults;
 
 /* MeasuredResultsList */
-typedef struct MeasuredResultsList {
-	A_SEQUENCE_OF(struct MeasuredResults) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct MeasuredResultsList
+{
+    A_SEQUENCE_OF(struct MeasuredResults)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } MeasuredResultsList_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_MeasuredResultsList;
 /* Referred external types */
 #include "MeasuredResults.h"
 
-#endif	/* _MeasuredResultsList_H_ */
+#endif /* _MeasuredResultsList_H_ */
 #include <asn_internal.h>

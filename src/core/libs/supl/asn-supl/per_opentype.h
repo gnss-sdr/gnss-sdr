@@ -2,8 +2,8 @@
  * Copyright (c) 2007 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	_PER_OPENTYPE_H_
-#define	_PER_OPENTYPE_H_
+#ifndef _PER_OPENTYPE_H_
+#define _PER_OPENTYPE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,4 +19,4 @@ int uper_open_type_put(asn_TYPE_descriptor_t *td, asn_per_constraints_t *constra
 }
 #endif
 
-#endif	/* _PER_OPENTYPE_H_ */
+#endif /* _PER_OPENTYPE_H_ */

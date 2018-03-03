@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSPositioningMethod_H_
-#define	_GANSSPositioningMethod_H_
+#ifndef _GANSSPositioningMethod_H_
+#define _GANSSPositioningMethod_H_
 
 
 #include <asn_application.h>
@@ -19,12 +19,12 @@ extern "C" {
 
 /* Dependencies */
 typedef enum GANSSPositioningMethod {
-	GANSSPositioningMethod_gps	= 0,
-	GANSSPositioningMethod_galileo	= 1
+    GANSSPositioningMethod_gps = 0,
+    GANSSPositioningMethod_galileo = 1
 } e_GANSSPositioningMethod;
 
 /* GANSSPositioningMethod */
-typedef BIT_STRING_t	 GANSSPositioningMethod_t;
+typedef BIT_STRING_t GANSSPositioningMethod_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_GANSSPositioningMethod;
@@ -42,5 +42,5 @@ per_type_encoder_f GANSSPositioningMethod_encode_uper;
 }
 #endif
 
-#endif	/* _GANSSPositioningMethod_H_ */
+#endif /* _GANSSPositioningMethod_H_ */
 #include <asn_internal.h>

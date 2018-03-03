@@ -52,13 +52,13 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
     double t_Utc_daytime;
     double Delta_t_Utc = 0;
     // Determine if the effectivity time of the leap second event is in the past
-    int  weeksToLeapSecondEvent = WN_LSF_6 - (WN % 256);
+    int weeksToLeapSecondEvent = WN_LSF_6 - (WN % 256);
 
-    if ((weeksToLeapSecondEvent) >= 0) // is not in the past
+    if ((weeksToLeapSecondEvent) >= 0)  // is not in the past
         {
             //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
             int secondOfLeapSecondEvent = DN_6 * 24 * 60 * 60;
-            if  (std::abs(t_e - secondOfLeapSecondEvent) > 21600)
+            if (std::abs(t_e - secondOfLeapSecondEvent) > 21600)
                 {
                     /* 5.1.7a GST->UTC case a
                      * Whenever the leap second adjusted time indicated by the WN_LSF and the DN values
@@ -67,7 +67,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
                      * to the effective time and ends at six hours after the effective time,
                      * the GST/Utc relationship is given by
                      */
-                    Delta_t_Utc =  Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * static_cast<double>((WN % 256) - WNot_6));
+                    Delta_t_Utc = Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * static_cast<double>((WN % 256) - WNot_6));
                     t_Utc_daytime = fmod(t_e - Delta_t_Utc, 86400);
                 }
             else
@@ -77,13 +77,13 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
                      * prior to the leap second adjustment to six hours after the adjustment time, ,
                      * the effective time is computed according to the following equations:
                      */
-                    Delta_t_Utc =  Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * static_cast<double>((WN % 256) - WNot_6));
+                    Delta_t_Utc = Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * static_cast<double>((WN % 256) - WNot_6));
                     double W = fmod(t_e - Delta_t_Utc - 43200, 86400) + 43200;
                     t_Utc_daytime = fmod(W, 86400 + Delta_tLSF_6 - Delta_tLS_6);
                     //implement something to handle a leap second event!
                 }
         }
-    else // the effectivity time is in the past
+    else  // the effectivity time is in the past
         {
             /* 5.1.7c GST->UTC case c
              * Whenever the leap second adjustment time, as indicated by the WN_LSF and DN values,
@@ -100,4 +100,3 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
     t_Utc = secondsOfWeekBeforeToday + t_Utc_daytime;
     return t_Utc;
 }
-

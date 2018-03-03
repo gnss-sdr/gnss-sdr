@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_AcquisElement_H_
-#define	_AcquisElement_H_
+#ifndef _AcquisElement_H_
+#define _AcquisElement_H_
 
 
 #include <asn_application.h>
@@ -24,18 +24,19 @@ struct AddionalDopplerFields;
 struct AddionalAngleFields;
 
 /* AcquisElement */
-typedef struct AcquisElement {
-	SatelliteID_t	 svid;
-	long	 doppler0;
-	struct AddionalDopplerFields	*addionalDoppler	/* OPTIONAL */;
-	long	 codePhase;
-	long	 intCodePhase;
-	long	 gpsBitNumber;
-	long	 codePhaseSearchWindow;
-	struct AddionalAngleFields	*addionalAngle	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct AcquisElement
+{
+    SatelliteID_t svid;
+    long doppler0;
+    struct AddionalDopplerFields *addionalDoppler /* OPTIONAL */;
+    long codePhase;
+    long intCodePhase;
+    long gpsBitNumber;
+    long codePhaseSearchWindow;
+    struct AddionalAngleFields *addionalAngle /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } AcquisElement_t;
 
 /* Implementation */
@@ -49,5 +50,5 @@ extern asn_TYPE_descriptor_t asn_DEF_AcquisElement;
 #include "AddionalDopplerFields.h"
 #include "AddionalAngleFields.h"
 
-#endif	/* _AcquisElement_H_ */
+#endif /* _AcquisElement_H_ */
 #include <asn_internal.h>

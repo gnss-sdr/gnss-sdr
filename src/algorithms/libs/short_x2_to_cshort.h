@@ -48,12 +48,13 @@ class short_x2_to_cshort : public gr::sync_block
 {
 private:
     friend short_x2_to_cshort_sptr make_short_x2_to_cshort();
+
 public:
     short_x2_to_cshort();
 
     int work(int noutput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif

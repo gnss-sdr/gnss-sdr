@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_EOTDQuality_H_
-#define	_EOTDQuality_H_
+#ifndef _EOTDQuality_H_
+#define _EOTDQuality_H_
 
 
 #include <asn_application.h>
@@ -19,12 +19,13 @@ extern "C" {
 #endif
 
 /* EOTDQuality */
-typedef struct EOTDQuality {
-	long	 nbrOfMeasurements;
-	long	 stdOfEOTD;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct EOTDQuality
+{
+    long nbrOfMeasurements;
+    long stdOfEOTD;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } EOTDQuality_t;
 
 /* Implementation */
@@ -34,5 +35,5 @@ extern asn_TYPE_descriptor_t asn_DEF_EOTDQuality;
 }
 #endif
 
-#endif	/* _EOTDQuality_H_ */
+#endif /* _EOTDQuality_H_ */
 #include <asn_internal.h>

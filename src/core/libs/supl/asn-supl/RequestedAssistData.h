@@ -4,8 +4,8 @@
  * 	found in "../supl-posinit.asn"
  */
 
-#ifndef	_RequestedAssistData_H_
-#define	_RequestedAssistData_H_
+#ifndef _RequestedAssistData_H_
+#define _RequestedAssistData_H_
 
 
 #include <asn_application.h>
@@ -22,24 +22,25 @@ extern "C" {
 struct XNavigationModel;
 
 /* RequestedAssistData */
-typedef struct RequestedAssistData {
-	BOOLEAN_t	 almanacRequested;
-	BOOLEAN_t	 utcModelRequested;
-	BOOLEAN_t	 ionosphericModelRequested;
-	BOOLEAN_t	 dgpsCorrectionsRequested;
-	BOOLEAN_t	 referenceLocationRequested;
-	BOOLEAN_t	 referenceTimeRequested;
-	BOOLEAN_t	 acquisitionAssistanceRequested;
-	BOOLEAN_t	 realTimeIntegrityRequested;
-	BOOLEAN_t	 navigationModelRequested;
-	struct XNavigationModel	*navigationModelData	/* OPTIONAL */;
-	/*
+typedef struct RequestedAssistData
+{
+    BOOLEAN_t almanacRequested;
+    BOOLEAN_t utcModelRequested;
+    BOOLEAN_t ionosphericModelRequested;
+    BOOLEAN_t dgpsCorrectionsRequested;
+    BOOLEAN_t referenceLocationRequested;
+    BOOLEAN_t referenceTimeRequested;
+    BOOLEAN_t acquisitionAssistanceRequested;
+    BOOLEAN_t realTimeIntegrityRequested;
+    BOOLEAN_t navigationModelRequested;
+    struct XNavigationModel *navigationModelData /* OPTIONAL */;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } RequestedAssistData_t;
 
 /* Implementation */
@@ -52,5 +53,5 @@ extern asn_TYPE_descriptor_t asn_DEF_RequestedAssistData;
 /* Referred external types */
 #include "XNavigationModel.h"
 
-#endif	/* _RequestedAssistData_H_ */
+#endif /* _RequestedAssistData_H_ */
 #include <asn_internal.h>

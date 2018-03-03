@@ -50,9 +50,9 @@
 class Glonass_Gnav_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    unsigned long int read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    signed long int read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
 
 public:
     bool flag_CRC_test;
@@ -63,45 +63,45 @@ public:
     int i_channel_ID;
     unsigned int i_satellite_PRN;
 
-    Glonass_Gnav_Ephemeris gnav_ephemeris;    //!< Ephemeris information decoded
-    Glonass_Gnav_Utc_Model gnav_utc_model;    //!< UTC model information
+    Glonass_Gnav_Ephemeris gnav_ephemeris;                      //!< Ephemeris information decoded
+    Glonass_Gnav_Utc_Model gnav_utc_model;                      //!< UTC model information
     Glonass_Gnav_Almanac gnav_almanac[GLONASS_L1_CA_NBR_SATS];  //!< Almanac information for all 24 satellites
 
     // Ephemeris Flags and control variables
-    bool flag_all_ephemeris;      //!< Flag indicating that all strings containing ephemeris have been received
-    bool flag_ephemeris_str_1;    //!< Flag indicating that ephemeris 1/4 (string 1) have been received
-    bool flag_ephemeris_str_2;    //!< Flag indicating that ephemeris 2/4 (string 2) have been received
-    bool flag_ephemeris_str_3;    //!< Flag indicating that ephemeris 3/4 (string 3) have been received
-    bool flag_ephemeris_str_4;    //!< Flag indicating that ephemeris 4/4 (string 4) have been received
+    bool flag_all_ephemeris;    //!< Flag indicating that all strings containing ephemeris have been received
+    bool flag_ephemeris_str_1;  //!< Flag indicating that ephemeris 1/4 (string 1) have been received
+    bool flag_ephemeris_str_2;  //!< Flag indicating that ephemeris 2/4 (string 2) have been received
+    bool flag_ephemeris_str_3;  //!< Flag indicating that ephemeris 3/4 (string 3) have been received
+    bool flag_ephemeris_str_4;  //!< Flag indicating that ephemeris 4/4 (string 4) have been received
 
     // Almanac Flags
-    bool flag_all_almanac;        //!< Flag indicating that all almanac have been received
-    bool flag_almanac_str_6;      //!< Flag indicating that almanac of string 6 have been received
-    bool flag_almanac_str_7;      //!< Flag indicating that almanac of string 7 have been received
-    bool flag_almanac_str_8;      //!< Flag indicating that almanac of string 8 have been received
-    bool flag_almanac_str_9;      //!< Flag indicating that almanac of string 9 have been received
-    bool flag_almanac_str_10;     //!< Flag indicating that almanac of string 10 have been received
-    bool flag_almanac_str_11;     //!< Flag indicating that almanac of string 11 have been received
-    bool flag_almanac_str_12;     //!< Flag indicating that almanac of string 12 have been received
-    bool flag_almanac_str_13;     //!< Flag indicating that almanac of string 13 have been received
-    bool flag_almanac_str_14;     //!< Flag indicating that almanac of string 14 have been received
-    bool flag_almanac_str_15;     //!< Flag indicating that almanac of string 15 have been received
-    unsigned int i_alm_satellite_slot_number; //!< SV Orbit Slot Number
+    bool flag_all_almanac;                     //!< Flag indicating that all almanac have been received
+    bool flag_almanac_str_6;                   //!< Flag indicating that almanac of string 6 have been received
+    bool flag_almanac_str_7;                   //!< Flag indicating that almanac of string 7 have been received
+    bool flag_almanac_str_8;                   //!< Flag indicating that almanac of string 8 have been received
+    bool flag_almanac_str_9;                   //!< Flag indicating that almanac of string 9 have been received
+    bool flag_almanac_str_10;                  //!< Flag indicating that almanac of string 10 have been received
+    bool flag_almanac_str_11;                  //!< Flag indicating that almanac of string 11 have been received
+    bool flag_almanac_str_12;                  //!< Flag indicating that almanac of string 12 have been received
+    bool flag_almanac_str_13;                  //!< Flag indicating that almanac of string 13 have been received
+    bool flag_almanac_str_14;                  //!< Flag indicating that almanac of string 14 have been received
+    bool flag_almanac_str_15;                  //!< Flag indicating that almanac of string 15 have been received
+    unsigned int i_alm_satellite_slot_number;  //!< SV Orbit Slot Number
 
     // UTC and System Clocks Flags
-    bool flag_utc_model_valid;    //!< If set, it indicates that the UTC model parameters are filled
-    bool flag_utc_model_str_5;    //!< Clock info send in string 5 of navigation data
-    bool flag_utc_model_str_15;   //!< Clock info send in string 15 of frame 5 of navigation data
+    bool flag_utc_model_valid;   //!< If set, it indicates that the UTC model parameters are filled
+    bool flag_utc_model_str_5;   //!< Clock info send in string 5 of navigation data
+    bool flag_utc_model_str_15;  //!< Clock info send in string 15 of frame 5 of navigation data
 
-    bool flag_TOW_set;      //!< Flag indicating when the TOW has been set
-    bool flag_TOW_new;      //!< Flag indicating when a new TOW has been computed
+    bool flag_TOW_set;  //!< Flag indicating when the TOW has been set
+    bool flag_TOW_new;  //!< Flag indicating when a new TOW has been computed
 
-    double d_satClkCorr;    //!<  Satellite clock error
-    double d_dtr;           //!<  Relativistic clock correction term
-    double d_satClkDrift;   //!<  Satellite clock drift
+    double d_satClkCorr;   //!<  Satellite clock error
+    double d_dtr;          //!<  Relativistic clock correction term
+    double d_satClkDrift;  //!<  Satellite clock drift
 
-    double d_previous_tb; //!< Previous iode for the Glonass_Gnav_Ephemeris object. Used to determine when new data arrives
-    double d_previous_Na[GLONASS_L1_CA_NBR_SATS]; //!< Previous time for almanac of the Glonass_Gnav_Almanac object
+    double d_previous_tb;                          //!< Previous iode for the Glonass_Gnav_Ephemeris object. Used to determine when new data arrives
+    double d_previous_Na[GLONASS_L1_CA_NBR_SATS];  //!< Previous time for almanac of the Glonass_Gnav_Almanac object
 
     /*!
      * \brief Compute CRC for GLONASS GNAV strings

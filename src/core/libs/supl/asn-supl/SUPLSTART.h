@@ -4,8 +4,8 @@
  * 	found in "../supl-start.asn"
  */
 
-#ifndef	_SUPLSTART_H_
-#define	_SUPLSTART_H_
+#ifndef _SUPLSTART_H_
+#define _SUPLSTART_H_
 
 
 #include <asn_application.h>
@@ -23,17 +23,18 @@ extern "C" {
 struct QoP;
 
 /* SUPLSTART */
-typedef struct SUPLSTART {
-	SETCapabilities_t	 sETCapabilities;
-	LocationId_t	 locationId;
-	struct QoP	*qoP	/* OPTIONAL */;
-	/*
+typedef struct SUPLSTART
+{
+    SETCapabilities_t sETCapabilities;
+    LocationId_t locationId;
+    struct QoP *qoP /* OPTIONAL */;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SUPLSTART_t;
 
 /* Implementation */
@@ -46,5 +47,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SUPLSTART;
 /* Referred external types */
 #include "QoP.h"
 
-#endif	/* _SUPLSTART_H_ */
+#endif /* _SUPLSTART_H_ */
 #include <asn_internal.h>

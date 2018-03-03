@@ -50,12 +50,12 @@ class ConfigurationInterface;
  * I/Q samples over TCP.
  * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr)
  */
-class RtlTcpSignalSource: public GNSSBlockInterface
+class RtlTcpSignalSource : public GNSSBlockInterface
 {
 public:
     RtlTcpSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~RtlTcpSignalSource();
 

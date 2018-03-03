@@ -45,7 +45,7 @@ class gps_l1_ca_telemetry_decoder_cc;
 typedef boost::shared_ptr<gps_l1_ca_telemetry_decoder_cc> gps_l1_ca_telemetry_decoder_cc_sptr;
 
 gps_l1_ca_telemetry_decoder_cc_sptr
-gps_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+gps_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200E
@@ -55,20 +55,20 @@ class gps_l1_ca_telemetry_decoder_cc : public gr::block
 {
 public:
     ~gps_l1_ca_telemetry_decoder_cc();
-    void set_satellite(const Gnss_Satellite & satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                         //!< Set receiver's channel
+    void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
+    void set_channel(int channel);                        //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
      */
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
     friend gps_l1_ca_telemetry_decoder_cc_sptr
-    gps_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    gps_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
-    gps_l1_ca_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    gps_l1_ca_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
     bool gps_word_parityCheck(unsigned int gpsword);
 

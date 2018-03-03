@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfOTD_MsrElementRest_H_
-#define	_SeqOfOTD_MsrElementRest_H_
+#ifndef _SeqOfOTD_MsrElementRest_H_
+#define _SeqOfOTD_MsrElementRest_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct OTD_MsrElementRest;
 
 /* SeqOfOTD-MsrElementRest */
-typedef struct SeqOfOTD_MsrElementRest {
-	A_SEQUENCE_OF(struct OTD_MsrElementRest) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SeqOfOTD_MsrElementRest
+{
+    A_SEQUENCE_OF(struct OTD_MsrElementRest)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SeqOfOTD_MsrElementRest_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfOTD_MsrElementRest;
 /* Referred external types */
 #include "OTD-MsrElementRest.h"
 
-#endif	/* _SeqOfOTD_MsrElementRest_H_ */
+#endif /* _SeqOfOTD_MsrElementRest_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_OTD_MeasureInfo_5_Ext_H_
-#define	_OTD_MeasureInfo_5_Ext_H_
+#ifndef _OTD_MeasureInfo_5_Ext_H_
+#define _OTD_MeasureInfo_5_Ext_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* OTD-MeasureInfo-5-Ext */
-typedef SeqOfOTD_MsrElementRest_t	 OTD_MeasureInfo_5_Ext_t;
+typedef SeqOfOTD_MsrElementRest_t OTD_MeasureInfo_5_Ext_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasureInfo_5_Ext;
@@ -36,5 +36,5 @@ per_type_encoder_f OTD_MeasureInfo_5_Ext_encode_uper;
 }
 #endif
 
-#endif	/* _OTD_MeasureInfo_5_Ext_H_ */
+#endif /* _OTD_MeasureInfo_5_Ext_H_ */
 #include <asn_internal.h>

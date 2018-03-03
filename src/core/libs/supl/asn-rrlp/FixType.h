@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_FixType_H_
-#define	_FixType_H_
+#ifndef _FixType_H_
+#define _FixType_H_
 
 
 #include <asn_application.h>
@@ -19,12 +19,12 @@ extern "C" {
 
 /* Dependencies */
 typedef enum FixType {
-	FixType_twoDFix	= 0,
-	FixType_threeDFix	= 1
+    FixType_twoDFix = 0,
+    FixType_threeDFix = 1
 } e_FixType;
 
 /* FixType */
-typedef long	 FixType_t;
+typedef long FixType_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_FixType;
@@ -42,5 +42,5 @@ per_type_encoder_f FixType_encode_uper;
 }
 #endif
 
-#endif	/* _FixType_H_ */
+#endif /* _FixType_H_ */
 #include <asn_internal.h>

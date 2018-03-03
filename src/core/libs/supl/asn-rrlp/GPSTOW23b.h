@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GPSTOW23b_H_
-#define	_GPSTOW23b_H_
+#ifndef _GPSTOW23b_H_
+#define _GPSTOW23b_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* GPSTOW23b */
-typedef long	 GPSTOW23b_t;
+typedef long GPSTOW23b_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_GPSTOW23b;
@@ -36,5 +36,5 @@ per_type_encoder_f GPSTOW23b_encode_uper;
 }
 #endif
 
-#endif	/* _GPSTOW23b_H_ */
+#endif /* _GPSTOW23b_H_ */
 #include <asn_internal.h>

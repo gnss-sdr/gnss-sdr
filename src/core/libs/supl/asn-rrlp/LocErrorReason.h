@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_LocErrorReason_H_
-#define	_LocErrorReason_H_
+#ifndef _LocErrorReason_H_
+#define _LocErrorReason_H_
 
 
 #include <asn_application.h>
@@ -19,27 +19,27 @@ extern "C" {
 
 /* Dependencies */
 typedef enum LocErrorReason {
-	LocErrorReason_unDefined	= 0,
-	LocErrorReason_notEnoughBTSs	= 1,
-	LocErrorReason_notEnoughSats	= 2,
-	LocErrorReason_eotdLocCalAssDataMissing	= 3,
-	LocErrorReason_eotdAssDataMissing	= 4,
-	LocErrorReason_gpsLocCalAssDataMissing	= 5,
-	LocErrorReason_gpsAssDataMissing	= 6,
-	LocErrorReason_methodNotSupported	= 7,
-	LocErrorReason_notProcessed	= 8,
-	LocErrorReason_refBTSForGPSNotServingBTS	= 9,
-	LocErrorReason_refBTSForEOTDNotServingBTS	= 10,
-	/*
+    LocErrorReason_unDefined = 0,
+    LocErrorReason_notEnoughBTSs = 1,
+    LocErrorReason_notEnoughSats = 2,
+    LocErrorReason_eotdLocCalAssDataMissing = 3,
+    LocErrorReason_eotdAssDataMissing = 4,
+    LocErrorReason_gpsLocCalAssDataMissing = 5,
+    LocErrorReason_gpsAssDataMissing = 6,
+    LocErrorReason_methodNotSupported = 7,
+    LocErrorReason_notProcessed = 8,
+    LocErrorReason_refBTSForGPSNotServingBTS = 9,
+    LocErrorReason_refBTSForEOTDNotServingBTS = 10,
+    /*
 	 * Enumeration is extensible
 	 */
-	LocErrorReason_notEnoughGANSSSats	= 11,
-	LocErrorReason_ganssAssDataMissing	= 12,
-	LocErrorReason_refBTSForGANSSNotServingBTS	= 13
+    LocErrorReason_notEnoughGANSSSats = 11,
+    LocErrorReason_ganssAssDataMissing = 12,
+    LocErrorReason_refBTSForGANSSNotServingBTS = 13
 } e_LocErrorReason;
 
 /* LocErrorReason */
-typedef ENUMERATED_t	 LocErrorReason_t;
+typedef ENUMERATED_t LocErrorReason_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_LocErrorReason;
@@ -57,5 +57,5 @@ per_type_encoder_f LocErrorReason_encode_uper;
 }
 #endif
 
-#endif	/* _LocErrorReason_H_ */
+#endif /* _LocErrorReason_H_ */
 #include <asn_internal.h>

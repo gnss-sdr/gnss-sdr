@@ -40,9 +40,9 @@
 
 std::deque<bool> l5i_xa_shift(std::deque<bool> xa)
 {
-    if (xa == std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,0,1})
+    if (xa == std::deque<bool>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1})
         {
-            return std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,1,1};
+            return std::deque<bool>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
         }
     else
         {
@@ -55,9 +55,9 @@ std::deque<bool> l5i_xa_shift(std::deque<bool> xa)
 
 std::deque<bool> l5q_xa_shift(std::deque<bool> xa)
 {
-    if (xa == std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,0,1})
+    if (xa == std::deque<bool>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1})
         {
-            return std::deque<bool>{1,1,1,1,1,1,1,1,1,1,1,1,1};
+            return std::deque<bool>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
         }
     else
         {
@@ -78,7 +78,7 @@ std::deque<bool> l5i_xb_shift(std::deque<bool> xb)
 
 std::deque<bool> l5q_xb_shift(std::deque<bool> xb)
 {
-    std::deque<bool> out(xb.begin(), xb.end()-1);
+    std::deque<bool> out(xb.begin(), xb.end() - 1);
     out.push_front(xb[12] xor xb[11] xor xb[7] xor xb[6] xor xb[5] xor xb[3] xor xb[2] xor xb[0]);
     return out;
 }
@@ -86,7 +86,7 @@ std::deque<bool> l5q_xb_shift(std::deque<bool> xb)
 
 std::deque<bool> make_l5i_xa()
 {
-    std::deque<bool> xa = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+    std::deque<bool> xa = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     std::deque<bool> y(GPS_L5i_CODE_LENGTH_CHIPS, 0);
 
     for (int i = 0; i < GPS_L5i_CODE_LENGTH_CHIPS; i++)
@@ -100,8 +100,8 @@ std::deque<bool> make_l5i_xa()
 
 std::deque<bool> make_l5i_xb()
 {
-    std::deque<bool> xb = {1,1,1,1,1,1,1,1,1,1,1,1,1};
-    std::deque<bool> y(GPS_L5i_CODE_LENGTH_CHIPS,0);
+    std::deque<bool> xb = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    std::deque<bool> y(GPS_L5i_CODE_LENGTH_CHIPS, 0);
 
     for (int i = 0; i < GPS_L5i_CODE_LENGTH_CHIPS; i++)
         {
@@ -114,7 +114,7 @@ std::deque<bool> make_l5i_xb()
 
 std::deque<bool> make_l5q_xa()
 {
-    std::deque<bool> xa = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+    std::deque<bool> xa = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     std::deque<bool> y(GPS_L5q_CODE_LENGTH_CHIPS, 0);
 
     for (int i = 0; i < GPS_L5q_CODE_LENGTH_CHIPS; i++)
@@ -128,7 +128,7 @@ std::deque<bool> make_l5q_xa()
 
 std::deque<bool> make_l5q_xb()
 {
-    std::deque<bool> xb = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+    std::deque<bool> xb = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     std::deque<bool> y(GPS_L5q_CODE_LENGTH_CHIPS, 0);
 
     for (int i = 0; i < GPS_L5q_CODE_LENGTH_CHIPS; i++)
@@ -140,7 +140,7 @@ std::deque<bool> make_l5q_xb()
 }
 
 
-void make_l5i(int32_t * _dest, int prn)
+void make_l5i(int32_t* _dest, int prn)
 {
     int xb_offset = GPS_L5i_INIT_REG[prn];
 
@@ -160,7 +160,7 @@ void make_l5i(int32_t * _dest, int prn)
 }
 
 
-void make_l5q(int32_t * _dest, int prn)
+void make_l5q(int32_t* _dest, int prn)
 {
     int xb_offset = GPS_L5q_INIT_REG[prn];
 
@@ -186,7 +186,7 @@ void gps_l5i_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
 
     if (_prn > 0 and _prn < 51)
         {
-          make_l5i(_code, _prn - 1);
+            make_l5i(_code, _prn - 1);
         }
 
     for (signed int i = 0; i < GPS_L5i_CODE_LENGTH_CHIPS; i++)
@@ -206,7 +206,7 @@ void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _
     int32_t* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
-          make_l5i(_code, _prn - 1);
+            make_l5i(_code, _prn - 1);
         }
 
     signed int _samplesPerCode, _codeValueIndex;
@@ -218,7 +218,7 @@ void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _
     _samplesPerCode = static_cast<int>(static_cast<double>(_fs) / (static_cast<double>(GPS_L5i_CODE_RATE_HZ) / static_cast<double>(_codeLength)));
 
     //--- Find time constants --------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);   // Sampling period in sec
+    _ts = 1.0 / static_cast<float>(_fs);                   // Sampling period in sec
     _tc = 1.0 / static_cast<float>(GPS_L5i_CODE_RATE_HZ);  // C/A chip period in sec
 
     //float aux;
@@ -240,7 +240,7 @@ void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0); //repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);  //repeat the chip -> upsample
                 }
         }
     delete[] _code;
@@ -253,7 +253,7 @@ void gps_l5q_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
 
     if (_prn > 0 and _prn < 51)
         {
-          make_l5q(_code, _prn - 1);
+            make_l5q(_code, _prn - 1);
         }
 
     for (signed int i = 0; i < GPS_L5q_CODE_LENGTH_CHIPS; i++)
@@ -273,7 +273,7 @@ void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _
     int32_t* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
-          make_l5q(_code, _prn - 1);
+            make_l5q(_code, _prn - 1);
         }
 
     signed int _samplesPerCode, _codeValueIndex;
@@ -285,7 +285,7 @@ void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _
     _samplesPerCode = static_cast<int>(static_cast<double>(_fs) / (static_cast<double>(GPS_L5q_CODE_RATE_HZ) / static_cast<double>(_codeLength)));
 
     //--- Find time constants --------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);   // Sampling period in sec
+    _ts = 1.0 / static_cast<float>(_fs);                   // Sampling period in sec
     _tc = 1.0 / static_cast<float>(GPS_L5q_CODE_RATE_HZ);  // C/A chip period in sec
 
     //float aux;
@@ -307,10 +307,8 @@ void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0); //repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);  //repeat the chip -> upsample
                 }
         }
     delete[] _code;
 }
-
-

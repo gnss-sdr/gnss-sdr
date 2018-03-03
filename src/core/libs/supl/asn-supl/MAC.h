@@ -4,8 +4,8 @@
  * 	found in "../supl-init.asn"
  */
 
-#ifndef	_MAC_H_
-#define	_MAC_H_
+#ifndef _MAC_H_
+#define _MAC_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* MAC */
-typedef BIT_STRING_t	 MAC_t;
+typedef BIT_STRING_t MAC_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_MAC;
@@ -36,5 +36,5 @@ per_type_encoder_f MAC_encode_uper;
 }
 #endif
 
-#endif	/* _MAC_H_ */
+#endif /* _MAC_H_ */
 #include <asn_internal.h>

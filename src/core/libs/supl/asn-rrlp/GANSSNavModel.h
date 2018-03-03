@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSNavModel_H_
-#define	_GANSSNavModel_H_
+#ifndef _GANSSNavModel_H_
+#define _GANSSNavModel_H_
 
 
 #include <asn_application.h>
@@ -20,15 +20,16 @@ extern "C" {
 #endif
 
 /* GANSSNavModel */
-typedef struct GANSSNavModel {
-	long	 nonBroadcastIndFlag;
-	long	*toeMSB	/* OPTIONAL */;
-	long	*eMSB	/* OPTIONAL */;
-	long	*sqrtAMBS	/* OPTIONAL */;
-	SeqOfGANSSSatelliteElement_t	 ganssSatelliteList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GANSSNavModel
+{
+    long nonBroadcastIndFlag;
+    long *toeMSB /* OPTIONAL */;
+    long *eMSB /* OPTIONAL */;
+    long *sqrtAMBS /* OPTIONAL */;
+    SeqOfGANSSSatelliteElement_t ganssSatelliteList;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GANSSNavModel_t;
 
 /* Implementation */
@@ -38,5 +39,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSSNavModel;
 }
 #endif
 
-#endif	/* _GANSSNavModel_H_ */
+#endif /* _GANSSNavModel_H_ */
 #include <asn_internal.h>

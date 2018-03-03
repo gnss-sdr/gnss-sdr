@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_UlPseudoSegInd_H_
-#define	_UlPseudoSegInd_H_
+#ifndef _UlPseudoSegInd_H_
+#define _UlPseudoSegInd_H_
 
 
 #include <asn_application.h>
@@ -19,12 +19,12 @@ extern "C" {
 
 /* Dependencies */
 typedef enum UlPseudoSegInd {
-	UlPseudoSegInd_firstOfMany	= 0,
-	UlPseudoSegInd_secondOfMany	= 1
+    UlPseudoSegInd_firstOfMany = 0,
+    UlPseudoSegInd_secondOfMany = 1
 } e_UlPseudoSegInd;
 
 /* UlPseudoSegInd */
-typedef ENUMERATED_t	 UlPseudoSegInd_t;
+typedef ENUMERATED_t UlPseudoSegInd_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_UlPseudoSegInd;
@@ -42,5 +42,5 @@ per_type_encoder_f UlPseudoSegInd_encode_uper;
 }
 #endif
 
-#endif	/* _UlPseudoSegInd_H_ */
+#endif /* _UlPseudoSegInd_H_ */
 #include <asn_internal.h>

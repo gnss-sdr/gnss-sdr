@@ -2,8 +2,8 @@
  * Copyright (c) 2003, 2005 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	_INTEGER_H_
-#define	_INTEGER_H_
+#ifndef _INTEGER_H_
+#define _INTEGER_H_
 
 #include <asn_application.h>
 #include <asn_codecs_prim.h>
@@ -17,21 +17,23 @@ typedef ASN__PRIMITIVE_TYPE_t INTEGER_t;
 extern asn_TYPE_descriptor_t asn_DEF_INTEGER;
 
 /* Map with <tag> to integer value association */
-typedef struct asn_INTEGER_enum_map_s {
-	long		 nat_value;	/* associated native integer value */
-	size_t		 enum_len;	/* strlen("tag") */
-	const char	*enum_name;	/* "tag" */
+typedef struct asn_INTEGER_enum_map_s
+{
+    long nat_value;        /* associated native integer value */
+    size_t enum_len;       /* strlen("tag") */
+    const char *enum_name; /* "tag" */
 } asn_INTEGER_enum_map_t;
 
 /* This type describes an enumeration for INTEGER and ENUMERATED types */
-typedef struct asn_INTEGER_specifics_s {
-	asn_INTEGER_enum_map_t *value2enum;	/* N -> "tag"; sorted by N */
-	unsigned int *enum2value;		/* "tag" => N; sorted by tag */
-	int map_count;				/* Elements in either map */
-	int extension;				/* This map is extensible */
-	int strict_enumeration;			/* Enumeration set is fixed */
-	int field_width;			/* Size of native integer */
-	int field_unsigned;			/* Signed=0, unsigned=1 */
+typedef struct asn_INTEGER_specifics_s
+{
+    asn_INTEGER_enum_map_t *value2enum; /* N -> "tag"; sorted by N */
+    unsigned int *enum2value;           /* "tag" => N; sorted by tag */
+    int map_count;                      /* Elements in either map */
+    int extension;                      /* This map is extensible */
+    int strict_enumeration;             /* Enumeration set is fixed */
+    int field_width;                    /* Size of native integer */
+    int field_unsigned;                 /* Signed=0, unsigned=1 */
 } asn_INTEGER_specifics_t;
 
 asn_struct_print_f INTEGER_print;
@@ -66,4 +68,4 @@ const asn_INTEGER_enum_map_t *INTEGER_map_value2enum(asn_INTEGER_specifics_t *sp
 }
 #endif
 
-#endif	/* _INTEGER_H_ */
+#endif /* _INTEGER_H_ */

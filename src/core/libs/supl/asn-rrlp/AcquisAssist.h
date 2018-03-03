@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_AcquisAssist_H_
-#define	_AcquisAssist_H_
+#ifndef _AcquisAssist_H_
+#define _AcquisAssist_H_
 
 
 #include <asn_application.h>
@@ -20,12 +20,13 @@ extern "C" {
 #endif
 
 /* AcquisAssist */
-typedef struct AcquisAssist {
-	TimeRelation_t	 timeRelation;
-	SeqOfAcquisElement_t	 acquisList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct AcquisAssist
+{
+    TimeRelation_t timeRelation;
+    SeqOfAcquisElement_t acquisList;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } AcquisAssist_t;
 
 /* Implementation */
@@ -35,5 +36,5 @@ extern asn_TYPE_descriptor_t asn_DEF_AcquisAssist;
 }
 #endif
 
-#endif	/* _AcquisAssist_H_ */
+#endif /* _AcquisAssist_H_ */
 #include <asn_internal.h>

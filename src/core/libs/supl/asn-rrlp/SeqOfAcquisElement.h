@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfAcquisElement_H_
-#define	_SeqOfAcquisElement_H_
+#ifndef _SeqOfAcquisElement_H_
+#define _SeqOfAcquisElement_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct AcquisElement;
 
 /* SeqOfAcquisElement */
-typedef struct SeqOfAcquisElement {
-	A_SEQUENCE_OF(struct AcquisElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SeqOfAcquisElement
+{
+    A_SEQUENCE_OF(struct AcquisElement)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SeqOfAcquisElement_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfAcquisElement;
 /* Referred external types */
 #include "AcquisElement.h"
 
-#endif	/* _SeqOfAcquisElement_H_ */
+#endif /* _SeqOfAcquisElement_H_ */
 #include <asn_internal.h>

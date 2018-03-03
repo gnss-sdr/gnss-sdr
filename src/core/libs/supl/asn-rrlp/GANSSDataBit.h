@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSDataBit_H_
-#define	_GANSSDataBit_H_
+#ifndef _GANSSDataBit_H_
+#define _GANSSDataBit_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* GANSSDataBit */
-typedef long	 GANSSDataBit_t;
+typedef long GANSSDataBit_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_GANSSDataBit;
@@ -36,5 +36,5 @@ per_type_encoder_f GANSSDataBit_encode_uper;
 }
 #endif
 
-#endif	/* _GANSSDataBit_H_ */
+#endif /* _GANSSDataBit_H_ */
 #include <asn_internal.h>

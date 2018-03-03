@@ -52,10 +52,10 @@ class ConfigurationInterface;
 class GpsL1CaDllPllCAidTracking : public TrackingInterface
 {
 public:
-  GpsL1CaDllPllCAidTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+    GpsL1CaDllPllCAidTracking(ConfigurationInterface* configuration,
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaDllPllCAidTracking();
 
@@ -104,4 +104,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_H_
+#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_H_

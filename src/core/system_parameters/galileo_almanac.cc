@@ -93,4 +93,3 @@ Galileo_Almanac::Galileo_Almanac()
     t_0G_10 = 0.0;
     WN_0G_10 = 0.0;
 }
-

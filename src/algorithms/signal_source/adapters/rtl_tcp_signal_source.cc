@@ -43,10 +43,8 @@ using google::LogMessage;
 
 
 RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                role_(role), in_stream_(in_stream), out_stream_(out_stream),
-                queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -55,7 +53,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     samples_ = configuration->property(role + ".samples", 0);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename",
-            default_dump_file);
+        default_dump_file);
 
     // rtl_tcp PARAMTERS
     std::string default_address = "127.0.0.1";
@@ -134,38 +132,39 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
 
 
 RtlTcpSignalSource::~RtlTcpSignalSource()
-{}
+{
+}
 
 
 void RtlTcpSignalSource::MakeBlock()
 {
     try
-    {
+        {
             std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
-            LOG (INFO) << "Connecting to " << address_ << ":" << port_;
-            signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
-    }
-    catch( const boost::exception & e )
-    {
+            LOG(INFO) << "Connecting to " << address_ << ":" << port_;
+            signal_source_ = rtl_tcp_make_signal_source_c(address_, port_, flip_iq_);
+        }
+    catch (const boost::exception& e)
+        {
             LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
-            throw std::runtime_error( "Failure connecting to the device" );
-    }
+            throw std::runtime_error("Failure connecting to the device");
+        }
 }
 
 
 void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
 {
-    if ( samples_ )
+    if (samples_)
         {
-            top_block->connect (signal_source_, 0, valve_, 0);
+            top_block->connect(signal_source_, 0, valve_, 0);
             DLOG(INFO) << "connected rtl tcp source to valve";
-            if ( dump_ )
+            if (dump_)
                 {
                     top_block->connect(valve_, 0, file_sink_, 0);
                     DLOG(INFO) << "connected valve to file sink";
                 }
         }
-    else if ( dump_ )
+    else if (dump_)
         {
             top_block->connect(signal_source_, 0, file_sink_, 0);
             DLOG(INFO) << "connected rtl tcp source to file sink";
@@ -175,15 +174,15 @@ void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
 
 void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-    if ( samples_ )
+    if (samples_)
         {
-            top_block->disconnect (signal_source_, 0, valve_, 0);
-            if ( dump_ )
+            top_block->disconnect(signal_source_, 0, valve_, 0);
+            if (dump_)
                 {
                     top_block->disconnect(valve_, 0, file_sink_, 0);
                 }
         }
-    else if ( dump_ )
+    else if (dump_)
         {
             top_block->disconnect(signal_source_, 0, file_sink_, 0);
         }

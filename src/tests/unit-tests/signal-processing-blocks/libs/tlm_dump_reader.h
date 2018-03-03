@@ -54,4 +54,4 @@ private:
     std::ifstream d_dump_file;
 };
 
-#endif //GNSS_SDR_TLM_DUMP_READER_H
+#endif  //GNSS_SDR_TLM_DUMP_READER_H

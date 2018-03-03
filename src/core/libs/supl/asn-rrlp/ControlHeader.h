@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ControlHeader_H_
-#define	_ControlHeader_H_
+#ifndef _ControlHeader_H_
+#define _ControlHeader_H_
 
 
 #include <asn_application.h>
@@ -29,19 +29,20 @@ struct AcquisAssist;
 struct SeqOf_BadSatelliteSet;
 
 /* ControlHeader */
-typedef struct ControlHeader {
-	struct ReferenceTime	*referenceTime	/* OPTIONAL */;
-	struct RefLocation	*refLocation	/* OPTIONAL */;
-	struct DGPSCorrections	*dgpsCorrections	/* OPTIONAL */;
-	struct NavigationModel	*navigationModel	/* OPTIONAL */;
-	struct IonosphericModel	*ionosphericModel	/* OPTIONAL */;
-	struct UTCModel	*utcModel	/* OPTIONAL */;
-	struct Almanac	*almanac	/* OPTIONAL */;
-	struct AcquisAssist	*acquisAssist	/* OPTIONAL */;
-	struct SeqOf_BadSatelliteSet	*realTimeIntegrity	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct ControlHeader
+{
+    struct ReferenceTime *referenceTime /* OPTIONAL */;
+    struct RefLocation *refLocation /* OPTIONAL */;
+    struct DGPSCorrections *dgpsCorrections /* OPTIONAL */;
+    struct NavigationModel *navigationModel /* OPTIONAL */;
+    struct IonosphericModel *ionosphericModel /* OPTIONAL */;
+    struct UTCModel *utcModel /* OPTIONAL */;
+    struct Almanac *almanac /* OPTIONAL */;
+    struct AcquisAssist *acquisAssist /* OPTIONAL */;
+    struct SeqOf_BadSatelliteSet *realTimeIntegrity /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } ControlHeader_t;
 
 /* Implementation */
@@ -62,5 +63,5 @@ extern asn_TYPE_descriptor_t asn_DEF_ControlHeader;
 #include "AcquisAssist.h"
 #include "SeqOf-BadSatelliteSet.h"
 
-#endif	/* _ControlHeader_H_ */
+#endif /* _ControlHeader_H_ */
 #include <asn_internal.h>

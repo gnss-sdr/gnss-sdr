@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_UARFCN_H_
-#define	_UARFCN_H_
+#ifndef _UARFCN_H_
+#define _UARFCN_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* UARFCN */
-typedef long	 UARFCN_t;
+typedef long UARFCN_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_UARFCN;
@@ -36,5 +36,5 @@ per_type_encoder_f UARFCN_encode_uper;
 }
 #endif
 
-#endif	/* _UARFCN_H_ */
+#endif /* _UARFCN_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_BSIC_H_
-#define	_BSIC_H_
+#ifndef _BSIC_H_
+#define _BSIC_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* BSIC */
-typedef long	 BSIC_t;
+typedef long BSIC_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_BSIC;
@@ -36,5 +36,5 @@ per_type_encoder_f BSIC_encode_uper;
 }
 #endif
 
-#endif	/* _BSIC_H_ */
+#endif /* _BSIC_H_ */
 #include <asn_internal.h>

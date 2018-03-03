@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_AntiSpoofFlag_H_
-#define	_AntiSpoofFlag_H_
+#ifndef _AntiSpoofFlag_H_
+#define _AntiSpoofFlag_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* AntiSpoofFlag */
-typedef long	 AntiSpoofFlag_t;
+typedef long AntiSpoofFlag_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_AntiSpoofFlag;
@@ -36,5 +36,5 @@ per_type_encoder_f AntiSpoofFlag_encode_uper;
 }
 #endif
 
-#endif	/* _AntiSpoofFlag_H_ */
+#endif /* _AntiSpoofFlag_H_ */
 #include <asn_internal.h>

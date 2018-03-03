@@ -45,9 +45,8 @@
 using google::LogMessage;
 
 GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -63,20 +62,20 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     float early_late_space_chips;
     float very_early_late_space_chips;
     size_t port_ch0;
-    item_type = configuration->property(role + ".item_type",default_item_type);
+    item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
-    if(FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+    if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
-    if(FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.15);
     very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", 0.6);
     port_ch0 = configuration->property(role + ".port_ch0", 2060);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename); //unused!
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
     vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
@@ -84,16 +83,16 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = galileo_e1_tcp_connector_make_tracking_cc(
-                    f_if,
-                    fs_in,
-                    vector_length,
-                    dump,
-                    dump_filename,
-                    pll_bw_hz,
-                    dll_bw_hz,
-                    early_late_space_chips,
-                    very_early_late_space_chips,
-                    port_ch0);
+                f_if,
+                fs_in,
+                vector_length,
+                dump,
+                dump_filename,
+                pll_bw_hz,
+                dll_bw_hz,
+                early_late_space_chips,
+                very_early_late_space_chips,
+                port_ch0);
         }
     else
         {
@@ -106,7 +105,8 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
 
 
 GalileoE1TcpConnectorTracking::~GalileoE1TcpConnectorTracking()
-{}
+{
+}
 
 
 void GalileoE1TcpConnectorTracking::start_tracking()
@@ -131,13 +131,17 @@ void GalileoE1TcpConnectorTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchr
 
 void GalileoE1TcpConnectorTracking::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 void GalileoE1TcpConnectorTracking::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
@@ -150,4 +154,3 @@ gr::basic_block_sptr GalileoE1TcpConnectorTracking::get_right_block()
 {
     return tracking_;
 }
-

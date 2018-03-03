@@ -4,8 +4,8 @@
  * 	found in "../supl-end.asn"
  */
 
-#ifndef	_SUPLEND_H_
-#define	_SUPLEND_H_
+#ifndef _SUPLEND_H_
+#define _SUPLEND_H_
 
 
 #include <asn_application.h>
@@ -23,17 +23,18 @@ extern "C" {
 struct Position;
 
 /* SUPLEND */
-typedef struct SUPLEND {
-	struct Position	*position	/* OPTIONAL */;
-	StatusCode_t	*statusCode	/* OPTIONAL */;
-	Ver_t	*ver	/* OPTIONAL */;
-	/*
+typedef struct SUPLEND
+{
+    struct Position *position /* OPTIONAL */;
+    StatusCode_t *statusCode /* OPTIONAL */;
+    Ver_t *ver /* OPTIONAL */;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SUPLEND_t;
 
 /* Implementation */
@@ -46,5 +47,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SUPLEND;
 /* Referred external types */
 #include "Position.h"
 
-#endif	/* _SUPLEND_H_ */
+#endif /* _SUPLEND_H_ */
 #include <asn_internal.h>

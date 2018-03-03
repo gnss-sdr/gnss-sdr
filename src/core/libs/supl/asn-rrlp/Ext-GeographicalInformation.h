@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_Ext_GeographicalInformation_H_
-#define	_Ext_GeographicalInformation_H_
+#ifndef _Ext_GeographicalInformation_H_
+#define _Ext_GeographicalInformation_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* Ext-GeographicalInformation */
-typedef OCTET_STRING_t	 Ext_GeographicalInformation_t;
+typedef OCTET_STRING_t Ext_GeographicalInformation_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_Ext_GeographicalInformation;
@@ -36,5 +36,5 @@ per_type_encoder_f Ext_GeographicalInformation_encode_uper;
 }
 #endif
 
-#endif	/* _Ext_GeographicalInformation_H_ */
+#endif /* _Ext_GeographicalInformation_H_ */
 #include <asn_internal.h>

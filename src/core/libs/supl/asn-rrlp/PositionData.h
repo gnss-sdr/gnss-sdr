@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_PositionData_H_
-#define	_PositionData_H_
+#ifndef _PositionData_H_
+#define _PositionData_H_
 
 
 #include <asn_application.h>
@@ -19,13 +19,13 @@ extern "C" {
 
 /* Dependencies */
 typedef enum PositionData {
-	PositionData_e_otd	= 0,
-	PositionData_gps	= 1,
-	PositionData_galileo	= 2
+    PositionData_e_otd = 0,
+    PositionData_gps = 1,
+    PositionData_galileo = 2
 } e_PositionData;
 
 /* PositionData */
-typedef BIT_STRING_t	 PositionData_t;
+typedef BIT_STRING_t PositionData_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_PositionData;
@@ -43,5 +43,5 @@ per_type_encoder_f PositionData_encode_uper;
 }
 #endif
 
-#endif	/* _PositionData_H_ */
+#endif /* _PositionData_H_ */
 #include <asn_internal.h>

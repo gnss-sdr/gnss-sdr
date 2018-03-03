@@ -4,8 +4,8 @@
  * 	found in "../supl-start.asn"
  */
 
-#ifndef	_PosProtocol_H_
-#define	_PosProtocol_H_
+#ifndef _PosProtocol_H_
+#define _PosProtocol_H_
 
 
 #include <asn_application.h>
@@ -19,17 +19,18 @@ extern "C" {
 #endif
 
 /* PosProtocol */
-typedef struct PosProtocol {
-	BOOLEAN_t	 tia801;
-	BOOLEAN_t	 rrlp;
-	BOOLEAN_t	 rrc;
-	/*
+typedef struct PosProtocol
+{
+    BOOLEAN_t tia801;
+    BOOLEAN_t rrlp;
+    BOOLEAN_t rrc;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } PosProtocol_t;
 
 /* Implementation */
@@ -39,5 +40,5 @@ extern asn_TYPE_descriptor_t asn_DEF_PosProtocol;
 }
 #endif
 
-#endif	/* _PosProtocol_H_ */
+#endif /* _PosProtocol_H_ */
 #include <asn_internal.h>

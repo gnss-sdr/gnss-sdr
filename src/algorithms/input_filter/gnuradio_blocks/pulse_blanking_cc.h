@@ -44,7 +44,6 @@ pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int length_, int n_segm
 class pulse_blanking_cc : public gr::block
 {
 private:
-    
     int length_;
     int n_segments;
     int n_segments_est;
@@ -54,19 +53,17 @@ private:
     float noise_power_estimation;
     float thres_;
     float pfa;
-    gr_complex* zeros_;
-    
+    gr_complex *zeros_;
+
 public:
-    
     pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset);
-    
+
     ~pulse_blanking_cc();
 
-    int general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-    
+    int general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
-    
 };
 
 #endif

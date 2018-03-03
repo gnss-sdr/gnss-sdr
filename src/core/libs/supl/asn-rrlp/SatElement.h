@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SatElement_H_
-#define	_SatElement_H_
+#ifndef _SatElement_H_
+#define _SatElement_H_
 
 
 #include <asn_application.h>
@@ -20,19 +20,20 @@ extern "C" {
 #endif
 
 /* SatElement */
-typedef struct SatElement {
-	SatelliteID_t	 satelliteID;
-	long	 iode;
-	long	 udre;
-	long	 pseudoRangeCor;
-	long	 rangeRateCor;
-	long	 deltaPseudoRangeCor2;
-	long	 deltaRangeRateCor2;
-	long	 deltaPseudoRangeCor3;
-	long	 deltaRangeRateCor3;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SatElement
+{
+    SatelliteID_t satelliteID;
+    long iode;
+    long udre;
+    long pseudoRangeCor;
+    long rangeRateCor;
+    long deltaPseudoRangeCor2;
+    long deltaRangeRateCor2;
+    long deltaPseudoRangeCor3;
+    long deltaRangeRateCor3;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SatElement_t;
 
 /* Implementation */
@@ -42,5 +43,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SatElement;
 }
 #endif
 
-#endif	/* _SatElement_H_ */
+#endif /* _SatElement_H_ */
 #include <asn_internal.h>

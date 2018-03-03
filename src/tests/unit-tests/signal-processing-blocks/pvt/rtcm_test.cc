@@ -98,7 +98,6 @@ TEST(RtcmTest, BinToHex)
 }
 
 
-
 TEST(RtcmTest, HexToInt)
 {
     auto rtcm = std::make_shared<Rtcm>();
@@ -114,7 +113,7 @@ TEST(RtcmTest, HexToUint)
 {
     auto rtcm = std::make_shared<Rtcm>();
     long unsigned int expected1 = 42;
-    EXPECT_EQ(expected1,  rtcm->hex_to_uint(rtcm->bin_to_hex("00101010")));
+    EXPECT_EQ(expected1, rtcm->hex_to_uint(rtcm->bin_to_hex("00101010")));
 }
 
 
@@ -161,7 +160,7 @@ TEST(RtcmTest, BinToBinaryData)
     std::string bin_str("1101101011010110");
     std::string data_str = rtcm->bin_to_binary_data(bin_str);
 
-    std::string test_binary = data_str.substr(0,1);
+    std::string test_binary = data_str.substr(0, 1);
     std::string test_bin = rtcm->binary_data_to_bin(test_binary);
     std::string test_hex = rtcm->bin_to_hex(test_bin);
     EXPECT_EQ(0, test_hex.compare("DA"));
@@ -253,7 +252,6 @@ TEST(RtcmTest, MT1005)
 }
 
 
-
 TEST(RtcmTest, MT1019)
 {
     auto rtcm = std::make_shared<Rtcm>();
@@ -271,7 +269,7 @@ TEST(RtcmTest, MT1019)
     EXPECT_EQ(0, rtcm->read_MT1019(tx_msg, gps_eph_read));
     EXPECT_EQ(static_cast<unsigned int>(3), gps_eph_read.i_satellite_PRN);
     EXPECT_DOUBLE_EQ(4, gps_eph_read.d_IODC);
-    EXPECT_DOUBLE_EQ( 2.0 * E_LSB, gps_eph_read.d_e_eccentricity);
+    EXPECT_DOUBLE_EQ(2.0 * E_LSB, gps_eph_read.d_e_eccentricity);
     EXPECT_EQ(expected_true, gps_eph_read.b_fit_interval_flag);
     EXPECT_EQ(1, rtcm->read_MT1019(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gps_eph_read));
 }
@@ -289,23 +287,23 @@ TEST(RtcmTest, MT1020)
     Glonass_Gnav_Utc_Model gnav_utc_model_read = Glonass_Gnav_Utc_Model();
 
     // Perform data read and print of special values types
-    gnav_ephemeris.d_P_1        = 15;
+    gnav_ephemeris.d_P_1 = 15;
     // Bit distribution per fields
-    gnav_ephemeris.d_t_k        = 7560;
+    gnav_ephemeris.d_t_k = 7560;
     // Glonass signed values
-    gnav_ephemeris.d_VXn        = -0.490900039672852;
+    gnav_ephemeris.d_VXn = -0.490900039672852;
     // Bit distribution per fields dependant on other factors
-    gnav_ephemeris.d_t_b        = 8100;
+    gnav_ephemeris.d_t_b = 8100;
     // Binary flag representation
-    gnav_ephemeris.d_P_3        = 1;
+    gnav_ephemeris.d_P_3 = 1;
 
     std::string tx_msg = rtcm->print_MT1020(gnav_ephemeris, gnav_utc_model);
 
     EXPECT_EQ(0, rtcm->read_MT1020(tx_msg, gnav_ephemeris_read, gnav_utc_model_read));
     EXPECT_EQ(gnav_ephemeris.d_P_1, gnav_ephemeris_read.d_P_1);
     EXPECT_TRUE(gnav_ephemeris.d_t_b - gnav_ephemeris_read.d_t_b < FLT_EPSILON);
-    EXPECT_TRUE( gnav_ephemeris.d_VXn - gnav_ephemeris_read.d_VXn < FLT_EPSILON);
-    EXPECT_TRUE( gnav_ephemeris.d_t_k - gnav_ephemeris.d_t_k < FLT_EPSILON);
+    EXPECT_TRUE(gnav_ephemeris.d_VXn - gnav_ephemeris_read.d_VXn < FLT_EPSILON);
+    EXPECT_TRUE(gnav_ephemeris.d_t_k - gnav_ephemeris.d_t_k < FLT_EPSILON);
     EXPECT_EQ(gnav_ephemeris.d_P_3, gnav_ephemeris_read.d_P_3);
     EXPECT_EQ(1, rtcm->read_MT1020(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gnav_ephemeris_read, gnav_utc_model_read));
 }
@@ -318,7 +316,7 @@ TEST(RtcmTest, MT1029)
     unsigned int ref_id = 23;
     double obs_time = 0;
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
-    std::string m1029 = rtcm->bin_to_hex(rtcm->binary_data_to_bin(rtcm->print_MT1029(ref_id, gps_eph,  obs_time, s_test)));
+    std::string m1029 = rtcm->bin_to_hex(rtcm->binary_data_to_bin(rtcm->print_MT1029(ref_id, gps_eph, obs_time, s_test)));
     std::string encoded_text = m1029.substr(24, 60);
     std::string expected_encoded_text("5554462D3820D0BFD180D0BED0B2D0B5D180D0BAD0B02077C3B672746572");
     EXPECT_EQ(0, expected_encoded_text.compare(encoded_text));
@@ -345,7 +343,7 @@ TEST(RtcmTest, MT1045)
 
     EXPECT_EQ(0, rtcm->read_MT1045(tx_msg, gal_eph_read));
     EXPECT_EQ(expected_true, gal_eph_read.E5a_DVS);
-    EXPECT_DOUBLE_EQ( 53.0 * OMEGA_dot_3_LSB, gal_eph_read.OMEGA_dot_3);
+    EXPECT_DOUBLE_EQ(53.0 * OMEGA_dot_3_LSB, gal_eph_read.OMEGA_dot_3);
     EXPECT_EQ(static_cast<unsigned int>(5), gal_eph_read.i_satellite_PRN);
     EXPECT_EQ(1, rtcm->read_MT1045(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gal_eph_read));
 }
@@ -422,24 +420,24 @@ TEST(RtcmTest, MSMCell)
     //glo_gnav_eph.i_satellite_PRN = gnss_synchro.PRN;
 
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
-            {},
-            gal_eph,
-			{},
-            obs_time,
-            pseudoranges,
-            ref_id,
-            clock_steering_indicator,
-            external_clock_indicator,
-            smooth_int,
-            divergence_free,
-            more_messages);
+        {},
+        gal_eph,
+        {},
+        obs_time,
+        pseudoranges,
+        ref_id,
+        clock_steering_indicator,
+        external_clock_indicator,
+        smooth_int,
+        divergence_free,
+        more_messages);
 
     std::string MSM1_bin = rtcm->binary_data_to_bin(MSM1);
     unsigned int Nsat = 4;
     unsigned int Nsig = 3;
     unsigned int size_header = 14;
     unsigned int size_msg_length = 10;
-    EXPECT_EQ(0, MSM1_bin.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010101100")); // check cell mask
+    EXPECT_EQ(0, MSM1_bin.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010101100"));  // check cell mask
 
     std::map<int, Gnss_Synchro> pseudoranges2;
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro6));
@@ -450,19 +448,19 @@ TEST(RtcmTest, MSMCell)
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(5, gnss_synchro));
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(6, gnss_synchro));
     std::string MSM1_2 = rtcm->print_MSM_1(gps_eph,
-             {},
-             gal_eph,
-			 {},
-             obs_time,
-             pseudoranges2,
-             ref_id,
-             clock_steering_indicator,
-             external_clock_indicator,
-             smooth_int,
-             divergence_free,
-             more_messages);
+        {},
+        gal_eph,
+        {},
+        obs_time,
+        pseudoranges2,
+        ref_id,
+        clock_steering_indicator,
+        external_clock_indicator,
+        smooth_int,
+        divergence_free,
+        more_messages);
     std::string MSM1_bin_2 = rtcm->binary_data_to_bin(MSM1_2);
-    EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010001100")); // check cell mask
+    EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010001100"));  // check cell mask
 
     Gnss_Synchro gnss_synchro7;
     gnss_synchro7.PRN = 10;
@@ -478,19 +476,19 @@ TEST(RtcmTest, MSMCell)
     pseudoranges3.insert(std::pair<int, Gnss_Synchro>(5, gnss_synchro5));
 
     std::string MSM1_3 = rtcm->print_MSM_1(gps_eph,
-                {},
-                gal_eph,
-                {},
-                obs_time,
-                pseudoranges3,
-                ref_id,
-                clock_steering_indicator,
-                external_clock_indicator,
-                smooth_int,
-                divergence_free,
-                more_messages);
+        {},
+        gal_eph,
+        {},
+        obs_time,
+        pseudoranges3,
+        ref_id,
+        clock_steering_indicator,
+        external_clock_indicator,
+        smooth_int,
+        divergence_free,
+        more_messages);
     std::string MSM1_bin_3 = rtcm->binary_data_to_bin(MSM1_3);
-    EXPECT_EQ(0, MSM1_bin_3.substr(size_header + size_msg_length + 169, (Nsat-1) * Nsig).compare("001010111")); // check cell mask
+    EXPECT_EQ(0, MSM1_bin_3.substr(size_header + size_msg_length + 169, (Nsat - 1) * Nsig).compare("001010111"));  // check cell mask
 }
 
 
@@ -547,15 +545,15 @@ TEST(RtcmTest, MSM1)
     gps_eph.i_satellite_PRN = gnss_synchro.PRN;
 
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
-            {}, {}, {},
-            obs_time,
-            pseudoranges,
-            ref_id,
-            clock_steering_indicator,
-            external_clock_indicator,
-            smooth_int,
-            divergence_free,
-            more_messages);
+        {}, {}, {},
+        obs_time,
+        pseudoranges,
+        ref_id,
+        clock_steering_indicator,
+        external_clock_indicator,
+        smooth_int,
+        divergence_free,
+        more_messages);
 
     EXPECT_EQ(expected_true, rtcm->check_CRC(MSM1));
 
@@ -569,23 +567,23 @@ TEST(RtcmTest, MSM1)
     unsigned int data_size = MSM1_bin.length() - size_header - size_msg_length - size_crc;
     EXPECT_EQ(expected_true, upper_bound >= data_size);
     EXPECT_EQ(0, MSM1_bin.substr(0, size_header).compare("11010011000000"));
-    EXPECT_EQ(ref_id, rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length + 12, 12)));
-    EXPECT_EQ(0, MSM1_bin.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("101101")); // check cell mask
+    EXPECT_EQ(ref_id, rtcm->bin_to_uint(MSM1_bin.substr(size_header + size_msg_length + 12, 12)));
+    EXPECT_EQ(0, MSM1_bin.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("101101"));  // check cell mask
 
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     unsigned int rough_range_1 = static_cast<unsigned int>(std::floor(std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10)) + 0.5) & 0x3FFu;
     unsigned int rough_range_2 = static_cast<unsigned int>(std::floor(std::round(gnss_synchro2.Pseudorange_m / meters_to_miliseconds / TWO_N10)) + 0.5) & 0x3FFu;
     unsigned int rough_range_4 = static_cast<unsigned int>(std::floor(std::round(gnss_synchro3.Pseudorange_m / meters_to_miliseconds / TWO_N10)) + 0.5) & 0x3FFu;
-    unsigned int read_pseudorange_1 = rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length + 169 + Nsat * Nsig , 10));
-    unsigned int read_pseudorange_2 = rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length + 169 + Nsat * Nsig + 10, 10));
-    unsigned int read_pseudorange_4 = rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length + 169 + Nsat * Nsig + 20, 10));
+    unsigned int read_pseudorange_1 = rtcm->bin_to_uint(MSM1_bin.substr(size_header + size_msg_length + 169 + Nsat * Nsig, 10));
+    unsigned int read_pseudorange_2 = rtcm->bin_to_uint(MSM1_bin.substr(size_header + size_msg_length + 169 + Nsat * Nsig + 10, 10));
+    unsigned int read_pseudorange_4 = rtcm->bin_to_uint(MSM1_bin.substr(size_header + size_msg_length + 169 + Nsat * Nsig + 20, 10));
 
     EXPECT_EQ(rough_range_1, read_pseudorange_1);
     EXPECT_EQ(rough_range_2, read_pseudorange_2);
     EXPECT_EQ(rough_range_4, read_pseudorange_4);
 
-    int psrng4_s = static_cast<int>(std::round( (gnss_synchro3.Pseudorange_m  - std::round(gnss_synchro3.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10)/ meters_to_miliseconds / TWO_N24));
-    int read_psrng4_s = rtcm->bin_to_int( MSM1_bin.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
+    int psrng4_s = static_cast<int>(std::round((gnss_synchro3.Pseudorange_m - std::round(gnss_synchro3.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10) / meters_to_miliseconds / TWO_N24));
+    int read_psrng4_s = rtcm->bin_to_int(MSM1_bin.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
     EXPECT_EQ(psrng4_s, read_psrng4_s);
 
     std::map<int, Gnss_Synchro> pseudoranges2;
@@ -594,17 +592,17 @@ TEST(RtcmTest, MSM1)
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(3, gnss_synchro2));
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(4, gnss_synchro));
     std::string MSM1_2 = rtcm->print_MSM_1(gps_eph,
-            {}, {}, {},
-            obs_time,
-            pseudoranges2,
-            ref_id,
-            clock_steering_indicator,
-            external_clock_indicator,
-            smooth_int,
-            divergence_free,
-            more_messages);
+        {}, {}, {},
+        obs_time,
+        pseudoranges2,
+        ref_id,
+        clock_steering_indicator,
+        external_clock_indicator,
+        smooth_int,
+        divergence_free,
+        more_messages);
     std::string MSM1_bin2 = rtcm->binary_data_to_bin(MSM1_2);
-    int read_psrng4_s_2 = rtcm->bin_to_int( MSM1_bin2.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
+    int read_psrng4_s_2 = rtcm->bin_to_int(MSM1_bin2.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
     EXPECT_EQ(psrng4_s, read_psrng4_s_2);
 }
 
@@ -643,7 +641,3 @@ TEST(RtcmTest, InstantiateServerWithoutClosing)
     std::string test3_bin = rtcm->hex_to_bin(test3);
     EXPECT_EQ(0, test3_bin.compare("11111111"));
 }
-
-
-
-

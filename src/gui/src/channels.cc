@@ -43,26 +43,31 @@ Channels::Channels(QWidget *parent, QString block_name_, QString dir_path_) : QW
     //By Default multiConstellation=false
     multi_constellation = false;
     //Dependent Keys
-    dependent_keys << "Channel.RF_channel_ID" << "Channel.SignalSource_ID" << "Channel.signal";
-    list_sub_tabwidget = new QList <QTabWidget*>;
+    dependent_keys << "Channel.RF_channel_ID"
+                   << "Channel.SignalSource_ID"
+                   << "Channel.signal";
+    list_sub_tabwidget = new QList<QTabWidget *>;
     map_implementation = new QMap<QString, QLineEdit *>;
-    list_map_generic = new QList < QMap<QString, QLineEdit *> *>;
-    list_map_subdirectory = new QList < QMap<QString, QLineEdit *> *>;
-    list_map_channels = new QList < QMap<QString, QLineEdit *> *>;
-    map_source_channel = new QMap <QString,int> ;
-    map_channel_types =  new QMap<QString, QLineEdit *> ;
-    map_channel_values = new QMap <QString,int>;
-    map_channel_tab_index = new QMap <QString,int>;;
-    list_spacer = new QList <QSpacerItem *>;
+    list_map_generic = new QList<QMap<QString, QLineEdit *> *>;
+    list_map_subdirectory = new QList<QMap<QString, QLineEdit *> *>;
+    list_map_channels = new QList<QMap<QString, QLineEdit *> *>;
+    map_source_channel = new QMap<QString, int>;
+    map_channel_types = new QMap<QString, QLineEdit *>;
+    map_channel_values = new QMap<QString, int>;
+    map_channel_tab_index = new QMap<QString, int>;
+    ;
+    list_spacer = new QList<QSpacerItem *>;
     block_directory = new QDir(dir_path);
-    list_subdirectory = new QList <QDir *>;
-    block_implementation_list = new QList <QStringList*>;
-    block_implementation_list_path = new QList <QStringList*>;
+    list_subdirectory = new QList<QDir *>;
+    block_implementation_list = new QList<QStringList *>;
+    block_implementation_list_path = new QList<QStringList *>;
     block_directory->setFilter(QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Dirs);
     QStringList directory_name_filters;
-    directory_name_filters << "Acquisition" << "TelemetryDecoder" << "Tracking";
+    directory_name_filters << "Acquisition"
+                           << "TelemetryDecoder"
+                           << "Tracking";
     block_directory->setNameFilters(directory_name_filters);
-    QSettings * implementation_options;
+    QSettings *implementation_options;
     implementation_options = new QSettings(dir_path + "/channel_types.ini", QSettings::IniFormat);
     QStringList group_list = implementation_options->childGroups();
     if (group_list.empty())
@@ -80,7 +85,7 @@ Channels::Channels(QWidget *parent, QString block_name_, QString dir_path_) : QW
             map_channel_tab_index->insert(key, tabindex);
             tabindex++;
         }
-    QSettings * implementation_options_generic;
+    QSettings *implementation_options_generic;
     implementation_options_generic = new QSettings(dir_path + "/generic.ini", QSettings::IniFormat);
     QStringList group_list_generic = implementation_options_generic->childGroups();
     if (group_list_generic.empty())
@@ -89,7 +94,7 @@ Channels::Channels(QWidget *parent, QString block_name_, QString dir_path_) : QW
         }
     QString main_group_generic = group_list_generic.at(0);
     implementation_options_generic->beginGroup(main_group_generic);
-    foreach(QString key,implementation_options_generic->childKeys())
+    foreach (QString key, implementation_options_generic->childKeys())
         {
             if (!(dependent_keys.contains(key)))
                 {
@@ -120,13 +125,13 @@ Channels::Channels(QWidget *parent, QString block_name_, QString dir_path_) : QW
             block_implementation_list_path->append(new QStringList);
         }
     int directory_index = 0;
-    foreach(QDir * dir,*list_subdirectory)
+    foreach (QDir *dir, *list_subdirectory)
         {
             dir->setFilter(QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Files);
             dir->setNameFilters(name_filters);
             foreach (QFileInfo item, dir->entryInfoList())
                 {
-                    if (item.isFile() && (item.fileName() != "generic.ini") )
+                    if (item.isFile() && (item.fileName() != "generic.ini"))
                         {
                             block_implementation_list->at(directory_index)->append(item.baseName());
                             block_implementation_list_path->at(directory_index)->append(item.filePath());
@@ -144,7 +149,7 @@ Channels::Channels(QWidget *parent, QString block_name_, QString dir_path_) : QW
     block_scroll_area_widget_layout->addWidget(block_tab_widget);
     connect(this, SIGNAL(fire_update_channels()), this, SLOT(update_channels()));
 
-    QVBoxLayout * layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(block_scroll_area);
     setLayout(layout);
     add_pages();
@@ -154,7 +159,7 @@ Channels::Channels(QWidget *parent, QString block_name_, QString dir_path_) : QW
 
 void Channels::add_pages()
 {
-    block_tab_widget->addTab(new QWidget(),"Channels");
+    block_tab_widget->addTab(new QWidget(), "Channels");
     list_map_generic->append(new QMap<QString, QLineEdit *>);
     list_spacer->append(new QSpacerItem(10, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
     foreach (QString subdirectory_name, *subdirectories_names)
@@ -170,7 +175,7 @@ void Channels::add_pages()
 void Channels::populate_channel_page()
 {
     int index = 0;
-    QVBoxLayout * layout = new QVBoxLayout();
+    QVBoxLayout *layout = new QVBoxLayout();
     if (!block_tab_widget->widget(index)->layout())
         {
             block_tab_widget->widget(index)->setLayout(layout);
@@ -182,16 +187,16 @@ void Channels::populate_channel_page()
 }
 
 
-QGroupBox* Channels::box_channel_types()
+QGroupBox *Channels::box_channel_types()
 {
-    QGroupBox * grid_groupbox;
+    QGroupBox *grid_groupbox;
     grid_groupbox = new QGroupBox("Channels");
-    QPushButton * update_button = new QPushButton("Update");
-    QGridLayout * layout = new QGridLayout;
+    QPushButton *update_button = new QPushButton("Update");
+    QGridLayout *layout = new QGridLayout;
     uint max_col = 4;
-    uint row  =0;
+    uint row = 0;
     uint col = 0;
-    foreach(QString key, channel_types_keys)
+    foreach (QString key, channel_types_keys)
         {
             map_channel_types->insert(key, new QLineEdit());
         }
@@ -219,7 +224,7 @@ void Channels::update_channels()
     int temp;
     bool flag = false;
     multi_constellation = false;
-    foreach(QString key, map_channel_types->keys())
+    foreach (QString key, map_channel_types->keys())
         {
             temp = map_channel_types->value(key)->text().toInt();
             if (temp > 0)
@@ -274,8 +279,8 @@ void Channels::update_channel_boxes()
 {
     block_tab_widget->widget(0)->layout()->removeItem(list_spacer->at(0));
     map_implementation->clear();
-    QList<QGroupBox*> box_list = block_tab_widget->widget(0)->findChildren<QGroupBox*>("SubBox", Qt::FindDirectChildrenOnly);
-    foreach(QGroupBox * box, box_list)
+    QList<QGroupBox *> box_list = block_tab_widget->widget(0)->findChildren<QGroupBox *>("SubBox", Qt::FindDirectChildrenOnly);
+    foreach (QGroupBox *box, box_list)
         {
             block_tab_widget->widget(0)->layout()->removeWidget(box);
             delete box;
@@ -287,15 +292,15 @@ void Channels::update_channel_boxes()
 }
 
 
-QGroupBox* Channels::sub_box(QString boxname,  QStringList keys)
+QGroupBox *Channels::sub_box(QString boxname, QStringList keys)
 {
-    QGroupBox * grid_groupbox;
+    QGroupBox *grid_groupbox;
     grid_groupbox = new QGroupBox(boxname);
-    QGridLayout * layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout;
     uint max_col = 4;
     uint row = 0;
     uint col = 0;
-    foreach(QString key, keys)
+    foreach (QString key, keys)
         {
             map_implementation->insert(key, new QLineEdit());
             layout->addWidget(new QLabel(key), row, col++);
@@ -312,15 +317,15 @@ QGroupBox* Channels::sub_box(QString boxname,  QStringList keys)
 }
 
 
-QGroupBox* Channels::box_generic(int index, QStringList keys)
+QGroupBox *Channels::box_generic(int index, QStringList keys)
 {
-    QGroupBox * grid_groupbox;
+    QGroupBox *grid_groupbox;
     grid_groupbox = new QGroupBox("Generic");
-    QGridLayout * layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout;
     uint max_col = 4;
     uint row = 0;
     uint col = 0;
-    foreach(QString key, keys)
+    foreach (QString key, keys)
         {
             list_map_generic->at(index)->insert(key, new QLineEdit());
         }
@@ -341,14 +346,14 @@ QGroupBox* Channels::box_generic(int index, QStringList keys)
 
 void Channels::populate_page(int index)
 {
-    QVBoxLayout * layout = new QVBoxLayout();
+    QVBoxLayout *layout = new QVBoxLayout();
     if (!block_tab_widget->widget(index)->layout())
         {
             block_tab_widget->widget(index)->setLayout(layout);
-            layout->addWidget(list_sub_tabwidget->at(index-1));
-            foreach(QString key,channel_types)
+            layout->addWidget(list_sub_tabwidget->at(index - 1));
+            foreach (QString key, channel_types)
                 {
-                    list_sub_tabwidget->at(index-1)->addTab(new QWidget(), key);
+                    list_sub_tabwidget->at(index - 1)->addTab(new QWidget(), key);
                 }
         }
 }
@@ -365,18 +370,18 @@ void Channels::update_subtabs()
             list_map_subdirectory->clear();
         }
     //delete all childrens widget from subtabs
-    for(int i = 0; i < list_sub_tabwidget->count(); i++)
+    for (int i = 0; i < list_sub_tabwidget->count(); i++)
         {
-            for(int j = list_sub_tabwidget->at(i)->count(); j > 0; j--)
+            for (int j = list_sub_tabwidget->at(i)->count(); j > 0; j--)
                 {
                     list_map_subdirectory->append(new QMap<QString, QLineEdit *>);
                     list_sub_tabwidget->at(i)->widget(j - 1)->deleteLater();
                     list_sub_tabwidget->at(i)->removeTab(j - 1);
                 }
-    }
-    for(int i = 0; i < list_sub_tabwidget->count(); i++)
+        }
+    for (int i = 0; i < list_sub_tabwidget->count(); i++)
         {
-            foreach(QString key, channel_types)
+            foreach (QString key, channel_types)
                 {
                     list_sub_tabwidget->at(i)->addTab(new QWidget(), key);
                 }
@@ -384,21 +389,21 @@ void Channels::update_subtabs()
     //Append a map for each channel specific configurations
     foreach (QString key, map_channel_types->keys())
         {
-            for(int i = 0; i < map_channel_types->value(key)->text().toInt() * list_subdirectory->count(); i++)
+            for (int i = 0; i < map_channel_types->value(key)->text().toInt() * list_subdirectory->count(); i++)
                 {
                     list_map_channels->append(new QMap<QString, QLineEdit *>);
                 }
         }
     foreach (QString key, map_channel_types->keys())
         {
-            int sub_index =  map_channel_tab_index->value(key);
+            int sub_index = map_channel_tab_index->value(key);
             int channel_count = map_channel_types->value(key)->text().toInt();
             if (channel_count > 0)
                 {
                     //add generic box
-                    for(int i = 0; i < list_sub_tabwidget->count(); i++)
+                    for (int i = 0; i < list_sub_tabwidget->count(); i++)
                         {
-                            QVBoxLayout * layout =  new QVBoxLayout;
+                            QVBoxLayout *layout = new QVBoxLayout;
                             list_sub_tabwidget->at(i)->widget(sub_index)->setLayout(layout);
                             layout->addWidget(box_channel("Generic", *block_implementation_list->at(i)));
                             //add channel count number of boxes
@@ -420,15 +425,15 @@ void Channels::update_subtabs()
 }
 
 
-QGroupBox* Channels::box_channel(QString boxname, QStringList keys)
+QGroupBox *Channels::box_channel(QString boxname, QStringList keys)
 {
-    QGroupBox * grid_groupbox;
+    QGroupBox *grid_groupbox;
     grid_groupbox = new QGroupBox(boxname);
-    QVBoxLayout * main_layout = new QVBoxLayout;
-    QGroupBox * grid_groupboxinner;
+    QVBoxLayout *main_layout = new QVBoxLayout;
+    QGroupBox *grid_groupboxinner;
     grid_groupboxinner = new QGroupBox("optionBox");
-    QGridLayout * layout = new QGridLayout;
-    QComboBox * source_combobox;
+    QGridLayout *layout = new QGridLayout;
+    QComboBox *source_combobox;
     source_combobox = new QComboBox();
     source_combobox->setObjectName("sourceComboBox");
     source_combobox->addItem("Select");
@@ -447,18 +452,18 @@ QGroupBox* Channels::box_channel(QString boxname, QStringList keys)
 
 void Channels::generic_page_slot(QString imp)
 {
-    QComboBox * sender_combobox = qobject_cast<QComboBox*>(sender());
-    if( sender_combobox != NULL )
+    QComboBox *sender_combobox = qobject_cast<QComboBox *>(sender());
+    if (sender_combobox != NULL)
         {
-            QList<QGroupBox*> box_list = sender_combobox->parentWidget()->findChildren<QGroupBox*>(QString(), Qt::FindDirectChildrenOnly);
-            foreach(QGroupBox * box, box_list)
+            QList<QGroupBox *> box_list = sender_combobox->parentWidget()->findChildren<QGroupBox *>(QString(), Qt::FindDirectChildrenOnly);
+            foreach (QGroupBox *box, box_list)
                 {
-                    foreach(QLabel * obj, box->findChildren<QLabel*>(QString(), Qt::FindDirectChildrenOnly))
+                    foreach (QLabel *obj, box->findChildren<QLabel *>(QString(), Qt::FindDirectChildrenOnly))
                         {
                             box->layout()->removeWidget(obj);
                             delete obj;
                         }
-                    foreach(QLineEdit * obj, box->findChildren<QLineEdit*>(QString(), Qt::FindDirectChildrenOnly))
+                    foreach (QLineEdit *obj, box->findChildren<QLineEdit *>(QString(), Qt::FindDirectChildrenOnly))
                         {
                             box->layout()->removeWidget(obj);
                             delete obj;
@@ -470,7 +475,7 @@ void Channels::generic_page_slot(QString imp)
             list_map_subdirectory->at(map_index)->clear();
             QString temp_block = block_tab_widget->tabText(block_tab_widget->currentIndex());
             QString imp_path = dir_path + "/" + temp_block + "/" + imp + ".ini";
-            QSettings * implementation_options;
+            QSettings *implementation_options;
             implementation_options = new QSettings(imp_path, QSettings::IniFormat);
             QStringList group_list = implementation_options->childGroups();
             if (group_list.empty())
@@ -488,33 +493,33 @@ void Channels::generic_page_slot(QString imp)
             uint max_col = 4;
             uint row = 0;
             uint col = 0;
-            foreach(QString key, all_keys)
+            foreach (QString key, all_keys)
                 {
                     list_map_subdirectory->at(map_index)->insert(key, new QLineEdit());
-                    QRegularExpression key_re1( "^(Acquisition_)(1B|1C|2S|5X)[0-9]{0,}.(doppler_)(max|min|step)$" );
+                    QRegularExpression key_re1("^(Acquisition_)(1B|1C|2S|5X)[0-9]{0,}.(doppler_)(max|min|step)$");
                     QRegularExpressionMatch match1 = key_re1.match(key);
                     if (match1.hasMatch())
                         {
                             list_map_subdirectory->at(map_index)->value(key)->setToolTip("Specify in [Hz]");
                         }
 
-                    QRegularExpression key_re2( "^(Acquisition_|Tracking_)(1B|1C|2S|5X)[0-9]{0,}.(if)$" );
+                    QRegularExpression key_re2("^(Acquisition_|Tracking_)(1B|1C|2S|5X)[0-9]{0,}.(if)$");
                     QRegularExpressionMatch match2 = key_re2.match(key);
                     if (match2.hasMatch())
                         {
                             list_map_subdirectory->at(map_index)->value(key)->setToolTip("Intermediate Frequency in [Hz]");
                         }
 
-                    QRegularExpression key_re3( "^(Tracking_)(1B|1C|2S|5X)[0-9]{0,}.(dll|pll)(_bw_)(hz|init_hz|narrow_hz)$" );
+                    QRegularExpression key_re3("^(Tracking_)(1B|1C|2S|5X)[0-9]{0,}.(dll|pll)(_bw_)(hz|init_hz|narrow_hz)$");
                     QRegularExpressionMatch match3 = key_re3.match(key);
                     if (match3.hasMatch())
                         {
                             list_map_subdirectory->at(map_index)->value(key)->setToolTip("Bandwidth in [Hz]");
                         }
 
-                    QGroupBox * box = sender_combobox->parentWidget()->findChild<QGroupBox*>(QString(), Qt::FindDirectChildrenOnly);
-                    qobject_cast<QGridLayout*>( box->layout())->addWidget(new QLabel(key), row, col++);
-                    qobject_cast<QGridLayout*>( box->layout())->addWidget(list_map_subdirectory->at(map_index)->value(key), row, col++);
+                    QGroupBox *box = sender_combobox->parentWidget()->findChild<QGroupBox *>(QString(), Qt::FindDirectChildrenOnly);
+                    qobject_cast<QGridLayout *>(box->layout())->addWidget(new QLabel(key), row, col++);
+                    qobject_cast<QGridLayout *>(box->layout())->addWidget(list_map_subdirectory->at(map_index)->value(key), row, col++);
                     if ((col % max_col) == 0)
                         {
                             col = 0;
@@ -525,15 +530,15 @@ void Channels::generic_page_slot(QString imp)
 }
 
 
-QGroupBox* Channels::box_specfic_channel(QString boxname, int index,  QStringList keys)
+QGroupBox *Channels::box_specfic_channel(QString boxname, int index, QStringList keys)
 {
-    QGroupBox * grid_groupbox;
+    QGroupBox *grid_groupbox;
     grid_groupbox = new QGroupBox(boxname);
-    QVBoxLayout * main_layout = new QVBoxLayout;
-    QGroupBox * grid_groupboxinner;
+    QVBoxLayout *main_layout = new QVBoxLayout;
+    QGroupBox *grid_groupboxinner;
     grid_groupboxinner = new QGroupBox("Channel:" + QString::number(index));
-    QGridLayout * layout = new QGridLayout;
-    QComboBox * source_combobox;
+    QGridLayout *layout = new QGridLayout;
+    QComboBox *source_combobox;
     source_combobox = new QComboBox();
     source_combobox->setObjectName("sourceComboBox");
     source_combobox->addItem("Select");
@@ -552,18 +557,18 @@ QGroupBox* Channels::box_specfic_channel(QString boxname, int index,  QStringLis
 
 void Channels::channel_page_slot(QString imp)
 {
-    QComboBox * sender_combobox = qobject_cast<QComboBox*>(sender());
-    if( sender_combobox != NULL )
+    QComboBox *sender_combobox = qobject_cast<QComboBox *>(sender());
+    if (sender_combobox != NULL)
         {
-            QList<QGroupBox*> box_list = sender_combobox->parentWidget()->findChildren<QGroupBox*>(QString(), Qt::FindDirectChildrenOnly);
-            foreach(QGroupBox * box, box_list)
+            QList<QGroupBox *> box_list = sender_combobox->parentWidget()->findChildren<QGroupBox *>(QString(), Qt::FindDirectChildrenOnly);
+            foreach (QGroupBox *box, box_list)
                 {
-                    foreach(QLabel *obj, box->findChildren<QLabel*>(QString(), Qt::FindDirectChildrenOnly))
+                    foreach (QLabel *obj, box->findChildren<QLabel *>(QString(), Qt::FindDirectChildrenOnly))
                         {
                             box->layout()->removeWidget(obj);
                             delete obj;
                         }
-                    foreach(QLineEdit *obj, box->findChildren<QLineEdit*>(QString(), Qt::FindDirectChildrenOnly))
+                    foreach (QLineEdit *obj, box->findChildren<QLineEdit *>(QString(), Qt::FindDirectChildrenOnly))
                         {
                             box->layout()->removeWidget(obj);
                             delete obj;
@@ -578,14 +583,14 @@ void Channels::channel_page_slot(QString imp)
                     cumm_channel.append(total_channels);
                     total_channels += map_channel_types->value(key)->text().toInt();
                 }
-            QGroupBox * box = sender_combobox->parentWidget()->findChild<QGroupBox*>(QString(), Qt::FindDirectChildrenOnly);
+            QGroupBox *box = sender_combobox->parentWidget()->findChild<QGroupBox *>(QString(), Qt::FindDirectChildrenOnly);
             QString box_title = box->title();
             QString channel_number = box_title.split(":").at(1);
             int map_index = (tab_index - 1) * total_channels + cumm_channel.at(sub_index) + channel_number.toInt();
             list_map_channels->at(map_index)->clear();
             QString temp_block = block_tab_widget->tabText(block_tab_widget->currentIndex());
             QString imp_path = dir_path + "/" + temp_block + "/" + imp + ".ini";
-            QSettings * implementation_options;
+            QSettings *implementation_options;
             implementation_options = new QSettings(imp_path, QSettings::IniFormat);
             QStringList group_list = implementation_options->childGroups();
             if (group_list.empty())
@@ -597,14 +602,14 @@ void Channels::channel_page_slot(QString imp)
             implementation_options->beginGroup(main_group);
             QStringList all_keys = implementation_options->childKeys();
             implementation_options->endGroup();
-            int main_map_index = list_sub_tabwidget->at(tab_index-1)->currentIndex();
+            int main_map_index = list_sub_tabwidget->at(tab_index - 1)->currentIndex();
             QString imp_key;
             imp_key = block_tab_widget->tabText(tab_index) + "_" + list_sub_tabwidget->at(tab_index - 1)->tabText(main_map_index) + channel_number + ".implementation";
             list_map_channels->at(map_index)->insert(imp_key, new QLineEdit(imp_value));
             uint max_col = 4;
             uint row = 0;
             uint col = 0;
-            foreach(QString key, all_keys)
+            foreach (QString key, all_keys)
                 {
                     if (!key.contains('.'))
                         {
@@ -613,28 +618,28 @@ void Channels::channel_page_slot(QString imp)
                     QStringList temp = key.split(".");
                     key = temp.at(0) + channel_number + "." + temp.at(1);
                     list_map_channels->at(map_index)->insert(key, new QLineEdit());
-                    QRegularExpression key_re1( "^(Acquisition_)(1B|1C|2S|5X)[0-9]{0,}.(doppler_)(max|min|step)$" );
+                    QRegularExpression key_re1("^(Acquisition_)(1B|1C|2S|5X)[0-9]{0,}.(doppler_)(max|min|step)$");
                     QRegularExpressionMatch match1 = key_re1.match(key);
                     if (match1.hasMatch())
                         {
                             list_map_channels->at(map_index)->value(key)->setToolTip("Specify in [Hz]");
                         }
 
-                    QRegularExpression key_re2( "^(Acquisition_|Tracking_)(1B|1C|2S|5X)[0-9]{0,}.(if)$" );
+                    QRegularExpression key_re2("^(Acquisition_|Tracking_)(1B|1C|2S|5X)[0-9]{0,}.(if)$");
                     QRegularExpressionMatch match2 = key_re2.match(key);
                     if (match2.hasMatch())
                         {
                             list_map_channels->at(map_index)->value(key)->setToolTip("Intermediate Frequency in [Hz]");
                         }
 
-                    QRegularExpression key_re3( "^(Tracking_)(1B|1C|2S|5X)[0-9]{0,}.(dll|pll)(_bw_)(hz|init_hz|narrow_hz)$" );
+                    QRegularExpression key_re3("^(Tracking_)(1B|1C|2S|5X)[0-9]{0,}.(dll|pll)(_bw_)(hz|init_hz|narrow_hz)$");
                     QRegularExpressionMatch match3 = key_re3.match(key);
                     if (match3.hasMatch())
                         {
                             list_map_channels->at(map_index)->value(key)->setToolTip("Bandwidth in [Hz]");
                         }
-                    qobject_cast<QGridLayout*>( box->layout())->addWidget(new QLabel(key), row, col++);
-                    qobject_cast<QGridLayout*>( box->layout())->addWidget(list_map_channels->at(map_index)->value(key), row, col++);
+                    qobject_cast<QGridLayout *>(box->layout())->addWidget(new QLabel(key), row, col++);
+                    qobject_cast<QGridLayout *>(box->layout())->addWidget(list_map_channels->at(map_index)->value(key), row, col++);
                     if ((col % max_col) == 0)
                         {
                             col = 0;
@@ -685,7 +690,7 @@ void Channels::listener_rf_channel(QString key, int value)
 {
     if (map_source_channel->contains(key))
         {
-            if(value > 1)
+            if (value > 1)
                 {
                     multi_band = true;
                 }
@@ -700,10 +705,10 @@ void Channels::listener_rf_channel(QString key, int value)
 }
 
 
-QMap<QString, QString >* Channels::get_options()
+QMap<QString, QString> *Channels::get_options()
 {
-    QMap<QString, QString > * map_options;
-    map_options  = new QMap<QString, QString >;
+    QMap<QString, QString> *map_options;
+    map_options = new QMap<QString, QString>;
     foreach (QString key, map_channel_types->keys())
         {
             map_options->insert(key, map_channel_types->value(key)->text());
@@ -735,4 +740,3 @@ QMap<QString, QString >* Channels::get_options()
         }
     return map_options;
 }
-

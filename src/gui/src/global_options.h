@@ -50,28 +50,27 @@ class Global_Options : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Global_Options(QWidget *parent = 0, QString block_name_="GlobalOptions", QString dir_path_="");
-    QMap<QString, QString> * get_options();
+    explicit Global_Options(QWidget *parent = 0, QString block_name_ = "GlobalOptions", QString dir_path_ = "");
+    QMap<QString, QString> *get_options();
     QString block_name;
 
 private:
     void setup_page();
-    QGroupBox * box_generic(QString box_name, QSettings *ini_settings);
-    QGroupBox * box_implementation(QString box_name, QStringList current_group_keys);
+    QGroupBox *box_generic(QString box_name, QSettings *ini_settings);
+    QGroupBox *box_implementation(QString box_name, QStringList current_group_keys);
     void update_implementation();
-    QDir * block_dir;
+    QDir *block_dir;
     QString dir_path;
-    QTabWidget * block_tab_widget;
-    QScrollArea * block_scroll_area;
-    QWidget * block_scroll_area_widget;
-    QVBoxLayout * block_scroll_area_widget_layout;
+    QTabWidget *block_tab_widget;
+    QScrollArea *block_scroll_area;
+    QWidget *block_scroll_area_widget;
+    QVBoxLayout *block_scroll_area_widget_layout;
     QList<QString> block_implementation_list_path;
-    QMap <QString, QLineEdit *> * map_implementation;
+    QMap<QString, QLineEdit *> *map_implementation;
 
 signals:
 
 public slots:
-
 };
 
-#endif // GNSS_SDR_GUI_GLOBAL_OPTIONS_H
+#endif  // GNSS_SDR_GUI_GLOBAL_OPTIONS_H

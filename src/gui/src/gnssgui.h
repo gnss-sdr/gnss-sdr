@@ -54,7 +54,7 @@ class Gnss_GUI : public QDialog
     Q_OBJECT
 
 public:
-    explicit Gnss_GUI(QWidget * parent = 0);
+    explicit Gnss_GUI(QWidget* parent = 0);
     ~Gnss_GUI();
 
 private:
@@ -62,37 +62,37 @@ private:
     void create_menu();
     void create_generate_box();
     QByteArray read_stylesheets(const QString file_path);
-    QTabWidget * tab_widget;
-    QDialogButtonBox * button_box;
+    QTabWidget* tab_widget;
+    QDialogButtonBox* button_box;
     QString dir_path;
-    QDir * base_dir;
+    QDir* base_dir;
 
     QList<QString> list_blocks;
-    Signal_Source * page_signal_source;
-    Signal_Conditioner * page_signal_conditioner;
-    Channels * page_channels;
-    Observables * page_observables;
-    Pvt * page_pvt;
-    Supl * page_supl;
-    Global_Options * page_global_options;
+    Signal_Source* page_signal_source;
+    Signal_Conditioner* page_signal_conditioner;
+    Channels* page_channels;
+    Observables* page_observables;
+    Pvt* page_pvt;
+    Supl* page_supl;
+    Global_Options* page_global_options;
 
     //File Menu Related
-    QMenuBar * menu_bar;
-    QMenu * file_menu;
-    QMenu * load_menu;
-    QMenu * help_menu;
-    QAction * exit_action;
-    QAction * load_action_style1;
-    QAction * load_action_custom;
-    QAction * load_action_none;
-    QAction * help_action;
+    QMenuBar* menu_bar;
+    QMenu* file_menu;
+    QMenu* load_menu;
+    QMenu* help_menu;
+    QAction* exit_action;
+    QAction* load_action_style1;
+    QAction* load_action_custom;
+    QAction* load_action_none;
+    QAction* help_action;
 
     //Generation Related
-    QPushButton * generate_button;
-    QLineEdit * output_filename_editor;
-    QGroupBox * generate_box;
+    QPushButton* generate_button;
+    QLineEdit* output_filename_editor;
+    QGroupBox* generate_box;
 
-    QMap <QString, QString> * map_options;
+    QMap<QString, QString>* map_options;
     QList<QString> styles_list;
 
 public slots:
@@ -103,4 +103,4 @@ public slots:
     void help_slot();
 };
 
-#endif // GNSS_SDR_GUI_GNSSGUI_H
+#endif  // GNSS_SDR_GUI_GNSSGUI_H

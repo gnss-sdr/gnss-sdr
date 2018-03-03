@@ -51,19 +51,19 @@ class Channels : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Channels(QWidget * parent = 0, QString block_name_ = "Channels", QString dir_path_ = "");
-    QMap<QString, QString> * get_options();
+    explicit Channels(QWidget *parent = 0, QString block_name_ = "Channels", QString dir_path_ = "");
+    QMap<QString, QString> *get_options();
     QString block_name;
 
 private:
     void add_pages();
     void populate_page(int index);
     void populate_channel_page();
-    QGroupBox * box_channel_types();
-    QGroupBox * box_generic(int index,  QStringList keys);
-    QGroupBox * sub_box(QString boxname,  QStringList keys);
-    QGroupBox * box_channel(QString boxname,  QStringList keys);
-    QGroupBox * box_specfic_channel(QString boxname, int index,  QStringList keys);
+    QGroupBox *box_channel_types();
+    QGroupBox *box_generic(int index, QStringList keys);
+    QGroupBox *sub_box(QString boxname, QStringList keys);
+    QGroupBox *box_channel(QString boxname, QStringList keys);
+    QGroupBox *box_specfic_channel(QString boxname, int index, QStringList keys);
     void update_channel_boxes();
 
     //variable for keeping number of signal sources
@@ -76,8 +76,8 @@ private:
     bool multi_constellation;
 
     QString dir_path;
-    QList <QDir *> * list_subdirectory;
-    QStringList * subdirectories_names;
+    QList<QDir *> *list_subdirectory;
+    QStringList *subdirectories_names;
     QStringList channel_types;
     QStringList channel_types_keys;
     QStringList dependent_keys;
@@ -86,24 +86,24 @@ private:
     QStringList multiconstellation_keys;
     QStringList multisource_keys;
 
-    QDir * block_directory;
-    QList <QTabWidget*> * list_sub_tabwidget;
-    QList <QStringList*> * block_implementation_list;
-    QList <QStringList*> * block_implementation_list_path;
-    QMap<QString, QLineEdit *> * map_implementation;
-    QList < QMap<QString, QLineEdit *> *> * list_map_generic;
-    QList < QMap<QString, QLineEdit *> *> * list_map_subdirectory;
-    QList < QMap<QString, QLineEdit *> *> * list_map_channels;
-    QMap<QString, QLineEdit *> * map_channel_types;
-    QMap <QString,int> * map_source_channel;
-    QMap <QString,int> * map_channel_values;
-    QMap <QString,int> * map_channel_tab_index;
+    QDir *block_directory;
+    QList<QTabWidget *> *list_sub_tabwidget;
+    QList<QStringList *> *block_implementation_list;
+    QList<QStringList *> *block_implementation_list_path;
+    QMap<QString, QLineEdit *> *map_implementation;
+    QList<QMap<QString, QLineEdit *> *> *list_map_generic;
+    QList<QMap<QString, QLineEdit *> *> *list_map_subdirectory;
+    QList<QMap<QString, QLineEdit *> *> *list_map_channels;
+    QMap<QString, QLineEdit *> *map_channel_types;
+    QMap<QString, int> *map_source_channel;
+    QMap<QString, int> *map_channel_values;
+    QMap<QString, int> *map_channel_tab_index;
 
-    QList <QSpacerItem *> * list_spacer;
-    QTabWidget * block_tab_widget;
-    QWidget * block_scroll_area_widget;
-    QVBoxLayout * block_scroll_area_widget_layout;
-    QScrollArea * block_scroll_area;
+    QList<QSpacerItem *> *list_spacer;
+    QTabWidget *block_tab_widget;
+    QWidget *block_scroll_area_widget;
+    QVBoxLayout *block_scroll_area_widget_layout;
+    QScrollArea *block_scroll_area;
 
 signals:
     void fire_update_channels();
@@ -117,4 +117,4 @@ public slots:
     void channel_page_slot(QString imp);
 };
 
-#endif // GNSS_SDR_GUI_CHANNELS_H
+#endif  // GNSS_SDR_GUI_CHANNELS_H

@@ -53,39 +53,39 @@ class Signal_Conditioner : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Signal_Conditioner(QWidget * parent = 0, QString block_name_ = "Signal_Source", QString dir_path_ = "");
-    QMap<QString, QString> * get_options();
+    explicit Signal_Conditioner(QWidget *parent = 0, QString block_name_ = "Signal_Source", QString dir_path_ = "");
+    QMap<QString, QString> *get_options();
     QString block_name;
 
 private:
     void populate_page(int index);
     void add_subtab(int index);
     void populate_subtab(int index);
-    QGroupBox * box_implementation(QString boxname, QStringList current_group_Keys, int map_index, bool add_button);
-    QGroupBox * sub_box_implementation(QString boxname, QStringList current_group_keys);
-    QGroupBox * box_pass_through(QString boxname, int current_source);
-    QMap <QString,int> * map_source_channel;
+    QGroupBox *box_implementation(QString boxname, QStringList current_group_Keys, int map_index, bool add_button);
+    QGroupBox *sub_box_implementation(QString boxname, QStringList current_group_keys);
+    QGroupBox *box_pass_through(QString boxname, int current_source);
+    QMap<QString, int> *map_source_channel;
     QString dir_path;
-    QList <QDir *> * list_subdirectory;
-    QMap <int,bool> * map_pass_through_flag;
-    QStringList * subdirectories_paths;
-    QStringList * subdirectories_names;
-    QDir * block_directory;
-    QList <QStringList*> * blockImplementationList;
-    QList <QStringList*> * block_implementation_list_path;
-    QList < QMap<QString, QLineEdit *> *> * list_map_implementation;
-    QList < QMap<QString, QLineEdit *> *> * list_map_sub;
-    QList < QMap<QString, QLineEdit *> *> * list_map_pass;
-    QList <QSpacerItem *> * list_spacer;
-    QMap<int, QStringList*> * map_subgroup_list;
-    QList < QMap<QString, QStringList> *> * list_map_subgroup_child_keys;
-    QList < QMap<QString, QString > *> * list_map_subgroup_keys;
+    QList<QDir *> *list_subdirectory;
+    QMap<int, bool> *map_pass_through_flag;
+    QStringList *subdirectories_paths;
+    QStringList *subdirectories_names;
+    QDir *block_directory;
+    QList<QStringList *> *blockImplementationList;
+    QList<QStringList *> *block_implementation_list_path;
+    QList<QMap<QString, QLineEdit *> *> *list_map_implementation;
+    QList<QMap<QString, QLineEdit *> *> *list_map_sub;
+    QList<QMap<QString, QLineEdit *> *> *list_map_pass;
+    QList<QSpacerItem *> *list_spacer;
+    QMap<int, QStringList *> *map_subgroup_list;
+    QList<QMap<QString, QStringList> *> *list_map_subgroup_child_keys;
+    QList<QMap<QString, QString> *> *list_map_subgroup_keys;
 
-    QTabWidget * block_tab_widget;
-    QList <QTabWidget *> * list_sub_tabwidget;
-    QWidget * block_scroll_area_widget;
-    QVBoxLayout * block_scroll_area_widget_layout;
-    QScrollArea * block_scroll_area;
+    QTabWidget *block_tab_widget;
+    QList<QTabWidget *> *list_sub_tabwidget;
+    QWidget *block_scroll_area_widget;
+    QVBoxLayout *block_scroll_area_widget_layout;
+    QScrollArea *block_scroll_area;
 
     bool multiple_conditioners;
 signals:
@@ -100,4 +100,4 @@ public slots:
     void enable_disable(int);
 };
 
-#endif // GNSS_SDR_GUI_SIGNAL_CONDITIONER_H
+#endif  // GNSS_SDR_GUI_SIGNAL_CONDITIONER_H

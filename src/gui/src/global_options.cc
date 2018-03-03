@@ -40,12 +40,12 @@ Global_Options::Global_Options(QWidget *parent, QString block_name_, QString dir
     block_dir->setNameFilters(name_filters);
     foreach (QFileInfo item, block_dir->entryInfoList())
         {
-            if (item.isFile() && (item.fileName() != "generic.ini") )
+            if (item.isFile() && (item.fileName() != "generic.ini"))
                 {
                     block_implementation_list_path.append(item.filePath());
                 }
         }
-    map_implementation = new QMap <QString, QLineEdit *>;
+    map_implementation = new QMap<QString, QLineEdit *>;
     block_tab_widget = new QTabWidget();
     block_scroll_area_widget = new QWidget();
     block_scroll_area_widget_layout = new QVBoxLayout;
@@ -54,7 +54,7 @@ Global_Options::Global_Options(QWidget *parent, QString block_name_, QString dir
     block_scroll_area->setWidget(block_scroll_area_widget);
     block_scroll_area->setWidgetResizable(true);
     block_scroll_area_widget_layout->addWidget(block_tab_widget);
-    QVBoxLayout * layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(block_scroll_area);
     setLayout(layout);
     setup_page();
@@ -79,7 +79,7 @@ void Global_Options::update_implementation()
         {
             return;
         }
-    QSettings * implementation_options;
+    QSettings *implementation_options;
     implementation_options = new QSettings(source_settings, QSettings::IniFormat);
     QStringList group_list = implementation_options->childGroups();
     if (group_list.empty())
@@ -91,20 +91,20 @@ void Global_Options::update_implementation()
     QStringList main_keys = implementation_options->childKeys();
     implementation_options->endGroup();
     map_implementation->clear();
-    QGroupBox * option_box = box_implementation(main_group, main_keys);
+    QGroupBox *option_box = box_implementation(main_group, main_keys);
     block_tab_widget->widget(0)->layout()->addWidget(option_box);
 }
 
 
-QGroupBox* Global_Options::box_implementation(QString box_name, QStringList current_group_keys)
+QGroupBox *Global_Options::box_implementation(QString box_name, QStringList current_group_keys)
 {
-    QGroupBox * grid_groupbox;
+    QGroupBox *grid_groupbox;
     grid_groupbox = new QGroupBox(box_name);
     QGridLayout *layout = new QGridLayout;
     uint max_col = 4;
     uint row = 0;
     uint col = 0;
-    foreach(QString key,current_group_keys)
+    foreach (QString key, current_group_keys)
         {
             //Insert Items in main map
             if (key == "GNSS-SDR.internal_fs_sps")
@@ -130,14 +130,13 @@ QGroupBox* Global_Options::box_implementation(QString box_name, QStringList curr
 }
 
 
-QMap<QString, QString > * Global_Options::get_options()
+QMap<QString, QString> *Global_Options::get_options()
 {
-    QMap<QString, QString > * map_options;
-    map_options  = new QMap<QString, QString >;
+    QMap<QString, QString> *map_options;
+    map_options = new QMap<QString, QString>;
     foreach (QString key, map_implementation->keys())
         {
             map_options->insert(key, map_implementation->value(key)->text());
         }
     return map_options;
 }
-

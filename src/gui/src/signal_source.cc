@@ -31,16 +31,16 @@
 
 #include "signal_source.h"
 #include <iostream>
-Signal_Source::Signal_Source(QWidget * parent, QString block_name_, QString dir_path_) : QWidget(parent), block_name(block_name_), dir_path(dir_path_)
+Signal_Source::Signal_Source(QWidget *parent, QString block_name_, QString dir_path_) : QWidget(parent), block_name(block_name_), dir_path(dir_path_)
 {
     map_generic = new QMap<QString, QLineEdit *>;
-    map_subgroup_list = new QMap<int, QStringList*>;
-    list_map_implementation = new QList < QMap<QString, QLineEdit *> *>;
-    list_map_sub = new QList < QMap<QString, QLineEdit *> *>;
-    list_map_subgroup_keys = new QList < QMap<QString, QString > *>;
-    list_map_subgroup_child_keys = new QList < QMap<QString, QStringList> *>;
-    list_map_comboboxes = new QList < QMap<QString, QComboBox *> *>;
-    list_spacer = new QList <QSpacerItem *>;
+    map_subgroup_list = new QMap<int, QStringList *>;
+    list_map_implementation = new QList<QMap<QString, QLineEdit *> *>;
+    list_map_sub = new QList<QMap<QString, QLineEdit *> *>;
+    list_map_subgroup_keys = new QList<QMap<QString, QString> *>;
+    list_map_subgroup_child_keys = new QList<QMap<QString, QStringList> *>;
+    list_map_comboboxes = new QList<QMap<QString, QComboBox *> *>;
+    list_spacer = new QList<QSpacerItem *>;
     block_dir = new QDir(dir_path);
     block_dir->setFilter(QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Files);
     QStringList name_filters;
@@ -48,7 +48,7 @@ Signal_Source::Signal_Source(QWidget * parent, QString block_name_, QString dir_
     block_dir->setNameFilters(name_filters);
     foreach (QFileInfo item, block_dir->entryInfoList())
         {
-            if (item.isFile() && (item.fileName() != "generic.ini") )
+            if (item.isFile() && (item.fileName() != "generic.ini"))
                 {
                     block_implementation_list.append(item.baseName());
                     block_implementation_list_path.append(item.filePath());
@@ -63,31 +63,31 @@ Signal_Source::Signal_Source(QWidget * parent, QString block_name_, QString dir_
     block_scroll_area = new QScrollArea();
     block_scroll_area->setWidget(block_scroll_area_widget);
     block_scroll_area->setWidgetResizable(true);
-    foreach(QGroupBox *item, block_box_list)
+    foreach (QGroupBox *item, block_box_list)
         {
             block_scroll_area_widget_layout->addWidget(item);
         }
     block_scroll_area_widget_layout->addWidget(block_tab_widget);
-    QVBoxLayout * layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(block_scroll_area);
     QString homeLocation = QStandardPaths::locate(QStandardPaths::DocumentsLocation, QString("test"), QStandardPaths::LocateDirectory);
     setLayout(layout);
 }
 
 
-QGroupBox* Signal_Source::box_generic(QString boxname, QSettings *ini_settings)
+QGroupBox *Signal_Source::box_generic(QString boxname, QSettings *ini_settings)
 {
-    QGroupBox * grid_groupbox;
+    QGroupBox *grid_groupbox;
     grid_groupbox = new QGroupBox(boxname);
-    QPushButton * update_button = new QPushButton("Update");
-    QGridLayout * layout = new QGridLayout;
+    QPushButton *update_button = new QPushButton("Update");
+    QGridLayout *layout = new QGridLayout;
     uint max_col = 4;
     uint row = 0;
     uint col = 0;
 
     ini_settings->beginGroup("Generic");
     //map_generic = new QMap<QString, QLineEdit *>;
-    foreach(QString key,ini_settings->allKeys())
+    foreach (QString key, ini_settings->allKeys())
         {
             //if (key == "Receiver.sources_count")
             //    {
@@ -96,7 +96,7 @@ QGroupBox* Signal_Source::box_generic(QString boxname, QSettings *ini_settings)
             //    }
             //else
             //    {
-                    map_generic->insert(key, new QLineEdit());
+            map_generic->insert(key, new QLineEdit());
             //    }
         }
     foreach (const QString &key, map_generic->keys())
@@ -110,7 +110,7 @@ QGroupBox* Signal_Source::box_generic(QString boxname, QSettings *ini_settings)
                 }
         }
     ini_settings->endGroup();
-    layout->addWidget(update_button, row, max_col-1, 1, 1, Qt::AlignRight);
+    layout->addWidget(update_button, row, max_col - 1, 1, 1, Qt::AlignRight);
     grid_groupbox->setLayout(layout);
     connect(update_button, SIGNAL(clicked()), this, SLOT(update_sources()));
     return grid_groupbox;
@@ -123,13 +123,12 @@ void Signal_Source::update_sources()
         {
             if (map_generic->value("Receiver.sources_count")->text().isEmpty())
                 {
-                    emit share_source_count_value("Receiver.sources_count",0);
+                    emit share_source_count_value("Receiver.sources_count", 0);
                 }
             else
                 {
-                    emit share_source_count_value("Receiver.sources_count",map_generic->value("Receiver.sources_count")->text().toInt());
+                    emit share_source_count_value("Receiver.sources_count", map_generic->value("Receiver.sources_count")->text().toInt());
                 }
-
         }
     if (map_generic->contains("Receiver.sources_count"))
         {
@@ -146,12 +145,12 @@ void Signal_Source::update_sources()
                     list_map_subgroup_keys->clear();
                     list_map_subgroup_child_keys->clear();
                     list_spacer->clear();
-                    block_tab_widget->widget(i-1)->deleteLater();
-                    block_tab_widget->removeTab(i-1);
+                    block_tab_widget->widget(i - 1)->deleteLater();
+                    block_tab_widget->removeTab(i - 1);
                 }
             for (int i = 0; i < sources_count; i++)
                 {
-                    block_tab_widget->addTab(new QWidget (),block_name+QString::number(i));
+                    block_tab_widget->addTab(new QWidget(), block_name + QString::number(i));
                     //create a main map for each source
                     list_map_implementation->append(new QMap<QString, QLineEdit *>);
                     //create a sub map for each source
@@ -175,7 +174,7 @@ void Signal_Source::update_source_pages()
             if (!block_tab_widget->widget(sourceind)->layout())
                 {
                     block_tab_widget->widget(sourceind)->setLayout(new QVBoxLayout());
-                    QComboBox * source_combobox;
+                    QComboBox *source_combobox;
                     source_combobox = new QComboBox();
                     source_combobox->setObjectName("sourceComboBox");
                     source_combobox->addItem("Select");
@@ -204,7 +203,7 @@ void Signal_Source::update_implementation(QString sourceImpl)
         {
             return;
         }
-    QSettings * implementation_options;
+    QSettings *implementation_options;
     implementation_options = new QSettings(source_settings, QSettings::IniFormat);
     QStringList groupList = implementation_options->childGroups();
     if (groupList.empty())
@@ -218,9 +217,9 @@ void Signal_Source::update_implementation(QString sourceImpl)
     QStringList main_keys_updated;
     QStringList sub_keys_updated;
     int current_source = block_tab_widget->currentIndex();
-    if (block_tab_widget->count() > 1 )
+    if (block_tab_widget->count() > 1)
         {
-            foreach(QString key, main_keys)
+            foreach (QString key, main_keys)
                 {
                     QStringList temp = key.split(".");
                     QString temp_key = temp.at(0) + QString::number(current_source) + "." + temp.at(1);
@@ -232,8 +231,8 @@ void Signal_Source::update_implementation(QString sourceImpl)
             main_keys_updated = main_keys;
         }
 
-    QComboBox * sender_combobox = qobject_cast<QComboBox*>(sender());
-    if( sender_combobox != NULL )
+    QComboBox *sender_combobox = qobject_cast<QComboBox *>(sender());
+    if (sender_combobox != NULL)
         {
             //clear the main map for current source
             list_map_implementation->at(current_source)->clear();
@@ -249,9 +248,9 @@ void Signal_Source::update_implementation(QString sourceImpl)
                 {
                     list_map_implementation->at(current_source)->insert("SignalSource.implementation", new QLineEdit(imp_value));
                 }
-            QGroupBox * mainBox = box_implementation(top_group,main_keys_updated);
-            QList<QGroupBox*> boxList = sender_combobox->parentWidget()->layout()->parentWidget()->findChildren<QGroupBox*>(QString(), Qt::FindDirectChildrenOnly);
-            foreach(QGroupBox * box, boxList)
+            QGroupBox *mainBox = box_implementation(top_group, main_keys_updated);
+            QList<QGroupBox *> boxList = sender_combobox->parentWidget()->layout()->parentWidget()->findChildren<QGroupBox *>(QString(), Qt::FindDirectChildrenOnly);
+            foreach (QGroupBox *box, boxList)
                 {
                     sender_combobox->parentWidget()->layout()->removeWidget(box);
                     delete box;
@@ -259,22 +258,22 @@ void Signal_Source::update_implementation(QString sourceImpl)
             //Remove spacer
             sender_combobox->parentWidget()->layout()->removeItem(list_spacer->at(current_source));
             sender_combobox->parentWidget()->layout()->addWidget(mainBox);
-            sender_combobox->parentWidget()->layout()->setAlignment(mainBox,Qt::AlignTop);
+            sender_combobox->parentWidget()->layout()->setAlignment(mainBox, Qt::AlignTop);
             //Add Spacer
             sender_combobox->parentWidget()->layout()->addItem(list_spacer->at(current_source));
         }
-    map_subgroup_list->value(current_source)->operator =(implementation_options->childGroups());
+    map_subgroup_list->value(current_source)->operator=(implementation_options->childGroups());
     if (!((*map_subgroup_list->value(current_source)).empty()))
         {
-            foreach (QString sub_group,*map_subgroup_list->value(current_source))
+            foreach (QString sub_group, *map_subgroup_list->value(current_source))
                 {
                     QStringList temp = main_keys_updated.filter(sub_group);
                     list_map_subgroup_keys->at(current_source)->insert(temp.at(0), temp.at(0));
                     implementation_options->beginGroup(sub_group);
                     QStringList sub_keys = implementation_options->childKeys();
-                    if (block_tab_widget->count() > 1 )
+                    if (block_tab_widget->count() > 1)
                         {
-                            foreach(QString key,sub_keys)
+                            foreach (QString key, sub_keys)
                                 {
                                     QStringList temp = key.split(".");
                                     QString temp_key = temp.at(0) + QString::number(current_source) + "." + temp.at(1);
@@ -292,20 +291,20 @@ void Signal_Source::update_implementation(QString sourceImpl)
 }
 
 
-QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_keys)
+QGroupBox *Signal_Source::box_implementation(QString boxname, QStringList group_keys)
 {
-    QGroupBox * grid_groupbox;
+    QGroupBox *grid_groupbox;
     grid_groupbox = new QGroupBox(boxname);
-    QPushButton * update_button = new QPushButton("Update");
-    QGridLayout * layout = new QGridLayout;
+    QPushButton *update_button = new QPushButton("Update");
+    QGridLayout *layout = new QGridLayout;
     uint max_col = 4;
-    QComboBox * dumpComboBox;
-    QComboBox * repeatComboBox;
-    QComboBox * enable_throttle_controlComboBox;
-    QComboBox * item_typeComboBox;
-    QComboBox * subdeviceComboBox;
-    QComboBox * clock_sourceComboBox;
-    QComboBox * AGCComboBox;
+    QComboBox *dumpComboBox;
+    QComboBox *repeatComboBox;
+    QComboBox *enable_throttle_controlComboBox;
+    QComboBox *item_typeComboBox;
+    QComboBox *subdeviceComboBox;
+    QComboBox *clock_sourceComboBox;
+    QComboBox *AGCComboBox;
 
     uint row = 0;
     uint col = 0;
@@ -315,39 +314,39 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
     QStringList group_pars;
     QStringList group_dump;
 
-    QRegularExpression key_File_Signal_Source( "File_Signal_Source" );
-    QRegularExpression key_UHD_Signal_Source( "UHD_Signal_Source" );
-    QRegularExpression key_Osmosdr_Signal_Source( "Osmosdr_Signal_Source" );
-    QRegularExpression key_RtlTcp_Signal_Source( "RtlTcp_Signal_Source" );
+    QRegularExpression key_File_Signal_Source("File_Signal_Source");
+    QRegularExpression key_UHD_Signal_Source("UHD_Signal_Source");
+    QRegularExpression key_Osmosdr_Signal_Source("Osmosdr_Signal_Source");
+    QRegularExpression key_RtlTcp_Signal_Source("RtlTcp_Signal_Source");
 
-    QRegularExpression key_dump( "dump(?!(_filename))" );
-    QRegularExpression key_dump_filename( "dump_filename" );
-    QRegularExpression key_filename( "\\.filename" );
-    QRegularExpression key_sampling_frequency( "sampling_freq" );
-    QRegularExpression key_device_address( "device_address" );
-    QRegularExpression key_subdevice( "\\.subdevice" );
-    QRegularExpression key_samples( "\\.samples" );
-    QRegularExpression key_item_type( "\\.item_type" );
-    QRegularExpression key_repeat( "\\.repeat" );
-    QRegularExpression key_enable_throttle_control( "\\.enable_throttle_control" );
-    QRegularExpression key_implementation( "\\.implementation" );
-    QRegularExpression key_clock_source( "\\.clock_source" );
-    QRegularExpression key_freq( "^(SignalSource)[0-9]{0,}.(freq)$" );
-    QRegularExpression key_gain( "\\.gain$" );
-    QRegularExpression key_rf_gain( "\\.rf_gain$" );
-    QRegularExpression key_if_gain( "\\.if_gain$" );
-    QRegularExpression key_AGC_enabled( "\\.AGC_enabled" );
+    QRegularExpression key_dump("dump(?!(_filename))");
+    QRegularExpression key_dump_filename("dump_filename");
+    QRegularExpression key_filename("\\.filename");
+    QRegularExpression key_sampling_frequency("sampling_freq");
+    QRegularExpression key_device_address("device_address");
+    QRegularExpression key_subdevice("\\.subdevice");
+    QRegularExpression key_samples("\\.samples");
+    QRegularExpression key_item_type("\\.item_type");
+    QRegularExpression key_repeat("\\.repeat");
+    QRegularExpression key_enable_throttle_control("\\.enable_throttle_control");
+    QRegularExpression key_implementation("\\.implementation");
+    QRegularExpression key_clock_source("\\.clock_source");
+    QRegularExpression key_freq("^(SignalSource)[0-9]{0,}.(freq)$");
+    QRegularExpression key_gain("\\.gain$");
+    QRegularExpression key_rf_gain("\\.rf_gain$");
+    QRegularExpression key_if_gain("\\.if_gain$");
+    QRegularExpression key_AGC_enabled("\\.AGC_enabled");
 
     QString current_implementation;
     for (int i = 0; i < list_map_implementation->count(); i++)
         {
             foreach (QString key, list_map_implementation->at(i)->keys())
                 {
-                     QRegularExpressionMatch match_implementation = key_implementation.match(key);
-                     if (match_implementation.hasMatch())
-                         {
-                             current_implementation = list_map_implementation->at(i)->value(key)->text();
-                         }
+                    QRegularExpressionMatch match_implementation = key_implementation.match(key);
+                    if (match_implementation.hasMatch())
+                        {
+                            current_implementation = list_map_implementation->at(i)->value(key)->text();
+                        }
                 }
         }
     QRegularExpressionMatch match_File_Signal_Source = key_File_Signal_Source.match(current_implementation);
@@ -355,7 +354,7 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
     QRegularExpressionMatch match_Osmosdr_Signal_Source = key_Osmosdr_Signal_Source.match(current_implementation);
     QRegularExpressionMatch match_RtlTcp_Signal_Source = key_RtlTcp_Signal_Source.match(current_implementation);
 
-    foreach(QString key, group_keys)
+    foreach (QString key, group_keys)
         {
             //Insert Items in main map for this source
             QRegularExpressionMatch match_dump = key_dump.match(key);
@@ -454,7 +453,7 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                 }
             else if (match_item_type.hasMatch())
                 {
-                    if(match_File_Signal_Source.hasMatch())
+                    if (match_File_Signal_Source.hasMatch())
                         {
                             item_typeComboBox = new QComboBox();
                             item_typeComboBox->setObjectName("item_typeComboBox");
@@ -467,7 +466,7 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                             item_typeComboBox->setCurrentIndex(5);
                             list_map_comboboxes->at(current_source)->insert(key, item_typeComboBox);
                         }
-                    else if(match_UHD_Signal_Source.hasMatch())
+                    else if (match_UHD_Signal_Source.hasMatch())
                         {
                             item_typeComboBox = new QComboBox();
                             item_typeComboBox->setObjectName("item_typeComboBox");
@@ -493,30 +492,30 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                 }
             else
                 {
-                    if(match_dump_filename.hasMatch())
+                    if (match_dump_filename.hasMatch())
                         {
                             list_map_implementation->at(current_source)->insert(key, new QLineEdit("./my_capture.dat"));
                         }
-                    else if(match_samples.hasMatch())
+                    else if (match_samples.hasMatch())
                         {
                             list_map_implementation->at(current_source)->insert(key, new QLineEdit("0"));
                         }
-                    else if(match_gain.hasMatch())
+                    else if (match_gain.hasMatch())
                         {
-                            if(match_UHD_Signal_Source.hasMatch())
+                            if (match_UHD_Signal_Source.hasMatch())
                                 {
                                     list_map_implementation->at(current_source)->insert(key, new QLineEdit("50"));
                                 }
-                            if(match_Osmosdr_Signal_Source.hasMatch() || match_RtlTcp_Signal_Source.hasMatch())
+                            if (match_Osmosdr_Signal_Source.hasMatch() || match_RtlTcp_Signal_Source.hasMatch())
                                 {
                                     list_map_implementation->at(current_source)->insert(key, new QLineEdit("40"));
                                 }
                         }
-                    else if(match_rf_gain.hasMatch())
+                    else if (match_rf_gain.hasMatch())
                         {
                             list_map_implementation->at(current_source)->insert(key, new QLineEdit("40"));
                         }
-                    else if(match_if_gain.hasMatch())
+                    else if (match_if_gain.hasMatch())
                         {
                             list_map_implementation->at(current_source)->insert(key, new QLineEdit("40"));
                         }
@@ -536,8 +535,7 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                         }
                 }
 
-            if (!match_dump_filename.hasMatch() && !match_filename.hasMatch() && !match_dump.hasMatch() && !match_sampling_frequency.hasMatch()
-                    && !match_device_address.hasMatch() && !match_freq.hasMatch() )
+            if (!match_dump_filename.hasMatch() && !match_filename.hasMatch() && !match_dump.hasMatch() && !match_sampling_frequency.hasMatch() && !match_device_address.hasMatch() && !match_freq.hasMatch())
                 {
                     group_pars << key;
                 }
@@ -563,8 +561,7 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
             QRegularExpressionMatch match_clock_source2 = key_clock_source.match(key);
             QRegularExpressionMatch match_AGC_enabled2 = key_AGC_enabled.match(key);
 
-            if( match_repeat2.hasMatch() || match_enable_throttle_control2.hasMatch() || match_item_type2.hasMatch()
-                    || match_subdevice2.hasMatch() || match_clock_source2.hasMatch() || match_AGC_enabled2.hasMatch())
+            if (match_repeat2.hasMatch() || match_enable_throttle_control2.hasMatch() || match_item_type2.hasMatch() || match_subdevice2.hasMatch() || match_clock_source2.hasMatch() || match_AGC_enabled2.hasMatch())
                 {
                     layout->addWidget(new QLabel(key), row, col++);
                     layout->addWidget(list_map_comboboxes->at(current_source)->value(key), row, col++);
@@ -596,13 +593,13 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
                     layout->addWidget(list_map_comboboxes->at(current_source)->value(key), row, col++);
                 }
 
-        if ((col % max_col) == 0)
-            {
-                col = 0;
-                row++;
-            }
+            if ((col % max_col) == 0)
+                {
+                    col = 0;
+                    row++;
+                }
         }
-    layout->addWidget(update_button, row, max_col-1, 1, 1, Qt::AlignRight);
+    layout->addWidget(update_button, row, max_col - 1, 1, 1, Qt::AlignRight);
     grid_groupbox->setLayout(layout);
     connect(update_button, SIGNAL(clicked()), this, SLOT(add_sub_blocks()));
     grid_groupbox->setObjectName("MainGroupBox");
@@ -612,8 +609,8 @@ QGroupBox* Signal_Source::box_implementation(QString boxname, QStringList group_
 
 void Signal_Source::add_sub_blocks()
 {
-    QPushButton * sender_button = qobject_cast<QPushButton*>(sender());
-    QWidget * page_widget=  new (QWidget);
+    QPushButton *sender_button = qobject_cast<QPushButton *>(sender());
+    QWidget *page_widget = new (QWidget);
     int current_source = block_tab_widget->currentIndex();
     QString share_key;
     if (block_tab_widget->count() > 1)
@@ -631,7 +628,7 @@ void Signal_Source::add_sub_blocks()
                 {
                     value = 1;
                 }
-            emit share_rf_channels(share_key,value);
+            emit share_rf_channels(share_key, value);
         }
     else
         {
@@ -645,14 +642,14 @@ void Signal_Source::add_sub_blocks()
             QList<QGroupBox *> subbox_list = page_widget->findChildren<QGroupBox *>("SuBGroupBox");
             list_map_sub->at(current_source)->clear();
             //mapSub->clear();
-            foreach(QGroupBox * p, subbox_list)
+            foreach (QGroupBox *p, subbox_list)
                 {
                     p->setParent(NULL);
                     p->deleteLater();
                 }
             if ((list_map_subgroup_keys->count() - 1 >= current_source))
                 {
-                    foreach(const QString subgroup,list_map_subgroup_keys->at(current_source)->keys())
+                    foreach (const QString subgroup, list_map_subgroup_keys->at(current_source)->keys())
                         {
                             if (list_map_implementation->at(current_source)->contains(subgroup))
                                 {
@@ -669,21 +666,21 @@ void Signal_Source::add_sub_blocks()
                                                         {
                                                             sub_keys_updated.append(key + QString::number(i));
                                                         }
-                                                    QGroupBox * sub_box = sub_box_implementation(subgroup + QString::number(i), sub_keys_updated);
+                                                    QGroupBox *sub_box = sub_box_implementation(subgroup + QString::number(i), sub_keys_updated);
                                                     sender_button->parentWidget()->parentWidget()->layout()->addWidget(sub_box);
                                                 }
                                         }
                                     else
                                         {
-                                            if(sub_group_count == 1)
+                                            if (sub_group_count == 1)
                                                 {
                                                     //list_map_sub->append(new QMap<QString, QLineEdit *>);
                                                     QStringList sub_keys;
                                                     sub_keys = list_map_subgroup_child_keys->at(current_source)->value(subgroup);
-                                                    QGroupBox * sub_box = sub_box_implementation(subgroup, sub_keys);
+                                                    QGroupBox *sub_box = sub_box_implementation(subgroup, sub_keys);
                                                     sender_button->parentWidget()->parentWidget()->layout()->addWidget(sub_box);
                                                 }
-                                         }
+                                        }
                                 }
                         }
                 }
@@ -693,19 +690,19 @@ void Signal_Source::add_sub_blocks()
 }
 
 
-QGroupBox* Signal_Source::sub_box_implementation(QString boxname, QStringList group_keys)
+QGroupBox *Signal_Source::sub_box_implementation(QString boxname, QStringList group_keys)
 {
-    QGroupBox * grid_groupbox;
+    QGroupBox *grid_groupbox;
     grid_groupbox = new QGroupBox(boxname);
-    QGridLayout * layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout;
     uint max_col = 4;
     uint row = 0;
     uint col = 0;
     int current_source = block_tab_widget->currentIndex();
-    foreach(QString key,group_keys)
+    foreach (QString key, group_keys)
         {
             list_map_sub->at(current_source)->insert(key, new QLineEdit());
-            QRegularExpression key_re1( "^(SignalSource)[0-9]{0,}.(freq)[0-9]{0,}$" );
+            QRegularExpression key_re1("^(SignalSource)[0-9]{0,}.(freq)[0-9]{0,}$");
             QRegularExpressionMatch match = key_re1.match(key);
             if (match.hasMatch())
                 {
@@ -728,10 +725,10 @@ QGroupBox* Signal_Source::sub_box_implementation(QString boxname, QStringList gr
 }
 
 
-QMap<QString, QString >* Signal_Source::get_options()
+QMap<QString, QString> *Signal_Source::get_options()
 {
-    QMap<QString, QString > * map_options;
-    map_options = new QMap<QString, QString >;
+    QMap<QString, QString> *map_options;
+    map_options = new QMap<QString, QString>;
     foreach (QString key, map_generic->keys())
         {
             map_options->insert(key, map_generic->value(key)->text());

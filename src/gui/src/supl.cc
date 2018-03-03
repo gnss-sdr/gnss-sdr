@@ -40,14 +40,14 @@ Supl::Supl(QWidget *parent, QString block_name_, QString dir_path_) : QWidget(pa
     block_dir->setNameFilters(name_filters);
     foreach (QFileInfo item, block_dir->entryInfoList())
         {
-            if (item.isFile() && (item.fileName() != "generic.ini") )
+            if (item.isFile() && (item.fileName() != "generic.ini"))
                 {
                     block_implementation_list.append(item.baseName());
                     block_implementation_list_path.append(item.filePath());
                 }
         }
-    map_implementation = new QMap <QString, QLineEdit *>;
-    list_spacer = new QList <QSpacerItem *>;
+    map_implementation = new QMap<QString, QLineEdit *>;
+    list_spacer = new QList<QSpacerItem *>;
     block_tab_widget = new QTabWidget();
     block_scroll_area_widget = new QWidget();
     block_scroll_area_widget_layout = new QVBoxLayout;
@@ -56,7 +56,7 @@ Supl::Supl(QWidget *parent, QString block_name_, QString dir_path_) : QWidget(pa
     block_scroll_area->setWidget(block_scroll_area_widget);
     block_scroll_area->setWidgetResizable(true);
     block_scroll_area_widget_layout->addWidget(block_tab_widget);
-    QVBoxLayout * layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(block_scroll_area);
     setLayout(layout);
     setup_page();
@@ -68,7 +68,7 @@ void Supl::setup_page()
     list_spacer->append(new QSpacerItem(10, 10, QSizePolicy::Minimum, QSizePolicy::Expanding));
     block_tab_widget->addTab(new QWidget(), block_name);
     block_tab_widget->widget(0)->setLayout(new QVBoxLayout());
-    QComboBox * source_combobox;
+    QComboBox *source_combobox;
     source_combobox = new QComboBox();
     source_combobox->setObjectName("sourceComboBox");
     source_combobox->addItem("Select");
@@ -91,7 +91,7 @@ void Supl::update_implementation(QString selected_implementation)
         {
             return;
         }
-    QSettings * implementation_options;
+    QSettings *implementation_options;
     implementation_options = new QSettings(source_settings, QSettings::IniFormat);
     QStringList group_list = implementation_options->childGroups();
     if (group_list.empty())
@@ -103,15 +103,15 @@ void Supl::update_implementation(QString selected_implementation)
     implementation_options->beginGroup(main_group);
     QStringList main_keys = implementation_options->childKeys();
     implementation_options->endGroup();
-    QComboBox* combobox = qobject_cast<QComboBox*>(sender());
-    if( combobox != NULL )
+    QComboBox *combobox = qobject_cast<QComboBox *>(sender());
+    if (combobox != NULL)
         {
             //clear the main map
             map_implementation->clear();
             //map_implementation->insert("SUPL.implementation",new QLineEdit(implementation_value));
-            QGroupBox * option_box = box_implementation(main_group, main_keys);
-            QList<QGroupBox*> box_list = combobox->parentWidget()->findChildren<QGroupBox*>(QString(), Qt::FindDirectChildrenOnly);
-            foreach(QGroupBox* box, box_list)
+            QGroupBox *option_box = box_implementation(main_group, main_keys);
+            QList<QGroupBox *> box_list = combobox->parentWidget()->findChildren<QGroupBox *>(QString(), Qt::FindDirectChildrenOnly);
+            foreach (QGroupBox *box, box_list)
                 {
                     combobox->parentWidget()->layout()->removeWidget(box);
                     delete box;
@@ -126,15 +126,15 @@ void Supl::update_implementation(QString selected_implementation)
 }
 
 
-QGroupBox* Supl::box_implementation(QString box_name, QStringList current_group_keys)
+QGroupBox *Supl::box_implementation(QString box_name, QStringList current_group_keys)
 {
-    QGroupBox * grid_groupbox;
+    QGroupBox *grid_groupbox;
     grid_groupbox = new QGroupBox(box_name);
     QGridLayout *layout = new QGridLayout;
     uint max_col = 4;
     uint row = 0;
     uint col = 0;
-    foreach(QString key,current_group_keys)
+    foreach (QString key, current_group_keys)
         {
             //Insert Items in main map
             map_implementation->insert(key, new QLineEdit());
@@ -152,10 +152,10 @@ QGroupBox* Supl::box_implementation(QString box_name, QStringList current_group_
 }
 
 
-QMap<QString, QString > * Supl::get_options()
+QMap<QString, QString> *Supl::get_options()
 {
-    QMap<QString, QString > * map_options;
-    map_options  = new QMap<QString, QString >;
+    QMap<QString, QString> *map_options;
+    map_options = new QMap<QString, QString>;
     foreach (QString key, map_implementation->keys())
         {
             map_options->insert(key, map_implementation->value(key)->text());

@@ -32,43 +32,44 @@
 
 #include "gnssgui.h"
 
-Gnss_GUI::Gnss_GUI(QWidget *parent): QDialog(parent)
+Gnss_GUI::Gnss_GUI(QWidget *parent) : QDialog(parent)
 {
-    #ifdef GUI_FILES_DIR
-        {
-            dir_path.append(GUI_FILES_DIR);
-            if (dir_path.isEmpty())
-                {
-                    dir_path.append(QStandardPaths::locate(QStandardPaths::HomeLocation, QString("gui_ini_files"), QStandardPaths::LocateDirectory));
-                }
-            else
-                {
-                    if (!QDir(dir_path+"gui_ini_files").exists())
-                        {
-                            dir_path = "";
-                        }
-                    else
-                        {
-                            dir_path = dir_path + "gui_ini_files";
-                        }
-                }
-        }
-    #else
-        {
-            dir_path.append(QStandardPaths::locate(QStandardPaths::HomeLocation, QString("gui_ini_files"), QStandardPaths::LocateDirectory));
-        }
-    #endif
+#ifdef GUI_FILES_DIR
+    {
+        dir_path.append(GUI_FILES_DIR);
+        if (dir_path.isEmpty())
+            {
+                dir_path.append(QStandardPaths::locate(QStandardPaths::HomeLocation, QString("gui_ini_files"), QStandardPaths::LocateDirectory));
+            }
+        else
+            {
+                if (!QDir(dir_path + "gui_ini_files").exists())
+                    {
+                        dir_path = "";
+                    }
+                else
+                    {
+                        dir_path = dir_path + "gui_ini_files";
+                    }
+            }
+    }
+#else
+    {
+        dir_path.append(QStandardPaths::locate(QStandardPaths::HomeLocation, QString("gui_ini_files"), QStandardPaths::LocateDirectory));
+    }
+#endif
     if (dir_path.isEmpty())
         {
             QString home_location = QStandardPaths::locate(QStandardPaths::HomeLocation, "", QStandardPaths::LocateDirectory);
             QMessageBox::information(this, tr("Error"),
-                    "<qt>Folder <b>gui_ini_files</b> cannot be located.<br>"
-                    "Please make sure it is located in the location "
-                    "specified by qmake <b>GUI_FILES_LOCATION</b> variable if you set it. Else it should be"
-                    "present in your <b>"+ home_location+"</b>.<br> GUI will not be populated.</qt>");
+                "<qt>Folder <b>gui_ini_files</b> cannot be located.<br>"
+                "Please make sure it is located in the location "
+                "specified by qmake <b>GUI_FILES_LOCATION</b> variable if you set it. Else it should be"
+                "present in your <b>" +
+                    home_location + "</b>.<br> GUI will not be populated.</qt>");
             return;
         }
-    map_options = new QMap <QString, QString>;
+    map_options = new QMap<QString, QString>;
     base_dir = new QDir(dir_path);
     base_dir->setFilter(QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Dirs);
     foreach (QFileInfo mItem, base_dir->entryInfoList())
@@ -97,10 +98,10 @@ Gnss_GUI::Gnss_GUI(QWidget *parent): QDialog(parent)
     tab_widget->addTab(page_observables, "Observables");
     page_pvt = new Pvt(this, "Pvt", dir_path + "/Pvt");
     tab_widget->addTab(page_pvt, "Pvt");
-    connect(page_signal_source, SIGNAL(share_source_count_value(QString,int)), page_signal_conditioner, SLOT(listener_source_count(QString,int)));
-    connect(page_signal_source, SIGNAL(share_rf_channels(QString,int)), page_signal_conditioner, SLOT(listener_rf_channel(QString,int)));
-    connect(page_signal_source, SIGNAL(share_source_count_value(QString,int)), page_channels, SLOT(listener_source_count(QString,int)));
-    connect(page_signal_source, SIGNAL(share_rf_channels(QString,int)), page_channels, SLOT(listener_rf_channel(QString,int)));
+    connect(page_signal_source, SIGNAL(share_source_count_value(QString, int)), page_signal_conditioner, SLOT(listener_source_count(QString, int)));
+    connect(page_signal_source, SIGNAL(share_rf_channels(QString, int)), page_signal_conditioner, SLOT(listener_rf_channel(QString, int)));
+    connect(page_signal_source, SIGNAL(share_source_count_value(QString, int)), page_channels, SLOT(listener_source_count(QString, int)));
+    connect(page_signal_source, SIGNAL(share_rf_channels(QString, int)), page_channels, SLOT(listener_rf_channel(QString, int)));
 
     //Vertical Layout is the main Layout
     QVBoxLayout *main_layout = new QVBoxLayout;
@@ -147,7 +148,7 @@ void Gnss_GUI::create_menu()
 void Gnss_GUI::create_generate_box()
 {
     generate_box = new QGroupBox("Generate");
-    QHBoxLayout * generate_layout = new QHBoxLayout();
+    QHBoxLayout *generate_layout = new QHBoxLayout();
     generate_button = new QPushButton("Generate");
     connect(generate_button, SIGNAL(clicked()), this, SLOT(generate_configuration_file()));
     output_filename_editor = new QLineEdit("default_conf");
@@ -165,10 +166,10 @@ void Gnss_GUI::generate_configuration_file()
 {
     QString file_name = output_filename_editor->text().split(".").at(0);
     QFile conf_file(file_name + ".conf");
-    QList <QMap <QString, QString> *> * list_map_options;
-    list_map_options = new QList <QMap <QString, QString> *>;
-    QMap <QString, QString> * map_temp;
-    map_temp = new QMap <QString, QString>;
+    QList<QMap<QString, QString> *> *list_map_options;
+    list_map_options = new QList<QMap<QString, QString> *>;
+    QMap<QString, QString> *map_temp;
+    map_temp = new QMap<QString, QString>;
     list_map_options->append(page_global_options->get_options());
     list_map_options->append(page_supl->get_options());
     list_map_options->append(page_signal_source->get_options());
@@ -193,7 +194,7 @@ void Gnss_GUI::generate_configuration_file()
                                                 {
                                                     out << key << "=" << map_temp->value(key) << endl;
                                                 }
-                                         }
+                                        }
                                 }
                         }
                 }
@@ -213,7 +214,6 @@ void Gnss_GUI::generate_configuration_file()
         {
             conf_file.close();
         }
-
 }
 
 
@@ -279,10 +279,10 @@ void Gnss_GUI::load_none()
 void Gnss_GUI::help_slot()
 {
     QMessageBox::about(this, tr("About Menu"),
-            tr("This is the <b>GUI</b> for generating the configuration files for <b>GNSS-SDR</b>. <br>"
-                    "Please visit <b>GNSS-SDR</b> website by clicking <a href='http://gnss-sdr.org'>GNSS-SDR.</a><br>"
-                    "Please see <b>GNSS-SDR</b> Dcoumentation by clicking <a href='http://gnss-sdr.org/docs/'>Docs.</a><br>"
-                    "Please see <b>GNSS-SDR-GUI</b> Dcoumentation by clicking <a href='https://github.com/UHaider/gnss_sdr_gui'>GUI-Docs.</a><br>"));
+        tr("This is the <b>GUI</b> for generating the configuration files for <b>GNSS-SDR</b>. <br>"
+           "Please visit <b>GNSS-SDR</b> website by clicking <a href='http://gnss-sdr.org'>GNSS-SDR.</a><br>"
+           "Please see <b>GNSS-SDR</b> Dcoumentation by clicking <a href='http://gnss-sdr.org/docs/'>Docs.</a><br>"
+           "Please see <b>GNSS-SDR-GUI</b> Dcoumentation by clicking <a href='https://github.com/UHaider/gnss_sdr_gui'>GUI-Docs.</a><br>"));
 }
 
 

@@ -22,10 +22,10 @@
 
 struct volk_gnsssdr_machine *volk_gnsssdr_machines[] = {
 %for machine in machines:
-#ifdef LV_MACHINE_${machine.name.upper()}
+#ifdef LV_MACHINE_${machine.name.upper() }
 &volk_gnsssdr_machine_${machine.name},
 #endif
 %endfor
 };
 
-unsigned int n_volk_gnsssdr_machines = sizeof(volk_gnsssdr_machines)/sizeof(*volk_gnsssdr_machines);
+unsigned int n_volk_gnsssdr_machines = sizeof(volk_gnsssdr_machines) / sizeof(*volk_gnsssdr_machines);

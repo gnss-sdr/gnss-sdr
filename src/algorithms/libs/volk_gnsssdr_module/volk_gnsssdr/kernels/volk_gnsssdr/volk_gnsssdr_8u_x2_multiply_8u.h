@@ -72,7 +72,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_u_avx2(unsigned char* cChar, c
     const unsigned char* a = aChar;
     const unsigned char* b = bChar;
 
-    for(number = 0; number < avx2_iters; number++)
+    for (number = 0; number < avx2_iters; number++)
         {
             x = _mm256_loadu_si256((__m256i*)a);
             y = _mm256_loadu_si256((__m256i*)b);
@@ -101,7 +101,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_u_avx2(unsigned char* cChar, c
             c += 32;
         }
 
-    for (i = avx2_iters * 32; i < num_points ; ++i)
+    for (i = avx2_iters * 32; i < num_points; ++i)
         {
             *c++ = (*a++) * (*b++);
         }
@@ -123,7 +123,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_u_sse3(unsigned char* cChar, c
     const unsigned char* a = aChar;
     const unsigned char* b = bChar;
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             x = _mm_lddqu_si128((__m128i*)a);
             y = _mm_lddqu_si128((__m128i*)b);
@@ -152,7 +152,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_u_sse3(unsigned char* cChar, c
             c += 16;
         }
 
-    for (i = sse_iters * 16; i < num_points ; ++i)
+    for (i = sse_iters * 16; i < num_points; ++i)
         {
             *c++ = (*a++) * (*b++);
         }
@@ -168,7 +168,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_generic(unsigned char* cChar, 
     const unsigned char* bPtr = bChar;
     unsigned int number;
 
-    for(number = 0; number < num_points; number++)
+    for (number = 0; number < num_points; number++)
         {
             *cPtr++ = (*aPtr++) * (*bPtr++);
         }
@@ -189,7 +189,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_a_sse3(unsigned char* cChar, c
     const unsigned char* a = aChar;
     const unsigned char* b = bChar;
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);
@@ -240,7 +240,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_a_avx2(unsigned char* cChar, c
     const unsigned char* a = aChar;
     const unsigned char* b = bChar;
 
-    for(number = 0; number < avx2_iters; number++)
+    for (number = 0; number < avx2_iters; number++)
         {
             x = _mm256_load_si256((__m256i*)a);
             y = _mm256_load_si256((__m256i*)b);
@@ -269,7 +269,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_a_avx2(unsigned char* cChar, c
             c += 32;
         }
 
-    for (i = avx2_iters * 32; i < num_points ; ++i)
+    for (i = avx2_iters * 32; i < num_points; ++i)
         {
             *c++ = (*a++) * (*b++);
         }

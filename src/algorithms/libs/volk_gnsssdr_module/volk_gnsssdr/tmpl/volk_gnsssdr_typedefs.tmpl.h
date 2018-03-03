@@ -24,6 +24,6 @@
 
 %for kern in kernels:
 typedef void (*${kern.pname})(${kern.arglist_types});
-% endfor
+%endfor
 
 #endif /*INCLUDED_VOLK_GNSSSDR_TYPEDEFS*/

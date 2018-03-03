@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SVID_H_
-#define	_SVID_H_
+#ifndef _SVID_H_
+#define _SVID_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* SVID */
-typedef long	 SVID_t;
+typedef long SVID_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_SVID;
@@ -36,5 +36,5 @@ per_type_encoder_f SVID_encode_uper;
 }
 #endif
 
-#endif	/* _SVID_H_ */
+#endif /* _SVID_H_ */
 #include <asn_internal.h>

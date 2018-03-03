@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_TimeslotISCP_H_
-#define	_TimeslotISCP_H_
+#ifndef _TimeslotISCP_H_
+#define _TimeslotISCP_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* TimeslotISCP */
-typedef long	 TimeslotISCP_t;
+typedef long TimeslotISCP_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_TimeslotISCP;
@@ -36,5 +36,5 @@ per_type_encoder_f TimeslotISCP_encode_uper;
 }
 #endif
 
-#endif	/* _TimeslotISCP_H_ */
+#endif /* _TimeslotISCP_H_ */
 #include <asn_internal.h>

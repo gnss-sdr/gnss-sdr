@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SystemInfoIndex_H_
-#define	_SystemInfoIndex_H_
+#ifndef _SystemInfoIndex_H_
+#define _SystemInfoIndex_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* SystemInfoIndex */
-typedef long	 SystemInfoIndex_t;
+typedef long SystemInfoIndex_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_SystemInfoIndex;
@@ -36,5 +36,5 @@ per_type_encoder_f SystemInfoIndex_encode_uper;
 }
 #endif
 
-#endif	/* _SystemInfoIndex_H_ */
+#endif /* _SystemInfoIndex_H_ */
 #include <asn_internal.h>

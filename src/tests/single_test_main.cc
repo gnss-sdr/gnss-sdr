@@ -29,15 +29,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include <cmath>
-#include <iostream>
-#include <queue>
-#include <boost/thread.hpp>
-#include <boost/filesystem.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gtest/gtest.h>
-#include <gnuradio/msg_queue.h>
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "gps_navigation_message.h"
@@ -48,10 +39,16 @@
 #include "gps_ref_location.h"
 #include "gps_ref_time.h"
 #include "galileo_navigation_message.h"
-//#include "sbas_ionospheric_correction.h"
-//#include "sbas_telemetry_data.h"
-//#include "sbas_ephemeris.h"
-//#include "sbas_satellite_correction.h"
+#include <boost/thread.hpp>
+#include <boost/filesystem.hpp>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
+#include <cmath>
+#include <iostream>
+#include <queue>
+
 
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
@@ -65,20 +62,22 @@ int main(int argc, char **argv)
 {
     google::ParseCommandLineFlags(&argc, &argv, true);
     try
-    {
+        {
             testing::InitGoogleTest(&argc, argv);
-    }
-    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+        }
+    catch (...)
+        {
+        }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
     google::InitGoogleLogging(argv[0]);
     int res = 0;
     try
-    {
+        {
             res = RUN_ALL_TESTS();
-    }
-    catch(...)
-    {
+        }
+    catch (...)
+        {
             LOG(WARNING) << "Unexpected catch";
-    }
+        }
     google::ShutDownCommandLineFlags();
     return res;
 }

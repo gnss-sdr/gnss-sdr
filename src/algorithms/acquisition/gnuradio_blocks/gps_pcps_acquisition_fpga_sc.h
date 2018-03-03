@@ -63,12 +63,12 @@ typedef boost::shared_ptr<gps_pcps_acquisition_fpga_sc> gps_pcps_acquisition_fpg
 
 gps_pcps_acquisition_fpga_sc_sptr
 gps_pcps_make_acquisition_fpga_sc(unsigned int sampled_ms,
-        unsigned int max_dwells, unsigned int doppler_max, long freq,
-        long fs_in, int samples_per_ms, int samples_per_code,
-        int vector_length_, unsigned int nsamples_total_,
-        bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-        unsigned int select_queue_Fpga, std::string device_name, bool dump,
-        std::string dump_filename);
+    unsigned int max_dwells, unsigned int doppler_max, long freq,
+    long fs_in, int samples_per_ms, int samples_per_code,
+    int vector_length_, unsigned int nsamples_total_,
+    bool bit_transition_flag, bool use_CFAR_algorithm_flag,
+    unsigned int select_queue_Fpga, std::string device_name, bool dump,
+    std::string dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -81,20 +81,20 @@ class gps_pcps_acquisition_fpga_sc : public gr::block
 private:
     friend gps_pcps_acquisition_fpga_sc_sptr
     gps_pcps_make_acquisition_fpga_sc(unsigned int sampled_ms,
-            unsigned int max_dwells, unsigned int doppler_max, long freq,
-            long fs_in, int samples_per_ms, int samples_per_code,
-            int vector_length, unsigned int nsamples_total,
-            bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-            unsigned int select_queue_Fpga, std::string device_name, bool dump,
-            std::string dump_filename);
+        unsigned int max_dwells, unsigned int doppler_max, long freq,
+        long fs_in, int samples_per_ms, int samples_per_code,
+        int vector_length, unsigned int nsamples_total,
+        bool bit_transition_flag, bool use_CFAR_algorithm_flag,
+        unsigned int select_queue_Fpga, std::string device_name, bool dump,
+        std::string dump_filename);
 
     gps_pcps_acquisition_fpga_sc(unsigned int sampled_ms,
-            unsigned int max_dwells, unsigned int doppler_max, long freq,
-            long fs_in, int samples_per_ms, int samples_per_code,
-            int vector_length, unsigned int nsamples_total,
-            bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-            unsigned int select_queue_Fpga, std::string device_name, bool dump,
-            std::string dump_filename);
+        unsigned int max_dwells, unsigned int doppler_max, long freq,
+        long fs_in, int samples_per_ms, int samples_per_code,
+        int vector_length, unsigned int nsamples_total,
+        bool bit_transition_flag, bool use_CFAR_algorithm_flag,
+        unsigned int select_queue_Fpga, std::string device_name, bool dump,
+        std::string dump_filename);
 
     int d_samples_per_code;
     float d_threshold;
@@ -107,9 +107,13 @@ private:
     unsigned int d_num_doppler_bins;
 
     Gnss_Synchro *d_gnss_synchro;
-    float d_mag;bool d_bit_transition_flag;bool d_use_CFAR_algorithm_flag;
-    std::ofstream d_dump_file;bool d_active;
-    int d_state;bool d_dump;
+    float d_mag;
+    bool d_bit_transition_flag;
+    bool d_use_CFAR_algorithm_flag;
+    std::ofstream d_dump_file;
+    bool d_active;
+    int d_state;
+    bool d_dump;
     unsigned int d_channel;
     std::string d_dump_filename;
 
@@ -126,7 +130,7 @@ public:
      * to exchange synchronization data between acquisition and tracking blocks.
      * \param p_gnss_synchro Satellite information shared by the processing blocks.
      */
-    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    inline void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
     {
         d_gnss_synchro = p_gnss_synchro;
     }
@@ -207,9 +211,8 @@ public:
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
-
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_SC_H_*/

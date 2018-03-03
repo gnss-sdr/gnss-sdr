@@ -58,11 +58,11 @@ private:
     float d_old_carr_error = 0;
     float d_old_carr_nco = 0;
 
-    void calculate_lopp_coef(float* tau1,float* tau2, float lbw, float zeta, float k);
+    void calculate_lopp_coef(float* tau1, float* tau2, float lbw, float zeta, float k);
 
 public:
     void set_PLL_BW(float pll_bw_hz);  //! Set PLL loop bandwidth [Hz]
-    void set_pdi(float pdi_carr); //! Set Summation interval for code [s]
+    void set_pdi(float pdi_carr);      //! Set Summation interval for code [s]
     void initialize();
     float get_carrier_nco(float PLL_discriminator);
     Tracking_2nd_PLL_filter(float pdi_carr);

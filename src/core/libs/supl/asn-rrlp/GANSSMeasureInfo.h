@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSMeasureInfo_H_
-#define	_GANSSMeasureInfo_H_
+#ifndef _GANSSMeasureInfo_H_
+#define _GANSSMeasureInfo_H_
 
 
 #include <asn_application.h>
@@ -19,11 +19,12 @@ extern "C" {
 #endif
 
 /* GANSSMeasureInfo */
-typedef struct GANSSMeasureInfo {
-	SeqOfGANSS_MsrSetElement_t	 ganssMsrSetList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GANSSMeasureInfo
+{
+    SeqOfGANSS_MsrSetElement_t ganssMsrSetList;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GANSSMeasureInfo_t;
 
 /* Implementation */
@@ -33,5 +34,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSSMeasureInfo;
 }
 #endif
 
-#endif	/* _GANSSMeasureInfo_H_ */
+#endif /* _GANSSMeasureInfo_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfOTD_FirstSetMsrs_R98_Ext_H_
-#define	_SeqOfOTD_FirstSetMsrs_R98_Ext_H_
+#ifndef _SeqOfOTD_FirstSetMsrs_R98_Ext_H_
+#define _SeqOfOTD_FirstSetMsrs_R98_Ext_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct OTD_MeasurementWithID;
 
 /* SeqOfOTD-FirstSetMsrs-R98-Ext */
-typedef struct SeqOfOTD_FirstSetMsrs_R98_Ext {
-	A_SEQUENCE_OF(struct OTD_MeasurementWithID) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SeqOfOTD_FirstSetMsrs_R98_Ext
+{
+    A_SEQUENCE_OF(struct OTD_MeasurementWithID)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SeqOfOTD_FirstSetMsrs_R98_Ext_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfOTD_FirstSetMsrs_R98_Ext;
 /* Referred external types */
 #include "OTD-FirstSetMsrs.h"
 
-#endif	/* _SeqOfOTD_FirstSetMsrs_R98_Ext_H_ */
+#endif /* _SeqOfOTD_FirstSetMsrs_R98_Ext_H_ */
 #include <asn_internal.h>

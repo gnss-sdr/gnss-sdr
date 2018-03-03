@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GPSAssistanceData_H_
-#define	_GPSAssistanceData_H_
+#ifndef _GPSAssistanceData_H_
+#define _GPSAssistanceData_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* GPSAssistanceData */
-typedef OCTET_STRING_t	 GPSAssistanceData_t;
+typedef OCTET_STRING_t GPSAssistanceData_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_GPSAssistanceData;
@@ -36,5 +36,5 @@ per_type_encoder_f GPSAssistanceData_encode_uper;
 }
 #endif
 
-#endif	/* _GPSAssistanceData_H_ */
+#endif /* _GPSAssistanceData_H_ */
 #include <asn_internal.h>

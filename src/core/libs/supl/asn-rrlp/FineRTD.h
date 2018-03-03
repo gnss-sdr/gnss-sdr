@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_FineRTD_H_
-#define	_FineRTD_H_
+#ifndef _FineRTD_H_
+#define _FineRTD_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* FineRTD */
-typedef long	 FineRTD_t;
+typedef long FineRTD_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_FineRTD;
@@ -36,5 +36,5 @@ per_type_encoder_f FineRTD_encode_uper;
 }
 #endif
 
-#endif	/* _FineRTD_H_ */
+#endif /* _FineRTD_H_ */
 #include <asn_internal.h>

@@ -35,14 +35,14 @@
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 
 
 using google::LogMessage;
 
 GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -57,6 +57,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
+    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     tong_init_val_ = configuration->property(role + ".tong_init_val", 1);
@@ -66,8 +67,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = round(fs_in_
-            / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -77,8 +77,8 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_, if_, fs_in_,
-                                    code_length_, code_length_, tong_init_val_, tong_max_val_, tong_max_dwells_,
-                                    dump_, dump_filename_);
+                code_length_, code_length_, tong_init_val_, tong_max_val_, tong_max_dwells_,
+                dump_, dump_filename_);
 
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
 
@@ -108,9 +108,9 @@ void GpsL1CaPcpsTongAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
     if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_channel(channel_);
-    }
+        {
+            acquisition_cc_->set_channel(channel_);
+        }
 }
 
 
@@ -118,11 +118,11 @@ void GpsL1CaPcpsTongAcquisition::set_threshold(float threshold)
 {
     float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-    if(pfa == 0.0)
+    if (pfa == 0.0)
         {
-            pfa = configuration_->property(role_+".pfa", 0.0);
+            pfa = configuration_->property(role_ + ".pfa", 0.0);
         }
-    if(pfa == 0.0)
+    if (pfa == 0.0)
         {
             threshold_ = threshold;
         }
@@ -157,7 +157,6 @@ void GpsL1CaPcpsTongAcquisition::set_doppler_step(unsigned int doppler_step)
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
-
 }
 
 
@@ -193,21 +192,21 @@ void GpsL1CaPcpsTongAcquisition::init()
 void GpsL1CaPcpsTongAcquisition::set_local_code()
 {
     if (item_type_.compare("gr_complex") == 0)
-    {
-        std::complex<float>* code = new std::complex<float>[code_length_];
+        {
+            std::complex<float>* code = new std::complex<float>[code_length_];
 
-        gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+            gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
-        for (unsigned int i = 0; i < sampled_ms_; i++)
-            {
-                memcpy(&(code_[i*code_length_]), code,
-                       sizeof(gr_complex)*code_length_);
-            }
+            for (unsigned int i = 0; i < sampled_ms_; i++)
+                {
+                    memcpy(&(code_[i * code_length_]), code,
+                        sizeof(gr_complex) * code_length_);
+                }
 
-        acquisition_cc_->set_local_code(code_);
+            acquisition_cc_->set_local_code(code_);
 
-        delete[] code;
-    }
+            delete[] code;
+        }
 }
 
 
@@ -223,9 +222,9 @@ void GpsL1CaPcpsTongAcquisition::reset()
 void GpsL1CaPcpsTongAcquisition::set_state(int state)
 {
     if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_state(state);
-    }
+        {
+            acquisition_cc_->set_state(state);
+        }
 }
 
 
@@ -238,13 +237,13 @@ float GpsL1CaPcpsTongAcquisition::calculate_threshold(float pfa)
             frequency_bins++;
         }
 
-    DLOG(INFO) << "Channel "<< channel_ <<"   Pfa = "<< pfa;
+    DLOG(INFO) << "Channel " << channel_ << "   Pfa = " << pfa;
 
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
-    double val = pow(1.0 - pfa,exponent);
+    double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
-    boost::math::exponential_distribution<double> mydist (lambda);
+    boost::math::exponential_distribution<double> mydist(lambda);
     float threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
@@ -257,7 +256,6 @@ void GpsL1CaPcpsTongAcquisition::connect(gr::top_block_sptr top_block)
         {
             top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
-
 }
 
 
@@ -280,4 +278,3 @@ gr::basic_block_sptr GpsL1CaPcpsTongAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }
-

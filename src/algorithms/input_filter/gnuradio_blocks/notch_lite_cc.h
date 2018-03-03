@@ -49,7 +49,6 @@ notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int length_,
 class NotchLite : public gr::block
 {
 private:
-    
     int length_;
     int n_segments;
     int n_segments_est;
@@ -68,20 +67,19 @@ private:
     gr_complex c_samples2;
     float angle1;
     float angle2;
-    float* power_spect;
+    float *power_spect;
     std::unique_ptr<gr::fft::fft_complex> d_fft;
-    
+
 public:
-        
     NotchLite(float p_c_factor, float pfa, int length_, int n_segments_est, int n_segments_reset, int n_segments_coeff);
-    
+
     ~NotchLite();
-    
+
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
-    
-    int general_work (int noutput_items, gr_vector_int &ninput_items, 
-                      gr_vector_const_void_star &input_items,
-                      gr_vector_void_star &output_items);
+
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
-#endif //GNSS_SDR_NOTCH_LITE_H_
+#endif  //GNSS_SDR_NOTCH_LITE_H_

@@ -39,19 +39,18 @@
 #include "pcps_opencl_acquisition_cc.h"
 
 
-
 class ConfigurationInterface;
 
 /*!
  * \brief This class adapts an OpenCL PCPS acquisition block to an
  *  AcquisitionInterface for GPS L1 C/A signals
  */
-class GpsL1CaPcpsOpenClAcquisition: public AcquisitionInterface
+class GpsL1CaPcpsOpenClAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsOpenClAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsOpenClAcquisition();
 
@@ -144,8 +143,8 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float>* code_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

@@ -30,17 +30,19 @@
  */
 
 #include "channel.h"
+#include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
-#include "configuration_interface.h"
+
 
 using google::LogMessage;
 
 // Constructor
-Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
-        std::shared_ptr<GNSSBlockInterface> pass_through, std::shared_ptr<AcquisitionInterface> acq,
-        std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
-        std::string role, std::string implementation, gr::msg_queue::sptr queue)
+Channel::Channel(ConfigurationInterface* configuration, unsigned int channel,
+    std::shared_ptr<GNSSBlockInterface> pass_through, std::shared_ptr<AcquisitionInterface> acq,
+    std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
+    std::string role, std::string implementation, gr::msg_queue::sptr queue)
 {
     pass_through_ = pass_through;
     acq_ = acq;
@@ -62,10 +64,10 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     trk_->set_gnss_synchro(&gnss_synchro_);
 
     // Provide a warning to the user about the change of parameter name
-    if(channel_ == 0)
+    if (channel_ == 0)
         {
             long int deprecation_warning = configuration->property("GNSS-SDR.internal_fs_hz", 0);
-            if(deprecation_warning != 0)
+            if (deprecation_warning != 0)
                 {
                     std::cout << "WARNING: The global parameter name GNSS-SDR.internal_fs_hz has been DEPRECATED." << std::endl;
                     std::cout << "WARNING: Please replace it by GNSS-SDR.internal_fs_sps in your configuration file." << std::endl;
@@ -74,14 +76,15 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     // IMPORTANT: Do not change the order between set_doppler_step and set_threshold
 
-    unsigned int doppler_step = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_step" ,0);
-    if(doppler_step == 0) doppler_step = configuration->property("Acquisition_" + implementation_+".doppler_step", 500);
-    DLOG(INFO) << "Channel "<< channel_ << " Doppler_step = " << doppler_step;
+    unsigned int doppler_step = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_step", 0);
+    if (doppler_step == 0) doppler_step = configuration->property("Acquisition_" + implementation_ + ".doppler_step", 500);
+    if (FLAGS_doppler_step != 0) doppler_step = static_cast<unsigned int>(FLAGS_doppler_step);
+    DLOG(INFO) << "Channel " << channel_ << " Doppler_step = " << doppler_step;
 
     acq_->set_doppler_step(doppler_step);
 
     float threshold = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".threshold", 0.0);
-    if(threshold == 0.0) threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", 0.0);
+    if (threshold == 0.0) threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", 0.0);
 
     acq_->set_threshold(threshold);
 
@@ -104,7 +107,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
 
 // Destructor
-Channel::~Channel(){}
+Channel::~Channel() {}
 
 
 void Channel::connect(gr::top_block_sptr top_block)
@@ -187,9 +190,9 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
     std::lock_guard<std::mutex> lk(mx);
     gnss_signal_ = gnss_signal;
     std::string str_aux = gnss_signal_.get_signal_str();
-    const char * str = str_aux.c_str(); // get a C style null terminated string
-    std::memcpy(static_cast<void*>(gnss_synchro_.Signal), str, 3); // copy string into synchro char array: 2 char + null
-    gnss_synchro_.Signal[2] = 0; // make sure that string length is only two characters
+    const char* str = str_aux.c_str();                              // get a C style null terminated string
+    std::memcpy(static_cast<void*>(gnss_synchro_.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+    gnss_synchro_.Signal[2] = 0;                                    // make sure that string length is only two characters
     gnss_synchro_.PRN = gnss_signal_.get_satellite().get_PRN();
     gnss_synchro_.System = gnss_signal_.get_satellite().get_system_short().c_str()[0];
     acq_->set_local_code();
@@ -202,11 +205,10 @@ void Channel::start_acquisition()
     std::lock_guard<std::mutex> lk(mx);
     bool result = false;
     result = channel_fsm_->Event_start_acquisition();
-    if(!result)
+    if (!result)
         {
             LOG(WARNING) << "Invalid channel event";
             return;
         }
     DLOG(INFO) << "Channel start_acquisition()";
 }
-

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfSystemInfoAssistBTS_H_
-#define	_SeqOfSystemInfoAssistBTS_H_
+#ifndef _SeqOfSystemInfoAssistBTS_H_
+#define _SeqOfSystemInfoAssistBTS_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct SystemInfoAssistBTS;
 
 /* SeqOfSystemInfoAssistBTS */
-typedef struct SeqOfSystemInfoAssistBTS {
-	A_SEQUENCE_OF(struct SystemInfoAssistBTS) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SeqOfSystemInfoAssistBTS
+{
+    A_SEQUENCE_OF(struct SystemInfoAssistBTS)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SeqOfSystemInfoAssistBTS_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfSystemInfoAssistBTS;
 /* Referred external types */
 #include "SystemInfoAssistBTS.h"
 
-#endif	/* _SeqOfSystemInfoAssistBTS_H_ */
+#endif /* _SeqOfSystemInfoAssistBTS_H_ */
 #include <asn_internal.h>

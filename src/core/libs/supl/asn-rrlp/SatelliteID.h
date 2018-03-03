@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SatelliteID_H_
-#define	_SatelliteID_H_
+#ifndef _SatelliteID_H_
+#define _SatelliteID_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* SatelliteID */
-typedef long	 SatelliteID_t;
+typedef long SatelliteID_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_SatelliteID;
@@ -36,5 +36,5 @@ per_type_encoder_f SatelliteID_encode_uper;
 }
 #endif
 
-#endif	/* _SatelliteID_H_ */
+#endif /* _SatelliteID_H_ */
 #include <asn_internal.h>

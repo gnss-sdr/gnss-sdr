@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_FQDN_H_
-#define	_FQDN_H_
+#ifndef _FQDN_H_
+#define _FQDN_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* FQDN */
-typedef VisibleString_t	 FQDN_t;
+typedef VisibleString_t FQDN_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_FQDN;
@@ -36,5 +36,5 @@ per_type_encoder_f FQDN_encode_uper;
 }
 #endif
 
-#endif	/* _FQDN_H_ */
+#endif /* _FQDN_H_ */
 #include <asn_internal.h>

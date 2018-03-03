@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_PrimaryCCPCH_RSCP_H_
-#define	_PrimaryCCPCH_RSCP_H_
+#ifndef _PrimaryCCPCH_RSCP_H_
+#define _PrimaryCCPCH_RSCP_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* PrimaryCCPCH-RSCP */
-typedef long	 PrimaryCCPCH_RSCP_t;
+typedef long PrimaryCCPCH_RSCP_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_PrimaryCCPCH_RSCP;
@@ -36,5 +36,5 @@ per_type_encoder_f PrimaryCCPCH_RSCP_encode_uper;
 }
 #endif
 
-#endif	/* _PrimaryCCPCH_RSCP_H_ */
+#endif /* _PrimaryCCPCH_RSCP_H_ */
 #include <asn_internal.h>

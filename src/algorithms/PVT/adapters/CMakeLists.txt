@@ -28,6 +28,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${ARMADILLO_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}

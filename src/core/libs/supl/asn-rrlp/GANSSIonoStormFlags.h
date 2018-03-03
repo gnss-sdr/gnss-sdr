@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSIonoStormFlags_H_
-#define	_GANSSIonoStormFlags_H_
+#ifndef _GANSSIonoStormFlags_H_
+#define _GANSSIonoStormFlags_H_
 
 
 #include <asn_application.h>
@@ -19,15 +19,16 @@ extern "C" {
 #endif
 
 /* GANSSIonoStormFlags */
-typedef struct GANSSIonoStormFlags {
-	long	 ionoStormFlag1;
-	long	 ionoStormFlag2;
-	long	 ionoStormFlag3;
-	long	 ionoStormFlag4;
-	long	 ionoStormFlag5;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GANSSIonoStormFlags
+{
+    long ionoStormFlag1;
+    long ionoStormFlag2;
+    long ionoStormFlag3;
+    long ionoStormFlag4;
+    long ionoStormFlag5;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GANSSIonoStormFlags_t;
 
 /* Implementation */
@@ -37,5 +38,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSSIonoStormFlags;
 }
 #endif
 
-#endif	/* _GANSSIonoStormFlags_H_ */
+#endif /* _GANSSIonoStormFlags_H_ */
 #include <asn_internal.h>

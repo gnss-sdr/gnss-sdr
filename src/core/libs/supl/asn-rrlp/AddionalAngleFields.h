@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_AddionalAngleFields_H_
-#define	_AddionalAngleFields_H_
+#ifndef _AddionalAngleFields_H_
+#define _AddionalAngleFields_H_
 
 
 #include <asn_application.h>
@@ -19,12 +19,13 @@ extern "C" {
 #endif
 
 /* AddionalAngleFields */
-typedef struct AddionalAngleFields {
-	long	 azimuth;
-	long	 elevation;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct AddionalAngleFields
+{
+    long azimuth;
+    long elevation;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } AddionalAngleFields_t;
 
 /* Implementation */
@@ -34,5 +35,5 @@ extern asn_TYPE_descriptor_t asn_DEF_AddionalAngleFields;
 }
 #endif
 
-#endif	/* _AddionalAngleFields_H_ */
+#endif /* _AddionalAngleFields_H_ */
 #include <asn_internal.h>

@@ -29,22 +29,21 @@
  */
 
 #include "uhd_signal_source.h"
-#include <iostream>
-#include <uhd/types/device_addr.hpp>
-#include <uhd/exception.hpp>
-#include <volk/volk.h>
-#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include "GPS_L1_CA.h"
+#include <glog/logging.h>
+#include <uhd/types/device_addr.hpp>
+#include <uhd/exception.hpp>
+#include <volk/volk.h>
+#include <iostream>
+
 
 using google::LogMessage;
 
 UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                role_(role), in_stream_(in_stream), out_stream_(out_stream),
-                queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -58,13 +57,13 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     // available transports on the system (ethernet, usb...).
     // To narrow down the discovery process to a particular device,
     // specify a transport key/value pair specific to your device.
-    if (empty.compare(device_address_) != 0) // if not empty
+    if (empty.compare(device_address_) != 0)  // if not empty
         {
             dev_addr["addr"] = device_address_;
         }
     //filter the device by serial number if required (useful for USB devices)
     std::string device_serial = configuration->property(role + ".device_serial", empty);
-    if (empty.compare(device_serial) != 0) // if not empty
+    if (empty.compare(device_serial) != 0)  // if not empty
         {
             dev_addr["serial"] = device_serial;
         }
@@ -84,8 +83,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             freq_.push_back(configuration->property(role + ".freq", GPS_L1_FREQ_HZ));
             gain_.push_back(configuration->property(role + ".gain", 50.0));
 
-            IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz", sample_rate_/2));
-
+            IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz", sample_rate_ / 2));
         }
     else
         {
@@ -100,7 +98,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
                     freq_.push_back(configuration->property(role + ".freq" + boost::lexical_cast<std::string>(i), GPS_L1_FREQ_HZ));
                     gain_.push_back(configuration->property(role + ".gain" + boost::lexical_cast<std::string>(i), 50.0));
 
-                    IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz" + boost::lexical_cast<std::string>(i), sample_rate_/2));
+                    IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz" + boost::lexical_cast<std::string>(i), sample_rate_ / 2));
                 }
         }
     // 1. Make the uhd driver instance
@@ -218,14 +216,14 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
         {
             if (samples_.at(i) != 0)
                 {
-                    LOG(INFO) << "RF_channel "<< i << " Send STOP signal after " << samples_.at(i) << " samples";
+                    LOG(INFO) << "RF_channel " << i << " Send STOP signal after " << samples_.at(i) << " samples";
                     valve_.push_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
                     DLOG(INFO) << "valve(" << valve_.at(i)->unique_id() << ")";
                 }
 
             if (dump_.at(i))
                 {
-                    LOG(INFO) << "RF_channel "<< i << "Dumping output into file " << dump_filename_.at(i);
+                    LOG(INFO) << "RF_channel " << i << "Dumping output into file " << dump_filename_.at(i);
                     file_sink_.push_back(gr::blocks::file_sink::make(item_size_, dump_filename_.at(i).c_str()));
                     DLOG(INFO) << "file_sink(" << file_sink_.at(i)->unique_id() << ")";
                 }
@@ -233,9 +231,9 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
 }
 
 
-
 UhdSignalSource::~UhdSignalSource()
-{}
+{
+}
 
 
 void UhdSignalSource::connect(gr::top_block_sptr top_block)
@@ -264,7 +262,6 @@ void UhdSignalSource::connect(gr::top_block_sptr top_block)
 }
 
 
-
 void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     for (int i = 0; i < RF_channels_; i++)
@@ -287,7 +284,6 @@ void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
                 }
         }
 }
-
 
 
 gr::basic_block_sptr UhdSignalSource::get_left_block()

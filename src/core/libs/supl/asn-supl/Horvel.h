@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_Horvel_H_
-#define	_Horvel_H_
+#ifndef _Horvel_H_
+#define _Horvel_H_
 
 
 #include <asn_application.h>
@@ -19,16 +19,17 @@ extern "C" {
 #endif
 
 /* Horvel */
-typedef struct Horvel {
-	BIT_STRING_t	 bearing;
-	BIT_STRING_t	 horspeed;
-	/*
+typedef struct Horvel
+{
+    BIT_STRING_t bearing;
+    BIT_STRING_t horspeed;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } Horvel_t;
 
 /* Implementation */
@@ -38,5 +39,5 @@ extern asn_TYPE_descriptor_t asn_DEF_Horvel;
 }
 #endif
 
-#endif	/* _Horvel_H_ */
+#endif /* _Horvel_H_ */
 #include <asn_internal.h>

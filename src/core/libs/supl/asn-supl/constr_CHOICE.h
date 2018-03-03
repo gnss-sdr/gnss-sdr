@@ -3,8 +3,8 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	_CONSTR_CHOICE_H_
-#define	_CONSTR_CHOICE_H_
+#ifndef _CONSTR_CHOICE_H_
+#define _CONSTR_CHOICE_H_
 
 #include <asn_application.h>
 
@@ -12,28 +12,29 @@
 extern "C" {
 #endif
 
-typedef struct asn_CHOICE_specifics_s {
-	/*
+typedef struct asn_CHOICE_specifics_s
+{
+    /*
 	 * Target structure description.
 	 */
-	int struct_size;	/* Size of the target structure. */
-	int ctx_offset;		/* Offset of the asn_codec_ctx_t member */
-	int pres_offset;	/* Identifier of the present member */
-	int pres_size;		/* Size of the identifier (enum) */
+    int struct_size; /* Size of the target structure. */
+    int ctx_offset;  /* Offset of the asn_codec_ctx_t member */
+    int pres_offset; /* Identifier of the present member */
+    int pres_size;   /* Size of the identifier (enum) */
 
-	/*
+    /*
 	 * Tags to members mapping table.
 	 */
-	asn_TYPE_tag2member_t *tag2el;
-	int tag2el_count;
+    asn_TYPE_tag2member_t *tag2el;
+    int tag2el_count;
 
-	/* Canonical ordering of CHOICE elements, for PER */
-	int *canonical_order;
+    /* Canonical ordering of CHOICE elements, for PER */
+    int *canonical_order;
 
-	/*
+    /*
 	 * Extensions-related stuff.
 	 */
-	int ext_start;		/* First member of extensions, or -1 */
+    int ext_start; /* First member of extensions, or -1 */
 } asn_CHOICE_specifics_t;
 
 /*
@@ -54,4 +55,4 @@ asn_outmost_tag_f CHOICE_outmost_tag;
 }
 #endif
 
-#endif	/* _CONSTR_CHOICE_H_ */
+#endif /* _CONSTR_CHOICE_H_ */

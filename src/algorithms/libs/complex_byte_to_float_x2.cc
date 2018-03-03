@@ -40,10 +40,9 @@ complex_byte_to_float_x2_sptr make_complex_byte_to_float_x2()
 }
 
 
-
 complex_byte_to_float_x2::complex_byte_to_float_x2() : sync_block("complex_byte_to_float_x2",
-                        gr::io_signature::make (1, 1, sizeof(lv_8sc_t)), // lv_8sc_t is a Volk's typedef for std::complex<signed char>
-                        gr::io_signature::make (2, 2, sizeof(float)))
+                                                           gr::io_signature::make(1, 1, sizeof(lv_8sc_t)),  // lv_8sc_t is a Volk's typedef for std::complex<signed char>
+                                                           gr::io_signature::make(2, 2, sizeof(float)))
 {
     const int alignment_multiple = volk_get_alignment() / sizeof(float);
     set_alignment(std::max(1, alignment_multiple));
@@ -51,8 +50,8 @@ complex_byte_to_float_x2::complex_byte_to_float_x2() : sync_block("complex_byte_
 
 
 int complex_byte_to_float_x2::work(int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
 {
     const lv_8sc_t *in = reinterpret_cast<const lv_8sc_t *>(input_items[0]);
     float *out0 = reinterpret_cast<float *>(output_items[0]);

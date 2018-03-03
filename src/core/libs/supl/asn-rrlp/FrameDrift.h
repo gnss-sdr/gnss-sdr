@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_FrameDrift_H_
-#define	_FrameDrift_H_
+#ifndef _FrameDrift_H_
+#define _FrameDrift_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* FrameDrift */
-typedef long	 FrameDrift_t;
+typedef long FrameDrift_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_FrameDrift;
@@ -36,5 +36,5 @@ per_type_encoder_f FrameDrift_encode_uper;
 }
 #endif
 
-#endif	/* _FrameDrift_H_ */
+#endif /* _FrameDrift_H_ */
 #include <asn_internal.h>

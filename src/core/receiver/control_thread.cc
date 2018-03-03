@@ -33,44 +33,50 @@
  */
 
 #include "control_thread.h"
+#include "concurrent_queue.h"
+#include "concurrent_map.h"
+#include "control_message_factory.h"
+#include "file_configuration.h"
+#include "gnss_flowgraph.h"
+#include "gnss_sdr_flags.h"
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
+#include "galileo_almanac.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
+#include "gps_almanac.h"
+#include <boost/lexical_cast.hpp>
+#include <boost/chrono.hpp>
+#include <glog/logging.h>
+#include <gnuradio/message.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <string>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <boost/lexical_cast.hpp>
-#include <boost/chrono.hpp>
-#include <gnuradio/message.h>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include "gps_ephemeris.h"
-#include "gps_iono.h"
-#include "gps_utc_model.h"
-#include "gps_almanac.h"
-#include "galileo_ephemeris.h"
-#include "galileo_iono.h"
-#include "galileo_utc_model.h"
-#include "galileo_almanac.h"
-#include "concurrent_queue.h"
-#include "concurrent_map.h"
-#include "gnss_flowgraph.h"
-#include "file_configuration.h"
-#include "control_message_factory.h"
+
 
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 using google::LogMessage;
 
-DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"),
-        "File containing the configuration parameters");
 
 ControlThread::ControlThread()
 {
-    configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
+    if (!FLAGS_c.compare("-"))
+        {
+            configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
+        }
+    else
+        {
+            configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
+        }
     delete_configuration_ = false;
     init();
 }
@@ -84,12 +90,11 @@ ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configurati
 }
 
 
-
 ControlThread::~ControlThread()
 {
     // save navigation data to files
-   // if (save_assistance_to_XML() == true) {}
-   if(msqid != -1) msgctl(msqid, IPC_RMID, NULL);
+    // if (save_assistance_to_XML() == true) {}
+    if (msqid != -1) msgctl(msqid, IPC_RMID, NULL);
 }
 
 
@@ -186,10 +191,10 @@ bool ControlThread::read_assistance_from_XML()
     std::cout << "SUPL: Try read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
         {
-            std::map<int,Gps_Ephemeris>::const_iterator gps_eph_iter;
-            for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
-                    gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
-                    gps_eph_iter++)
+            std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
+            for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
+                 gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
+                 gps_eph_iter++)
                 {
                     std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
                     std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
@@ -279,22 +284,22 @@ void ControlThread::assist_GNSS()
             std::string default_lac = "0x59e2";
             std::string default_ci = "0x31b0";
             try
-            {
+                {
                     supl_lac = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_LAC", default_lac));
-            }
-            catch(boost::bad_lexical_cast &)
-            {
+                }
+            catch (boost::bad_lexical_cast &)
+                {
                     supl_lac = 0x59e2;
-            }
+                }
 
             try
-            {
+                {
                     supl_ci = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_CI", default_ci));
-            }
-            catch(boost::bad_lexical_cast &)
-            {
+                }
+            catch (boost::bad_lexical_cast &)
+                {
                     supl_ci = 0x31b0;
-            }
+                }
 
             bool SUPL_read_gps_assistance_xml = configuration_->property("GNSS-SDR.SUPL_read_gps_assistance_xml", false);
             if (SUPL_read_gps_assistance_xml == true)
@@ -314,10 +319,10 @@ void ControlThread::assist_GNSS()
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
-                            std::map<int,Gps_Ephemeris>::const_iterator gps_eph_iter;
-                            for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
-                                    gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
-                                    gps_eph_iter++)
+                            std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
+                            for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
+                                 gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
+                                 gps_eph_iter++)
                                 {
                                     std::cout << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
                                     std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
@@ -351,10 +356,10 @@ void ControlThread::assist_GNSS()
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
-                            std::map<int,Gps_Almanac>::const_iterator gps_alm_iter;
-                            for(gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.cbegin();
-                                    gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
-                                    gps_alm_iter++)
+                            std::map<int, Gps_Almanac>::const_iterator gps_alm_iter;
+                            for (gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.cbegin();
+                                 gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
+                                 gps_alm_iter++)
                                 {
                                     std::cout << "SUPL: Received Almanac for GPS SV " << gps_alm_iter->first << std::endl;
                                     std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
@@ -387,9 +392,9 @@ void ControlThread::assist_GNSS()
                     if (error == 0)
                         {
                             std::map<int, Gps_Acq_Assist>::const_iterator gps_acq_iter;
-                            for(gps_acq_iter = supl_client_acquisition_.gps_acq_map.cbegin();
-                                    gps_acq_iter != supl_client_acquisition_.gps_acq_map.cend();
-                                    gps_acq_iter++)
+                            for (gps_acq_iter = supl_client_acquisition_.gps_acq_map.cbegin();
+                                 gps_acq_iter != supl_client_acquisition_.gps_acq_map.cend();
+                                 gps_acq_iter++)
                                 {
                                     std::cout << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first << std::endl;
                                     global_gps_acq_assist_map.write(gps_acq_iter->second.i_satellite_PRN, gps_acq_iter->second);
@@ -423,13 +428,13 @@ void ControlThread::init()
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = gr::msg_queue::make(0);
     try
-    {
+        {
             flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
-    }
-    catch (const boost::bad_lexical_cast& e )
-    {
+        }
+    catch (const boost::bad_lexical_cast &e)
+        {
             std::cout << "Caught bad lexical cast with error " << e.what() << std::endl;
-    }
+        }
     control_message_factory_ = std::make_shared<ControlMessageFactory>();
     stop_ = false;
     processed_control_messages_ = 0;
@@ -482,16 +487,16 @@ void ControlThread::process_control_messages()
 void ControlThread::apply_action(unsigned int what)
 {
     switch (what)
-    {
-    case 0:
-        DLOG(INFO) << "Received action STOP";
-        stop_ = true;
-        applied_actions_++;
-        break;
-    default:
-        DLOG(INFO) << "Unrecognized action.";
-        break;
-    }
+        {
+        case 0:
+            DLOG(INFO) << "Received action STOP";
+            stop_ = true;
+            applied_actions_++;
+            break;
+        default:
+            DLOG(INFO) << "Unrecognized action.";
+            break;
+        }
 }
 
 
@@ -500,19 +505,19 @@ void ControlThread::gps_acq_assist_data_collector()
     // ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
     Gps_Acq_Assist gps_acq;
     Gps_Acq_Assist gps_acq_old;
-    while(stop_ == false)
+    while (stop_ == false)
         {
             global_gps_acq_assist_queue.wait_and_pop(gps_acq);
-            if(gps_acq.i_satellite_PRN == 0) break;
+            if (gps_acq.i_satellite_PRN == 0) break;
 
             // DEBUG MESSAGE
             std::cout << "Acquisition assistance record has arrived from SAT ID "
                       << gps_acq.i_satellite_PRN
                       << " with Doppler "
                       << gps_acq.d_Doppler0
-                      << " [Hz] "<< std::endl;
+                      << " [Hz] " << std::endl;
             // insert new acq record to the global ephemeris map
-            if (global_gps_acq_assist_map.read(gps_acq.i_satellite_PRN,gps_acq_old))
+            if (global_gps_acq_assist_map.read(gps_acq.i_satellite_PRN, gps_acq_old))
                 {
                     std::cout << "Acquisition assistance record updated" << std::endl;
                     global_gps_acq_assist_map.write(gps_acq.i_satellite_PRN, gps_acq);
@@ -529,8 +534,9 @@ void ControlThread::gps_acq_assist_data_collector()
 
 void ControlThread::sysv_queue_listener()
 {
-    typedef struct  {
-        long mtype; // required by SysV queue messaging
+    typedef struct
+    {
+        long mtype;  // required by SysV queue messaging
         double stop_message;
     } stop_msgbuf;
 
@@ -541,18 +547,18 @@ void ControlThread::sysv_queue_listener()
 
     key_t key = 1102;
 
-    if((msqid = msgget(key, 0644 | IPC_CREAT )) == -1)
+    if ((msqid = msgget(key, 0644 | IPC_CREAT)) == -1)
         {
             perror("GNSS-SDR cannot create SysV message queues");
             exit(1);
         }
 
-    while(read_queue && !stop_)
+    while (read_queue && !stop_)
         {
             if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
                 {
                     received_message = msg.stop_message;
-                    if( (std::abs(received_message - (-200.0)) < 10 * std::numeric_limits<double>::epsilon()) )
+                    if ((std::abs(received_message - (-200.0)) < 10 * std::numeric_limits<double>::epsilon()))
                         {
                             std::cout << "Quit order received, stopping GNSS-SDR !!" << std::endl;
                             std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
@@ -571,7 +577,7 @@ void ControlThread::keyboard_listener()
 {
     bool read_keys = true;
     char c = '0';
-    while(read_keys && !stop_)
+    while (read_keys && !stop_)
         {
             std::cin.get(c);
             if (c == 'q')

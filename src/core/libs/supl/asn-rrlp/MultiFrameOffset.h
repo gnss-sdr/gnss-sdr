@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_MultiFrameOffset_H_
-#define	_MultiFrameOffset_H_
+#ifndef _MultiFrameOffset_H_
+#define _MultiFrameOffset_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* MultiFrameOffset */
-typedef long	 MultiFrameOffset_t;
+typedef long MultiFrameOffset_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_MultiFrameOffset;
@@ -36,5 +36,5 @@ per_type_encoder_f MultiFrameOffset_encode_uper;
 }
 #endif
 
-#endif	/* _MultiFrameOffset_H_ */
+#endif /* _MultiFrameOffset_H_ */
 #include <asn_internal.h>

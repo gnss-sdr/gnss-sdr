@@ -30,19 +30,18 @@
  */
 
 #include "fmcomms2_signal_source.h"
-#include <iostream>
-#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include "GPS_L1_CA.h"
+#include <glog/logging.h>
+#include <iostream>
+
 
 using google::LogMessage;
 
 Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                        role_(role), in_stream_(in_stream), out_stream_(out_stream),
-                        queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
@@ -74,17 +73,17 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     std::cout << "LO frequency : " << freq_ << " Hz" << std::endl;
     std::cout << "sample rate: " << sample_rate_ << " Hz" << std::endl;
 
-    if(item_type_.compare("gr_complex") == 0)
+    if (item_type_.compare("gr_complex") == 0)
         {
             fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
-                    uri_.c_str(), freq_, sample_rate_,
-                    bandwidth_,
-                    rx1_en_, rx2_en_,
-                    buffer_size_, quadrature_, rf_dc_,
-                    bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
-                    gain_mode_rx2_.c_str(), rf_gain_rx2_,
-                    rf_port_select_.c_str(), filter_file_.c_str(),
-                    filter_auto_);
+                uri_.c_str(), freq_, sample_rate_,
+                bandwidth_,
+                rx1_en_, rx2_en_,
+                buffer_size_, quadrature_, rf_dc_,
+                bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
+                gain_mode_rx2_.c_str(), rf_gain_rx2_,
+                rf_port_select_.c_str(), filter_file_.c_str(),
+                filter_auto_);
         }
     else
         {
@@ -108,7 +107,8 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
 
 
 Fmcomms2SignalSource::~Fmcomms2SignalSource()
-{}
+{
+}
 
 
 void Fmcomms2SignalSource::connect(gr::top_block_sptr top_block)
@@ -127,8 +127,7 @@ void Fmcomms2SignalSource::connect(gr::top_block_sptr top_block)
         {
             if (dump_)
                 {
-
-                    top_block->connect(fmcomms2_source_f32c_ , 0, file_sink_, 0);
+                    top_block->connect(fmcomms2_source_f32c_, 0, file_sink_, 0);
                     DLOG(INFO) << "connected fmcomms2 source to file sink";
                 }
         }

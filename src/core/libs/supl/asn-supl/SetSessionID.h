@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_SetSessionID_H_
-#define	_SetSessionID_H_
+#ifndef _SetSessionID_H_
+#define _SetSessionID_H_
 
 
 #include <asn_application.h>
@@ -20,12 +20,13 @@ extern "C" {
 #endif
 
 /* SetSessionID */
-typedef struct SetSessionID {
-	long	 sessionId;
-	SETId_t	 setId;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SetSessionID
+{
+    long sessionId;
+    SETId_t setId;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SetSessionID_t;
 
 /* Implementation */
@@ -35,5 +36,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SetSessionID;
 }
 #endif
 
-#endif	/* _SetSessionID_H_ */
+#endif /* _SetSessionID_H_ */
 #include <asn_internal.h>

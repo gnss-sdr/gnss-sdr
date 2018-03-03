@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSRealTimeIntegrity_H_
-#define	_GANSSRealTimeIntegrity_H_
+#ifndef _GANSSRealTimeIntegrity_H_
+#define _GANSSRealTimeIntegrity_H_
 
 
 #include <asn_application.h>
@@ -19,11 +19,12 @@ extern "C" {
 #endif
 
 /* GANSSRealTimeIntegrity */
-typedef struct GANSSRealTimeIntegrity {
-	SeqOfBadSignalElement_t	 ganssBadSignalList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GANSSRealTimeIntegrity
+{
+    SeqOfBadSignalElement_t ganssBadSignalList;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GANSSRealTimeIntegrity_t;
 
 /* Implementation */
@@ -33,5 +34,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSSRealTimeIntegrity;
 }
 #endif
 
-#endif	/* _GANSSRealTimeIntegrity_H_ */
+#endif /* _GANSSRealTimeIntegrity_H_ */
 #include <asn_internal.h>

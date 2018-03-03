@@ -92,7 +92,7 @@ static char* find_char_or_comment(char* s, char c)
 /* Version of strncpy that ensures dest (size bytes) is null-terminated. */
 static char* strncpy0(char* dest, const char* src, size_t size)
 {
-    for(unsigned int i = 0; i < size - 1; i++)
+    for (unsigned int i = 0; i < size - 1; i++)
         {
             dest[i] = src[i];
         }
@@ -102,8 +102,8 @@ static char* strncpy0(char* dest, const char* src, size_t size)
 
 /* See documentation in header file. */
 int ini_parse(const char* filename,
-              int (*handler)(void*, const char*, const char*, const char*),
-              void* user)
+    int (*handler)(void*, const char*, const char*, const char*),
+    void* user)
 {
     /* Uses a fair bit of stack (use heap instead if you need to) */
     char line[MAX_LINE];
@@ -128,10 +128,10 @@ int ini_parse(const char* filename,
         {
             lineno++;
             int len_str = line_str.length();
-            const char * read_line = line_str.data();
+            const char* read_line = line_str.data();
             if (len_str > (MAX_LINE - 1)) len_str = MAX_LINE - 1;
             int i;
-            for(i = 0; i < len_str; i++)
+            for (i = 0; i < len_str; i++)
                 {
                     line[i] = read_line[i];
                 }
@@ -139,16 +139,16 @@ int ini_parse(const char* filename,
             start = lskip(rstrip(line));
 
 #if INI_ALLOW_MULTILINE
-        if (*prev_name && *start && start > line)
-            {
-                /* Non-black line with leading whitespace, treat as continuation
+            if (*prev_name && *start && start > line)
+                {
+                    /* Non-black line with leading whitespace, treat as continuation
                 of previous name's value (as per Python ConfigParser). */
-                if (!handler(user, section, prev_name, start) && !error)
-                    error = lineno;
-            }
-        else
+                    if (!handler(user, section, prev_name, start) && !error)
+                        error = lineno;
+                }
+            else
 #endif
-            if (*start == '[')
+                if (*start == '[')
                 {
                     /* A "[section]" line */
                     end = find_char_or_comment(start + 1, ']');

@@ -29,7 +29,7 @@
 
 static inline int16_t sat_adds16i(int16_t x, int16_t y)
 {
-    int32_t res = (int32_t) x + (int32_t) y;
+    int32_t res = (int32_t)x + (int32_t)y;
 
     if (res < SHRT_MIN) res = SHRT_MIN;
     if (res > SHRT_MAX) res = SHRT_MAX;
@@ -39,7 +39,7 @@ static inline int16_t sat_adds16i(int16_t x, int16_t y)
 
 static inline int16_t sat_muls16i(int16_t x, int16_t y)
 {
-    int32_t res = (int32_t) x * (int32_t) y;
+    int32_t res = (int32_t)x * (int32_t)y;
 
     if (res < SHRT_MIN) res = SHRT_MIN;
     if (res > SHRT_MAX) res = SHRT_MAX;

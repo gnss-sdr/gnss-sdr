@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_TLMWord_H_
-#define	_TLMWord_H_
+#ifndef _TLMWord_H_
+#define _TLMWord_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* TLMWord */
-typedef long	 TLMWord_t;
+typedef long TLMWord_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_TLMWord;
@@ -36,5 +36,5 @@ per_type_encoder_f TLMWord_encode_uper;
 }
 #endif
 
-#endif	/* _TLMWord_H_ */
+#endif /* _TLMWord_H_ */
 #include <asn_internal.h>

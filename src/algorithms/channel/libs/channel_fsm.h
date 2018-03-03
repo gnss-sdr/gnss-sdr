@@ -32,12 +32,13 @@
 #ifndef GNSS_SDR_CHANNEL_FSM_H
 #define GNSS_SDR_CHANNEL_FSM_H
 
-#include <mutex>
-#include <memory>
-#include <gnuradio/msg_queue.h>
 #include "acquisition_interface.h"
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
+#include <gnuradio/msg_queue.h>
+#include <memory>
+#include <mutex>
+
 
 /*!
  * \brief This class implements a State Machine for channel
@@ -61,7 +62,6 @@ public:
     bool Event_failed_tracking_standby();
 
 private:
-
     void start_acquisition();
     void start_tracking();
     void request_satellite();

@@ -35,16 +35,15 @@
 #ifndef GNSS_SDR_TWO_BIT_PACKED_FILE_SIGNAL_SOURCE_H_
 #define GNSS_SDR_TWO_BIT_PACKED_FILE_SIGNAL_SOURCE_H_
 
-#include <string>
+#include "gnss_block_interface.h"
+#include "unpack_2bit_samples.h"
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
-#include "gnss_block_interface.h"
-#include "unpack_2bit_samples.h"
-
+#include <string>
 
 
 class ConfigurationInterface;
@@ -53,12 +52,12 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class TwoBitPackedFileSignalSource: public GNSSBlockInterface
+class TwoBitPackedFileSignalSource : public GNSSBlockInterface
 {
 public:
     TwoBitPackedFileSignalSource(ConfigurationInterface* configuration, std::string role,
-            unsigned int in_streams, unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+        unsigned int in_streams, unsigned int out_streams,
+        boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~TwoBitPackedFileSignalSource();
     inline std::string role() override
@@ -145,7 +144,7 @@ private:
     gr::basic_block_sptr char_to_float_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
-    gr::blocks::throttle::sptr  throttle_;
+    gr::blocks::throttle::sptr throttle_;
     boost::shared_ptr<gr::msg_queue> queue_;
     size_t item_size_;
     bool big_endian_items_;

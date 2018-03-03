@@ -4,8 +4,8 @@
  * 	found in "../supl-init.asn"
  */
 
-#ifndef	_FormatIndicator_H_
-#define	_FormatIndicator_H_
+#ifndef _FormatIndicator_H_
+#define _FormatIndicator_H_
 
 
 #include <asn_application.h>
@@ -19,21 +19,21 @@ extern "C" {
 
 /* Dependencies */
 typedef enum FormatIndicator {
-	FormatIndicator_logicalName	= 0,
-	FormatIndicator_e_mailAddress	= 1,
-	FormatIndicator_msisdn	= 2,
-	FormatIndicator_url	= 3,
-	FormatIndicator_sipUrl	= 4,
-	FormatIndicator_min	= 5,
-	FormatIndicator_mdn	= 6,
-	FormatIndicator_imsPublicIdentity	= 7
-	/*
+    FormatIndicator_logicalName = 0,
+    FormatIndicator_e_mailAddress = 1,
+    FormatIndicator_msisdn = 2,
+    FormatIndicator_url = 3,
+    FormatIndicator_sipUrl = 4,
+    FormatIndicator_min = 5,
+    FormatIndicator_mdn = 6,
+    FormatIndicator_imsPublicIdentity = 7
+    /*
 	 * Enumeration is extensible
 	 */
 } e_FormatIndicator;
 
 /* FormatIndicator */
-typedef ENUMERATED_t	 FormatIndicator_t;
+typedef ENUMERATED_t FormatIndicator_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_FormatIndicator;
@@ -51,5 +51,5 @@ per_type_encoder_f FormatIndicator_encode_uper;
 }
 #endif
 
-#endif	/* _FormatIndicator_H_ */
+#endif /* _FormatIndicator_H_ */
 #include <asn_internal.h>

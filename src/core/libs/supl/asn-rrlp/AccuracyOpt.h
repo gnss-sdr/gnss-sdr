@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_AccuracyOpt_H_
-#define	_AccuracyOpt_H_
+#ifndef _AccuracyOpt_H_
+#define _AccuracyOpt_H_
 
 
 #include <asn_application.h>
@@ -19,11 +19,12 @@ extern "C" {
 #endif
 
 /* AccuracyOpt */
-typedef struct AccuracyOpt {
-	Accuracy_t	*accuracy	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct AccuracyOpt
+{
+    Accuracy_t *accuracy /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } AccuracyOpt_t;
 
 /* Implementation */
@@ -33,5 +34,5 @@ extern asn_TYPE_descriptor_t asn_DEF_AccuracyOpt;
 }
 #endif
 
-#endif	/* _AccuracyOpt_H_ */
+#endif /* _AccuracyOpt_H_ */
 #include <asn_internal.h>

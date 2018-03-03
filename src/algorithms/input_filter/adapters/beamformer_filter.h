@@ -32,9 +32,9 @@
 #ifndef GNSS_SDR_BEAMFORMER_FILTER_H_
 #define GNSS_SDR_BEAMFORMER_FILTER_H_
 
-#include <string>
-#include <gnuradio/hier_block2.h>
 #include "gnss_block_interface.h"
+#include <gnuradio/hier_block2.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -42,12 +42,12 @@ class ConfigurationInterface;
  * \brief Interface of an adapter of a direct resampler conditioner block
  * to a SignalConditionerInterface
  */
-class BeamformerFilter: public GNSSBlockInterface
+class BeamformerFilter : public GNSSBlockInterface
 {
 public:
     BeamformerFilter(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream);
 
     virtual ~BeamformerFilter();
 

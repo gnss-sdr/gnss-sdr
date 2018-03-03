@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_UTRA_CarrierRSSI_H_
-#define	_UTRA_CarrierRSSI_H_
+#ifndef _UTRA_CarrierRSSI_H_
+#define _UTRA_CarrierRSSI_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* UTRA-CarrierRSSI */
-typedef long	 UTRA_CarrierRSSI_t;
+typedef long UTRA_CarrierRSSI_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_UTRA_CarrierRSSI;
@@ -36,5 +36,5 @@ per_type_encoder_f UTRA_CarrierRSSI_encode_uper;
 }
 #endif
 
-#endif	/* _UTRA_CarrierRSSI_H_ */
+#endif /* _UTRA_CarrierRSSI_H_ */
 #include <asn_internal.h>

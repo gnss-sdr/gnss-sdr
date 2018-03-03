@@ -37,42 +37,40 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H
 
-#include <fstream>
-#include <map>
-#include <deque>
-#include <string>
-#include <gnuradio/block.h>
-#include <pmt/pmt.h>
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
 //#include "tracking_loop_filter.h"
 #include "cpu_multicorrelator.h"
+#include <gnuradio/block.h>
+#include <pmt/pmt.h>
+#include <fstream>
+#include <map>
+#include <deque>
+#include <string>
 
 class gps_l1_ca_dll_pll_c_aid_tracking_cc;
 
 typedef boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_cc>
-        gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr;
+    gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr;
 
 gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 gps_l1_ca_dll_pll_c_aid_make_tracking_cc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float pll_bw_narrow_hz,
-                                   float dll_bw_narrow_hz,
-                                   int extend_correlation_ms,
-                                   float early_late_space_chips);
-
+    long fs_in, unsigned int vector_length,
+    bool dump,
+    std::string dump_filename,
+    float pll_bw_hz,
+    float dll_bw_hz,
+    float pll_bw_narrow_hz,
+    float dll_bw_narrow_hz,
+    int extend_correlation_ms,
+    float early_late_space_chips);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class gps_l1_ca_dll_pll_c_aid_tracking_cc: public gr::block
+class gps_l1_ca_dll_pll_c_aid_tracking_cc : public gr::block
 {
 public:
     ~gps_l1_ca_dll_pll_c_aid_tracking_cc();
@@ -81,36 +79,34 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
 
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
     friend gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr
     gps_l1_ca_dll_pll_c_aid_make_tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float pll_bw_narrow_hz,
-            float dll_bw_narrow_hz,
-            int extend_correlation_ms,
-            float early_late_space_chips);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
+        int extend_correlation_ms,
+        float early_late_space_chips);
 
     gps_l1_ca_dll_pll_c_aid_tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float pll_bw_narrow_hz,
-            float dll_bw_narrow_hz,
-            int extend_correlation_ms,
-            float early_late_space_chips);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
+        int extend_correlation_ms,
+        float early_late_space_chips);
 
     // tracking configuration vars
     unsigned int d_vector_length;
@@ -200,4 +196,4 @@ private:
     int save_matfile();
 };
 
-#endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H
+#endif  //GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfGANSSSatelliteElement_H_
-#define	_SeqOfGANSSSatelliteElement_H_
+#ifndef _SeqOfGANSSSatelliteElement_H_
+#define _SeqOfGANSSSatelliteElement_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct GANSSSatelliteElement;
 
 /* SeqOfGANSSSatelliteElement */
-typedef struct SeqOfGANSSSatelliteElement {
-	A_SEQUENCE_OF(struct GANSSSatelliteElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SeqOfGANSSSatelliteElement
+{
+    A_SEQUENCE_OF(struct GANSSSatelliteElement)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SeqOfGANSSSatelliteElement_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSSatelliteElement;
 /* Referred external types */
 #include "GANSSSatelliteElement.h"
 
-#endif	/* _SeqOfGANSSSatelliteElement_H_ */
+#endif /* _SeqOfGANSSSatelliteElement_H_ */
 #include <asn_internal.h>

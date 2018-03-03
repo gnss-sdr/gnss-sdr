@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfGPS_MsrElement_H_
-#define	_SeqOfGPS_MsrElement_H_
+#ifndef _SeqOfGPS_MsrElement_H_
+#define _SeqOfGPS_MsrElement_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct GPS_MsrElement;
 
 /* SeqOfGPS-MsrElement */
-typedef struct SeqOfGPS_MsrElement {
-	A_SEQUENCE_OF(struct GPS_MsrElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SeqOfGPS_MsrElement
+{
+    A_SEQUENCE_OF(struct GPS_MsrElement)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SeqOfGPS_MsrElement_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfGPS_MsrElement;
 /* Referred external types */
 #include "GPS-MsrElement.h"
 
-#endif	/* _SeqOfGPS_MsrElement_H_ */
+#endif /* _SeqOfGPS_MsrElement_H_ */
 #include <asn_internal.h>

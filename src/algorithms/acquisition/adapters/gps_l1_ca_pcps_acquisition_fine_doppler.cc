@@ -37,13 +37,13 @@
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 
 using google::LogMessage;
 
 GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -57,22 +57,22 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
-    doppler_min_ = configuration->property(role + ".doppler_min", -5000);
+    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    doppler_min_ = configuration->property(role + ".doppler_min", -doppler_max_);
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
-    max_dwells_= configuration->property(role + ".max_dwells", 1);
- 
+    max_dwells_ = configuration->property(role + ".max_dwells", 1);
+
     //--- Find number of samples per spreading code -------------------------
-    vector_length_ = round(fs_in_
-            / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     code_ = new gr_complex[vector_length_];
 
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(max_dwells_,sampled_ms_,
-                    doppler_max_, doppler_min_, if_, fs_in_, vector_length_,
-                    dump_, dump_filename_);
+            acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(max_dwells_, sampled_ms_,
+                doppler_max_, doppler_min_, if_, fs_in_, vector_length_,
+                dump_, dump_filename_);
         }
     else
         {
@@ -130,7 +130,7 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_gnss_synchro(Gnss_Synchro* gnss_sync
 
 signed int GpsL1CaPcpsAcquisitionFineDoppler::mag()
 {
-   return acquisition_cc_->mag();
+    return acquisition_cc_->mag();
 }
 
 
@@ -156,14 +156,18 @@ void GpsL1CaPcpsAcquisitionFineDoppler::reset()
 
 void GpsL1CaPcpsAcquisitionFineDoppler::connect(boost::shared_ptr<gr::top_block> top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 
 void GpsL1CaPcpsAcquisitionFineDoppler::disconnect(boost::shared_ptr<gr::top_block> top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
@@ -178,4 +182,3 @@ boost::shared_ptr<gr::basic_block> GpsL1CaPcpsAcquisitionFineDoppler::get_right_
 {
     return acquisition_cc_;
 }
-

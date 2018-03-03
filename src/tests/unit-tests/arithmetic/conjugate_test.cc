@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-
+#include <algorithm>
 #include <chrono>
 #include <complex>
 #include <armadillo>
@@ -39,17 +39,16 @@
 DEFINE_int32(size_conjugate_test, 100000, "Size of the arrays used for conjugate testing");
 
 
-
 TEST(ConjugateTest, StandardCComplexImplementation)
 {
     std::complex<float>* input = new std::complex<float>[FLAGS_size_conjugate_test];
     std::complex<float>* output = new std::complex<float>[FLAGS_size_conjugate_test];
-    memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_conjugate_test);
+    std::fill_n(input, FLAGS_size_conjugate_test, std::complex<float>(0.0, 0.0));
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    for(int i = 0; i < FLAGS_size_conjugate_test; i++)
+    for (int i = 0; i < FLAGS_size_conjugate_test; i++)
         {
             output[i] = std::conj(input[i]);
         }
@@ -63,7 +62,6 @@ TEST(ConjugateTest, StandardCComplexImplementation)
     delete[] input;
     delete[] output;
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
-
 }
 
 
@@ -74,7 +72,7 @@ TEST(ConjugateTest, C11ComplexImplementation)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
     int pos = 0;
-    for (const auto &item : input)
+    for (const auto& item : input)
         {
             output[pos++] = std::conj(item);
         }
@@ -85,9 +83,9 @@ TEST(ConjugateTest, C11ComplexImplementation)
               << " microseconds" << std::endl;
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
 
-    std::complex<float> expected(0,0);
-    std::complex<float> result(0,0);
-    for (const auto &item : output)
+    std::complex<float> expected(0, 0);
+    std::complex<float> result(0, 0);
+    for (const auto& item : output)
         {
             result += item;
         }
@@ -118,7 +116,7 @@ TEST(ConjugateTest, VolkComplexImplementation)
 {
     std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     std::complex<float>* output = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
-    memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_conjugate_test);
+    std::fill_n(input, FLAGS_size_conjugate_test, std::complex<float>(0.0, 0.0));
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
@@ -127,7 +125,7 @@ TEST(ConjugateTest, VolkComplexImplementation)
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "Conjugate of a "<< FLAGS_size_conjugate_test
+    std::cout << "Conjugate of a " << FLAGS_size_conjugate_test
               << "-length complex float vector using VOLK finished in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);

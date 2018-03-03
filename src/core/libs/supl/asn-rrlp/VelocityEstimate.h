@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_VelocityEstimate_H_
-#define	_VelocityEstimate_H_
+#ifndef _VelocityEstimate_H_
+#define _VelocityEstimate_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* VelocityEstimate */
-typedef INTEGER_t	 VelocityEstimate_t;
+typedef INTEGER_t VelocityEstimate_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_VelocityEstimate;
@@ -36,5 +36,5 @@ per_type_encoder_f VelocityEstimate_encode_uper;
 }
 #endif
 
-#endif	/* _VelocityEstimate_H_ */
+#endif /* _VelocityEstimate_H_ */
 #include <asn_internal.h>

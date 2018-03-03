@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_CellID_H_
-#define	_CellID_H_
+#ifndef _CellID_H_
+#define _CellID_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* CellID */
-typedef long	 CellID_t;
+typedef long CellID_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_CellID;
@@ -36,5 +36,5 @@ per_type_encoder_f CellID_encode_uper;
 }
 #endif
 
-#endif	/* _CellID_H_ */
+#endif /* _CellID_H_ */
 #include <asn_internal.h>

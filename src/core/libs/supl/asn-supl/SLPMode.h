@@ -4,8 +4,8 @@
  * 	found in "../supl-init.asn"
  */
 
-#ifndef	_SLPMode_H_
-#define	_SLPMode_H_
+#ifndef _SLPMode_H_
+#define _SLPMode_H_
 
 
 #include <asn_application.h>
@@ -19,12 +19,12 @@ extern "C" {
 
 /* Dependencies */
 typedef enum SLPMode {
-	SLPMode_proxy	= 0,
-	SLPMode_nonProxy	= 1
+    SLPMode_proxy = 0,
+    SLPMode_nonProxy = 1
 } e_SLPMode;
 
 /* SLPMode */
-typedef ENUMERATED_t	 SLPMode_t;
+typedef ENUMERATED_t SLPMode_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_SLPMode;
@@ -42,5 +42,5 @@ per_type_encoder_f SLPMode_encode_uper;
 }
 #endif
 
-#endif	/* _SLPMode_H_ */
+#endif /* _SLPMode_H_ */
 #include <asn_internal.h>

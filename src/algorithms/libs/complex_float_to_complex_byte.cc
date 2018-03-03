@@ -31,9 +31,7 @@
 
 #include "complex_float_to_complex_byte.h"
 #include <gnuradio/io_signature.h>
-#include <volk/volk.h>
-#include "volk_gnsssdr/volk_gnsssdr.h"
-
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 
 complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte()
@@ -42,22 +40,21 @@ complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte()
 }
 
 
-
 complex_float_to_complex_byte::complex_float_to_complex_byte() : sync_block("complex_float_to_complex_byte",
-                        gr::io_signature::make (1, 1, sizeof(gr_complex)),
-                        gr::io_signature::make (1, 1, sizeof(lv_8sc_t))) // lv_8sc_t is a Volk's typedef for std::complex<signed char>
+                                                                     gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                                                                     gr::io_signature::make(1, 1, sizeof(lv_8sc_t)))  // lv_8sc_t is a Volk's typedef for std::complex<signed char>
 {
-    const int alignment_multiple = volk_get_alignment() / sizeof(lv_8sc_t);
+    const int alignment_multiple = volk_gnsssdr_get_alignment() / sizeof(lv_8sc_t);
     set_alignment(std::max(1, alignment_multiple));
 }
 
 
 int complex_float_to_complex_byte::work(int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
 {
     const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);
-    lv_8sc_t *out = reinterpret_cast<lv_8sc_t*>(output_items[0]);
+    lv_8sc_t *out = reinterpret_cast<lv_8sc_t *>(output_items[0]);
     volk_gnsssdr_32fc_convert_8ic(out, in, noutput_items);
     return noutput_items;
 }

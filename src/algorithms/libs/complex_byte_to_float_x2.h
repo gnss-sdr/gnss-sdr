@@ -49,12 +49,13 @@ class complex_byte_to_float_x2 : public gr::sync_block
 {
 private:
     friend complex_byte_to_float_x2_sptr make_complex_byte_to_float_x2();
+
 public:
     complex_byte_to_float_x2();
 
     int work(int noutput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif

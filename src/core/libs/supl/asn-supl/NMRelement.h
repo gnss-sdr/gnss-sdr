@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_NMRelement_H_
-#define	_NMRelement_H_
+#ifndef _NMRelement_H_
+#define _NMRelement_H_
 
 
 #include <asn_application.h>
@@ -19,17 +19,18 @@ extern "C" {
 #endif
 
 /* NMRelement */
-typedef struct NMRelement {
-	long	 aRFCN;
-	long	 bSIC;
-	long	 rxLev;
-	/*
+typedef struct NMRelement
+{
+    long aRFCN;
+    long bSIC;
+    long rxLev;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } NMRelement_t;
 
 /* Implementation */
@@ -39,5 +40,5 @@ extern asn_TYPE_descriptor_t asn_DEF_NMRelement;
 }
 #endif
 
-#endif	/* _NMRelement_H_ */
+#endif /* _NMRelement_H_ */
 #include <asn_internal.h>

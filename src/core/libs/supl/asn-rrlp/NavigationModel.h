@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_NavigationModel_H_
-#define	_NavigationModel_H_
+#ifndef _NavigationModel_H_
+#define _NavigationModel_H_
 
 
 #include <asn_application.h>
@@ -19,11 +19,12 @@ extern "C" {
 #endif
 
 /* NavigationModel */
-typedef struct NavigationModel {
-	SeqOfNavModelElement_t	 navModelList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct NavigationModel
+{
+    SeqOfNavModelElement_t navModelList;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } NavigationModel_t;
 
 /* Implementation */
@@ -33,5 +34,5 @@ extern asn_TYPE_descriptor_t asn_DEF_NavigationModel;
 }
 #endif
 
-#endif	/* _NavigationModel_H_ */
+#endif /* _NavigationModel_H_ */
 #include <asn_internal.h>

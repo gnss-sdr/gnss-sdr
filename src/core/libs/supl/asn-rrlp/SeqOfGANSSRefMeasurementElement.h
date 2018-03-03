@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfGANSSRefMeasurementElement_H_
-#define	_SeqOfGANSSRefMeasurementElement_H_
+#ifndef _SeqOfGANSSRefMeasurementElement_H_
+#define _SeqOfGANSSRefMeasurementElement_H_
 
 
 #include <asn_application.h>
@@ -22,11 +22,13 @@ extern "C" {
 struct GANSSRefMeasurementElement;
 
 /* SeqOfGANSSRefMeasurementElement */
-typedef struct SeqOfGANSSRefMeasurementElement {
-	A_SEQUENCE_OF(struct GANSSRefMeasurementElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SeqOfGANSSRefMeasurementElement
+{
+    A_SEQUENCE_OF(struct GANSSRefMeasurementElement)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SeqOfGANSSRefMeasurementElement_t;
 
 /* Implementation */
@@ -39,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSRefMeasurementElement;
 /* Referred external types */
 #include "GANSSRefMeasurementElement.h"
 
-#endif	/* _SeqOfGANSSRefMeasurementElement_H_ */
+#endif /* _SeqOfGANSSRefMeasurementElement_H_ */
 #include <asn_internal.h>

@@ -36,16 +36,17 @@
 #ifndef GNSS_SDR_GNSS_FLOWGRAPH_H_
 #define GNSS_SDR_GNSS_FLOWGRAPH_H_
 
+#include "GPS_L1_CA.h"
+#include "gnss_signal.h"
+#include "gnss_sdr_sample_counter.h"
+#include <gnuradio/top_block.h>
+#include <gnuradio/msg_queue.h>
 #include <list>
 #include <memory>
 #include <queue>
 #include <string>
 #include <vector>
-#include <gnuradio/top_block.h>
-#include <gnuradio/msg_queue.h>
-#include "GPS_L1_CA.h"
-#include "gnss_signal.h"
-#include "gnss_sdr_sample_counter.h"
+
 
 class GNSSBlockInterface;
 class ChannelInterface;
@@ -113,11 +114,12 @@ public:
      * It is used to assist the receiver with external ephemeris data
      */
     bool send_telemetry_msg(pmt::pmt_t msg);
+
 private:
-    void init(); // Populates the SV PRN list available for acquisition and tracking
+    void init();  // Populates the SV PRN list available for acquisition and tracking
     void set_signals_list();
-    void set_channels_state(); // Initializes the channels state (start acquisition or keep standby)
-                               // using the configuration parameters (number of channels and max channels in acquisition)
+    void set_channels_state();  // Initializes the channels state (start acquisition or keep standby)
+                                // using the configuration parameters (number of channels and max channels in acquisition)
     Gnss_Signal search_next_signal(std::string searched_signal, bool pop);
     bool connected_;
     bool running_;

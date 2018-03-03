@@ -37,10 +37,9 @@
 #ifndef GNSS_SDR_gps_l5i_dll_pll_tracking_H_
 #define GNSS_SDR_gps_l5i_dll_pll_tracking_H_
 
-#include <string>
 #include "tracking_interface.h"
 #include "gps_l5i_dll_pll_tracking_cc.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -51,9 +50,9 @@ class GpsL5iDllPllTracking : public TrackingInterface
 {
 public:
     GpsL5iDllPllTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL5iDllPllTracking();
 
@@ -100,4 +99,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif // GNSS_SDR_gps_l5i_dll_pll_tracking_H_
+#endif  // GNSS_SDR_gps_l5i_dll_pll_tracking_H_

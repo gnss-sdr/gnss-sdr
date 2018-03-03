@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_OTDValue_H_
-#define	_OTDValue_H_
+#ifndef _OTDValue_H_
+#define _OTDValue_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* OTDValue */
-typedef long	 OTDValue_t;
+typedef long OTDValue_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_OTDValue;
@@ -36,5 +36,5 @@ per_type_encoder_f OTDValue_encode_uper;
 }
 #endif
 
-#endif	/* _OTDValue_H_ */
+#endif /* _OTDValue_H_ */
 #include <asn_internal.h>

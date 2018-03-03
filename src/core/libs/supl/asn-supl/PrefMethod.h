@@ -4,8 +4,8 @@
  * 	found in "../supl-start.asn"
  */
 
-#ifndef	_PrefMethod_H_
-#define	_PrefMethod_H_
+#ifndef _PrefMethod_H_
+#define _PrefMethod_H_
 
 
 #include <asn_application.h>
@@ -19,13 +19,13 @@ extern "C" {
 
 /* Dependencies */
 typedef enum PrefMethod {
-	PrefMethod_agpsSETassistedPreferred	= 0,
-	PrefMethod_agpsSETBasedPreferred	= 1,
-	PrefMethod_noPreference	= 2
+    PrefMethod_agpsSETassistedPreferred = 0,
+    PrefMethod_agpsSETBasedPreferred = 1,
+    PrefMethod_noPreference = 2
 } e_PrefMethod;
 
 /* PrefMethod */
-typedef ENUMERATED_t	 PrefMethod_t;
+typedef ENUMERATED_t PrefMethod_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_PrefMethod;
@@ -43,5 +43,5 @@ per_type_encoder_f PrefMethod_encode_uper;
 }
 #endif
 
-#endif	/* _PrefMethod_H_ */
+#endif /* _PrefMethod_H_ */
 #include <asn_internal.h>

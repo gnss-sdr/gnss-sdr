@@ -4,8 +4,8 @@
  * 	found in "../supl-ulp.asn"
  */
 
-#ifndef	_UlpMessage_H_
-#define	_UlpMessage_H_
+#ifndef _UlpMessage_H_
+#define _UlpMessage_H_
 
 
 #include <asn_application.h>
@@ -26,39 +26,41 @@ extern "C" {
 
 /* Dependencies */
 typedef enum UlpMessage_PR {
-	UlpMessage_PR_NOTHING,	/* No components present */
-	UlpMessage_PR_msSUPLINIT,
-	UlpMessage_PR_msSUPLSTART,
-	UlpMessage_PR_msSUPLRESPONSE,
-	UlpMessage_PR_msSUPLPOSINIT,
-	UlpMessage_PR_msSUPLPOS,
-	UlpMessage_PR_msSUPLEND,
-	UlpMessage_PR_msDUMMY2,
-	UlpMessage_PR_msDUMMY3,
-	/* Extensions may appear below */
-	
+    UlpMessage_PR_NOTHING, /* No components present */
+    UlpMessage_PR_msSUPLINIT,
+    UlpMessage_PR_msSUPLSTART,
+    UlpMessage_PR_msSUPLRESPONSE,
+    UlpMessage_PR_msSUPLPOSINIT,
+    UlpMessage_PR_msSUPLPOS,
+    UlpMessage_PR_msSUPLEND,
+    UlpMessage_PR_msDUMMY2,
+    UlpMessage_PR_msDUMMY3,
+    /* Extensions may appear below */
+
 } UlpMessage_PR;
 
 /* UlpMessage */
-typedef struct UlpMessage {
-	UlpMessage_PR present;
-	union UlpMessage_u {
-		SUPLINIT_t	 msSUPLINIT;
-		SUPLSTART_t	 msSUPLSTART;
-		SUPLRESPONSE_t	 msSUPLRESPONSE;
-		SUPLPOSINIT_t	 msSUPLPOSINIT;
-		SUPLPOS_t	 msSUPLPOS;
-		SUPLEND_t	 msSUPLEND;
-		DUMMY_t	 msDUMMY2;
-		DUMMY_t	 msDUMMY3;
-		/*
+typedef struct UlpMessage
+{
+    UlpMessage_PR present;
+    union UlpMessage_u
+    {
+        SUPLINIT_t msSUPLINIT;
+        SUPLSTART_t msSUPLSTART;
+        SUPLRESPONSE_t msSUPLRESPONSE;
+        SUPLPOSINIT_t msSUPLPOSINIT;
+        SUPLPOS_t msSUPLPOS;
+        SUPLEND_t msSUPLEND;
+        DUMMY_t msDUMMY2;
+        DUMMY_t msDUMMY3;
+        /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+    } choice;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } UlpMessage_t;
 
 /* Implementation */
@@ -68,5 +70,5 @@ extern asn_TYPE_descriptor_t asn_DEF_UlpMessage;
 }
 #endif
 
-#endif	/* _UlpMessage_H_ */
+#endif /* _UlpMessage_H_ */
 #include <asn_internal.h>

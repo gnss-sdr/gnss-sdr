@@ -32,9 +32,9 @@
 
 #include "glonass_l1_signal_processing.h"
 
-auto auxCeil = [](float x){ return static_cast<int>(static_cast<long>((x)+1)); };
+auto auxCeil = [](float x) { return static_cast<int>(static_cast<long>((x) + 1)); };
 
-void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest,/* signed int _prn,*/ unsigned int _chip_shift)
+void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest, /* signed int _prn,*/ unsigned int _chip_shift)
 {
     const unsigned int _code_length = 511;
     bool G1[_code_length];
@@ -44,19 +44,19 @@ void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest,/* signed int _pr
     unsigned int delay;
     unsigned int lcv, lcv2;
 
-    for(lcv = 0; lcv < 9; lcv++)
+    for (lcv = 0; lcv < 9; lcv++)
         {
             G1_register[lcv] = 1;
         }
 
     /* Generate G1 Register */
-    for(lcv = 0; lcv < _code_length; lcv++)
+    for (lcv = 0; lcv < _code_length; lcv++)
         {
             G1[lcv] = G1_register[2];
 
-            feedback1 = G1_register[4]^G1_register[0];
+            feedback1 = G1_register[4] ^ G1_register[0];
 
-            for(lcv2 = 0; lcv2 < 8; lcv2++)
+            for (lcv2 = 0; lcv2 < 8; lcv2++)
                 {
                     G1_register[lcv2] = G1_register[lcv2 + 1];
                 }
@@ -65,10 +65,10 @@ void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest,/* signed int _pr
         }
 
     /* Generate PRN from G1 Register */
-    for(lcv = 0; lcv < _code_length; lcv++)
+    for (lcv = 0; lcv < _code_length; lcv++)
         {
             aux = G1[lcv];
-            if(aux == true)
+            if (aux == true)
                 {
                     _dest[lcv] = std::complex<float>(1, 0);
                 }
@@ -84,10 +84,10 @@ void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest,/* signed int _pr
     delay %= _code_length;
 
     /* Generate PRN from G1 and G2 Registers */
-    for(lcv = 0; lcv < _code_length; lcv++)
+    for (lcv = 0; lcv < _code_length; lcv++)
         {
             aux = G1[(lcv + _chip_shift) % _code_length];
-            if(aux == true)
+            if (aux == true)
                 {
                     _dest[lcv] = std::complex<float>(1, 0);
                 }
@@ -104,7 +104,7 @@ void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest,/* signed int _pr
 /*
  *  Generates complex GLONASS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
  */
-void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest,/* unsigned int _prn,*/ signed int _fs, unsigned int _chip_shift)
+void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, /* unsigned int _prn,*/ signed int _fs, unsigned int _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::complex<float> _code[511];
@@ -112,16 +112,16 @@ void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest,/* unsign
     float _ts;
     float _tc;
     float aux;
-    const signed int _codeFreqBasis = 511000; //Hz
+    const signed int _codeFreqBasis = 511000;  //Hz
     const signed int _codeLength = 511;
 
     //--- Find number of samples per spreading code ----------------------------
     _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
     //--- Find time constants --------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);   // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // C/A chip period in sec
-    glonass_l1_ca_code_gen_complex(_code, _chip_shift); //generate C/A code 1 sample per chip
+    _ts = 1.0 / static_cast<float>(_fs);                 // Sampling period in sec
+    _tc = 1.0 / static_cast<float>(_codeFreqBasis);      // C/A chip period in sec
+    glonass_l1_ca_code_gen_complex(_code, _chip_shift);  //generate C/A code 1 sample per chip
 
     for (signed int i = 0; i < _samplesPerCode; i++)
         {
@@ -133,8 +133,8 @@ void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest,/* unsign
             // millisecond).
 
             // _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
-            aux = (_ts * (i + 1)) / _tc;   
-            _codeValueIndex = auxCeil( aux ) - 1;
+            aux = (_ts * (i + 1)) / _tc;
+            _codeValueIndex = auxCeil(aux) - 1;
 
             //--- Make the digitized version of the C/A code -----------------------
             // The "upsampled" code is made by selecting values form the CA code
@@ -143,11 +143,10 @@ void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest,/* unsign
                 {
                     //--- Correct the last index (due to number rounding issues) -----------
                     _dest[i] = _code[_codeLength - 1];
-
                 }
             else
                 {
-                    _dest[i] = _code[_codeValueIndex]; //repeat the chip -> upsample
+                    _dest[i] = _code[_codeValueIndex];  //repeat the chip -> upsample
                 }
         }
 }

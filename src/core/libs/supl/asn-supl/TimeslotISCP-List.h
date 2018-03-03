@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_TimeslotISCP_List_H_
-#define	_TimeslotISCP_List_H_
+#ifndef _TimeslotISCP_List_H_
+#define _TimeslotISCP_List_H_
 
 
 #include <asn_application.h>
@@ -20,11 +20,13 @@ extern "C" {
 #endif
 
 /* TimeslotISCP-List */
-typedef struct TimeslotISCP_List {
-	A_SEQUENCE_OF(TimeslotISCP_t) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct TimeslotISCP_List
+{
+    A_SEQUENCE_OF(TimeslotISCP_t)
+    list;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } TimeslotISCP_List_t;
 
 /* Implementation */
@@ -34,5 +36,5 @@ extern asn_TYPE_descriptor_t asn_DEF_TimeslotISCP_List;
 }
 #endif
 
-#endif	/* _TimeslotISCP_List_H_ */
+#endif /* _TimeslotISCP_List_H_ */
 #include <asn_internal.h>

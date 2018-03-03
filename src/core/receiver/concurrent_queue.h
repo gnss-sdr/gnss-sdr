@@ -31,10 +31,10 @@
 #ifndef GNSS_SDR_CONCURRENT_QUEUE_H
 #define GNSS_SDR_CONCURRENT_QUEUE_H
 
-#include <queue>
 #include <boost/thread.hpp>
+#include <queue>
 
-template<typename Data>
+template <typename Data>
 
 /*!
  * \brief This class implements a thread-safe std::queue
@@ -49,6 +49,7 @@ private:
     std::queue<Data> the_queue;
     mutable boost::mutex the_mutex;
     boost::condition_variable the_condition_variable;
+
 public:
     void push(Data const& data)
     {
@@ -67,7 +68,7 @@ public:
     bool try_pop(Data& popped_value)
     {
         boost::mutex::scoped_lock lock(the_mutex);
-        if(the_queue.empty())
+        if (the_queue.empty())
             {
                 return false;
             }
@@ -79,7 +80,7 @@ public:
     void wait_and_pop(Data& popped_value)
     {
         boost::mutex::scoped_lock lock(the_mutex);
-        while(the_queue.empty())
+        while (the_queue.empty())
             {
                 the_condition_variable.wait(lock);
             }

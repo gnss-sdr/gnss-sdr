@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_StatusCode_H_
-#define	_StatusCode_H_
+#ifndef _StatusCode_H_
+#define _StatusCode_H_
 
 
 #include <asn_application.h>
@@ -19,33 +19,33 @@ extern "C" {
 
 /* Dependencies */
 typedef enum StatusCode {
-	StatusCode_unspecified	= 0,
-	StatusCode_systemFailure	= 1,
-	StatusCode_unexpectedMessage	= 2,
-	StatusCode_protocolError	= 3,
-	StatusCode_dataMissing	= 4,
-	StatusCode_unexpectedDataValue	= 5,
-	StatusCode_posMethodFailure	= 6,
-	StatusCode_posMethodMismatch	= 7,
-	StatusCode_posProtocolMismatch	= 8,
-	StatusCode_targetSETnotReachable	= 9,
-	StatusCode_versionNotSupported	= 10,
-	StatusCode_resourceShortage	= 11,
-	StatusCode_invalidSessionId	= 12,
-	StatusCode_nonProxyModeNotSupported	= 13,
-	StatusCode_proxyModeNotSupported	= 14,
-	StatusCode_positioningNotPermitted	= 15,
-	StatusCode_authNetFailure	= 16,
-	StatusCode_authSuplinitFailure	= 17,
-	StatusCode_consentDeniedByUser	= 100,
-	StatusCode_consentGrantedByUser	= 101
-	/*
+    StatusCode_unspecified = 0,
+    StatusCode_systemFailure = 1,
+    StatusCode_unexpectedMessage = 2,
+    StatusCode_protocolError = 3,
+    StatusCode_dataMissing = 4,
+    StatusCode_unexpectedDataValue = 5,
+    StatusCode_posMethodFailure = 6,
+    StatusCode_posMethodMismatch = 7,
+    StatusCode_posProtocolMismatch = 8,
+    StatusCode_targetSETnotReachable = 9,
+    StatusCode_versionNotSupported = 10,
+    StatusCode_resourceShortage = 11,
+    StatusCode_invalidSessionId = 12,
+    StatusCode_nonProxyModeNotSupported = 13,
+    StatusCode_proxyModeNotSupported = 14,
+    StatusCode_positioningNotPermitted = 15,
+    StatusCode_authNetFailure = 16,
+    StatusCode_authSuplinitFailure = 17,
+    StatusCode_consentDeniedByUser = 100,
+    StatusCode_consentGrantedByUser = 101
+    /*
 	 * Enumeration is extensible
 	 */
 } e_StatusCode;
 
 /* StatusCode */
-typedef ENUMERATED_t	 StatusCode_t;
+typedef ENUMERATED_t StatusCode_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_StatusCode;
@@ -63,5 +63,5 @@ per_type_encoder_f StatusCode_encode_uper;
 }
 #endif
 
-#endif	/* _StatusCode_H_ */
+#endif /* _StatusCode_H_ */
 #include <asn_internal.h>

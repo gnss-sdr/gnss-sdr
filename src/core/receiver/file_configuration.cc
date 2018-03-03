@@ -34,11 +34,12 @@
  */
 
 #include "file_configuration.h"
-#include <string>
-#include <glog/logging.h>
+#include "in_memory_configuration.h"
 #include "INIReader.h"
 #include "string_converter.h"
-#include "in_memory_configuration.h"
+#include <glog/logging.h>
+#include <string>
+
 
 using google::LogMessage;
 
@@ -64,7 +65,7 @@ FileConfiguration::~FileConfiguration()
 
 std::string FileConfiguration::property(std::string property_name, std::string default_value)
 {
-    if(overrided_->is_present(property_name))
+    if (overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
         }
@@ -77,7 +78,7 @@ std::string FileConfiguration::property(std::string property_name, std::string d
 
 bool FileConfiguration::property(std::string property_name, bool default_value)
 {
-    if(overrided_->is_present(property_name))
+    if (overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
         }
@@ -91,7 +92,7 @@ bool FileConfiguration::property(std::string property_name, bool default_value)
 
 long FileConfiguration::property(std::string property_name, long default_value)
 {
-    if(overrided_->is_present(property_name))
+    if (overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
         }
@@ -101,12 +102,11 @@ long FileConfiguration::property(std::string property_name, long default_value)
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
-
 
 
 int FileConfiguration::property(std::string property_name, int default_value)
 {
-    if(overrided_->is_present(property_name))
+    if (overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
         }
@@ -116,12 +116,11 @@ int FileConfiguration::property(std::string property_name, int default_value)
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
-
 
 
 unsigned int FileConfiguration::property(std::string property_name, unsigned int default_value)
 {
-    if(overrided_->is_present(property_name))
+    if (overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
         }
@@ -131,12 +130,11 @@ unsigned int FileConfiguration::property(std::string property_name, unsigned int
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
-
 
 
 unsigned short FileConfiguration::property(std::string property_name, unsigned short default_value)
 {
-    if(overrided_->is_present(property_name))
+    if (overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
         }
@@ -148,10 +146,9 @@ unsigned short FileConfiguration::property(std::string property_name, unsigned s
 }
 
 
-
 float FileConfiguration::property(std::string property_name, float default_value)
 {
-    if(overrided_->is_present(property_name))
+    if (overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
         }
@@ -165,7 +162,7 @@ float FileConfiguration::property(std::string property_name, float default_value
 
 double FileConfiguration::property(std::string property_name, double default_value)
 {
-    if(overrided_->is_present(property_name))
+    if (overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
         }
@@ -177,12 +174,10 @@ double FileConfiguration::property(std::string property_name, double default_val
 }
 
 
-
 void FileConfiguration::set_property(std::string property_name, std::string value)
 {
     overrided_->set_property(property_name, value);
 }
-
 
 
 void FileConfiguration::init()
@@ -191,11 +186,11 @@ void FileConfiguration::init()
     overrided_ = std::make_shared<InMemoryConfiguration>();
     ini_reader_ = std::make_shared<INIReader>(filename_);
     error_ = ini_reader_->ParseError();
-    if(error_ == 0)
+    if (error_ == 0)
         {
             DLOG(INFO) << "Configuration file " << filename_ << " opened with no errors";
         }
-    else if(error_ > 0)
+    else if (error_ > 0)
         {
             LOG(WARNING) << "Configuration file " << filename_ << " contains errors in line " << error_;
         }
@@ -204,5 +199,3 @@ void FileConfiguration::init()
             LOG(WARNING) << "Unable to open configuration file " << filename_;
         }
 }
-
-

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSTOD_GSMTimeAssociation_H_
-#define	_GANSSTOD_GSMTimeAssociation_H_
+#ifndef _GANSSTOD_GSMTimeAssociation_H_
+#define _GANSSTOD_GSMTimeAssociation_H_
 
 
 #include <asn_application.h>
@@ -24,16 +24,17 @@ extern "C" {
 #endif
 
 /* GANSSTOD-GSMTimeAssociation */
-typedef struct GANSSTOD_GSMTimeAssociation {
-	BCCHCarrier_t	 bcchCarrier;
-	BSIC_t	 bsic;
-	FrameNumber_t	 frameNumber;
-	TimeSlot_t	 timeSlot;
-	BitNumber_t	 bitNumber;
-	FrameDrift_t	*frameDrift	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GANSSTOD_GSMTimeAssociation
+{
+    BCCHCarrier_t bcchCarrier;
+    BSIC_t bsic;
+    FrameNumber_t frameNumber;
+    TimeSlot_t timeSlot;
+    BitNumber_t bitNumber;
+    FrameDrift_t *frameDrift /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GANSSTOD_GSMTimeAssociation_t;
 
 /* Implementation */
@@ -43,5 +44,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSSTOD_GSMTimeAssociation;
 }
 #endif
 
-#endif	/* _GANSSTOD_GSMTimeAssociation_H_ */
+#endif /* _GANSSTOD_GSMTimeAssociation_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_RefLocation_H_
-#define	_RefLocation_H_
+#ifndef _RefLocation_H_
+#define _RefLocation_H_
 
 
 #include <asn_application.h>
@@ -19,11 +19,12 @@ extern "C" {
 #endif
 
 /* RefLocation */
-typedef struct RefLocation {
-	Ext_GeographicalInformation_t	 threeDLocation;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct RefLocation
+{
+    Ext_GeographicalInformation_t threeDLocation;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } RefLocation_t;
 
 /* Implementation */
@@ -33,5 +34,5 @@ extern asn_TYPE_descriptor_t asn_DEF_RefLocation;
 }
 #endif
 
-#endif	/* _RefLocation_H_ */
+#endif /* _RefLocation_H_ */
 #include <asn_internal.h>

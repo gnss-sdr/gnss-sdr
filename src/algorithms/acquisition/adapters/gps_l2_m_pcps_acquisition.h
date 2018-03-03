@@ -34,15 +34,14 @@
 #ifndef GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_H_
 #define GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
-#include <gnuradio/blocks/float_to_complex.h>
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
+#include "gnss_synchro.h"
 #include "pcps_acquisition.h"
 #include "complex_byte_to_float_x2.h"
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <gnuradio/blocks/float_to_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-
+#include <string>
 
 
 class ConfigurationInterface;
@@ -51,12 +50,12 @@ class ConfigurationInterface;
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GPS L2 M signals
  */
-class GpsL2MPcpsAcquisition: public AcquisitionInterface
+class GpsL2MPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GpsL2MPcpsAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL2MPcpsAcquisition();
 
@@ -157,8 +156,8 @@ private:
     bool dump_;
     bool blocking_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float>* code_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

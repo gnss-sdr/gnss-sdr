@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_TimeRelation_H_
-#define	_TimeRelation_H_
+#ifndef _TimeRelation_H_
+#define _TimeRelation_H_
 
 
 #include <asn_application.h>
@@ -22,12 +22,13 @@ extern "C" {
 struct GSMTime;
 
 /* TimeRelation */
-typedef struct TimeRelation {
-	GPSTOW23b_t	 gpsTOW;
-	struct GSMTime	*gsmTime	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct TimeRelation
+{
+    GPSTOW23b_t gpsTOW;
+    struct GSMTime *gsmTime /* OPTIONAL */;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } TimeRelation_t;
 
 /* Implementation */
@@ -40,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_TimeRelation;
 /* Referred external types */
 #include "GSMTime.h"
 
-#endif	/* _TimeRelation_H_ */
+#endif /* _TimeRelation_H_ */
 #include <asn_internal.h>

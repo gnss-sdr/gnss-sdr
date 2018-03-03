@@ -39,4 +39,3 @@ Gps_Ref_Time::Gps_Ref_Time()
     d_tv_sec = 0.0;
     d_tv_usec = 0.0;
 }
-

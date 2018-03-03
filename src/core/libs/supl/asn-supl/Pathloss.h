@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_Pathloss_H_
-#define	_Pathloss_H_
+#ifndef _Pathloss_H_
+#define _Pathloss_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* Pathloss */
-typedef long	 Pathloss_t;
+typedef long Pathloss_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_Pathloss;
@@ -36,5 +36,5 @@ per_type_encoder_f Pathloss_encode_uper;
 }
 #endif
 
-#endif	/* _Pathloss_H_ */
+#endif /* _Pathloss_H_ */
 #include <asn_internal.h>

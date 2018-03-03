@@ -32,10 +32,9 @@
  */
 
 #include "galileo_e5_signal_processing.h"
-#include <gnuradio/math.h>
 #include "Galileo_E5a.h"
 #include "gnss_signal_processing.h"
-
+#include <gnuradio/gr_complex.h>
 
 
 void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed int _prn, char _Signal[3])
@@ -86,10 +85,10 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed in
                 {
                     hex_to_binary_converter(a, Galileo_E5a_I_PRIMARY_CODE[prn].at(i));
                     hex_to_binary_converter(b, Galileo_E5a_Q_PRIMARY_CODE[prn].at(i));
-                    _dest[index] = std::complex<float>(float(a[0]),float(b[0]));
-                    _dest[index + 1] = std::complex<float>(float(a[1]),float(b[1]));
-                    _dest[index + 2] = std::complex<float>(float(a[2]),float(b[2]));
-                    _dest[index + 3] = std::complex<float>(float(a[3]),float(b[3]));
+                    _dest[index] = std::complex<float>(float(a[0]), float(b[0]));
+                    _dest[index + 1] = std::complex<float>(float(a[1]), float(b[1]));
+                    _dest[index + 2] = std::complex<float>(float(a[2]), float(b[2]));
+                    _dest[index + 3] = std::complex<float>(float(a[3]), float(b[3]));
                     index = index + 4;
                 }
             // last 2 bits are filled up zeros
@@ -101,7 +100,7 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed in
 }
 
 void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
-        unsigned int _prn, signed int _fs, unsigned int _chip_shift)
+    unsigned int _prn, signed int _fs, unsigned int _chip_shift)
 {
     unsigned int _samplesPerCode;
     unsigned int delay;
@@ -110,17 +109,19 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
 
     std::complex<float>* _code = new std::complex<float>[_codeLength]();
 
-    galileo_e5_a_code_gen_complex_primary(_code , _prn , _Signal);
+    galileo_e5_a_code_gen_complex_primary(_code, _prn, _Signal);
 
-    _samplesPerCode = static_cast<unsigned int>(static_cast<double>(_fs) / ( static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
+    _samplesPerCode = static_cast<unsigned int>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
     delay = ((_codeLength - _chip_shift) % _codeLength) * _samplesPerCode / _codeLength;
 
     if (_fs != _codeFreqBasis)
         {
             std::complex<float>* _resampled_signal;
-            if (posix_memalign((void**)&_resampled_signal, 16, _samplesPerCode * sizeof(gr_complex)) == 0){};
-            resampler(_code, _resampled_signal, _codeFreqBasis, _fs, _codeLength, _samplesPerCode); //resamples code to fs
+            if (posix_memalign((void**)&_resampled_signal, 16, _samplesPerCode * sizeof(gr_complex)) == 0)
+                {
+                };
+            resampler(_code, _resampled_signal, _codeFreqBasis, _fs, _codeLength, _samplesPerCode);  //resamples code to fs
             delete[] _code;
             _code = _resampled_signal;
         }

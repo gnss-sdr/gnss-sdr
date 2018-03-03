@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_SETId_H_
-#define	_SETId_H_
+#ifndef _SETId_H_
+#define _SETId_H_
 
 
 #include <asn_application.h>
@@ -23,35 +23,37 @@ extern "C" {
 
 /* Dependencies */
 typedef enum SETId_PR {
-	SETId_PR_NOTHING,	/* No components present */
-	SETId_PR_msisdn,
-	SETId_PR_mdn,
-	SETId_PR_min,
-	SETId_PR_imsi,
-	SETId_PR_nai,
-	SETId_PR_iPAddress,
-	/* Extensions may appear below */
-	
+    SETId_PR_NOTHING, /* No components present */
+    SETId_PR_msisdn,
+    SETId_PR_mdn,
+    SETId_PR_min,
+    SETId_PR_imsi,
+    SETId_PR_nai,
+    SETId_PR_iPAddress,
+    /* Extensions may appear below */
+
 } SETId_PR;
 
 /* SETId */
-typedef struct SETId {
-	SETId_PR present;
-	union SETId_u {
-		OCTET_STRING_t	 msisdn;
-		OCTET_STRING_t	 mdn;
-		BIT_STRING_t	 min;
-		OCTET_STRING_t	 imsi;
-		IA5String_t	 nai;
-		IPAddress_t	 iPAddress;
-		/*
+typedef struct SETId
+{
+    SETId_PR present;
+    union SETId_u
+    {
+        OCTET_STRING_t msisdn;
+        OCTET_STRING_t mdn;
+        BIT_STRING_t min;
+        OCTET_STRING_t imsi;
+        IA5String_t nai;
+        IPAddress_t iPAddress;
+        /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+    } choice;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SETId_t;
 
 /* Implementation */
@@ -61,5 +63,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SETId;
 }
 #endif
 
-#endif	/* _SETId_H_ */
+#endif /* _SETId_H_ */
 #include <asn_internal.h>

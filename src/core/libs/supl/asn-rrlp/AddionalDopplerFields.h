@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_AddionalDopplerFields_H_
-#define	_AddionalDopplerFields_H_
+#ifndef _AddionalDopplerFields_H_
+#define _AddionalDopplerFields_H_
 
 
 #include <asn_application.h>
@@ -19,12 +19,13 @@ extern "C" {
 #endif
 
 /* AddionalDopplerFields */
-typedef struct AddionalDopplerFields {
-	long	 doppler1;
-	long	 dopplerUncertainty;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct AddionalDopplerFields
+{
+    long doppler1;
+    long dopplerUncertainty;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } AddionalDopplerFields_t;
 
 /* Implementation */
@@ -34,5 +35,5 @@ extern asn_TYPE_descriptor_t asn_DEF_AddionalDopplerFields;
 }
 #endif
 
-#endif	/* _AddionalDopplerFields_H_ */
+#endif /* _AddionalDopplerFields_H_ */
 #include <asn_internal.h>

@@ -29,7 +29,6 @@
  */
 
 
-
 #ifndef GNSS_SDR_CONTROL_MESSAGE_H_
 #define GNSS_SDR_CONTROL_MESSAGE_H_
 
@@ -38,7 +37,6 @@
  */
 class ControlMessage
 {
-
 public:
     static unsigned int const ack_success = 0;
     static unsigned int const ack_failed = 1;

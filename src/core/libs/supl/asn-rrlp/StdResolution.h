@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_StdResolution_H_
-#define	_StdResolution_H_
+#ifndef _StdResolution_H_
+#define _StdResolution_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* StdResolution */
-typedef long	 StdResolution_t;
+typedef long StdResolution_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_StdResolution;
@@ -36,5 +36,5 @@ per_type_encoder_f StdResolution_encode_uper;
 }
 #endif
 
-#endif	/* _StdResolution_H_ */
+#endif /* _StdResolution_H_ */
 #include <asn_internal.h>

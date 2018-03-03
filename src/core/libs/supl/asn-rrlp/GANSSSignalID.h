@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSSignalID_H_
-#define	_GANSSSignalID_H_
+#ifndef _GANSSSignalID_H_
+#define _GANSSSignalID_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* GANSSSignalID */
-typedef long	 GANSSSignalID_t;
+typedef long GANSSSignalID_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_GANSSSignalID;
@@ -36,5 +36,5 @@ per_type_encoder_f GANSSSignalID_encode_uper;
 }
 #endif
 
-#endif	/* _GANSSSignalID_H_ */
+#endif /* _GANSSSignalID_H_ */
 #include <asn_internal.h>

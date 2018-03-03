@@ -31,20 +31,19 @@
 
 
 #include "signal_generator.h"
-#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E5a.h"
 #include "GLONASS_L1_CA.h"
+#include <glog/logging.h>
 
 
 using google::LogMessage;
 
 SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
-        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) :
-                role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    std::string role, unsigned int in_stream,
+    unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/gen_source.dat";
@@ -86,27 +85,22 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     unsigned int vector_length = 0;
     if (std::find(system.begin(), system.end(), "E") != system.end())
         {
-            if (signal1[0].at(0)=='5')
+            if (signal1[0].at(0) == '5')
                 {
-                    vector_length = round(static_cast<float>(fs_in) / (Galileo_E5a_CODE_CHIP_RATE_HZ
-                            / Galileo_E5a_CODE_LENGTH_CHIPS));
+                    vector_length = round(static_cast<float>(fs_in) / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
                 }
             else
                 {
-                    vector_length = round(static_cast<float>(fs_in) / (Galileo_E1_CODE_CHIP_RATE_HZ
-                            / Galileo_E1_B_CODE_LENGTH_CHIPS))
-                                              * Galileo_E1_C_SECONDARY_CODE_LENGTH;
+                    vector_length = round(static_cast<float>(fs_in) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)) * Galileo_E1_C_SECONDARY_CODE_LENGTH;
                 }
         }
     else if (std::find(system.begin(), system.end(), "G") != system.end())
         {
-            vector_length = round(static_cast<float>(fs_in)
-                    / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+            vector_length = round(static_cast<float>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
         }
     else if (std::find(system.begin(), system.end(), "R") != system.end())
         {
-            vector_length = round((float)fs_in
-                    / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+            vector_length = round((float)fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
         }
 
     if (item_type_.compare("gr_complex") == 0)
@@ -114,7 +108,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
             item_size_ = sizeof(gr_complex);
             DLOG(INFO) << "Item size " << item_size_;
             gen_source_ = signal_make_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips, delay_sec,
-                    data_flag, noise_flag, fs_in, vector_length, BW_BB);
+                data_flag, noise_flag, fs_in, vector_length, BW_BB);
 
             vector_to_stream_ = gr::blocks::vector_to_stream::make(item_size_, vector_length);
 
@@ -141,7 +135,8 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
 
 
 SignalGenerator::~SignalGenerator()
-{}
+{
+}
 
 
 void SignalGenerator::connect(gr::top_block_sptr top_block)
@@ -156,7 +151,6 @@ void SignalGenerator::connect(gr::top_block_sptr top_block)
                     top_block->connect(vector_to_stream_, 0, file_sink_, 0);
                     DLOG(INFO) << "connected vector_to_stream_ to file sink";
                 }
-
         }
 }
 

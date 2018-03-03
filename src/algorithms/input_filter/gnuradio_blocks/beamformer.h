@@ -41,19 +41,19 @@ beamformer_sptr make_beamformer();
 /*!
  * \brief This class implements a real-time software-defined spatial filter using the CTTC GNSS experimental antenna array input and a set of dynamically reloadable weights
  */
-class beamformer: public gr::sync_block
+class beamformer : public gr::sync_block
 {
 private:
     friend beamformer_sptr
     make_beamformer_sptr();
 
-    gr_complex* weight_vector;
+    gr_complex *weight_vector;
 
 public:
     beamformer();
     ~beamformer();
-    int work (int noutput_items, gr_vector_const_void_star &input_items,
-              gr_vector_void_star &output_items);
+    int work(int noutput_items, gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif

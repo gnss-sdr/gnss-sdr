@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_TA0_H_
-#define	_TA0_H_
+#ifndef _TA0_H_
+#define _TA0_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* TA0 */
-typedef long	 TA0_t;
+typedef long TA0_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_TA0;
@@ -36,5 +36,5 @@ per_type_encoder_f TA0_encode_uper;
 }
 #endif
 
-#endif	/* _TA0_H_ */
+#endif /* _TA0_H_ */
 #include <asn_internal.h>

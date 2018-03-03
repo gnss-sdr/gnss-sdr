@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_Accuracy_H_
-#define	_Accuracy_H_
+#ifndef _Accuracy_H_
+#define _Accuracy_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* Accuracy */
-typedef long	 Accuracy_t;
+typedef long Accuracy_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_Accuracy;
@@ -36,5 +36,5 @@ per_type_encoder_f Accuracy_encode_uper;
 }
 #endif
 
-#endif	/* _Accuracy_H_ */
+#endif /* _Accuracy_H_ */
 #include <asn_internal.h>

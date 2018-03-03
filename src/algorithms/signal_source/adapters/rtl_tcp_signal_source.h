@@ -32,15 +32,16 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 
-#include <stdexcept>
-#include <string>
+#include "rtl_tcp_signal_source_c.h"
+#include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/deinterleave.h>
 #include <gnuradio/blocks/float_to_complex.h>
-#include "rtl_tcp_signal_source_c.h"
-#include "gnss_block_interface.h"
+#include <stdexcept>
+#include <string>
+
 
 class ConfigurationInterface;
 
@@ -49,12 +50,12 @@ class ConfigurationInterface;
  * I/Q samples over TCP.
  * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr)
  */
-class RtlTcpSignalSource: public GNSSBlockInterface
+class RtlTcpSignalSource : public GNSSBlockInterface
 {
 public:
     RtlTcpSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~RtlTcpSignalSource();
 

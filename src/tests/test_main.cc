@@ -29,17 +29,6 @@
 * -------------------------------------------------------------------------
 */
 
-#include <cmath>
-#include <iostream>
-#include <queue>
-#include <memory>
-#include <boost/thread.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/filesystem.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
-#include <gtest/gtest.h>
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "control_thread.h"
@@ -62,6 +51,19 @@
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_utc_model.h"
+
+#include <boost/thread.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/filesystem.hpp>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
+#include <cmath>
+#include <iostream>
+#include <queue>
+#include <memory>
+
 
 using google::LogMessage;
 
@@ -162,20 +164,22 @@ int main(int argc, char **argv)
     std::cout << "Running GNSS-SDR Tests..." << std::endl;
     int res = 0;
     try
-    {
+        {
             testing::InitGoogleTest(&argc, argv);
-    }
-    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+        }
+    catch (...)
+        {
+        }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
     try
-    {
+        {
             res = RUN_ALL_TESTS();
-    }
-    catch(...)
-    {
+        }
+    catch (...)
+        {
             LOG(WARNING) << "Unexpected catch";
-    }
+        }
     google::ShutDownCommandLineFlags();
     return res;
 }

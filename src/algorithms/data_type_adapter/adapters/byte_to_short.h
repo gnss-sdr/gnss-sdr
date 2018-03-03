@@ -31,11 +31,10 @@
 #ifndef GNSS_SDR_BYTE_TO_SHORT_H_
 #define GNSS_SDR_BYTE_TO_SHORT_H_
 
-#include <string>
+#include "gnss_block_interface.h"
 #include <gnuradio/blocks/char_to_short.h>
 #include <gnuradio/blocks/file_sink.h>
-#include "gnss_block_interface.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -43,12 +42,12 @@ class ConfigurationInterface;
  * \brief Adapts an 8-bits sample stream (IF) to a short int stream (IF)
  *
  */
-class ByteToShort: public GNSSBlockInterface
+class ByteToShort : public GNSSBlockInterface
 {
 public:
     ByteToShort(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~ByteToShort();
 

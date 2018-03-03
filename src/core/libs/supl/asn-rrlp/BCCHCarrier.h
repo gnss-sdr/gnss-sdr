@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_BCCHCarrier_H_
-#define	_BCCHCarrier_H_
+#ifndef _BCCHCarrier_H_
+#define _BCCHCarrier_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* BCCHCarrier */
-typedef long	 BCCHCarrier_t;
+typedef long BCCHCarrier_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_BCCHCarrier;
@@ -36,5 +36,5 @@ per_type_encoder_f BCCHCarrier_encode_uper;
 }
 #endif
 
-#endif	/* _BCCHCarrier_H_ */
+#endif /* _BCCHCarrier_H_ */
 #include <asn_internal.h>

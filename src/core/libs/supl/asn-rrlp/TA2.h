@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_TA2_H_
-#define	_TA2_H_
+#ifndef _TA2_H_
+#define _TA2_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* TA2 */
-typedef long	 TA2_t;
+typedef long TA2_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_TA2;
@@ -36,5 +36,5 @@ per_type_encoder_f TA2_encode_uper;
 }
 #endif
 
-#endif	/* _TA2_H_ */
+#endif /* _TA2_H_ */
 #include <asn_internal.h>

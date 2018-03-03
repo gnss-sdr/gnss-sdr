@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSAssistanceData_H_
-#define	_GANSSAssistanceData_H_
+#ifndef _GANSSAssistanceData_H_
+#define _GANSSAssistanceData_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* GANSSAssistanceData */
-typedef OCTET_STRING_t	 GANSSAssistanceData_t;
+typedef OCTET_STRING_t GANSSAssistanceData_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_GANSSAssistanceData;
@@ -36,5 +36,5 @@ per_type_encoder_f GANSSAssistanceData_encode_uper;
 }
 #endif
 
-#endif	/* _GANSSAssistanceData_H_ */
+#endif /* _GANSSAssistanceData_H_ */
 #include <asn_internal.h>

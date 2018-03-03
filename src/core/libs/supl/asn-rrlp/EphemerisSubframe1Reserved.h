@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_EphemerisSubframe1Reserved_H_
-#define	_EphemerisSubframe1Reserved_H_
+#ifndef _EphemerisSubframe1Reserved_H_
+#define _EphemerisSubframe1Reserved_H_
 
 
 #include <asn_application.h>
@@ -19,14 +19,15 @@ extern "C" {
 #endif
 
 /* EphemerisSubframe1Reserved */
-typedef struct EphemerisSubframe1Reserved {
-	long	 reserved1;
-	long	 reserved2;
-	long	 reserved3;
-	long	 reserved4;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct EphemerisSubframe1Reserved
+{
+    long reserved1;
+    long reserved2;
+    long reserved3;
+    long reserved4;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } EphemerisSubframe1Reserved_t;
 
 /* Implementation */
@@ -36,5 +37,5 @@ extern asn_TYPE_descriptor_t asn_DEF_EphemerisSubframe1Reserved;
 }
 #endif
 
-#endif	/* _EphemerisSubframe1Reserved_H_ */
+#endif /* _EphemerisSubframe1Reserved_H_ */
 #include <asn_internal.h>

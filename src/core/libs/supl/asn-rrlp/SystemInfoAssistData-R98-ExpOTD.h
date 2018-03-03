@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SystemInfoAssistData_R98_ExpOTD_H_
-#define	_SystemInfoAssistData_R98_ExpOTD_H_
+#ifndef _SystemInfoAssistData_R98_ExpOTD_H_
+#define _SystemInfoAssistData_R98_ExpOTD_H_
 
 
 #include <asn_application.h>
@@ -19,11 +19,12 @@ extern "C" {
 #endif
 
 /* SystemInfoAssistData-R98-ExpOTD */
-typedef struct SystemInfoAssistData_R98_ExpOTD {
-	SeqOfSystemInfoAssistBTS_R98_ExpOTD_t	 systemInfoAssistListR98_ExpOTD;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct SystemInfoAssistData_R98_ExpOTD
+{
+    SeqOfSystemInfoAssistBTS_R98_ExpOTD_t systemInfoAssistListR98_ExpOTD;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SystemInfoAssistData_R98_ExpOTD_t;
 
 /* Implementation */
@@ -33,5 +34,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SystemInfoAssistData_R98_ExpOTD;
 }
 #endif
 
-#endif	/* _SystemInfoAssistData_R98_ExpOTD_H_ */
+#endif /* _SystemInfoAssistData_R98_ExpOTD_H_ */
 #include <asn_internal.h>

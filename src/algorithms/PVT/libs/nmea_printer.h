@@ -36,11 +36,9 @@
 #ifndef GNSS_SDR_NMEA_PRINTER_H_
 #define GNSS_SDR_NMEA_PRINTER_H_
 
-
-#include <iostream>
+#include "pvt_solution.h"
 #include <fstream>
 #include <string>
-#include "pvt_solution.h"
 
 
 /*!
@@ -68,17 +66,17 @@ public:
     ~Nmea_Printer();
 
 private:
-    std::string nmea_filename; // String with the NMEA log filename
-    std::ofstream nmea_file_descriptor; // Output file stream for NMEA log file
+    std::string nmea_filename;           // String with the NMEA log filename
+    std::ofstream nmea_file_descriptor;  // Output file stream for NMEA log file
     std::string nmea_devname;
-    int nmea_dev_descriptor; // NMEA serial device descriptor (i.e. COM port)
+    int nmea_dev_descriptor;  // NMEA serial device descriptor (i.e. COM port)
     std::shared_ptr<Pvt_Solution> d_PVT_data;
-    int init_serial(std::string serial_device); //serial port control
+    int init_serial(std::string serial_device);  //serial port control
     void close_serial();
-    std::string get_GPGGA(); // fix data
-    std::string get_GPGSV(); // satellite data
-    std::string get_GPGSA(); // overall satellite reception data
-    std::string get_GPRMC(); // minimum recommended data
+    std::string get_GPGGA();  // fix data
+    std::string get_GPGSV();  // satellite data
+    std::string get_GPGSA();  // overall satellite reception data
+    std::string get_GPRMC();  // minimum recommended data
     std::string get_UTC_NMEA_time(boost::posix_time::ptime d_position_UTC_time);
     std::string longitude_to_hm(double longitude);
     std::string latitude_to_hm(double lat);

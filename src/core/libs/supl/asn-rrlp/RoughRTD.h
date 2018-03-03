@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_RoughRTD_H_
-#define	_RoughRTD_H_
+#ifndef _RoughRTD_H_
+#define _RoughRTD_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* RoughRTD */
-typedef long	 RoughRTD_t;
+typedef long RoughRTD_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_RoughRTD;
@@ -36,5 +36,5 @@ per_type_encoder_f RoughRTD_encode_uper;
 }
 #endif
 
-#endif	/* _RoughRTD_H_ */
+#endif /* _RoughRTD_H_ */
 #include <asn_internal.h>

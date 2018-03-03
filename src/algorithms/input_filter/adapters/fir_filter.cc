@@ -30,23 +30,21 @@
  */
 
 #include "fir_filter.h"
+#include "configuration_interface.h"
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/filter/pm_remez.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
-#include "configuration_interface.h"
+
 
 using google::LogMessage;
 
 FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     size_t item_size;
     (*this).init();
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             item_size = sizeof(gr_complex);
             fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps_);
@@ -57,8 +55,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
                     file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0) && (output_item_type_.compare("cshort") == 0))
         {
             item_size = sizeof(lv_16sc_t);
             cshort_to_float_x2_ = make_cshort_to_float_x2();
@@ -75,8 +72,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
                     file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             item_size = sizeof(gr_complex);
             cshort_to_float_x2_ = make_cshort_to_float_x2();
@@ -92,8 +88,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
                 }
         }
 
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             item_size = sizeof(gr_complex);
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
@@ -111,8 +106,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
                     file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0) && (output_item_type_.compare("cbyte") == 0))
         {
             item_size = sizeof(lv_8sc_t);
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
@@ -140,16 +134,14 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
 }
 
 
-
 FirFilter::~FirFilter()
-{}
-
+{
+}
 
 
 void FirFilter::connect(gr::top_block_sptr top_block)
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             if (dump_)
                 {
@@ -160,8 +152,7 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                     DLOG(INFO) << "Nothing to connect internally";
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0) && (output_item_type_.compare("cshort") == 0))
         {
             top_block->connect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->connect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -174,8 +165,7 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                     top_block->connect(short_x2_to_cshort_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             top_block->connect(cbyte_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->connect(cbyte_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -186,8 +176,7 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                     top_block->connect(float_to_complex_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0) && (output_item_type_.compare("cbyte") == 0))
         {
             top_block->connect(cbyte_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->connect(cbyte_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -200,8 +189,7 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                     top_block->connect(char_x2_cbyte_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             top_block->connect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->connect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -219,19 +207,16 @@ void FirFilter::connect(gr::top_block_sptr top_block)
 }
 
 
-
 void FirFilter::disconnect(gr::top_block_sptr top_block)
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             if (dump_)
                 {
                     top_block->disconnect(fir_filter_ccf_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             top_block->disconnect(fir_filter_fff_2_, 0, float_to_complex_, 1);
             top_block->disconnect(fir_filter_fff_1_, 0, float_to_complex_, 0);
@@ -242,8 +227,7 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
                     top_block->disconnect(float_to_complex_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0) && (output_item_type_.compare("cshort") == 0))
         {
             top_block->disconnect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->disconnect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -256,8 +240,7 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
                     top_block->disconnect(short_x2_to_cshort_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0) && (output_item_type_.compare("cbyte") == 0))
         {
             top_block->disconnect(float_to_char_2_, 0, char_x2_cbyte_, 1);
             top_block->disconnect(float_to_char_1_, 0, char_x2_cbyte_, 0);
@@ -270,8 +253,7 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
                     top_block->disconnect(char_x2_cbyte_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             top_block->disconnect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->disconnect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -289,31 +271,25 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
 }
 
 
-
 gr::basic_block_sptr FirFilter::get_left_block()
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             return fir_filter_ccf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0) && (output_item_type_.compare("cshort") == 0))
         {
             return cshort_to_float_x2_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             return cbyte_to_float_x2_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0) && (output_item_type_.compare("cbyte") == 0))
         {
             return cbyte_to_float_x2_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             return cshort_to_float_x2_;
         }
@@ -325,31 +301,25 @@ gr::basic_block_sptr FirFilter::get_left_block()
 }
 
 
-
 gr::basic_block_sptr FirFilter::get_right_block()
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             return fir_filter_ccf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0) && (output_item_type_.compare("cshort") == 0))
         {
             return short_x2_to_cshort_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             return float_to_complex_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0) && (output_item_type_.compare("cbyte") == 0))
         {
             return char_x2_cbyte_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-              && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0) && (output_item_type_.compare("gr_complex") == 0))
         {
             return float_to_complex_;
         }
@@ -361,7 +331,6 @@ gr::basic_block_sptr FirFilter::get_right_block()
 }
 
 
-
 void FirFilter::init()
 {
     std::string default_input_item_type = "gr_complex";
@@ -370,9 +339,9 @@ void FirFilter::init()
     std::string default_dump_filename = "../data/input_filter.dat";
     int default_number_of_taps = 6;
     unsigned int default_number_of_bands = 2;
-    std::vector<double> default_bands = { 0.0, 0.4, 0.6, 1.0 };
-    std::vector<double> default_ampl = { 1.0, 1.0, 0.0, 0.0 };
-    std::vector<double> default_error_w = { 1.0, 1.0 };
+    std::vector<double> default_bands = {0.0, 0.4, 0.6, 1.0};
+    std::vector<double> default_ampl = {1.0, 1.0, 0.0, 0.0};
+    std::vector<double> default_error_w = {1.0, 1.0};
     std::string default_filter_type = "bandpass";
     int default_grid_density = 16;
 

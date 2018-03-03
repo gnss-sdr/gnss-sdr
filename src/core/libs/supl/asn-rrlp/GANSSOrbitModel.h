@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSOrbitModel_H_
-#define	_GANSSOrbitModel_H_
+#ifndef _GANSSOrbitModel_H_
+#define _GANSSOrbitModel_H_
 
 
 #include <asn_application.h>
@@ -20,25 +20,27 @@ extern "C" {
 
 /* Dependencies */
 typedef enum GANSSOrbitModel_PR {
-	GANSSOrbitModel_PR_NOTHING,	/* No components present */
-	GANSSOrbitModel_PR_keplerianSet,
-	/* Extensions may appear below */
-	
+    GANSSOrbitModel_PR_NOTHING, /* No components present */
+    GANSSOrbitModel_PR_keplerianSet,
+    /* Extensions may appear below */
+
 } GANSSOrbitModel_PR;
 
 /* GANSSOrbitModel */
-typedef struct GANSSOrbitModel {
-	GANSSOrbitModel_PR present;
-	union GANSSOrbitModel_u {
-		NavModel_KeplerianSet_t	 keplerianSet;
-		/*
+typedef struct GANSSOrbitModel
+{
+    GANSSOrbitModel_PR present;
+    union GANSSOrbitModel_u
+    {
+        NavModel_KeplerianSet_t keplerianSet;
+        /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+    } choice;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GANSSOrbitModel_t;
 
 /* Implementation */
@@ -48,5 +50,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSSOrbitModel;
 }
 #endif
 
-#endif	/* _GANSSOrbitModel_H_ */
+#endif /* _GANSSOrbitModel_H_ */
 #include <asn_internal.h>

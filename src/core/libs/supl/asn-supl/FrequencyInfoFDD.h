@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_FrequencyInfoFDD_H_
-#define	_FrequencyInfoFDD_H_
+#ifndef _FrequencyInfoFDD_H_
+#define _FrequencyInfoFDD_H_
 
 
 #include <asn_application.h>
@@ -19,16 +19,17 @@ extern "C" {
 #endif
 
 /* FrequencyInfoFDD */
-typedef struct FrequencyInfoFDD {
-	UARFCN_t	*uarfcn_UL	/* OPTIONAL */;
-	UARFCN_t	 uarfcn_DL;
-	/*
+typedef struct FrequencyInfoFDD
+{
+    UARFCN_t *uarfcn_UL /* OPTIONAL */;
+    UARFCN_t uarfcn_DL;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } FrequencyInfoFDD_t;
 
 /* Implementation */
@@ -38,5 +39,5 @@ extern asn_TYPE_descriptor_t asn_DEF_FrequencyInfoFDD;
 }
 #endif
 
-#endif	/* _FrequencyInfoFDD_H_ */
+#endif /* _FrequencyInfoFDD_H_ */
 #include <asn_internal.h>

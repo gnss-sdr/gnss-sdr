@@ -32,7 +32,6 @@
 
 
 #include <chrono>
-#include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -66,8 +65,7 @@ private:
 
 public:
     int rx_message;
-    ~GpsL2MDllPllTrackingTest_msg_rx(); //!< Default destructor
-
+    ~GpsL2MDllPllTrackingTest_msg_rx();  //!< Default destructor
 };
 
 
@@ -80,20 +78,19 @@ GpsL2MDllPllTrackingTest_msg_rx_sptr GpsL2MDllPllTrackingTest_msg_rx_make()
 void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
-    {
+        {
             long int message = pmt::to_long(msg);
             rx_message = message;
-    }
-    catch(boost::bad_any_cast& e)
-    {
+        }
+    catch (boost::bad_any_cast& e)
+        {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
-    }
+        }
 }
 
 
-GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() :
-            gr::block("GpsL2MDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() : gr::block("GpsL2MDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
@@ -102,12 +99,13 @@ GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() :
 
 
 GpsL2MDllPllTrackingTest_msg_rx::~GpsL2MDllPllTrackingTest_msg_rx()
-{}
+{
+}
 
 
 // ###########################################################
 
-class GpsL2MDllPllTrackingTest: public ::testing::Test
+class GpsL2MDllPllTrackingTest : public ::testing::Test
 {
 protected:
     GpsL2MDllPllTrackingTest()
@@ -119,7 +117,8 @@ protected:
     }
 
     ~GpsL2MDllPllTrackingTest()
-    {}
+    {
+    }
 
     void init();
 
@@ -169,23 +168,23 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     gnss_synchro.Acq_doppler_hz = 1200;
     gnss_synchro.Acq_samplestamp_samples = 0;
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         tracking->set_channel(gnss_synchro.Channel_ID);
     }) << "Failure setting channel.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         tracking->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         tracking->connect(top_block);
     }) << "Failure connecting tracking to the top_block.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         //gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
         std::string path = std::string(TEST_PATH);
-        std::string file =  path + "signal_samples/gps_l2c_m_prn7_5msps.dat";
-        const char * file_name = file.c_str();
+        std::string file = path + "signal_samples/gps_l2c_m_prn7_5msps.dat";
+        const char* file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
@@ -197,14 +196,13 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
 
     tracking->start_tracking();
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
-        top_block->run(); // Start threads and wait
+        top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
     // TODO: Verify tracking results
-    std::cout <<  "Tracked " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Tracked " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
-

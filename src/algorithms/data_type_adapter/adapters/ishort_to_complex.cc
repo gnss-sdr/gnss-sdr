@@ -29,15 +29,13 @@
  */
 
 #include "ishort_to_complex.h"
-#include <glog/logging.h>
 #include "configuration_interface.h"
+#include <glog/logging.h>
 
 using google::LogMessage;
 
 IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "short";
     std::string default_output_item_type = "gr_complex";
@@ -70,14 +68,15 @@ IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::str
 
 
 IshortToComplex::~IshortToComplex()
-{}
+{
+}
 
 
 void IshortToComplex::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     top_block->connect(gr_interleaved_short_to_complex_, 0, conjugate_cc_, 0);
                     top_block->connect(conjugate_cc_, 0, file_sink_, 0);
@@ -89,7 +88,7 @@ void IshortToComplex::connect(gr::top_block_sptr top_block)
         }
     else
         {
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     top_block->connect(gr_interleaved_short_to_complex_, 0, conjugate_cc_, 0);
                 }
@@ -105,7 +104,7 @@ void IshortToComplex::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     top_block->disconnect(gr_interleaved_short_to_complex_, 0, conjugate_cc_, 0);
                     top_block->disconnect(conjugate_cc_, 0, file_sink_, 0);
@@ -117,7 +116,7 @@ void IshortToComplex::disconnect(gr::top_block_sptr top_block)
         }
     else
         {
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     top_block->disconnect(gr_interleaved_short_to_complex_, 0, conjugate_cc_, 0);
                 }
@@ -133,7 +132,7 @@ gr::basic_block_sptr IshortToComplex::get_left_block()
 
 gr::basic_block_sptr IshortToComplex::get_right_block()
 {
-    if(inverted_spectrum)
+    if (inverted_spectrum)
         {
             return conjugate_cc_;
         }

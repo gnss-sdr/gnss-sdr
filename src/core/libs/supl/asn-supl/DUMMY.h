@@ -4,8 +4,8 @@
  * 	found in "../supl-ulp.asn"
  */
 
-#ifndef	_DUMMY_H_
-#define	_DUMMY_H_
+#ifndef _DUMMY_H_
+#define _DUMMY_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* DUMMY */
-typedef INTEGER_t	 DUMMY_t;
+typedef INTEGER_t DUMMY_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_DUMMY;
@@ -36,5 +36,5 @@ per_type_encoder_f DUMMY_encode_uper;
 }
 #endif
 
-#endif	/* _DUMMY_H_ */
+#endif /* _DUMMY_H_ */
 #include <asn_internal.h>

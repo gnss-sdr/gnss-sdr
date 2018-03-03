@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_RefQuality_H_
-#define	_RefQuality_H_
+#ifndef _RefQuality_H_
+#define _RefQuality_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* RefQuality */
-typedef long	 RefQuality_t;
+typedef long RefQuality_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_RefQuality;
@@ -36,5 +36,5 @@ per_type_encoder_f RefQuality_encode_uper;
 }
 #endif
 
-#endif	/* _RefQuality_H_ */
+#endif /* _RefQuality_H_ */
 #include <asn_internal.h>

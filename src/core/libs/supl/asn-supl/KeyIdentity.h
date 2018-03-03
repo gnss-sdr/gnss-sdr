@@ -4,8 +4,8 @@
  * 	found in "../supl-init.asn"
  */
 
-#ifndef	_KeyIdentity_H_
-#define	_KeyIdentity_H_
+#ifndef _KeyIdentity_H_
+#define _KeyIdentity_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* KeyIdentity */
-typedef BIT_STRING_t	 KeyIdentity_t;
+typedef BIT_STRING_t KeyIdentity_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_KeyIdentity;
@@ -36,5 +36,5 @@ per_type_encoder_f KeyIdentity_encode_uper;
 }
 #endif
 
-#endif	/* _KeyIdentity_H_ */
+#endif /* _KeyIdentity_H_ */
 #include <asn_internal.h>

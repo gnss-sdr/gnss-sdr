@@ -39,44 +39,41 @@
 #include <gnuradio/blocks/stream_to_vector.h>
 #include "unpack_2bit_samples.h"
 
-std::vector< uint8_t > packData( std::vector< int8_t > const & raw_data,
-                                 bool big_endian )
+std::vector<uint8_t> packData(std::vector<int8_t> const &raw_data,
+    bool big_endian)
 {
-    std::vector< uint8_t > packed_data( raw_data.size()/4 );
+    std::vector<uint8_t> packed_data(raw_data.size() / 4);
 
-    int shift = ( big_endian ? 6 : 0 );
+    int shift = (big_endian ? 6 : 0);
     unsigned int j = 0;
 
-    for( unsigned int i = 0; i < raw_data.size(); ++i )
-    {
-        unsigned val = static_cast< unsigned >( (raw_data[i] - 1 )/2 & 0x03 );
-
-        packed_data[j] |= val << shift;
-
-        if( big_endian )
+    for (unsigned int i = 0; i < raw_data.size(); ++i)
         {
-            shift -= 2;
-            if( shift < 0 )
-            {
-                shift = 6;
-                j++;
-            }
-        }
-        else
-        {
-            shift += 2;
-            if( shift > 6 )
-            {
-                shift = 0;
-                j++;
-            }
+            unsigned val = static_cast<unsigned>((raw_data[i] - 1) / 2 & 0x03);
 
-        }
+            packed_data[j] |= val << shift;
 
-    }
+            if (big_endian)
+                {
+                    shift -= 2;
+                    if (shift < 0)
+                        {
+                            shift = 6;
+                            j++;
+                        }
+                }
+            else
+                {
+                    shift += 2;
+                    if (shift > 6)
+                        {
+                            shift = 0;
+                            j++;
+                        }
+                }
+        }
 
     return packed_data;
-
 }
 
 TEST(Unpack2bitSamplesTest, CheckBigEndianByte)
@@ -86,30 +83,30 @@ TEST(Unpack2bitSamplesTest, CheckBigEndianByte)
     bool big_endian_items = false;
 
 
-    std::vector< int8_t > raw_data = { -1, 3, 1, -1, -3, 1, 3, 1 };
-    std::vector< uint8_t > packed_data = packData( raw_data, big_endian_bytes );
-    std::vector< uint8_t > unpacked_data;
+    std::vector<int8_t> raw_data = {-1, 3, 1, -1, -3, 1, 3, 1};
+    std::vector<uint8_t> packed_data = packData(raw_data, big_endian_bytes);
+    std::vector<uint8_t> unpacked_data;
 
     gr::top_block_sptr top_block = gr::make_top_block("Unpack2bitSamplesTest");
 
     gr::blocks::vector_source_b::sptr source =
-        gr::blocks::vector_source_b::make( packed_data );
+        gr::blocks::vector_source_b::make(packed_data);
 
 
     boost::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
-                                 item_size,
-                                 big_endian_items );
+            item_size,
+            big_endian_items);
 
     gr::blocks::stream_to_vector::sptr stov =
-        gr::blocks::stream_to_vector::make( item_size, raw_data.size() );
+        gr::blocks::stream_to_vector::make(item_size, raw_data.size());
 
     gr::blocks::vector_sink_b::sptr sink =
-        gr::blocks::vector_sink_b::make( raw_data.size() );
+        gr::blocks::vector_sink_b::make(raw_data.size());
 
 
     top_block->connect(source, 0, unpacker, 0);
-    top_block->connect(unpacker, 0, stov, 0 );
+    top_block->connect(unpacker, 0, stov, 0);
     top_block->connect(stov, 0, sink, 0);
 
     top_block->run();
@@ -117,13 +114,12 @@ TEST(Unpack2bitSamplesTest, CheckBigEndianByte)
 
     unpacked_data = sink->data();
 
-    EXPECT_EQ( raw_data.size(), unpacked_data.size() );
+    EXPECT_EQ(raw_data.size(), unpacked_data.size());
 
-    for( unsigned int i = 0; i < raw_data.size(); ++i )
-    {
-        EXPECT_EQ( raw_data[i], static_cast< int8_t >( unpacked_data[i] ) );
-    }
-
+    for (unsigned int i = 0; i < raw_data.size(); ++i)
+        {
+            EXPECT_EQ(raw_data[i], static_cast<int8_t>(unpacked_data[i]));
+        }
 }
 
 TEST(Unpack2bitSamplesTest, CheckLittleEndianByte)
@@ -133,30 +129,30 @@ TEST(Unpack2bitSamplesTest, CheckLittleEndianByte)
     bool big_endian_items = false;
 
 
-    std::vector< int8_t > raw_data = { -1, 3, 1, -1, -3, 1, 3, 1 };
-    std::vector< uint8_t > packed_data = packData( raw_data, big_endian_bytes );
-    std::vector< uint8_t > unpacked_data;
+    std::vector<int8_t> raw_data = {-1, 3, 1, -1, -3, 1, 3, 1};
+    std::vector<uint8_t> packed_data = packData(raw_data, big_endian_bytes);
+    std::vector<uint8_t> unpacked_data;
 
     gr::top_block_sptr top_block = gr::make_top_block("Unpack2bitSamplesTest");
 
     gr::blocks::vector_source_b::sptr source =
-        gr::blocks::vector_source_b::make( packed_data );
+        gr::blocks::vector_source_b::make(packed_data);
 
 
     boost::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
-                                 item_size,
-                                 big_endian_items );
+            item_size,
+            big_endian_items);
 
     gr::blocks::stream_to_vector::sptr stov =
-        gr::blocks::stream_to_vector::make( item_size, raw_data.size() );
+        gr::blocks::stream_to_vector::make(item_size, raw_data.size());
 
     gr::blocks::vector_sink_b::sptr sink =
-        gr::blocks::vector_sink_b::make( raw_data.size() );
+        gr::blocks::vector_sink_b::make(raw_data.size());
 
 
     top_block->connect(source, 0, unpacker, 0);
-    top_block->connect(unpacker, 0, stov, 0 );
+    top_block->connect(unpacker, 0, stov, 0);
     top_block->connect(stov, 0, sink, 0);
 
     top_block->run();
@@ -164,13 +160,12 @@ TEST(Unpack2bitSamplesTest, CheckLittleEndianByte)
 
     unpacked_data = sink->data();
 
-    EXPECT_EQ( raw_data.size(), unpacked_data.size() );
+    EXPECT_EQ(raw_data.size(), unpacked_data.size());
 
-    for( unsigned int i = 0; i < raw_data.size(); ++i )
-    {
-        EXPECT_EQ( raw_data[i], static_cast< int8_t >( unpacked_data[i] ) );
-    }
-
+    for (unsigned int i = 0; i < raw_data.size(); ++i)
+        {
+            EXPECT_EQ(raw_data[i], static_cast<int8_t>(unpacked_data[i]));
+        }
 }
 
 TEST(Unpack2bitSamplesTest, CheckBigEndianShortBigEndianByte)
@@ -180,51 +175,50 @@ TEST(Unpack2bitSamplesTest, CheckBigEndianShortBigEndianByte)
     bool big_endian_items = true;
 
 
-    std::vector< int8_t > raw_data = { -1, 3, 1, -1, -3, 1, 3, 1 };
-    std::vector< uint8_t > packed_data = packData( raw_data, big_endian_bytes );
+    std::vector<int8_t> raw_data = {-1, 3, 1, -1, -3, 1, 3, 1};
+    std::vector<uint8_t> packed_data = packData(raw_data, big_endian_bytes);
     // change the order of each pair of bytes:
-    for( unsigned int ii = 0; ii < packed_data.size(); ii+=item_size )
-    {
-        unsigned int kk = ii + item_size - 1;
-        unsigned int jj = ii;
-        while( kk > jj )
+    for (unsigned int ii = 0; ii < packed_data.size(); ii += item_size)
         {
-            uint8_t tmp = packed_data[jj];
-            packed_data[jj] = packed_data[kk];
-            packed_data[kk] = tmp;
-            --kk;
-            ++jj;
+            unsigned int kk = ii + item_size - 1;
+            unsigned int jj = ii;
+            while (kk > jj)
+                {
+                    uint8_t tmp = packed_data[jj];
+                    packed_data[jj] = packed_data[kk];
+                    packed_data[kk] = tmp;
+                    --kk;
+                    ++jj;
+                }
         }
-    }
 
     // Now create a new big endian buffer:
-    std::vector< int16_t > packed_data_short(
-            reinterpret_cast< int16_t *>( &packed_data[0] ),
-            reinterpret_cast< int16_t * >( &packed_data[0] )
-            + packed_data.size()/item_size);
+    std::vector<int16_t> packed_data_short(
+        reinterpret_cast<int16_t *>(&packed_data[0]),
+        reinterpret_cast<int16_t *>(&packed_data[0]) + packed_data.size() / item_size);
 
-    std::vector< uint8_t > unpacked_data;
+    std::vector<uint8_t> unpacked_data;
 
     gr::top_block_sptr top_block = gr::make_top_block("Unpack2bitSamplesTest");
 
     gr::blocks::vector_source_s::sptr source =
-        gr::blocks::vector_source_s::make( packed_data_short );
+        gr::blocks::vector_source_s::make(packed_data_short);
 
 
     boost::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
-                                 item_size,
-                                 big_endian_items );
+            item_size,
+            big_endian_items);
 
     gr::blocks::stream_to_vector::sptr stov =
-        gr::blocks::stream_to_vector::make( 1, raw_data.size() );
+        gr::blocks::stream_to_vector::make(1, raw_data.size());
 
     gr::blocks::vector_sink_b::sptr sink =
-        gr::blocks::vector_sink_b::make( raw_data.size() );
+        gr::blocks::vector_sink_b::make(raw_data.size());
 
 
     top_block->connect(source, 0, unpacker, 0);
-    top_block->connect(unpacker, 0, stov, 0 );
+    top_block->connect(unpacker, 0, stov, 0);
     top_block->connect(stov, 0, sink, 0);
 
     top_block->run();
@@ -232,13 +226,12 @@ TEST(Unpack2bitSamplesTest, CheckBigEndianShortBigEndianByte)
 
     unpacked_data = sink->data();
 
-    EXPECT_EQ( raw_data.size(), unpacked_data.size() );
+    EXPECT_EQ(raw_data.size(), unpacked_data.size());
 
-    for( unsigned int i = 0; i < raw_data.size(); ++i )
-    {
-        EXPECT_EQ( raw_data[i], static_cast< int8_t >( unpacked_data[i] ) );
-    }
-
+    for (unsigned int i = 0; i < raw_data.size(); ++i)
+        {
+            EXPECT_EQ(raw_data[i], static_cast<int8_t>(unpacked_data[i]));
+        }
 }
 
 TEST(Unpack2bitSamplesTest, CheckBigEndianShortLittleEndianByte)
@@ -248,51 +241,50 @@ TEST(Unpack2bitSamplesTest, CheckBigEndianShortLittleEndianByte)
     bool big_endian_items = true;
 
 
-    std::vector< int8_t > raw_data = { -1, 3, 1, -1, -3, 1, 3, 1 };
-    std::vector< uint8_t > packed_data = packData( raw_data, big_endian_bytes );
+    std::vector<int8_t> raw_data = {-1, 3, 1, -1, -3, 1, 3, 1};
+    std::vector<uint8_t> packed_data = packData(raw_data, big_endian_bytes);
     // change the order of each pair of bytes:
-    for( unsigned int ii = 0; ii < packed_data.size(); ii+=item_size )
-    {
-        unsigned int kk = ii + item_size - 1;
-        unsigned int jj = ii;
-        while( kk > jj )
+    for (unsigned int ii = 0; ii < packed_data.size(); ii += item_size)
         {
-            uint8_t tmp = packed_data[jj];
-            packed_data[jj] = packed_data[kk];
-            packed_data[kk] = tmp;
-            --kk;
-            ++jj;
+            unsigned int kk = ii + item_size - 1;
+            unsigned int jj = ii;
+            while (kk > jj)
+                {
+                    uint8_t tmp = packed_data[jj];
+                    packed_data[jj] = packed_data[kk];
+                    packed_data[kk] = tmp;
+                    --kk;
+                    ++jj;
+                }
         }
-    }
 
     // Now create a new big endian buffer:
-    std::vector< int16_t > packed_data_short(
-            reinterpret_cast< int16_t *>( &packed_data[0] ),
-            reinterpret_cast< int16_t * >( &packed_data[0] )
-            + packed_data.size()/item_size);
+    std::vector<int16_t> packed_data_short(
+        reinterpret_cast<int16_t *>(&packed_data[0]),
+        reinterpret_cast<int16_t *>(&packed_data[0]) + packed_data.size() / item_size);
 
-    std::vector< uint8_t > unpacked_data;
+    std::vector<uint8_t> unpacked_data;
 
     gr::top_block_sptr top_block = gr::make_top_block("Unpack2bitSamplesTest");
 
     gr::blocks::vector_source_s::sptr source =
-        gr::blocks::vector_source_s::make( packed_data_short );
+        gr::blocks::vector_source_s::make(packed_data_short);
 
 
     boost::shared_ptr<gr::block> unpacker =
         make_unpack_2bit_samples(big_endian_bytes,
-                                 item_size,
-                                 big_endian_items );
+            item_size,
+            big_endian_items);
 
     gr::blocks::stream_to_vector::sptr stov =
-        gr::blocks::stream_to_vector::make( 1, raw_data.size() );
+        gr::blocks::stream_to_vector::make(1, raw_data.size());
 
     gr::blocks::vector_sink_b::sptr sink =
-        gr::blocks::vector_sink_b::make( raw_data.size() );
+        gr::blocks::vector_sink_b::make(raw_data.size());
 
 
     top_block->connect(source, 0, unpacker, 0);
-    top_block->connect(unpacker, 0, stov, 0 );
+    top_block->connect(unpacker, 0, stov, 0);
     top_block->connect(stov, 0, sink, 0);
 
     top_block->run();
@@ -300,11 +292,10 @@ TEST(Unpack2bitSamplesTest, CheckBigEndianShortLittleEndianByte)
 
     unpacked_data = sink->data();
 
-    EXPECT_EQ( raw_data.size(), unpacked_data.size() );
+    EXPECT_EQ(raw_data.size(), unpacked_data.size());
 
-    for( unsigned int i = 0; i < raw_data.size(); ++i )
-    {
-        EXPECT_EQ( raw_data[i], static_cast< int8_t >( unpacked_data[i] ) );
-    }
-
+    for (unsigned int i = 0; i < raw_data.size(); ++i)
+        {
+            EXPECT_EQ(raw_data[i], static_cast<int8_t>(unpacked_data[i]));
+        }
 }

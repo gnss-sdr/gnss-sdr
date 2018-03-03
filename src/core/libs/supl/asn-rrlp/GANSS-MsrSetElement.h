@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSS_MsrSetElement_H_
-#define	_GANSS_MsrSetElement_H_
+#ifndef _GANSS_MsrSetElement_H_
+#define _GANSS_MsrSetElement_H_
 
 
 #include <asn_application.h>
@@ -25,15 +25,16 @@ extern "C" {
 struct ReferenceFrame;
 
 /* GANSS-MsrSetElement */
-typedef struct GANSS_MsrSetElement {
-	struct ReferenceFrame	*referenceFrame	/* OPTIONAL */;
-	GANSSTODm_t	*ganssTODm	/* OPTIONAL */;
-	long	*deltaGNASSTOD	/* OPTIONAL */;
-	GANSSTODUncertainty_t	*ganssTODUncertainty	/* OPTIONAL */;
-	SeqOfGANSS_SgnTypeElement_t	 ganss_SgnTypeList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GANSS_MsrSetElement
+{
+    struct ReferenceFrame *referenceFrame /* OPTIONAL */;
+    GANSSTODm_t *ganssTODm /* OPTIONAL */;
+    long *deltaGNASSTOD /* OPTIONAL */;
+    GANSSTODUncertainty_t *ganssTODUncertainty /* OPTIONAL */;
+    SeqOfGANSS_SgnTypeElement_t ganss_SgnTypeList;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GANSS_MsrSetElement_t;
 
 /* Implementation */
@@ -46,5 +47,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSS_MsrSetElement;
 /* Referred external types */
 #include "ReferenceFrame.h"
 
-#endif	/* _GANSS_MsrSetElement_H_ */
+#endif /* _GANSS_MsrSetElement_H_ */
 #include <asn_internal.h>

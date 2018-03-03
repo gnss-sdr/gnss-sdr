@@ -68,9 +68,6 @@ void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz, float pll_bw_hz, int o
 }
 
 
-
-
-
 void Tracking_FLL_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
 {
     if (d_order == 3)
@@ -86,9 +83,6 @@ void Tracking_FLL_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
 }
 
 
-
-
-
 float Tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float PLL_discriminator, float correlation_time_s)
 {
     float carrier_error_hz;
@@ -98,8 +92,8 @@ float Tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float 
              *  3rd order PLL with 2nd order FLL assist
              */
             d_pll_w = d_pll_w + correlation_time_s * (d_pll_w0p3 * PLL_discriminator + d_pll_w0f2 * FLL_discriminator);
-            d_pll_x = d_pll_x + correlation_time_s * (0.5*d_pll_w + d_pll_a2 * d_pll_w0f * FLL_discriminator + d_pll_a3 * d_pll_w0p2 * PLL_discriminator);
-            carrier_error_hz  = 0.5*d_pll_x + d_pll_b3 * d_pll_w0p * PLL_discriminator;
+            d_pll_x = d_pll_x + correlation_time_s * (0.5 * d_pll_w + d_pll_a2 * d_pll_w0f * FLL_discriminator + d_pll_a3 * d_pll_w0p2 * PLL_discriminator);
+            carrier_error_hz = 0.5 * d_pll_x + d_pll_b3 * d_pll_w0p * PLL_discriminator;
         }
     else
         {
@@ -118,11 +112,10 @@ float Tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float 
         }
 
     return carrier_error_hz;
-
 }
 
 
-Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter ()
+Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter()
 {
     d_order = 0;
     d_pll_w = 0;
@@ -138,6 +131,6 @@ Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter ()
 }
 
 
-Tracking_FLL_PLL_filter::~Tracking_FLL_PLL_filter ()
-{}
-
+Tracking_FLL_PLL_filter::~Tracking_FLL_PLL_filter()
+{
+}

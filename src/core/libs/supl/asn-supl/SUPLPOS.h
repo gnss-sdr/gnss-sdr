@@ -4,8 +4,8 @@
  * 	found in "../supl-pos.asn"
  */
 
-#ifndef	_SUPLPOS_H_
-#define	_SUPLPOS_H_
+#ifndef _SUPLPOS_H_
+#define _SUPLPOS_H_
 
 
 #include <asn_application.h>
@@ -22,16 +22,17 @@ extern "C" {
 struct Velocity;
 
 /* SUPLPOS */
-typedef struct SUPLPOS {
-	PosPayLoad_t	 posPayLoad;
-	struct Velocity	*velocity	/* OPTIONAL */;
-	/*
+typedef struct SUPLPOS
+{
+    PosPayLoad_t posPayLoad;
+    struct Velocity *velocity /* OPTIONAL */;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } SUPLPOS_t;
 
 /* Implementation */
@@ -44,5 +45,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SUPLPOS;
 /* Referred external types */
 #include "Velocity.h"
 
-#endif	/* _SUPLPOS_H_ */
+#endif /* _SUPLPOS_H_ */
 #include <asn_internal.h>

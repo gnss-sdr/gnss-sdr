@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSUTCModel_H_
-#define	_GANSSUTCModel_H_
+#ifndef _GANSSUTCModel_H_
+#define _GANSSUTCModel_H_
 
 
 #include <asn_application.h>
@@ -19,18 +19,19 @@ extern "C" {
 #endif
 
 /* GANSSUTCModel */
-typedef struct GANSSUTCModel {
-	long	 ganssUtcA1;
-	long	 ganssUtcA0;
-	long	 ganssUtcTot;
-	long	 ganssUtcWNt;
-	long	 ganssUtcDeltaTls;
-	long	 ganssUtcWNlsf;
-	long	 ganssUtcDN;
-	long	 ganssUtcDeltaTlsf;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct GANSSUTCModel
+{
+    long ganssUtcA1;
+    long ganssUtcA0;
+    long ganssUtcTot;
+    long ganssUtcWNt;
+    long ganssUtcDeltaTls;
+    long ganssUtcWNlsf;
+    long ganssUtcDN;
+    long ganssUtcDeltaTlsf;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } GANSSUTCModel_t;
 
 /* Implementation */
@@ -40,5 +41,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSSUTCModel;
 }
 #endif
 
-#endif	/* _GANSSUTCModel_H_ */
+#endif /* _GANSSUTCModel_H_ */
 #include <asn_internal.h>

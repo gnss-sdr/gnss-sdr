@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SVIDMASK_H_
-#define	_SVIDMASK_H_
+#ifndef _SVIDMASK_H_
+#define _SVIDMASK_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* SVIDMASK */
-typedef BIT_STRING_t	 SVIDMASK_t;
+typedef BIT_STRING_t SVIDMASK_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_SVIDMASK;
@@ -36,5 +36,5 @@ per_type_encoder_f SVIDMASK_encode_uper;
 }
 #endif
 
-#endif	/* _SVIDMASK_H_ */
+#endif /* _SVIDMASK_H_ */
 #include <asn_internal.h>

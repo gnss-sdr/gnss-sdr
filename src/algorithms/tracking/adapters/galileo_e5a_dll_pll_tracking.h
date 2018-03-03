@@ -39,10 +39,9 @@
 #ifndef GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_
 #define GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_
 
-#include <string>
 #include "tracking_interface.h"
 #include "galileo_e5a_dll_pll_tracking_cc.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -53,9 +52,9 @@ class GalileoE5aDllPllTracking : public TrackingInterface
 {
 public:
     GalileoE5aDllPllTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GalileoE5aDllPllTracking();
 

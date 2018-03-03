@@ -4,8 +4,8 @@
  * 	found in "../supl-init.asn"
  */
 
-#ifndef	_NotificationType_H_
-#define	_NotificationType_H_
+#ifndef _NotificationType_H_
+#define _NotificationType_H_
 
 
 #include <asn_application.h>
@@ -19,18 +19,18 @@ extern "C" {
 
 /* Dependencies */
 typedef enum NotificationType {
-	NotificationType_noNotificationNoVerification	= 0,
-	NotificationType_notificationOnly	= 1,
-	NotificationType_notificationAndVerficationAllowedNA	= 2,
-	NotificationType_notificationAndVerficationDeniedNA	= 3,
-	NotificationType_privacyOverride	= 4
-	/*
+    NotificationType_noNotificationNoVerification = 0,
+    NotificationType_notificationOnly = 1,
+    NotificationType_notificationAndVerficationAllowedNA = 2,
+    NotificationType_notificationAndVerficationDeniedNA = 3,
+    NotificationType_privacyOverride = 4
+    /*
 	 * Enumeration is extensible
 	 */
 } e_NotificationType;
 
 /* NotificationType */
-typedef ENUMERATED_t	 NotificationType_t;
+typedef ENUMERATED_t NotificationType_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_NotificationType;
@@ -48,5 +48,5 @@ per_type_encoder_f NotificationType_encode_uper;
 }
 #endif
 
-#endif	/* _NotificationType_H_ */
+#endif /* _NotificationType_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_WcdmaCellInformation_H_
-#define	_WcdmaCellInformation_H_
+#ifndef _WcdmaCellInformation_H_
+#define _WcdmaCellInformation_H_
 
 
 #include <asn_application.h>
@@ -23,20 +23,21 @@ struct FrequencyInfo;
 struct MeasuredResultsList;
 
 /* WcdmaCellInformation */
-typedef struct WcdmaCellInformation {
-	long	 refMCC;
-	long	 refMNC;
-	long	 refUC;
-	struct FrequencyInfo	*frequencyInfo	/* OPTIONAL */;
-	long	*primaryScramblingCode	/* OPTIONAL */;
-	struct MeasuredResultsList	*measuredResultsList	/* OPTIONAL */;
-	/*
+typedef struct WcdmaCellInformation
+{
+    long refMCC;
+    long refMNC;
+    long refUC;
+    struct FrequencyInfo *frequencyInfo /* OPTIONAL */;
+    long *primaryScramblingCode /* OPTIONAL */;
+    struct MeasuredResultsList *measuredResultsList /* OPTIONAL */;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } WcdmaCellInformation_t;
 
 /* Implementation */
@@ -50,5 +51,5 @@ extern asn_TYPE_descriptor_t asn_DEF_WcdmaCellInformation;
 #include "FrequencyInfo.h"
 #include "MeasuredResultsList.h"
 
-#endif	/* _WcdmaCellInformation_H_ */
+#endif /* _WcdmaCellInformation_H_ */
 #include <asn_internal.h>

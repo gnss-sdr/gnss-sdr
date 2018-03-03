@@ -4,8 +4,8 @@
  * 	found in "../supl-start.asn"
  */
 
-#ifndef	_PosTechnology_H_
-#define	_PosTechnology_H_
+#ifndef _PosTechnology_H_
+#define _PosTechnology_H_
 
 
 #include <asn_application.h>
@@ -19,21 +19,22 @@ extern "C" {
 #endif
 
 /* PosTechnology */
-typedef struct PosTechnology {
-	BOOLEAN_t	 agpsSETassisted;
-	BOOLEAN_t	 agpsSETBased;
-	BOOLEAN_t	 autonomousGPS;
-	BOOLEAN_t	 aFLT;
-	BOOLEAN_t	 eCID;
-	BOOLEAN_t	 eOTD;
-	BOOLEAN_t	 oTDOA;
-	/*
+typedef struct PosTechnology
+{
+    BOOLEAN_t agpsSETassisted;
+    BOOLEAN_t agpsSETBased;
+    BOOLEAN_t autonomousGPS;
+    BOOLEAN_t aFLT;
+    BOOLEAN_t eCID;
+    BOOLEAN_t eOTD;
+    BOOLEAN_t oTDOA;
+    /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } PosTechnology_t;
 
 /* Implementation */
@@ -43,5 +44,5 @@ extern asn_TYPE_descriptor_t asn_DEF_PosTechnology;
 }
 #endif
 
-#endif	/* _PosTechnology_H_ */
+#endif /* _PosTechnology_H_ */
 #include <asn_internal.h>

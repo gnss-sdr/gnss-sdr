@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_BitNumber_H_
-#define	_BitNumber_H_
+#ifndef _BitNumber_H_
+#define _BitNumber_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* BitNumber */
-typedef long	 BitNumber_t;
+typedef long BitNumber_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_BitNumber;
@@ -36,5 +36,5 @@ per_type_encoder_f BitNumber_encode_uper;
 }
 #endif
 
-#endif	/* _BitNumber_H_ */
+#endif /* _BitNumber_H_ */
 #include <asn_internal.h>

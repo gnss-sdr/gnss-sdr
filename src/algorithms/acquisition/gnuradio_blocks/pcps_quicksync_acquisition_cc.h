@@ -51,29 +51,29 @@
 #ifndef GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H_
 
+#include "gnss_synchro.h"
+#include <gnuradio/block.h>
+#include <gnuradio/gr_complex.h>
+#include <gnuradio/fft/fft.h>
 #include <fstream>
 #include <string>
 #include <algorithm>
 #include <functional>
-#include <assert.h>
-#include <gnuradio/block.h>
-#include <gnuradio/gr_complex.h>
-#include <gnuradio/fft/fft.h>
-#include "gnss_synchro.h"
+#include <cassert>
 
 class pcps_quicksync_acquisition_cc;
 
 typedef boost::shared_ptr<pcps_quicksync_acquisition_cc>
-pcps_quicksync_acquisition_cc_sptr;
+    pcps_quicksync_acquisition_cc_sptr;
 
 pcps_quicksync_acquisition_cc_sptr
 pcps_quicksync_make_acquisition_cc(unsigned int folding_factor,
-        unsigned int sampled_ms, unsigned int max_dwells,
-        unsigned int doppler_max, long freq, long fs_in,
-        int samples_per_ms, int samples_per_code,
-        bool bit_transition_flag,
-        bool dump,
-        std::string dump_filename);
+    unsigned int sampled_ms, unsigned int max_dwells,
+    unsigned int doppler_max, long freq, long fs_in,
+    int samples_per_ms, int samples_per_code,
+    bool bit_transition_flag,
+    bool dump,
+    std::string dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition with
@@ -82,31 +82,31 @@ pcps_quicksync_make_acquisition_cc(unsigned int folding_factor,
  * Check \ref Navitec2012 "Faster GPS via the Sparse Fourier Transform",
  * for details of its implementation and functionality.
  */
-class pcps_quicksync_acquisition_cc: public gr::block
+class pcps_quicksync_acquisition_cc : public gr::block
 {
 private:
     friend pcps_quicksync_acquisition_cc_sptr
     pcps_quicksync_make_acquisition_cc(unsigned int folding_factor,
-            unsigned int sampled_ms, unsigned int max_dwells,
-            unsigned int doppler_max, long freq, long fs_in,
-            int samples_per_ms, int samples_per_code,
-            bool bit_transition_flag,
-            bool dump,
-            std::string dump_filename);
+        unsigned int sampled_ms, unsigned int max_dwells,
+        unsigned int doppler_max, long freq, long fs_in,
+        int samples_per_ms, int samples_per_code,
+        bool bit_transition_flag,
+        bool dump,
+        std::string dump_filename);
 
     pcps_quicksync_acquisition_cc(unsigned int folding_factor,
-            unsigned int sampled_ms, unsigned int max_dwells,
-            unsigned int doppler_max, long freq, long fs_in,
-            int samples_per_ms, int samples_per_code,
-            bool bit_transition_flag,
-            bool dump,
-            std::string dump_filename);
+        unsigned int sampled_ms, unsigned int max_dwells,
+        unsigned int doppler_max, long freq, long fs_in,
+        int samples_per_ms, int samples_per_code,
+        bool bit_transition_flag,
+        bool dump,
+        std::string dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-            int doppler_offset);
+        int doppler_offset);
 
     gr_complex* d_code;
-    unsigned int d_folding_factor; // also referred in the paper as 'p'
+    unsigned int d_folding_factor;  // also referred in the paper as 'p'
     float* d_corr_acumulator;
     unsigned int* d_possible_delay;
     float* d_corr_output_f;
@@ -135,7 +135,7 @@ private:
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_fft_if2;
     gr::fft::fft_complex* d_ifft;
-    Gnss_Synchro *d_gnss_synchro;
+    Gnss_Synchro* d_gnss_synchro;
     unsigned int d_code_phase;
     float d_doppler_freq;
     float d_mag;
@@ -183,7 +183,7 @@ public:
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
-    void set_local_code(std::complex<float> * code);
+    void set_local_code(std::complex<float>* code);
 
     /*!
      * \brief Starts acquisition algorithm, turning from standby mode to
@@ -242,9 +242,9 @@ public:
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
-    int general_work(int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_CC_H_*/

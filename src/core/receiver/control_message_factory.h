@@ -31,16 +31,16 @@
 #ifndef GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_
 #define GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_
 
+#include <gnuradio/message.h>
 #include <memory>
 #include <vector>
-#include <gnuradio/message.h>
 
 //! Message described by who sent it and what it says
 typedef struct ControlMessage_
 {
     unsigned int who;
     unsigned int what;
-} ControlMessage ;
+} ControlMessage;
 
 
 /*!
@@ -50,7 +50,6 @@ typedef struct ControlMessage_
  */
 class ControlMessageFactory
 {
-
 public:
     //! Constructor
     ControlMessageFactory();

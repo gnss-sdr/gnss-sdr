@@ -31,12 +31,11 @@
 #ifndef GNSS_SDR_ISHORT_TO_COMPLEX_H_
 #define GNSS_SDR_ISHORT_TO_COMPLEX_H_
 
-#include <string>
-#include <gnuradio/blocks/interleaved_short_to_complex.h>
-#include <gnuradio/blocks/file_sink.h>
 #include "conjugate_cc.h"
 #include "gnss_block_interface.h"
-
+#include <gnuradio/blocks/interleaved_short_to_complex.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -44,12 +43,12 @@ class ConfigurationInterface;
  * \brief Adapts an I/Q interleaved short integer sample stream to a gr_complex (float) stream
  *
  */
-class IshortToComplex: public GNSSBlockInterface
+class IshortToComplex : public GNSSBlockInterface
 {
 public:
     IshortToComplex(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~IshortToComplex();
 

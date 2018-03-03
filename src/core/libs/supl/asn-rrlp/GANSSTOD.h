@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSTOD_H_
-#define	_GANSSTOD_H_
+#ifndef _GANSSTOD_H_
+#define _GANSSTOD_H_
 
 
 #include <asn_application.h>
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* GANSSTOD */
-typedef long	 GANSSTOD_t;
+typedef long GANSSTOD_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_GANSSTOD;
@@ -36,5 +36,5 @@ per_type_encoder_f GANSSTOD_encode_uper;
 }
 #endif
 
-#endif	/* _GANSSTOD_H_ */
+#endif /* _GANSSTOD_H_ */
 #include <asn_internal.h>

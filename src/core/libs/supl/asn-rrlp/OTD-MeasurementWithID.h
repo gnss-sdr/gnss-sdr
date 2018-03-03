@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_OTD_MeasurementWithID_H_
-#define	_OTD_MeasurementWithID_H_
+#ifndef _OTD_MeasurementWithID_H_
+#define _OTD_MeasurementWithID_H_
 
 
 #include <asn_application.h>
@@ -22,14 +22,15 @@ extern "C" {
 #endif
 
 /* OTD-MeasurementWithID */
-typedef struct OTD_MeasurementWithID {
-	NeighborIdentity_t	 neighborIdentity;
-	ModuloTimeSlot_t	 nborTimeSlot;
-	EOTDQuality_t	 eotdQuality;
-	OTDValue_t	 otdValue;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct OTD_MeasurementWithID
+{
+    NeighborIdentity_t neighborIdentity;
+    ModuloTimeSlot_t nborTimeSlot;
+    EOTDQuality_t eotdQuality;
+    OTDValue_t otdValue;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } OTD_MeasurementWithID_t;
 
 /* Implementation */
@@ -39,5 +40,5 @@ extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasurementWithID;
 }
 #endif
 
-#endif	/* _OTD_MeasurementWithID_H_ */
+#endif /* _OTD_MeasurementWithID_H_ */
 #include <asn_internal.h>

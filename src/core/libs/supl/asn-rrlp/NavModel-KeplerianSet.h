@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_NavModel_KeplerianSet_H_
-#define	_NavModel_KeplerianSet_H_
+#ifndef _NavModel_KeplerianSet_H_
+#define _NavModel_KeplerianSet_H_
 
 
 #include <asn_application.h>
@@ -19,26 +19,27 @@ extern "C" {
 #endif
 
 /* NavModel-KeplerianSet */
-typedef struct NavModel_KeplerianSet {
-	long	 keplerToeLSB;
-	long	 keplerW;
-	long	 keplerDeltaN;
-	long	 keplerM0;
-	long	 keplerOmegaDot;
-	long	 keplerELSB;
-	long	 keplerIDot;
-	long	 keplerAPowerHalfLSB;
-	long	 keplerI0;
-	long	 keplerOmega0;
-	long	 keplerCrs;
-	long	 keplerCis;
-	long	 keplerCus;
-	long	 keplerCrc;
-	long	 keplerCic;
-	long	 keplerCuc;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
+typedef struct NavModel_KeplerianSet
+{
+    long keplerToeLSB;
+    long keplerW;
+    long keplerDeltaN;
+    long keplerM0;
+    long keplerOmegaDot;
+    long keplerELSB;
+    long keplerIDot;
+    long keplerAPowerHalfLSB;
+    long keplerI0;
+    long keplerOmega0;
+    long keplerCrs;
+    long keplerCis;
+    long keplerCus;
+    long keplerCrc;
+    long keplerCic;
+    long keplerCuc;
+
+    /* Context for parsing across buffer boundaries */
+    asn_struct_ctx_t _asn_ctx;
 } NavModel_KeplerianSet_t;
 
 /* Implementation */
@@ -48,5 +49,5 @@ extern asn_TYPE_descriptor_t asn_DEF_NavModel_KeplerianSet;
 }
 #endif
 
-#endif	/* _NavModel_KeplerianSet_H_ */
+#endif /* _NavModel_KeplerianSet_H_ */
 #include <asn_internal.h>

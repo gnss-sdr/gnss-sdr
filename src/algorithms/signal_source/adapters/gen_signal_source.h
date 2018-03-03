@@ -33,21 +33,21 @@
 #ifndef GNSS_SDR_GEN_SIGNAL_SOURCE_H_
 #define GNSS_SDR_GEN_SIGNAL_SOURCE_H_
 
-#include <string>
-#include <gnuradio/msg_queue.h>
-#include "gnss_block_interface.h"
 
+#include "gnss_block_interface.h"
+#include <gnuradio/msg_queue.h>
+#include <string>
 
 /*!
  * \brief This class wraps blocks that generates synthesized GNSS signal and
  * filters the signal.
  */
-class GenSignalSource: public GNSSBlockInterface
+class GenSignalSource : public GNSSBlockInterface
 {
 public:
     //! Constructor
     GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
-            std::string role, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, boost::shared_ptr<gr::msg_queue> queue);
 
     //! Virtual destructor
     virtual ~GenSignalSource();

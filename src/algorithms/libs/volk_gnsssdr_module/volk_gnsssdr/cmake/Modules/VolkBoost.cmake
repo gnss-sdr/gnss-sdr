@@ -29,8 +29,6 @@ set(__INCLUDED_VOLK_BOOST_CMAKE TRUE)
 set(BOOST_REQUIRED_COMPONENTS
     filesystem
     system
-    unit_test_framework
-    program_options
 )
 
 if(UNIX AND NOT BOOST_ROOT AND EXISTS "/usr/lib64")

@@ -20,11 +20,7 @@
 <% arch_names = this_machine.arch_names %>
 
 %for arch in this_machine.archs:
-#define LV_HAVE_$         \
-    {                     \
-        arch.name.upper() \
-    }                     \
-    1
+#define LV_HAVE_${arch.name.upper()} 1
 %endfor
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
@@ -39,9 +35,7 @@
 #include <volk_gnsssdr/${kern.name}.h>
 %endfor
 
-struct volk_gnsssdr_machine volk_gnsssdr_machine_$
-{
-    this_machine.name} = {
+struct volk_gnsssdr_machine volk_gnsssdr_machine_${this_machine.name} = {
 <% make_arch_have_list = (' | '.join(['(1 << LV_%s)'%a.name.upper() for a in this_machine.archs])) %>    ${make_arch_have_list},
 <% this_machine_name = "\""+this_machine.name+"\"" %>    ${this_machine_name},
     ${this_machine.alignment},

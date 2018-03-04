@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* BadSignalElement */
-typedef struct BadSignalElement
-{
-    SVID_t badSVID;
-    long *badSignalID /* OPTIONAL */;
+    /* BadSignalElement */
+    typedef struct BadSignalElement
+    {
+        SVID_t badSVID;
+        long *badSignalID /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} BadSignalElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } BadSignalElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_BadSignalElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_BadSignalElement;
 
 #ifdef __cplusplus
 }

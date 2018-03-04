@@ -7,12 +7,13 @@
 #define _ASN_CODECS_H_
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-struct asn_TYPE_descriptor_s; /* Forward declaration */
+    struct asn_TYPE_descriptor_s; /* Forward declaration */
 
-/*
+    /*
  * This structure defines a set of parameters that may be passed
  * to every ASN.1 encoder or decoder function.
  * WARNING: if max_stack_size member is set, and you are calling the
@@ -21,9 +22,9 @@ struct asn_TYPE_descriptor_s; /* Forward declaration */
  *   If you can't always satisfy this requirement, use ber_decode(),
  *   xer_decode() and uper_decode() functions instead.
  */
-typedef struct asn_codec_ctx_s
-{
-    /*
+    typedef struct asn_codec_ctx_s
+    {
+        /*
 	 * Limit the decoder routines to use no (much) more stack than a given
 	 * number of bytes. Most of decoders are stack-based, and this
 	 * would protect against stack overflows if the number of nested
@@ -34,31 +35,31 @@ typedef struct asn_codec_ctx_s
 	 * this variable. Be careful in multithreaded environments, as the
 	 * stack size is rather limited.
 	 */
-    size_t max_stack_size; /* 0 disables stack bounds checking */
-} asn_codec_ctx_t;
+        size_t max_stack_size; /* 0 disables stack bounds checking */
+    } asn_codec_ctx_t;
 
-/*
+    /*
  * Type of the return value of the encoding functions (der_encode, xer_encode).
  */
-typedef struct asn_enc_rval_s
-{
-    /*
+    typedef struct asn_enc_rval_s
+    {
+        /*
 	 * Number of bytes encoded.
 	 * -1 indicates failure to encode the structure.
 	 * In this case, the members below this one are meaningful.
 	 */
-    ssize_t encoded;
+        ssize_t encoded;
 
-    /*
+        /*
 	 * Members meaningful when (encoded == -1), for post mortem analysis.
 	 */
 
-    /* Type which cannot be encoded */
-    struct asn_TYPE_descriptor_s *failed_type;
+        /* Type which cannot be encoded */
+        struct asn_TYPE_descriptor_s *failed_type;
 
-    /* Pointer to the structure of that type */
-    void *structure_ptr;
-} asn_enc_rval_t;
+        /* Pointer to the structure of that type */
+        void *structure_ptr;
+    } asn_enc_rval_t;
 #define _ASN_ENCODE_FAILED                                      \
     do                                                          \
         {                                                       \
@@ -79,7 +80,7 @@ typedef struct asn_enc_rval_s
         }                           \
     while (0)
 
-/*
+    /*
  * Type of the return value of the decoding functions (ber_decode, xer_decode)
  * 
  * Please note that the number of consumed bytes is ALWAYS meaningful,
@@ -87,17 +88,17 @@ typedef struct asn_enc_rval_s
  * decoded bytes, hence providing a possibility to fail with more diagnostics
  * (i.e., print the offending remainder of the buffer).
  */
-enum asn_dec_rval_code_e
-{
-    RC_OK,    /* Decoded successfully */
-    RC_WMORE, /* More data expected, call again */
-    RC_FAIL   /* Failure to decode data */
-};
-typedef struct asn_dec_rval_s
-{
-    enum asn_dec_rval_code_e code; /* Result code */
-    size_t consumed;               /* Number of bytes consumed */
-} asn_dec_rval_t;
+    enum asn_dec_rval_code_e
+    {
+        RC_OK,    /* Decoded successfully */
+        RC_WMORE, /* More data expected, call again */
+        RC_FAIL   /* Failure to decode data */
+    };
+    typedef struct asn_dec_rval_s
+    {
+        enum asn_dec_rval_code_e code; /* Result code */
+        size_t consumed;               /* Number of bytes consumed */
+    } asn_dec_rval_t;
 #define _ASN_DECODE_FAILED                                      \
     do                                                          \
         {                                                       \

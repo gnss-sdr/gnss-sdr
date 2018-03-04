@@ -15,20 +15,21 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSMeasureInfo */
-typedef struct GANSSMeasureInfo
-{
-    SeqOfGANSS_MsrSetElement_t ganssMsrSetList;
+    /* GANSSMeasureInfo */
+    typedef struct GANSSMeasureInfo
+    {
+        SeqOfGANSS_MsrSetElement_t ganssMsrSetList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSMeasureInfo_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSMeasureInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSMeasureInfo;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSMeasureInfo;
 
 #ifdef __cplusplus
 }

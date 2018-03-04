@@ -17,26 +17,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SETCapabilities */
-typedef struct SETCapabilities
-{
-    PosTechnology_t posTechnology;
-    PrefMethod_t prefMethod;
-    PosProtocol_t posProtocol;
-    /*
+    /* SETCapabilities */
+    typedef struct SETCapabilities
+    {
+        PosTechnology_t posTechnology;
+        PrefMethod_t prefMethod;
+        PosProtocol_t posProtocol;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SETCapabilities_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SETCapabilities_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SETCapabilities;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SETCapabilities;
 
 #ifdef __cplusplus
 }

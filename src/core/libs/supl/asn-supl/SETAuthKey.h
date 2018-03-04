@@ -15,38 +15,40 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum SETAuthKey_PR {
-    SETAuthKey_PR_NOTHING, /* No components present */
-    SETAuthKey_PR_shortKey,
-    SETAuthKey_PR_longKey,
-    /* Extensions may appear below */
-
-} SETAuthKey_PR;
-
-/* SETAuthKey */
-typedef struct SETAuthKey
-{
-    SETAuthKey_PR present;
-    union SETAuthKey_u
+    /* Dependencies */
+    typedef enum SETAuthKey_PR
     {
-        BIT_STRING_t shortKey;
-        BIT_STRING_t longKey;
-        /*
+        SETAuthKey_PR_NOTHING, /* No components present */
+        SETAuthKey_PR_shortKey,
+        SETAuthKey_PR_longKey,
+        /* Extensions may appear below */
+
+    } SETAuthKey_PR;
+
+    /* SETAuthKey */
+    typedef struct SETAuthKey
+    {
+        SETAuthKey_PR present;
+        union SETAuthKey_u
+        {
+            BIT_STRING_t shortKey;
+            BIT_STRING_t longKey;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SETAuthKey_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SETAuthKey_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SETAuthKey;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SETAuthKey;
 
 #ifdef __cplusplus
 }

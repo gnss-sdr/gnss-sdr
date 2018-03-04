@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* TA2 */
-typedef long TA2_t;
+    /* TA2 */
+    typedef long TA2_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_TA2;
-asn_struct_free_f TA2_free;
-asn_struct_print_f TA2_print;
-asn_constr_check_f TA2_constraint;
-ber_type_decoder_f TA2_decode_ber;
-der_type_encoder_f TA2_encode_der;
-xer_type_decoder_f TA2_decode_xer;
-xer_type_encoder_f TA2_encode_xer;
-per_type_decoder_f TA2_decode_uper;
-per_type_encoder_f TA2_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_TA2;
+    asn_struct_free_f TA2_free;
+    asn_struct_print_f TA2_print;
+    asn_constr_check_f TA2_constraint;
+    ber_type_decoder_f TA2_decode_ber;
+    der_type_encoder_f TA2_encode_der;
+    xer_type_decoder_f TA2_decode_xer;
+    xer_type_encoder_f TA2_encode_xer;
+    per_type_decoder_f TA2_decode_uper;
+    per_type_encoder_f TA2_encode_uper;
 
 #ifdef __cplusplus
 }

@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Almanac */
-typedef struct Almanac
-{
-    long alamanacWNa;
-    SeqOfAlmanacElement_t almanacList;
+    /* Almanac */
+    typedef struct Almanac
+    {
+        long alamanacWNa;
+        SeqOfAlmanacElement_t almanacList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Almanac_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Almanac_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Almanac;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Almanac;
 
 #ifdef __cplusplus
 }

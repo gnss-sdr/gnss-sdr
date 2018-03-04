@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSSGenericAssistDataElement;
+    /* Forward declarations */
+    struct GANSSGenericAssistDataElement;
 
-/* SeqOfGANSSGenericAssistDataElement */
-typedef struct SeqOfGANSSGenericAssistDataElement
-{
-    A_SEQUENCE_OF(struct GANSSGenericAssistDataElement)
-    list;
+    /* SeqOfGANSSGenericAssistDataElement */
+    typedef struct SeqOfGANSSGenericAssistDataElement
+    {
+        A_SEQUENCE_OF(struct GANSSGenericAssistDataElement)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOfGANSSGenericAssistDataElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfGANSSGenericAssistDataElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSGenericAssistDataElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSGenericAssistDataElement;
 
 #ifdef __cplusplus
 }

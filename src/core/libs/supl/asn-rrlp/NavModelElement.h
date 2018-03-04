@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* NavModelElement */
-typedef struct NavModelElement
-{
-    SatelliteID_t satelliteID;
-    SatStatus_t satStatus;
+    /* NavModelElement */
+    typedef struct NavModelElement
+    {
+        SatelliteID_t satelliteID;
+        SatStatus_t satStatus;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} NavModelElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } NavModelElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_NavModelElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_NavModelElement;
 
 #ifdef __cplusplus
 }

@@ -18,42 +18,44 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum Velocity_PR {
-    Velocity_PR_NOTHING, /* No components present */
-    Velocity_PR_horvel,
-    Velocity_PR_horandvervel,
-    Velocity_PR_horveluncert,
-    Velocity_PR_horandveruncert,
-    /* Extensions may appear below */
-
-} Velocity_PR;
-
-/* Velocity */
-typedef struct Velocity
-{
-    Velocity_PR present;
-    union Velocity_u
+    /* Dependencies */
+    typedef enum Velocity_PR
     {
-        Horvel_t horvel;
-        Horandvervel_t horandvervel;
-        Horveluncert_t horveluncert;
-        Horandveruncert_t horandveruncert;
-        /*
+        Velocity_PR_NOTHING, /* No components present */
+        Velocity_PR_horvel,
+        Velocity_PR_horandvervel,
+        Velocity_PR_horveluncert,
+        Velocity_PR_horandveruncert,
+        /* Extensions may appear below */
+
+    } Velocity_PR;
+
+    /* Velocity */
+    typedef struct Velocity
+    {
+        Velocity_PR present;
+        union Velocity_u
+        {
+            Horvel_t horvel;
+            Horandvervel_t horandvervel;
+            Horveluncert_t horveluncert;
+            Horandveruncert_t horandveruncert;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Velocity_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Velocity_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Velocity;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Velocity;
 
 #ifdef __cplusplus
 }

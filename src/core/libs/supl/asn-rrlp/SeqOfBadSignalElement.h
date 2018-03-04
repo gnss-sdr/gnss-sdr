@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct BadSignalElement;
+    /* Forward declarations */
+    struct BadSignalElement;
 
-/* SeqOfBadSignalElement */
-typedef struct SeqOfBadSignalElement
-{
-    A_SEQUENCE_OF(struct BadSignalElement)
-    list;
+    /* SeqOfBadSignalElement */
+    typedef struct SeqOfBadSignalElement
+    {
+        A_SEQUENCE_OF(struct BadSignalElement)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOfBadSignalElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfBadSignalElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfBadSignalElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfBadSignalElement;
 
 #ifdef __cplusplus
 }

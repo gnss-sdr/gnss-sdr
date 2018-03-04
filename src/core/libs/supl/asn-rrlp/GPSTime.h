@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GPSTime */
-typedef struct GPSTime
-{
-    GPSTOW23b_t gpsTOW23b;
-    GPSWeek_t gpsWeek;
+    /* GPSTime */
+    typedef struct GPSTime
+    {
+        GPSTOW23b_t gpsTOW23b;
+        GPSWeek_t gpsWeek;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GPSTime_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GPSTime_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GPSTime;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GPSTime;
 
 #ifdef __cplusplus
 }

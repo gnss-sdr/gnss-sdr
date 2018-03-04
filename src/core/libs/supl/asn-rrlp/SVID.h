@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SVID */
-typedef long SVID_t;
+    /* SVID */
+    typedef long SVID_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SVID;
-asn_struct_free_f SVID_free;
-asn_struct_print_f SVID_print;
-asn_constr_check_f SVID_constraint;
-ber_type_decoder_f SVID_decode_ber;
-der_type_encoder_f SVID_encode_der;
-xer_type_decoder_f SVID_decode_xer;
-xer_type_encoder_f SVID_encode_xer;
-per_type_decoder_f SVID_decode_uper;
-per_type_encoder_f SVID_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SVID;
+    asn_struct_free_f SVID_free;
+    asn_struct_print_f SVID_print;
+    asn_constr_check_f SVID_constraint;
+    ber_type_decoder_f SVID_decode_ber;
+    der_type_encoder_f SVID_encode_der;
+    xer_type_decoder_f SVID_decode_xer;
+    xer_type_encoder_f SVID_encode_xer;
+    per_type_decoder_f SVID_decode_uper;
+    per_type_encoder_f SVID_encode_uper;
 
 #ifdef __cplusplus
 }

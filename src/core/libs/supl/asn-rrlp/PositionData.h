@@ -14,30 +14,32 @@
 #include <BIT_STRING.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum PositionData {
-    PositionData_e_otd = 0,
-    PositionData_gps = 1,
-    PositionData_galileo = 2
-} e_PositionData;
+    /* Dependencies */
+    typedef enum PositionData
+    {
+        PositionData_e_otd = 0,
+        PositionData_gps = 1,
+        PositionData_galileo = 2
+    } e_PositionData;
 
-/* PositionData */
-typedef BIT_STRING_t PositionData_t;
+    /* PositionData */
+    typedef BIT_STRING_t PositionData_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PositionData;
-asn_struct_free_f PositionData_free;
-asn_struct_print_f PositionData_print;
-asn_constr_check_f PositionData_constraint;
-ber_type_decoder_f PositionData_decode_ber;
-der_type_encoder_f PositionData_encode_der;
-xer_type_decoder_f PositionData_decode_xer;
-xer_type_encoder_f PositionData_encode_xer;
-per_type_decoder_f PositionData_decode_uper;
-per_type_encoder_f PositionData_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PositionData;
+    asn_struct_free_f PositionData_free;
+    asn_struct_print_f PositionData_print;
+    asn_constr_check_f PositionData_constraint;
+    ber_type_decoder_f PositionData_decode_ber;
+    der_type_encoder_f PositionData_encode_der;
+    xer_type_decoder_f PositionData_decode_xer;
+    xer_type_encoder_f PositionData_encode_xer;
+    per_type_decoder_f PositionData_decode_uper;
+    per_type_encoder_f PositionData_encode_uper;
 
 #ifdef __cplusplus
 }

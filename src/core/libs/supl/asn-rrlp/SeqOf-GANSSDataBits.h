@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SeqOf-GANSSDataBits */
-typedef struct SeqOf_GANSSDataBits
-{
-    A_SEQUENCE_OF(GANSSDataBit_t)
-    list;
+    /* SeqOf-GANSSDataBits */
+    typedef struct SeqOf_GANSSDataBits
+    {
+        A_SEQUENCE_OF(GANSSDataBit_t)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOf_GANSSDataBits_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOf_GANSSDataBits_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOf_GANSSDataBits;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOf_GANSSDataBits;
 
 #ifdef __cplusplus
 }

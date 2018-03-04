@@ -15,21 +15,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ReferenceFrame */
-typedef struct ReferenceFrame
-{
-    long referenceFN;
-    long *referenceFNMSB /* OPTIONAL */;
+    /* ReferenceFrame */
+    typedef struct ReferenceFrame
+    {
+        long referenceFN;
+        long *referenceFNMSB /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} ReferenceFrame_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReferenceFrame_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceFrame;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceFrame;
 
 #ifdef __cplusplus
 }

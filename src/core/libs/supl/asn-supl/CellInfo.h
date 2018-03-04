@@ -17,40 +17,42 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum CellInfo_PR {
-    CellInfo_PR_NOTHING, /* No components present */
-    CellInfo_PR_gsmCell,
-    CellInfo_PR_wcdmaCell,
-    CellInfo_PR_cdmaCell,
-    /* Extensions may appear below */
-
-} CellInfo_PR;
-
-/* CellInfo */
-typedef struct CellInfo
-{
-    CellInfo_PR present;
-    union CellInfo_u
+    /* Dependencies */
+    typedef enum CellInfo_PR
     {
-        GsmCellInformation_t gsmCell;
-        WcdmaCellInformation_t wcdmaCell;
-        CdmaCellInformation_t cdmaCell;
-        /*
+        CellInfo_PR_NOTHING, /* No components present */
+        CellInfo_PR_gsmCell,
+        CellInfo_PR_wcdmaCell,
+        CellInfo_PR_cdmaCell,
+        /* Extensions may appear below */
+
+    } CellInfo_PR;
+
+    /* CellInfo */
+    typedef struct CellInfo
+    {
+        CellInfo_PR present;
+        union CellInfo_u
+        {
+            GsmCellInformation_t gsmCell;
+            WcdmaCellInformation_t wcdmaCell;
+            CdmaCellInformation_t cdmaCell;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} CellInfo_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } CellInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_CellInfo;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_CellInfo;
 
 #ifdef __cplusplus
 }

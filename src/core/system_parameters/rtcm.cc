@@ -3498,34 +3498,35 @@ unsigned int Rtcm::msm_lock_time_indicator(unsigned int lock_time_period_s)
 }
 
 
+// clang-format off
 unsigned int Rtcm::msm_extended_lock_time_indicator(unsigned int lock_time_period_s)
 {
     // Table 3.5-75
-    if (lock_time_period_s < 64) return (lock_time_period_s);
-    if (64 <= lock_time_period_s && lock_time_period_s < 128) return (64 + (lock_time_period_s - 64) / 2);
-    if (128 <= lock_time_period_s && lock_time_period_s < 256) return (96 + (lock_time_period_s - 128) / 4);
-    if (256 <= lock_time_period_s && lock_time_period_s < 512) return (128 + (lock_time_period_s - 256) / 8);
-    if (512 <= lock_time_period_s && lock_time_period_s < 1024) return (160 + (lock_time_period_s - 512) / 16);
-    if (1024 <= lock_time_period_s && lock_time_period_s < 2048) return (192 + (lock_time_period_s - 1024) / 32);
-    if (2048 <= lock_time_period_s && lock_time_period_s < 4096) return (224 + (lock_time_period_s - 2048) / 64);
-    if (4096 <= lock_time_period_s && lock_time_period_s < 8192) return (256 + (lock_time_period_s - 4096) / 128);
-    if (8192 <= lock_time_period_s && lock_time_period_s < 16384) return (288 + (lock_time_period_s - 8192) / 256);
-    if (16384 <= lock_time_period_s && lock_time_period_s < 32768) return (320 + (lock_time_period_s - 16384) / 512);
-    if (32768 <= lock_time_period_s && lock_time_period_s < 65536) return (352 + (lock_time_period_s - 32768) / 1024);
-    if (65536 <= lock_time_period_s && lock_time_period_s < 131072) return (384 + (lock_time_period_s - 65536) / 2048);
-    if (131072 <= lock_time_period_s && lock_time_period_s < 262144) return (416 + (lock_time_period_s - 131072) / 4096);
-    if (262144 <= lock_time_period_s && lock_time_period_s < 524288) return (448 + (lock_time_period_s - 262144) / 8192);
-    if (524288 <= lock_time_period_s && lock_time_period_s < 1048576) return (480 + (lock_time_period_s - 524288) / 16384);
-    if (1048576 <= lock_time_period_s && lock_time_period_s < 2097152) return (512 + (lock_time_period_s - 1048576) / 32768);
-    if (2097152 <= lock_time_period_s && lock_time_period_s < 4194304) return (544 + (lock_time_period_s - 2097152) / 65536);
-    if (4194304 <= lock_time_period_s && lock_time_period_s < 8388608) return (576 + (lock_time_period_s - 4194304) / 131072);
-    if (8388608 <= lock_time_period_s && lock_time_period_s < 16777216) return (608 + (lock_time_period_s - 8388608) / 262144);
-    if (16777216 <= lock_time_period_s && lock_time_period_s < 33554432) return (640 + (lock_time_period_s - 16777216) / 524288);
-    if (33554432 <= lock_time_period_s && lock_time_period_s < 67108864) return (672 + (lock_time_period_s - 33554432) / 1048576);
-    if (67108864 <= lock_time_period_s) return (704);
-    return 1023;  // will never happen
+    if(                                   lock_time_period_s < 64       ) return (       lock_time_period_s                      );
+    if(       64 <= lock_time_period_s && lock_time_period_s < 128      ) return ( 64 + (lock_time_period_s - 64      ) / 2      );
+    if(      128 <= lock_time_period_s && lock_time_period_s < 256      ) return ( 96 + (lock_time_period_s - 128     ) / 4      );
+    if(      256 <= lock_time_period_s && lock_time_period_s < 512      ) return (128 + (lock_time_period_s - 256     ) / 8      );
+    if(      512 <= lock_time_period_s && lock_time_period_s < 1024     ) return (160 + (lock_time_period_s - 512     ) / 16     );
+    if(     1024 <= lock_time_period_s && lock_time_period_s < 2048     ) return (192 + (lock_time_period_s - 1024    ) / 32     );
+    if(     2048 <= lock_time_period_s && lock_time_period_s < 4096     ) return (224 + (lock_time_period_s - 2048    ) / 64     );
+    if(     4096 <= lock_time_period_s && lock_time_period_s < 8192     ) return (256 + (lock_time_period_s - 4096    ) / 128    );
+    if(     8192 <= lock_time_period_s && lock_time_period_s < 16384    ) return (288 + (lock_time_period_s - 8192    ) / 256    );
+    if(    16384 <= lock_time_period_s && lock_time_period_s < 32768    ) return (320 + (lock_time_period_s - 16384   ) / 512    );
+    if(    32768 <= lock_time_period_s && lock_time_period_s < 65536    ) return (352 + (lock_time_period_s - 32768   ) / 1024   );
+    if(    65536 <= lock_time_period_s && lock_time_period_s < 131072   ) return (384 + (lock_time_period_s - 65536   ) / 2048   );
+    if(   131072 <= lock_time_period_s && lock_time_period_s < 262144   ) return (416 + (lock_time_period_s - 131072  ) / 4096   );
+    if(   262144 <= lock_time_period_s && lock_time_period_s < 524288   ) return (448 + (lock_time_period_s - 262144  ) / 8192   );
+    if(   524288 <= lock_time_period_s && lock_time_period_s < 1048576  ) return (480 + (lock_time_period_s - 524288  ) / 16384  );
+    if(  1048576 <= lock_time_period_s && lock_time_period_s < 2097152  ) return (512 + (lock_time_period_s - 1048576 ) / 32768  );
+    if(  2097152 <= lock_time_period_s && lock_time_period_s < 4194304  ) return (544 + (lock_time_period_s - 2097152 ) / 65536  );
+    if(  4194304 <= lock_time_period_s && lock_time_period_s < 8388608  ) return (576 + (lock_time_period_s - 4194304 ) / 131072 );
+    if(  8388608 <= lock_time_period_s && lock_time_period_s < 16777216 ) return (608 + (lock_time_period_s - 8388608 ) / 262144 );
+    if( 16777216 <= lock_time_period_s && lock_time_period_s < 33554432 ) return (640 + (lock_time_period_s - 16777216) / 524288 );
+    if( 33554432 <= lock_time_period_s && lock_time_period_s < 67108864 ) return (672 + (lock_time_period_s - 33554432) / 1048576);
+    if( 67108864 <= lock_time_period_s                                  ) return (704                                            );
+    return 1023; // will never happen
 }
-
+// clang-format on
 
 // *****************************************************************************************************
 //

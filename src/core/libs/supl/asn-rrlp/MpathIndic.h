@@ -14,31 +14,33 @@
 #include <ENUMERATED.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum MpathIndic {
-    MpathIndic_notMeasured = 0,
-    MpathIndic_low = 1,
-    MpathIndic_medium = 2,
-    MpathIndic_high = 3
-} e_MpathIndic;
+    /* Dependencies */
+    typedef enum MpathIndic
+    {
+        MpathIndic_notMeasured = 0,
+        MpathIndic_low = 1,
+        MpathIndic_medium = 2,
+        MpathIndic_high = 3
+    } e_MpathIndic;
 
-/* MpathIndic */
-typedef ENUMERATED_t MpathIndic_t;
+    /* MpathIndic */
+    typedef ENUMERATED_t MpathIndic_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MpathIndic;
-asn_struct_free_f MpathIndic_free;
-asn_struct_print_f MpathIndic_print;
-asn_constr_check_f MpathIndic_constraint;
-ber_type_decoder_f MpathIndic_decode_ber;
-der_type_encoder_f MpathIndic_encode_der;
-xer_type_decoder_f MpathIndic_decode_xer;
-xer_type_encoder_f MpathIndic_encode_xer;
-per_type_decoder_f MpathIndic_decode_uper;
-per_type_encoder_f MpathIndic_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MpathIndic;
+    asn_struct_free_f MpathIndic_free;
+    asn_struct_print_f MpathIndic_print;
+    asn_constr_check_f MpathIndic_constraint;
+    ber_type_decoder_f MpathIndic_decode_ber;
+    der_type_encoder_f MpathIndic_encode_der;
+    xer_type_decoder_f MpathIndic_decode_xer;
+    xer_type_encoder_f MpathIndic_encode_xer;
+    per_type_decoder_f MpathIndic_decode_uper;
+    per_type_encoder_f MpathIndic_encode_uper;
 
 #ifdef __cplusplus
 }

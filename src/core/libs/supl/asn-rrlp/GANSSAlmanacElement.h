@@ -15,36 +15,38 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum GANSSAlmanacElement_PR {
-    GANSSAlmanacElement_PR_NOTHING, /* No components present */
-    GANSSAlmanacElement_PR_keplerianAlmanacSet,
-    /* Extensions may appear below */
-
-} GANSSAlmanacElement_PR;
-
-/* GANSSAlmanacElement */
-typedef struct GANSSAlmanacElement
-{
-    GANSSAlmanacElement_PR present;
-    union GANSSAlmanacElement_u
+    /* Dependencies */
+    typedef enum GANSSAlmanacElement_PR
     {
-        Almanac_KeplerianSet_t keplerianAlmanacSet;
-        /*
+        GANSSAlmanacElement_PR_NOTHING, /* No components present */
+        GANSSAlmanacElement_PR_keplerianAlmanacSet,
+        /* Extensions may appear below */
+
+    } GANSSAlmanacElement_PR;
+
+    /* GANSSAlmanacElement */
+    typedef struct GANSSAlmanacElement
+    {
+        GANSSAlmanacElement_PR present;
+        union GANSSAlmanacElement_u
+        {
+            Almanac_KeplerianSet_t keplerianAlmanacSet;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSAlmanacElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSAlmanacElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSAlmanacElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSAlmanacElement;
 
 #ifdef __cplusplus
 }

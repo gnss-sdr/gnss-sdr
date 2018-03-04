@@ -16,40 +16,42 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum SatStatus_PR {
-    SatStatus_PR_NOTHING, /* No components present */
-    SatStatus_PR_newSatelliteAndModelUC,
-    SatStatus_PR_oldSatelliteAndModel,
-    SatStatus_PR_newNaviModelUC,
-    /* Extensions may appear below */
-
-} SatStatus_PR;
-
-/* SatStatus */
-typedef struct SatStatus
-{
-    SatStatus_PR present;
-    union SatStatus_u
+    /* Dependencies */
+    typedef enum SatStatus_PR
     {
-        UncompressedEphemeris_t newSatelliteAndModelUC;
-        NULL_t oldSatelliteAndModel;
-        UncompressedEphemeris_t newNaviModelUC;
-        /*
+        SatStatus_PR_NOTHING, /* No components present */
+        SatStatus_PR_newSatelliteAndModelUC,
+        SatStatus_PR_oldSatelliteAndModel,
+        SatStatus_PR_newNaviModelUC,
+        /* Extensions may appear below */
+
+    } SatStatus_PR;
+
+    /* SatStatus */
+    typedef struct SatStatus
+    {
+        SatStatus_PR present;
+        union SatStatus_u
+        {
+            UncompressedEphemeris_t newSatelliteAndModelUC;
+            NULL_t oldSatelliteAndModel;
+            UncompressedEphemeris_t newNaviModelUC;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SatStatus_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SatStatus_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SatStatus;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SatStatus;
 
 #ifdef __cplusplus
 }

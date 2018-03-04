@@ -20,40 +20,42 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum NeighborIdentity_PR {
-    NeighborIdentity_PR_NOTHING, /* No components present */
-    NeighborIdentity_PR_bsicAndCarrier,
-    NeighborIdentity_PR_ci,
-    NeighborIdentity_PR_multiFrameCarrier,
-    NeighborIdentity_PR_requestIndex,
-    NeighborIdentity_PR_systemInfoIndex,
-    NeighborIdentity_PR_ciAndLAC
-} NeighborIdentity_PR;
-
-/* NeighborIdentity */
-typedef struct NeighborIdentity
-{
-    NeighborIdentity_PR present;
-    union NeighborIdentity_u
+    /* Dependencies */
+    typedef enum NeighborIdentity_PR
     {
-        BSICAndCarrier_t bsicAndCarrier;
-        CellID_t ci;
-        MultiFrameCarrier_t multiFrameCarrier;
-        RequestIndex_t requestIndex;
-        SystemInfoIndex_t systemInfoIndex;
-        CellIDAndLAC_t ciAndLAC;
-    } choice;
+        NeighborIdentity_PR_NOTHING, /* No components present */
+        NeighborIdentity_PR_bsicAndCarrier,
+        NeighborIdentity_PR_ci,
+        NeighborIdentity_PR_multiFrameCarrier,
+        NeighborIdentity_PR_requestIndex,
+        NeighborIdentity_PR_systemInfoIndex,
+        NeighborIdentity_PR_ciAndLAC
+    } NeighborIdentity_PR;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} NeighborIdentity_t;
+    /* NeighborIdentity */
+    typedef struct NeighborIdentity
+    {
+        NeighborIdentity_PR present;
+        union NeighborIdentity_u
+        {
+            BSICAndCarrier_t bsicAndCarrier;
+            CellID_t ci;
+            MultiFrameCarrier_t multiFrameCarrier;
+            RequestIndex_t requestIndex;
+            SystemInfoIndex_t systemInfoIndex;
+            CellIDAndLAC_t ciAndLAC;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_NeighborIdentity;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } NeighborIdentity_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_NeighborIdentity;
 
 #ifdef __cplusplus
 }

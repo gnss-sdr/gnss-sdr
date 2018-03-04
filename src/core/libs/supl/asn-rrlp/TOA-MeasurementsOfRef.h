@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* TOA-MeasurementsOfRef */
-typedef struct TOA_MeasurementsOfRef
-{
-    RefQuality_t refQuality;
-    NumOfMeasurements_t numOfMeasurements;
+    /* TOA-MeasurementsOfRef */
+    typedef struct TOA_MeasurementsOfRef
+    {
+        RefQuality_t refQuality;
+        NumOfMeasurements_t numOfMeasurements;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} TOA_MeasurementsOfRef_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } TOA_MeasurementsOfRef_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_TOA_MeasurementsOfRef;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_TOA_MeasurementsOfRef;
 
 #ifdef __cplusplus
 }

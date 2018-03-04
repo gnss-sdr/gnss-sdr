@@ -15,33 +15,34 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct FrequencyInfo;
-struct MeasuredResultsList;
+    /* Forward declarations */
+    struct FrequencyInfo;
+    struct MeasuredResultsList;
 
-/* WcdmaCellInformation */
-typedef struct WcdmaCellInformation
-{
-    long refMCC;
-    long refMNC;
-    long refUC;
-    struct FrequencyInfo *frequencyInfo /* OPTIONAL */;
-    long *primaryScramblingCode /* OPTIONAL */;
-    struct MeasuredResultsList *measuredResultsList /* OPTIONAL */;
-    /*
+    /* WcdmaCellInformation */
+    typedef struct WcdmaCellInformation
+    {
+        long refMCC;
+        long refMNC;
+        long refUC;
+        struct FrequencyInfo *frequencyInfo /* OPTIONAL */;
+        long *primaryScramblingCode /* OPTIONAL */;
+        struct MeasuredResultsList *measuredResultsList /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} WcdmaCellInformation_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } WcdmaCellInformation_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_WcdmaCellInformation;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_WcdmaCellInformation;
 
 #ifdef __cplusplus
 }

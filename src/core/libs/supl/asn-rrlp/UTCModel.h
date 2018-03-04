@@ -15,27 +15,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* UTCModel */
-typedef struct UTCModel
-{
-    long utcA1;
-    long utcA0;
-    long utcTot;
-    long utcWNt;
-    long utcDeltaTls;
-    long utcWNlsf;
-    long utcDN;
-    long utcDeltaTlsf;
+    /* UTCModel */
+    typedef struct UTCModel
+    {
+        long utcA1;
+        long utcA0;
+        long utcTot;
+        long utcWNt;
+        long utcDeltaTls;
+        long utcWNlsf;
+        long utcDN;
+        long utcDeltaTlsf;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} UTCModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } UTCModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_UTCModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_UTCModel;
 
 #ifdef __cplusplus
 }

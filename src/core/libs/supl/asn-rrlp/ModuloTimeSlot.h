@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ModuloTimeSlot */
-typedef long ModuloTimeSlot_t;
+    /* ModuloTimeSlot */
+    typedef long ModuloTimeSlot_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ModuloTimeSlot;
-asn_struct_free_f ModuloTimeSlot_free;
-asn_struct_print_f ModuloTimeSlot_print;
-asn_constr_check_f ModuloTimeSlot_constraint;
-ber_type_decoder_f ModuloTimeSlot_decode_ber;
-der_type_encoder_f ModuloTimeSlot_encode_der;
-xer_type_decoder_f ModuloTimeSlot_decode_xer;
-xer_type_encoder_f ModuloTimeSlot_encode_xer;
-per_type_decoder_f ModuloTimeSlot_decode_uper;
-per_type_encoder_f ModuloTimeSlot_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ModuloTimeSlot;
+    asn_struct_free_f ModuloTimeSlot_free;
+    asn_struct_print_f ModuloTimeSlot_print;
+    asn_constr_check_f ModuloTimeSlot_constraint;
+    ber_type_decoder_f ModuloTimeSlot_decode_ber;
+    der_type_encoder_f ModuloTimeSlot_encode_der;
+    xer_type_decoder_f ModuloTimeSlot_decode_xer;
+    xer_type_encoder_f ModuloTimeSlot_encode_xer;
+    per_type_decoder_f ModuloTimeSlot_decode_uper;
+    per_type_encoder_f ModuloTimeSlot_encode_uper;
 
 #ifdef __cplusplus
 }

@@ -18,27 +18,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReferenceFrame;
+    /* Forward declarations */
+    struct ReferenceFrame;
 
-/* GANSS-MsrSetElement */
-typedef struct GANSS_MsrSetElement
-{
-    struct ReferenceFrame *referenceFrame /* OPTIONAL */;
-    GANSSTODm_t *ganssTODm /* OPTIONAL */;
-    long *deltaGNASSTOD /* OPTIONAL */;
-    GANSSTODUncertainty_t *ganssTODUncertainty /* OPTIONAL */;
-    SeqOfGANSS_SgnTypeElement_t ganss_SgnTypeList;
+    /* GANSS-MsrSetElement */
+    typedef struct GANSS_MsrSetElement
+    {
+        struct ReferenceFrame *referenceFrame /* OPTIONAL */;
+        GANSSTODm_t *ganssTODm /* OPTIONAL */;
+        long *deltaGNASSTOD /* OPTIONAL */;
+        GANSSTODUncertainty_t *ganssTODUncertainty /* OPTIONAL */;
+        SeqOfGANSS_SgnTypeElement_t ganss_SgnTypeList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSS_MsrSetElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSS_MsrSetElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSS_MsrSetElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSS_MsrSetElement;
 
 #ifdef __cplusplus
 }

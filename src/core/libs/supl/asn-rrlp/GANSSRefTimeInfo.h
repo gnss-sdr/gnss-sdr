@@ -17,23 +17,24 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSRefTimeInfo */
-typedef struct GANSSRefTimeInfo
-{
-    long *ganssDay /* OPTIONAL */;
-    GANSSTOD_t ganssTOD;
-    GANSSTODUncertainty_t *ganssTODUncertainty /* OPTIONAL */;
-    long *ganssTimeID /* OPTIONAL */;
+    /* GANSSRefTimeInfo */
+    typedef struct GANSSRefTimeInfo
+    {
+        long *ganssDay /* OPTIONAL */;
+        GANSSTOD_t ganssTOD;
+        GANSSTODUncertainty_t *ganssTODUncertainty /* OPTIONAL */;
+        long *ganssTimeID /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSRefTimeInfo_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSRefTimeInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSRefTimeInfo;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSRefTimeInfo;
 
 #ifdef __cplusplus
 }

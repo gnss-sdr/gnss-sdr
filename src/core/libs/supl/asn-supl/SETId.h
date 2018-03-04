@@ -18,46 +18,48 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum SETId_PR {
-    SETId_PR_NOTHING, /* No components present */
-    SETId_PR_msisdn,
-    SETId_PR_mdn,
-    SETId_PR_min,
-    SETId_PR_imsi,
-    SETId_PR_nai,
-    SETId_PR_iPAddress,
-    /* Extensions may appear below */
-
-} SETId_PR;
-
-/* SETId */
-typedef struct SETId
-{
-    SETId_PR present;
-    union SETId_u
+    /* Dependencies */
+    typedef enum SETId_PR
     {
-        OCTET_STRING_t msisdn;
-        OCTET_STRING_t mdn;
-        BIT_STRING_t min;
-        OCTET_STRING_t imsi;
-        IA5String_t nai;
-        IPAddress_t iPAddress;
-        /*
+        SETId_PR_NOTHING, /* No components present */
+        SETId_PR_msisdn,
+        SETId_PR_mdn,
+        SETId_PR_min,
+        SETId_PR_imsi,
+        SETId_PR_nai,
+        SETId_PR_iPAddress,
+        /* Extensions may appear below */
+
+    } SETId_PR;
+
+    /* SETId */
+    typedef struct SETId
+    {
+        SETId_PR present;
+        union SETId_u
+        {
+            OCTET_STRING_t msisdn;
+            OCTET_STRING_t mdn;
+            BIT_STRING_t min;
+            OCTET_STRING_t imsi;
+            IA5String_t nai;
+            IPAddress_t iPAddress;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SETId_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SETId_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SETId;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SETId;
 
 #ifdef __cplusplus
 }

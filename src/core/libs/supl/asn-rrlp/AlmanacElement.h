@@ -16,31 +16,32 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* AlmanacElement */
-typedef struct AlmanacElement
-{
-    SatelliteID_t satelliteID;
-    long almanacE;
-    long alamanacToa;
-    long almanacKsii;
-    long almanacOmegaDot;
-    long almanacSVhealth;
-    long almanacAPowerHalf;
-    long almanacOmega0;
-    long almanacW;
-    long almanacM0;
-    long almanacAF0;
-    long almanacAF1;
+    /* AlmanacElement */
+    typedef struct AlmanacElement
+    {
+        SatelliteID_t satelliteID;
+        long almanacE;
+        long alamanacToa;
+        long almanacKsii;
+        long almanacOmegaDot;
+        long almanacSVhealth;
+        long almanacAPowerHalf;
+        long almanacOmega0;
+        long almanacW;
+        long almanacM0;
+        long almanacAF0;
+        long almanacAF1;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} AlmanacElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AlmanacElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AlmanacElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AlmanacElement;
 
 #ifdef __cplusplus
 }

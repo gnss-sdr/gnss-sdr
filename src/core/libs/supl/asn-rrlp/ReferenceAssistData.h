@@ -18,23 +18,24 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ReferenceAssistData */
-typedef struct ReferenceAssistData
-{
-    BCCHCarrier_t bcchCarrier;
-    BSIC_t bsic;
-    TimeSlotScheme_t timeSlotScheme;
-    BTSPosition_t *btsPosition /* OPTIONAL */;
+    /* ReferenceAssistData */
+    typedef struct ReferenceAssistData
+    {
+        BCCHCarrier_t bcchCarrier;
+        BSIC_t bsic;
+        TimeSlotScheme_t timeSlotScheme;
+        BTSPosition_t *btsPosition /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} ReferenceAssistData_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReferenceAssistData_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceAssistData;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceAssistData;
 
 #ifdef __cplusplus
 }

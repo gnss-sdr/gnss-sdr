@@ -15,42 +15,43 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SeqOfGANSSTimeModel;
-struct GANSSDiffCorrections;
-struct GANSSNavModel;
-struct GANSSRealTimeIntegrity;
-struct GANSSDataBitAssist;
-struct GANSSRefMeasurementAssist;
-struct GANSSAlmanacModel;
-struct GANSSUTCModel;
+    /* Forward declarations */
+    struct SeqOfGANSSTimeModel;
+    struct GANSSDiffCorrections;
+    struct GANSSNavModel;
+    struct GANSSRealTimeIntegrity;
+    struct GANSSDataBitAssist;
+    struct GANSSRefMeasurementAssist;
+    struct GANSSAlmanacModel;
+    struct GANSSUTCModel;
 
-/* GANSSGenericAssistDataElement */
-typedef struct GANSSGenericAssistDataElement
-{
-    long *ganssID /* OPTIONAL */;
-    struct SeqOfGANSSTimeModel *ganssTimeModel /* OPTIONAL */;
-    struct GANSSDiffCorrections *ganssDiffCorrections /* OPTIONAL */;
-    struct GANSSNavModel *ganssNavigationModel /* OPTIONAL */;
-    struct GANSSRealTimeIntegrity *ganssRealTimeIntegrity /* OPTIONAL */;
-    struct GANSSDataBitAssist *ganssDataBitAssist /* OPTIONAL */;
-    struct GANSSRefMeasurementAssist *ganssRefMeasurementAssist /* OPTIONAL */;
-    struct GANSSAlmanacModel *ganssAlmanacModel /* OPTIONAL */;
-    struct GANSSUTCModel *ganssUTCModel /* OPTIONAL */;
-    /*
+    /* GANSSGenericAssistDataElement */
+    typedef struct GANSSGenericAssistDataElement
+    {
+        long *ganssID /* OPTIONAL */;
+        struct SeqOfGANSSTimeModel *ganssTimeModel /* OPTIONAL */;
+        struct GANSSDiffCorrections *ganssDiffCorrections /* OPTIONAL */;
+        struct GANSSNavModel *ganssNavigationModel /* OPTIONAL */;
+        struct GANSSRealTimeIntegrity *ganssRealTimeIntegrity /* OPTIONAL */;
+        struct GANSSDataBitAssist *ganssDataBitAssist /* OPTIONAL */;
+        struct GANSSRefMeasurementAssist *ganssRefMeasurementAssist /* OPTIONAL */;
+        struct GANSSAlmanacModel *ganssAlmanacModel /* OPTIONAL */;
+        struct GANSSUTCModel *ganssUTCModel /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSGenericAssistDataElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSGenericAssistDataElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSGenericAssistDataElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSGenericAssistDataElement;
 
 #ifdef __cplusplus
 }

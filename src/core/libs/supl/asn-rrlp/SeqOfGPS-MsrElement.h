@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GPS_MsrElement;
+    /* Forward declarations */
+    struct GPS_MsrElement;
 
-/* SeqOfGPS-MsrElement */
-typedef struct SeqOfGPS_MsrElement
-{
-    A_SEQUENCE_OF(struct GPS_MsrElement)
-    list;
+    /* SeqOfGPS-MsrElement */
+    typedef struct SeqOfGPS_MsrElement
+    {
+        A_SEQUENCE_OF(struct GPS_MsrElement)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOfGPS_MsrElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfGPS_MsrElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfGPS_MsrElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfGPS_MsrElement;
 
 #ifdef __cplusplus
 }

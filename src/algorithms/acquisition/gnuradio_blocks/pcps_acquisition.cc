@@ -65,9 +65,10 @@ pcps_acquisition::pcps_acquisition(
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag, bool use_CFAR_algorithm_flag,
     bool dump, bool blocking,
-    std::string dump_filename, size_t it_size) : gr::block("pcps_acquisition",
-                                                     gr::io_signature::make(1, 1, it_size * sampled_ms * samples_per_ms * (bit_transition_flag ? 2 : 1)),
-                                                     gr::io_signature::make(0, 0, it_size * sampled_ms * samples_per_ms * (bit_transition_flag ? 2 : 1)))
+    std::string dump_filename,
+    size_t it_size) : gr::block("pcps_acquisition",
+                          gr::io_signature::make(1, 1, it_size * sampled_ms * samples_per_ms * (bit_transition_flag ? 2 : 1)),
+                          gr::io_signature::make(0, 0, it_size * sampled_ms * samples_per_ms * (bit_transition_flag ? 2 : 1)))
 {
     this->message_port_register_out(pmt::mp("events"));
 

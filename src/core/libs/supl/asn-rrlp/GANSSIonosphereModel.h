@@ -15,22 +15,23 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSIonosphereModel */
-typedef struct GANSSIonosphereModel
-{
-    long ai0;
-    long ai1;
-    long ai2;
+    /* GANSSIonosphereModel */
+    typedef struct GANSSIonosphereModel
+    {
+        long ai0;
+        long ai1;
+        long ai2;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSIonosphereModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSIonosphereModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSIonosphereModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSIonosphereModel;
 
 #ifdef __cplusplus
 }

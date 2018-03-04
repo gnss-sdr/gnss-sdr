@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSIonoStormFlags */
-typedef struct GANSSIonoStormFlags
-{
-    long ionoStormFlag1;
-    long ionoStormFlag2;
-    long ionoStormFlag3;
-    long ionoStormFlag4;
-    long ionoStormFlag5;
+    /* GANSSIonoStormFlags */
+    typedef struct GANSSIonoStormFlags
+    {
+        long ionoStormFlag1;
+        long ionoStormFlag2;
+        long ionoStormFlag3;
+        long ionoStormFlag4;
+        long ionoStormFlag5;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSIonoStormFlags_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSIonoStormFlags_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSIonoStormFlags;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSIonoStormFlags;
 
 #ifdef __cplusplus
 }

@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct NMRelement;
+    /* Forward declarations */
+    struct NMRelement;
 
-/* NMR */
-typedef struct NMR
-{
-    A_SEQUENCE_OF(struct NMRelement)
-    list;
+    /* NMR */
+    typedef struct NMR
+    {
+        A_SEQUENCE_OF(struct NMRelement)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} NMR_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } NMR_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_NMR;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_NMR;
 
 #ifdef __cplusplus
 }

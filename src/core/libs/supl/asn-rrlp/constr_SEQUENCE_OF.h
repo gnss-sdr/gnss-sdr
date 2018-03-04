@@ -9,7 +9,8 @@
 #include <constr_SET_OF.h> /* Implemented using SET OF */
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /*
@@ -22,9 +23,9 @@ extern "C" {
 #define SEQUENCE_OF_decode_ber SET_OF_decode_ber
 #define SEQUENCE_OF_decode_xer SET_OF_decode_xer
 #define SEQUENCE_OF_decode_uper SET_OF_decode_uper
-der_type_encoder_f SEQUENCE_OF_encode_der;
-xer_type_encoder_f SEQUENCE_OF_encode_xer;
-per_type_encoder_f SEQUENCE_OF_encode_uper;
+    der_type_encoder_f SEQUENCE_OF_encode_der;
+    xer_type_encoder_f SEQUENCE_OF_encode_xer;
+    per_type_encoder_f SEQUENCE_OF_encode_uper;
 
 #ifdef __cplusplus
 }

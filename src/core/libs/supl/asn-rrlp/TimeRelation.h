@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GSMTime;
+    /* Forward declarations */
+    struct GSMTime;
 
-/* TimeRelation */
-typedef struct TimeRelation
-{
-    GPSTOW23b_t gpsTOW;
-    struct GSMTime *gsmTime /* OPTIONAL */;
+    /* TimeRelation */
+    typedef struct TimeRelation
+    {
+        GPSTOW23b_t gpsTOW;
+        struct GSMTime *gsmTime /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} TimeRelation_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } TimeRelation_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_TimeRelation;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_TimeRelation;
 
 #ifdef __cplusplus
 }

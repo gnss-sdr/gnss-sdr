@@ -18,23 +18,24 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* OTD-MeasurementWithID */
-typedef struct OTD_MeasurementWithID
-{
-    NeighborIdentity_t neighborIdentity;
-    ModuloTimeSlot_t nborTimeSlot;
-    EOTDQuality_t eotdQuality;
-    OTDValue_t otdValue;
+    /* OTD-MeasurementWithID */
+    typedef struct OTD_MeasurementWithID
+    {
+        NeighborIdentity_t neighborIdentity;
+        ModuloTimeSlot_t nborTimeSlot;
+        EOTDQuality_t eotdQuality;
+        OTDValue_t otdValue;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} OTD_MeasurementWithID_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } OTD_MeasurementWithID_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasurementWithID;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasurementWithID;
 
 #ifdef __cplusplus
 }

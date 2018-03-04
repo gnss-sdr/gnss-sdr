@@ -15,20 +15,21 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSRealTimeIntegrity */
-typedef struct GANSSRealTimeIntegrity
-{
-    SeqOfBadSignalElement_t ganssBadSignalList;
+    /* GANSSRealTimeIntegrity */
+    typedef struct GANSSRealTimeIntegrity
+    {
+        SeqOfBadSignalElement_t ganssBadSignalList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSRealTimeIntegrity_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSRealTimeIntegrity_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSRealTimeIntegrity;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSRealTimeIntegrity;
 
 #ifdef __cplusplus
 }

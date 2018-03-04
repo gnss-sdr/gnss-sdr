@@ -16,24 +16,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* DGANSSSgnElement */
-typedef struct DGANSSSgnElement
-{
-    SVID_t svID;
-    long iod;
-    long udre;
-    long pseudoRangeCor;
-    long rangeRateCor;
+    /* DGANSSSgnElement */
+    typedef struct DGANSSSgnElement
+    {
+        SVID_t svID;
+        long iod;
+        long udre;
+        long pseudoRangeCor;
+        long rangeRateCor;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} DGANSSSgnElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } DGANSSSgnElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_DGANSSSgnElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_DGANSSSgnElement;
 
 #ifdef __cplusplus
 }

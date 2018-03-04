@@ -16,29 +16,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Rel_5_ProtocolError_Extension;
+    /* Forward declarations */
+    struct Rel_5_ProtocolError_Extension;
 
-/* ProtocolError */
-typedef struct ProtocolError
-{
-    ErrorCodes_t errorCause;
-    ExtensionContainer_t *extensionContainer /* OPTIONAL */;
-    /*
+    /* ProtocolError */
+    typedef struct ProtocolError
+    {
+        ErrorCodes_t errorCause;
+        ExtensionContainer_t *extensionContainer /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-    struct Rel_5_ProtocolError_Extension *rel_5_ProtocolError_Extension /* OPTIONAL */;
+        struct Rel_5_ProtocolError_Extension *rel_5_ProtocolError_Extension /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} ProtocolError_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ProtocolError_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolError;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ProtocolError;
 
 #ifdef __cplusplus
 }

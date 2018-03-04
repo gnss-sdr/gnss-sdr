@@ -14,27 +14,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Extended_reference;
+    /* Forward declarations */
+    struct Extended_reference;
 
-/* Rel-5-ProtocolError-Extension */
-typedef struct Rel_5_ProtocolError_Extension
-{
-    struct Extended_reference *extended_reference /* OPTIONAL */;
-    /*
+    /* Rel-5-ProtocolError-Extension */
+    typedef struct Rel_5_ProtocolError_Extension
+    {
+        struct Extended_reference *extended_reference /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Rel_5_ProtocolError_Extension_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Rel_5_ProtocolError_Extension_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Rel_5_ProtocolError_Extension;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Rel_5_ProtocolError_Extension;
 
 #ifdef __cplusplus
 }

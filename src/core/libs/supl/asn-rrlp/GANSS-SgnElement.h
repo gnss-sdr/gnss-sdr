@@ -17,28 +17,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSS-SgnElement */
-typedef struct GANSS_SgnElement
-{
-    SVID_t svID;
-    long cNo;
-    MpathIndic_t mpathDet;
-    long *carrierQualityInd /* OPTIONAL */;
-    long codePhase;
-    long *integerCodePhase /* OPTIONAL */;
-    long codePhaseRMSError;
-    long *doppler /* OPTIONAL */;
-    long *adr /* OPTIONAL */;
+    /* GANSS-SgnElement */
+    typedef struct GANSS_SgnElement
+    {
+        SVID_t svID;
+        long cNo;
+        MpathIndic_t mpathDet;
+        long *carrierQualityInd /* OPTIONAL */;
+        long codePhase;
+        long *integerCodePhase /* OPTIONAL */;
+        long codePhaseRMSError;
+        long *doppler /* OPTIONAL */;
+        long *adr /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSS_SgnElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSS_SgnElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSS_SgnElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSS_SgnElement;
 
 #ifdef __cplusplus
 }

@@ -15,30 +15,31 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* PosTechnology */
-typedef struct PosTechnology
-{
-    BOOLEAN_t agpsSETassisted;
-    BOOLEAN_t agpsSETBased;
-    BOOLEAN_t autonomousGPS;
-    BOOLEAN_t aFLT;
-    BOOLEAN_t eCID;
-    BOOLEAN_t eOTD;
-    BOOLEAN_t oTDOA;
-    /*
+    /* PosTechnology */
+    typedef struct PosTechnology
+    {
+        BOOLEAN_t agpsSETassisted;
+        BOOLEAN_t agpsSETBased;
+        BOOLEAN_t autonomousGPS;
+        BOOLEAN_t aFLT;
+        BOOLEAN_t eCID;
+        BOOLEAN_t eOTD;
+        BOOLEAN_t oTDOA;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} PosTechnology_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PosTechnology_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PosTechnology;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PosTechnology;
 
 #ifdef __cplusplus
 }

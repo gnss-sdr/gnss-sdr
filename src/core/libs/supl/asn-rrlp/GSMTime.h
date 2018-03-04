@@ -19,24 +19,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GSMTime */
-typedef struct GSMTime
-{
-    BCCHCarrier_t bcchCarrier;
-    BSIC_t bsic;
-    FrameNumber_t frameNumber;
-    TimeSlot_t timeSlot;
-    BitNumber_t bitNumber;
+    /* GSMTime */
+    typedef struct GSMTime
+    {
+        BCCHCarrier_t bcchCarrier;
+        BSIC_t bsic;
+        FrameNumber_t frameNumber;
+        TimeSlot_t timeSlot;
+        BitNumber_t bitNumber;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GSMTime_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GSMTime_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GSMTime;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GSMTime;
 
 #ifdef __cplusplus
 }

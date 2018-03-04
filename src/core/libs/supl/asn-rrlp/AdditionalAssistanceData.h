@@ -17,26 +17,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* AdditionalAssistanceData */
-typedef struct AdditionalAssistanceData
-{
-    GPSAssistanceData_t *gpsAssistanceData /* OPTIONAL */;
-    ExtensionContainer_t *extensionContainer /* OPTIONAL */;
-    /*
+    /* AdditionalAssistanceData */
+    typedef struct AdditionalAssistanceData
+    {
+        GPSAssistanceData_t *gpsAssistanceData /* OPTIONAL */;
+        ExtensionContainer_t *extensionContainer /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-    GANSSAssistanceData_t *ganssAssistanceData /* OPTIONAL */;
+        GANSSAssistanceData_t *ganssAssistanceData /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} AdditionalAssistanceData_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AdditionalAssistanceData_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AdditionalAssistanceData;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AdditionalAssistanceData;
 
 #ifdef __cplusplus
 }

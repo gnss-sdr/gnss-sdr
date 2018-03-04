@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* RelDistance */
-typedef long RelDistance_t;
+    /* RelDistance */
+    typedef long RelDistance_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_RelDistance;
-asn_struct_free_f RelDistance_free;
-asn_struct_print_f RelDistance_print;
-asn_constr_check_f RelDistance_constraint;
-ber_type_decoder_f RelDistance_decode_ber;
-der_type_encoder_f RelDistance_encode_der;
-xer_type_decoder_f RelDistance_decode_xer;
-xer_type_encoder_f RelDistance_encode_xer;
-per_type_decoder_f RelDistance_decode_uper;
-per_type_encoder_f RelDistance_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_RelDistance;
+    asn_struct_free_f RelDistance_free;
+    asn_struct_print_f RelDistance_print;
+    asn_constr_check_f RelDistance_constraint;
+    ber_type_decoder_f RelDistance_decode_ber;
+    der_type_encoder_f RelDistance_encode_der;
+    xer_type_decoder_f RelDistance_decode_xer;
+    xer_type_encoder_f RelDistance_encode_xer;
+    per_type_decoder_f RelDistance_decode_uper;
+    per_type_encoder_f RelDistance_encode_uper;
 
 #ifdef __cplusplus
 }

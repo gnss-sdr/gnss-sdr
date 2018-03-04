@@ -71,9 +71,7 @@ gps_pcps_acquisition_fpga_sc::gps_pcps_acquisition_fpga_sc(
     int samples_per_code, int vector_length, unsigned int nsamples_total,
     bool bit_transition_flag, bool use_CFAR_algorithm_flag,
     unsigned int select_queue_Fpga, std::string device_name, bool dump,
-    std::string dump_filename) :
-
-                                 gr::block("pcps_acquisition_fpga_sc",
+    std::string dump_filename) : gr::block("pcps_acquisition_fpga_sc",
                                      gr::io_signature::make(0, 0, sizeof(lv_16sc_t)),
                                      gr::io_signature::make(0, 0, 0))
 {

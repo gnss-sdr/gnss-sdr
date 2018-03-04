@@ -34,7 +34,8 @@
 #ifndef GNSS_SDR_SUPL_CLIENT_H_
 #define GNSS_SDR_SUPL_CLIENT_H_
 
-extern "C" {
+extern "C"
+{
 #include "supl.h"
 }
 #include "GPS_L1_CA.h"

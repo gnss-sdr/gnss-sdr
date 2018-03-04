@@ -20,35 +20,36 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReferenceFrame;
+    /* Forward declarations */
+    struct ReferenceFrame;
 
-/* GANSSLocationInfo */
-typedef struct GANSSLocationInfo
-{
-    struct ReferenceFrame *referenceFrame /* OPTIONAL */;
-    GANSSTODm_t *ganssTODm /* OPTIONAL */;
-    long *ganssTODFrac /* OPTIONAL */;
-    GANSSTODUncertainty_t *ganssTODUncertainty /* OPTIONAL */;
-    long *ganssTimeID /* OPTIONAL */;
-    FixType_t fixType;
-    PositionData_t posData;
-    long *stationaryIndication /* OPTIONAL */;
-    Ext_GeographicalInformation_t posEstimate;
-    /*
+    /* GANSSLocationInfo */
+    typedef struct GANSSLocationInfo
+    {
+        struct ReferenceFrame *referenceFrame /* OPTIONAL */;
+        GANSSTODm_t *ganssTODm /* OPTIONAL */;
+        long *ganssTODFrac /* OPTIONAL */;
+        GANSSTODUncertainty_t *ganssTODUncertainty /* OPTIONAL */;
+        long *ganssTimeID /* OPTIONAL */;
+        FixType_t fixType;
+        PositionData_t posData;
+        long *stationaryIndication /* OPTIONAL */;
+        Ext_GeographicalInformation_t posEstimate;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSLocationInfo_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSLocationInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSLocationInfo;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSLocationInfo;
 
 #ifdef __cplusplus
 }

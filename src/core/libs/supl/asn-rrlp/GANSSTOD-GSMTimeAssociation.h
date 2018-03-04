@@ -20,25 +20,26 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSTOD-GSMTimeAssociation */
-typedef struct GANSSTOD_GSMTimeAssociation
-{
-    BCCHCarrier_t bcchCarrier;
-    BSIC_t bsic;
-    FrameNumber_t frameNumber;
-    TimeSlot_t timeSlot;
-    BitNumber_t bitNumber;
-    FrameDrift_t *frameDrift /* OPTIONAL */;
+    /* GANSSTOD-GSMTimeAssociation */
+    typedef struct GANSSTOD_GSMTimeAssociation
+    {
+        BCCHCarrier_t bcchCarrier;
+        BSIC_t bsic;
+        FrameNumber_t frameNumber;
+        TimeSlot_t timeSlot;
+        BitNumber_t bitNumber;
+        FrameDrift_t *frameDrift /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSTOD_GSMTimeAssociation_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSTOD_GSMTimeAssociation_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSTOD_GSMTimeAssociation;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSTOD_GSMTimeAssociation;
 
 #ifdef __cplusplus
 }

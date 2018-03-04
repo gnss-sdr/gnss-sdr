@@ -18,27 +18,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct CalcAssistanceBTS;
+    /* Forward declarations */
+    struct CalcAssistanceBTS;
 
-/* AssistBTSData */
-typedef struct AssistBTSData
-{
-    BSIC_t bsic;
-    MultiFrameOffset_t multiFrameOffset;
-    TimeSlotScheme_t timeSlotScheme;
-    RoughRTD_t roughRTD;
-    struct CalcAssistanceBTS *calcAssistanceBTS /* OPTIONAL */;
+    /* AssistBTSData */
+    typedef struct AssistBTSData
+    {
+        BSIC_t bsic;
+        MultiFrameOffset_t multiFrameOffset;
+        TimeSlotScheme_t timeSlotScheme;
+        RoughRTD_t roughRTD;
+        struct CalcAssistanceBTS *calcAssistanceBTS /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} AssistBTSData_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AssistBTSData_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AssistBTSData;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AssistBTSData;
 
 #ifdef __cplusplus
 }

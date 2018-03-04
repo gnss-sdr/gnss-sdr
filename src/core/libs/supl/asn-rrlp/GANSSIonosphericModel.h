@@ -15,28 +15,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSSIonoStormFlags;
+    /* Forward declarations */
+    struct GANSSIonoStormFlags;
 
-/* GANSSIonosphericModel */
-typedef struct GANSSIonosphericModel
-{
-    GANSSIonosphereModel_t ganssIonoModel;
-    struct GANSSIonoStormFlags *ganssIonoStormFlags /* OPTIONAL */;
-    /*
+    /* GANSSIonosphericModel */
+    typedef struct GANSSIonosphericModel
+    {
+        GANSSIonosphereModel_t ganssIonoModel;
+        struct GANSSIonoStormFlags *ganssIonoStormFlags /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSIonosphericModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSIonosphericModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSIonosphericModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSIonosphericModel;
 
 #ifdef __cplusplus
 }

@@ -16,12 +16,13 @@
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* Environment version might be used to avoid running with the old library */
-#define ASN1C_ENVIRONMENT_VERSION 922    /* Compile-time version */
-int get_asn1c_environment_version(void); /* Run-time version */
+#define ASN1C_ENVIRONMENT_VERSION 922        /* Compile-time version */
+    int get_asn1c_environment_version(void); /* Run-time version */
 
 #define CALLOC(nmemb, size) calloc(nmemb, size)
 #define MALLOC(size) malloc(size)
@@ -38,7 +39,7 @@ int get_asn1c_environment_version(void); /* Run-time version */
 #ifdef ASN_THREAD_SAFE
 #define asn_debug_indent 0
 #else  /* !ASN_THREAD_SAFE */
-int asn_debug_indent;
+    int asn_debug_indent;
 #endif /* ASN_THREAD_SAFE */
 #define ASN_DEBUG(fmt, args...)                 \
     do                                          \
@@ -51,14 +52,14 @@ int asn_debug_indent;
         }                                       \
     while (0)
 #else /* !__GNUC__ */
-void ASN_DEBUG_f(const char *fmt, ...);
+    void ASN_DEBUG_f(const char *fmt, ...);
 #define ASN_DEBUG ASN_DEBUG_f
 #endif /* __GNUC__ */
 #else  /* EMIT_ASN_DEBUG != 1 */
-static inline void ASN_DEBUG(const char *fmt, ...)
-{
-    (void)fmt;
-}
+    static inline void ASN_DEBUG(const char *fmt, ...)
+    {
+        (void)fmt;
+    }
 #endif /* EMIT_ASN_DEBUG */
 #endif /* ASN_DEBUG */
 
@@ -107,25 +108,25 @@ static inline void ASN_DEBUG(const char *fmt, ...)
  * Check stack against overflow, if limit is set.
  */
 #define _ASN_DEFAULT_STACK_MAX (30000)
-static inline int
-_ASN_STACK_OVERFLOW_CHECK(asn_codec_ctx_t *ctx)
-{
-    if (ctx && ctx->max_stack_size)
-        {
-            /* ctx MUST be allocated on the stack */
-            ptrdiff_t usedstack = ((char *)ctx - (char *)&ctx);
-            if (usedstack > 0) usedstack = -usedstack; /* grows up! */
+    static inline int
+    _ASN_STACK_OVERFLOW_CHECK(asn_codec_ctx_t *ctx)
+    {
+        if (ctx && ctx->max_stack_size)
+            {
+                /* ctx MUST be allocated on the stack */
+                ptrdiff_t usedstack = ((char *)ctx - (char *)&ctx);
+                if (usedstack > 0) usedstack = -usedstack; /* grows up! */
 
-            /* double negative required to avoid int wrap-around */
-            if (usedstack < -(ptrdiff_t)ctx->max_stack_size)
-                {
-                    ASN_DEBUG("Stack limit %ld reached",
-                        (long)ctx->max_stack_size);
-                    return -1;
-                }
-        }
-    return 0;
-}
+                /* double negative required to avoid int wrap-around */
+                if (usedstack < -(ptrdiff_t)ctx->max_stack_size)
+                    {
+                        ASN_DEBUG("Stack limit %ld reached",
+                            (long)ctx->max_stack_size);
+                        return -1;
+                    }
+            }
+        return 0;
+    }
 
 #ifdef __cplusplus
 }

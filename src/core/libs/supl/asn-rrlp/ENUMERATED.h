@@ -8,15 +8,16 @@
 #include <INTEGER.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-typedef INTEGER_t ENUMERATED_t; /* Implemented via INTEGER */
+    typedef INTEGER_t ENUMERATED_t; /* Implemented via INTEGER */
 
-extern asn_TYPE_descriptor_t asn_DEF_ENUMERATED;
+    extern asn_TYPE_descriptor_t asn_DEF_ENUMERATED;
 
-per_type_decoder_f ENUMERATED_decode_uper;
-per_type_encoder_f ENUMERATED_encode_uper;
+    per_type_decoder_f ENUMERATED_decode_uper;
+    per_type_encoder_f ENUMERATED_encode_uper;
 
 #ifdef __cplusplus
 }

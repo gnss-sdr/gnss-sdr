@@ -15,20 +15,21 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GPS-MeasureInfo */
-typedef struct GPS_MeasureInfo
-{
-    SeqOfGPS_MsrSetElement_t gpsMsrSetList;
+    /* GPS-MeasureInfo */
+    typedef struct GPS_MeasureInfo
+    {
+        SeqOfGPS_MsrSetElement_t gpsMsrSetList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GPS_MeasureInfo_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GPS_MeasureInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GPS_MeasureInfo;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GPS_MeasureInfo;
 
 #ifdef __cplusplus
 }

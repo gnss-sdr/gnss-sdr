@@ -15,20 +15,21 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* AccuracyOpt */
-typedef struct AccuracyOpt
-{
-    Accuracy_t *accuracy /* OPTIONAL */;
+    /* AccuracyOpt */
+    typedef struct AccuracyOpt
+    {
+        Accuracy_t *accuracy /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} AccuracyOpt_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AccuracyOpt_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AccuracyOpt;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AccuracyOpt;
 
 #ifdef __cplusplus
 }

@@ -15,29 +15,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Almanac-KeplerianSet */
-typedef struct Almanac_KeplerianSet
-{
-    long kepAlmanacE;
-    long kepAlmanacDeltaI;
-    long kepAlmanacOmegaDot;
-    long kepSVHealth;
-    long kepAlmanacAPowerHalf;
-    long kepAlmanacOmega0;
-    long kepAlmanacW;
-    long kepAlmanacM0;
-    long kepAlmanacAF0;
-    long kepAlmanacAF1;
+    /* Almanac-KeplerianSet */
+    typedef struct Almanac_KeplerianSet
+    {
+        long kepAlmanacE;
+        long kepAlmanacDeltaI;
+        long kepAlmanacOmegaDot;
+        long kepSVHealth;
+        long kepAlmanacAPowerHalf;
+        long kepAlmanacOmega0;
+        long kepAlmanacW;
+        long kepAlmanacM0;
+        long kepAlmanacAF0;
+        long kepAlmanacAF1;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Almanac_KeplerianSet_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Almanac_KeplerianSet_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Almanac_KeplerianSet;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Almanac_KeplerianSet;
 
 #ifdef __cplusplus
 }

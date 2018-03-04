@@ -14,29 +14,31 @@
 #include <ENUMERATED.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum UseMultipleSets {
-    UseMultipleSets_multipleSets = 0,
-    UseMultipleSets_oneSet = 1
-} e_UseMultipleSets;
+    /* Dependencies */
+    typedef enum UseMultipleSets
+    {
+        UseMultipleSets_multipleSets = 0,
+        UseMultipleSets_oneSet = 1
+    } e_UseMultipleSets;
 
-/* UseMultipleSets */
-typedef ENUMERATED_t UseMultipleSets_t;
+    /* UseMultipleSets */
+    typedef ENUMERATED_t UseMultipleSets_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_UseMultipleSets;
-asn_struct_free_f UseMultipleSets_free;
-asn_struct_print_f UseMultipleSets_print;
-asn_constr_check_f UseMultipleSets_constraint;
-ber_type_decoder_f UseMultipleSets_decode_ber;
-der_type_encoder_f UseMultipleSets_encode_der;
-xer_type_decoder_f UseMultipleSets_decode_xer;
-xer_type_encoder_f UseMultipleSets_encode_xer;
-per_type_decoder_f UseMultipleSets_decode_uper;
-per_type_encoder_f UseMultipleSets_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_UseMultipleSets;
+    asn_struct_free_f UseMultipleSets_free;
+    asn_struct_print_f UseMultipleSets_print;
+    asn_constr_check_f UseMultipleSets_constraint;
+    ber_type_decoder_f UseMultipleSets_decode_ber;
+    der_type_encoder_f UseMultipleSets_encode_der;
+    xer_type_decoder_f UseMultipleSets_decode_xer;
+    xer_type_encoder_f UseMultipleSets_encode_xer;
+    per_type_decoder_f UseMultipleSets_decode_uper;
+    per_type_encoder_f UseMultipleSets_encode_uper;
 
 #ifdef __cplusplus
 }

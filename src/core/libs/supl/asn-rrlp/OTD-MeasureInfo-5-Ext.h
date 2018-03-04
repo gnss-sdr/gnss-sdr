@@ -14,23 +14,24 @@
 #include "SeqOfOTD-MsrElementRest.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* OTD-MeasureInfo-5-Ext */
-typedef SeqOfOTD_MsrElementRest_t OTD_MeasureInfo_5_Ext_t;
+    /* OTD-MeasureInfo-5-Ext */
+    typedef SeqOfOTD_MsrElementRest_t OTD_MeasureInfo_5_Ext_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasureInfo_5_Ext;
-asn_struct_free_f OTD_MeasureInfo_5_Ext_free;
-asn_struct_print_f OTD_MeasureInfo_5_Ext_print;
-asn_constr_check_f OTD_MeasureInfo_5_Ext_constraint;
-ber_type_decoder_f OTD_MeasureInfo_5_Ext_decode_ber;
-der_type_encoder_f OTD_MeasureInfo_5_Ext_encode_der;
-xer_type_decoder_f OTD_MeasureInfo_5_Ext_decode_xer;
-xer_type_encoder_f OTD_MeasureInfo_5_Ext_encode_xer;
-per_type_decoder_f OTD_MeasureInfo_5_Ext_decode_uper;
-per_type_encoder_f OTD_MeasureInfo_5_Ext_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasureInfo_5_Ext;
+    asn_struct_free_f OTD_MeasureInfo_5_Ext_free;
+    asn_struct_print_f OTD_MeasureInfo_5_Ext_print;
+    asn_constr_check_f OTD_MeasureInfo_5_Ext_constraint;
+    ber_type_decoder_f OTD_MeasureInfo_5_Ext_decode_ber;
+    der_type_encoder_f OTD_MeasureInfo_5_Ext_encode_der;
+    xer_type_decoder_f OTD_MeasureInfo_5_Ext_decode_xer;
+    xer_type_encoder_f OTD_MeasureInfo_5_Ext_encode_xer;
+    per_type_decoder_f OTD_MeasureInfo_5_Ext_decode_uper;
+    per_type_encoder_f OTD_MeasureInfo_5_Ext_encode_uper;
 
 #ifdef __cplusplus
 }

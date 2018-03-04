@@ -24,50 +24,54 @@
 struct VOLK_CPU volk_gnsssdr_cpu;
 
 #if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
-    #define VOLK_CPU_x86
+#define VOLK_CPU_x86
 #endif
 
 #if defined(VOLK_CPU_x86)
 
 //implement get cpuid for gcc compilers using a system or local copy of cpuid.h
 #if defined(__GNUC__)
-    #include <cpuid.h>
-    #define cpuid_x86(op, r) __get_cpuid(op, (unsigned int *)r+0, (unsigned int *)r+1, (unsigned int *)r+2, (unsigned int *)r+3)
-    #define cpuid_x86_count(op, count, regs) __cpuid_count(op, count, *((unsigned int*)regs), *((unsigned int*)regs+1), *((unsigned int*)regs+2), *((unsigned int*)regs+3))
+#include <cpuid.h>
+#define cpuid_x86(op, r) __get_cpuid(op, (unsigned int *)r + 0, (unsigned int *)r + 1, (unsigned int *)r + 2, (unsigned int *)r + 3)
+#define cpuid_x86_count(op, count, regs) __cpuid_count(op, count, *((unsigned int *)regs), *((unsigned int *)regs + 1), *((unsigned int *)regs + 2), *((unsigned int *)regs + 3))
 
-    /* Return Intel AVX extended CPU capabilities register.
+/* Return Intel AVX extended CPU capabilities register.
      * This function will bomb on non-AVX-capable machines, so
      * check for AVX capability before executing.
      */
-    #if ((__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 2) || (__clang_major__ >= 3)) && defined(HAVE_XGETBV)
-    static inline unsigned long long _xgetbv(unsigned int index){
-        unsigned int eax, edx;
-        __VOLK_ASM __VOLK_VOLATILE ("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
-        return ((unsigned long long)edx << 32) | eax;
-    }
-    #define __xgetbv() _xgetbv(0)
-    #else
-    #define __xgetbv() 0
-    #endif
+#if ((__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 2) || (__clang_major__ >= 3)) && defined(HAVE_XGETBV)
+static inline unsigned long long _xgetbv(unsigned int index)
+{
+    unsigned int eax, edx;
+    __VOLK_ASM __VOLK_VOLATILE("xgetbv"
+                               : "=a"(eax), "=d"(edx)
+                               : "c"(index));
+    return ((unsigned long long)edx << 32) | eax;
+}
+#define __xgetbv() _xgetbv(0)
+#else
+#define __xgetbv() 0
+#endif
 
 //implement get cpuid for MSVC compilers using __cpuid intrinsic
 #elif defined(_MSC_VER) && defined(HAVE_INTRIN_H)
-    #include <intrin.h>
-    #define cpuid_x86(op, r) __cpuid(((int*)r), op)
+#include <intrin.h>
+#define cpuid_x86(op, r) __cpuid(((int *)r), op)
 
-    #if defined(_XCR_XFEATURE_ENABLED_MASK)
-    #define __xgetbv() _xgetbv(_XCR_XFEATURE_ENABLED_MASK)
-    #else
-    #define __xgetbv() 0
-    #endif
+#if defined(_XCR_XFEATURE_ENABLED_MASK)
+#define __xgetbv() _xgetbv(_XCR_XFEATURE_ENABLED_MASK)
+#else
+#define __xgetbv() 0
+#endif
 
 #else
-    #error "A get cpuid for volk_gnsssdr is not available on this compiler..."
-#endif //defined(__GNUC__)
+#error "A get cpuid for volk_gnsssdr is not available on this compiler..."
+#endif  //defined(__GNUC__)
 
-#endif //defined(VOLK_CPU_x86)
+#endif  //defined(VOLK_CPU_x86)
 
-static inline unsigned int cpuid_count_x86_bit(unsigned int level, unsigned int count, unsigned int reg, unsigned int bit) {
+static inline unsigned int cpuid_count_x86_bit(unsigned int level, unsigned int count, unsigned int reg, unsigned int bit)
+{
 #if defined(VOLK_CPU_x86)
     unsigned int regs[4] = {0};
     cpuid_x86_count(level, count, regs);
@@ -77,10 +81,11 @@ static inline unsigned int cpuid_count_x86_bit(unsigned int level, unsigned int 
 #endif
 }
 
-static inline unsigned int cpuid_x86_bit(unsigned int reg, unsigned int op, unsigned int bit) {
+static inline unsigned int cpuid_x86_bit(unsigned int reg, unsigned int op, unsigned int bit)
+{
 #if defined(VOLK_CPU_x86)
     unsigned int regs[4];
-    memset(regs, 0, sizeof(unsigned int)*4);
+    memset(regs, 0, sizeof(unsigned int) * 4);
     cpuid_x86(op, regs);
     return regs[reg] >> bit & 0x01;
 #else
@@ -88,10 +93,11 @@ static inline unsigned int cpuid_x86_bit(unsigned int reg, unsigned int op, unsi
 #endif
 }
 
-static inline unsigned int check_extended_cpuid(unsigned int val) {
+static inline unsigned int check_extended_cpuid(unsigned int val)
+{
 #if defined(VOLK_CPU_x86)
     unsigned int regs[4];
-    memset(regs, 0, sizeof(unsigned int)*4);
+    memset(regs, 0, sizeof(unsigned int) * 4);
     cpuid_x86(0x80000000, regs);
     return regs[0] >= val;
 #else
@@ -99,7 +105,8 @@ static inline unsigned int check_extended_cpuid(unsigned int val) {
 #endif
 }
 
-static inline unsigned int get_avx_enabled(void) {
+static inline unsigned int get_avx_enabled(void)
+{
 #if defined(VOLK_CPU_x86)
     return __xgetbv() & 0x6;
 #else
@@ -107,7 +114,8 @@ static inline unsigned int get_avx_enabled(void) {
 #endif
 }
 
-static inline unsigned int get_avx2_enabled(void) {
+static inline unsigned int get_avx2_enabled(void)
+{
 #if defined(VOLK_CPU_x86)
     return __xgetbv() & 0x6;
 #else
@@ -117,28 +125,30 @@ static inline unsigned int get_avx2_enabled(void) {
 
 //neon detection is linux specific
 #if defined(__arm__) && defined(__linux__)
-    #include <asm/hwcap.h>
-    #include <linux/auxvec.h>
-    #include <stdio.h>
-    #define VOLK_CPU_ARM
+#include <asm/hwcap.h>
+#include <linux/auxvec.h>
+#include <stdio.h>
+#define VOLK_CPU_ARM
 #endif
 
-static int has_neon(void){
+static int has_neon(void)
+{
 #if defined(VOLK_CPU_ARM)
     FILE *auxvec_f;
     unsigned long auxvec[2];
     unsigned int found_neon = 0;
     auxvec_f = fopen("/proc/self/auxv", "rb");
-    if(!auxvec_f) return 0;
+    if (!auxvec_f) return 0;
 
     size_t r = 1;
     //so auxv is basically 32b of ID and 32b of value
     //so it goes like this
-    while(!found_neon && r) {
-      r = fread(auxvec, sizeof(unsigned long), 2, auxvec_f);
-      if((auxvec[0] == AT_HWCAP) && (auxvec[1] & HWCAP_NEON))
-        found_neon = 1;
-    }
+    while (!found_neon && r)
+        {
+            r = fread(auxvec, sizeof(unsigned long), 2, auxvec_f);
+            if ((auxvec[0] == AT_HWCAP) && (auxvec[1] & HWCAP_NEON))
+                found_neon = 1;
+        }
 
     fclose(auxvec_f);
     return found_neon;
@@ -146,6 +156,7 @@ static int has_neon(void){
     return 0;
 #endif
 }
+// clang-format off
 
 %for arch in archs:
 static int i_can_has_${arch.name} (void) {
@@ -195,3 +206,4 @@ unsigned int volk_gnsssdr_get_lvarch() {
     %endfor
     return retval;
 }
+// clang-format on

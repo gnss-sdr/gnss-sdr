@@ -17,26 +17,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GPS-MsrElement */
-typedef struct GPS_MsrElement
-{
-    SatelliteID_t satelliteID;
-    long cNo;
-    long doppler;
-    long wholeChips;
-    long fracChips;
-    MpathIndic_t mpathIndic;
-    long pseuRangeRMSErr;
+    /* GPS-MsrElement */
+    typedef struct GPS_MsrElement
+    {
+        SatelliteID_t satelliteID;
+        long cNo;
+        long doppler;
+        long wholeChips;
+        long fracChips;
+        MpathIndic_t mpathIndic;
+        long pseuRangeRMSErr;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GPS_MsrElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GPS_MsrElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GPS_MsrElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GPS_MsrElement;
 
 #ifdef __cplusplus
 }

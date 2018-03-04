@@ -17,48 +17,50 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum fmodeSpecificInfo_PR {
-    fmodeSpecificInfo_PR_NOTHING, /* No components present */
-    fmodeSpecificInfo_PR_fdd,
-    fmodeSpecificInfo_PR_tdd,
-    /* Extensions may appear below */
-
-} fmodeSpecificInfo_PR;
-
-/* FrequencyInfo */
-typedef struct FrequencyInfo
-{
-    struct fmodeSpecificInfo
+    /* Dependencies */
+    typedef enum fmodeSpecificInfo_PR
     {
-        fmodeSpecificInfo_PR present;
-        union FrequencyInfo__fmodeSpecificInfo_u
+        fmodeSpecificInfo_PR_NOTHING, /* No components present */
+        fmodeSpecificInfo_PR_fdd,
+        fmodeSpecificInfo_PR_tdd,
+        /* Extensions may appear below */
+
+    } fmodeSpecificInfo_PR;
+
+    /* FrequencyInfo */
+    typedef struct FrequencyInfo
+    {
+        struct fmodeSpecificInfo
         {
-            FrequencyInfoFDD_t fdd;
-            FrequencyInfoTDD_t tdd;
-            /*
+            fmodeSpecificInfo_PR present;
+            union FrequencyInfo__fmodeSpecificInfo_u
+            {
+                FrequencyInfoFDD_t fdd;
+                FrequencyInfoTDD_t tdd;
+                /*
 			 * This type is extensible,
 			 * possible extensions are below.
 			 */
-        } choice;
+            } choice;
 
-        /* Context for parsing across buffer boundaries */
-        asn_struct_ctx_t _asn_ctx;
-    } fmodeSpecificInfo;
-    /*
+            /* Context for parsing across buffer boundaries */
+            asn_struct_ctx_t _asn_ctx;
+        } fmodeSpecificInfo;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} FrequencyInfo_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } FrequencyInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_FrequencyInfo;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_FrequencyInfo;
 
 #ifdef __cplusplus
 }

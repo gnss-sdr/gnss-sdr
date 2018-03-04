@@ -15,27 +15,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* IonosphericModel */
-typedef struct IonosphericModel
-{
-    long alfa0;
-    long alfa1;
-    long alfa2;
-    long alfa3;
-    long beta0;
-    long beta1;
-    long beta2;
-    long beta3;
+    /* IonosphericModel */
+    typedef struct IonosphericModel
+    {
+        long alfa0;
+        long alfa1;
+        long alfa2;
+        long alfa3;
+        long beta0;
+        long beta1;
+        long beta2;
+        long beta3;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} IonosphericModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } IonosphericModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_IonosphericModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_IonosphericModel;
 
 #ifdef __cplusplus
 }

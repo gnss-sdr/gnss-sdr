@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SeqOf-BadSatelliteSet */
-typedef struct SeqOf_BadSatelliteSet
-{
-    A_SEQUENCE_OF(SatelliteID_t)
-    list;
+    /* SeqOf-BadSatelliteSet */
+    typedef struct SeqOf_BadSatelliteSet
+    {
+        A_SEQUENCE_OF(SatelliteID_t)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOf_BadSatelliteSet_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOf_BadSatelliteSet_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOf_BadSatelliteSet;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOf_BadSatelliteSet;
 
 #ifdef __cplusplus
 }

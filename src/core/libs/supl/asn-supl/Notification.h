@@ -18,29 +18,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Notification */
-typedef struct Notification
-{
-    NotificationType_t notificationType;
-    EncodingType_t *encodingType /* OPTIONAL */;
-    OCTET_STRING_t *requestorId /* OPTIONAL */;
-    FormatIndicator_t *requestorIdType /* OPTIONAL */;
-    OCTET_STRING_t *clientName /* OPTIONAL */;
-    FormatIndicator_t *clientNameType /* OPTIONAL */;
-    /*
+    /* Notification */
+    typedef struct Notification
+    {
+        NotificationType_t notificationType;
+        EncodingType_t *encodingType /* OPTIONAL */;
+        OCTET_STRING_t *requestorId /* OPTIONAL */;
+        FormatIndicator_t *requestorIdType /* OPTIONAL */;
+        OCTET_STRING_t *clientName /* OPTIONAL */;
+        FormatIndicator_t *clientNameType /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Notification_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Notification_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Notification;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Notification;
 
 #ifdef __cplusplus
 }

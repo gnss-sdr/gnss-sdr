@@ -17,24 +17,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSAlmanacModel */
-typedef struct GANSSAlmanacModel
-{
-    long weekNumber;
-    SVIDMASK_t svIDMask;
-    long *toa /* OPTIONAL */;
-    long *ioda /* OPTIONAL */;
-    SeqOfGANSSAlmanacElement_t ganssAlmanacList;
+    /* GANSSAlmanacModel */
+    typedef struct GANSSAlmanacModel
+    {
+        long weekNumber;
+        SVIDMASK_t svIDMask;
+        long *toa /* OPTIONAL */;
+        long *ioda /* OPTIONAL */;
+        SeqOfGANSSAlmanacElement_t ganssAlmanacList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSAlmanacModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSAlmanacModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSAlmanacModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSAlmanacModel;
 
 #ifdef __cplusplus
 }

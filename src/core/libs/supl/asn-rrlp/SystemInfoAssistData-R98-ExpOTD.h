@@ -15,20 +15,21 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SystemInfoAssistData-R98-ExpOTD */
-typedef struct SystemInfoAssistData_R98_ExpOTD
-{
-    SeqOfSystemInfoAssistBTS_R98_ExpOTD_t systemInfoAssistListR98_ExpOTD;
+    /* SystemInfoAssistData-R98-ExpOTD */
+    typedef struct SystemInfoAssistData_R98_ExpOTD
+    {
+        SeqOfSystemInfoAssistBTS_R98_ExpOTD_t systemInfoAssistListR98_ExpOTD;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SystemInfoAssistData_R98_ExpOTD_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SystemInfoAssistData_R98_ExpOTD_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SystemInfoAssistData_R98_ExpOTD;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SystemInfoAssistData_R98_ExpOTD;
 
 #ifdef __cplusplus
 }

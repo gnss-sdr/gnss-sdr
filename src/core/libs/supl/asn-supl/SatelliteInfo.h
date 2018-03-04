@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SatelliteInfoElement;
+    /* Forward declarations */
+    struct SatelliteInfoElement;
 
-/* SatelliteInfo */
-typedef struct SatelliteInfo
-{
-    A_SEQUENCE_OF(struct SatelliteInfoElement)
-    list;
+    /* SatelliteInfo */
+    typedef struct SatelliteInfo
+    {
+        A_SEQUENCE_OF(struct SatelliteInfoElement)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SatelliteInfo_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SatelliteInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SatelliteInfo;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SatelliteInfo;
 
 #ifdef __cplusplus
 }

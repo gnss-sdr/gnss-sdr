@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSDataBit */
-typedef long GANSSDataBit_t;
+    /* GANSSDataBit */
+    typedef long GANSSDataBit_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSDataBit;
-asn_struct_free_f GANSSDataBit_free;
-asn_struct_print_f GANSSDataBit_print;
-asn_constr_check_f GANSSDataBit_constraint;
-ber_type_decoder_f GANSSDataBit_decode_ber;
-der_type_encoder_f GANSSDataBit_encode_der;
-xer_type_decoder_f GANSSDataBit_decode_xer;
-xer_type_encoder_f GANSSDataBit_encode_xer;
-per_type_decoder_f GANSSDataBit_decode_uper;
-per_type_encoder_f GANSSDataBit_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSDataBit;
+    asn_struct_free_f GANSSDataBit_free;
+    asn_struct_print_f GANSSDataBit_print;
+    asn_constr_check_f GANSSDataBit_constraint;
+    ber_type_decoder_f GANSSDataBit_decode_ber;
+    der_type_encoder_f GANSSDataBit_encode_der;
+    xer_type_decoder_f GANSSDataBit_decode_xer;
+    xer_type_encoder_f GANSSDataBit_encode_xer;
+    per_type_decoder_f GANSSDataBit_decode_uper;
+    per_type_encoder_f GANSSDataBit_encode_uper;
 
 #ifdef __cplusplus
 }

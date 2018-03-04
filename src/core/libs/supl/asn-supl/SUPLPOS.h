@@ -15,28 +15,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Velocity;
+    /* Forward declarations */
+    struct Velocity;
 
-/* SUPLPOS */
-typedef struct SUPLPOS
-{
-    PosPayLoad_t posPayLoad;
-    struct Velocity *velocity /* OPTIONAL */;
-    /*
+    /* SUPLPOS */
+    typedef struct SUPLPOS
+    {
+        PosPayLoad_t posPayLoad;
+        struct Velocity *velocity /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SUPLPOS_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SUPLPOS_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SUPLPOS;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SUPLPOS;
 
 #ifdef __cplusplus
 }

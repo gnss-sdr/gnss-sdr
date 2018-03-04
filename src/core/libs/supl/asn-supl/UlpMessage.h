@@ -21,50 +21,52 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum UlpMessage_PR {
-    UlpMessage_PR_NOTHING, /* No components present */
-    UlpMessage_PR_msSUPLINIT,
-    UlpMessage_PR_msSUPLSTART,
-    UlpMessage_PR_msSUPLRESPONSE,
-    UlpMessage_PR_msSUPLPOSINIT,
-    UlpMessage_PR_msSUPLPOS,
-    UlpMessage_PR_msSUPLEND,
-    UlpMessage_PR_msDUMMY2,
-    UlpMessage_PR_msDUMMY3,
-    /* Extensions may appear below */
-
-} UlpMessage_PR;
-
-/* UlpMessage */
-typedef struct UlpMessage
-{
-    UlpMessage_PR present;
-    union UlpMessage_u
+    /* Dependencies */
+    typedef enum UlpMessage_PR
     {
-        SUPLINIT_t msSUPLINIT;
-        SUPLSTART_t msSUPLSTART;
-        SUPLRESPONSE_t msSUPLRESPONSE;
-        SUPLPOSINIT_t msSUPLPOSINIT;
-        SUPLPOS_t msSUPLPOS;
-        SUPLEND_t msSUPLEND;
-        DUMMY_t msDUMMY2;
-        DUMMY_t msDUMMY3;
-        /*
+        UlpMessage_PR_NOTHING, /* No components present */
+        UlpMessage_PR_msSUPLINIT,
+        UlpMessage_PR_msSUPLSTART,
+        UlpMessage_PR_msSUPLRESPONSE,
+        UlpMessage_PR_msSUPLPOSINIT,
+        UlpMessage_PR_msSUPLPOS,
+        UlpMessage_PR_msSUPLEND,
+        UlpMessage_PR_msDUMMY2,
+        UlpMessage_PR_msDUMMY3,
+        /* Extensions may appear below */
+
+    } UlpMessage_PR;
+
+    /* UlpMessage */
+    typedef struct UlpMessage
+    {
+        UlpMessage_PR present;
+        union UlpMessage_u
+        {
+            SUPLINIT_t msSUPLINIT;
+            SUPLSTART_t msSUPLSTART;
+            SUPLRESPONSE_t msSUPLRESPONSE;
+            SUPLPOSINIT_t msSUPLPOSINIT;
+            SUPLPOS_t msSUPLPOS;
+            SUPLEND_t msSUPLEND;
+            DUMMY_t msDUMMY2;
+            DUMMY_t msDUMMY3;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} UlpMessage_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } UlpMessage_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_UlpMessage;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_UlpMessage;
 
 #ifdef __cplusplus
 }

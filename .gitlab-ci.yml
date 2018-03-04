@@ -187,6 +187,7 @@ fedora-rawhide:
   before_script:
     - source ~/.bash_profile
   script:
+    - dnf upgrade -y --nogpgcheck
     - yum install -y automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python-mako python-six matio-devel
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..

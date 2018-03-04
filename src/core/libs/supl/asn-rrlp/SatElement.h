@@ -16,28 +16,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SatElement */
-typedef struct SatElement
-{
-    SatelliteID_t satelliteID;
-    long iode;
-    long udre;
-    long pseudoRangeCor;
-    long rangeRateCor;
-    long deltaPseudoRangeCor2;
-    long deltaRangeRateCor2;
-    long deltaPseudoRangeCor3;
-    long deltaRangeRateCor3;
+    /* SatElement */
+    typedef struct SatElement
+    {
+        SatelliteID_t satelliteID;
+        long iode;
+        long udre;
+        long pseudoRangeCor;
+        long rangeRateCor;
+        long deltaPseudoRangeCor2;
+        long deltaRangeRateCor2;
+        long deltaPseudoRangeCor3;
+        long deltaRangeRateCor3;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SatElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SatElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SatElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SatElement;
 
 #ifdef __cplusplus
 }

@@ -32,7 +32,7 @@
 
 
 #ifndef GNSS_SDR_KML_PRINTER_H_
-#define	GNSS_SDR_KML_PRINTER_H_
+#define GNSS_SDR_KML_PRINTER_H_
 
 #include <iostream>
 #include <fstream>
@@ -48,6 +48,7 @@ class Kml_Printer_gpstk
 {
 private:
     std::ofstream kml_file;
+
 public:
     bool set_headers(std::string filename);
     bool print_position(gpstk::Position position);

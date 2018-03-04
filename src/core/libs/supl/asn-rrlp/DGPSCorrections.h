@@ -16,22 +16,23 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* DGPSCorrections */
-typedef struct DGPSCorrections
-{
-    long gpsTOW;
-    long status;
-    SeqOfSatElement_t satList;
+    /* DGPSCorrections */
+    typedef struct DGPSCorrections
+    {
+        long gpsTOW;
+        long status;
+        SeqOfSatElement_t satList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} DGPSCorrections_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } DGPSCorrections_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_DGPSCorrections;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_DGPSCorrections;
 
 #ifdef __cplusplus
 }

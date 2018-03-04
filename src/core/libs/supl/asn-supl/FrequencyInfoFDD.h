@@ -15,25 +15,26 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* FrequencyInfoFDD */
-typedef struct FrequencyInfoFDD
-{
-    UARFCN_t *uarfcn_UL /* OPTIONAL */;
-    UARFCN_t uarfcn_DL;
-    /*
+    /* FrequencyInfoFDD */
+    typedef struct FrequencyInfoFDD
+    {
+        UARFCN_t *uarfcn_UL /* OPTIONAL */;
+        UARFCN_t uarfcn_DL;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} FrequencyInfoFDD_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } FrequencyInfoFDD_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_FrequencyInfoFDD;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_FrequencyInfoFDD;
 
 #ifdef __cplusplus
 }

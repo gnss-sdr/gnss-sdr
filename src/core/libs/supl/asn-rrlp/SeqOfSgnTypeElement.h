@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SgnTypeElement;
+    /* Forward declarations */
+    struct SgnTypeElement;
 
-/* SeqOfSgnTypeElement */
-typedef struct SeqOfSgnTypeElement
-{
-    A_SEQUENCE_OF(struct SgnTypeElement)
-    list;
+    /* SeqOfSgnTypeElement */
+    typedef struct SeqOfSgnTypeElement
+    {
+        A_SEQUENCE_OF(struct SgnTypeElement)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOfSgnTypeElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfSgnTypeElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfSgnTypeElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfSgnTypeElement;
 
 #ifdef __cplusplus
 }

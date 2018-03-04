@@ -76,9 +76,10 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     long freq, long fs_in, int samples_per_ms,
     int samples_per_code, unsigned int tong_init_val,
     unsigned int tong_max_val, unsigned int tong_max_dwells,
-    bool dump, std::string dump_filename) : gr::block("pcps_tong_acquisition_cc",
-                                                gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
-                                                gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
+    bool dump,
+    std::string dump_filename) : gr::block("pcps_tong_acquisition_cc",
+                                     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
+                                     gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0;  // SAMPLE COUNTER

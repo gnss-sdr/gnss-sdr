@@ -16,29 +16,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Rel98_Ext_ExpOTD;
+    /* Forward declarations */
+    struct Rel98_Ext_ExpOTD;
 
-/* Rel98-MsrPosition-Req-Extension */
-typedef struct Rel98_MsrPosition_Req_Extension
-{
-    struct Rel98_Ext_ExpOTD *rel98_Ext_ExpOTD /* OPTIONAL */;
-    /*
+    /* Rel98-MsrPosition-Req-Extension */
+    typedef struct Rel98_MsrPosition_Req_Extension
+    {
+        struct Rel98_Ext_ExpOTD *rel98_Ext_ExpOTD /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-    NULL_t *gpsTimeAssistanceMeasurementRequest /* OPTIONAL */;
-    GPSReferenceTimeUncertainty_t *gpsReferenceTimeUncertainty /* OPTIONAL */;
+        NULL_t *gpsTimeAssistanceMeasurementRequest /* OPTIONAL */;
+        GPSReferenceTimeUncertainty_t *gpsReferenceTimeUncertainty /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Rel98_MsrPosition_Req_Extension_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Rel98_MsrPosition_Req_Extension_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Rel98_MsrPosition_Req_Extension;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Rel98_MsrPosition_Req_Extension;
 
 #ifdef __cplusplus
 }

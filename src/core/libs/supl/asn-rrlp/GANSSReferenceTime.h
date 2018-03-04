@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSSTOD_GSMTimeAssociation;
+    /* Forward declarations */
+    struct GANSSTOD_GSMTimeAssociation;
 
-/* GANSSReferenceTime */
-typedef struct GANSSReferenceTime
-{
-    GANSSRefTimeInfo_t ganssRefTimeInfo;
-    struct GANSSTOD_GSMTimeAssociation *ganssTOD_GSMTimeAssociation /* OPTIONAL */;
+    /* GANSSReferenceTime */
+    typedef struct GANSSReferenceTime
+    {
+        GANSSRefTimeInfo_t ganssRefTimeInfo;
+        struct GANSSTOD_GSMTimeAssociation *ganssTOD_GSMTimeAssociation /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSReferenceTime_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSReferenceTime_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSReferenceTime;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSReferenceTime;
 
 #ifdef __cplusplus
 }

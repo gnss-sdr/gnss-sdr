@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSSRefMeasurementElement;
+    /* Forward declarations */
+    struct GANSSRefMeasurementElement;
 
-/* SeqOfGANSSRefMeasurementElement */
-typedef struct SeqOfGANSSRefMeasurementElement
-{
-    A_SEQUENCE_OF(struct GANSSRefMeasurementElement)
-    list;
+    /* SeqOfGANSSRefMeasurementElement */
+    typedef struct SeqOfGANSSRefMeasurementElement
+    {
+        A_SEQUENCE_OF(struct GANSSRefMeasurementElement)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOfGANSSRefMeasurementElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfGANSSRefMeasurementElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSRefMeasurementElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSRefMeasurementElement;
 
 #ifdef __cplusplus
 }

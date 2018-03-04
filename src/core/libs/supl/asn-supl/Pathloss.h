@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Pathloss */
-typedef long Pathloss_t;
+    /* Pathloss */
+    typedef long Pathloss_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Pathloss;
-asn_struct_free_f Pathloss_free;
-asn_struct_print_f Pathloss_print;
-asn_constr_check_f Pathloss_constraint;
-ber_type_decoder_f Pathloss_decode_ber;
-der_type_encoder_f Pathloss_encode_der;
-xer_type_decoder_f Pathloss_decode_xer;
-xer_type_encoder_f Pathloss_encode_xer;
-per_type_decoder_f Pathloss_decode_uper;
-per_type_encoder_f Pathloss_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Pathloss;
+    asn_struct_free_f Pathloss_free;
+    asn_struct_print_f Pathloss_print;
+    asn_constr_check_f Pathloss_constraint;
+    ber_type_decoder_f Pathloss_decode_ber;
+    der_type_encoder_f Pathloss_encode_der;
+    xer_type_decoder_f Pathloss_decode_xer;
+    xer_type_encoder_f Pathloss_encode_xer;
+    per_type_decoder_f Pathloss_decode_uper;
+    per_type_encoder_f Pathloss_encode_uper;
 
 #ifdef __cplusplus
 }

@@ -19,10 +19,11 @@
 #ifndef INCLUDED_VOLK_GNSSSDR_CONFIG_FIXED_H
 #define INCLUDED_VOLK_GNSSSDR_CONFIG_FIXED_H
 
+// clang-format off
 %for i, arch in enumerate(archs):
 //#ifndef LV_${arch.name.upper()}
 #define LV_${arch.name.upper()} ${i}
 //#endif
 %endfor
-
+// clang-format on
 #endif /*INCLUDED_VOLK_GNSSSDR_CONFIG_FIXED*/

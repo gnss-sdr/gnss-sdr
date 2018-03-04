@@ -15,40 +15,42 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum PosPayLoad_PR {
-    PosPayLoad_PR_NOTHING, /* No components present */
-    PosPayLoad_PR_tia801payload,
-    PosPayLoad_PR_rrcPayload,
-    PosPayLoad_PR_rrlpPayload,
-    /* Extensions may appear below */
-
-} PosPayLoad_PR;
-
-/* PosPayLoad */
-typedef struct PosPayLoad
-{
-    PosPayLoad_PR present;
-    union PosPayLoad_u
+    /* Dependencies */
+    typedef enum PosPayLoad_PR
     {
-        OCTET_STRING_t tia801payload;
-        OCTET_STRING_t rrcPayload;
-        OCTET_STRING_t rrlpPayload;
-        /*
+        PosPayLoad_PR_NOTHING, /* No components present */
+        PosPayLoad_PR_tia801payload,
+        PosPayLoad_PR_rrcPayload,
+        PosPayLoad_PR_rrlpPayload,
+        /* Extensions may appear below */
+
+    } PosPayLoad_PR;
+
+    /* PosPayLoad */
+    typedef struct PosPayLoad
+    {
+        PosPayLoad_PR present;
+        union PosPayLoad_u
+        {
+            OCTET_STRING_t tia801payload;
+            OCTET_STRING_t rrcPayload;
+            OCTET_STRING_t rrlpPayload;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} PosPayLoad_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PosPayLoad_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PosPayLoad;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PosPayLoad;
 
 #ifdef __cplusplus
 }

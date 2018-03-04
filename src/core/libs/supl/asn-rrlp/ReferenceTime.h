@@ -15,26 +15,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GSMTime;
-struct GPSTOWAssist;
+    /* Forward declarations */
+    struct GSMTime;
+    struct GPSTOWAssist;
 
-/* ReferenceTime */
-typedef struct ReferenceTime
-{
-    GPSTime_t gpsTime;
-    struct GSMTime *gsmTime /* OPTIONAL */;
-    struct GPSTOWAssist *gpsTowAssist /* OPTIONAL */;
+    /* ReferenceTime */
+    typedef struct ReferenceTime
+    {
+        GPSTime_t gpsTime;
+        struct GSMTime *gsmTime /* OPTIONAL */;
+        struct GPSTOWAssist *gpsTowAssist /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} ReferenceTime_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReferenceTime_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceTime;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceTime;
 
 #ifdef __cplusplus
 }

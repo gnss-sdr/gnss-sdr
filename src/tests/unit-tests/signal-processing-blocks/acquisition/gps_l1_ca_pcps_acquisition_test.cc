@@ -251,7 +251,6 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-
     }) << "Failure connecting the blocks of acquisition test.";
 
     EXPECT_NO_THROW({

@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* OTDValue */
-typedef long OTDValue_t;
+    /* OTDValue */
+    typedef long OTDValue_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTDValue;
-asn_struct_free_f OTDValue_free;
-asn_struct_print_f OTDValue_print;
-asn_constr_check_f OTDValue_constraint;
-ber_type_decoder_f OTDValue_decode_ber;
-der_type_encoder_f OTDValue_encode_der;
-xer_type_decoder_f OTDValue_decode_xer;
-xer_type_encoder_f OTDValue_encode_xer;
-per_type_decoder_f OTDValue_decode_uper;
-per_type_encoder_f OTDValue_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTDValue;
+    asn_struct_free_f OTDValue_free;
+    asn_struct_print_f OTDValue_print;
+    asn_constr_check_f OTDValue_constraint;
+    ber_type_decoder_f OTDValue_decode_ber;
+    der_type_encoder_f OTDValue_encode_der;
+    xer_type_decoder_f OTDValue_decode_xer;
+    xer_type_encoder_f OTDValue_encode_xer;
+    per_type_decoder_f OTDValue_decode_uper;
+    per_type_encoder_f OTDValue_encode_uper;
 
 #ifdef __cplusplus
 }

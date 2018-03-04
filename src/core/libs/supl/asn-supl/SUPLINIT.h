@@ -18,35 +18,36 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Notification;
-struct SLPAddress;
-struct QoP;
+    /* Forward declarations */
+    struct Notification;
+    struct SLPAddress;
+    struct QoP;
 
-/* SUPLINIT */
-typedef struct SUPLINIT
-{
-    PosMethod_t posMethod;
-    struct Notification *notification /* OPTIONAL */;
-    struct SLPAddress *sLPAddress /* OPTIONAL */;
-    struct QoP *qoP /* OPTIONAL */;
-    SLPMode_t sLPMode;
-    MAC_t *mAC /* OPTIONAL */;
-    KeyIdentity_t *keyIdentity /* OPTIONAL */;
-    /*
+    /* SUPLINIT */
+    typedef struct SUPLINIT
+    {
+        PosMethod_t posMethod;
+        struct Notification *notification /* OPTIONAL */;
+        struct SLPAddress *sLPAddress /* OPTIONAL */;
+        struct QoP *qoP /* OPTIONAL */;
+        SLPMode_t sLPMode;
+        MAC_t *mAC /* OPTIONAL */;
+        KeyIdentity_t *keyIdentity /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SUPLINIT_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SUPLINIT_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SUPLINIT;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SUPLINIT;
 
 #ifdef __cplusplus
 }

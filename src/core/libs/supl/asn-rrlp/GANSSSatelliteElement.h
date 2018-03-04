@@ -18,28 +18,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSSatelliteElement */
-typedef struct GANSSSatelliteElement
-{
-    SVID_t svID;
-    long svHealth;
-    long iod;
-    GANSSClockModel_t ganssClockModel;
-    GANSSOrbitModel_t ganssOrbitModel;
-    /*
+    /* GANSSSatelliteElement */
+    typedef struct GANSSSatelliteElement
+    {
+        SVID_t svID;
+        long svHealth;
+        long iod;
+        GANSSClockModel_t ganssClockModel;
+        GANSSOrbitModel_t ganssOrbitModel;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSSatelliteElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSSatelliteElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSSatelliteElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSSatelliteElement;
 
 #ifdef __cplusplus
 }

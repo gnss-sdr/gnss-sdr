@@ -17,29 +17,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct TOA_MeasurementsOfRef;
-struct SeqOfOTD_MsrsOfOtherSets;
+    /* Forward declarations */
+    struct TOA_MeasurementsOfRef;
+    struct SeqOfOTD_MsrsOfOtherSets;
 
-/* OTD-MsrElementRest */
-typedef struct OTD_MsrElementRest
-{
-    long refFrameNumber;
-    ModuloTimeSlot_t referenceTimeSlot;
-    struct TOA_MeasurementsOfRef *toaMeasurementsOfRef /* OPTIONAL */;
-    StdResolution_t stdResolution;
-    long *taCorrection /* OPTIONAL */;
-    struct SeqOfOTD_MsrsOfOtherSets *otd_MsrsOfOtherSets /* OPTIONAL */;
+    /* OTD-MsrElementRest */
+    typedef struct OTD_MsrElementRest
+    {
+        long refFrameNumber;
+        ModuloTimeSlot_t referenceTimeSlot;
+        struct TOA_MeasurementsOfRef *toaMeasurementsOfRef /* OPTIONAL */;
+        StdResolution_t stdResolution;
+        long *taCorrection /* OPTIONAL */;
+        struct SeqOfOTD_MsrsOfOtherSets *otd_MsrsOfOtherSets /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} OTD_MsrElementRest_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } OTD_MsrElementRest_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTD_MsrElementRest;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTD_MsrElementRest;
 
 #ifdef __cplusplus
 }

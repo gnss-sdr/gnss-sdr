@@ -76,9 +76,9 @@ struct GPU_Complex
     }
     CUDA_CALLABLE_MEMBER_DEVICE void multiply_acc(const GPU_Complex& a, const GPU_Complex& b)
     {
-    //c=a*b+c
-    //real part
-    //c.r=(a.r*b.r - a.i*b.i)+c.r
+        //c=a*b+c
+        //real part
+        //c.r=(a.r*b.r - a.i*b.i)+c.r
 #ifdef __CUDACC__
         r = __fmaf_rn(a.r, b.r, r);
         r = __fmaf_rn(-a.i, b.i, r);

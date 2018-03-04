@@ -15,21 +15,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Extended-reference */
-typedef struct Extended_reference
-{
-    long smlc_code;
-    long transaction_ID;
+    /* Extended-reference */
+    typedef struct Extended_reference
+    {
+        long smlc_code;
+        long transaction_ID;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Extended_reference_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Extended_reference_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Extended_reference;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Extended_reference;
 
 #ifdef __cplusplus
 }

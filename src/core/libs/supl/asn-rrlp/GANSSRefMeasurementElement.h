@@ -16,34 +16,35 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct AdditionalDopplerFields;
-struct AddionalAngleFields;
+    /* Forward declarations */
+    struct AdditionalDopplerFields;
+    struct AddionalAngleFields;
 
-/* GANSSRefMeasurementElement */
-typedef struct GANSSRefMeasurementElement
-{
-    SVID_t svID;
-    long doppler0;
-    struct AdditionalDopplerFields *additionalDoppler /* OPTIONAL */;
-    long codePhase;
-    long intCodePhase;
-    long codePhaseSearchWindow;
-    struct AddionalAngleFields *additionalAngle /* OPTIONAL */;
-    /*
+    /* GANSSRefMeasurementElement */
+    typedef struct GANSSRefMeasurementElement
+    {
+        SVID_t svID;
+        long doppler0;
+        struct AdditionalDopplerFields *additionalDoppler /* OPTIONAL */;
+        long codePhase;
+        long intCodePhase;
+        long codePhaseSearchWindow;
+        struct AddionalAngleFields *additionalAngle /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSRefMeasurementElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSRefMeasurementElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSRefMeasurementElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSRefMeasurementElement;
 
 #ifdef __cplusplus
 }

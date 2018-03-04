@@ -45,7 +45,8 @@
 #include <vector>
 
 
-extern "C" {
+extern "C"
+{
 #include "cnav_msg.h"
 #include "edc.h"
 #include "bits.h"

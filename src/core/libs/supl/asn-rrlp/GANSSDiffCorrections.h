@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSDiffCorrections */
-typedef struct GANSSDiffCorrections
-{
-    long dganssRefTime;
-    SeqOfSgnTypeElement_t sgnTypeList;
+    /* GANSSDiffCorrections */
+    typedef struct GANSSDiffCorrections
+    {
+        long dganssRefTime;
+        SeqOfSgnTypeElement_t sgnTypeList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSDiffCorrections_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSDiffCorrections_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSDiffCorrections;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSDiffCorrections;
 
 #ifdef __cplusplus
 }

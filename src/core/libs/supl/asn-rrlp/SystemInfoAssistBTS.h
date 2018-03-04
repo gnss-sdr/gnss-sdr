@@ -16,32 +16,34 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum SystemInfoAssistBTS_PR {
-    SystemInfoAssistBTS_PR_NOTHING, /* No components present */
-    SystemInfoAssistBTS_PR_notPresent,
-    SystemInfoAssistBTS_PR_present
-} SystemInfoAssistBTS_PR;
-
-/* SystemInfoAssistBTS */
-typedef struct SystemInfoAssistBTS
-{
-    SystemInfoAssistBTS_PR present;
-    union SystemInfoAssistBTS_u
+    /* Dependencies */
+    typedef enum SystemInfoAssistBTS_PR
     {
-        NULL_t notPresent;
-        AssistBTSData_t present;
-    } choice;
+        SystemInfoAssistBTS_PR_NOTHING, /* No components present */
+        SystemInfoAssistBTS_PR_notPresent,
+        SystemInfoAssistBTS_PR_present
+    } SystemInfoAssistBTS_PR;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SystemInfoAssistBTS_t;
+    /* SystemInfoAssistBTS */
+    typedef struct SystemInfoAssistBTS
+    {
+        SystemInfoAssistBTS_PR present;
+        union SystemInfoAssistBTS_u
+        {
+            NULL_t notPresent;
+            AssistBTSData_t present;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SystemInfoAssistBTS;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SystemInfoAssistBTS_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SystemInfoAssistBTS;
 
 #ifdef __cplusplus
 }

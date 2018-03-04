@@ -14,35 +14,37 @@
 #include <ENUMERATED.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum NotificationType {
-    NotificationType_noNotificationNoVerification = 0,
-    NotificationType_notificationOnly = 1,
-    NotificationType_notificationAndVerficationAllowedNA = 2,
-    NotificationType_notificationAndVerficationDeniedNA = 3,
-    NotificationType_privacyOverride = 4
-    /*
+    /* Dependencies */
+    typedef enum NotificationType
+    {
+        NotificationType_noNotificationNoVerification = 0,
+        NotificationType_notificationOnly = 1,
+        NotificationType_notificationAndVerficationAllowedNA = 2,
+        NotificationType_notificationAndVerficationDeniedNA = 3,
+        NotificationType_privacyOverride = 4
+        /*
 	 * Enumeration is extensible
 	 */
-} e_NotificationType;
+    } e_NotificationType;
 
-/* NotificationType */
-typedef ENUMERATED_t NotificationType_t;
+    /* NotificationType */
+    typedef ENUMERATED_t NotificationType_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_NotificationType;
-asn_struct_free_f NotificationType_free;
-asn_struct_print_f NotificationType_print;
-asn_constr_check_f NotificationType_constraint;
-ber_type_decoder_f NotificationType_decode_ber;
-der_type_encoder_f NotificationType_encode_der;
-xer_type_decoder_f NotificationType_decode_xer;
-xer_type_encoder_f NotificationType_encode_xer;
-per_type_decoder_f NotificationType_decode_uper;
-per_type_encoder_f NotificationType_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_NotificationType;
+    asn_struct_free_f NotificationType_free;
+    asn_struct_print_f NotificationType_print;
+    asn_constr_check_f NotificationType_constraint;
+    ber_type_decoder_f NotificationType_decode_ber;
+    der_type_encoder_f NotificationType_encode_der;
+    xer_type_decoder_f NotificationType_decode_xer;
+    xer_type_encoder_f NotificationType_encode_xer;
+    per_type_decoder_f NotificationType_decode_uper;
+    per_type_encoder_f NotificationType_encode_uper;
 
 #ifdef __cplusplus
 }

@@ -18,25 +18,26 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSTimeModelElement */
-typedef struct GANSSTimeModelElement
-{
-    long ganssTimeModelRefTime;
-    TA0_t tA0;
-    TA1_t *tA1 /* OPTIONAL */;
-    TA2_t *tA2 /* OPTIONAL */;
-    long gnssTOID;
-    long *weekNumber /* OPTIONAL */;
+    /* GANSSTimeModelElement */
+    typedef struct GANSSTimeModelElement
+    {
+        long ganssTimeModelRefTime;
+        TA0_t tA0;
+        TA1_t *tA1 /* OPTIONAL */;
+        TA2_t *tA2 /* OPTIONAL */;
+        long gnssTOID;
+        long *weekNumber /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSTimeModelElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSTimeModelElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSTimeModelElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSTimeModelElement;
 
 #ifdef __cplusplus
 }

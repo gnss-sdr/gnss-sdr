@@ -14,25 +14,26 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct MsrAssistData_R98_ExpOTD;
-struct SystemInfoAssistData_R98_ExpOTD;
+    /* Forward declarations */
+    struct MsrAssistData_R98_ExpOTD;
+    struct SystemInfoAssistData_R98_ExpOTD;
 
-/* Rel98-Ext-ExpOTD */
-typedef struct Rel98_Ext_ExpOTD
-{
-    struct MsrAssistData_R98_ExpOTD *msrAssistData_R98_ExpOTD /* OPTIONAL */;
-    struct SystemInfoAssistData_R98_ExpOTD *systemInfoAssistData_R98_ExpOTD /* OPTIONAL */;
+    /* Rel98-Ext-ExpOTD */
+    typedef struct Rel98_Ext_ExpOTD
+    {
+        struct MsrAssistData_R98_ExpOTD *msrAssistData_R98_ExpOTD /* OPTIONAL */;
+        struct SystemInfoAssistData_R98_ExpOTD *systemInfoAssistData_R98_ExpOTD /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Rel98_Ext_ExpOTD_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Rel98_Ext_ExpOTD_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Rel98_Ext_ExpOTD;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Rel98_Ext_ExpOTD;
 
 #ifdef __cplusplus
 }

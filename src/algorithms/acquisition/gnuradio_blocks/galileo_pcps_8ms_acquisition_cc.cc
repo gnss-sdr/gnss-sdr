@@ -54,9 +54,10 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
     unsigned int sampled_ms, unsigned int max_dwells,
     unsigned int doppler_max, long freq, long fs_in,
     int samples_per_ms, int samples_per_code,
-    bool dump, std::string dump_filename) : gr::block("galileo_pcps_8ms_acquisition_cc",
-                                                gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
-                                                gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
+    bool dump,
+    std::string dump_filename) : gr::block("galileo_pcps_8ms_acquisition_cc",
+                                     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
+                                     gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0;  // SAMPLE COUNTER

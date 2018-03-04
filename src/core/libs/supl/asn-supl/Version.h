@@ -15,22 +15,23 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Version */
-typedef struct Version
-{
-    long maj;
-    long min;
-    long servind;
+    /* Version */
+    typedef struct Version
+    {
+        long maj;
+        long min;
+        long servind;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Version_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Version_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Version;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Version;
 
 #ifdef __cplusplus
 }

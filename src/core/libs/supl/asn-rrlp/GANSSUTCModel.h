@@ -15,27 +15,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSUTCModel */
-typedef struct GANSSUTCModel
-{
-    long ganssUtcA1;
-    long ganssUtcA0;
-    long ganssUtcTot;
-    long ganssUtcWNt;
-    long ganssUtcDeltaTls;
-    long ganssUtcWNlsf;
-    long ganssUtcDN;
-    long ganssUtcDeltaTlsf;
+    /* GANSSUTCModel */
+    typedef struct GANSSUTCModel
+    {
+        long ganssUtcA1;
+        long ganssUtcA0;
+        long ganssUtcTot;
+        long ganssUtcWNt;
+        long ganssUtcDeltaTls;
+        long ganssUtcWNlsf;
+        long ganssUtcDN;
+        long ganssUtcDeltaTlsf;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSUTCModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSUTCModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSUTCModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSUTCModel;
 
 #ifdef __cplusplus
 }

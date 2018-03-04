@@ -16,22 +16,23 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* MultipleSets */
-typedef struct MultipleSets
-{
-    long nbrOfSets;
-    long nbrOfReferenceBTSs;
-    ReferenceRelation_t *referenceRelation /* OPTIONAL */;
+    /* MultipleSets */
+    typedef struct MultipleSets
+    {
+        long nbrOfSets;
+        long nbrOfReferenceBTSs;
+        ReferenceRelation_t *referenceRelation /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} MultipleSets_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } MultipleSets_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MultipleSets;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MultipleSets;
 
 #ifdef __cplusplus
 }

@@ -15,36 +15,38 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum GANSSClockModel_PR {
-    GANSSClockModel_PR_NOTHING, /* No components present */
-    GANSSClockModel_PR_standardClockModelList,
-    /* Extensions may appear below */
-
-} GANSSClockModel_PR;
-
-/* GANSSClockModel */
-typedef struct GANSSClockModel
-{
-    GANSSClockModel_PR present;
-    union GANSSClockModel_u
+    /* Dependencies */
+    typedef enum GANSSClockModel_PR
     {
-        SeqOfStandardClockModelElement_t standardClockModelList;
-        /*
+        GANSSClockModel_PR_NOTHING, /* No components present */
+        GANSSClockModel_PR_standardClockModelList,
+        /* Extensions may appear below */
+
+    } GANSSClockModel_PR;
+
+    /* GANSSClockModel */
+    typedef struct GANSSClockModel
+    {
+        GANSSClockModel_PR present;
+        union GANSSClockModel_u
+        {
+            SeqOfStandardClockModelElement_t standardClockModelList;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSClockModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSClockModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSClockModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSClockModel;
 
 #ifdef __cplusplus
 }

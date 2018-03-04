@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct NavModelElement;
+    /* Forward declarations */
+    struct NavModelElement;
 
-/* SeqOfNavModelElement */
-typedef struct SeqOfNavModelElement
-{
-    A_SEQUENCE_OF(struct NavModelElement)
-    list;
+    /* SeqOfNavModelElement */
+    typedef struct SeqOfNavModelElement
+    {
+        A_SEQUENCE_OF(struct NavModelElement)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOfNavModelElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfNavModelElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfNavModelElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfNavModelElement;
 
 #ifdef __cplusplus
 }

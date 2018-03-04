@@ -14,36 +14,38 @@
 #include <ENUMERATED.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum ErrorCodes {
-    ErrorCodes_unDefined = 0,
-    ErrorCodes_missingComponet = 1,
-    ErrorCodes_incorrectData = 2,
-    ErrorCodes_missingIEorComponentElement = 3,
-    ErrorCodes_messageTooShort = 4,
-    ErrorCodes_unknowReferenceNumber = 5
-    /*
+    /* Dependencies */
+    typedef enum ErrorCodes
+    {
+        ErrorCodes_unDefined = 0,
+        ErrorCodes_missingComponet = 1,
+        ErrorCodes_incorrectData = 2,
+        ErrorCodes_missingIEorComponentElement = 3,
+        ErrorCodes_messageTooShort = 4,
+        ErrorCodes_unknowReferenceNumber = 5
+        /*
 	 * Enumeration is extensible
 	 */
-} e_ErrorCodes;
+    } e_ErrorCodes;
 
-/* ErrorCodes */
-typedef ENUMERATED_t ErrorCodes_t;
+    /* ErrorCodes */
+    typedef ENUMERATED_t ErrorCodes_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ErrorCodes;
-asn_struct_free_f ErrorCodes_free;
-asn_struct_print_f ErrorCodes_print;
-asn_constr_check_f ErrorCodes_constraint;
-ber_type_decoder_f ErrorCodes_decode_ber;
-der_type_encoder_f ErrorCodes_encode_der;
-xer_type_decoder_f ErrorCodes_decode_xer;
-xer_type_encoder_f ErrorCodes_encode_xer;
-per_type_decoder_f ErrorCodes_decode_uper;
-per_type_encoder_f ErrorCodes_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ErrorCodes;
+    asn_struct_free_f ErrorCodes_free;
+    asn_struct_print_f ErrorCodes_print;
+    asn_constr_check_f ErrorCodes_constraint;
+    ber_type_decoder_f ErrorCodes_decode_ber;
+    der_type_encoder_f ErrorCodes_encode_der;
+    xer_type_decoder_f ErrorCodes_decode_xer;
+    xer_type_encoder_f ErrorCodes_encode_xer;
+    per_type_decoder_f ErrorCodes_decode_uper;
+    per_type_encoder_f ErrorCodes_encode_uper;
 
 #ifdef __cplusplus
 }

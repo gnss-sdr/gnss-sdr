@@ -14,25 +14,26 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSSCommonAssistData;
-struct SeqOfGANSSGenericAssistDataElement;
+    /* Forward declarations */
+    struct GANSSCommonAssistData;
+    struct SeqOfGANSSGenericAssistDataElement;
 
-/* GANSS-ControlHeader */
-typedef struct GANSS_ControlHeader
-{
-    struct GANSSCommonAssistData *ganssCommonAssistData /* OPTIONAL */;
-    struct SeqOfGANSSGenericAssistDataElement *ganssGenericAssistDataList /* OPTIONAL */;
+    /* GANSS-ControlHeader */
+    typedef struct GANSS_ControlHeader
+    {
+        struct GANSSCommonAssistData *ganssCommonAssistData /* OPTIONAL */;
+        struct SeqOfGANSSGenericAssistDataElement *ganssGenericAssistDataList /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSS_ControlHeader_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSS_ControlHeader_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSS_ControlHeader;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSS_ControlHeader;
 
 #ifdef __cplusplus
 }

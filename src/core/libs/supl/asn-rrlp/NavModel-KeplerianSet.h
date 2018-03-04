@@ -15,35 +15,36 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* NavModel-KeplerianSet */
-typedef struct NavModel_KeplerianSet
-{
-    long keplerToeLSB;
-    long keplerW;
-    long keplerDeltaN;
-    long keplerM0;
-    long keplerOmegaDot;
-    long keplerELSB;
-    long keplerIDot;
-    long keplerAPowerHalfLSB;
-    long keplerI0;
-    long keplerOmega0;
-    long keplerCrs;
-    long keplerCis;
-    long keplerCus;
-    long keplerCrc;
-    long keplerCic;
-    long keplerCuc;
+    /* NavModel-KeplerianSet */
+    typedef struct NavModel_KeplerianSet
+    {
+        long keplerToeLSB;
+        long keplerW;
+        long keplerDeltaN;
+        long keplerM0;
+        long keplerOmegaDot;
+        long keplerELSB;
+        long keplerIDot;
+        long keplerAPowerHalfLSB;
+        long keplerI0;
+        long keplerOmega0;
+        long keplerCrs;
+        long keplerCis;
+        long keplerCus;
+        long keplerCrc;
+        long keplerCic;
+        long keplerCuc;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} NavModel_KeplerianSet_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } NavModel_KeplerianSet_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_NavModel_KeplerianSet;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_NavModel_KeplerianSet;
 
 #ifdef __cplusplus
 }

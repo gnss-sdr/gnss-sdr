@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* AssistBTSData-R98-ExpOTD */
-typedef struct AssistBTSData_R98_ExpOTD
-{
-    ExpectedOTD_t expectedOTD;
-    ExpOTDUncertainty_t expOTDuncertainty;
+    /* AssistBTSData-R98-ExpOTD */
+    typedef struct AssistBTSData_R98_ExpOTD
+    {
+        ExpectedOTD_t expectedOTD;
+        ExpOTDUncertainty_t expOTDuncertainty;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} AssistBTSData_R98_ExpOTD_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AssistBTSData_R98_ExpOTD_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AssistBTSData_R98_ExpOTD;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AssistBTSData_R98_ExpOTD;
 
 #ifdef __cplusplus
 }

@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* AcquisAssist */
-typedef struct AcquisAssist
-{
-    TimeRelation_t timeRelation;
-    SeqOfAcquisElement_t acquisList;
+    /* AcquisAssist */
+    typedef struct AcquisAssist
+    {
+        TimeRelation_t timeRelation;
+        SeqOfAcquisElement_t acquisList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} AcquisAssist_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AcquisAssist_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AcquisAssist;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AcquisAssist;
 
 #ifdef __cplusplus
 }

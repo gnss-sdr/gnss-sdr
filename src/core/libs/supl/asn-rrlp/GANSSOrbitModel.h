@@ -15,36 +15,38 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum GANSSOrbitModel_PR {
-    GANSSOrbitModel_PR_NOTHING, /* No components present */
-    GANSSOrbitModel_PR_keplerianSet,
-    /* Extensions may appear below */
-
-} GANSSOrbitModel_PR;
-
-/* GANSSOrbitModel */
-typedef struct GANSSOrbitModel
-{
-    GANSSOrbitModel_PR present;
-    union GANSSOrbitModel_u
+    /* Dependencies */
+    typedef enum GANSSOrbitModel_PR
     {
-        NavModel_KeplerianSet_t keplerianSet;
-        /*
+        GANSSOrbitModel_PR_NOTHING, /* No components present */
+        GANSSOrbitModel_PR_keplerianSet,
+        /* Extensions may appear below */
+
+    } GANSSOrbitModel_PR;
+
+    /* GANSSOrbitModel */
+    typedef struct GANSSOrbitModel
+    {
+        GANSSOrbitModel_PR present;
+        union GANSSOrbitModel_u
+        {
+            NavModel_KeplerianSet_t keplerianSet;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSOrbitModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSOrbitModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSOrbitModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSOrbitModel;
 
 #ifdef __cplusplus
 }

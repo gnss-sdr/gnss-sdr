@@ -15,21 +15,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* AddionalAngleFields */
-typedef struct AddionalAngleFields
-{
-    long azimuth;
-    long elevation;
+    /* AddionalAngleFields */
+    typedef struct AddionalAngleFields
+    {
+        long azimuth;
+        long elevation;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} AddionalAngleFields_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AddionalAngleFields_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AddionalAngleFields;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AddionalAngleFields;
 
 #ifdef __cplusplus
 }

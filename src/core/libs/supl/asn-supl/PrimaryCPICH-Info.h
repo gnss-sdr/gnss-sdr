@@ -15,20 +15,21 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* PrimaryCPICH-Info */
-typedef struct PrimaryCPICH_Info
-{
-    long primaryScramblingCode;
+    /* PrimaryCPICH-Info */
+    typedef struct PrimaryCPICH_Info
+    {
+        long primaryScramblingCode;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} PrimaryCPICH_Info_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PrimaryCPICH_Info_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PrimaryCPICH_Info;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PrimaryCPICH_Info;
 
 #ifdef __cplusplus
 }

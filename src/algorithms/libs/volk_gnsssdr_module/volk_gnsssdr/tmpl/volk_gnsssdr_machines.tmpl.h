@@ -27,6 +27,7 @@
 
 __VOLK_DECL_BEGIN
 
+// clang-format off
 struct volk_gnsssdr_machine {
     const unsigned int caps; //capabilities (i.e., archs compiled into this machine, in the volk_gnsssdr_get_lvarch format)
     const char *name;
@@ -48,5 +49,6 @@ extern struct volk_gnsssdr_machine volk_gnsssdr_machine_${machine.name};
 %endfor
 
 __VOLK_DECL_END
+// clang-format on
 
-#endif //INCLUDED_LIBVOLK_GNSSSDR_MACHINES_H
+#endif  //INCLUDED_LIBVOLK_GNSSSDR_MACHINES_H

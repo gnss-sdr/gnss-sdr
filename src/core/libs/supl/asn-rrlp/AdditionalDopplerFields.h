@@ -15,21 +15,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* AdditionalDopplerFields */
-typedef struct AdditionalDopplerFields
-{
-    long doppler1;
-    long dopplerUncertainty;
+    /* AdditionalDopplerFields */
+    typedef struct AdditionalDopplerFields
+    {
+        long doppler1;
+        long dopplerUncertainty;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} AdditionalDopplerFields_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AdditionalDopplerFields_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AdditionalDopplerFields;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AdditionalDopplerFields;
 
 #ifdef __cplusplus
 }

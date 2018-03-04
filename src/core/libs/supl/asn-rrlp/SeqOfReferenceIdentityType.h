@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReferenceIdentityType;
+    /* Forward declarations */
+    struct ReferenceIdentityType;
 
-/* SeqOfReferenceIdentityType */
-typedef struct SeqOfReferenceIdentityType
-{
-    A_SEQUENCE_OF(struct ReferenceIdentityType)
-    list;
+    /* SeqOfReferenceIdentityType */
+    typedef struct SeqOfReferenceIdentityType
+    {
+        A_SEQUENCE_OF(struct ReferenceIdentityType)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOfReferenceIdentityType_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfReferenceIdentityType_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfReferenceIdentityType;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfReferenceIdentityType;
 
 #ifdef __cplusplus
 }

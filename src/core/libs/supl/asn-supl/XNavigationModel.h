@@ -15,31 +15,32 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SatelliteInfo;
+    /* Forward declarations */
+    struct SatelliteInfo;
 
-/* XNavigationModel */
-typedef struct XNavigationModel
-{
-    long gpsWeek;
-    long gpsToe;
-    long nSAT;
-    long toeLimit;
-    struct SatelliteInfo *satInfo /* OPTIONAL */;
-    /*
+    /* XNavigationModel */
+    typedef struct XNavigationModel
+    {
+        long gpsWeek;
+        long gpsToe;
+        long nSAT;
+        long toeLimit;
+        struct SatelliteInfo *satInfo /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} XNavigationModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } XNavigationModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_XNavigationModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_XNavigationModel;
 
 #ifdef __cplusplus
 }

@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct MeasuredResults;
+    /* Forward declarations */
+    struct MeasuredResults;
 
-/* MeasuredResultsList */
-typedef struct MeasuredResultsList
-{
-    A_SEQUENCE_OF(struct MeasuredResults)
-    list;
+    /* MeasuredResultsList */
+    typedef struct MeasuredResultsList
+    {
+        A_SEQUENCE_OF(struct MeasuredResults)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} MeasuredResultsList_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } MeasuredResultsList_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MeasuredResultsList;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MeasuredResultsList;
 
 #ifdef __cplusplus
 }

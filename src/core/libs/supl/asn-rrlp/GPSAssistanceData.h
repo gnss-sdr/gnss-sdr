@@ -14,23 +14,24 @@
 #include <OCTET_STRING.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GPSAssistanceData */
-typedef OCTET_STRING_t GPSAssistanceData_t;
+    /* GPSAssistanceData */
+    typedef OCTET_STRING_t GPSAssistanceData_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GPSAssistanceData;
-asn_struct_free_f GPSAssistanceData_free;
-asn_struct_print_f GPSAssistanceData_print;
-asn_constr_check_f GPSAssistanceData_constraint;
-ber_type_decoder_f GPSAssistanceData_decode_ber;
-der_type_encoder_f GPSAssistanceData_encode_der;
-xer_type_decoder_f GPSAssistanceData_decode_xer;
-xer_type_encoder_f GPSAssistanceData_encode_xer;
-per_type_decoder_f GPSAssistanceData_decode_uper;
-per_type_encoder_f GPSAssistanceData_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GPSAssistanceData;
+    asn_struct_free_f GPSAssistanceData_free;
+    asn_struct_print_f GPSAssistanceData_print;
+    asn_constr_check_f GPSAssistanceData_constraint;
+    ber_type_decoder_f GPSAssistanceData_decode_ber;
+    der_type_encoder_f GPSAssistanceData_encode_der;
+    xer_type_decoder_f GPSAssistanceData_decode_xer;
+    xer_type_encoder_f GPSAssistanceData_encode_xer;
+    per_type_decoder_f GPSAssistanceData_decode_uper;
+    per_type_encoder_f GPSAssistanceData_encode_uper;
 
 #ifdef __cplusplus
 }

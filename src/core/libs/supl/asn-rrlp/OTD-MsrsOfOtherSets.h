@@ -16,32 +16,34 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum OTD_MsrsOfOtherSets_PR {
-    OTD_MsrsOfOtherSets_PR_NOTHING, /* No components present */
-    OTD_MsrsOfOtherSets_PR_identityNotPresent,
-    OTD_MsrsOfOtherSets_PR_identityPresent
-} OTD_MsrsOfOtherSets_PR;
-
-/* OTD-MsrsOfOtherSets */
-typedef struct OTD_MsrsOfOtherSets
-{
-    OTD_MsrsOfOtherSets_PR present;
-    union OTD_MsrsOfOtherSets_u
+    /* Dependencies */
+    typedef enum OTD_MsrsOfOtherSets_PR
     {
-        OTD_Measurement_t identityNotPresent;
-        OTD_MeasurementWithID_t identityPresent;
-    } choice;
+        OTD_MsrsOfOtherSets_PR_NOTHING, /* No components present */
+        OTD_MsrsOfOtherSets_PR_identityNotPresent,
+        OTD_MsrsOfOtherSets_PR_identityPresent
+    } OTD_MsrsOfOtherSets_PR;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} OTD_MsrsOfOtherSets_t;
+    /* OTD-MsrsOfOtherSets */
+    typedef struct OTD_MsrsOfOtherSets
+    {
+        OTD_MsrsOfOtherSets_PR present;
+        union OTD_MsrsOfOtherSets_u
+        {
+            OTD_Measurement_t identityNotPresent;
+            OTD_MeasurementWithID_t identityPresent;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTD_MsrsOfOtherSets;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } OTD_MsrsOfOtherSets_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTD_MsrsOfOtherSets;
 
 #ifdef __cplusplus
 }

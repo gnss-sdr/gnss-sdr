@@ -15,23 +15,24 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* EphemerisSubframe1Reserved */
-typedef struct EphemerisSubframe1Reserved
-{
-    long reserved1;
-    long reserved2;
-    long reserved3;
-    long reserved4;
+    /* EphemerisSubframe1Reserved */
+    typedef struct EphemerisSubframe1Reserved
+    {
+        long reserved1;
+        long reserved2;
+        long reserved3;
+        long reserved4;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} EphemerisSubframe1Reserved_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } EphemerisSubframe1Reserved_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_EphemerisSubframe1Reserved;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_EphemerisSubframe1Reserved;
 
 #ifdef __cplusplus
 }

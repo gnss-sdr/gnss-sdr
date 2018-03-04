@@ -16,32 +16,34 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum SystemInfoAssistBTS_R98_ExpOTD_PR {
-    SystemInfoAssistBTS_R98_ExpOTD_PR_NOTHING, /* No components present */
-    SystemInfoAssistBTS_R98_ExpOTD_PR_notPresent,
-    SystemInfoAssistBTS_R98_ExpOTD_PR_present
-} SystemInfoAssistBTS_R98_ExpOTD_PR;
-
-/* SystemInfoAssistBTS-R98-ExpOTD */
-typedef struct SystemInfoAssistBTS_R98_ExpOTD
-{
-    SystemInfoAssistBTS_R98_ExpOTD_PR present;
-    union SystemInfoAssistBTS_R98_ExpOTD_u
+    /* Dependencies */
+    typedef enum SystemInfoAssistBTS_R98_ExpOTD_PR
     {
-        NULL_t notPresent;
-        AssistBTSData_R98_ExpOTD_t present;
-    } choice;
+        SystemInfoAssistBTS_R98_ExpOTD_PR_NOTHING, /* No components present */
+        SystemInfoAssistBTS_R98_ExpOTD_PR_notPresent,
+        SystemInfoAssistBTS_R98_ExpOTD_PR_present
+    } SystemInfoAssistBTS_R98_ExpOTD_PR;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SystemInfoAssistBTS_R98_ExpOTD_t;
+    /* SystemInfoAssistBTS-R98-ExpOTD */
+    typedef struct SystemInfoAssistBTS_R98_ExpOTD
+    {
+        SystemInfoAssistBTS_R98_ExpOTD_PR present;
+        union SystemInfoAssistBTS_R98_ExpOTD_u
+        {
+            NULL_t notPresent;
+            AssistBTSData_R98_ExpOTD_t present;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SystemInfoAssistBTS_R98_ExpOTD;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SystemInfoAssistBTS_R98_ExpOTD_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SystemInfoAssistBTS_R98_ExpOTD;
 
 #ifdef __cplusplus
 }

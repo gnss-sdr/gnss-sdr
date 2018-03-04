@@ -19,44 +19,46 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum RRLP_Component_PR {
-    RRLP_Component_PR_NOTHING, /* No components present */
-    RRLP_Component_PR_msrPositionReq,
-    RRLP_Component_PR_msrPositionRsp,
-    RRLP_Component_PR_assistanceData,
-    RRLP_Component_PR_assistanceDataAck,
-    RRLP_Component_PR_protocolError,
-    /* Extensions may appear below */
-
-} RRLP_Component_PR;
-
-/* RRLP-Component */
-typedef struct RRLP_Component
-{
-    RRLP_Component_PR present;
-    union RRLP_Component_u
+    /* Dependencies */
+    typedef enum RRLP_Component_PR
     {
-        MsrPosition_Req_t msrPositionReq;
-        MsrPosition_Rsp_t msrPositionRsp;
-        AssistanceData_t assistanceData;
-        NULL_t assistanceDataAck;
-        ProtocolError_t protocolError;
-        /*
+        RRLP_Component_PR_NOTHING, /* No components present */
+        RRLP_Component_PR_msrPositionReq,
+        RRLP_Component_PR_msrPositionRsp,
+        RRLP_Component_PR_assistanceData,
+        RRLP_Component_PR_assistanceDataAck,
+        RRLP_Component_PR_protocolError,
+        /* Extensions may appear below */
+
+    } RRLP_Component_PR;
+
+    /* RRLP-Component */
+    typedef struct RRLP_Component
+    {
+        RRLP_Component_PR present;
+        union RRLP_Component_u
+        {
+            MsrPosition_Req_t msrPositionReq;
+            MsrPosition_Rsp_t msrPositionRsp;
+            AssistanceData_t assistanceData;
+            NULL_t assistanceDataAck;
+            ProtocolError_t protocolError;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-    } choice;
+        } choice;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} RRLP_Component_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } RRLP_Component_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_RRLP_Component;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_RRLP_Component;
 
 #ifdef __cplusplus
 }

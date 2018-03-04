@@ -253,11 +253,12 @@ const unsigned int tbl_CRC24Q[] = {
     0x42FA2F, 0xC4B6D4, 0xC82F22, 0x4E63D9, 0xD11CCE, 0x575035, 0x5BC9C3, 0xDD8538};
 
 
-extern "C" {
-void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
-extern void dgetrf_(int *, int *, double *, int *, int *, int *);
-extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
-extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
+extern "C"
+{
+    void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+    extern void dgetrf_(int *, int *, double *, int *, int *, int *);
+    extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
+    extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
 }
 
 

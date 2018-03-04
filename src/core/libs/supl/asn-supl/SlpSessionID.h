@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SlpSessionID */
-typedef struct SlpSessionID
-{
-    OCTET_STRING_t sessionID;
-    SLPAddress_t slpId;
+    /* SlpSessionID */
+    typedef struct SlpSessionID
+    {
+        OCTET_STRING_t sessionID;
+        SLPAddress_t slpId;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SlpSessionID_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SlpSessionID_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SlpSessionID;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SlpSessionID;
 
 #ifdef __cplusplus
 }

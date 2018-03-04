@@ -18,23 +18,24 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ULP-PDU */
-typedef struct ULP_PDU
-{
-    long length;
-    Version_t version;
-    SessionID_t sessionID;
-    UlpMessage_t message;
+    /* ULP-PDU */
+    typedef struct ULP_PDU
+    {
+        long length;
+        Version_t version;
+        SessionID_t sessionID;
+        UlpMessage_t message;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} ULP_PDU_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ULP_PDU_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ULP_PDU;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ULP_PDU;
 
 #ifdef __cplusplus
 }

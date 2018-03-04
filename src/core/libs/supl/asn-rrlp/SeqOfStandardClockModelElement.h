@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct StandardClockModelElement;
+    /* Forward declarations */
+    struct StandardClockModelElement;
 
-/* SeqOfStandardClockModelElement */
-typedef struct SeqOfStandardClockModelElement
-{
-    A_SEQUENCE_OF(struct StandardClockModelElement)
-    list;
+    /* SeqOfStandardClockModelElement */
+    typedef struct SeqOfStandardClockModelElement
+    {
+        A_SEQUENCE_OF(struct StandardClockModelElement)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOfStandardClockModelElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfStandardClockModelElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfStandardClockModelElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfStandardClockModelElement;
 
 #ifdef __cplusplus
 }

@@ -14,23 +14,24 @@
 #include <BIT_STRING.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Ver */
-typedef BIT_STRING_t Ver_t;
+    /* Ver */
+    typedef BIT_STRING_t Ver_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Ver;
-asn_struct_free_f Ver_free;
-asn_struct_print_f Ver_print;
-asn_constr_check_f Ver_constraint;
-ber_type_decoder_f Ver_decode_ber;
-der_type_encoder_f Ver_encode_der;
-xer_type_decoder_f Ver_decode_xer;
-xer_type_encoder_f Ver_encode_xer;
-per_type_decoder_f Ver_decode_uper;
-per_type_encoder_f Ver_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Ver;
+    asn_struct_free_f Ver_free;
+    asn_struct_print_f Ver_print;
+    asn_constr_check_f Ver_constraint;
+    ber_type_decoder_f Ver_decode_ber;
+    der_type_encoder_f Ver_encode_der;
+    xer_type_decoder_f Ver_decode_xer;
+    xer_type_encoder_f Ver_encode_xer;
+    per_type_decoder_f Ver_decode_uper;
+    per_type_encoder_f Ver_encode_uper;
 
 #ifdef __cplusplus
 }

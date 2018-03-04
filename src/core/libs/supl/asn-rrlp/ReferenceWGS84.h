@@ -16,22 +16,23 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ReferenceWGS84 */
-typedef struct ReferenceWGS84
-{
-    RelDistance_t relativeNorth;
-    RelDistance_t relativeEast;
-    RelativeAlt_t *relativeAlt /* OPTIONAL */;
+    /* ReferenceWGS84 */
+    typedef struct ReferenceWGS84
+    {
+        RelDistance_t relativeNorth;
+        RelDistance_t relativeEast;
+        RelativeAlt_t *relativeAlt /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} ReferenceWGS84_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReferenceWGS84_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceWGS84;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceWGS84;
 
 #ifdef __cplusplus
 }

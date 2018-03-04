@@ -15,29 +15,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Horandveruncert */
-typedef struct Horandveruncert
-{
-    BIT_STRING_t verdirect;
-    BIT_STRING_t bearing;
-    BIT_STRING_t horspeed;
-    BIT_STRING_t verspeed;
-    BIT_STRING_t horuncertspeed;
-    BIT_STRING_t veruncertspeed;
-    /*
+    /* Horandveruncert */
+    typedef struct Horandveruncert
+    {
+        BIT_STRING_t verdirect;
+        BIT_STRING_t bearing;
+        BIT_STRING_t horspeed;
+        BIT_STRING_t verspeed;
+        BIT_STRING_t horuncertspeed;
+        BIT_STRING_t veruncertspeed;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Horandveruncert_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Horandveruncert_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Horandveruncert;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Horandveruncert;
 
 #ifdef __cplusplus
 }

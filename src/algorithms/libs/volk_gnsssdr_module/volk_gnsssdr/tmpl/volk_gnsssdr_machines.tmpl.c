@@ -20,6 +20,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_typedefs.h>
 #include "volk_gnsssdr_machines.h"
 
+// clang-format off
 struct volk_gnsssdr_machine *volk_gnsssdr_machines[] = {
 %for machine in machines:
 #ifdef LV_MACHINE_${machine.name.upper()}
@@ -27,5 +28,5 @@ struct volk_gnsssdr_machine *volk_gnsssdr_machines[] = {
 #endif
 %endfor
 };
-
-unsigned int n_volk_gnsssdr_machines = sizeof(volk_gnsssdr_machines)/sizeof(*volk_gnsssdr_machines);
+// clang-format on
+unsigned int n_volk_gnsssdr_machines = sizeof(volk_gnsssdr_machines) / sizeof(*volk_gnsssdr_machines);

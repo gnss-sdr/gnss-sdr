@@ -15,20 +15,21 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSRefLocation */
-typedef struct GANSSRefLocation
-{
-    Ext_GeographicalInformation_t threeDLocation;
+    /* GANSSRefLocation */
+    typedef struct GANSSRefLocation
+    {
+        Ext_GeographicalInformation_t threeDLocation;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSRefLocation_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSRefLocation_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSRefLocation;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSRefLocation;
 
 #ifdef __cplusplus
 }

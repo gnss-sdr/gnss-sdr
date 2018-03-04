@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSSTimeModelElement;
+    /* Forward declarations */
+    struct GANSSTimeModelElement;
 
-/* SeqOfGANSSTimeModel */
-typedef struct SeqOfGANSSTimeModel
-{
-    A_SEQUENCE_OF(struct GANSSTimeModelElement)
-    list;
+    /* SeqOfGANSSTimeModel */
+    typedef struct SeqOfGANSSTimeModel
+    {
+        A_SEQUENCE_OF(struct GANSSTimeModelElement)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOfGANSSTimeModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfGANSSTimeModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSTimeModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSTimeModel;
 
 #ifdef __cplusplus
 }

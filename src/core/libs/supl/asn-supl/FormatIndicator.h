@@ -14,38 +14,40 @@
 #include <ENUMERATED.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum FormatIndicator {
-    FormatIndicator_logicalName = 0,
-    FormatIndicator_e_mailAddress = 1,
-    FormatIndicator_msisdn = 2,
-    FormatIndicator_url = 3,
-    FormatIndicator_sipUrl = 4,
-    FormatIndicator_min = 5,
-    FormatIndicator_mdn = 6,
-    FormatIndicator_imsPublicIdentity = 7
-    /*
+    /* Dependencies */
+    typedef enum FormatIndicator
+    {
+        FormatIndicator_logicalName = 0,
+        FormatIndicator_e_mailAddress = 1,
+        FormatIndicator_msisdn = 2,
+        FormatIndicator_url = 3,
+        FormatIndicator_sipUrl = 4,
+        FormatIndicator_min = 5,
+        FormatIndicator_mdn = 6,
+        FormatIndicator_imsPublicIdentity = 7
+        /*
 	 * Enumeration is extensible
 	 */
-} e_FormatIndicator;
+    } e_FormatIndicator;
 
-/* FormatIndicator */
-typedef ENUMERATED_t FormatIndicator_t;
+    /* FormatIndicator */
+    typedef ENUMERATED_t FormatIndicator_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_FormatIndicator;
-asn_struct_free_f FormatIndicator_free;
-asn_struct_print_f FormatIndicator_print;
-asn_constr_check_f FormatIndicator_constraint;
-ber_type_decoder_f FormatIndicator_decode_ber;
-der_type_encoder_f FormatIndicator_encode_der;
-xer_type_decoder_f FormatIndicator_decode_xer;
-xer_type_encoder_f FormatIndicator_encode_xer;
-per_type_decoder_f FormatIndicator_decode_uper;
-per_type_encoder_f FormatIndicator_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_FormatIndicator;
+    asn_struct_free_f FormatIndicator_free;
+    asn_struct_print_f FormatIndicator_print;
+    asn_constr_check_f FormatIndicator_constraint;
+    ber_type_decoder_f FormatIndicator_decode_ber;
+    der_type_encoder_f FormatIndicator_encode_der;
+    xer_type_decoder_f FormatIndicator_decode_xer;
+    xer_type_encoder_f FormatIndicator_encode_xer;
+    per_type_decoder_f FormatIndicator_decode_uper;
+    per_type_encoder_f FormatIndicator_encode_uper;
 
 #ifdef __cplusplus
 }

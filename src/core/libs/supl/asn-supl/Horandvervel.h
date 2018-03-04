@@ -15,27 +15,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Horandvervel */
-typedef struct Horandvervel
-{
-    BIT_STRING_t verdirect;
-    BIT_STRING_t bearing;
-    BIT_STRING_t horspeed;
-    BIT_STRING_t verspeed;
-    /*
+    /* Horandvervel */
+    typedef struct Horandvervel
+    {
+        BIT_STRING_t verdirect;
+        BIT_STRING_t bearing;
+        BIT_STRING_t horspeed;
+        BIT_STRING_t verspeed;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} Horandvervel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Horandvervel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Horandvervel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Horandvervel;
 
 #ifdef __cplusplus
 }

@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Accuracy */
-typedef long Accuracy_t;
+    /* Accuracy */
+    typedef long Accuracy_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Accuracy;
-asn_struct_free_f Accuracy_free;
-asn_struct_print_f Accuracy_print;
-asn_constr_check_f Accuracy_constraint;
-ber_type_decoder_f Accuracy_decode_ber;
-der_type_encoder_f Accuracy_encode_der;
-xer_type_decoder_f Accuracy_decode_xer;
-xer_type_encoder_f Accuracy_encode_xer;
-per_type_decoder_f Accuracy_decode_uper;
-per_type_encoder_f Accuracy_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Accuracy;
+    asn_struct_free_f Accuracy_free;
+    asn_struct_print_f Accuracy_print;
+    asn_constr_check_f Accuracy_constraint;
+    ber_type_decoder_f Accuracy_decode_ber;
+    der_type_encoder_f Accuracy_encode_der;
+    xer_type_decoder_f Accuracy_decode_xer;
+    xer_type_encoder_f Accuracy_encode_xer;
+    per_type_decoder_f Accuracy_decode_uper;
+    per_type_encoder_f Accuracy_encode_uper;
 
 #ifdef __cplusplus
 }

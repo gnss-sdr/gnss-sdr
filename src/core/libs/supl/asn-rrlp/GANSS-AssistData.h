@@ -15,20 +15,21 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSS-AssistData */
-typedef struct GANSS_AssistData
-{
-    GANSS_ControlHeader_t ganss_controlHeader;
+    /* GANSS-AssistData */
+    typedef struct GANSS_AssistData
+    {
+        GANSS_ControlHeader_t ganss_controlHeader;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSS_AssistData_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSS_AssistData_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSS_AssistData;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSS_AssistData;
 
 #ifdef __cplusplus
 }

@@ -15,20 +15,21 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* OTD-MeasureInfo-R98-Ext */
-typedef struct OTD_MeasureInfo_R98_Ext
-{
-    OTD_MsrElementFirst_R98_Ext_t otdMsrFirstSets_R98_Ext;
+    /* OTD-MeasureInfo-R98-Ext */
+    typedef struct OTD_MeasureInfo_R98_Ext
+    {
+        OTD_MsrElementFirst_R98_Ext_t otdMsrFirstSets_R98_Ext;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} OTD_MeasureInfo_R98_Ext_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } OTD_MeasureInfo_R98_Ext_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasureInfo_R98_Ext;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasureInfo_R98_Ext;
 
 #ifdef __cplusplus
 }

@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct OTD_MsrElementRest;
+    /* Forward declarations */
+    struct OTD_MsrElementRest;
 
-/* SeqOfOTD-MsrElementRest */
-typedef struct SeqOfOTD_MsrElementRest
-{
-    A_SEQUENCE_OF(struct OTD_MsrElementRest)
-    list;
+    /* SeqOfOTD-MsrElementRest */
+    typedef struct SeqOfOTD_MsrElementRest
+    {
+        A_SEQUENCE_OF(struct OTD_MsrElementRest)
+        list;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SeqOfOTD_MsrElementRest_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfOTD_MsrElementRest_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfOTD_MsrElementRest;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfOTD_MsrElementRest;
 
 #ifdef __cplusplus
 }

@@ -566,7 +566,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
         top_block->connect(observables->get_right_block(), 0, sink_ch0, 0);
         top_block->connect(observables->get_right_block(), 1, sink_ch1, 0);
-
     }) << "Failure connecting the blocks.";
 
     tracking_ch0->start_tracking();

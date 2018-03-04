@@ -15,32 +15,33 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct NMR;
+    /* Forward declarations */
+    struct NMR;
 
-/* GsmCellInformation */
-typedef struct GsmCellInformation
-{
-    long refMCC;
-    long refMNC;
-    long refLAC;
-    long refCI;
-    struct NMR *nMR /* OPTIONAL */;
-    long *tA /* OPTIONAL */;
-    /*
+    /* GsmCellInformation */
+    typedef struct GsmCellInformation
+    {
+        long refMCC;
+        long refMNC;
+        long refLAC;
+        long refCI;
+        struct NMR *nMR /* OPTIONAL */;
+        long *tA /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GsmCellInformation_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GsmCellInformation_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GsmCellInformation;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GsmCellInformation;
 
 #ifdef __cplusplus
 }

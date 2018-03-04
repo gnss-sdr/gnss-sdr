@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* LAC */
-typedef long LAC_t;
+    /* LAC */
+    typedef long LAC_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_LAC;
-asn_struct_free_f LAC_free;
-asn_struct_print_f LAC_print;
-asn_constr_check_f LAC_constraint;
-ber_type_decoder_f LAC_decode_ber;
-der_type_encoder_f LAC_encode_der;
-xer_type_decoder_f LAC_decode_xer;
-xer_type_encoder_f LAC_encode_xer;
-per_type_decoder_f LAC_decode_uper;
-per_type_encoder_f LAC_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_LAC;
+    asn_struct_free_f LAC_free;
+    asn_struct_print_f LAC_print;
+    asn_constr_check_f LAC_constraint;
+    ber_type_decoder_f LAC_decode_ber;
+    der_type_encoder_f LAC_encode_der;
+    xer_type_decoder_f LAC_decode_xer;
+    xer_type_encoder_f LAC_encode_xer;
+    per_type_decoder_f LAC_decode_uper;
+    per_type_encoder_f LAC_encode_uper;
 
 #ifdef __cplusplus
 }

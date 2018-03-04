@@ -15,21 +15,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* EOTDQuality */
-typedef struct EOTDQuality
-{
-    long nbrOfMeasurements;
-    long stdOfEOTD;
+    /* EOTDQuality */
+    typedef struct EOTDQuality
+    {
+        long nbrOfMeasurements;
+        long stdOfEOTD;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} EOTDQuality_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } EOTDQuality_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_EOTDQuality;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_EOTDQuality;
 
 #ifdef __cplusplus
 }

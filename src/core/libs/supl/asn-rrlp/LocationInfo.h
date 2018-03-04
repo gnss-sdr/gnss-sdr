@@ -17,23 +17,24 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* LocationInfo */
-typedef struct LocationInfo
-{
-    long refFrame;
-    long *gpsTOW /* OPTIONAL */;
-    FixType_t fixType;
-    Ext_GeographicalInformation_t posEstimate;
+    /* LocationInfo */
+    typedef struct LocationInfo
+    {
+        long refFrame;
+        long *gpsTOW /* OPTIONAL */;
+        FixType_t fixType;
+        Ext_GeographicalInformation_t posEstimate;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} LocationInfo_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } LocationInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_LocationInfo;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_LocationInfo;
 
 #ifdef __cplusplus
 }

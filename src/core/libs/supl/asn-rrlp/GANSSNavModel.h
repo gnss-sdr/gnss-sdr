@@ -16,24 +16,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSNavModel */
-typedef struct GANSSNavModel
-{
-    long nonBroadcastIndFlag;
-    long *toeMSB /* OPTIONAL */;
-    long *eMSB /* OPTIONAL */;
-    long *sqrtAMBS /* OPTIONAL */;
-    SeqOfGANSSSatelliteElement_t ganssSatelliteList;
+    /* GANSSNavModel */
+    typedef struct GANSSNavModel
+    {
+        long nonBroadcastIndFlag;
+        long *toeMSB /* OPTIONAL */;
+        long *eMSB /* OPTIONAL */;
+        long *sqrtAMBS /* OPTIONAL */;
+        SeqOfGANSSSatelliteElement_t ganssSatelliteList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} GANSSNavModel_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSNavModel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSNavModel;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSNavModel;
 
 #ifdef __cplusplus
 }

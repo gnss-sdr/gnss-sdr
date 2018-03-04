@@ -14,39 +14,40 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReferenceTime;
-struct RefLocation;
-struct DGPSCorrections;
-struct NavigationModel;
-struct IonosphericModel;
-struct UTCModel;
-struct Almanac;
-struct AcquisAssist;
-struct SeqOf_BadSatelliteSet;
+    /* Forward declarations */
+    struct ReferenceTime;
+    struct RefLocation;
+    struct DGPSCorrections;
+    struct NavigationModel;
+    struct IonosphericModel;
+    struct UTCModel;
+    struct Almanac;
+    struct AcquisAssist;
+    struct SeqOf_BadSatelliteSet;
 
-/* ControlHeader */
-typedef struct ControlHeader
-{
-    struct ReferenceTime *referenceTime /* OPTIONAL */;
-    struct RefLocation *refLocation /* OPTIONAL */;
-    struct DGPSCorrections *dgpsCorrections /* OPTIONAL */;
-    struct NavigationModel *navigationModel /* OPTIONAL */;
-    struct IonosphericModel *ionosphericModel /* OPTIONAL */;
-    struct UTCModel *utcModel /* OPTIONAL */;
-    struct Almanac *almanac /* OPTIONAL */;
-    struct AcquisAssist *acquisAssist /* OPTIONAL */;
-    struct SeqOf_BadSatelliteSet *realTimeIntegrity /* OPTIONAL */;
+    /* ControlHeader */
+    typedef struct ControlHeader
+    {
+        struct ReferenceTime *referenceTime /* OPTIONAL */;
+        struct RefLocation *refLocation /* OPTIONAL */;
+        struct DGPSCorrections *dgpsCorrections /* OPTIONAL */;
+        struct NavigationModel *navigationModel /* OPTIONAL */;
+        struct IonosphericModel *ionosphericModel /* OPTIONAL */;
+        struct UTCModel *utcModel /* OPTIONAL */;
+        struct Almanac *almanac /* OPTIONAL */;
+        struct AcquisAssist *acquisAssist /* OPTIONAL */;
+        struct SeqOf_BadSatelliteSet *realTimeIntegrity /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} ControlHeader_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ControlHeader_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ControlHeader;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ControlHeader;
 
 #ifdef __cplusplus
 }

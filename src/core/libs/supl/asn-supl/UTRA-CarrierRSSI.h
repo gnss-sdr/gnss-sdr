@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* UTRA-CarrierRSSI */
-typedef long UTRA_CarrierRSSI_t;
+    /* UTRA-CarrierRSSI */
+    typedef long UTRA_CarrierRSSI_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_UTRA_CarrierRSSI;
-asn_struct_free_f UTRA_CarrierRSSI_free;
-asn_struct_print_f UTRA_CarrierRSSI_print;
-asn_constr_check_f UTRA_CarrierRSSI_constraint;
-ber_type_decoder_f UTRA_CarrierRSSI_decode_ber;
-der_type_encoder_f UTRA_CarrierRSSI_encode_der;
-xer_type_decoder_f UTRA_CarrierRSSI_decode_xer;
-xer_type_encoder_f UTRA_CarrierRSSI_encode_xer;
-per_type_decoder_f UTRA_CarrierRSSI_decode_uper;
-per_type_encoder_f UTRA_CarrierRSSI_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_UTRA_CarrierRSSI;
+    asn_struct_free_f UTRA_CarrierRSSI_free;
+    asn_struct_print_f UTRA_CarrierRSSI_print;
+    asn_constr_check_f UTRA_CarrierRSSI_constraint;
+    ber_type_decoder_f UTRA_CarrierRSSI_decode_ber;
+    der_type_encoder_f UTRA_CarrierRSSI_encode_der;
+    xer_type_decoder_f UTRA_CarrierRSSI_decode_xer;
+    xer_type_encoder_f UTRA_CarrierRSSI_encode_xer;
+    per_type_decoder_f UTRA_CarrierRSSI_decode_uper;
+    per_type_encoder_f UTRA_CarrierRSSI_encode_uper;
 
 #ifdef __cplusplus
 }

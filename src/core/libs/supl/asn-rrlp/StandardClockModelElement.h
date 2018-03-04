@@ -15,29 +15,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* StandardClockModelElement */
-typedef struct StandardClockModelElement
-{
-    long stanClockTocLSB;
-    long stanClockAF2;
-    long stanClockAF1;
-    long stanClockAF0;
-    long *stanClockTgd /* OPTIONAL */;
-    long *stanModelID /* OPTIONAL */;
-    /*
+    /* StandardClockModelElement */
+    typedef struct StandardClockModelElement
+    {
+        long stanClockTocLSB;
+        long stanClockAF2;
+        long stanClockAF1;
+        long stanClockAF0;
+        long *stanClockTgd /* OPTIONAL */;
+        long *stanModelID /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} StandardClockModelElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } StandardClockModelElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_StandardClockModelElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_StandardClockModelElement;
 
 #ifdef __cplusplus
 }

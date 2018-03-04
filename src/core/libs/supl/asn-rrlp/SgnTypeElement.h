@@ -17,22 +17,23 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SgnTypeElement */
-typedef struct SgnTypeElement
-{
-    GANSSSignalID_t *ganssSignalID /* OPTIONAL */;
-    long ganssStatusHealth;
-    SeqOfDGANSSSgnElement_t dganssSgnList;
+    /* SgnTypeElement */
+    typedef struct SgnTypeElement
+    {
+        GANSSSignalID_t *ganssSignalID /* OPTIONAL */;
+        long ganssStatusHealth;
+        SeqOfDGANSSSgnElement_t dganssSgnList;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} SgnTypeElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SgnTypeElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SgnTypeElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SgnTypeElement;
 
 #ifdef __cplusplus
 }

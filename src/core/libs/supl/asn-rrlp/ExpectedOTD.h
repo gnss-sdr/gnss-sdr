@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ExpectedOTD */
-typedef long ExpectedOTD_t;
+    /* ExpectedOTD */
+    typedef long ExpectedOTD_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ExpectedOTD;
-asn_struct_free_f ExpectedOTD_free;
-asn_struct_print_f ExpectedOTD_print;
-asn_constr_check_f ExpectedOTD_constraint;
-ber_type_decoder_f ExpectedOTD_decode_ber;
-der_type_encoder_f ExpectedOTD_encode_der;
-xer_type_decoder_f ExpectedOTD_decode_xer;
-xer_type_encoder_f ExpectedOTD_encode_xer;
-per_type_decoder_f ExpectedOTD_decode_uper;
-per_type_encoder_f ExpectedOTD_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ExpectedOTD;
+    asn_struct_free_f ExpectedOTD_free;
+    asn_struct_print_f ExpectedOTD_print;
+    asn_constr_check_f ExpectedOTD_constraint;
+    ber_type_decoder_f ExpectedOTD_decode_ber;
+    der_type_encoder_f ExpectedOTD_encode_der;
+    xer_type_decoder_f ExpectedOTD_decode_xer;
+    xer_type_encoder_f ExpectedOTD_encode_xer;
+    per_type_decoder_f ExpectedOTD_decode_uper;
+    per_type_encoder_f ExpectedOTD_encode_uper;
 
 #ifdef __cplusplus
 }

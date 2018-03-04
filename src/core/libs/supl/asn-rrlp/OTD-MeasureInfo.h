@@ -15,24 +15,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SeqOfOTD_MsrElementRest;
+    /* Forward declarations */
+    struct SeqOfOTD_MsrElementRest;
 
-/* OTD-MeasureInfo */
-typedef struct OTD_MeasureInfo
-{
-    OTD_MsrElementFirst_t otdMsrFirstSets;
-    struct SeqOfOTD_MsrElementRest *otdMsrRestSets /* OPTIONAL */;
+    /* OTD-MeasureInfo */
+    typedef struct OTD_MeasureInfo
+    {
+        OTD_MsrElementFirst_t otdMsrFirstSets;
+        struct SeqOfOTD_MsrElementRest *otdMsrRestSets /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} OTD_MeasureInfo_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } OTD_MeasureInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasureInfo;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasureInfo;
 
 #ifdef __cplusplus
 }

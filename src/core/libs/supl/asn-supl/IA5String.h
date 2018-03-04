@@ -8,17 +8,18 @@
 #include <OCTET_STRING.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-typedef OCTET_STRING_t IA5String_t; /* Implemented via OCTET STRING */
+    typedef OCTET_STRING_t IA5String_t; /* Implemented via OCTET STRING */
 
-/*
+    /*
  * IA5String ASN.1 type definition.
  */
-extern asn_TYPE_descriptor_t asn_DEF_IA5String;
+    extern asn_TYPE_descriptor_t asn_DEF_IA5String;
 
-asn_constr_check_f IA5String_constraint;
+    asn_constr_check_f IA5String_constraint;
 
 #ifdef __cplusplus
 }

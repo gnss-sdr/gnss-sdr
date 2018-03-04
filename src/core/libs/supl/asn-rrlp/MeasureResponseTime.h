@@ -14,23 +14,24 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* MeasureResponseTime */
-typedef long MeasureResponseTime_t;
+    /* MeasureResponseTime */
+    typedef long MeasureResponseTime_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MeasureResponseTime;
-asn_struct_free_f MeasureResponseTime_free;
-asn_struct_print_f MeasureResponseTime_print;
-asn_constr_check_f MeasureResponseTime_constraint;
-ber_type_decoder_f MeasureResponseTime_decode_ber;
-der_type_encoder_f MeasureResponseTime_encode_der;
-xer_type_decoder_f MeasureResponseTime_decode_xer;
-xer_type_encoder_f MeasureResponseTime_encode_xer;
-per_type_decoder_f MeasureResponseTime_decode_uper;
-per_type_encoder_f MeasureResponseTime_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MeasureResponseTime;
+    asn_struct_free_f MeasureResponseTime_free;
+    asn_struct_print_f MeasureResponseTime_print;
+    asn_constr_check_f MeasureResponseTime_constraint;
+    ber_type_decoder_f MeasureResponseTime_decode_ber;
+    der_type_encoder_f MeasureResponseTime_encode_der;
+    xer_type_decoder_f MeasureResponseTime_decode_xer;
+    xer_type_encoder_f MeasureResponseTime_encode_xer;
+    per_type_decoder_f MeasureResponseTime_decode_uper;
+    per_type_encoder_f MeasureResponseTime_encode_uper;
 
 #ifdef __cplusplus
 }

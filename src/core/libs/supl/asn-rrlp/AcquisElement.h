@@ -16,31 +16,32 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct AddionalDopplerFields;
-struct AddionalAngleFields;
+    /* Forward declarations */
+    struct AddionalDopplerFields;
+    struct AddionalAngleFields;
 
-/* AcquisElement */
-typedef struct AcquisElement
-{
-    SatelliteID_t svid;
-    long doppler0;
-    struct AddionalDopplerFields *addionalDoppler /* OPTIONAL */;
-    long codePhase;
-    long intCodePhase;
-    long gpsBitNumber;
-    long codePhaseSearchWindow;
-    struct AddionalAngleFields *addionalAngle /* OPTIONAL */;
+    /* AcquisElement */
+    typedef struct AcquisElement
+    {
+        SatelliteID_t svid;
+        long doppler0;
+        struct AddionalDopplerFields *addionalDoppler /* OPTIONAL */;
+        long codePhase;
+        long intCodePhase;
+        long gpsBitNumber;
+        long codePhaseSearchWindow;
+        struct AddionalAngleFields *addionalAngle /* OPTIONAL */;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} AcquisElement_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AcquisElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AcquisElement;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AcquisElement;
 
 #ifdef __cplusplus
 }

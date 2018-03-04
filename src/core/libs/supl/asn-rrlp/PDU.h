@@ -16,21 +16,22 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* PDU */
-typedef struct PDU
-{
-    long referenceNumber;
-    RRLP_Component_t component;
+    /* PDU */
+    typedef struct PDU
+    {
+        long referenceNumber;
+        RRLP_Component_t component;
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} PDU_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PDU_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PDU;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PDU;
 
 #ifdef __cplusplus
 }

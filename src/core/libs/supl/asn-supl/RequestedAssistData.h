@@ -15,36 +15,37 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct XNavigationModel;
+    /* Forward declarations */
+    struct XNavigationModel;
 
-/* RequestedAssistData */
-typedef struct RequestedAssistData
-{
-    BOOLEAN_t almanacRequested;
-    BOOLEAN_t utcModelRequested;
-    BOOLEAN_t ionosphericModelRequested;
-    BOOLEAN_t dgpsCorrectionsRequested;
-    BOOLEAN_t referenceLocationRequested;
-    BOOLEAN_t referenceTimeRequested;
-    BOOLEAN_t acquisitionAssistanceRequested;
-    BOOLEAN_t realTimeIntegrityRequested;
-    BOOLEAN_t navigationModelRequested;
-    struct XNavigationModel *navigationModelData /* OPTIONAL */;
-    /*
+    /* RequestedAssistData */
+    typedef struct RequestedAssistData
+    {
+        BOOLEAN_t almanacRequested;
+        BOOLEAN_t utcModelRequested;
+        BOOLEAN_t ionosphericModelRequested;
+        BOOLEAN_t dgpsCorrectionsRequested;
+        BOOLEAN_t referenceLocationRequested;
+        BOOLEAN_t referenceTimeRequested;
+        BOOLEAN_t acquisitionAssistanceRequested;
+        BOOLEAN_t realTimeIntegrityRequested;
+        BOOLEAN_t navigationModelRequested;
+        struct XNavigationModel *navigationModelData /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 
-    /* Context for parsing across buffer boundaries */
-    asn_struct_ctx_t _asn_ctx;
-} RequestedAssistData_t;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } RequestedAssistData_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_RequestedAssistData;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_RequestedAssistData;
 
 #ifdef __cplusplus
 }

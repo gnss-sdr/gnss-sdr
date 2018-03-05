@@ -32,7 +32,6 @@
 
 #include "gps_cnav_navigation_message.h"
 #include "gnss_satellite.h"
-#include <iostream>
 
 
 void Gps_CNAV_Navigation_Message::reset()
@@ -258,20 +257,27 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
         ephemeris_record.d_A_f2 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF2));
         ephemeris_record.d_A_f2 = ephemeris_record.d_A_f2 * CNAV_AF2_LSB;
         //group delays
-        ephemeris_record.d_TGD = static_cast<double>(read_navigation_signed(data_bits, CNAV_TGD));
-        //Check if the grup delay value is not available. See IS-GPS-200, Table 30-IV.
+        //Check if the grup delay values are not available. See IS-GPS-200, Table 30-IV.
         //Bit string "1000000000000" is -4096 in 2 complement
+        ephemeris_record.d_TGD = static_cast<double>(read_navigation_signed(data_bits, CNAV_TGD));
         if(ephemeris_record.d_TGD < -4095.9) { ephemeris_record.d_TGD = 0.0; }
-        ephemeris_record.d_TGD = ephemeris_record.d_TGD * CNAV_TGD_LSB;
+        ephemeris_record.d_TGD *= CNAV_TGD_LSB;
+
         ephemeris_record.d_ISCL1 = static_cast<double>(read_navigation_signed(data_bits, CNAV_ISCL1));
-        ephemeris_record.d_ISCL1 = ephemeris_record.d_ISCL1 * CNAV_ISCL1_LSB;
+        if(ephemeris_record.d_ISCL1 < -4095.9) { ephemeris_record.d_ISCL1 = 0.0; }
+        ephemeris_record.d_ISCL1 *= CNAV_ISCL1_LSB;
+
         ephemeris_record.d_ISCL2 = static_cast<double>(read_navigation_signed(data_bits, CNAV_ISCL2));
-        ephemeris_record.d_ISCL2 = ephemeris_record.d_ISCL2 * CNAV_ISCL2_LSB;
-        std::cout << "ISCL2 * c = " << ephemeris_record.d_ISCL2 * 3e8 << " [m]" << std::endl;
+        if(ephemeris_record.d_ISCL2 < -4095.9) { ephemeris_record.d_ISCL2 = 0.0; }
+        ephemeris_record.d_ISCL2 *= CNAV_ISCL2_LSB;
+
         ephemeris_record.d_ISCL5I = static_cast<double>(read_navigation_signed(data_bits, CNAV_ISCL5I));
-        ephemeris_record.d_ISCL5I = ephemeris_record.d_ISCL5I * CNAV_ISCL5I_LSB;
+        if(ephemeris_record.d_ISCL5I < -4095.9) { ephemeris_record.d_ISCL5I = 0.0; }
+        ephemeris_record.d_ISCL5I *= CNAV_ISCL5I_LSB;
+
         ephemeris_record.d_ISCL5Q = static_cast<double>(read_navigation_signed(data_bits, CNAV_ISCL5Q));
-        ephemeris_record.d_ISCL5Q = ephemeris_record.d_ISCL5Q * CNAV_ISCL5Q_LSB;
+        if(ephemeris_record.d_ISCL5Q < -4095.9) { ephemeris_record.d_ISCL5Q = 0.0; }
+        ephemeris_record.d_ISCL5Q *= CNAV_ISCL5Q_LSB;
         //iono
         iono_record.d_alpha0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_ALPHA0));
         iono_record.d_alpha0 = iono_record.d_alpha0 * CNAV_ALPHA0_LSB;

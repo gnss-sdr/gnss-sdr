@@ -54,6 +54,8 @@
 #include "rtklib_ephemeris.h"
 #include "rtklib_ionex.h"
 #include "rtklib_sbas.h"
+#include <fstream>
+#include <string>
 
 /* pseudorange measurement error variance ------------------------------------*/
 double varerr(const prcopt_t *opt, double el, int sys)
@@ -84,8 +86,16 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         int iter, const prcopt_t *opt, double *var)
 {
     const double *lam = nav->lam[obs->sat - 1];
-    double PC, P1, P2, P1_P2, P1_C1, P2_C2, gamma_;
-    int i = 0, j = 1, sys;
+    double PC;
+    double P1;
+    double P2;
+    double P1_P2;
+    double P1_C1;
+    double P2_C2;
+    double gamma_ = 0.0;
+    int i = 0;
+    int j = 1;
+    int sys;
 
     *var = 0.0;
 
@@ -133,15 +143,22 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     /* fL1^2 / fL2(orL5)^2 . See IS-GPS-200, p. 103 and Galileo ICD p. 48 */
     if(sys == SYS_GPS or sys == SYS_GAL)
     {
-        gamma_ = std::pow(lam[i], 2.0) / std::pow(lam[j], 2.0);
+        gamma_ = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0);
     }
-
     P1 = obs->P[i];
     P2 = obs->P[j];
     P1_P2 = nav->cbias[obs->sat-1][0];
     P1_C1 = nav->cbias[obs->sat-1][1];
     P2_C2 = nav->cbias[obs->sat-1][2];
-
+    std::string d_dump_filename = "/home/antonio/data/dump_prange.dat";
+    std::ofstream d_file;
+    d_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
+    d_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+    d_file.write(reinterpret_cast<char*>(&P1), sizeof(double));
+    d_file.write(reinterpret_cast<char*>(&P2), sizeof(double));
+    d_file.write(reinterpret_cast<char*>(&P1_P2), sizeof(double));
+    d_file.write(reinterpret_cast<char*>(&P1_C1), sizeof(double));
+    d_file.write(reinterpret_cast<char*>(&P2_C2), sizeof(double));
     /* if no P1-P2 DCB, use TGD instead */
     if(P1_P2 == 0.0 and sys == SYS_GPS)
     {
@@ -151,7 +168,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     {
         //TODO
     }
-
+    d_file.write(reinterpret_cast<char*>(&P1_P2), sizeof(double));
     if (opt->ionoopt == IONOOPT_IFLC)
     { /* dual-frequency */
 
@@ -166,17 +183,18 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     { /* single-frequency */
         if((obs->code[i] == CODE_NONE) && (obs->code[j] == CODE_NONE)) { return 0.0; }
 
-        else if((obs->code[i] != CODE_NONE) && (obs->code[j] == CODE_NONE))
+        else if((obs->code[i] != CODE_NONE) and (obs->code[j] == CODE_NONE))
         {//CHECK!!
             P1 += P1_C1; /* C1->P1 */
-            PC = P1 - P1_P2 / (1.0 - gamma_);
+            PC = P1 + P1_P2 / (gamma_ - 1.0);
         }
-        else if((obs->code[i] == CODE_NONE) && (obs->code[j] != CODE_NONE))
+        else if((obs->code[i] == CODE_NONE) and (obs->code[j] != CODE_NONE))
         {
             if(sys == SYS_GPS)
             {//CHECK!!
                 P2 += P2_C2; /* C2->P2 */
-                PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                //PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                PC = P2 + gamma_ * P1_P2 / (gamma_ - 1.0);
             }
             else if(sys == SYS_GAL)
             {
@@ -190,7 +208,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             {
                 P1 += P1_C1;
                 P2 += P2_C2;
-                PC = (P2 - gamma_ * P1) / (1 - gamma_) - P1_P2 / (gamma_ - 1);
+                PC = (P2 - gamma_ * P1) / (1.0 - gamma_) - P1_P2 / (gamma_ - 1.0);
             }
             else if(sys == SYS_GAL)
             {
@@ -198,10 +216,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             }
         }
     }
+    d_file.write(reinterpret_cast<char*>(&PC), sizeof(double));
     if (opt->sateph == EPHOPT_SBAS) { PC -= P1_C1; } /* sbas clock based C1 */
 
     *var = std::pow(ERR_CBIAS, 2.0);
-
+    d_file.close();
     return PC;
 }
 

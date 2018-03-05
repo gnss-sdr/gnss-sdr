@@ -80,6 +80,50 @@ double gettgd(int sat, const nav_t *nav)
     return 0.0;
 }
 
+/* get isc parameter (m) -----------------------------------------------------*/
+double getiscl1(int sat, const nav_t *nav)
+{
+    int i;
+    for (i = 0; i < nav->n; i++)
+        {
+            if (nav->eph[i].sat != sat) continue;
+            return SPEED_OF_LIGHT * nav->eph[i].isc[0];
+        }
+    return 0.0;
+}
+
+double getiscl2(int sat, const nav_t *nav)
+{
+    int i;
+    for (i = 0; i < nav->n; i++)
+        {
+            if (nav->eph[i].sat != sat) continue;
+            return SPEED_OF_LIGHT * nav->eph[i].isc[1];
+        }
+    return 0.0;
+}
+
+double getiscl5i(int sat, const nav_t *nav)
+{
+    int i;
+    for (i = 0; i < nav->n; i++)
+        {
+            if (nav->eph[i].sat != sat) continue;
+            return SPEED_OF_LIGHT * nav->eph[i].isc[2];
+        }
+    return 0.0;
+}
+
+double getiscl5q(int sat, const nav_t *nav)
+{
+    int i;
+    for (i = 0; i < nav->n; i++)
+        {
+            if (nav->eph[i].sat != sat) continue;
+            return SPEED_OF_LIGHT * nav->eph[i].isc[3];
+        }
+    return 0.0;
+}
 
 /* psendorange with code bias correction -------------------------------------*/
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
@@ -92,6 +136,10 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     double P1_P2;
     double P1_C1;
     double P2_C2;
+    double ISCl1  = 0.0;
+    double ISCl2  = 0.0;
+    double ISCl5i = 0.0;
+    double ISCl5q = 0.0;
     double gamma_ = 0.0;
     int i = 0;
     int j = 1;
@@ -150,10 +198,13 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     P1_P2 = nav->cbias[obs->sat-1][0];
     P1_C1 = nav->cbias[obs->sat-1][1];
     P2_C2 = nav->cbias[obs->sat-1][2];
+
     std::string d_dump_filename = "/home/antonio/data/dump_prange.dat";
     std::ofstream d_file;
     d_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
-    d_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+    d_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary | std::ios::app);
+    double tmp_double = static_cast<double>(obs->sat);
+    d_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
     d_file.write(reinterpret_cast<char*>(&P1), sizeof(double));
     d_file.write(reinterpret_cast<char*>(&P2), sizeof(double));
     d_file.write(reinterpret_cast<char*>(&P1_P2), sizeof(double));
@@ -167,6 +218,14 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     else if(P1_P2 == 0.0 and sys == SYS_GAL)
     {
         //TODO
+    }
+
+    if(sys == SYS_GPS)
+    {
+        ISCl1  = getiscl1(obs->sat, nav);
+        ISCl2  = getiscl2(obs->sat, nav);
+        ISCl5i = getiscl5i(obs->sat, nav);
+        ISCl5q = getiscl5q(obs->sat, nav);
     }
     d_file.write(reinterpret_cast<char*>(&P1_P2), sizeof(double));
     if (opt->ionoopt == IONOOPT_IFLC)
@@ -208,7 +267,10 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             {
                 P1 += P1_C1;
                 P2 += P2_C2;
-                PC = (P2 - gamma_ * P1) / (1.0 - gamma_) - P1_P2 / (gamma_ - 1.0);
+                if(obs->code[j] == CODE_L2S)
+                {
+                    PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2 / (gamma_ - 1.0);
+                }
             }
             else if(sys == SYS_GAL)
             {

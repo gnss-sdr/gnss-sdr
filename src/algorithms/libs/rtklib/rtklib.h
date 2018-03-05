@@ -464,6 +464,7 @@ typedef struct {        /* GPS/QZS/GAL broadcast ephemeris type */
                         /* GPS/QZS:tgd[0]=TGD */
                         /* GAL    :tgd[0]=BGD E5a/E1,tgd[1]=BGD E5b/E1 */
                         /* BDS    :tgd[0]=BGD1,tgd[1]=BGD2 */
+    double isc[4];      /* GPS    :isc[0]=ISCL1, isc[1]=ISCL2, isc[2]=ISCL5I, isc[3]=ISCL5Q */
     double Adot,ndot;   /* Adot,ndot for CNAV */
 } eph_t;
 

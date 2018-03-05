@@ -99,7 +99,7 @@ crosscompile:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y build-essential xz-utils curl
+    - apt-get install -y build-essential xz-utils curl gawk wget git-core diffstat unzip texinfo gcc-multilib chrpath socat cpio python python3 python3-pip python3-pexpect debianutils iputils-ping
     - curl https://sites.cttc.es/gnss_files/SDK/Rocko/oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh --output oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
     - echo "3a59b721a1b018ce445366ba859a5988  oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh" > sdk.md5
     - md5sum -c sdk.md5

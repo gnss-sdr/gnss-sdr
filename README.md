@@ -84,7 +84,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
        boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
        boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
        blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel gnutls-devel openssl-devel python-mako python-six 
+       glog-devel openssl-devel python-mako python-six 
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -97,11 +97,11 @@ If you are using CentOS 7, you can install the dependencies via Extra Packages f
 $ sudo yum install wget
 $ wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 $ sudo rpm -Uvh epel-release-latest-7.noarch.rpm
-$ sudo yum install make automake gcc gcc-c++ kernel-devel libtool automake \
+$ sudo yum install make automake gcc gcc-c++ kernel-devel libtool \
        hdf5-devel cmake git boost-devel boost-date-time boost-system \
        boost-filesystem boost-thread boost-chrono boost-serialization \
        log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel \
-       armadillo-devel gnutls-devel openssl-devel python-mako python-six
+       armadillo-devel openssl-devel python-mako python-six
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -244,11 +244,11 @@ changing `/home/username/googletest-release-1.8.0/googletest` by the actual dire
 
 
 
-#### Install the [GnuTLS library](http://www.gnutls.org/ "GnuTLS's Homepage"):
+#### Install the [GnuTLS](http://www.gnutls.org/ "GnuTLS's Homepage") or [OpenSSL](https://www.openssl.org/ "OpenSSL's Homepage") libraries:
 
 ~~~~~~
 $ sudo apt-get install libgnutls-openssl-dev    # For Debian/Ubuntu/LinuxMint
-$ sudo yum install libgnutls-openssl-devel      # For Fedora/CentOS/RHEL
+$ sudo yum install openssl-devel                # For Fedora/CentOS/RHEL
 ~~~~~~
 
 In case the GnuTLS library with openssl extensions package is not available in your GNU/Linux distribution, GNSS-SDR can also work well with OpenSSL.

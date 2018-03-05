@@ -69,23 +69,23 @@ boost::system::error_code rtl_tcp_dongle_info::read(boost::asio::ip::tcp::socket
 
 const char *rtl_tcp_dongle_info::get_type_name() const
 {
-    switch(get_tuner_type())
-    {
-    default:
-        return "UNKNOWN";
-    case TUNER_E4000:
-        return "E4000";
-    case TUNER_FC0012:
-        return "FC0012";
-    case TUNER_FC0013:
-        return "FC0013";
-    case TUNER_FC2580:
-        return "FC2580";
-    case TUNER_R820T:
-        return "R820T";
-    case TUNER_R828D:
-        return "R828D";
-    }
+    switch (get_tuner_type())
+        {
+        default:
+            return "UNKNOWN";
+        case TUNER_E4000:
+            return "E4000";
+        case TUNER_FC0012:
+            return "FC0012";
+        case TUNER_FC0013:
+            return "FC0013";
+        case TUNER_FC2580:
+            return "FC2580";
+        case TUNER_R820T:
+            return "R820T";
+        case TUNER_R828D:
+            return "R828D";
+        }
 }
 
 
@@ -96,29 +96,29 @@ double rtl_tcp_dongle_info::clip_gain(int gain) const
 
     std::vector<double> gains;
     switch (get_tuner_type())
-    {
-    case TUNER_E4000:
-        gains = { -10, 15, 40, 65, 90, 115, 140, 165, 190, 215,
-                240, 290, 340, 420 };
-        break;
-    case TUNER_FC0012:
-        gains = { -99, -40, 71, 179, 192 };
-        break;
-    case TUNER_FC0013:
-        gains = { -99, -73, -65, -63, -60, -58, -54, 58, 61,
+        {
+        case TUNER_E4000:
+            gains = {-10, 15, 40, 65, 90, 115, 140, 165, 190, 215,
+                240, 290, 340, 420};
+            break;
+        case TUNER_FC0012:
+            gains = {-99, -40, 71, 179, 192};
+            break;
+        case TUNER_FC0013:
+            gains = {-99, -73, -65, -63, -60, -58, -54, 58, 61,
                 63, 65, 67, 68, 70, 71, 179, 181, 182,
-                184, 186, 188, 191, 197 };
-        break;
-    case TUNER_R820T:
-        gains = { 0, 9, 14, 27, 37, 77, 87, 125, 144, 157,
+                184, 186, 188, 191, 197};
+            break;
+        case TUNER_R820T:
+            gains = {0, 9, 14, 27, 37, 77, 87, 125, 144, 157,
                 166, 197, 207, 229, 254, 280, 297, 328,
                 338, 364, 372, 386, 402, 421, 434, 439,
-                445, 480, 496 };
-        break;
-    default:
-        // no gains
-        break;
-    }
+                445, 480, 496};
+            break;
+        default:
+            // no gains
+            break;
+        }
 
     // clip
     if (gains.size() == 0)
@@ -130,22 +130,22 @@ double rtl_tcp_dongle_info::clip_gain(int gain) const
         {
             double last_stop = gains.front();
             BOOST_FOREACH (double g, gains)
-            {
-                g /= 10.0;
+                {
+                    g /= 10.0;
 
-                if (gain < g)
-                    {
-                        if (std::abs(gain - g) < std::abs(gain - last_stop))
-                            {
-                                return g;
-                            }
-                        else
-                            {
-                                return last_stop;
-                            }
-                    }
-                last_stop = g;
-            }
+                    if (gain < g)
+                        {
+                            if (std::abs(gain - g) < std::abs(gain - last_stop))
+                                {
+                                    return g;
+                                }
+                            else
+                                {
+                                    return last_stop;
+                                }
+                        }
+                    last_stop = g;
+                }
             return last_stop;
         }
 }

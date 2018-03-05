@@ -40,7 +40,7 @@ typedef struct ControlMessage_
 {
     unsigned int who;
     unsigned int what;
-} ControlMessage ;
+} ControlMessage;
 
 
 /*!
@@ -50,7 +50,6 @@ typedef struct ControlMessage_
  */
 class ControlMessageFactory
 {
-
 public:
     //! Constructor
     ControlMessageFactory();

@@ -68,18 +68,19 @@ concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 std::vector<double> TTFF_v;
 const int decimation_factor = 1;
 
-typedef struct  {
-    long mtype; // required by SysV message
+typedef struct
+{
+    long mtype;  // required by SysV message
     double ttff;
 } ttff_msgbuf;
 
 
-class TfttGpsL1CATest: public ::testing::Test
+class TfttGpsL1CATest : public ::testing::Test
 {
 public:
     void config_1();
     void config_2();
-    void print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_);
+    void print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_);
 
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config2;
@@ -236,7 +237,7 @@ void TfttGpsL1CATest::config_1()
 
 void TfttGpsL1CATest::config_2()
 {
-    if(FLAGS_config_file_ttff.empty())
+    if (FLAGS_config_file_ttff.empty())
         {
             std::string path = std::string(TEST_PATH);
             std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
@@ -267,25 +268,29 @@ void receive_msg()
     key_t key_stop = 1102;
     bool leave = false;
 
-    while(!leave)
+    while (!leave)
         {
             // wait for the queue to be created
-            while((msqid = msgget(key, 0644)) == -1){}
+            while ((msqid = msgget(key, 0644)) == -1)
+                {
+                }
 
             if (msgrcv(msqid, &msg, msgrcv_size, 1, 0) != -1)
                 {
                     ttff_msg = msg.ttff;
-                    if( (ttff_msg != 0) && (ttff_msg != -1))
+                    if ((ttff_msg != 0) && (ttff_msg != -1))
                         {
                             TTFF_v.push_back(ttff_msg);
                             LOG(INFO) << "Valid Time-To-First-Fix: " << ttff_msg << "[s]";
                             // Stop the receiver
-                            while(((msqid_stop = msgget(key_stop, 0644))) == -1){}
+                            while (((msqid_stop = msgget(key_stop, 0644))) == -1)
+                                {
+                                }
                             double msgsend_size = sizeof(msg_stop.ttff);
                             msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
                         }
 
-                    if( std::abs(ttff_msg - (-1.0) ) < 10 * std::numeric_limits<double>::epsilon() )
+                    if (std::abs(ttff_msg - (-1.0)) < 10 * std::numeric_limits<double>::epsilon())
                         {
                             leave = true;
                         }
@@ -295,7 +300,7 @@ void receive_msg()
 }
 
 
-void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> & ttff_v, std::shared_ptr<ConfigurationInterface> config_)
+void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_)
 {
     std::ofstream ttff_report_file;
     std::string filename = "ttff_report";
@@ -308,38 +313,38 @@ void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> & ttff_v, std:
     const int year = timeinfo.tm_year - 100;
     strm0 << year;
     const int month = timeinfo.tm_mon + 1;
-    if(month < 10)
+    if (month < 10)
         {
             strm0 << "0";
         }
     strm0 << month;
     const int day = timeinfo.tm_mday;
-    if(day < 10)
+    if (day < 10)
         {
             strm0 << "0";
         }
     strm0 << day << "_";
     const int hour = timeinfo.tm_hour;
-    if(hour < 10)
-                {
+    if (hour < 10)
+        {
             strm0 << "0";
         }
     strm0 << hour;
     const int min = timeinfo.tm_min;
 
-    if(min < 10)
+    if (min < 10)
         {
             strm0 << "0";
         }
     strm0 << min;
     const int sec = timeinfo.tm_sec;
-    if(sec < 10)
+    if (sec < 10)
         {
             strm0 << "0";
         }
     strm0 << sec;
 
-    filename_ = filename + "_" +  strm0.str() + ".txt";
+    filename_ = filename + "_" + strm0.str() + ".txt";
 
     ttff_report_file.open(filename_.c_str());
 
@@ -363,7 +368,7 @@ void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> & ttff_v, std:
 
     stm << "---------------------------" << std::endl;
     stm << " Time-To-First-Fix Report" << std::endl;
-    stm <<  "---------------------------" << std::endl;
+    stm << "---------------------------" << std::endl;
     stm << "Initial receiver status: ";
     if (read_ephemeris)
         {
@@ -383,7 +388,7 @@ void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> & ttff_v, std:
             stm << "Disabled." << std::endl;
         }
     stm << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
-    for(double ttff_ : ttff) stm << ttff_ << " ";
+    for (double ttff_ : ttff) stm << ttff_ << " ";
     stm << std::endl;
     stm << "TTFF mean: " << mean << " [s]" << std::endl;
     if (ttff.size() > 0)
@@ -393,9 +398,10 @@ void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> & ttff_v, std:
         }
     stm << "TTFF stdev: " << stdev << " [s]" << std::endl;
     stm << "Operating System: " << std::string(HOST_SYSTEM) << std::endl;
-    stm << "Navigation mode: " << "3D" << std::endl;
+    stm << "Navigation mode: "
+        << "3D" << std::endl;
 
-    if(source.compare("UHD_Signal_Source"))
+    if (source.compare("UHD_Signal_Source"))
         {
             stm << "Source: File" << std::endl;
         }
@@ -429,11 +435,11 @@ TEST_F(TfttGpsL1CATest, ColdStart)
     config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
     config2->set_property("PVT.flag_rtcm_server", "false");
 
-    for(int n = 0; n < FLAGS_num_measurements; n++)
+    for (int n = 0; n < FLAGS_num_measurements; n++)
         {
             // Create a new ControlThread object with a smart pointer
             std::shared_ptr<ControlThread> control_thread;
-            if(FLAGS_config_file_ttff.empty())
+            if (FLAGS_config_file_ttff.empty())
                 {
                     control_thread = std::make_shared<ControlThread>(config);
                 }
@@ -448,17 +454,17 @@ TEST_F(TfttGpsL1CATest, ColdStart)
             start = std::chrono::system_clock::now();
             // start receiver
             try
-            {
+                {
                     control_thread->run();
-            }
-            catch(const boost::exception & e)
-            {
+                }
+            catch (const boost::exception &e)
+                {
                     std::cout << "Boost exception: " << boost::diagnostic_information(e);
-            }
-            catch(const std::exception & ex)
-            {
-                    std::cout  << "STD exception: " << ex.what();
-            }
+                }
+            catch (const std::exception &ex)
+                {
+                    std::cout << "STD exception: " << ex.what();
+                }
 
             // stop clock
             end = std::chrono::system_clock::now();
@@ -470,7 +476,7 @@ TEST_F(TfttGpsL1CATest, ColdStart)
 
             num_measurements = num_measurements + 1;
             std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
-            if(n < FLAGS_num_measurements - 1)
+            if (n < FLAGS_num_measurements - 1)
                 {
                     std::random_device r;
                     std::default_random_engine e1(r());
@@ -478,13 +484,14 @@ TEST_F(TfttGpsL1CATest, ColdStart)
                     float random_variable_0_1 = uniform_dist(e1);
                     int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
                     std::cout << "Waiting a random amount of time (from 5 to 30 s) to start a new measurement... " << std::endl;
-                    std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
+                    std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl
+                              << std::endl;
                     std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5) + std::chrono::seconds(random_delay_s));
                 }
         }
 
     // Print TTFF report
-    if(FLAGS_config_file_ttff.empty())
+    if (FLAGS_config_file_ttff.empty())
         {
             print_TTFF_report(TTFF_v, config);
         }
@@ -492,7 +499,7 @@ TEST_F(TfttGpsL1CATest, ColdStart)
         {
             print_TTFF_report(TTFF_v, config2);
         }
-    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5)); //let the USRP some time to rest before the next test
+    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5));  //let the USRP some time to rest before the next test
 }
 
 
@@ -512,11 +519,11 @@ TEST_F(TfttGpsL1CATest, HotStart)
     config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
     config2->set_property("PVT.flag_rtcm_server", "false");
 
-    for(int n = 0; n < FLAGS_num_measurements; n++)
+    for (int n = 0; n < FLAGS_num_measurements; n++)
         {
             // Create a new ControlThread object with a smart pointer
             std::shared_ptr<ControlThread> control_thread;
-            if(FLAGS_config_file_ttff.empty())
+            if (FLAGS_config_file_ttff.empty())
                 {
                     control_thread = std::make_shared<ControlThread>(config);
                 }
@@ -531,17 +538,17 @@ TEST_F(TfttGpsL1CATest, HotStart)
 
             // start receiver
             try
-            {
+                {
                     control_thread->run();
-            }
-            catch(const boost::exception & e)
-            {
+                }
+            catch (const boost::exception &e)
+                {
                     std::cout << "Boost exception: " << boost::diagnostic_information(e);
-            }
-            catch(const std::exception & ex)
-            {
-                    std::cout  << "STD exception: " << ex.what();
-            }
+                }
+            catch (const std::exception &ex)
+                {
+                    std::cout << "STD exception: " << ex.what();
+                }
 
             // stop clock
             end = std::chrono::system_clock::now();
@@ -553,7 +560,7 @@ TEST_F(TfttGpsL1CATest, HotStart)
 
             num_measurements = num_measurements + 1;
             std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds." << std::endl;
-            if(n < FLAGS_num_measurements - 1)
+            if (n < FLAGS_num_measurements - 1)
                 {
                     std::random_device r;
                     std::default_random_engine e1(r());
@@ -561,13 +568,14 @@ TEST_F(TfttGpsL1CATest, HotStart)
                     float random_variable_0_1 = uniform_dist(e1);
                     int random_delay_s = static_cast<int>(random_variable_0_1 * 25.0);
                     std::cout << "Waiting a random amount of time (from 5 to 30 s) to start new measurement... " << std::endl;
-                    std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl << std::endl;
+                    std::cout << "This time will wait " << random_delay_s + 5 << " s." << std::endl
+                              << std::endl;
                     std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(5) + std::chrono::seconds(random_delay_s));
                 }
         }
 
     // Print TTFF report
-    if(FLAGS_config_file_ttff.empty())
+    if (FLAGS_config_file_ttff.empty())
         {
             print_TTFF_report(TTFF_v, config);
         }
@@ -584,10 +592,12 @@ int main(int argc, char **argv)
     int res = 0;
     TTFF_v.clear();
     try
-    {
+        {
             testing::InitGoogleTest(&argc, argv);
-    }
-    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+        }
+    catch (...)
+        {
+        }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
@@ -597,24 +607,24 @@ int main(int argc, char **argv)
 
     // Run the Tests
     try
-    {
+        {
             res = RUN_ALL_TESTS();
-    }
-    catch(...)
-    {
+        }
+    catch (...)
+        {
             LOG(WARNING) << "Unexpected catch";
-    }
+        }
 
     // Terminate the queue thread
     key_t sysv_msg_key;
     int sysv_msqid;
     sysv_msg_key = 1101;
     int msgflg = IPC_CREAT | 0666;
-    if ((sysv_msqid = msgget(sysv_msg_key, msgflg )) == -1)
-    {
-        std::cout << "GNSS-SDR can not create message queues!" << std::endl;
-        return 1;
-    }
+    if ((sysv_msqid = msgget(sysv_msg_key, msgflg)) == -1)
+        {
+            std::cout << "GNSS-SDR can not create message queues!" << std::endl;
+            return 1;
+        }
     ttff_msgbuf msg;
     msg.mtype = 1;
     msg.ttff = -1;

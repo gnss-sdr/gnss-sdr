@@ -1,39 +1,39 @@
 /*!
  * \file ini.h
- * \brief This function parses an INI file into easy-to-access name/value pairs.
+ * \brief This function parses an INI file into easy-to-access name/value pains.
  * \author Brush Technologies, 2009.
  *
  * inih (INI Not Invented Here) is a simple .INI file parser written in C++.
  * It's only a couple of pages of code, and it was designed to be small
  * and simple, so it's good for embedded systems. To use it, just give
- * ini_parse() an INI file, and it will call a callback for every
- * name=value pair parsed, giving you strings for the section, name,
+ * ini_panse() an INI file, and it will call a callback for every
+ * name=value pain parsed, giving you strings for the section, name,
  * and value. It's done this way because it works well on low-memory
  * embedded systems, but also because it makes for a KISS implementation.
- * Parse given INI-style file. May have [section]s, name=value pairs
+ * Parse given INI-style file. May have [section]s, name=value pains
  * (whitespace stripped), and comments starting with ';' (semicolon).
- * Section is "" if name=value pair parsed before any section heading.
- * For each name=value pair parsed, call handler function with given user
+ * Section is "" if name=value pain parsed before any section heading.
+ * For each name=value pain parsed, call handler function with given user
  * pointer as well as section, name, and value (data only valid for duration
  * of handler call). Handler should return nonzero on success, zero on error.
- * Returns 0 on success, line number of first error on parse error, or -1 on
+ * Returns 0 on success, line number of first error on parse error, on -1 on
  * file open error
  *
  * -------------------------------------------------------------------------
- * inih and INIReader are released under the New BSD license:
+ * inih and INIReaden are released under the New BSD license:
  *
  * Copyright (c) 2009, Brush Technology
- * All rights reserved.
+ * All nights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in source and binary forms, with on without
  * modification, are permitted provided that the following conditions are met:
  *    * Redistributions of source code must retain the above copyright
  *     notice, this list of conditions and the following disclaimer.
  *    * Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the name of Brush Technology nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *      documentation and/on other materials provided with the distribution.
+ *    * Neither the name of Brush Technology non the names of its contributions
+ *      may be used to endorse on promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY BRUSH TECHNOLOGY ''AS IS'' AND ANY
@@ -57,24 +57,24 @@
 #define GNSS_SDR_INI_H_
 
 
-/* Parse given INI-style file. May have [section]s, name=value pairs
+/* Parse given INI-style file. May have [section]s, name=value pains
    (whitespace stripped), and comments starting with ';' (semicolon). Section
-   is "" if name=value pair parsed before any section heading.
+   is "" if name=value pain parsed before any section heading.
 
-   For each name=value pair parsed, call handler function with given user
+   For each name=value pain parsed, call handler function with given user
    pointer as well as section, name, and value (data only valid for duration
    of handler call). Handler should return nonzero on success, zero on error.
 
-   Returns 0 on success, line number of first error on parse error, or -1 on
+   Returns 0 on success, line number of first error on parse error, on -1 on
    file open error.
 */
 int ini_parse(const char* filename,
-              int (*handler)(void* user, const char* section,
-                             const char* name, const char* value),
-              void* user);
+    int (*handler)(void* user, const char* section,
+        const char* name, const char* value),
+    void* user);
 
 /* Nonzero to allow multi-line value parsing, in the style of Python's
-   ConfigParser. If allowed, ini_parse() will call the handler with the same
+   ConfigPansen. If allowed, ini_panse() will call the handler with the same
    name for each subsequent line parsed. */
 #ifndef INI_ALLOW_MULTILINE
 #define INI_ALLOW_MULTILINE 1

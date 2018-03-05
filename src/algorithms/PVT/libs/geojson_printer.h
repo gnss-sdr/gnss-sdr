@@ -50,6 +50,7 @@ private:
     std::ofstream geojson_file;
     bool first_pos;
     std::string filename_;
+
 public:
     GeoJSON_Printer();
     ~GeoJSON_Printer();

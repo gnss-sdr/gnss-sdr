@@ -74,7 +74,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* resu
     unsigned int n;
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            result[n_vec] = lv_cmake(0,0);
+            result[n_vec] = lv_cmake(0, 0);
             for (n = 0; n < num_points; n++)
                 {
                     //r*a.r - i*a.i, i*a.r + r*a.i
@@ -96,11 +96,11 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic_sat(lv_16sc_t* 
     unsigned int n;
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            result[n_vec] = lv_cmake(0,0);
+            result[n_vec] = lv_cmake(0, 0);
             for (n = 0; n < num_points; n++)
                 {
-                    lv_16sc_t tmp = lv_cmake(sat_adds16i(sat_muls16i(lv_creal(in_common[n]), lv_creal(in_a[n_vec][n])), - sat_muls16i(lv_cimag(in_common[n]), lv_cimag(in_a[n_vec][n]))),
-                                             sat_adds16i(sat_muls16i(lv_creal(in_common[n]), lv_cimag(in_a[n_vec][n])), sat_muls16i(lv_cimag(in_common[n]), lv_creal(in_a[n_vec][n]))));
+                    lv_16sc_t tmp = lv_cmake(sat_adds16i(sat_muls16i(lv_creal(in_common[n]), lv_creal(in_a[n_vec][n])), -sat_muls16i(lv_cimag(in_common[n]), lv_cimag(in_a[n_vec][n]))),
+                        sat_adds16i(sat_muls16i(lv_creal(in_common[n]), lv_cimag(in_a[n_vec][n])), sat_muls16i(lv_cimag(in_common[n]), lv_creal(in_a[n_vec][n]))));
                     result[n_vec] = lv_cmake(sat_adds16i(lv_creal(result[n_vec]), lv_creal(tmp)), sat_adds16i(lv_cimag(result[n_vec]), lv_cimag(tmp)));
                 }
         }
@@ -112,9 +112,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic_sat(lv_16sc_t* 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
-    lv_16sc_t dotProduct = lv_cmake(0,0);
+    lv_16sc_t dotProduct = lv_cmake(0, 0);
     int n_vec;
     unsigned int index;
     const unsigned int sse_iters = num_points / 4;
@@ -125,7 +125,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
 
     if (sse_iters > 0)
         {
-            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16)
+            lv_16sc_t dotProductVector[4];
 
             __m128i* realcacc = (__m128i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m128i), volk_gnsssdr_get_alignment());
             __m128i* imagcacc = (__m128i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m128i), volk_gnsssdr_get_alignment());
@@ -141,25 +142,25 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
             mask_imag = _mm_set_epi8(0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0);
             mask_real = _mm_set_epi8(0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF);
 
-            for(index = 0; index < sse_iters; index++)
+            for (index = 0; index < sse_iters; index++)
                 {
                     // b[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
-                    b = _mm_load_si128((__m128i*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    b = _mm_load_si128((__m128i*)_in_common);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
-                            a = _mm_load_si128((__m128i*)&(_in_a[n_vec][index*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                            a = _mm_load_si128((__m128i*)&(_in_a[n_vec][index * 4]));  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
 
-                            c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
+                            c = _mm_mullo_epi16(a, b);  // a3.i*b3.i, a3.r*b3.r, ....
 
-                            c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                            c_sr = _mm_srli_si128(c, 2);  // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
                             real = _mm_subs_epi16(c, c_sr);
 
-                            c_sr = _mm_slli_si128(b, 2); // b3.r, b2.i ....
-                            c = _mm_mullo_epi16(a, c_sr); // a3.i*b3.r, ....
+                            c_sr = _mm_slli_si128(b, 2);   // b3.r, b2.i ....
+                            c = _mm_mullo_epi16(a, c_sr);  // a3.i*b3.r, ....
 
-                            c_sr = _mm_slli_si128(a, 2); // a3.r, a2.i ....
-                            imag = _mm_mullo_epi16(b, c_sr); // b3.i*a3.r, ....
+                            c_sr = _mm_slli_si128(a, 2);      // a3.r, a2.i ....
+                            imag = _mm_mullo_epi16(b, c_sr);  // b3.i*a3.r, ....
 
                             imag = _mm_adds_epi16(c, imag);
 
@@ -176,12 +177,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
 
                     a = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-                    _mm_store_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
-                    dotProduct = lv_cmake(0,0);
+                    _mm_store_si128((__m128i*)dotProductVector, a);  // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0, 0);
                     for (index = 0; index < 4; ++index)
                         {
                             dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[index])),
-                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
+                                sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
                         }
                     _out[n_vec] = dotProduct;
                 }
@@ -191,12 +192,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
 
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            for(index  = sse_iters * 4; index < num_points; index++)
+            for (index = sse_iters * 4; index < num_points; index++)
                 {
                     lv_16sc_t tmp = in_common[index] * in_a[n_vec][index];
 
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
-                            sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+                        sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
                 }
         }
 }
@@ -206,9 +207,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
-    lv_16sc_t dotProduct = lv_cmake(0,0);
+    lv_16sc_t dotProduct = lv_cmake(0, 0);
     int n_vec;
     unsigned int index;
     const unsigned int sse_iters = num_points / 4;
@@ -219,7 +220,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
 
     if (sse_iters > 0)
         {
-            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16)
+            lv_16sc_t dotProductVector[4];
 
             __m128i* realcacc = (__m128i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m128i), volk_gnsssdr_get_alignment());
             __m128i* imagcacc = (__m128i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m128i), volk_gnsssdr_get_alignment());
@@ -235,25 +237,25 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
             mask_imag = _mm_set_epi8(0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0);
             mask_real = _mm_set_epi8(0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF);
 
-            for(index = 0; index < sse_iters; index++)
+            for (index = 0; index < sse_iters; index++)
                 {
                     // b[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
-                    b = _mm_loadu_si128((__m128i*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    b = _mm_loadu_si128((__m128i*)_in_common);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
-                            a = _mm_loadu_si128((__m128i*)&(_in_a[n_vec][index*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                            a = _mm_loadu_si128((__m128i*)&(_in_a[n_vec][index * 4]));  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
 
-                            c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
+                            c = _mm_mullo_epi16(a, b);  // a3.i*b3.i, a3.r*b3.r, ....
 
-                            c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                            c_sr = _mm_srli_si128(c, 2);  // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
                             real = _mm_subs_epi16(c, c_sr);
 
-                            c_sr = _mm_slli_si128(b, 2); // b3.r, b2.i ....
-                            c = _mm_mullo_epi16(a, c_sr); // a3.i*b3.r, ....
+                            c_sr = _mm_slli_si128(b, 2);   // b3.r, b2.i ....
+                            c = _mm_mullo_epi16(a, c_sr);  // a3.i*b3.r, ....
 
-                            c_sr = _mm_slli_si128(a, 2); // a3.r, a2.i ....
-                            imag = _mm_mullo_epi16(b, c_sr); // b3.i*a3.r, ....
+                            c_sr = _mm_slli_si128(a, 2);      // a3.r, a2.i ....
+                            imag = _mm_mullo_epi16(b, c_sr);  // b3.i*a3.r, ....
 
                             imag = _mm_adds_epi16(c, imag);
 
@@ -270,12 +272,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
 
                     a = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-                    _mm_store_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
-                    dotProduct = lv_cmake(0,0);
+                    _mm_store_si128((__m128i*)dotProductVector, a);  // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0, 0);
                     for (index = 0; index < 4; ++index)
                         {
                             dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[index])),
-                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
+                                sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
                         }
                     _out[n_vec] = dotProduct;
                 }
@@ -285,12 +287,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
 
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            for(index = sse_iters * 4; index < num_points; index++)
+            for (index = sse_iters * 4; index < num_points; index++)
                 {
                     lv_16sc_t tmp = in_common[index] * in_a[n_vec][index];
 
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
-                            sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+                        sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
                 }
         }
 }
@@ -300,9 +302,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
 #ifdef LV_HAVE_AVX2
 #include <immintrin.h>
 
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_avx2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_avx2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
-    lv_16sc_t dotProduct = lv_cmake(0,0);
+    lv_16sc_t dotProduct = lv_cmake(0, 0);
     int n_vec;
     unsigned int index;
     const unsigned int sse_iters = num_points / 8;
@@ -313,7 +315,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_avx2(lv_16sc_t* resul
 
     if (sse_iters > 0)
         {
-            __VOLK_ATTR_ALIGNED(32) lv_16sc_t dotProductVector[8];
+            __VOLK_ATTR_ALIGNED(32)
+            lv_16sc_t dotProductVector[8];
 
             __m256i* realcacc = (__m256i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m256i), volk_gnsssdr_get_alignment());
             __m256i* imagcacc = (__m256i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m256i), volk_gnsssdr_get_alignment());
@@ -329,24 +332,24 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_avx2(lv_16sc_t* resul
             mask_imag = _mm256_set_epi8(0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0);
             mask_real = _mm256_set_epi8(0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF);
 
-            for(index = 0; index < sse_iters; index++)
+            for (index = 0; index < sse_iters; index++)
                 {
                     b = _mm256_load_si256((__m256i*)_in_common);
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 16);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
-                            a = _mm256_load_si256((__m256i*)&(_in_a[n_vec][index*8]));
+                            a = _mm256_load_si256((__m256i*)&(_in_a[n_vec][index * 8]));
 
                             c = _mm256_mullo_epi16(a, b);
 
-                            c_sr = _mm256_srli_si256(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                            c_sr = _mm256_srli_si256(c, 2);  // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
                             real = _mm256_subs_epi16(c, c_sr);
 
-                            c_sr = _mm256_slli_si256(b, 2); // b3.r, b2.i ....
-                            c = _mm256_mullo_epi16(a, c_sr); // a3.i*b3.r, ....
+                            c_sr = _mm256_slli_si256(b, 2);   // b3.r, b2.i ....
+                            c = _mm256_mullo_epi16(a, c_sr);  // a3.i*b3.r, ....
 
-                            c_sr = _mm256_slli_si256(a, 2); // a3.r, a2.i ....
-                            imag = _mm256_mullo_epi16(b, c_sr); // b3.i*a3.r, ....
+                            c_sr = _mm256_slli_si256(a, 2);      // a3.r, a2.i ....
+                            imag = _mm256_mullo_epi16(b, c_sr);  // b3.i*a3.r, ....
 
                             imag = _mm256_adds_epi16(c, imag);
 
@@ -363,12 +366,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_avx2(lv_16sc_t* resul
 
                     a = _mm256_or_si256(realcacc[n_vec], imagcacc[n_vec]);
 
-                    _mm256_store_si256((__m256i*)dotProductVector, a); // Store the results back into the dot product vector
-                    dotProduct = lv_cmake(0,0);
+                    _mm256_store_si256((__m256i*)dotProductVector, a);  // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0, 0);
                     for (index = 0; index < 8; ++index)
                         {
                             dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[index])),
-                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
+                                sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
                         }
                     _out[n_vec] = dotProduct;
                 }
@@ -379,12 +382,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_avx2(lv_16sc_t* resul
 
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            for(index  = sse_iters * 8; index < num_points; index++)
+            for (index = sse_iters * 8; index < num_points; index++)
                 {
                     lv_16sc_t tmp = in_common[index] * in_a[n_vec][index];
 
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
-                            sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+                        sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
                 }
         }
 }
@@ -394,9 +397,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_avx2(lv_16sc_t* resul
 #ifdef LV_HAVE_AVX2
 #include <immintrin.h>
 
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_avx2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_avx2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
-    lv_16sc_t dotProduct = lv_cmake(0,0);
+    lv_16sc_t dotProduct = lv_cmake(0, 0);
 
     const unsigned int sse_iters = num_points / 8;
     int n_vec;
@@ -407,7 +410,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_avx2(lv_16sc_t* resul
 
     if (sse_iters > 0)
         {
-            __VOLK_ATTR_ALIGNED(32) lv_16sc_t dotProductVector[8];
+            __VOLK_ATTR_ALIGNED(32)
+            lv_16sc_t dotProductVector[8];
 
             __m256i* realcacc = (__m256i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m256i), volk_gnsssdr_get_alignment());
             __m256i* imagcacc = (__m256i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m256i), volk_gnsssdr_get_alignment());
@@ -423,24 +427,24 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_avx2(lv_16sc_t* resul
             mask_imag = _mm256_set_epi8(0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0);
             mask_real = _mm256_set_epi8(0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF);
 
-            for(index = 0; index < sse_iters; index++)
+            for (index = 0; index < sse_iters; index++)
                 {
                     b = _mm256_loadu_si256((__m256i*)_in_common);
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 16);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
-                            a = _mm256_loadu_si256((__m256i*)&(_in_a[n_vec][index*8]));
+                            a = _mm256_loadu_si256((__m256i*)&(_in_a[n_vec][index * 8]));
 
                             c = _mm256_mullo_epi16(a, b);
 
-                            c_sr = _mm256_srli_si256(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                            c_sr = _mm256_srli_si256(c, 2);  // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
                             real = _mm256_subs_epi16(c, c_sr);
 
-                            c_sr = _mm256_slli_si256(b, 2); // b3.r, b2.i ....
-                            c = _mm256_mullo_epi16(a, c_sr); // a3.i*b3.r, ....
+                            c_sr = _mm256_slli_si256(b, 2);   // b3.r, b2.i ....
+                            c = _mm256_mullo_epi16(a, c_sr);  // a3.i*b3.r, ....
 
-                            c_sr = _mm256_slli_si256(a, 2); // a3.r, a2.i ....
-                            imag = _mm256_mullo_epi16(b, c_sr); // b3.i*a3.r, ....
+                            c_sr = _mm256_slli_si256(a, 2);      // a3.r, a2.i ....
+                            imag = _mm256_mullo_epi16(b, c_sr);  // b3.i*a3.r, ....
 
                             imag = _mm256_adds_epi16(c, imag);
 
@@ -457,12 +461,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_avx2(lv_16sc_t* resul
 
                     a = _mm256_or_si256(realcacc[n_vec], imagcacc[n_vec]);
 
-                    _mm256_store_si256((__m256i*)dotProductVector, a); // Store the results back into the dot product vector
-                    dotProduct = lv_cmake(0,0);
+                    _mm256_store_si256((__m256i*)dotProductVector, a);  // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0, 0);
                     for (index = 0; index < 8; ++index)
                         {
                             dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[index])),
-                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
+                                sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
                         }
                     _out[n_vec] = dotProduct;
                 }
@@ -473,12 +477,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_avx2(lv_16sc_t* resul
 
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            for(index = sse_iters * 8; index < num_points; index++)
+            for (index = sse_iters * 8; index < num_points; index++)
                 {
                     lv_16sc_t tmp = in_common[index] * in_a[n_vec][index];
 
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
-                            sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+                        sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
                 }
         }
 }
@@ -488,9 +492,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_avx2(lv_16sc_t* resul
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
-    lv_16sc_t dotProduct = lv_cmake(0,0);
+    lv_16sc_t dotProduct = lv_cmake(0, 0);
     int n_vec;
     unsigned int index;
     const unsigned int neon_iters = num_points / 4;
@@ -501,7 +505,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
 
     if (neon_iters > 0)
         {
-            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16)
+            lv_16sc_t dotProductVector[4];
 
             int16x4x2_t a_val, b_val, c_val;
 
@@ -509,19 +514,19 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
 
             int16x4x2_t tmp_real, tmp_imag;
 
-            for(n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     accumulator[n_vec].val[0] = vdup_n_s16(0);
                     accumulator[n_vec].val[1] = vdup_n_s16(0);
                 }
 
-            for(index = 0; index < neon_iters; index++)
+            for (index = 0; index < neon_iters; index++)
                 {
-                    b_val = vld2_s16((int16_t*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    b_val = vld2_s16((int16_t*)_in_common);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
-                            a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                            a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index * 4]));  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                             //__VOLK_GNSSSDR_PREFETCH(&_in_a[n_vec][index*4] + 8);
 
                             // multiply the real*real and imag*imag to get real result
@@ -547,12 +552,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
 
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
-                    vst2_s16((int16_t*)dotProductVector, accumulator[n_vec]); // Store the results back into the dot product vector
-                    dotProduct = lv_cmake(0,0);
+                    vst2_s16((int16_t*)dotProductVector, accumulator[n_vec]);  // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0, 0);
                     for (index = 0; index < 4; ++index)
                         {
                             dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[index])),
-                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
+                                sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
                         }
                     _out[n_vec] = dotProduct;
                 }
@@ -561,12 +566,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
 
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            for(index = neon_iters * 4; index < num_points; index++)
+            for (index = neon_iters * 4; index < num_points; index++)
                 {
                     lv_16sc_t tmp = in_common[index] * in_a[n_vec][index];
 
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
-                            sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+                        sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
                 }
         }
 }
@@ -576,9 +581,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_vma(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_vma(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
-    lv_16sc_t dotProduct = lv_cmake(0,0);
+    lv_16sc_t dotProduct = lv_cmake(0, 0);
 
     const unsigned int neon_iters = num_points / 4;
     int n_vec;
@@ -589,25 +594,26 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_vma(lv_16sc_t* res
 
     if (neon_iters > 0)
         {
-            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16)
+            lv_16sc_t dotProductVector[4];
 
             int16x4x2_t a_val, b_val, tmp;
 
             int16x4x2_t* accumulator = (int16x4x2_t*)volk_gnsssdr_malloc(num_a_vectors * sizeof(int16x4x2_t), volk_gnsssdr_get_alignment());
 
-            for(n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     accumulator[n_vec].val[0] = vdup_n_s16(0);
                     accumulator[n_vec].val[1] = vdup_n_s16(0);
                 }
 
-            for(index = 0; index < neon_iters; index++)
+            for (index = 0; index < neon_iters; index++)
                 {
-                    b_val = vld2_s16((int16_t*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    b_val = vld2_s16((int16_t*)_in_common);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
-                            a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index*4]));
+                            a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index * 4]));
 
                             tmp.val[0] = vmul_s16(a_val.val[0], b_val.val[0]);
                             tmp.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
@@ -624,12 +630,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_vma(lv_16sc_t* res
 
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
-                    vst2_s16((int16_t*)dotProductVector, accumulator[n_vec]); // Store the results back into the dot product vector
-                    dotProduct = lv_cmake(0,0);
+                    vst2_s16((int16_t*)dotProductVector, accumulator[n_vec]);  // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0, 0);
                     for (index = 0; index < 4; ++index)
                         {
                             dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[index])),
-                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
+                                sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
                         }
                     _out[n_vec] = dotProduct;
                 }
@@ -638,12 +644,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_vma(lv_16sc_t* res
 
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            for(index = neon_iters * 4; index < num_points; index++)
+            for (index = neon_iters * 4; index < num_points; index++)
                 {
                     lv_16sc_t tmp = in_common[index] * in_a[n_vec][index];
 
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
-                            sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+                        sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
                 }
         }
 }
@@ -653,9 +659,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_vma(lv_16sc_t* res
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
-    lv_16sc_t dotProduct = lv_cmake(0,0);
+    lv_16sc_t dotProduct = lv_cmake(0, 0);
 
     const unsigned int neon_iters = num_points / 4;
     int n_vec;
@@ -666,14 +672,15 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* 
 
     if (neon_iters > 0)
         {
-            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16)
+            lv_16sc_t dotProductVector[4];
 
             int16x4x2_t a_val, b_val;
 
             int16x4x2_t* accumulator1 = (int16x4x2_t*)volk_gnsssdr_malloc(num_a_vectors * sizeof(int16x4x2_t), volk_gnsssdr_get_alignment());
             int16x4x2_t* accumulator2 = (int16x4x2_t*)volk_gnsssdr_malloc(num_a_vectors * sizeof(int16x4x2_t), volk_gnsssdr_get_alignment());
 
-            for(n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     accumulator1[n_vec].val[0] = vdup_n_s16(0);
                     accumulator1[n_vec].val[1] = vdup_n_s16(0);
@@ -681,13 +688,13 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* 
                     accumulator2[n_vec].val[1] = vdup_n_s16(0);
                 }
 
-            for(index = 0; index < neon_iters; index++)
+            for (index = 0; index < neon_iters; index++)
                 {
-                    b_val = vld2_s16((int16_t*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    b_val = vld2_s16((int16_t*)_in_common);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_common + 8);
                     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
-                            a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index*4]));
+                            a_val = vld2_s16((int16_t*)&(_in_a[n_vec][index * 4]));
 
                             accumulator1[n_vec].val[0] = vmla_s16(accumulator1[n_vec].val[0], a_val.val[0], b_val.val[0]);
                             accumulator1[n_vec].val[1] = vmla_s16(accumulator1[n_vec].val[1], a_val.val[0], b_val.val[1]);
@@ -705,12 +712,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* 
 
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
-                    vst2_s16((int16_t*)dotProductVector, accumulator1[n_vec]); // Store the results back into the dot product vector
-                    dotProduct = lv_cmake(0,0);
+                    vst2_s16((int16_t*)dotProductVector, accumulator1[n_vec]);  // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0, 0);
                     for (index = 0; index < 4; ++index)
                         {
                             dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[index])),
-                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
+                                sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[index])));
                         }
                     _out[n_vec] = dotProduct;
                 }
@@ -720,12 +727,12 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_optvma(lv_16sc_t* 
 
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            for(index = neon_iters * 4; index < num_points; index++)
+            for (index = neon_iters * 4; index < num_points; index++)
                 {
                     lv_16sc_t tmp = in_common[index] * in_a[n_vec][index];
 
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
-                            sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+                        sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
                 }
         }
 }

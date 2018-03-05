@@ -43,12 +43,12 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples from a GN3S USB dongle, a RF front-end signal sampler
  */
-class RawArraySignalSource: public GNSSBlockInterface
+class RawArraySignalSource : public GNSSBlockInterface
 {
 public:
     RawArraySignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, gr::msg_queue::sptr queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, gr::msg_queue::sptr queue);
 
     virtual ~RawArraySignalSource();
 

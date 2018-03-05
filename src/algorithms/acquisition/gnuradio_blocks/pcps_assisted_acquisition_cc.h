@@ -58,12 +58,12 @@
 class pcps_assisted_acquisition_cc;
 
 typedef boost::shared_ptr<pcps_assisted_acquisition_cc>
-pcps_assisted_acquisition_cc_sptr;
+    pcps_assisted_acquisition_cc_sptr;
 
 pcps_assisted_acquisition_cc_sptr
 pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-        int doppler_max, int doppler_min, long freq, long fs_in, int samples_per_ms,
-        bool dump, std::string dump_filename);
+    int doppler_max, int doppler_min, long freq, long fs_in, int samples_per_ms,
+    bool dump, std::string dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -71,25 +71,25 @@ pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class pcps_assisted_acquisition_cc: public gr::block
+class pcps_assisted_acquisition_cc : public gr::block
 {
 private:
     friend pcps_assisted_acquisition_cc_sptr
     pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-            int doppler_max, int doppler_min, long freq, long fs_in,
-            int samples_per_ms, bool dump,
-            std::string dump_filename);
+        int doppler_max, int doppler_min, long freq, long fs_in,
+        int samples_per_ms, bool dump,
+        std::string dump_filename);
 
     pcps_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-            int doppler_max, int doppler_min, long freq, long fs_in,
-            int samples_per_ms, bool dump,
-            std::string dump_filename);
+        int doppler_max, int doppler_min, long freq, long fs_in,
+        int samples_per_ms, bool dump,
+        std::string dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-            int doppler_offset);
+        int doppler_offset);
 
-    int compute_and_accumulate_grid(gr_vector_const_void_star &input_items);
-    float estimate_input_power(gr_vector_const_void_star &input_items);
+    int compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
+    float estimate_input_power(gr_vector_const_void_star& input_items);
     double search_maximum();
     void get_assistance();
     void reset_grid();
@@ -122,7 +122,7 @@ private:
 
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_ifft;
-    Gnss_Synchro *d_gnss_synchro;
+    Gnss_Synchro* d_gnss_synchro;
     unsigned int d_code_phase;
     float d_doppler_freq;
     float d_input_power;
@@ -170,7 +170,7 @@ public:
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
-    void set_local_code(std::complex<float> * code);
+    void set_local_code(std::complex<float>* code);
 
     /*!
      * \brief Starts acquisition algorithm, turning from standby mode to
@@ -219,11 +219,11 @@ public:
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
-    int general_work(int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);
 
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 };
 
 #endif /* GNSS_SDR_PCPS_assisted_acquisition_cc_H_*/

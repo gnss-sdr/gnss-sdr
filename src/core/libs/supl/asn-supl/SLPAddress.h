@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_SLPAddress_H_
-#define	_SLPAddress_H_
+#ifndef _SLPAddress_H_
+#define _SLPAddress_H_
 
 
 #include <asn_application.h>
@@ -16,40 +16,44 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum SLPAddress_PR {
-	SLPAddress_PR_NOTHING,	/* No components present */
-	SLPAddress_PR_iPAddress,
-	SLPAddress_PR_fQDN,
-	/* Extensions may appear below */
-	
-} SLPAddress_PR;
+    /* Dependencies */
+    typedef enum SLPAddress_PR
+    {
+        SLPAddress_PR_NOTHING, /* No components present */
+        SLPAddress_PR_iPAddress,
+        SLPAddress_PR_fQDN,
+        /* Extensions may appear below */
 
-/* SLPAddress */
-typedef struct SLPAddress {
-	SLPAddress_PR present;
-	union SLPAddress_u {
-		IPAddress_t	 iPAddress;
-		FQDN_t	 fQDN;
-		/*
+    } SLPAddress_PR;
+
+    /* SLPAddress */
+    typedef struct SLPAddress
+    {
+        SLPAddress_PR present;
+        union SLPAddress_u
+        {
+            IPAddress_t iPAddress;
+            FQDN_t fQDN;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SLPAddress_t;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SLPAddress;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SLPAddress_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SLPAddress;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SLPAddress_H_ */
+#endif /* _SLPAddress_H_ */
 #include <asn_internal.h>

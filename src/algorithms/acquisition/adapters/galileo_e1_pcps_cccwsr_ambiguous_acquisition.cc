@@ -41,9 +41,8 @@
 using google::LogMessage;
 
 GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -58,47 +57,45 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0 ) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
 
     if (sampled_ms_ % 4 != 0)
         {
             sampled_ms_ = static_cast<int>(sampled_ms_ / 4) * 4;
             LOG(WARNING) << "coherent_integration_time should be multiple of "
-                                  << "Galileo code length (4 ms). coherent_integration_time = "
-                                  << sampled_ms_ << " ms will be used.";
+                         << "Galileo code length (4 ms). coherent_integration_time = "
+                         << sampled_ms_ << " ms will be used.";
         }
 
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
 
     dump_filename_ = configuration_->property(role + ".dump_filename",
-            default_dump_filename);
+        default_dump_filename);
 
     //--- Find number of samples per spreading code (4 ms)  -----------------
 
     code_length_ = round(
-            fs_in_
-            / (Galileo_E1_CODE_CHIP_RATE_HZ
-                    / Galileo_E1_B_CODE_LENGTH_CHIPS));
+        fs_in_ / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * static_cast<int>(sampled_ms_ / 4);
 
     int samples_per_ms = code_length_ / 4;
 
-    code_data_  = new gr_complex[vector_length_];
+    code_data_ = new gr_complex[vector_length_];
     code_pilot_ = new gr_complex[vector_length_];
 
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_cccwsr_make_acquisition_cc(sampled_ms_, max_dwells_,
-                    doppler_max_, if_, fs_in_, samples_per_ms, code_length_,
-                    dump_, dump_filename_);
+                doppler_max_, if_, fs_in_, samples_per_ms, code_length_,
+                dump_, dump_filename_);
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
             DLOG(INFO) << "stream_to_vector("
-                    << stream_to_vector_->unique_id() << ")";
+                       << stream_to_vector_->unique_id() << ")";
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id()
-                    << ")";
+                       << ")";
         }
     else
         {
@@ -147,7 +144,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_threshold(float threshold)
 
     threshold_ = threshold;
 
-    DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
+    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -177,7 +174,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_doppler_step(unsigned int dopp
 }
 
 void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_gnss_synchro(
-        Gnss_Synchro* gnss_synchro)
+    Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
     if (item_type_.compare("gr_complex") == 0)
@@ -212,20 +209,19 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_local_code()
     if (item_type_.compare("gr_complex") == 0)
         {
             bool cboc = configuration_->property(
-                    "Acquisition" + boost::lexical_cast<std::string>(channel_)
-                    + ".cboc", false);
+                "Acquisition" + boost::lexical_cast<std::string>(channel_) + ".cboc", false);
 
             char signal[3];
 
             strcpy(signal, "1B");
 
             galileo_e1_code_gen_complex_sampled(code_data_, signal,
-                    cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+                cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
             strcpy(signal, "1C");
 
             galileo_e1_code_gen_complex_sampled(code_pilot_, signal,
-                    cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+                cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
             acquisition_cc_->set_local_code(code_data_, code_pilot_);
         }
@@ -246,10 +242,11 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_state(int state)
 }
 
 
-
 float GalileoE1PcpsCccwsrAmbiguousAcquisition::calculate_threshold(float pfa)
 {
-    if(pfa){ /* Not implemented*/};
+    if (pfa)
+        { /* Not implemented*/
+        };
     return 0.0;
 }
 
@@ -260,7 +257,6 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::connect(gr::top_block_sptr top_blo
         {
             top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
-
 }
 
 
@@ -283,4 +279,3 @@ gr::basic_block_sptr GalileoE1PcpsCccwsrAmbiguousAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }
-

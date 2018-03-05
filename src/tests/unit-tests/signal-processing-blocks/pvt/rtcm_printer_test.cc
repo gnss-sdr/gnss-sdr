@@ -61,13 +61,13 @@ TEST(RtcmPrinterTest, Run)
     /* Convert the reference message to binary data */
     std::string reference_msg_binary;
     unsigned char c[1];
-    for(unsigned int i = 0; i < reference_msg.length(); i = i + 2)
+    for (unsigned int i = 0; i < reference_msg.length(); i = i + 2)
         {
             unsigned long int n, n2;
-            std::istringstream(reference_msg.substr(i,1)) >> std::hex >> n;
+            std::istringstream(reference_msg.substr(i, 1)) >> std::hex >> n;
             std::istringstream(reference_msg.substr(i + 1, 1)) >> std::hex >> n2;
-            c[0] = static_cast<unsigned char>(n * 16) +  static_cast<unsigned char>(n2);
-            std::string ret(c, c+1);
+            c[0] = static_cast<unsigned char>(n * 16) + static_cast<unsigned char>(n2);
+            std::string ret(c, c + 1);
             reference_msg_binary += ret;
         }
 
@@ -75,6 +75,3 @@ TEST(RtcmPrinterTest, Run)
 
     EXPECT_EQ(0, reference_msg_binary.compare(testing_msg));
 }
-
-
-

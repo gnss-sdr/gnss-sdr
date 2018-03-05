@@ -44,10 +44,10 @@ TEST(RinexPrinterTest, GalileoObsHeader)
     rp1->rinex_obs_header(rp1->obsFile, eph, 0.0);
     rp1->obsFile.seekp(0);
 
-    while(!rp1->obsFile.eof())
+    while (!rp1->obsFile.eof())
         {
             std::getline(rp1->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("SYS / # / OBS TYPES", 59) != std::string::npos)
                         {
@@ -58,7 +58,7 @@ TEST(RinexPrinterTest, GalileoObsHeader)
         }
     std::string expected_str("E    4 C1B L1B D1B S1B                                      SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str.compare(line_aux));
-    if(remove(rp1->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+    if (remove(rp1->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
     line_aux.clear();
 
     std::shared_ptr<Rinex_Printer> rp2;
@@ -67,10 +67,10 @@ TEST(RinexPrinterTest, GalileoObsHeader)
     rp2->rinex_obs_header(rp2->obsFile, eph, 0.0, bands);
     rp2->obsFile.seekp(0);
     no_more_finds = false;
-    while(!rp2->obsFile.eof())
+    while (!rp2->obsFile.eof())
         {
             std::getline(rp2->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("SYS / # / OBS TYPES", 59) != std::string::npos)
                         {
@@ -82,7 +82,7 @@ TEST(RinexPrinterTest, GalileoObsHeader)
     std::string expected_str2("E   12 C1B L1B D1B S1B C5X L5X D5X S5X C7X L7X D7X S7X      SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str2.compare(line_aux));
 
-    if(remove(rp2->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+    if (remove(rp2->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
 }
 
 
@@ -99,10 +99,10 @@ TEST(RinexPrinterTest, GlonassObsHeader)
     rp1->rinex_obs_header(rp1->obsFile, eph, 0.0, bands);
     rp1->obsFile.seekp(0);
 
-    while(!rp1->obsFile.eof())
+    while (!rp1->obsFile.eof())
         {
             std::getline(rp1->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("SYS / # / OBS TYPES", 59) != std::string::npos)
                         {
@@ -113,7 +113,7 @@ TEST(RinexPrinterTest, GlonassObsHeader)
         }
     std::string expected_str("R    4 C1C L1C D1C S1C                                      SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str.compare(line_aux));
-    if(remove(rp1->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+    if (remove(rp1->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
     line_aux.clear();
 }
 
@@ -133,19 +133,19 @@ TEST(RinexPrinterTest, MixedObsHeader)
     rp1->obsFile.seekp(0);
     int systems_found = 0;
 
-    while(!rp1->obsFile.eof())
+    while (!rp1->obsFile.eof())
         {
             std::getline(rp1->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("SYS / # / OBS TYPES", 59) != std::string::npos)
                         {
                             systems_found++;
-                            if(systems_found == 1)
+                            if (systems_found == 1)
                                 {
                                     line_aux = std::string(line_str);
                                 }
-                            if(systems_found == 2)
+                            if (systems_found == 2)
                                 {
                                     line_aux2 = std::string(line_str);
                                     no_more_finds = true;
@@ -158,7 +158,7 @@ TEST(RinexPrinterTest, MixedObsHeader)
     std::string expected_str2("E    8 C1B L1B D1B S1B C5X L5X D5X S5X                      SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str.compare(line_aux));
     EXPECT_EQ(0, expected_str2.compare(line_aux2));
-    if(remove(rp1->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+    if (remove(rp1->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
 }
 
 
@@ -177,19 +177,19 @@ TEST(RinexPrinterTest, MixedObsHeaderGpsGlo)
     rp1->obsFile.seekp(0);
     int systems_found = 0;
 
-    while(!rp1->obsFile.eof())
+    while (!rp1->obsFile.eof())
         {
             std::getline(rp1->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("SYS / # / OBS TYPES", 59) != std::string::npos)
                         {
                             systems_found++;
-                            if(systems_found == 1)
+                            if (systems_found == 1)
                                 {
                                     line_aux = std::string(line_str);
                                 }
-                            if(systems_found == 2)
+                            if (systems_found == 2)
                                 {
                                     line_aux2 = std::string(line_str);
                                     no_more_finds = true;
@@ -202,7 +202,7 @@ TEST(RinexPrinterTest, MixedObsHeaderGpsGlo)
     std::string expected_str2("R    4 C1C L1C D1C S1C                                      SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str.compare(line_aux));
     EXPECT_EQ(0, expected_str2.compare(line_aux2));
-    if(remove(rp1->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+    if (remove(rp1->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
 }
 
 
@@ -217,7 +217,7 @@ TEST(RinexPrinterTest, GalileoObsLog)
     rp = std::make_shared<Rinex_Printer>();
     rp->rinex_obs_header(rp->obsFile, eph, 0.0);
 
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+    std::map<int, Gnss_Synchro> gnss_pseudoranges_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
     Gnss_Synchro gs2 = Gnss_Synchro();
@@ -246,18 +246,18 @@ TEST(RinexPrinterTest, GalileoObsLog)
     gs4.Carrier_Doppler_hz = 1534;
     gs4.CN0_dB_hz = 42;
 
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(1,gs1) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(2,gs2) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(3,gs3) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(4,gs4) );
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
     rp->log_rinex_obs(rp->obsFile, eph, 0.0, gnss_pseudoranges_map);
     rp->obsFile.seekp(0);
 
-    while(!rp->obsFile.eof())
+    while (!rp->obsFile.eof())
         {
             std::getline(rp->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("E22", 0) != std::string::npos)
                         {
@@ -270,7 +270,7 @@ TEST(RinexPrinterTest, GalileoObsLog)
     std::string expected_str("E22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
     EXPECT_EQ(0, expected_str.compare(line_aux));
 
-    if(remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+    if (remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
 }
 
 
@@ -285,7 +285,7 @@ TEST(RinexPrinterTest, GlonassObsLog)
     rp = std::make_shared<Rinex_Printer>();
     rp->rinex_obs_header(rp->obsFile, eph, 0.0);
 
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+    std::map<int, Gnss_Synchro> gnss_pseudoranges_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
     Gnss_Synchro gs2 = Gnss_Synchro();
@@ -314,18 +314,18 @@ TEST(RinexPrinterTest, GlonassObsLog)
     gs4.Carrier_Doppler_hz = 1534;
     gs4.CN0_dB_hz = 42;
 
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(1,gs1) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(2,gs2) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(3,gs3) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(4,gs4) );
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
     rp->log_rinex_obs(rp->obsFile, eph, 0.0, gnss_pseudoranges_map);
     rp->obsFile.seekp(0);
 
-    while(!rp->obsFile.eof())
+    while (!rp->obsFile.eof())
         {
             std::getline(rp->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("R22", 0) != std::string::npos)
                         {
@@ -338,7 +338,7 @@ TEST(RinexPrinterTest, GlonassObsLog)
     std::string expected_str("R22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
     EXPECT_EQ(0, expected_str.compare(line_aux));
 
-    if(remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+    if (remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
 }
 
 
@@ -354,7 +354,7 @@ TEST(RinexPrinterTest, GpsObsLogDualBand)
     rp = std::make_shared<Rinex_Printer>();
     rp->rinex_obs_header(rp->obsFile, eph_gps, eph_cnav, 0.0);
 
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+    std::map<int, Gnss_Synchro> gnss_pseudoranges_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
     Gnss_Synchro gs2 = Gnss_Synchro();
@@ -395,18 +395,18 @@ TEST(RinexPrinterTest, GpsObsLogDualBand)
     gs3.Carrier_Doppler_hz = -1534;
     gs3.CN0_dB_hz = 47;
 
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(1,gs1) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(2,gs2) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(3,gs3) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(4,gs4) );
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
     rp->log_rinex_obs(rp->obsFile, eph_gps, eph_cnav, 0.0, gnss_pseudoranges_map);
     rp->obsFile.seekp(0);
 
-    while(!rp->obsFile.eof())
+    while (!rp->obsFile.eof())
         {
             std::getline(rp->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("G08", 0) != std::string::npos)
                         {
@@ -419,8 +419,7 @@ TEST(RinexPrinterTest, GpsObsLogDualBand)
     std::string expected_str("G08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
     EXPECT_EQ(0, expected_str.compare(line_aux));
 
-    if(remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
-
+    if (remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
 }
 
 
@@ -436,7 +435,7 @@ TEST(RinexPrinterTest, GalileoObsLogDualBand)
     std::string bands("1B 5X");
     rp->rinex_obs_header(rp->obsFile, eph, 0.0, bands);
 
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+    std::map<int, Gnss_Synchro> gnss_pseudoranges_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
     Gnss_Synchro gs2 = Gnss_Synchro();
@@ -477,18 +476,18 @@ TEST(RinexPrinterTest, GalileoObsLogDualBand)
     gs4.Carrier_Doppler_hz = 1534;
     gs4.CN0_dB_hz = 42;
 
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(1,gs1) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(2,gs2) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(3,gs3) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(4,gs4) );
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
 
     rp->log_rinex_obs(rp->obsFile, eph, 0.0, gnss_pseudoranges_map, bands);
     rp->obsFile.seekp(0);
 
-    while(!rp->obsFile.eof())
+    while (!rp->obsFile.eof())
         {
             std::getline(rp->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("E08", 0) != std::string::npos)
                         {
@@ -501,9 +500,8 @@ TEST(RinexPrinterTest, GalileoObsLogDualBand)
     std::string expected_str("E08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
     EXPECT_EQ(0, expected_str.compare(line_aux));
 
-    if(remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+    if (remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
 }
-
 
 
 TEST(RinexPrinterTest, MixedObsLog)
@@ -518,7 +516,7 @@ TEST(RinexPrinterTest, MixedObsLog)
     rp = std::make_shared<Rinex_Printer>();
     rp->rinex_obs_header(rp->obsFile, eph_gps, eph_gal, 0.0, "1B 5X");
 
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+    std::map<int, Gnss_Synchro> gnss_pseudoranges_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
     Gnss_Synchro gs2 = Gnss_Synchro();
@@ -584,23 +582,23 @@ TEST(RinexPrinterTest, MixedObsLog)
     gs8.Carrier_Doppler_hz = -20;
     gs8.CN0_dB_hz = 42;
 
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(1,gs1) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(2,gs2) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(3,gs3) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(4,gs4) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(5,gs5) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(6,gs6) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(7,gs7) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(8,gs8) );
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(5, gs5));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(6, gs6));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(7, gs7));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(8, gs8));
 
     rp->log_rinex_obs(rp->obsFile, eph_gps, eph_gal, 0.0, gnss_pseudoranges_map);
 
     rp->obsFile.seekp(0);
 
-    while(!rp->obsFile.eof())
+    while (!rp->obsFile.eof())
         {
             std::getline(rp->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("E16", 0) != std::string::npos)
                         {
@@ -612,7 +610,7 @@ TEST(RinexPrinterTest, MixedObsLog)
     std::string expected_str("E16  22000000.000 7         0.127 7       -20.000 7        42.000  22000000.000 6         8.292 6      1534.000 6        41.000");
     EXPECT_EQ(0, expected_str.compare(line_aux));
 
-    if(remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+    if (remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
 }
 
 
@@ -628,7 +626,7 @@ TEST(RinexPrinterTest, MixedObsLogGpsGlo)
     rp = std::make_shared<Rinex_Printer>();
     rp->rinex_obs_header(rp->obsFile, eph_gps, eph_glo, 0.0, "1G");
 
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+    std::map<int, Gnss_Synchro> gnss_pseudoranges_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
     Gnss_Synchro gs2 = Gnss_Synchro();
@@ -692,23 +690,23 @@ TEST(RinexPrinterTest, MixedObsLogGpsGlo)
     gs8.Carrier_Doppler_hz = -20;
     gs8.CN0_dB_hz = 42;
 
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(1,gs1) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(2,gs2) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(3,gs3) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(4,gs4) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(5,gs5) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(6,gs6) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(7,gs7) );
-    gnss_pseudoranges_map.insert( std::pair<int, Gnss_Synchro>(8,gs8) );
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(5, gs5));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(6, gs6));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(7, gs7));
+    gnss_pseudoranges_map.insert(std::pair<int, Gnss_Synchro>(8, gs8));
 
     rp->log_rinex_obs(rp->obsFile, eph_gps, eph_glo, 0.0, gnss_pseudoranges_map);
 
     rp->obsFile.seekp(0);
 
-    while(!rp->obsFile.eof())
+    while (!rp->obsFile.eof())
         {
             std::getline(rp->obsFile, line_str);
-            if(!no_more_finds)
+            if (!no_more_finds)
                 {
                     if (line_str.find("R16", 0) != std::string::npos)
                         {
@@ -721,5 +719,5 @@ TEST(RinexPrinterTest, MixedObsLogGpsGlo)
     std::string expected_str("R16  22000000.000 6         8.292 6      1534.000 6        41.000  22000000.000 7         0.127 7       -20.000 7        42.000");
     EXPECT_EQ(0, expected_str.compare(line_aux));
 
-    if(remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+    if (remove(rp->obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
 }

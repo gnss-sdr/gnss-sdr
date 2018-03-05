@@ -71,7 +71,7 @@ DEFINE_double(dp_error_mean_max, 75.0, "Maximum mean error in Doppler frequency"
 DEFINE_double(dp_error_std_max, 25.0, "Maximum standard deviation in Doppler frequency");
 DEFINE_bool(plot_obs_sys_test, false, "Plots results of ObsSystemTest with gnuplot");
 
-class ObsSystemTest: public ::testing::Test
+class ObsSystemTest : public ::testing::Test
 {
 public:
     int configure_receiver();
@@ -79,38 +79,38 @@ public:
     void check_results();
     bool check_valid_rinex_obs(std::string filename, int rinex_ver);  // return true if the file is a valid Rinex observation file.
     void read_rinex_files(
-            std::vector<arma::mat>& pseudorange_ref,
-            std::vector<arma::mat>& carrierphase_ref,
-            std::vector<arma::mat>& doppler_ref,
-            std::vector<arma::mat>& pseudorange_meas,
-            std::vector<arma::mat>& carrierphase_meas,
-            std::vector<arma::mat>& doppler_meas,
-            arma::mat& sow_prn_ref,
-            int signal_type);
+        std::vector<arma::mat>& pseudorange_ref,
+        std::vector<arma::mat>& carrierphase_ref,
+        std::vector<arma::mat>& doppler_ref,
+        std::vector<arma::mat>& pseudorange_meas,
+        std::vector<arma::mat>& carrierphase_meas,
+        std::vector<arma::mat>& doppler_meas,
+        arma::mat& sow_prn_ref,
+        int signal_type);
     void time_alignment_diff(
-            std::vector<arma::mat>& ref,
-            std::vector<arma::mat>& meas,
-            std::vector<arma::vec>& diff);
+        std::vector<arma::mat>& ref,
+        std::vector<arma::mat>& meas,
+        std::vector<arma::vec>& diff);
     void time_alignment_diff_cp(
-            std::vector<arma::mat>& ref,
-            std::vector<arma::mat>& meas,
-            std::vector<arma::vec>& diff);
+        std::vector<arma::mat>& ref,
+        std::vector<arma::mat>& meas,
+        std::vector<arma::vec>& diff);
     void time_alignment_diff_pr(
-            std::vector<arma::mat>& ref,
-            std::vector<arma::mat>& meas,
-            std::vector<arma::vec>& diff,
-            arma::mat& sow_prn_ref);
+        std::vector<arma::mat>& ref,
+        std::vector<arma::mat>& meas,
+        std::vector<arma::vec>& diff,
+        arma::mat& sow_prn_ref);
     void compute_pseudorange_error(std::vector<arma::vec>& diff,
-            double error_th_mean, double error_th_std,
-            std::string signal_name);
+        double error_th_mean, double error_th_std,
+        std::string signal_name);
     void compute_carrierphase_error(
-            std::vector<arma::vec>& diff,
-            double error_th_mean, double error_th_std,
-            std::string signal_name);
+        std::vector<arma::vec>& diff,
+        double error_th_mean, double error_th_std,
+        std::string signal_name);
     void compute_doppler_error(
-            std::vector<arma::vec>& diff,
-            double error_th_mean, double error_th_std,
-            std::string signal_name);
+        std::vector<arma::vec>& diff,
+        double error_th_mean, double error_th_std,
+        std::string signal_name);
     std::string filename_rinex_obs = FLAGS_filename_rinex_true;
     std::string generated_rinex_obs = FLAGS_filename_rinex_obs;
     std::string configuration_file_ = FLAGS_configuration_file;
@@ -126,7 +126,7 @@ public:
     const int num_prn_gal = 31;
 
     double pseudorange_error_th_mean = FLAGS_pr_error_mean_max;
-    double pseudorange_error_th_std= FLAGS_pr_error_std_max;
+    double pseudorange_error_th_std = FLAGS_pr_error_std_max;
     double carrierphase_error_th_mean = FLAGS_cp_error_mean_max;
     double carrierphase_error_th_std = FLAGS_cp_error_std_max;
     double doppler_error_th_mean = FLAGS_dp_error_mean_max;
@@ -137,11 +137,11 @@ public:
 bool ObsSystemTest::check_valid_rinex_obs(std::string filename, int rinex_ver)
 {
     bool res = false;
-    if(rinex_ver == 2)
+    if (rinex_ver == 2)
         {
             res = gpstk::isRinexObsFile(filename);
         }
-    if(rinex_ver == 3)
+    if (rinex_ver == 3)
         {
             res = gpstk::isRinex3ObsFile(filename);
         }
@@ -150,14 +150,14 @@ bool ObsSystemTest::check_valid_rinex_obs(std::string filename, int rinex_ver)
 
 
 void ObsSystemTest::read_rinex_files(
-        std::vector<arma::mat>& pseudorange_ref,
-        std::vector<arma::mat>& carrierphase_ref,
-        std::vector<arma::mat>& doppler_ref,
-        std::vector<arma::mat>& pseudorange_meas,
-        std::vector<arma::mat>& carrierphase_meas,
-        std::vector<arma::mat>& doppler_meas,
-        arma::mat& sow_prn_ref,
-        int signal_type)
+    std::vector<arma::mat>& pseudorange_ref,
+    std::vector<arma::mat>& carrierphase_ref,
+    std::vector<arma::mat>& doppler_ref,
+    std::vector<arma::mat>& pseudorange_meas,
+    std::vector<arma::mat>& carrierphase_meas,
+    std::vector<arma::mat>& doppler_meas,
+    arma::mat& sow_prn_ref,
+    int signal_type)
 {
     bool ref_exist = false;
     bool meas_exist = false;
@@ -169,53 +169,53 @@ void ObsSystemTest::read_rinex_files(
     std::string signal_type_string;
     sow_prn_ref.reset();
 
-    switch(signal_type)
-    {
-    case 0: //GPS L1
+    switch (signal_type)
+        {
+        case 0:  //GPS L1
 
-        sat_type = gpstk::SatID::systemGPS;
-        max_prn = num_prn_gps;
-        pr_string = "C1C";
-        cp_string = "L1C";
-        dp_string = "D1C";
-        signal_type_string = "GPS L1 C/A";
-        break;
+            sat_type = gpstk::SatID::systemGPS;
+            max_prn = num_prn_gps;
+            pr_string = "C1C";
+            cp_string = "L1C";
+            dp_string = "D1C";
+            signal_type_string = "GPS L1 C/A";
+            break;
 
-    case 1: //Galileo E1B
+        case 1:  //Galileo E1B
 
-        sat_type = gpstk::SatID::systemGalileo;
-        max_prn = num_prn_gal;
-        pr_string = "C1B";
-        cp_string = "L1B";
-        dp_string = "D1B";
-        signal_type_string = "Galileo E1B";
-        break;
+            sat_type = gpstk::SatID::systemGalileo;
+            max_prn = num_prn_gal;
+            pr_string = "C1B";
+            cp_string = "L1B";
+            dp_string = "D1B";
+            signal_type_string = "Galileo E1B";
+            break;
 
-    case 2: //GPS L5
+        case 2:  //GPS L5
 
-        sat_type = gpstk::SatID::systemGPS;
-        max_prn = num_prn_gps;
-        pr_string = "C5X";
-        cp_string = "L5X";
-        dp_string = "D5X";
-        signal_type_string = "GPS L5";
-        break;
+            sat_type = gpstk::SatID::systemGPS;
+            max_prn = num_prn_gps;
+            pr_string = "C5X";
+            cp_string = "L5X";
+            dp_string = "D5X";
+            signal_type_string = "GPS L5";
+            break;
 
-    case 3: //Galileo E5a
+        case 3:  //Galileo E5a
 
-        sat_type = gpstk::SatID::systemGalileo;
-        max_prn = num_prn_gal;
-        pr_string = "C5X";
-        cp_string = "L5X";
-        dp_string = "D5X";
-        signal_type_string = "Galileo E5a";
-        break;
-    }
+            sat_type = gpstk::SatID::systemGalileo;
+            max_prn = num_prn_gal;
+            pr_string = "C5X";
+            cp_string = "L5X";
+            dp_string = "D5X";
+            signal_type_string = "Galileo E5a";
+            break;
+        }
 
     // Open and read reference RINEX observables file
     std::cout << "Read: RINEX " << signal_type_string << " True" << std::endl;
     try
-    {
+        {
             gpstk::Rinex3ObsStream r_ref(filename_rinex_obs);
             r_ref.exceptions(std::ios::failbit);
             gpstk::Rinex3ObsData r_ref_data;
@@ -227,55 +227,55 @@ void ObsSystemTest::read_rinex_files(
                 {
                     for (int myprn = 1; myprn < max_prn; myprn++)
                         {
-                            gpstk::SatID prn( myprn, sat_type);
+                            gpstk::SatID prn(myprn, sat_type);
                             gpstk::CommonTime time = r_ref_data.time;
                             double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
                             gpstk::Rinex3ObsData::DataMap::iterator pointer = r_ref_data.obs.find(prn);
-                            if( pointer ==  r_ref_data.obs.end() )
+                            if (pointer == r_ref_data.obs.end())
                                 {
                                     // PRN not present; do nothing
                                 }
                             else
                                 {
-                                    dataobj = r_ref_data.getObs(prn, pr_string,  r_ref_header);
+                                    dataobj = r_ref_data.getObs(prn, pr_string, r_ref_header);
                                     double P1 = dataobj.data;
                                     pseudorange_ref.at(myprn).insert_rows(pseudorange_ref.at(myprn).n_rows, arma::rowvec({sow, P1}));
 
-                                    dataobj = r_ref_data.getObs(prn, cp_string,  r_ref_header);
+                                    dataobj = r_ref_data.getObs(prn, cp_string, r_ref_header);
                                     double L1 = dataobj.data;
                                     carrierphase_ref.at(myprn).insert_rows(carrierphase_ref.at(myprn).n_rows, arma::rowvec({sow, L1}));
 
-                                    dataobj = r_ref_data.getObs(prn, dp_string,  r_ref_header);
+                                    dataobj = r_ref_data.getObs(prn, dp_string, r_ref_header);
                                     double D1 = dataobj.data;
                                     doppler_ref.at(myprn).insert_rows(doppler_ref.at(myprn).n_rows, arma::rowvec({sow, D1}));
 
                                     ref_exist = true;
                                 }  // End of 'if( pointer == roe.obs.end() )'
-                        } // end for
-                } // end while
-    } // End of 'try' block
-    catch(const gpstk::FFStreamError& e)
-    {
+                        }          // end for
+                }                  // end while
+        }                          // End of 'try' block
+    catch (const gpstk::FFStreamError& e)
+        {
             std::cout << e;
             exit(1);
-    }
-    catch(const gpstk::Exception& e)
-    {
+        }
+    catch (const gpstk::Exception& e)
+        {
             std::cout << e;
             exit(1);
-    }
+        }
     catch (...)
-    {
+        {
             std::cout << "unknown error.  I don't feel so well..." << std::endl;
             exit(1);
-    }
+        }
 
     // Open and read measured RINEX observables file
-    std::cout << "Read: RINEX "<< signal_type_string << " measures" << std::endl;
+    std::cout << "Read: RINEX " << signal_type_string << " measures" << std::endl;
     try
-    {
+        {
             std::string arg2_gen;
-            if(internal_rinex_generation)
+            if (internal_rinex_generation)
                 {
                     arg2_gen = std::string("./") + generated_rinex_obs;
                 }
@@ -298,20 +298,20 @@ void ObsSystemTest::read_rinex_files(
                     bool set_pr_min = true;
                     for (int myprn = 1; myprn < max_prn; myprn++)
                         {
-                            gpstk::SatID prn( myprn, sat_type);
+                            gpstk::SatID prn(myprn, sat_type);
                             gpstk::CommonTime time = r_meas_data.time;
                             double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
                             gpstk::Rinex3ObsData::DataMap::iterator pointer = r_meas_data.obs.find(prn);
-                            if( pointer ==  r_meas_data.obs.end() )
+                            if (pointer == r_meas_data.obs.end())
                                 {
                                     // PRN not present; do nothing
                                 }
                             else
                                 {
-                                    dataobj = r_meas_data.getObs(prn, pr_string,  r_meas_header);
+                                    dataobj = r_meas_data.getObs(prn, pr_string, r_meas_header);
                                     double P1 = dataobj.data;
                                     pseudorange_meas.at(myprn).insert_rows(pseudorange_meas.at(myprn).n_rows, arma::rowvec({sow, P1}));
-                                    if(set_pr_min || (P1 < pr_min))
+                                    if (set_pr_min || (P1 < pr_min))
                                         {
                                             set_pr_min = false;
                                             pr_min = P1;
@@ -319,47 +319,47 @@ void ObsSystemTest::read_rinex_files(
                                             prn_min = static_cast<double>(myprn);
                                         }
 
-                                    dataobj = r_meas_data.getObs(prn, cp_string,  r_meas_header);
+                                    dataobj = r_meas_data.getObs(prn, cp_string, r_meas_header);
                                     double L1 = dataobj.data;
                                     carrierphase_meas.at(myprn).insert_rows(carrierphase_meas.at(myprn).n_rows, arma::rowvec({sow, L1}));
 
-                                    dataobj = r_meas_data.getObs(prn, dp_string,  r_meas_header);
+                                    dataobj = r_meas_data.getObs(prn, dp_string, r_meas_header);
                                     double D1 = dataobj.data;
                                     doppler_meas.at(myprn).insert_rows(doppler_meas.at(myprn).n_rows, arma::rowvec({sow, D1}));
 
                                     meas_exist = true;
                                 }  // End of 'if( pointer == roe.obs.end() )'
-                        } // end for
+                        }          // end for
                     if (!set_pr_min)
                         {
-                    	    sow_prn_ref.insert_rows(sow_prn_ref.n_rows, arma::rowvec({sow_insert, pr_min, prn_min}));
+                            sow_prn_ref.insert_rows(sow_prn_ref.n_rows, arma::rowvec({sow_insert, pr_min, prn_min}));
                         }
-                } // end while
-    } // End of 'try' block
-    catch(const gpstk::FFStreamError& e)
-    {
+                }  // end while
+        }          // End of 'try' block
+    catch (const gpstk::FFStreamError& e)
+        {
             std::cout << e;
             exit(1);
-    }
-    catch(const gpstk::Exception& e)
-    {
+        }
+    catch (const gpstk::Exception& e)
+        {
             std::cout << e;
             exit(1);
-    }
+        }
     catch (...)
-    {
+        {
             std::cout << "unknown error.  I don't feel so well..." << std::endl;
             exit(1);
-    }
+        }
     EXPECT_TRUE(ref_exist) << "RINEX reference file does not contain " << signal_type_string << " information";
     EXPECT_TRUE(meas_exist) << "RINEX generated file does not contain " << signal_type_string << " information";
 }
 
 
 void ObsSystemTest::time_alignment_diff(
-        std::vector<arma::mat>& ref,
-        std::vector<arma::mat>& meas,
-        std::vector<arma::vec>& diff)
+    std::vector<arma::mat>& ref,
+    std::vector<arma::mat>& meas,
+    std::vector<arma::vec>& diff)
 {
     std::vector<arma::mat>::iterator iter_ref;
     std::vector<arma::mat>::iterator iter_meas;
@@ -368,9 +368,9 @@ void ObsSystemTest::time_alignment_diff(
 
     iter_ref = ref.begin();
     iter_diff = diff.begin();
-    for(iter_meas = meas.begin(); iter_meas != meas.end(); iter_meas++)
+    for (iter_meas = meas.begin(); iter_meas != meas.end(); iter_meas++)
         {
-            if( !iter_meas->is_empty() && !iter_ref->is_empty() )
+            if (!iter_meas->is_empty() && !iter_ref->is_empty())
                 {
                     arma::uvec index_ = arma::find(iter_meas->col(0) > iter_ref->at(0, 0));
                     arma::uword index_min = arma::min(index_);
@@ -388,9 +388,9 @@ void ObsSystemTest::time_alignment_diff(
 
 
 void ObsSystemTest::time_alignment_diff_cp(
-        std::vector<arma::mat>& ref,
-        std::vector<arma::mat>& meas,
-        std::vector<arma::vec>& diff)
+    std::vector<arma::mat>& ref,
+    std::vector<arma::mat>& meas,
+    std::vector<arma::vec>& diff)
 {
     std::vector<arma::mat>::iterator iter_ref;
     std::vector<arma::mat>::iterator iter_meas;
@@ -399,9 +399,9 @@ void ObsSystemTest::time_alignment_diff_cp(
 
     iter_ref = ref.begin();
     iter_diff = diff.begin();
-    for(iter_meas = meas.begin(); iter_meas != meas.end(); iter_meas++)
+    for (iter_meas = meas.begin(); iter_meas != meas.end(); iter_meas++)
         {
-            if( !iter_meas->is_empty() && !iter_ref->is_empty() )
+            if (!iter_meas->is_empty() && !iter_ref->is_empty())
                 {
                     arma::uvec index_ = arma::find(iter_meas->col(0) > iter_ref->at(0, 0));
                     arma::uword index_min = arma::min(index_);
@@ -421,10 +421,10 @@ void ObsSystemTest::time_alignment_diff_cp(
 
 
 void ObsSystemTest::time_alignment_diff_pr(
-        std::vector<arma::mat>& ref,
-        std::vector<arma::mat>& meas,
-        std::vector<arma::vec>& diff,
-        arma::mat& sow_prn_ref)
+    std::vector<arma::mat>& ref,
+    std::vector<arma::mat>& meas,
+    std::vector<arma::vec>& diff,
+    arma::mat& sow_prn_ref)
 {
     std::vector<arma::mat>::iterator iter_ref;
     std::vector<arma::mat>::iterator iter_meas;
@@ -438,14 +438,14 @@ void ObsSystemTest::time_alignment_diff_pr(
     arma::vec::iterator iter_vec1 = subtraction_pr_ref.begin_col(1);
     arma::vec::iterator iter_vec2 = subtraction_pr_ref.begin_col(2);
 
-    for(iter_vec1 = subtraction_pr_ref.begin_col(1); iter_vec1 != subtraction_pr_ref.end_col(1); iter_vec1++)
+    for (iter_vec1 = subtraction_pr_ref.begin_col(1); iter_vec1 != subtraction_pr_ref.end_col(1); iter_vec1++)
         {
-            arma::vec aux_pr; //vector with only 1 element
-            arma::vec aux_sow = {*iter_vec0}; //vector with only 1 element
+            arma::vec aux_pr;                  //vector with only 1 element
+            arma::vec aux_sow = {*iter_vec0};  //vector with only 1 element
             arma::interp1(ref.at(static_cast<int>(*iter_vec2)).col(0),
-                    ref.at(static_cast<int>(*iter_vec2)).col(1),
-                    aux_sow,
-                    aux_pr);
+                ref.at(static_cast<int>(*iter_vec2)).col(1),
+                aux_sow,
+                aux_pr);
             *iter_vec1 = aux_pr(0);
             iter_vec0++;
             iter_vec2++;
@@ -453,9 +453,9 @@ void ObsSystemTest::time_alignment_diff_pr(
 
     iter_ref = ref.begin();
     iter_diff = diff.begin();
-    for(iter_meas = meas.begin(); iter_meas != meas.end(); iter_meas++)
+    for (iter_meas = meas.begin(); iter_meas != meas.end(); iter_meas++)
         {
-            if( !iter_meas->is_empty() && !iter_ref->is_empty() )
+            if (!iter_meas->is_empty() && !iter_ref->is_empty())
                 {
                     arma::uvec index_ = arma::find(iter_meas->col(0) > iter_ref->at(0, 0));
                     arma::uword index_min = arma::min(index_);
@@ -480,14 +480,22 @@ int ObsSystemTest::configure_receiver()
 {
     config = std::make_shared<FileConfiguration>(configuration_file_);
 
-    if( config->property("Channels_1C.count", 0) > 0 )
-        {gps_1C = true;}
-    if( config->property("Channels_1B.count", 0) > 0 )
-        {gal_1B = true;}
-    if( config->property("Channels_5X.count", 0) > 0 )
-        {gal_E5a = true;}
-    if( config->property("Channels_7X.count", 0) > 0 ) //NOT DEFINITIVE!!!!!
-        {gps_L5 = true;}
+    if (config->property("Channels_1C.count", 0) > 0)
+        {
+            gps_1C = true;
+        }
+    if (config->property("Channels_1B.count", 0) > 0)
+        {
+            gal_1B = true;
+        }
+    if (config->property("Channels_5X.count", 0) > 0)
+        {
+            gal_E5a = true;
+        }
+    if (config->property("Channels_7X.count", 0) > 0)  //NOT DEFINITIVE!!!!!
+        {
+            gps_L5 = true;
+        }
 
     return 0;
 }
@@ -499,20 +507,20 @@ int ObsSystemTest::run_receiver()
     control_thread = std::make_shared<ControlThread>(config);
     // start receiver
     try
-    {
+        {
             control_thread->run();
-    }
-    catch(const boost::exception & e)
-    {
+        }
+    catch (const boost::exception& e)
+        {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
-    }
-    catch(const std::exception & ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
-    }
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "STD exception: " << ex.what();
+        }
     // Get the name of the RINEX obs file generated by the receiver
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-    FILE *fp;
+    FILE* fp;
     std::string argum2 = std::string("/bin/ls *O | grep GSDR | tail -1");
     char buffer[1035];
     fp = popen(&argum2[0], "r");
@@ -533,33 +541,33 @@ int ObsSystemTest::run_receiver()
 
 
 void ObsSystemTest::compute_pseudorange_error(
-        std::vector<arma::vec>& diff,
-        double error_th_mean, double error_th_std,
-        std::string signal_name)
+    std::vector<arma::vec>& diff,
+    double error_th_mean, double error_th_std,
+    std::string signal_name)
 {
     int prn_id = 0;
     std::vector<arma::vec>::iterator iter_diff;
     std::vector<double> means;
     std::vector<double> stddevs;
     std::vector<double> prns;
-    for(iter_diff = diff.begin(); iter_diff != diff.end(); iter_diff++)
+    for (iter_diff = diff.begin(); iter_diff != diff.end(); iter_diff++)
         {
-            if(!iter_diff->is_empty())
+            if (!iter_diff->is_empty())
                 {
-                    while(iter_diff->has_nan())
+                    while (iter_diff->has_nan())
                         {
                             bool nan_found = false;
                             int k_aux = 0;
-                            while(!nan_found)
+                            while (!nan_found)
                                 {
-                                    if(!iter_diff->row(k_aux).is_finite())
+                                    if (!iter_diff->row(k_aux).is_finite())
                                         {
-                                    	    nan_found = true;
-                                	        iter_diff->shed_row(k_aux);
+                                            nan_found = true;
+                                            iter_diff->shed_row(k_aux);
                                         }
                                     k_aux++;
                                 }
-                    	}
+                        }
                     double d_mean = std::sqrt(arma::mean(arma::square(*iter_diff)));
                     means.push_back(d_mean);
                     double d_stddev = arma::stddev(*iter_diff);
@@ -573,10 +581,10 @@ void ObsSystemTest::compute_pseudorange_error(
                 }
             prn_id++;
         }
-    if(FLAGS_plot_obs_sys_test == true)
+    if (FLAGS_plot_obs_sys_test == true)
         {
             const std::string gnuplot_executable(FLAGS_gnuplot_executable);
-            if(gnuplot_executable.empty())
+            if (gnuplot_executable.empty())
                 {
                     std::cout << "WARNING: Although the flag plot_obs_sys_test has been set to TRUE," << std::endl;
                     std::cout << "gnuplot has not been found in your system." << std::endl;
@@ -585,7 +593,7 @@ void ObsSystemTest::compute_pseudorange_error(
             else
                 {
                     try
-                    {
+                        {
                             boost::filesystem::path p(gnuplot_executable);
                             boost::filesystem::path dir = p.parent_path();
                             std::string gnuplot_path = dir.native();
@@ -599,58 +607,58 @@ void ObsSystemTest::compute_pseudorange_error(
                             g1.plot_xy(prns, means, "RMS error");
                             g1.plot_xy(prns, stddevs, "Standard deviation");
                             size_t char_pos = signal_name.find(" ");
-                            while(char_pos != std::string::npos)
+                            while (char_pos != std::string::npos)
                                 {
                                     signal_name.replace(char_pos, 1, "_");
                                     char_pos = signal_name.find(" ");
                                 }
                             char_pos = signal_name.find("/");
-                            while(char_pos != std::string::npos)
+                            while (char_pos != std::string::npos)
                                 {
                                     signal_name.replace(char_pos, 1, "_");
                                     char_pos = signal_name.find("/");
                                 }
                             g1.savetops("Pseudorange_error_" + signal_name);
                             g1.savetopdf("Pseudorange_error_" + signal_name, 18);
-                            g1.showonscreen(); // window output
-                    }
-                    catch (const GnuplotException & ge)
-                    {
+                            g1.showonscreen();  // window output
+                        }
+                    catch (const GnuplotException& ge)
+                        {
                             std::cout << ge.what() << std::endl;
-                    }
+                        }
                 }
         }
 }
 
 
 void ObsSystemTest::compute_carrierphase_error(
-        std::vector<arma::vec>& diff,
-        double error_th_mean, double error_th_std,
-        std::string signal_name)
+    std::vector<arma::vec>& diff,
+    double error_th_mean, double error_th_std,
+    std::string signal_name)
 {
     int prn_id = 0;
     std::vector<double> means;
     std::vector<double> stddevs;
     std::vector<double> prns;
     std::vector<arma::vec>::iterator iter_diff;
-    for(iter_diff = diff.begin(); iter_diff != diff.end(); iter_diff++)
+    for (iter_diff = diff.begin(); iter_diff != diff.end(); iter_diff++)
         {
-            if(!iter_diff->is_empty())
+            if (!iter_diff->is_empty())
                 {
-                    while(iter_diff->has_nan())
+                    while (iter_diff->has_nan())
                         {
                             bool nan_found = false;
                             int k_aux = 0;
-                            while(!nan_found)
+                            while (!nan_found)
                                 {
-                                    if(!iter_diff->row(k_aux).is_finite())
+                                    if (!iter_diff->row(k_aux).is_finite())
                                         {
-                                	        nan_found = true;
-                            	            iter_diff->shed_row(k_aux);
+                                            nan_found = true;
+                                            iter_diff->shed_row(k_aux);
                                         }
                                     k_aux++;
                                 }
-                	    }
+                        }
                     double d_mean = std::sqrt(arma::mean(arma::square(*iter_diff)));
                     means.push_back(d_mean);
                     double d_stddev = arma::stddev(*iter_diff);
@@ -664,10 +672,10 @@ void ObsSystemTest::compute_carrierphase_error(
                 }
             prn_id++;
         }
-    if(FLAGS_plot_obs_sys_test == true)
+    if (FLAGS_plot_obs_sys_test == true)
         {
             const std::string gnuplot_executable(FLAGS_gnuplot_executable);
-            if(gnuplot_executable.empty())
+            if (gnuplot_executable.empty())
                 {
                     std::cout << "WARNING: Although the flag plot_obs_sys_test has been set to TRUE," << std::endl;
                     std::cout << "gnuplot has not been found in your system." << std::endl;
@@ -676,7 +684,7 @@ void ObsSystemTest::compute_carrierphase_error(
             else
                 {
                     try
-                    {
+                        {
                             boost::filesystem::path p(gnuplot_executable);
                             boost::filesystem::path dir = p.parent_path();
                             std::string gnuplot_path = dir.native();
@@ -690,58 +698,58 @@ void ObsSystemTest::compute_carrierphase_error(
                             g1.plot_xy(prns, means, "RMS error");
                             g1.plot_xy(prns, stddevs, "Standard deviation");
                             size_t char_pos = signal_name.find(" ");
-                            while(char_pos != std::string::npos)
+                            while (char_pos != std::string::npos)
                                 {
                                     signal_name.replace(char_pos, 1, "_");
                                     char_pos = signal_name.find(" ");
                                 }
                             char_pos = signal_name.find("/");
-                            while(char_pos != std::string::npos)
+                            while (char_pos != std::string::npos)
                                 {
                                     signal_name.replace(char_pos, 1, "_");
                                     char_pos = signal_name.find("/");
                                 }
                             g1.savetops("Carrier_phase_error_" + signal_name);
                             g1.savetopdf("Carrier_phase_error_" + signal_name, 18);
-                            g1.showonscreen(); // window output
-                    }
-                    catch (const GnuplotException & ge)
-                    {
+                            g1.showonscreen();  // window output
+                        }
+                    catch (const GnuplotException& ge)
+                        {
                             std::cout << ge.what() << std::endl;
-                    }
+                        }
                 }
         }
 }
 
 
 void ObsSystemTest::compute_doppler_error(
-        std::vector<arma::vec>& diff,
-        double error_th_mean, double error_th_std,
-        std::string signal_name)
+    std::vector<arma::vec>& diff,
+    double error_th_mean, double error_th_std,
+    std::string signal_name)
 {
     int prn_id = 0;
     std::vector<double> means;
     std::vector<double> stddevs;
     std::vector<double> prns;
     std::vector<arma::vec>::iterator iter_diff;
-    for(iter_diff = diff.begin(); iter_diff != diff.end(); iter_diff++)
+    for (iter_diff = diff.begin(); iter_diff != diff.end(); iter_diff++)
         {
-            if(!iter_diff->is_empty())
+            if (!iter_diff->is_empty())
                 {
-                    while(iter_diff->has_nan())
+                    while (iter_diff->has_nan())
                         {
                             bool nan_found = false;
                             int k_aux = 0;
-                            while(!nan_found)
+                            while (!nan_found)
                                 {
-                                    if(!iter_diff->row(k_aux).is_finite())
+                                    if (!iter_diff->row(k_aux).is_finite())
                                         {
-                                    	    nan_found = true;
-                            	            iter_diff->shed_row(k_aux);
+                                            nan_found = true;
+                                            iter_diff->shed_row(k_aux);
                                         }
                                     k_aux++;
                                 }
-                    	}
+                        }
                     double d_mean = std::sqrt(arma::mean(arma::square(*iter_diff)));
                     means.push_back(d_mean);
                     double d_stddev = arma::stddev(*iter_diff);
@@ -755,10 +763,10 @@ void ObsSystemTest::compute_doppler_error(
                 }
             prn_id++;
         }
-    if(FLAGS_plot_obs_sys_test == true)
+    if (FLAGS_plot_obs_sys_test == true)
         {
             const std::string gnuplot_executable(FLAGS_gnuplot_executable);
-            if(gnuplot_executable.empty())
+            if (gnuplot_executable.empty())
                 {
                     std::cout << "WARNING: Although the flag plot_obs_sys_test has been set to TRUE," << std::endl;
                     std::cout << "gnuplot has not been found in your system." << std::endl;
@@ -767,7 +775,7 @@ void ObsSystemTest::compute_doppler_error(
             else
                 {
                     try
-                    {
+                        {
                             boost::filesystem::path p(gnuplot_executable);
                             boost::filesystem::path dir = p.parent_path();
                             std::string gnuplot_path = dir.native();
@@ -781,25 +789,25 @@ void ObsSystemTest::compute_doppler_error(
                             g1.plot_xy(prns, means, "RMS error");
                             g1.plot_xy(prns, stddevs, "Standard deviation");
                             size_t char_pos = signal_name.find(" ");
-                            while(char_pos != std::string::npos)
+                            while (char_pos != std::string::npos)
                                 {
                                     signal_name.replace(char_pos, 1, "_");
                                     char_pos = signal_name.find(" ");
                                 }
                             char_pos = signal_name.find("/");
-                            while(char_pos != std::string::npos)
+                            while (char_pos != std::string::npos)
                                 {
                                     signal_name.replace(char_pos, 1, "_");
                                     char_pos = signal_name.find("/");
                                 }
                             g1.savetops("Doppler_error_" + signal_name);
                             g1.savetopdf("Doppler_error_" + signal_name, 18);
-                            g1.showonscreen(); // window output
-                    }
-                    catch (const GnuplotException & ge)
-                    {
+                            g1.showonscreen();  // window output
+                        }
+                    catch (const GnuplotException& ge)
+                        {
                             std::cout << ge.what() << std::endl;
-                    }
+                        }
                 }
         }
 }
@@ -808,7 +816,7 @@ void ObsSystemTest::compute_doppler_error(
 void ObsSystemTest::check_results()
 {
     arma::mat sow_prn_ref;
-    if(gps_1C)
+    if (gps_1C)
         {
             std::vector<arma::mat> pseudorange_ref(num_prn_gps);
             std::vector<arma::mat> carrierphase_ref(num_prn_gps);
@@ -846,7 +854,7 @@ void ObsSystemTest::check_results()
 
             compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std, "GPS L1 C/A");
         }
-    if(gps_L5)
+    if (gps_L5)
         {
             std::vector<arma::mat> pseudorange_ref(num_prn_gps);
             std::vector<arma::mat> carrierphase_ref(num_prn_gps);
@@ -884,7 +892,7 @@ void ObsSystemTest::check_results()
 
             compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std, "GPS L5");
         }
-    if(gal_1B)
+    if (gal_1B)
         {
             std::vector<arma::mat> pseudorange_ref(num_prn_gal);
             std::vector<arma::mat> carrierphase_ref(num_prn_gal);
@@ -922,7 +930,7 @@ void ObsSystemTest::check_results()
 
             compute_doppler_error(dp_diff, doppler_error_th_mean, doppler_error_th_std, "Galileo E1B");
         }
-    if(gal_E5a)
+    if (gal_E5a)
         {
             std::vector<arma::mat> pseudorange_ref(num_prn_gal);
             std::vector<arma::mat> carrierphase_ref(num_prn_gal);
@@ -971,16 +979,16 @@ TEST_F(ObsSystemTest, Observables_system_test)
     std::cout << "The file is valid." << std::endl;
     // Configure receiver
     configure_receiver();
-    if(generated_rinex_obs.compare("default_string") == 0)
+    if (generated_rinex_obs.compare("default_string") == 0)
         {
             // Run the receiver
-            ASSERT_EQ( run_receiver(), 0) << "Problem executing the software-defined signal generator";
+            ASSERT_EQ(run_receiver(), 0) << "Problem executing the software-defined signal generator";
         }
     std::cout << "Validating RINEX obs file obtained by GNSS-SDR: " << generated_rinex_obs << " ..." << std::endl;
     bool is_gen_rinex_obs_valid = false;
-    if(internal_rinex_generation)
+    if (internal_rinex_generation)
         {
-            is_gen_rinex_obs_valid = check_valid_rinex_obs( "./" + generated_rinex_obs, config->property("PVT.rinex_version", 3));
+            is_gen_rinex_obs_valid = check_valid_rinex_obs("./" + generated_rinex_obs, config->property("PVT.rinex_version", 3));
         }
     else
         {
@@ -993,28 +1001,30 @@ TEST_F(ObsSystemTest, Observables_system_test)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     std::cout << "Running GNSS-SDR in Space Observables validation test..." << std::endl;
     int res = 0;
     try
-    {
+        {
             testing::InitGoogleTest(&argc, argv);
-    }
-    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+        }
+    catch (...)
+        {
+        }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
 
     // Run the Tests
     try
-    {
+        {
             res = RUN_ALL_TESTS();
-    }
-    catch(...)
-    {
+        }
+    catch (...)
+        {
             LOG(WARNING) << "Unexpected catch";
-    }
+        }
     google::ShutDownCommandLineFlags();
     return res;
 }

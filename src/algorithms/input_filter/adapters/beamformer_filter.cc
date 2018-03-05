@@ -38,9 +38,8 @@
 using google::LogMessage;
 
 BeamformerFilter::BeamformerFilter(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_stream, unsigned int out_stream) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_stream, unsigned int out_stream) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/input_filter.dat";
@@ -55,12 +54,11 @@ BeamformerFilter::BeamformerFilter(
             beamformer_ = make_beamformer();
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << beamformer_->unique_id() << ")";
-
         }
     else
         {
             LOG(WARNING) << item_type_
-                                  << " unrecognized item type for beamformer";
+                         << " unrecognized item type for beamformer";
             item_size_ = sizeof(gr_complex);
         }
     if (dump_)
@@ -74,7 +72,6 @@ BeamformerFilter::BeamformerFilter(
 
 
 BeamformerFilter::~BeamformerFilter() {}
-
 
 
 void BeamformerFilter::connect(gr::top_block_sptr top_block)

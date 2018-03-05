@@ -33,7 +33,6 @@
 #include "string_converter.h"
 
 
-
 TEST(StringConverterTest, StringToBool)
 {
     std::unique_ptr<StringConverter> converter(new StringConverter());

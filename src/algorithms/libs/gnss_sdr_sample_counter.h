@@ -39,20 +39,20 @@ class gnss_sdr_sample_counter;
 
 typedef boost::shared_ptr<gnss_sdr_sample_counter> gnss_sdr_sample_counter_sptr;
 
-gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter ();
+gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter();
 
 class gnss_sdr_sample_counter : public gr::sync_block
 {
     friend gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter();
-    gnss_sdr_sample_counter ();
+    gnss_sdr_sample_counter();
     double last_T_rx_s;
     double report_interval_s;
     bool flag_enable_send_msg;
 
 public:
     int work(int noutput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif /*GNSS_SDR_sample_counter_H_*/

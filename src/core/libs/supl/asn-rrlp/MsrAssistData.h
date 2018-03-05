@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_MsrAssistData_H_
-#define	_MsrAssistData_H_
+#ifndef _MsrAssistData_H_
+#define _MsrAssistData_H_
 
 
 #include <asn_application.h>
@@ -15,23 +15,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* MsrAssistData */
-typedef struct MsrAssistData {
-	SeqOfMsrAssistBTS_t	 msrAssistList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} MsrAssistData_t;
+    /* MsrAssistData */
+    typedef struct MsrAssistData
+    {
+        SeqOfMsrAssistBTS_t msrAssistList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MsrAssistData;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } MsrAssistData_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MsrAssistData;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _MsrAssistData_H_ */
+#endif /* _MsrAssistData_H_ */
 #include <asn_internal.h>

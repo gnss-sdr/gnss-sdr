@@ -39,20 +39,22 @@
 using google::LogMessage;
 
 direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(
-        double sample_freq_in, double sample_freq_out)
+    double sample_freq_in, double sample_freq_out)
 {
     return direct_resampler_conditioner_cs_sptr(
-            new direct_resampler_conditioner_cs(sample_freq_in,
-                    sample_freq_out));
+        new direct_resampler_conditioner_cs(sample_freq_in,
+            sample_freq_out));
 }
 
 
 direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
-        double sample_freq_in, double sample_freq_out) :
-    gr::block("direct_resampler_make_conditioner_cs", gr::io_signature::make(1,
-            1, sizeof(lv_16sc_t)), gr::io_signature::make(1, 1, sizeof(lv_16sc_t))),
-            d_sample_freq_in(sample_freq_in), d_sample_freq_out(
-                    sample_freq_out), d_phase(0), d_lphase(0), d_history(1)
+    double sample_freq_in, double sample_freq_out) : gr::block("direct_resampler_make_conditioner_cs", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)), gr::io_signature::make(1, 1, sizeof(lv_16sc_t))),
+                                                     d_sample_freq_in(sample_freq_in),
+                                                     d_sample_freq_out(
+                                                         sample_freq_out),
+                                                     d_phase(0),
+                                                     d_lphase(0),
+                                                     d_history(1)
 {
     const double two_32 = 4294967296.0;
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296
@@ -72,15 +74,13 @@ direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
 
 direct_resampler_conditioner_cs::~direct_resampler_conditioner_cs()
 {
-
 }
 
 
 void direct_resampler_conditioner_cs::forecast(int noutput_items,
-        gr_vector_int &ninput_items_required)
+    gr_vector_int &ninput_items_required)
 {
-    int nreqd = std::max(static_cast<unsigned>(1), static_cast<int>(static_cast<double>(noutput_items + 1)
-            * sample_freq_in() / sample_freq_out()) + history() - 1);
+    int nreqd = std::max(static_cast<unsigned>(1), static_cast<int>(static_cast<double>(noutput_items + 1) * sample_freq_in() / sample_freq_out()) + history() - 1);
     unsigned ninputs = ninput_items_required.size();
 
     for (unsigned i = 0; i < ninputs; i++)
@@ -91,8 +91,8 @@ void direct_resampler_conditioner_cs::forecast(int noutput_items,
 
 
 int direct_resampler_conditioner_cs::general_work(int noutput_items,
-        gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+    gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
 {
     const lv_16sc_t *in = reinterpret_cast<const lv_16sc_t *>(input_items[0]);
     lv_16sc_t *out = reinterpret_cast<lv_16sc_t *>(output_items[0]);

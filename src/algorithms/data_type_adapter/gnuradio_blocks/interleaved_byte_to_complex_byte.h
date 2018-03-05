@@ -45,16 +45,17 @@ interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte();
  * \brief This class adapts an 8-bits interleaved sample stream
  * into a 16-bits complex stream (std::complex<unsigned char>)
  */
-class interleaved_byte_to_complex_byte :  public gr::sync_decimator
+class interleaved_byte_to_complex_byte : public gr::sync_decimator
 {
 private:
     friend interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte();
+
 public:
     interleaved_byte_to_complex_byte();
 
     int work(int noutput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif

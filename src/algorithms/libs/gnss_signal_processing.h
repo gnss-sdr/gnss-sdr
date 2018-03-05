@@ -43,14 +43,14 @@
  *
  */
 void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs,
-        unsigned int _samps);
+    unsigned int _samps);
 
 /*!
  * \brief This function generates a conjugate complex exponential in _dest.
  *
  */
 void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs,
-        unsigned int _samps);
+    unsigned int _samps);
 
 
 /*!
@@ -58,21 +58,21 @@ void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs,
  *  to binary (the output are 4 ints with +1 or -1 values).
  *
  */
-void hex_to_binary_converter(int * _dest, char _from);
+void hex_to_binary_converter(int* _dest, char _from);
 
 /*!
  * \brief This function resamples a sequence of float values.
  *
  */
 void resampler(float* _from, float* _dest,
-        float _fs_in, float _fs_out, unsigned int _length_in,
-        unsigned int _length_out);
+    float _fs_in, float _fs_out, unsigned int _length_in,
+    unsigned int _length_out);
 /*!
  * \brief This function resamples a sequence of complex values.
  *
  */
 void resampler(std::complex<float>* _from, std::complex<float>* _dest,
-        float _fs_in, float _fs_out, unsigned int _length_in,
-        unsigned int _length_out);
+    float _fs_in, float _fs_out, unsigned int _length_in,
+    unsigned int _length_out);
 
 #endif /* GNSS_SDR_GNSS_SIGNAL_PROCESSING_H_ */

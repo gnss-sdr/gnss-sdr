@@ -47,12 +47,12 @@ class ConfigurationInterface;
  * \brief Interface of a MMSE resampler block adapter
  * to a SignalConditionerInterface
  */
-class MmseResamplerConditioner: public GNSSBlockInterface
+class MmseResamplerConditioner : public GNSSBlockInterface
 {
 public:
     MmseResamplerConditioner(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream);
 
     virtual ~MmseResamplerConditioner();
 
@@ -86,11 +86,11 @@ private:
     std::string dump_filename_;
     double sample_freq_in_;
     double sample_freq_out_;
-    #ifdef GR_GREATER_38
+#ifdef GR_GREATER_38
     gr::filter::mmse_resampler_cc::sptr resampler_;
-    #else
+#else
     gr::filter::fractional_resampler_cc::sptr resampler_;
-    #endif
+#endif
     gr::block_sptr file_sink_;
 };
 

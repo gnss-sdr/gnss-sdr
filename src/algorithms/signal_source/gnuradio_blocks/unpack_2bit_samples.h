@@ -75,43 +75,43 @@ class unpack_2bit_samples;
 
 typedef boost::shared_ptr<unpack_2bit_samples> unpack_2bit_samples_sptr;
 
-unpack_2bit_samples_sptr make_unpack_2bit_samples( bool big_endian_bytes, 
-                                                   size_t item_size,
-                                                   bool big_endian_items,
-                                                   bool reverse_interleaving = false );
+unpack_2bit_samples_sptr make_unpack_2bit_samples(bool big_endian_bytes,
+    size_t item_size,
+    bool big_endian_items,
+    bool reverse_interleaving = false);
 
 /*!
  * \brief This class takes 2 bit samples that have been packed into bytes or
  * shorts as input and generates a byte for each sample. It generates eight
  * times as much data as is input (every two bits become 16 bits)
  */
-class unpack_2bit_samples: public gr::sync_interpolator
+class unpack_2bit_samples : public gr::sync_interpolator
 {
 private:
     friend unpack_2bit_samples_sptr
-           make_unpack_2bit_samples_sptr( bool big_endian_bytes, 
-                                          size_t item_size,
-                                          bool big_endian_items,
-                                          bool reverse_interleaving);
+    make_unpack_2bit_samples_sptr(bool big_endian_bytes,
+        size_t item_size,
+        bool big_endian_items,
+        bool reverse_interleaving);
     bool big_endian_bytes_;
     size_t item_size_;
     bool big_endian_items_;
     bool swap_endian_items_;
     bool swap_endian_bytes_;
     bool reverse_interleaving_;
-    std::vector< int8_t > work_buffer_;
+    std::vector<int8_t> work_buffer_;
 
 public:
-    unpack_2bit_samples( bool big_endianBytes,
-                         size_t item_size,
-                         bool big_endian_items,
-                         bool reverse_interleaving );
+    unpack_2bit_samples(bool big_endianBytes,
+        size_t item_size,
+        bool big_endian_items,
+        bool reverse_interleaving);
 
     ~unpack_2bit_samples();
 
-    int work (int noutput_items,
-              gr_vector_const_void_star &input_items,
-              gr_vector_void_star &output_items);
+    int work(int noutput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif

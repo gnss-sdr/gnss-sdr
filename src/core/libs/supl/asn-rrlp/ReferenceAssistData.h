@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ReferenceAssistData_H_
-#define	_ReferenceAssistData_H_
+#ifndef _ReferenceAssistData_H_
+#define _ReferenceAssistData_H_
 
 
 #include <asn_application.h>
@@ -18,26 +18,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ReferenceAssistData */
-typedef struct ReferenceAssistData {
-	BCCHCarrier_t	 bcchCarrier;
-	BSIC_t	 bsic;
-	TimeSlotScheme_t	 timeSlotScheme;
-	BTSPosition_t	*btsPosition	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ReferenceAssistData_t;
+    /* ReferenceAssistData */
+    typedef struct ReferenceAssistData
+    {
+        BCCHCarrier_t bcchCarrier;
+        BSIC_t bsic;
+        TimeSlotScheme_t timeSlotScheme;
+        BTSPosition_t *btsPosition /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceAssistData;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReferenceAssistData_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceAssistData;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _ReferenceAssistData_H_ */
+#endif /* _ReferenceAssistData_H_ */
 #include <asn_internal.h>

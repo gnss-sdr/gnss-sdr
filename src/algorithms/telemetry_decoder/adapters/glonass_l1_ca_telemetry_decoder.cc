@@ -43,12 +43,11 @@
 using google::LogMessage;
 
 GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface* configuration,
-        std::string role,
-        unsigned int in_streams,
-        unsigned int out_streams) :
-                role_(role),
-                in_streams_(in_streams),
-                out_streams_(out_streams)
+    std::string role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     std::string default_dump_filename = "./navigation.dat";
     DLOG(INFO) << "role " << role;
@@ -62,10 +61,11 @@ GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface*
 
 
 GlonassL1CaTelemetryDecoder::~GlonassL1CaTelemetryDecoder()
-{}
+{
+}
 
 
-void GlonassL1CaTelemetryDecoder::set_satellite(const Gnss_Satellite & satellite)
+void GlonassL1CaTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     telemetry_decoder_->set_satellite(satellite_);
@@ -75,7 +75,9 @@ void GlonassL1CaTelemetryDecoder::set_satellite(const Gnss_Satellite & satellite
 
 void GlonassL1CaTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
@@ -83,7 +85,9 @@ void GlonassL1CaTelemetryDecoder::connect(gr::top_block_sptr top_block)
 
 void GlonassL1CaTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     // Nothing to disconnect
 }
 

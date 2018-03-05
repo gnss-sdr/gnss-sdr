@@ -51,9 +51,9 @@ class Pass_Through : public GNSSBlockInterface
 {
 public:
     Pass_Through(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_stream,
-            unsigned int out_stream);
+        std::string role,
+        unsigned int in_stream,
+        unsigned int out_stream);
 
     virtual ~Pass_Through();
 
@@ -77,7 +77,7 @@ public:
     {
         return item_size_;
     }
-    
+
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;

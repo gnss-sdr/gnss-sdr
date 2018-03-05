@@ -39,9 +39,7 @@
 using google::LogMessage;
 
 NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                role_(role), in_streams_(in_streams),
-                out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     size_t item_size_;
     float p_c_factor;
@@ -56,7 +54,7 @@ NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, std::str
     int default_n_segments_reset = 5000000;
     float default_samp_freq = 4000000;
     float samp_freq = configuration->property("SignalSource.sampling_frequency", default_samp_freq);
-    float default_coeff_rate = samp_freq * 0.1; 
+    float default_coeff_rate = samp_freq * 0.1;
     float coeff_rate;
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/input_filter.dat";
@@ -94,7 +92,8 @@ NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, std::str
 
 
 NotchFilterLite::~NotchFilterLite()
-{}
+{
+}
 
 
 void NotchFilterLite::connect(gr::top_block_sptr top_block)
@@ -107,7 +106,7 @@ void NotchFilterLite::connect(gr::top_block_sptr top_block)
     else
         {
             DLOG(INFO) << "nothing to connect internally";
-        }   
+        }
 }
 
 
@@ -120,7 +119,7 @@ void NotchFilterLite::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr NotchFilterLite::get_left_block() 
+gr::basic_block_sptr NotchFilterLite::get_left_block()
 {
     return notch_filter_lite_;
 }

@@ -37,18 +37,19 @@
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
 #include <gnuradio/block.h>
-#include <algorithm> // for copy
+#include <algorithm>  // for copy
 #include <deque>
 #include <fstream>
 #include <string>
-#include <utility> // for pair
+#include <utility>  // for pair
 #include <vector>
 
 
-extern "C" {
-    #include "cnav_msg.h"
-    #include "edc.h"
-    #include "bits.h"
+extern "C"
+{
+#include "cnav_msg.h"
+#include "edc.h"
+#include "bits.h"
 }
 
 #include "GPS_L2C.h"
@@ -58,7 +59,7 @@ class gps_l2c_telemetry_decoder_cc;
 typedef boost::shared_ptr<gps_l2c_telemetry_decoder_cc> gps_l2c_telemetry_decoder_cc_sptr;
 
 gps_l2c_telemetry_decoder_cc_sptr
-gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
@@ -68,20 +69,20 @@ class gps_l2c_telemetry_decoder_cc : public gr::block
 {
 public:
     ~gps_l2c_telemetry_decoder_cc();
-    void set_satellite(const Gnss_Satellite & satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                         //!< Set receiver's channel
+    void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
+    void set_channel(int channel);                        //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
      */
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 
 private:
     friend gps_l2c_telemetry_decoder_cc_sptr
-    gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
-    gps_l2c_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    gps_l2c_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
     bool d_dump;
     Gnss_Satellite d_satellite;

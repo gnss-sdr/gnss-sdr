@@ -14,8 +14,8 @@
 /* Including external dependencies */
 #include "LocationId.h"
 #include "RelativeTime.h"
-#include <BOOLEAN.h>
-#include <constr_SEQUENCE.h>
+#include "BOOLEAN.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,4 +45,4 @@ extern asn_TYPE_member_t asn_MBR_LocationIdData_1[3];
 #endif
 
 #endif	/* _LocationIdData_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -12,7 +12,7 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,4 +45,4 @@ extern asn_TYPE_member_t asn_MBR_SessionID_1[2];
 #include "SlpSessionID.h"
 
 #endif	/* _SessionID_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

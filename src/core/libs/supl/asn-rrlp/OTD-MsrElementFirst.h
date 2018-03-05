@@ -8,13 +8,13 @@
 #define _OTD_MsrElementFirst_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 #include "ModuloTimeSlot.h"
 #include "StdResolution.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -51,4 +51,4 @@ extern "C"
 #include "SeqOfOTD-FirstSetMsrs.h"
 
 #endif /* _OTD_MsrElementFirst_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

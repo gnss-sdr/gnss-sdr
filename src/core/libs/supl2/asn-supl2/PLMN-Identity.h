@@ -13,7 +13,7 @@
 
 /* Including external dependencies */
 #include "MNC.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,4 +44,4 @@ extern asn_TYPE_member_t asn_MBR_PLMN_Identity_1[2];
 #include "MCC.h"
 
 #endif	/* _PLMN_Identity_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

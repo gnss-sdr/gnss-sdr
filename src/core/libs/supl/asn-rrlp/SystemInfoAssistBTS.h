@@ -8,12 +8,12 @@
 #define _SystemInfoAssistBTS_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <NULL.h>
+#include "NULL.h"
 #include "AssistBTSData.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -50,4 +50,4 @@ extern "C"
 #endif
 
 #endif /* _SystemInfoAssistBTS_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

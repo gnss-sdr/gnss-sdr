@@ -5,7 +5,7 @@
 #ifndef _ENUMERATED_H_
 #define _ENUMERATED_H_
 
-#include <INTEGER.h>
+#include "INTEGER.h"
 
 #ifdef __cplusplus
 extern "C"

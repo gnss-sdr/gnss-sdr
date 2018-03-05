@@ -6,8 +6,8 @@
 #ifndef _REENTRANT
 #define	_REENTRANT			/* for Sun */
 #endif
-#include <asn_internal.h>
-#include <GeneralizedTime.h>
+#include "asn_internal.h"
+#include "GeneralizedTime.h"
 #include <errno.h>
 
 #ifdef	__CYGWIN__

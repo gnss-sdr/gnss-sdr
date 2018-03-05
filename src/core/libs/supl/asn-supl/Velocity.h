@@ -8,14 +8,14 @@
 #define _Velocity_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "Horvel.h"
 #include "Horandvervel.h"
 #include "Horveluncert.h"
 #include "Horandveruncert.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -62,4 +62,4 @@ extern "C"
 #endif
 
 #endif /* _Velocity_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

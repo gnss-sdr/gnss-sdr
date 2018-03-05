@@ -12,8 +12,8 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <BOOLEAN.h>
-#include <constr_SEQUENCE.h>
+#include "BOOLEAN.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,4 +41,4 @@ extern asn_TYPE_member_t asn_MBR_SupportedWCDMAInfo_1[1];
 #endif
 
 #endif	/* _SupportedWCDMAInfo_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

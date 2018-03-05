@@ -12,7 +12,7 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeEnumerated.h>
+#include "NativeEnumerated.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,4 +50,4 @@ per_type_encoder_f SUPL_TRIGGERED_RESPONSE_RepMode_encode_uper;
 #endif
 
 #endif	/* _SUPL_TRIGGERED_RESPONSE_RepMode_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

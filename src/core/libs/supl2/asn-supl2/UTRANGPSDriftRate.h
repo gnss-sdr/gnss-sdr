@@ -12,7 +12,7 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeEnumerated.h>
+#include "NativeEnumerated.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,4 +59,4 @@ per_type_encoder_f UTRANGPSDriftRate_encode_uper;
 #endif
 
 #endif	/* _UTRANGPSDriftRate_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -8,15 +8,15 @@
 #define _RRLP_Component_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "MsrPosition-Req.h"
 #include "MsrPosition-Rsp.h"
 #include "AssistanceData.h"
-#include <NULL.h>
+#include "NULL.h"
 #include "ProtocolError.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -65,4 +65,4 @@ extern "C"
 #endif
 
 #endif /* _RRLP_Component_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

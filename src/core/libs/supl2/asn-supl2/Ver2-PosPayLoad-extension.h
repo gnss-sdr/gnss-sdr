@@ -12,10 +12,10 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <OCTET_STRING.h>
-#include <asn_SEQUENCE_OF.h>
-#include <constr_SEQUENCE_OF.h>
-#include <constr_SEQUENCE.h>
+#include "OCTET_STRING.h"
+#include "asn_SEQUENCE_OF.h"
+#include "constr_SEQUENCE_OF.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,4 +54,4 @@ extern asn_TYPE_member_t asn_MBR_Ver2_PosPayLoad_extension_1[2];
 #endif
 
 #endif	/* _Ver2_PosPayLoad_extension_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -13,10 +13,10 @@
 
 /* Including external dependencies */
 #include "GANSSSignals.h"
-#include <NativeInteger.h>
-#include <asn_SEQUENCE_OF.h>
-#include <constr_SEQUENCE_OF.h>
-#include <constr_SEQUENCE.h>
+#include "NativeInteger.h"
+#include "asn_SEQUENCE_OF.h"
+#include "constr_SEQUENCE_OF.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,4 +51,4 @@ extern asn_TYPE_member_t asn_MBR_ReqDataBitAssistanceList_1[3];
 #endif
 
 #endif	/* _ReqDataBitAssistanceList_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

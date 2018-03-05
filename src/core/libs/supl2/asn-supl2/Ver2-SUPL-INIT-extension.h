@@ -14,8 +14,8 @@
 /* Including external dependencies */
 #include "NotificationMode.h"
 #include "TriggerType.h"
-#include <NativeInteger.h>
-#include <constr_SEQUENCE.h>
+#include "NativeInteger.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,4 +64,4 @@ extern asn_TYPE_member_t asn_MBR_Ver2_SUPL_INIT_extension_1[8];
 #include "GNSSPosTechnology.h"
 
 #endif	/* _Ver2_SUPL_INIT_extension_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

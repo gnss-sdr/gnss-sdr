@@ -13,8 +13,8 @@
 
 /* Including external dependencies */
 #include "PolygonDescription.h"
-#include <NativeInteger.h>
-#include <constr_SEQUENCE.h>
+#include "NativeInteger.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,4 +39,4 @@ extern asn_TYPE_member_t asn_MBR_PolygonArea_1[2];
 #endif
 
 #endif	/* _PolygonArea_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

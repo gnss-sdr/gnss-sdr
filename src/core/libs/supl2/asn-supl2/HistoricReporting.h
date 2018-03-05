@@ -13,7 +13,7 @@
 
 /* Including external dependencies */
 #include "AllowedReportingType.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,4 +48,4 @@ extern asn_TYPE_member_t asn_MBR_HistoricReporting_1[2];
 #include "ReportingCriteria.h"
 
 #endif	/* _HistoricReporting_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

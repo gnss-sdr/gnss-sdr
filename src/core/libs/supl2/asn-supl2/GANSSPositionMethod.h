@@ -12,11 +12,11 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
-#include <BIT_STRING.h>
+#include "NativeInteger.h"
+#include "BIT_STRING.h"
 #include "GANSSPositioningMethodTypes.h"
 #include "GANSSSignals.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,4 +47,4 @@ extern asn_TYPE_member_t asn_MBR_GANSSPositionMethod_1[4];
 #endif
 
 #endif	/* _GANSSPositionMethod_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

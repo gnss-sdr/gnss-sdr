@@ -3,10 +3,10 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <constr_SEQUENCE.h>
-#include <OPEN_TYPE.h>
-#include <per_opentype.h>
+#include "asn_internal.h"
+#include "constr_SEQUENCE.h"
+#include "OPEN_TYPE.h"
+#include "per_opentype.h"
 
 /*
  * Number of bytes left for this structure.

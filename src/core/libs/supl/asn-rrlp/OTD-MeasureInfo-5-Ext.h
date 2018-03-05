@@ -8,7 +8,7 @@
 #define _OTD_MeasureInfo_5_Ext_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "SeqOfOTD-MsrElementRest.h"
@@ -38,4 +38,4 @@ extern "C"
 #endif
 
 #endif /* _OTD_MeasureInfo_5_Ext_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

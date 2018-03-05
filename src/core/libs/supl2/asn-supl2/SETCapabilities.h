@@ -15,7 +15,7 @@
 #include "PosTechnology.h"
 #include "PrefMethod.h"
 #include "PosProtocol.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,4 +52,4 @@ extern asn_TYPE_member_t asn_MBR_SETCapabilities_1[4];
 #include "Ver2-SETCapabilities-extension.h"
 
 #endif	/* _SETCapabilities_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

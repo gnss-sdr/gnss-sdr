@@ -5,7 +5,7 @@
 #ifndef	_UTCTime_H_
 #define	_UTCTime_H_
 
-#include <OCTET_STRING.h>
+#include "OCTET_STRING.h"
 
 #ifdef __cplusplus
 extern "C" {

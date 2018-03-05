@@ -12,8 +12,8 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
-#include <constr_SEQUENCE.h>
+#include "NativeInteger.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,4 +52,4 @@ extern asn_TYPE_member_t asn_MBR_GsmCellInformation_1[6];
 #include "NMR.h"
 
 #endif	/* _GsmCellInformation_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -8,12 +8,12 @@
 #define _Rel98_AssistanceData_Extension_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <NULL.h>
+#include "NULL.h"
 #include "GPSReferenceTimeUncertainty.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -49,4 +49,4 @@ extern "C"
 #include "Rel98-Ext-ExpOTD.h"
 
 #endif /* _Rel98_AssistanceData_Extension_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

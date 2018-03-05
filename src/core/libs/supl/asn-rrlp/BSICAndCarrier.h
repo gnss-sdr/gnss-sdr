@@ -8,12 +8,12 @@
 #define _BSICAndCarrier_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "BCCHCarrier.h"
 #include "BSIC.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -38,4 +38,4 @@ extern "C"
 #endif
 
 #endif /* _BSICAndCarrier_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

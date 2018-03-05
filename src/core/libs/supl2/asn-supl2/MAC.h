@@ -12,7 +12,7 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <BIT_STRING.h>
+#include "BIT_STRING.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,4 +39,4 @@ per_type_encoder_f MAC_encode_uper;
 #endif
 
 #endif	/* _MAC_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

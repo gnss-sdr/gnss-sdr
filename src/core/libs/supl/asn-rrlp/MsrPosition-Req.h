@@ -8,12 +8,12 @@
 #define _MsrPosition_Req_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "PositionInstruct.h"
 #include "ExtensionContainer.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -64,4 +64,4 @@ extern "C"
 #include "Rel5-MsrPosition-Req-Extension.h"
 
 #endif /* _MsrPosition_Req_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

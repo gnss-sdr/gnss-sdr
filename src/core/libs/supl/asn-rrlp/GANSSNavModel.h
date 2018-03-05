@@ -8,12 +8,12 @@
 #define _GANSSNavModel_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 #include "SeqOfGANSSSatelliteElement.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -41,4 +41,4 @@ extern "C"
 #endif
 
 #endif /* _GANSSNavModel_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

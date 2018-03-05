@@ -8,12 +8,12 @@
 #define _OTD_MsrsOfOtherSets_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "OTD-Measurement.h"
 #include "OTD-MeasurementWithID.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -50,4 +50,4 @@ extern "C"
 #endif
 
 #endif /* _OTD_MsrsOfOtherSets_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

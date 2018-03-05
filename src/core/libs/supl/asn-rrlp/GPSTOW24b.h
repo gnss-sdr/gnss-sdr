@@ -8,10 +8,10 @@
 #define _GPSTOW24b_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -38,4 +38,4 @@ extern "C"
 #endif
 
 #endif /* _GPSTOW24b_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -17,7 +17,7 @@
 #include "LteCellInformation.h"
 #include "WlanAPInformation.h"
 #include "WimaxBSInformation.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,4 +65,4 @@ extern asn_per_constraints_t asn_PER_type_Ver2_CellInfo_extension_constr_1;
 #endif
 
 #endif	/* _Ver2_CellInfo_extension_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

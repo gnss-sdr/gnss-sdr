@@ -14,7 +14,7 @@
 /* Including external dependencies */
 #include "PosMethod.h"
 #include "KeyIdentity4.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,4 +56,4 @@ extern asn_TYPE_member_t asn_MBR_SUPLRESPONSE_1[5];
 #include "Ver2-SUPL-RESPONSE-extension.h"
 
 #endif	/* _SUPLRESPONSE_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

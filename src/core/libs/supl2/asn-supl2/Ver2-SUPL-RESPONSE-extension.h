@@ -14,7 +14,7 @@
 /* Including external dependencies */
 #include "SPCSETKey.h"
 #include "SPCSETKeylifetime.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,4 +59,4 @@ extern asn_TYPE_member_t asn_MBR_Ver2_SUPL_RESPONSE_extension_1[6];
 #include "GNSSPosTechnology.h"
 
 #endif	/* _Ver2_SUPL_RESPONSE_extension_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

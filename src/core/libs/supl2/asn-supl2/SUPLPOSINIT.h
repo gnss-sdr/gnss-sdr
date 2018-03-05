@@ -15,7 +15,7 @@
 #include "SETCapabilities.h"
 #include "LocationId.h"
 #include "Ver.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,4 +61,4 @@ extern asn_TYPE_member_t asn_MBR_SUPLPOSINIT_1[7];
 #include "Ver2-SUPL-POS-INIT-extension.h"
 
 #endif	/* _SUPLPOSINIT_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

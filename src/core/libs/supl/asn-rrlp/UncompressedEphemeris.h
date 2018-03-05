@@ -8,12 +8,12 @@
 #define _UncompressedEphemeris_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 #include "EphemerisSubframe1Reserved.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -67,4 +67,4 @@ extern "C"
 #endif
 
 #endif /* _UncompressedEphemeris_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -8,7 +8,7 @@
 #define _NeighborIdentity_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "BSICAndCarrier.h"
@@ -17,7 +17,7 @@
 #include "RequestIndex.h"
 #include "SystemInfoIndex.h"
 #include "CellIDAndLAC.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -62,4 +62,4 @@ extern "C"
 #endif
 
 #endif /* _NeighborIdentity_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -12,7 +12,7 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,4 +49,4 @@ extern asn_TYPE_member_t asn_MBR_Ver2_SETCapabilities_extension_1[2];
 #include "SupportedBearers.h"
 
 #endif	/* _Ver2_SETCapabilities_extension_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

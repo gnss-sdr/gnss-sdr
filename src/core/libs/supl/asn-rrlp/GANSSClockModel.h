@@ -8,11 +8,11 @@
 #define _GANSSClockModel_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "SeqOfStandardClockModelElement.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -53,4 +53,4 @@ extern "C"
 #endif
 
 #endif /* _GANSSClockModel_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

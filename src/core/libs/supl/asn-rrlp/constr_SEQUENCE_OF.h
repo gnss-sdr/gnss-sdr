@@ -5,7 +5,7 @@
 #ifndef _CONSTR_SEQUENCE_OF_H_
 #define _CONSTR_SEQUENCE_OF_H_
 
-#include <asn_application.h>
+#include "asn_application.h"
 #include <constr_SET_OF.h> /* Implemented using SET OF */
 
 #ifdef __cplusplus

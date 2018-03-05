@@ -13,7 +13,7 @@
 
 /* Including external dependencies */
 #include "ResultCode.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,4 +54,4 @@ extern asn_TYPE_member_t asn_MBR_ReportData_1[4];
 #include "TimeStamp.h"
 
 #endif	/* _ReportData_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

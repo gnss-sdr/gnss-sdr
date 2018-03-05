@@ -8,12 +8,12 @@
 #define _SatElement_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "SatelliteID.h"
-#include <NativeInteger.h>
-#include <constr_SEQUENCE.h>
+#include "NativeInteger.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -45,4 +45,4 @@ extern "C"
 #endif
 
 #endif /* _SatElement_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

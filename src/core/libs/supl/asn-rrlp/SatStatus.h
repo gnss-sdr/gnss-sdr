@@ -8,12 +8,12 @@
 #define _SatStatus_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "UncompressedEphemeris.h"
-#include <NULL.h>
-#include <constr_CHOICE.h>
+#include "NULL.h"
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -58,4 +58,4 @@ extern "C"
 #endif
 
 #endif /* _SatStatus_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

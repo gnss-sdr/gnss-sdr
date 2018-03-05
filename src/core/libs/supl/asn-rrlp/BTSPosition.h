@@ -8,7 +8,7 @@
 #define _BTSPosition_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "Ext-GeographicalInformation.h"
@@ -38,4 +38,4 @@ extern "C"
 #endif
 
 #endif /* _BTSPosition_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

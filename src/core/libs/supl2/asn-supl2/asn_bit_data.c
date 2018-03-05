@@ -3,9 +3,9 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_system.h>
-#include <asn_internal.h>
-#include <asn_bit_data.h>
+#include "asn_system.h"
+#include "asn_internal.h"
+#include "asn_bit_data.h"
 
 /*
  * Create a contiguous non-refillable bit data structure.

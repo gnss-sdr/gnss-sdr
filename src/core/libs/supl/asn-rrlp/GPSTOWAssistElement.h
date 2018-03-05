@@ -8,7 +8,7 @@
 #define _GPSTOWAssistElement_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "SatelliteID.h"
@@ -16,7 +16,7 @@
 #include "AntiSpoofFlag.h"
 #include "AlertFlag.h"
 #include "TLMReservedBits.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -44,4 +44,4 @@ extern "C"
 #endif
 
 #endif /* _GPSTOWAssistElement_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

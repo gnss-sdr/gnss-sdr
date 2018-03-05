@@ -8,13 +8,13 @@
 #define _CellInfo_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "GsmCellInformation.h"
 #include "WcdmaCellInformation.h"
 #include "CdmaCellInformation.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -59,4 +59,4 @@ extern "C"
 #endif
 
 #endif /* _CellInfo_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

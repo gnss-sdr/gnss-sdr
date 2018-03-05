@@ -14,7 +14,7 @@
 /* Including external dependencies */
 #include "StatusCode.h"
 #include "Ver.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,4 +53,4 @@ extern asn_TYPE_member_t asn_MBR_SUPLEND_1[4];
 #include "Ver2-SUPL-END-extension.h"
 
 #endif	/* _SUPLEND_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

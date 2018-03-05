@@ -14,7 +14,7 @@
 /* Including external dependencies */
 #include "SETCapabilities.h"
 #include "LocationId.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,4 +53,4 @@ extern asn_TYPE_member_t asn_MBR_SUPLSTART_1[4];
 #include "Ver2-SUPL-START-extension.h"
 
 #endif	/* _SUPLSTART_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

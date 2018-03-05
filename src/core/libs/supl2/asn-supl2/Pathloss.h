@@ -12,7 +12,7 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,4 +39,4 @@ per_type_encoder_f Pathloss_encode_uper;
 #endif
 
 #endif	/* _Pathloss_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

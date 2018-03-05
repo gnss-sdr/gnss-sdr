@@ -12,7 +12,7 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeEnumerated.h>
+#include "NativeEnumerated.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,4 +54,4 @@ per_type_encoder_f ResultCode_encode_uper;
 #endif
 
 #endif	/* _ResultCode_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -8,11 +8,11 @@
 #define _LocationError_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "LocErrorReason.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -47,4 +47,4 @@ extern "C"
 #include "AdditionalAssistanceData.h"
 
 #endif /* _LocationError_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

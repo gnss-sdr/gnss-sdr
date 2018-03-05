@@ -5,7 +5,7 @@
 #ifndef _ASN1_CONSTRAINTS_VALIDATOR_H_
 #define _ASN1_CONSTRAINTS_VALIDATOR_H_
 
-#include <asn_system.h> /* Platform-dependent types */
+#include "asn_system.h" /* Platform-dependent types */
 
 #ifdef __cplusplus
 extern "C"

@@ -12,8 +12,8 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
-#include <constr_SEQUENCE.h>
+#include "NativeInteger.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,4 +50,4 @@ extern asn_TYPE_member_t asn_MBR_GanssNavigationModelData_1[4];
 #include "SatellitesListRelatedDataList.h"
 
 #endif	/* _GanssNavigationModelData_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -8,12 +8,12 @@
 #define _MethodType_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "AccuracyOpt.h"
 #include "Accuracy.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -54,4 +54,4 @@ extern "C"
 #endif
 
 #endif /* _MethodType_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

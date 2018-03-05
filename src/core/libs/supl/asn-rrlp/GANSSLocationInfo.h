@@ -8,16 +8,16 @@
 #define _GANSSLocationInfo_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "GANSSTODm.h"
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 #include "GANSSTODUncertainty.h"
 #include "FixType.h"
 #include "PositionData.h"
 #include "Ext-GeographicalInformation.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -59,4 +59,4 @@ extern "C"
 #include "ReferenceFrame.h"
 
 #endif /* _GANSSLocationInfo_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

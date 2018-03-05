@@ -8,7 +8,7 @@
 #define _UlpMessage_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "SUPLINIT.h"
@@ -18,7 +18,7 @@
 #include "SUPLPOS.h"
 #include "SUPLEND.h"
 #include "DUMMY.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -73,4 +73,4 @@ extern "C"
 #endif
 
 #endif /* _UlpMessage_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

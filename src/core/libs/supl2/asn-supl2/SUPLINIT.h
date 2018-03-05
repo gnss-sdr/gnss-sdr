@@ -16,7 +16,7 @@
 #include "SLPMode.h"
 #include "MAC.h"
 #include "KeyIdentity.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,4 +63,4 @@ extern asn_TYPE_member_t asn_MBR_SUPLINIT_1[8];
 #include "Ver2-SUPL-INIT-extension.h"
 
 #endif	/* _SUPLINIT_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

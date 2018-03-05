@@ -27,7 +27,7 @@
 #include "Ver2-SUPLNOTIFYRESPONSE.h"
 #include "Ver2-SUPLSETINIT.h"
 #include "Ver2-SUPLREPORT.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -94,4 +94,4 @@ extern asn_per_constraints_t asn_PER_type_UlpMessage_constr_1;
 #endif
 
 #endif	/* _UlpMessage_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

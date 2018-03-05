@@ -12,9 +12,9 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <BIT_STRING.h>
-#include <NativeEnumerated.h>
-#include <constr_SEQUENCE.h>
+#include "BIT_STRING.h"
+#include "NativeEnumerated.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,4 +54,4 @@ extern asn_TYPE_member_t asn_MBR_SupportedWLANApData_1[2];
 #endif
 
 #endif	/* _SupportedWLANApData_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

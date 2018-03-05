@@ -8,10 +8,10 @@
 #define _Ext_GeographicalInformation_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <OCTET_STRING.h>
+#include "OCTET_STRING.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -38,4 +38,4 @@ extern "C"
 #endif
 
 #endif /* _Ext_GeographicalInformation_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -8,10 +8,10 @@
 #define _DUMMY_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <INTEGER.h>
+#include "INTEGER.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -38,4 +38,4 @@ extern "C"
 #endif
 
 #endif /* _DUMMY_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

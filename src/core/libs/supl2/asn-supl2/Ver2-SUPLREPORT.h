@@ -13,8 +13,8 @@
 
 /* Including external dependencies */
 #include "Ver.h"
-#include <NULL.h>
-#include <constr_SEQUENCE.h>
+#include "NULL.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,4 +56,4 @@ extern asn_TYPE_member_t asn_MBR_Ver2_SUPLREPORT_1[5];
 #include "ReportDataList.h"
 
 #endif	/* _Ver2_SUPLREPORT_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

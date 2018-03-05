@@ -8,7 +8,7 @@
 #define _LocErrorReason_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include <ENUMERATED.h>
@@ -60,4 +60,4 @@ extern "C"
 #endif
 
 #endif /* _LocErrorReason_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

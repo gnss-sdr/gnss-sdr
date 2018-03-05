@@ -13,8 +13,8 @@
 
 /* Including external dependencies */
 #include "WimaxBsID.h"
-#include <NativeInteger.h>
-#include <constr_SEQUENCE.h>
+#include "NativeInteger.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,4 +56,4 @@ extern asn_TYPE_member_t asn_MBR_WimaxNMR_1[9];
 #include "ReportedLocation.h"
 
 #endif	/* _WimaxNMR_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

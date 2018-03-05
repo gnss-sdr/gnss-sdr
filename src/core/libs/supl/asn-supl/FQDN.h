@@ -8,10 +8,10 @@
 #define _FQDN_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <VisibleString.h>
+#include "VisibleString.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -38,4 +38,4 @@ extern "C"
 #endif
 
 #endif /* _FQDN_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

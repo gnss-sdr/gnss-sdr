@@ -14,9 +14,9 @@
 /* Including external dependencies */
 #include "NotificationType.h"
 #include "EncodingType.h"
-#include <OCTET_STRING.h>
+#include "OCTET_STRING.h"
 #include "FormatIndicator.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,4 +56,4 @@ extern asn_TYPE_member_t asn_MBR_Notification_1[7];
 #include "Ver2-Notification-extension.h"
 
 #endif	/* _Notification_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

@@ -8,11 +8,11 @@
 #define _GANSSAlmanacElement_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "Almanac-KeplerianSet.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -53,4 +53,4 @@ extern "C"
 #endif
 
 #endif /* _GANSSAlmanacElement_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

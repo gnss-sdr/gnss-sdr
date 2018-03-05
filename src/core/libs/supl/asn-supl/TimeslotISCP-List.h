@@ -8,12 +8,12 @@
 #define _TimeslotISCP_List_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "TimeslotISCP.h"
-#include <asn_SEQUENCE_OF.h>
-#include <constr_SEQUENCE_OF.h>
+#include "asn_SEQUENCE_OF.h"
+#include "constr_SEQUENCE_OF.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -38,4 +38,4 @@ extern "C"
 #endif
 
 #endif /* _TimeslotISCP_List_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

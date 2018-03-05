@@ -12,11 +12,11 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
-#include <constr_SEQUENCE.h>
+#include "NativeInteger.h"
+#include "constr_SEQUENCE.h"
 #include "PrimaryCPICH-Info.h"
 #include "CellParametersID.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,4 +80,4 @@ extern asn_TYPE_member_t asn_MBR_UTRAN_GPSReferenceTimeResult_1[4];
 #endif
 
 #endif	/* _UTRAN_GPSReferenceTimeResult_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

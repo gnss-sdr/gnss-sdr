@@ -8,12 +8,12 @@
 #define _SeqOf_GANSSDataBits_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "GANSSDataBit.h"
-#include <asn_SEQUENCE_OF.h>
-#include <constr_SEQUENCE_OF.h>
+#include "asn_SEQUENCE_OF.h"
+#include "constr_SEQUENCE_OF.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -38,4 +38,4 @@ extern "C"
 #endif
 
 #endif /* _SeqOf_GANSSDataBits_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

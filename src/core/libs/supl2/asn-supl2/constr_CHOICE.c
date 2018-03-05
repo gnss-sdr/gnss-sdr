@@ -2,9 +2,9 @@
  * Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <constr_CHOICE.h>
-#include <per_opentype.h>
+#include "asn_internal.h"
+#include "constr_CHOICE.h"
+#include "per_opentype.h"
 
 /*
  * Number of bytes left for this structure.

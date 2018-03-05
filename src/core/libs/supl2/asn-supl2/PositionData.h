@@ -14,7 +14,7 @@
 /* Including external dependencies */
 #include "Position.h"
 #include "PosMethod.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,4 +53,4 @@ extern asn_TYPE_member_t asn_MBR_PositionData_1[4];
 #include "GANSSsignalsInfo.h"
 
 #endif	/* _PositionData_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

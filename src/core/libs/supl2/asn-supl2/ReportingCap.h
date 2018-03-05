@@ -12,9 +12,9 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 #include "Ver2-ULP-Components_RepMode.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,4 +51,4 @@ extern asn_TYPE_member_t asn_MBR_ReportingCap_1[4];
 #include "BatchRepCap.h"
 
 #endif	/* _ReportingCap_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

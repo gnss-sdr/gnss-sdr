@@ -12,11 +12,11 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 #include "PrimaryCPICH-Info.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 #include "CellParametersID.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,4 +74,4 @@ extern asn_TYPE_member_t asn_MBR_UTRAN_GANSSReferenceTime_1[5];
 #endif
 
 #endif	/* _UTRAN_GANSSReferenceTime_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

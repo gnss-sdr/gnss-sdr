@@ -8,11 +8,11 @@
 #define _Horveluncert_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <BIT_STRING.h>
-#include <constr_SEQUENCE.h>
+#include "BIT_STRING.h"
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -42,4 +42,4 @@ extern "C"
 #endif
 
 #endif /* _Horveluncert_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

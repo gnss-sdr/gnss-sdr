@@ -8,14 +8,14 @@
 #define _ReferenceAssistData_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "BCCHCarrier.h"
 #include "BSIC.h"
 #include "TimeSlotScheme.h"
 #include "BTSPosition.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -42,4 +42,4 @@ extern "C"
 #endif
 
 #endif /* _ReferenceAssistData_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

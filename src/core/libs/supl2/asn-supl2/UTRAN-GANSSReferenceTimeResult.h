@@ -12,9 +12,9 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 #include "SET-GANSSReferenceTime.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,4 +43,4 @@ extern asn_TYPE_member_t asn_MBR_UTRAN_GANSSReferenceTimeResult_1[2];
 #endif
 
 #endif	/* _UTRAN_GANSSReferenceTimeResult_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

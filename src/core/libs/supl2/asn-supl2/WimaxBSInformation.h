@@ -13,7 +13,7 @@
 
 /* Including external dependencies */
 #include "WimaxBsID.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,4 +51,4 @@ extern asn_TYPE_member_t asn_MBR_WimaxBSInformation_1[3];
 #include "WimaxNMRList.h"
 
 #endif	/* _WimaxBSInformation_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

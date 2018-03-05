@@ -8,11 +8,11 @@
 #define _MsrPosition_Rsp_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "ExtensionContainer.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -68,4 +68,4 @@ extern "C"
 #include "Rel-5-MsrPosition-Rsp-Extension.h"
 
 #endif /* _MsrPosition_Rsp_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

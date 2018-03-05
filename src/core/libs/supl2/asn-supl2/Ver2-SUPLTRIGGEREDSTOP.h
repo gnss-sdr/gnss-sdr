@@ -13,7 +13,7 @@
 
 /* Including external dependencies */
 #include "StatusCode.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,4 +41,4 @@ extern asn_TYPE_member_t asn_MBR_Ver2_SUPLTRIGGEREDSTOP_1[1];
 #endif
 
 #endif	/* _Ver2_SUPLTRIGGEREDSTOP_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

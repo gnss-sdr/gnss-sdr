@@ -13,9 +13,9 @@
 
 /* Including external dependencies */
 #include "UTRAN-GPSReferenceTime.h"
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 #include "UTRANGPSDriftRate.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,4 +41,4 @@ extern asn_TYPE_member_t asn_MBR_UTRAN_GPSReferenceTimeAssistance_1[3];
 #endif
 
 #endif	/* _UTRAN_GPSReferenceTimeAssistance_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

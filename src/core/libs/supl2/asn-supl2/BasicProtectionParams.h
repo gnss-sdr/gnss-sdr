@@ -47,4 +47,4 @@ extern "C"
 #endif
 
 #endif /* _BasicProtectionParams_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

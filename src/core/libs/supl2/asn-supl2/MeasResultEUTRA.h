@@ -15,7 +15,7 @@
 #include "PhysCellId.h"
 #include "CellGlobalIdEUTRA.h"
 #include "TrackingAreaCode.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 #include "RSRP-Range.h"
 #include "RSRQ-Range.h"
 
@@ -59,4 +59,4 @@ extern asn_TYPE_member_t asn_MBR_MeasResultEUTRA_1[3];
 #endif
 
 #endif	/* _MeasResultEUTRA_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

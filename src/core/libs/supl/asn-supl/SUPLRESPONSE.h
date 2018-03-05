@@ -8,12 +8,12 @@
 #define _SUPLRESPONSE_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
 #include "PosMethod.h"
 #include "KeyIdentity4.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -52,4 +52,4 @@ extern "C"
 #include "SETAuthKey.h"
 
 #endif /* _SUPLRESPONSE_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

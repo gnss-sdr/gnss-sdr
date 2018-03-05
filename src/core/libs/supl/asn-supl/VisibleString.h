@@ -5,7 +5,7 @@
 #ifndef _VisibleString_H_
 #define _VisibleString_H_
 
-#include <OCTET_STRING.h>
+#include "OCTET_STRING.h"
 
 #ifdef __cplusplus
 extern "C"

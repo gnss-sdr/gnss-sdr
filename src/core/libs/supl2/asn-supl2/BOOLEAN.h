@@ -5,6 +5,7 @@
 #ifndef _BOOLEAN_H_
 #define _BOOLEAN_H_
 
+#define ASN_DISABLE_OER_SUPPORT 1
 #include "asn_application.h"
 
 #ifdef __cplusplus

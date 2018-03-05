@@ -5,7 +5,7 @@
 #ifndef _IA5String_H_
 #define _IA5String_H_
 
-#include <OCTET_STRING.h>
+#include "OCTET_STRING.h"
 
 #ifdef __cplusplus
 extern "C"

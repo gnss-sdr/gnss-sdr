@@ -8,14 +8,14 @@
 #define _SETId_H_
 
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 /* Including external dependencies */
-#include <OCTET_STRING.h>
-#include <BIT_STRING.h>
-#include <IA5String.h>
+#include "OCTET_STRING.h"
+#include "BIT_STRING.h"
+#include "IA5String.h"
 #include "IPAddress.h"
-#include <constr_CHOICE.h>
+#include "constr_CHOICE.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -66,4 +66,4 @@ extern "C"
 #endif
 
 #endif /* _SETId_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

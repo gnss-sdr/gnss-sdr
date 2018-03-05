@@ -12,11 +12,11 @@
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include <NativeInteger.h>
-#include <BIT_STRING.h>
-#include <BOOLEAN.h>
+#include "NativeInteger.h"
+#include "BIT_STRING.h"
+#include "BOOLEAN.h"
 #include "DGANSS-Sig-Id-Req.h"
-#include <constr_SEQUENCE.h>
+#include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,4 +71,4 @@ extern asn_TYPE_member_t asn_MBR_GanssReqGenericData_1[14];
 #include "GanssExtendedEphCheck.h"
 
 #endif	/* _GanssReqGenericData_H_ */
-#include <asn_internal.h>
+#include "asn_internal.h"

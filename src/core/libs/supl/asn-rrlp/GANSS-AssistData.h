@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSS_AssistData_H_
-#define	_GANSS_AssistData_H_
+#ifndef _GANSS_AssistData_H_
+#define _GANSS_AssistData_H_
 
 
 #include <asn_application.h>
@@ -15,23 +15,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSS-AssistData */
-typedef struct GANSS_AssistData {
-	GANSS_ControlHeader_t	 ganss_controlHeader;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSS_AssistData_t;
+    /* GANSS-AssistData */
+    typedef struct GANSS_AssistData
+    {
+        GANSS_ControlHeader_t ganss_controlHeader;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSS_AssistData;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSS_AssistData_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSS_AssistData;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSS_AssistData_H_ */
+#endif /* _GANSS_AssistData_H_ */
 #include <asn_internal.h>

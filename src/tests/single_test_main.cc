@@ -50,8 +50,6 @@
 #include <queue>
 
 
-
-
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
@@ -64,20 +62,22 @@ int main(int argc, char **argv)
 {
     google::ParseCommandLineFlags(&argc, &argv, true);
     try
-    {
+        {
             testing::InitGoogleTest(&argc, argv);
-    }
-    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+        }
+    catch (...)
+        {
+        }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
     google::InitGoogleLogging(argv[0]);
     int res = 0;
     try
-    {
+        {
             res = RUN_ALL_TESTS();
-    }
-    catch(...)
-    {
+        }
+    catch (...)
+        {
             LOG(WARNING) << "Unexpected catch";
-    }
+        }
     google::ShutDownCommandLineFlags();
     return res;
 }

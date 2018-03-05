@@ -45,9 +45,8 @@
 using google::LogMessage;
 
 GpsL5iDllPllTracking::GpsL5iDllPllTracking(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -67,13 +66,13 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
-    if(FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+    if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
-    if(FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
-            default_dump_filename); //unused!
+        default_dump_filename);  //unused!
     vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5i_CODE_RATE_HZ) / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS)));
 
     //################# MAKE TRACKING GNURadio object ###################
@@ -81,14 +80,14 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l5i_dll_pll_make_tracking_cc(
-                    f_if,
-                    fs_in,
-                    vector_length,
-                    dump,
-                    dump_filename,
-                    pll_bw_hz,
-                    dll_bw_hz,
-                    early_late_space_chips);
+                f_if,
+                fs_in,
+                vector_length,
+                dump,
+                dump_filename,
+                pll_bw_hz,
+                dll_bw_hz,
+                early_late_space_chips);
         }
     else
         {
@@ -101,7 +100,8 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
 
 
 GpsL5iDllPllTracking::~GpsL5iDllPllTracking()
-{}
+{
+}
 
 
 void GpsL5iDllPllTracking::start_tracking()
@@ -126,13 +126,17 @@ void GpsL5iDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GpsL5iDllPllTracking::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 void GpsL5iDllPllTracking::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
@@ -145,4 +149,3 @@ gr::basic_block_sptr GpsL5iDllPllTracking::get_right_block()
 {
     return tracking_;
 }
-

@@ -48,12 +48,13 @@ class conjugate_sc : public gr::sync_block
 {
 private:
     friend conjugate_sc_sptr make_conjugate_sc();
+
 public:
     conjugate_sc();
 
     int work(int noutput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif

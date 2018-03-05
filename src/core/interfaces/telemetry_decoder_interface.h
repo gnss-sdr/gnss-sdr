@@ -52,7 +52,7 @@ class TelemetryDecoderInterface : public GNSSBlockInterface
 {
 public:
     virtual void reset() = 0;
-    virtual void set_satellite(const Gnss_Satellite & sat) = 0;
+    virtual void set_satellite(const Gnss_Satellite& sat) = 0;
     virtual void set_channel(int channel) = 0;
 };
 

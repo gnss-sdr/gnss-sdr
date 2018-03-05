@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfNavModelElement_H_
-#define	_SeqOfNavModelElement_H_
+#ifndef _SeqOfNavModelElement_H_
+#define _SeqOfNavModelElement_H_
 
 
 #include <asn_application.h>
@@ -15,22 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct NavModelElement;
+    /* Forward declarations */
+    struct NavModelElement;
 
-/* SeqOfNavModelElement */
-typedef struct SeqOfNavModelElement {
-	A_SEQUENCE_OF(struct NavModelElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfNavModelElement_t;
+    /* SeqOfNavModelElement */
+    typedef struct SeqOfNavModelElement
+    {
+        A_SEQUENCE_OF(struct NavModelElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfNavModelElement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfNavModelElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfNavModelElement;
 
 #ifdef __cplusplus
 }
@@ -39,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfNavModelElement;
 /* Referred external types */
 #include "NavModelElement.h"
 
-#endif	/* _SeqOfNavModelElement_H_ */
+#endif /* _SeqOfNavModelElement_H_ */
 #include <asn_internal.h>

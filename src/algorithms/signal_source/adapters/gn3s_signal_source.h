@@ -44,12 +44,12 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples from a GN3S USB dongle, a RF front-end signal sampler
  */
-class Gn3sSignalSource: public GNSSBlockInterface
+class Gn3sSignalSource : public GNSSBlockInterface
 {
 public:
     Gn3sSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, gr::msg_queue::sptr queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, gr::msg_queue::sptr queue);
 
     virtual ~Gn3sSignalSource();
 

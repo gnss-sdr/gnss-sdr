@@ -56,4 +56,4 @@ private:
     std::ifstream d_dump_file;
 };
 
-#endif //GNSS_SDR_RACKING_TRUE_OBS_READER_H
+#endif  //GNSS_SDR_RACKING_TRUE_OBS_READER_H

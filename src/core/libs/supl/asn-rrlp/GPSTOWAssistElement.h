@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GPSTOWAssistElement_H_
-#define	_GPSTOWAssistElement_H_
+#ifndef _GPSTOWAssistElement_H_
+#define _GPSTOWAssistElement_H_
 
 
 #include <asn_application.h>
@@ -19,27 +19,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GPSTOWAssistElement */
-typedef struct GPSTOWAssistElement {
-	SatelliteID_t	 satelliteID;
-	TLMWord_t	 tlmWord;
-	AntiSpoofFlag_t	 antiSpoof;
-	AlertFlag_t	 alert;
-	TLMReservedBits_t	 tlmRsvdBits;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GPSTOWAssistElement_t;
+    /* GPSTOWAssistElement */
+    typedef struct GPSTOWAssistElement
+    {
+        SatelliteID_t satelliteID;
+        TLMWord_t tlmWord;
+        AntiSpoofFlag_t antiSpoof;
+        AlertFlag_t alert;
+        TLMReservedBits_t tlmRsvdBits;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GPSTOWAssistElement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GPSTOWAssistElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GPSTOWAssistElement;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GPSTOWAssistElement_H_ */
+#endif /* _GPSTOWAssistElement_H_ */
 #include <asn_internal.h>

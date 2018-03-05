@@ -46,31 +46,29 @@
 #include "tcp_communication.h"
 
 
-
 class Gps_L1_Ca_Tcp_Connector_Tracking_cc;
 
 typedef boost::shared_ptr<Gps_L1_Ca_Tcp_Connector_Tracking_cc> gps_l1_ca_tcp_connector_tracking_cc_sptr;
 
 gps_l1_ca_tcp_connector_tracking_cc_sptr
 gps_l1_ca_tcp_connector_make_tracking_cc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float early_late_space_chips,
-                                   size_t port_ch0);
+    long fs_in, unsigned int vector_length,
+    bool dump,
+    std::string dump_filename,
+    float early_late_space_chips,
+    size_t port_ch0);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class Gps_L1_Ca_Tcp_Connector_Tracking_cc: public gr::block
+class Gps_L1_Ca_Tcp_Connector_Tracking_cc : public gr::block
 {
 public:
     ~Gps_L1_Ca_Tcp_Connector_Tracking_cc();
 
     void set_channel(unsigned int channel);
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
 
     /*
@@ -78,33 +76,32 @@ public:
      *
      * The user must override work to define the signal processing code
      */
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
 private:
     friend gps_l1_ca_tcp_connector_tracking_cc_sptr
     gps_l1_ca_tcp_connector_make_tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float early_late_space_chips,
-            size_t port_ch0);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float early_late_space_chips,
+        size_t port_ch0);
 
     Gps_L1_Ca_Tcp_Connector_Tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float early_late_space_chips,
-            size_t port_ch0);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float early_late_space_chips,
+        size_t port_ch0);
 
     // tracking configuration vars
     unsigned int d_vector_length;
     bool d_dump;
 
-    Gnss_Synchro* d_acquisition_gnss_synchro;
+    Gnss_Synchro *d_acquisition_gnss_synchro;
     unsigned int d_channel;
 
     long d_if_freq;
@@ -115,7 +112,7 @@ private:
 
     double d_code_phase_step_chips;
 
-    gr_complex* d_ca_code;
+    gr_complex *d_ca_code;
 
     gr_complex *d_Early;
     gr_complex *d_Prompt;
@@ -130,8 +127,8 @@ private:
     float d_acq_code_phase_samples;
     float d_acq_carrier_doppler_hz;
     // correlator
-    float* d_local_code_shift_chips;
-    gr_complex* d_correlator_outs;
+    float *d_local_code_shift_chips;
+    gr_complex *d_correlator_outs;
     cpu_multicorrelator multicorrelator_cpu;
 
     // tracking vars
@@ -156,7 +153,7 @@ private:
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
-    gr_complex* d_Prompt_buffer;
+    gr_complex *d_Prompt_buffer;
     float d_carrier_lock_test;
     float d_CN0_SNV_dB_Hz;
     float d_carrier_lock_threshold;
@@ -174,4 +171,4 @@ private:
     std::string sys;
 };
 
-#endif //GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_CC_H
+#endif  //GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_CC_H

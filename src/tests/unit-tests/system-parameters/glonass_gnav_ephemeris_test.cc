@@ -53,12 +53,12 @@ TEST(GlonassGnavEphemerisTest, ComputeGlonassTime)
     expected_gtime = gtime.time_of_day();
 
     // Perform assertions of decoded fields
-    ASSERT_TRUE(expected_gdate.year() - d.year() < FLT_EPSILON );
-    ASSERT_TRUE(expected_gdate.month() - d.month() < FLT_EPSILON );
-    ASSERT_TRUE(expected_gdate.day() - d.day() < FLT_EPSILON );
-    ASSERT_TRUE(expected_gtime.hours() -  t.hours() < FLT_EPSILON );
-    ASSERT_TRUE(expected_gtime.minutes() -  t.minutes() < FLT_EPSILON );
-    ASSERT_TRUE(expected_gtime.seconds() -  t.seconds() < FLT_EPSILON );
+    ASSERT_TRUE(expected_gdate.year() - d.year() < FLT_EPSILON);
+    ASSERT_TRUE(expected_gdate.month() - d.month() < FLT_EPSILON);
+    ASSERT_TRUE(expected_gdate.day() - d.day() < FLT_EPSILON);
+    ASSERT_TRUE(expected_gtime.hours() - t.hours() < FLT_EPSILON);
+    ASSERT_TRUE(expected_gtime.minutes() - t.minutes() < FLT_EPSILON);
+    ASSERT_TRUE(expected_gtime.seconds() - t.seconds() < FLT_EPSILON);
 }
 
 
@@ -70,21 +70,21 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT1)
 {
     Glonass_Gnav_Ephemeris gnav_eph;
     gnav_eph.d_yr = 2004;
-    gnav_eph.d_N_T = 366+28;
+    gnav_eph.d_N_T = 366 + 28;
 
-    double glo2utc = 3600*3;
+    double glo2utc = 3600 * 3;
     double tod = 48600;
     double week = 0.0;
     double tow = 0.0;
     double true_leap_sec = 13;
     double true_week = 1307;
-    double true_tow = 480600+true_leap_sec;
+    double true_tow = 480600 + true_leap_sec;
 
     gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
 
     // Perform assertions of decoded fields
-    ASSERT_TRUE(week - true_week < FLT_EPSILON );
-    ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
+    ASSERT_TRUE(week - true_week < FLT_EPSILON);
+    ASSERT_TRUE(tow - true_tow < FLT_EPSILON);
 }
 
 
@@ -98,19 +98,19 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT2)
     gnav_eph.d_yr = 2016;
     gnav_eph.d_N_T = 268;
 
-    double glo2utc = 3600*3;
+    double glo2utc = 3600 * 3;
     double tod = 7560;
     double week = 0.0;
     double tow = 0.0;
     double true_leap_sec = 17;
     double true_week = 1915;
-    double true_tow = 518400+true_leap_sec+tod;
+    double true_tow = 518400 + true_leap_sec + tod;
 
     gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
 
     // Perform assertions of decoded fields
-    ASSERT_TRUE(week - true_week < FLT_EPSILON );
-    ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
+    ASSERT_TRUE(week - true_week < FLT_EPSILON);
+    ASSERT_TRUE(tow - true_tow < FLT_EPSILON);
 }
 
 
@@ -124,17 +124,17 @@ TEST(GlonassGnavEphemerisTest, ConvertGlonassT2GpsT3)
     gnav_eph.d_yr = 2016;
     gnav_eph.d_N_T = 62;
 
-    double glo2utc = 3600*3;
+    double glo2utc = 3600 * 3;
     double tod = 7560;
     double week = 0.0;
     double tow = 0.0;
     double true_leap_sec = 17;
     double true_week = 1886;
-    double true_tow = 259200+true_leap_sec+tod;
+    double true_tow = 259200 + true_leap_sec + tod;
 
     gnav_eph.glot_to_gpst(tod + glo2utc, 0.0, 0.0, &week, &tow);
 
     // Perform assertions of decoded fields
-    ASSERT_TRUE(week - true_week < FLT_EPSILON );
-    ASSERT_TRUE(tow - true_tow < FLT_EPSILON );
+    ASSERT_TRUE(week - true_week < FLT_EPSILON);
+    ASSERT_TRUE(tow - true_tow < FLT_EPSILON);
 }

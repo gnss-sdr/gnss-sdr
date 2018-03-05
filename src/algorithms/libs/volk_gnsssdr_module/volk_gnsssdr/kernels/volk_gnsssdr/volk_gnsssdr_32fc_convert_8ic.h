@@ -72,12 +72,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector,
     const float max_val = (float)SCHAR_MAX;
     float aux;
     unsigned int i;
-    for(i = 0; i < num_points * 2; i++)
+    for (i = 0; i < num_points * 2; i++)
         {
             aux = *inputVectorPtr++ * max_val;
-            if(aux > max_val)
+            if (aux > max_val)
                 aux = max_val;
-            else if(aux < min_val)
+            else if (aux < min_val)
                 aux = min_val;
             *outputVectorPtr++ = (int8_t)rintf(aux);
         }
@@ -107,12 +107,16 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_avx2(lv_8sc_t* outputVector, 
     const __m256 vmin_val = _mm256_set1_ps(min_val);
     const __m256 vmax_val = _mm256_set1_ps(max_val);
 
-    for(i = 0; i < avx2_iters; i++)
+    for (i = 0; i < avx2_iters; i++)
         {
-            inputVal1 = _mm256_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 8;
-            inputVal2 = _mm256_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 8;
-            inputVal3 = _mm256_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 8;
-            inputVal4 = _mm256_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 8;
+            inputVal1 = _mm256_loadu_ps((float*)inputVectorPtr);
+            inputVectorPtr += 8;
+            inputVal2 = _mm256_loadu_ps((float*)inputVectorPtr);
+            inputVectorPtr += 8;
+            inputVal3 = _mm256_loadu_ps((float*)inputVectorPtr);
+            inputVectorPtr += 8;
+            inputVal4 = _mm256_loadu_ps((float*)inputVectorPtr);
+            inputVectorPtr += 8;
             __VOLK_GNSSSDR_PREFETCH(inputVectorPtr + 32);
 
             inputVal1 = _mm256_mul_ps(inputVal1, vmax_val);
@@ -142,12 +146,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_avx2(lv_8sc_t* outputVector, 
             outputVectorPtr += 32;
         }
 
-    for(i = avx2_iters * 32; i < num_points * 2; i++)
+    for (i = avx2_iters * 32; i < num_points * 2; i++)
         {
             aux = *inputVectorPtr++ * max_val;
-            if(aux > max_val)
+            if (aux > max_val)
                 aux = max_val;
-            else if(aux < min_val)
+            else if (aux < min_val)
                 aux = min_val;
             *outputVectorPtr++ = (int8_t)rintf(aux);
         }
@@ -177,12 +181,16 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_avx2(lv_8sc_t* outputVector, 
     const __m256 vmin_val = _mm256_set1_ps(min_val);
     const __m256 vmax_val = _mm256_set1_ps(max_val);
 
-    for(i = 0; i < avx2_iters; i++)
+    for (i = 0; i < avx2_iters; i++)
         {
-            inputVal1 = _mm256_load_ps((float*)inputVectorPtr); inputVectorPtr += 8;
-            inputVal2 = _mm256_load_ps((float*)inputVectorPtr); inputVectorPtr += 8;
-            inputVal3 = _mm256_load_ps((float*)inputVectorPtr); inputVectorPtr += 8;
-            inputVal4 = _mm256_load_ps((float*)inputVectorPtr); inputVectorPtr += 8;
+            inputVal1 = _mm256_load_ps((float*)inputVectorPtr);
+            inputVectorPtr += 8;
+            inputVal2 = _mm256_load_ps((float*)inputVectorPtr);
+            inputVectorPtr += 8;
+            inputVal3 = _mm256_load_ps((float*)inputVectorPtr);
+            inputVectorPtr += 8;
+            inputVal4 = _mm256_load_ps((float*)inputVectorPtr);
+            inputVectorPtr += 8;
             __VOLK_GNSSSDR_PREFETCH(inputVectorPtr + 32);
 
             inputVal1 = _mm256_mul_ps(inputVal1, vmax_val);
@@ -212,12 +220,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_avx2(lv_8sc_t* outputVector, 
             outputVectorPtr += 32;
         }
 
-    for(i = avx2_iters * 32; i < num_points * 2; i++)
+    for (i = avx2_iters * 32; i < num_points * 2; i++)
         {
             aux = *inputVectorPtr++ * max_val;
-            if(aux > max_val)
+            if (aux > max_val)
                 aux = max_val;
-            else if(aux < min_val)
+            else if (aux < min_val)
                 aux = min_val;
             *outputVectorPtr++ = (int8_t)rintf(aux);
         }
@@ -247,12 +255,16 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
     const __m128 vmin_val = _mm_set_ps1(min_val);
     const __m128 vmax_val = _mm_set_ps1(max_val);
 
-    for(i = 0; i < sse_iters; i++)
+    for (i = 0; i < sse_iters; i++)
         {
-            inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-            inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-            inputVal3 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-            inputVal4 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+            inputVal1 = _mm_loadu_ps((float*)inputVectorPtr);
+            inputVectorPtr += 4;
+            inputVal2 = _mm_loadu_ps((float*)inputVectorPtr);
+            inputVectorPtr += 4;
+            inputVal3 = _mm_loadu_ps((float*)inputVectorPtr);
+            inputVectorPtr += 4;
+            inputVal4 = _mm_loadu_ps((float*)inputVectorPtr);
+            inputVectorPtr += 4;
 
             inputVal1 = _mm_mul_ps(inputVal1, vmax_val);
             inputVal2 = _mm_mul_ps(inputVal2, vmax_val);
@@ -278,12 +290,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
             outputVectorPtr += 16;
         }
 
-    for(i = sse_iters * 16; i < num_points * 2; i++)
+    for (i = sse_iters * 16; i < num_points * 2; i++)
         {
             aux = *inputVectorPtr++ * max_val;
-            if(aux > max_val)
+            if (aux > max_val)
                 aux = max_val;
-            else if(aux < min_val)
+            else if (aux < min_val)
                 aux = min_val;
             *outputVectorPtr++ = (int8_t)rintf(aux);
         }
@@ -313,12 +325,16 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
     const __m128 vmin_val = _mm_set_ps1(min_val);
     const __m128 vmax_val = _mm_set_ps1(max_val);
 
-    for(i = 0; i < sse_iters; i++)
+    for (i = 0; i < sse_iters; i++)
         {
-            inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-            inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-            inputVal3 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-            inputVal4 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+            inputVal1 = _mm_load_ps((float*)inputVectorPtr);
+            inputVectorPtr += 4;
+            inputVal2 = _mm_load_ps((float*)inputVectorPtr);
+            inputVectorPtr += 4;
+            inputVal3 = _mm_load_ps((float*)inputVectorPtr);
+            inputVectorPtr += 4;
+            inputVal4 = _mm_load_ps((float*)inputVectorPtr);
+            inputVectorPtr += 4;
 
             inputVal1 = _mm_mul_ps(inputVal1, vmax_val);
             inputVal2 = _mm_mul_ps(inputVal2, vmax_val);
@@ -344,12 +360,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
             outputVectorPtr += 16;
         }
 
-    for(i = sse_iters * 16; i < num_points * 2; i++)
+    for (i = sse_iters * 16; i < num_points * 2; i++)
         {
             aux = *inputVectorPtr++ * max_val;
-            if(aux > max_val)
+            if (aux > max_val)
                 aux = max_val;
-            else if(aux < min_val)
+            else if (aux < min_val)
                 aux = min_val;
             *outputVectorPtr++ = (int8_t)rintf(aux);
         }
@@ -383,9 +399,10 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
     int8x8_t res8_1, res8_2;
     int8x16_t outputVal;
 
-    for(i = 0; i < neon_iters; i++)
+    for (i = 0; i < neon_iters; i++)
         {
-            a = vld1q_f32((const float32_t*)inputVectorPtr); inputVectorPtr += 4;
+            a = vld1q_f32((const float32_t*)inputVectorPtr);
+            inputVectorPtr += 4;
             a = vmulq_f32(a, max_val);
             ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
             sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
@@ -394,7 +411,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
             toint_a = vcvtq_s32_f32(Round);
             intInputVal1 = vqmovn_s32(toint_a);
 
-            a = vld1q_f32((const float32_t*)inputVectorPtr); inputVectorPtr += 4;
+            a = vld1q_f32((const float32_t*)inputVectorPtr);
+            inputVectorPtr += 4;
             a = vmulq_f32(a, max_val);
             ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
             sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
@@ -406,7 +424,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
             pack16_8_1 = vcombine_s16(intInputVal1, intInputVal2);
             res8_1 = vqmovn_s16(pack16_8_1);
 
-            a = vld1q_f32((const float32_t*)inputVectorPtr); inputVectorPtr += 4;
+            a = vld1q_f32((const float32_t*)inputVectorPtr);
+            inputVectorPtr += 4;
             a = vmulq_f32(a, max_val);
             ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
             sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
@@ -415,7 +434,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
             toint_a = vcvtq_s32_f32(Round);
             intInputVal1 = vqmovn_s32(toint_a);
 
-            a = vld1q_f32((const float32_t*)inputVectorPtr); inputVectorPtr += 4;
+            a = vld1q_f32((const float32_t*)inputVectorPtr);
+            inputVectorPtr += 4;
             a = vmulq_f32(a, max_val);
             ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
             sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
@@ -433,12 +453,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
             outputVectorPtr += 16;
         }
 
-    for(i = neon_iters * 16; i < num_points * 2; i++)
+    for (i = neon_iters * 16; i < num_points * 2; i++)
         {
             aux = *inputVectorPtr++ * max_val_f;
-            if(aux > max_val_f)
+            if (aux > max_val_f)
                 aux = max_val_f;
-            else if(aux < min_val_f)
+            else if (aux < min_val_f)
                 aux = min_val_f;
             *outputVectorPtr++ = (int8_t)rintf(aux);
         }

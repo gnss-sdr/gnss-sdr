@@ -55,27 +55,25 @@
 class glonass_l1_ca_dll_pll_c_aid_tracking_sc;
 
 typedef boost::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_sc>
-        glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr;
+    glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr;
 
 glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr
 glonass_l1_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float pll_bw_narrow_hz,
-                                   float dll_bw_narrow_hz,
-                                   int extend_correlation_ms,
-                                   float early_late_space_chips);
-
+    long fs_in, unsigned int vector_length,
+    bool dump,
+    std::string dump_filename,
+    float pll_bw_hz,
+    float dll_bw_hz,
+    float pll_bw_narrow_hz,
+    float dll_bw_narrow_hz,
+    int extend_correlation_ms,
+    float early_late_space_chips);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class glonass_l1_ca_dll_pll_c_aid_tracking_sc: public gr::block
+class glonass_l1_ca_dll_pll_c_aid_tracking_sc : public gr::block
 {
 public:
     ~glonass_l1_ca_dll_pll_c_aid_tracking_sc();
@@ -84,36 +82,34 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
 
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
     friend glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr
     glonass_l1_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float pll_bw_narrow_hz,
-            float dll_bw_narrow_hz,
-            int extend_correlation_ms,
-            float early_late_space_chips);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
+        int extend_correlation_ms,
+        float early_late_space_chips);
 
     glonass_l1_ca_dll_pll_c_aid_tracking_sc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float pll_bw_narrow_hz,
-            float dll_bw_narrow_hz,
-            int extend_correlation_ms,
-            float early_late_space_chips);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
+        int extend_correlation_ms,
+        float early_late_space_chips);
 
     // tracking configuration vars
     unsigned int d_vector_length;
@@ -209,4 +205,4 @@ private:
     int save_matfile();
 };
 
-#endif //GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
+#endif  //GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H

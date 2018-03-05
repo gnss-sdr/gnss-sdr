@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSClockModel_H_
-#define	_GANSSClockModel_H_
+#ifndef _GANSSClockModel_H_
+#define _GANSSClockModel_H_
 
 
 #include <asn_application.h>
@@ -15,38 +15,42 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum GANSSClockModel_PR {
-	GANSSClockModel_PR_NOTHING,	/* No components present */
-	GANSSClockModel_PR_standardClockModelList,
-	/* Extensions may appear below */
-	
-} GANSSClockModel_PR;
+    /* Dependencies */
+    typedef enum GANSSClockModel_PR
+    {
+        GANSSClockModel_PR_NOTHING, /* No components present */
+        GANSSClockModel_PR_standardClockModelList,
+        /* Extensions may appear below */
 
-/* GANSSClockModel */
-typedef struct GANSSClockModel {
-	GANSSClockModel_PR present;
-	union GANSSClockModel_u {
-		SeqOfStandardClockModelElement_t	 standardClockModelList;
-		/*
+    } GANSSClockModel_PR;
+
+    /* GANSSClockModel */
+    typedef struct GANSSClockModel
+    {
+        GANSSClockModel_PR present;
+        union GANSSClockModel_u
+        {
+            SeqOfStandardClockModelElement_t standardClockModelList;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSClockModel_t;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSClockModel;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSClockModel_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSClockModel;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSClockModel_H_ */
+#endif /* _GANSSClockModel_H_ */
 #include <asn_internal.h>

@@ -62,29 +62,29 @@
 
 #include "rtklib.h"
 
-const double VAR_NOTEC = 30.0 * 30.0;   /* variance of no tec */
-const double MIN_EL = 0.0;         /* min elevation angle (rad) */
-const double MIN_HGT = -1000.0;     /* min user height (m) */
+const double VAR_NOTEC = 30.0 * 30.0; /* variance of no tec */
+const double MIN_EL = 0.0;            /* min elevation angle (rad) */
+const double MIN_HGT = -1000.0;       /* min user height (m) */
 
 int getindex(double value, const double *range);
 
 int nitem(const double *range);
 int dataindex(int i, int j, int k, const int *ndata);
 tec_t *addtec(const double *lats, const double *lons, const double *hgts,
-                     double rb, nav_t *nav);
+    double rb, nav_t *nav);
 void readionexdcb(FILE *fp, double *dcb, double *rms);
 double readionexh(FILE *fp, double *lats, double *lons, double *hgts,
-                         double *rb, double *nexp, double *dcb, double *rms);
+    double *rb, double *nexp, double *dcb, double *rms);
 int readionexb(FILE *fp, const double *lats, const double *lons,
-                      const double *hgts, double rb, double nexp, nav_t *nav);
+    const double *hgts, double rb, double nexp, nav_t *nav);
 void combtec(nav_t *nav);
 void readtec(const char *file, nav_t *nav, int opt);
 int interptec(const tec_t *tec, int k, const double *posp, double *value,
-                     double *rms);
+    double *rms);
 
 int iondelay(gtime_t time, const tec_t *tec, const double *pos,
-                    const double *azel, int opt, double *delay, double *var);
+    const double *azel, int opt, double *delay, double *var);
 int iontec(gtime_t time, const nav_t *nav, const double *pos,
-                  const double *azel, int opt, double *delay, double *var);
+    const double *azel, int opt, double *delay, double *var);
 
 #endif /* GNSS_SDR_RTKLIB_IONEX_H_ */

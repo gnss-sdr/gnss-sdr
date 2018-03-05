@@ -32,7 +32,6 @@
  */
 
 
-
 #ifndef GNSS_SDR_IN_MEMORY_CONFIGURATION_H_
 #define GNSS_SDR_IN_MEMORY_CONFIGURATION_H_
 
@@ -65,6 +64,7 @@ public:
     double property(std::string property_name, double default_value);
     void set_property(std::string property_name, std::string value);
     bool is_present(std::string property_name);
+
 private:
     std::map<std::string, std::string> properties_;
     std::unique_ptr<StringConverter> converter_;

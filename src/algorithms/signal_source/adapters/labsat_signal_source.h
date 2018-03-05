@@ -43,12 +43,12 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples stored by a LabSat 2 or LabSat 3 device
  */
-class LabsatSignalSource: public GNSSBlockInterface
+class LabsatSignalSource : public GNSSBlockInterface
 {
 public:
     LabsatSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, gr::msg_queue::sptr queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, gr::msg_queue::sptr queue);
 
     virtual ~LabsatSignalSource();
 

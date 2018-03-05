@@ -51,30 +51,30 @@ typedef boost::shared_ptr<pcps_cccwsr_acquisition_cc> pcps_cccwsr_acquisition_cc
 
 pcps_cccwsr_acquisition_cc_sptr
 pcps_cccwsr_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-                         unsigned int doppler_max, long freq, long fs_in,
-                         int samples_per_ms, int samples_per_code,
-                         bool dump, std::string dump_filename);
+    unsigned int doppler_max, long freq, long fs_in,
+    int samples_per_ms, int samples_per_code,
+    bool dump, std::string dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition with
  * Coherent Channel Combining With Sign Recovery scheme.
  */
-class pcps_cccwsr_acquisition_cc: public gr::block
+class pcps_cccwsr_acquisition_cc : public gr::block
 {
 private:
     friend pcps_cccwsr_acquisition_cc_sptr
     pcps_cccwsr_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-            unsigned int doppler_max, long freq, long fs_in,
-            int samples_per_ms, int samples_per_code,
-            bool dump, std::string dump_filename);
+        unsigned int doppler_max, long freq, long fs_in,
+        int samples_per_ms, int samples_per_code,
+        bool dump, std::string dump_filename);
 
     pcps_cccwsr_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-            unsigned int doppler_max, long freq, long fs_in,
-            int samples_per_ms, int samples_per_code,
-            bool dump, std::string dump_filename);
+        unsigned int doppler_max, long freq, long fs_in,
+        int samples_per_ms, int samples_per_code,
+        bool dump, std::string dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-            int doppler_offset);
+        int doppler_offset);
 
     long d_fs_in;
     long d_freq;
@@ -96,7 +96,7 @@ private:
     gr_complex* d_fft_code_pilot;
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_ifft;
-    Gnss_Synchro *d_gnss_synchro;
+    Gnss_Synchro* d_gnss_synchro;
     unsigned int d_code_phase;
     float d_doppler_freq;
     float d_mag;
@@ -118,98 +118,98 @@ public:
     /*!
      * \brief Default destructor.
      */
-     ~pcps_cccwsr_acquisition_cc();
+    ~pcps_cccwsr_acquisition_cc();
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to exchange synchronization data between acquisition and tracking blocks.
      * \param p_gnss_synchro Satellite information shared by the processing blocks.
      */
-     inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-     {
-         d_gnss_synchro = p_gnss_synchro;
-     }
+    inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    {
+        d_gnss_synchro = p_gnss_synchro;
+    }
 
-     /*!
+    /*!
       * \brief Returns the maximum peak of grid search.
       */
-     inline unsigned int mag() const
-     {
-         return d_mag;
-     }
+    inline unsigned int mag() const
+    {
+        return d_mag;
+    }
 
-     /*!
+    /*!
       * \brief Initializes acquisition algorithm.
       */
-     void init();
+    void init();
 
-     /*!
+    /*!
       * \brief Sets local code for CCCWSR acquisition algorithm.
       * \param data_code - Pointer to the data PRN code.
       * \param pilot_code - Pointer to the pilot PRN code.
       */
-     void set_local_code(std::complex<float> * code_data, std::complex<float> * code_pilot);
+    void set_local_code(std::complex<float>* code_data, std::complex<float>* code_pilot);
 
-     /*!
+    /*!
       * \brief Starts acquisition algorithm, turning from standby mode to
       * active mode
       * \param active - bool that activates/deactivates the block.
       */
-     inline void set_active(bool active)
-     {
-         d_active = active;
-     }
+    inline void set_active(bool active)
+    {
+        d_active = active;
+    }
 
-     /*!
+    /*!
       * \brief If set to 1, ensures that acquisition starts at the
       * first available sample.
       * \param state - int=1 forces start of acquisition
       */
-     void set_state(int state);
+    void set_state(int state);
 
-     /*!
+    /*!
       * \brief Set acquisition channel unique ID
       * \param channel - receiver channel.
       */
-     inline void set_channel(unsigned int channel)
-     {
-         d_channel = channel;
-     }
+    inline void set_channel(unsigned int channel)
+    {
+        d_channel = channel;
+    }
 
-     /*!
+    /*!
       * \brief Set statistics threshold of CCCWSR algorithm.
       * \param threshold - Threshold for signal detection (check \ref Navitec2012,
       * Algorithm 1, for a definition of this threshold).
       */
-     inline void set_threshold(float threshold)
-     {
-         d_threshold = threshold;
-     }
+    inline void set_threshold(float threshold)
+    {
+        d_threshold = threshold;
+    }
 
-     /*!
+    /*!
       * \brief Set maximum Doppler grid search
       * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
       */
-     inline void set_doppler_max(unsigned int doppler_max)
-     {
-         d_doppler_max = doppler_max;
-     }
+    inline void set_doppler_max(unsigned int doppler_max)
+    {
+        d_doppler_max = doppler_max;
+    }
 
-     /*!
+    /*!
       * \brief Set Doppler steps for the grid search
       * \param doppler_step - Frequency bin of the search grid [Hz].
       */
-     inline void set_doppler_step(unsigned int doppler_step)
-     {
-         d_doppler_step = doppler_step;
-     }
+    inline void set_doppler_step(unsigned int doppler_step)
+    {
+        d_doppler_step = doppler_step;
+    }
 
-     /*!
+    /*!
       * \brief Coherent Channel Combining With Sign Recovery Acquisition signal processing.
       */
-     int general_work(int noutput_items, gr_vector_int &ninput_items,
-             gr_vector_const_void_star &input_items,
-             gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);
 };
 
 #endif /* GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H_*/

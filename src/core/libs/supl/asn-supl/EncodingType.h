@@ -4,8 +4,8 @@
  * 	found in "../supl-init.asn"
  */
 
-#ifndef	_EncodingType_H_
-#define	_EncodingType_H_
+#ifndef _EncodingType_H_
+#define _EncodingType_H_
 
 
 #include <asn_application.h>
@@ -14,37 +14,39 @@
 #include <ENUMERATED.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum EncodingType {
-	EncodingType_ucs2	= 0,
-	EncodingType_gsmDefault	= 1,
-	EncodingType_utf8	= 2
-	/*
+    /* Dependencies */
+    typedef enum EncodingType
+    {
+        EncodingType_ucs2 = 0,
+        EncodingType_gsmDefault = 1,
+        EncodingType_utf8 = 2
+        /*
 	 * Enumeration is extensible
 	 */
-} e_EncodingType;
+    } e_EncodingType;
 
-/* EncodingType */
-typedef ENUMERATED_t	 EncodingType_t;
+    /* EncodingType */
+    typedef ENUMERATED_t EncodingType_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_EncodingType;
-asn_struct_free_f EncodingType_free;
-asn_struct_print_f EncodingType_print;
-asn_constr_check_f EncodingType_constraint;
-ber_type_decoder_f EncodingType_decode_ber;
-der_type_encoder_f EncodingType_encode_der;
-xer_type_decoder_f EncodingType_decode_xer;
-xer_type_encoder_f EncodingType_encode_xer;
-per_type_decoder_f EncodingType_decode_uper;
-per_type_encoder_f EncodingType_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_EncodingType;
+    asn_struct_free_f EncodingType_free;
+    asn_struct_print_f EncodingType_print;
+    asn_constr_check_f EncodingType_constraint;
+    ber_type_decoder_f EncodingType_decode_ber;
+    der_type_encoder_f EncodingType_encode_der;
+    xer_type_decoder_f EncodingType_decode_xer;
+    xer_type_encoder_f EncodingType_encode_xer;
+    per_type_decoder_f EncodingType_decode_uper;
+    per_type_encoder_f EncodingType_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _EncodingType_H_ */
+#endif /* _EncodingType_H_ */
 #include <asn_internal.h>

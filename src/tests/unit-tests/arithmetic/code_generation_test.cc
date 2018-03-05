@@ -35,7 +35,6 @@
 #include "gnss_signal_processing.h"
 
 
-
 TEST(CodeGenerationTest, CodeGenGPSL1Test)
 {
     std::complex<float>* _dest = new std::complex<float>[1023];
@@ -47,9 +46,9 @@ TEST(CodeGenerationTest, CodeGenGPSL1Test)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    for(int i = 0; i < iterations; i++)
+    for (int i = 0; i < iterations; i++)
         {
-            gps_l1_ca_code_gen_complex( _dest,  _prn,  _chip_shift);
+            gps_l1_ca_code_gen_complex(_dest, _prn, _chip_shift);
         }
 
     end = std::chrono::system_clock::now();
@@ -66,7 +65,7 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
     signed int _prn = 1;
     unsigned int _chip_shift = 4;
     double _fs = 8000000.0;
-    const signed int _codeFreqBasis = 1023000; //Hz
+    const signed int _codeFreqBasis = 1023000;  //Hz
     const signed int _codeLength = 1023;
     int _samplesPerCode = round(_fs / static_cast<double>(_codeFreqBasis / _codeLength));
     std::complex<float>* _dest = new std::complex<float>[_samplesPerCode];
@@ -76,9 +75,9 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    for(int i = 0; i < iterations; i++)
+    for (int i = 0; i < iterations; i++)
         {
-            gps_l1_ca_code_gen_complex_sampled( _dest,  _prn, _fs, _chip_shift);
+            gps_l1_ca_code_gen_complex_sampled(_dest, _prn, _fs, _chip_shift);
         }
 
     end = std::chrono::system_clock::now();
@@ -94,7 +93,7 @@ TEST(CodeGenerationTest, ComplexConjugateTest)
 {
     double _fs = 8000000.0;
     double _f = 4000.0;
-    const signed int _codeFreqBasis = 1023000; //Hz
+    const signed int _codeFreqBasis = 1023000;  //Hz
     const signed int _codeLength = 1023;
     int _samplesPerCode = round(_fs / static_cast<double>(_codeFreqBasis / _codeLength));
     std::complex<float>* _dest = new std::complex<float>[_samplesPerCode];
@@ -104,9 +103,9 @@ TEST(CodeGenerationTest, ComplexConjugateTest)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    for(int i = 0; i < iterations; i++)
+    for (int i = 0; i < iterations; i++)
         {
-            complex_exp_gen_conj( _dest, _f,  _fs,  _samplesPerCode);
+            complex_exp_gen_conj(_dest, _f, _fs, _samplesPerCode);
         }
 
     end = std::chrono::system_clock::now();

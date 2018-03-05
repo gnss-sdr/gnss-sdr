@@ -33,7 +33,7 @@
 #include "rtl_tcp_commands.h"
 #include <string>
 
-boost::system::error_code rtl_tcp_command (RTL_TCP_COMMAND id, unsigned param, boost::asio::ip::tcp::socket &socket)
+boost::system::error_code rtl_tcp_command(RTL_TCP_COMMAND id, unsigned param, boost::asio::ip::tcp::socket &socket)
 {
     // Data payload
     unsigned char data[sizeof(unsigned char) + sizeof(unsigned)];

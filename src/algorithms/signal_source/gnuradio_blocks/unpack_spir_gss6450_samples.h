@@ -41,11 +41,11 @@ typedef boost::shared_ptr<unpack_spir_gss6450_samples> unpack_spir_gss6450_sampl
 unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int adc_nbit);
 
 
-class unpack_spir_gss6450_samples: public gr::sync_interpolator
+class unpack_spir_gss6450_samples : public gr::sync_interpolator
 {
 public:
     int work(int noutput_items,
-             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
     friend unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples_sptr(unsigned int adc_nbit);
     unpack_spir_gss6450_samples(unsigned int adc_nbit);
     ~unpack_spir_gss6450_samples();

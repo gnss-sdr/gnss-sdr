@@ -50,7 +50,7 @@ class galileo_e1b_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<galileo_e1b_telemetry_decoder_cc> galileo_e1b_telemetry_decoder_cc_sptr;
 
-galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the INAV data defined in Galileo ICD
@@ -60,26 +60,26 @@ class galileo_e1b_telemetry_decoder_cc : public gr::block
 {
 public:
     ~galileo_e1b_telemetry_decoder_cc();
-    void set_satellite(const Gnss_Satellite & satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                 //!< Set receiver's channel
+    void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
+    void set_channel(int channel);                        //!< Set receiver's channel
     int flag_even_word_arrived;
 
     /*!
      * \brief This is where all signal processing takes place
      */
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
     friend galileo_e1b_telemetry_decoder_cc_sptr
-    galileo_e1b_make_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
-    galileo_e1b_telemetry_decoder_cc(const Gnss_Satellite & satellite, bool dump);
+    galileo_e1b_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    galileo_e1b_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
 
     void deinterleaver(int rows, int cols, double *in, double *out);
 
-    void decode_word(double *symbols,int frame_length);
+    void decode_word(double *symbols, int frame_length);
 
     unsigned short int d_preambles_bits[GALILEO_INAV_PREAMBLE_LENGTH_BITS];
 
@@ -108,7 +108,7 @@ private:
     double d_TOW_at_current_symbol;
 
     bool flag_TOW_set;
-    double delta_t; //GPS-GALILEO time offset
+    double delta_t;  //GPS-GALILEO time offset
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;

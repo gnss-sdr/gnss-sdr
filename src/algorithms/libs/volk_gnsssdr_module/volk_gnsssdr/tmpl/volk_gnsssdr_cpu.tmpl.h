@@ -23,16 +23,18 @@
 
 __VOLK_DECL_BEGIN
 
+// clang-format off
 struct VOLK_CPU {
     %for arch in archs:
     int (*has_${arch.name}) ();
     %endfor
 };
+// clang-format on
 
 extern struct VOLK_CPU volk_gnsssdr_cpu;
 
-void volk_gnsssdr_cpu_init ();
-unsigned int volk_gnsssdr_get_lvarch ();
+void volk_gnsssdr_cpu_init();
+unsigned int volk_gnsssdr_get_lvarch();
 
 __VOLK_DECL_END
 

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ReferenceRelation_H_
-#define	_ReferenceRelation_H_
+#ifndef _ReferenceRelation_H_
+#define _ReferenceRelation_H_
 
 
 #include <asn_application.h>
@@ -14,34 +14,36 @@
 #include <ENUMERATED.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum ReferenceRelation {
-	ReferenceRelation_secondBTSThirdSet	= 0,
-	ReferenceRelation_secondBTSSecondSet	= 1,
-	ReferenceRelation_firstBTSFirstSet	= 2
-} e_ReferenceRelation;
+    /* Dependencies */
+    typedef enum ReferenceRelation
+    {
+        ReferenceRelation_secondBTSThirdSet = 0,
+        ReferenceRelation_secondBTSSecondSet = 1,
+        ReferenceRelation_firstBTSFirstSet = 2
+    } e_ReferenceRelation;
 
-/* ReferenceRelation */
-typedef ENUMERATED_t	 ReferenceRelation_t;
+    /* ReferenceRelation */
+    typedef ENUMERATED_t ReferenceRelation_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceRelation;
-asn_struct_free_f ReferenceRelation_free;
-asn_struct_print_f ReferenceRelation_print;
-asn_constr_check_f ReferenceRelation_constraint;
-ber_type_decoder_f ReferenceRelation_decode_ber;
-der_type_encoder_f ReferenceRelation_encode_der;
-xer_type_decoder_f ReferenceRelation_decode_xer;
-xer_type_encoder_f ReferenceRelation_encode_xer;
-per_type_decoder_f ReferenceRelation_decode_uper;
-per_type_encoder_f ReferenceRelation_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceRelation;
+    asn_struct_free_f ReferenceRelation_free;
+    asn_struct_print_f ReferenceRelation_print;
+    asn_constr_check_f ReferenceRelation_constraint;
+    ber_type_decoder_f ReferenceRelation_decode_ber;
+    der_type_encoder_f ReferenceRelation_encode_der;
+    xer_type_decoder_f ReferenceRelation_decode_xer;
+    xer_type_encoder_f ReferenceRelation_encode_xer;
+    per_type_decoder_f ReferenceRelation_decode_uper;
+    per_type_encoder_f ReferenceRelation_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _ReferenceRelation_H_ */
+#endif /* _ReferenceRelation_H_ */
 #include <asn_internal.h>

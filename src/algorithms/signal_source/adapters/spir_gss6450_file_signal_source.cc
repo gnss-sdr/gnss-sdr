@@ -42,8 +42,7 @@ using google::LogMessage;
 
 
 SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams, unsigned int out_streams, gr::msg_queue::sptr queue) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    std::string role, unsigned int in_streams, unsigned int out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_dump_filename = "../data/my_capture_dump.dat";
@@ -64,54 +63,57 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
     long bytes_seek = configuration->property(role + ".bytes_to_skip", 65536);
     double sample_size_byte = static_cast<double>(adc_bits_) / 4.0;
 
-    if(sel_ch_ > n_channels_) { LOG(WARNING) << "Invalid RF channel selection"; }
-    if(n_channels_ > 1)
-    {
-        for(unsigned int i = 0; i < (n_channels_ - 1); i++)
+    if (sel_ch_ > n_channels_)
         {
-            null_sinks_.push_back(gr::blocks::null_sink::make(item_size_));
+            LOG(WARNING) << "Invalid RF channel selection";
         }
-        DLOG(INFO)<< "NUMBER OF NULL SINKS = " << null_sinks_.size();
-    }
+    if (n_channels_ > 1)
+        {
+            for (unsigned int i = 0; i < (n_channels_ - 1); i++)
+                {
+                    null_sinks_.push_back(gr::blocks::null_sink::make(item_size_));
+                }
+            DLOG(INFO) << "NUMBER OF NULL SINKS = " << null_sinks_.size();
+        }
     try
-    {
-        file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
-        file_source_->seek(bytes_seek / item_size_, SEEK_SET);
-        unpack_spir_ = make_unpack_spir_gss6450_samples(adc_bits_);
-        deint_ = gr::blocks::deinterleave::make(item_size_);
-    }
-    catch (const std::exception &e)
-    {
+        {
+            file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
+            file_source_->seek(bytes_seek / item_size_, SEEK_SET);
+            unpack_spir_ = make_unpack_spir_gss6450_samples(adc_bits_);
+            deint_ = gr::blocks::deinterleave::make(item_size_);
+        }
+    catch (const std::exception& e)
+        {
             std::cerr
-            << "The receiver was configured to work with a file signal source "
-            << std::endl
-            << "but the specified file is unreachable by GNSS-SDR."
-            << std::endl
-            <<  "Please modify your configuration file"
-            << std::endl
-            <<  "and point SignalSource.filename to a valid raw data file. Then:"
-            << std::endl
-            << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-            << std::endl
-            << "Examples of configuration files available at:"
-            << std::endl
-            << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
-            << std::endl;
+                << "The receiver was configured to work with a file signal source "
+                << std::endl
+                << "but the specified file is unreachable by GNSS-SDR."
+                << std::endl
+                << "Please modify your configuration file"
+                << std::endl
+                << "and point SignalSource.filename to a valid raw data file. Then:"
+                << std::endl
+                << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
+                << std::endl
+                << "Examples of configuration files available at:"
+                << std::endl
+                << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
+                << std::endl;
 
             LOG(WARNING) << "file_signal_source: Unable to open the samples file "
                          << filename_.c_str() << ", exiting the program.";
             throw(e);
-    }
+        }
     DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";
 
-    if(samples_ == 0) // read all file
+    if (samples_ == 0)  // read all file
         {
             /*!
              * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
              * A possible solution is to compute the file length in samples using file size, excluding the last 2 milliseconds, and enable always the
              * valve block
              */
-            std::ifstream file (filename_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+            std::ifstream file(filename_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
             std::ifstream::pos_type size;
 
             if (file.is_open())
@@ -127,12 +129,12 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
             std::cout << "Processing file " << filename_ << ", which contains " << size << " [bytes]" << std::endl;
-            std::cout.precision (ss);
+            std::cout.precision(ss);
 
-            if(size > 0)
+            if (size > 0)
                 {
                     samples_ = static_cast<unsigned long long>(floor(static_cast<double>(static_cast<long>(size) - static_cast<long>(bytes_seek)) / (sample_size_byte * static_cast<double>(n_channels_))));
-                    samples_ = samples_- static_cast<unsigned long long>(ceil(0.002 * sampling_frequency_)); //process all the samples available in the file excluding the last 2 ms
+                    samples_ = samples_ - static_cast<unsigned long long>(ceil(0.002 * sampling_frequency_));  //process all the samples available in the file excluding the last 2 ms
                 }
         }
 
@@ -169,7 +171,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
 
 
 SpirGSS6450FileSignalSource::~SpirGSS6450FileSignalSource()
-{}
+{
+}
 
 
 void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
@@ -177,27 +180,27 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
     if (samples_ > 0)
         {
             top_block->connect(file_source_, 0, deint_, 0);
-            if(endian_swap_)
-            {
-                top_block->connect(deint_, sel_ch_ - 1, endian_ ,0);
-                top_block->connect(endian_, 0, unpack_spir_, 0);
-            }
-            else
-            {
-                top_block->connect(deint_, sel_ch_ - 1, unpack_spir_, 0);
-            }
-            if(n_channels_ > 1)
-            {
-                unsigned int aux = 0;
-                for(unsigned int i = 0; i < n_channels_; i++)
+            if (endian_swap_)
                 {
-                    if(i != (sel_ch_ - 1))
-                    {
-                        top_block->connect(deint_, i, null_sinks_.at(aux), 0);
-                        aux++;
-                    }
+                    top_block->connect(deint_, sel_ch_ - 1, endian_, 0);
+                    top_block->connect(endian_, 0, unpack_spir_, 0);
                 }
-            }
+            else
+                {
+                    top_block->connect(deint_, sel_ch_ - 1, unpack_spir_, 0);
+                }
+            if (n_channels_ > 1)
+                {
+                    unsigned int aux = 0;
+                    for (unsigned int i = 0; i < n_channels_; i++)
+                        {
+                            if (i != (sel_ch_ - 1))
+                                {
+                                    top_block->connect(deint_, i, null_sinks_.at(aux), 0);
+                                    aux++;
+                                }
+                        }
+                }
             if (enable_throttle_control_)
                 {
                     top_block->connect(unpack_spir_, 0, throttle_, 0);
@@ -207,7 +210,7 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
                 {
                     top_block->connect(unpack_spir_, 0, valve_, 0);
                 }
-            if(dump_)
+            if (dump_)
                 {
                     top_block->connect(valve_, 0, sink_, 0);
                 }
@@ -222,47 +225,47 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
 void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (samples_ > 0)
-    {
-        top_block->disconnect(file_source_, 0, deint_, 0);
-        if(endian_swap_)
         {
-            top_block->disconnect(deint_, sel_ch_ - 1, endian_ ,0);
-            top_block->disconnect(endian_, 0, unpack_spir_, 0);
-        }
-        else
-        {
-            top_block->disconnect(deint_, sel_ch_ - 1, unpack_spir_, 0);
-        }
-        if(n_channels_ > 1)
-        {
-            unsigned int aux = 0;
-            for(unsigned int i = 0; i < n_channels_; i++)
-            {
-                if(i != (sel_ch_ - 1))
+            top_block->disconnect(file_source_, 0, deint_, 0);
+            if (endian_swap_)
                 {
-                    top_block->disconnect(deint_, i, null_sinks_.at(aux), 0);
-                    aux++;
+                    top_block->disconnect(deint_, sel_ch_ - 1, endian_, 0);
+                    top_block->disconnect(endian_, 0, unpack_spir_, 0);
                 }
-            }
+            else
+                {
+                    top_block->disconnect(deint_, sel_ch_ - 1, unpack_spir_, 0);
+                }
+            if (n_channels_ > 1)
+                {
+                    unsigned int aux = 0;
+                    for (unsigned int i = 0; i < n_channels_; i++)
+                        {
+                            if (i != (sel_ch_ - 1))
+                                {
+                                    top_block->disconnect(deint_, i, null_sinks_.at(aux), 0);
+                                    aux++;
+                                }
+                        }
+                }
+            if (enable_throttle_control_)
+                {
+                    top_block->disconnect(unpack_spir_, 0, throttle_, 0);
+                    top_block->disconnect(throttle_, 0, valve_, 0);
+                }
+            else
+                {
+                    top_block->disconnect(unpack_spir_, 0, valve_, 0);
+                }
+            if (dump_)
+                {
+                    top_block->disconnect(valve_, 0, sink_, 0);
+                }
         }
-        if (enable_throttle_control_)
-            {
-                top_block->disconnect(unpack_spir_, 0, throttle_, 0);
-                top_block->disconnect(throttle_, 0, valve_, 0);
-            }
-        else
-            {
-                top_block->disconnect(unpack_spir_, 0, valve_, 0);
-            }
-        if(dump_)
-        {
-            top_block->disconnect(valve_, 0, sink_, 0);
-        }
-    }
     else
-    {
-        LOG(WARNING) << "Nothing to disconnect";
-    }
+        {
+            LOG(WARNING) << "Nothing to disconnect";
+        }
 }
 
 
@@ -275,10 +278,19 @@ gr::basic_block_sptr SpirGSS6450FileSignalSource::get_left_block()
 
 gr::basic_block_sptr SpirGSS6450FileSignalSource::get_right_block()
 {
-    if(samples_ > 0) { return valve_; }
+    if (samples_ > 0)
+        {
+            return valve_;
+        }
     else
         {
-            if(enable_throttle_control_) { return throttle_; }
-            else { return unpack_spir_; }
+            if (enable_throttle_control_)
+                {
+                    return throttle_;
+                }
+            else
+                {
+                    return unpack_spir_;
+                }
         }
 }

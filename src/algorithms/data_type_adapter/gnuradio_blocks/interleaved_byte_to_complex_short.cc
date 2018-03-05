@@ -40,11 +40,10 @@ interleaved_byte_to_complex_short_sptr make_interleaved_byte_to_complex_short()
 }
 
 
-
 interleaved_byte_to_complex_short::interleaved_byte_to_complex_short() : sync_decimator("interleaved_byte_to_complex_short",
-                        gr::io_signature::make (1, 1, sizeof(int8_t)),
-                        gr::io_signature::make (1, 1, sizeof(lv_16sc_t)), // lv_16sc_t is a Volk's typedef for std::complex<short int>
-                        2)
+                                                                             gr::io_signature::make(1, 1, sizeof(int8_t)),
+                                                                             gr::io_signature::make(1, 1, sizeof(lv_16sc_t)),  // lv_16sc_t is a Volk's typedef for std::complex<short int>
+                                                                             2)
 {
     const int alignment_multiple = volk_get_alignment() / sizeof(lv_16sc_t);
     set_alignment(std::max(1, alignment_multiple));
@@ -52,15 +51,15 @@ interleaved_byte_to_complex_short::interleaved_byte_to_complex_short() : sync_de
 
 
 int interleaved_byte_to_complex_short::work(int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
 {
     const int8_t *in = reinterpret_cast<const int8_t *>(input_items[0]);
     lv_16sc_t *out = reinterpret_cast<lv_16sc_t *>(output_items[0]);
     // This could be put into a Volk kernel
     int8_t real_part;
     int8_t imag_part;
-    for(int number = 0; number < noutput_items; number++)
+    for (int number = 0; number < noutput_items; number++)
         {
             // lv_cmake(r, i) defined at volk/volk_complex.h
             real_part = *in++;

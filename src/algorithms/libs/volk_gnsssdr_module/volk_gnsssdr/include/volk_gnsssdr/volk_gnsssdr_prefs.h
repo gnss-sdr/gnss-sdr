@@ -32,9 +32,9 @@ __VOLK_DECL_BEGIN
 
 typedef struct volk_gnsssdr_arch_pref
 {
-    char name[128];   //name of the kernel
-    char impl_a[128]; //best aligned impl
-    char impl_u[128]; //best unaligned impl
+    char name[128];    //name of the kernel
+    char impl_a[128];  //best aligned impl
+    char impl_u[128];  //best unaligned impl
 } volk_gnsssdr_arch_pref_t;
 
 ////////////////////////////////////////////////////////////////////////

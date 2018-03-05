@@ -44,9 +44,8 @@
 using google::LogMessage;
 
 GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -72,9 +71,9 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
-    if(FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+    if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 0.5);
-    if(FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 2.0);
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 0.25);
     int extend_correlation_symbols;
@@ -88,7 +87,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
 
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
-            default_dump_filename); //unused!
+        default_dump_filename);  //unused!
     vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
@@ -96,21 +95,21 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = galileo_e1_dll_pll_veml_make_tracking_cc(
-                    f_if,
-                    fs_in,
-                    vector_length,
-                    dump,
-                    dump_filename,
-                    pll_bw_hz,
-                    dll_bw_hz,
-                    pll_bw_narrow_hz,
-                    dll_bw_narrow_hz,
-                    early_late_space_chips,
-                    very_early_late_space_chips,
-                    early_late_space_narrow_chips,
-                    very_early_late_space_narrow_chips,
-                    extend_correlation_symbols,
-                    track_pilot);
+                f_if,
+                fs_in,
+                vector_length,
+                dump,
+                dump_filename,
+                pll_bw_hz,
+                dll_bw_hz,
+                pll_bw_narrow_hz,
+                dll_bw_narrow_hz,
+                early_late_space_chips,
+                very_early_late_space_chips,
+                early_late_space_narrow_chips,
+                very_early_late_space_narrow_chips,
+                extend_correlation_symbols,
+                track_pilot);
         }
     else
         {
@@ -125,7 +124,8 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
 
 
 GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking()
-{}
+{
+}
 
 
 void GalileoE1DllPllVemlTracking::start_tracking()
@@ -152,14 +152,18 @@ void GalileoE1DllPllVemlTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GalileoE1DllPllVemlTracking::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
 void GalileoE1DllPllVemlTracking::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
@@ -174,4 +178,3 @@ gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_right_block()
 {
     return tracking_;
 }
-

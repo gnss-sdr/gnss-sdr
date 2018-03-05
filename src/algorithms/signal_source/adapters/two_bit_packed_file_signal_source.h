@@ -52,12 +52,12 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class TwoBitPackedFileSignalSource: public GNSSBlockInterface
+class TwoBitPackedFileSignalSource : public GNSSBlockInterface
 {
 public:
     TwoBitPackedFileSignalSource(ConfigurationInterface* configuration, std::string role,
-            unsigned int in_streams, unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+        unsigned int in_streams, unsigned int out_streams,
+        boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~TwoBitPackedFileSignalSource();
     inline std::string role() override
@@ -144,7 +144,7 @@ private:
     gr::basic_block_sptr char_to_float_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
-    gr::blocks::throttle::sptr  throttle_;
+    gr::blocks::throttle::sptr throttle_;
     boost::shared_ptr<gr::msg_queue> queue_;
     size_t item_size_;
     bool big_endian_items_;

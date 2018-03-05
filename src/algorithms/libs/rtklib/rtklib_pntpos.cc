@@ -83,8 +83,7 @@ double gettgd(int sat, const nav_t *nav)
 /* get isc parameter (m) -----------------------------------------------------*/
 double getiscl1(int sat, const nav_t *nav)
 {
-    int i;
-    for (i = 0; i < nav->n; i++)
+    for (int i = 0; i < nav->n; i++)
         {
             if (nav->eph[i].sat != sat) continue;
             return SPEED_OF_LIGHT * nav->eph[i].isc[0];
@@ -94,8 +93,7 @@ double getiscl1(int sat, const nav_t *nav)
 
 double getiscl2(int sat, const nav_t *nav)
 {
-    int i;
-    for (i = 0; i < nav->n; i++)
+    for (int i = 0; i < nav->n; i++)
         {
             if (nav->eph[i].sat != sat) continue;
             return SPEED_OF_LIGHT * nav->eph[i].isc[1];
@@ -105,8 +103,7 @@ double getiscl2(int sat, const nav_t *nav)
 
 double getiscl5i(int sat, const nav_t *nav)
 {
-    int i;
-    for (i = 0; i < nav->n; i++)
+    for (int i = 0; i < nav->n; i++)
         {
             if (nav->eph[i].sat != sat) continue;
             return SPEED_OF_LIGHT * nav->eph[i].isc[2];
@@ -116,8 +113,7 @@ double getiscl5i(int sat, const nav_t *nav)
 
 double getiscl5q(int sat, const nav_t *nav)
 {
-    int i;
-    for (i = 0; i < nav->n; i++)
+    for (int i = 0; i < nav->n; i++)
         {
             if (nav->eph[i].sat != sat) continue;
             return SPEED_OF_LIGHT * nav->eph[i].isc[3];
@@ -129,13 +125,13 @@ double getiscl5q(int sat, const nav_t *nav)
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         int iter, const prcopt_t *opt, double *var)
 {
-    const double *lam = nav->lam[obs->sat - 1];
-    double PC;
-    double P1;
-    double P2;
-    double P1_P2;
-    double P1_C1;
-    double P2_C2;
+    const double* lam = nav->lam[obs->sat - 1];
+    double PC = 0.0;
+    double P1 = 0.0;
+    double P2 = 0.0;
+    double P1_P2 = 0.0;
+    double P1_C1 = 0.0;
+    double P2_C2 = 0.0;
     double ISCl1  = 0.0;
     double ISCl2  = 0.0;
     double ISCl5i = 0.0;
@@ -143,11 +139,10 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     double gamma_ = 0.0;
     int i = 0;
     int j = 1;
-    int sys;
-
+    int sys = satsys(obs->sat, NULL);
     *var = 0.0;
 
-    if (!(sys = satsys(obs->sat, NULL)))
+    if(sys == SYS_NONE)
     {
         trace(4, "prange: satsys NULL\n");
         return 0.0;
@@ -155,15 +150,15 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
-    if (sys & (SYS_GAL | SYS_SBS)) {j = 2;}
+    if(sys == SYS_GAL or sys == SYS_SBS) {j = 2;}
 
-    if (sys == SYS_GPS)
+    if(sys == SYS_GPS)
     {
         if(obs->code[1] != CODE_NONE) {j = 1;}
         else if(obs->code[2] != CODE_NONE) {j = 2;}
     }
 
-    if (NFREQ<2 || lam[i] == 0.0 || lam[j] == 0.0)
+    if(lam[i] == 0.0 or lam[j] == 0.0)
     {
         trace(4, "prange: NFREQ<2||lam[i]==0.0||lam[j]==0.0\n");
         printf("i: %d j:%d, lam[i]: %f lam[j] %f\n", i, j, lam[i], lam[j]);
@@ -171,7 +166,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     }
 
     /* test snr mask */
-    if (iter > 0)
+    if(iter > 0)
     {
         if (testsnr(0, i, azel[1], obs->SNR[i] * 0.25, &opt->snrmask))
         {
@@ -226,9 +221,15 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         ISCl2  = getiscl2(obs->sat, nav);
         ISCl5i = getiscl5i(obs->sat, nav);
         ISCl5q = getiscl5q(obs->sat, nav);
+        d_file.write(reinterpret_cast<char*>(&ISCl1), sizeof(double));
+        d_file.write(reinterpret_cast<char*>(&ISCl2), sizeof(double));
+        d_file.write(reinterpret_cast<char*>(&ISCl5i), sizeof(double));
+        d_file.write(reinterpret_cast<char*>(&ISCl5q), sizeof(double));
     }
     d_file.write(reinterpret_cast<char*>(&P1_P2), sizeof(double));
-    if (opt->ionoopt == IONOOPT_IFLC)
+
+    //CHECK IF IT IS STILL NEEDED
+    if(opt->ionoopt == IONOOPT_IFLC)
     { /* dual-frequency */
 
         if (P1 == 0.0 || P2 == 0.0) { return 0.0; }
@@ -238,22 +239,23 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         /* iono-free combination */
         PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
     }
+    ////////////////////////////////////////////
     else
     { /* single-frequency */
-        if((obs->code[i] == CODE_NONE) && (obs->code[j] == CODE_NONE)) { return 0.0; }
+        if(obs->code[i] == CODE_NONE and obs->code[j] == CODE_NONE) { return 0.0; }
 
-        else if((obs->code[i] != CODE_NONE) and (obs->code[j] == CODE_NONE))
+        else if(obs->code[i] != CODE_NONE and obs->code[j] == CODE_NONE)
         {//CHECK!!
             P1 += P1_C1; /* C1->P1 */
             PC = P1 + P1_P2 / (gamma_ - 1.0);
         }
-        else if((obs->code[i] == CODE_NONE) and (obs->code[j] != CODE_NONE))
+        else if(obs->code[i] == CODE_NONE and obs->code[j] != CODE_NONE)
         {
             if(sys == SYS_GPS)
             {//CHECK!!
                 P2 += P2_C2; /* C2->P2 */
                 //PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
-                PC = P2 + gamma_ * P1_P2 / (gamma_ - 1.0);
+                PC = P2 + P1_P2 / (gamma_ - 1.0) - ISCl2;
             }
             else if(sys == SYS_GAL)
             {
@@ -261,28 +263,27 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             }
         }
         /* dual-frequency */
-        else
+        else if(sys == SYS_GPS)
         {
-            if(sys == SYS_GPS) /* See IS-GPS-200 p. 179 */
+            if(obs->code[j] == CODE_L2S) /* L1 + L2 */
             {
-                P1 += P1_C1;
-                P2 += P2_C2;
-                if(obs->code[j] == CODE_L2S)
-                {
-                    PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2 / (gamma_ - 1.0);
-                }
+                //PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2 / (gamma_ - 1.0);
+                PC = (P1 + P2) / 2.0;
             }
-            else if(sys == SYS_GAL)
+            if(obs->code[j] == CODE_L5X) /* L1 + L5 */
             {
-                //TODO
+
             }
+        }
+        else if(sys == SYS_GAL) /* E1 + E5a */
+        {
+
         }
     }
     d_file.write(reinterpret_cast<char*>(&PC), sizeof(double));
-    if (opt->sateph == EPHOPT_SBAS) { PC -= P1_C1; } /* sbas clock based C1 */
-
-    *var = std::pow(ERR_CBIAS, 2.0);
     d_file.close();
+    if(opt->sateph == EPHOPT_SBAS) { PC -= P1_C1; } /* sbas clock based C1 */
+    *var = std::pow(ERR_CBIAS, 2.0);
     return PC;
 }
 

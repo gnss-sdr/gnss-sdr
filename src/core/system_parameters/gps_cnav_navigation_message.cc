@@ -32,6 +32,7 @@
 
 #include "gps_cnav_navigation_message.h"
 #include "gnss_satellite.h"
+#include <iostream>
 
 
 void Gps_CNAV_Navigation_Message::reset()
@@ -266,6 +267,7 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
         ephemeris_record.d_ISCL1 = ephemeris_record.d_ISCL1 * CNAV_ISCL1_LSB;
         ephemeris_record.d_ISCL2 = static_cast<double>(read_navigation_signed(data_bits, CNAV_ISCL2));
         ephemeris_record.d_ISCL2 = ephemeris_record.d_ISCL2 * CNAV_ISCL2_LSB;
+        std::cout << "ISCL2 * c = " << ephemeris_record.d_ISCL2 * 3e8 << " [m]" << std::endl;
         ephemeris_record.d_ISCL5I = static_cast<double>(read_navigation_signed(data_bits, CNAV_ISCL5I));
         ephemeris_record.d_ISCL5I = ephemeris_record.d_ISCL5I * CNAV_ISCL5I_LSB;
         ephemeris_record.d_ISCL5Q = static_cast<double>(read_navigation_signed(data_bits, CNAV_ISCL5Q));

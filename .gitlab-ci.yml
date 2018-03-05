@@ -58,6 +58,42 @@ stages:
 
 
 # Stage "build"
+archlinux:
+  image: base/devel:latest
+  stage: build
+  before_script:
+    - pwd
+  script:
+    - pacman -Syu --noconfirm
+    - pacman -S --noconfirm cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr blas lapack gflags google-glog gnutls openssl python2-mako python2-six libmatio gtest
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+centos7:
+  image: centos:centos7
+  stage: build
+  before_script:
+    - pwd
+  script:
+    - yum install -y wget
+    - wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    - rpm -Uvh epel-release-latest-7.noarch.rpm
+    - yum install -y make automake gcc gcc-c++ kernel-devel libtool hdf5-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel openssl-devel python-mako python-six
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
 debian8.10:
   image: debian:8.10-slim
   stage: build
@@ -66,9 +102,11 @@ debian8.10:
     - apt-get install -y --no-install-recommends build-essential libtool automake libhdf5-dev cmake git ca-certificates libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..
-    - make -j2
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
     - make check
     - make install
+  allow_failure: true
 
 
 debian9.3:
@@ -79,7 +117,8 @@ debian9.3:
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..
-    - make -j2
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
     - make check
     - make install
 
@@ -92,7 +131,8 @@ debian9.3-i386:
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - cd build
     - cmake -DENABLE_PACKAGING=ON -DENABLE_OSMOSDR=ON ..
-    - make -j2
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
     - make check
     - make install
 
@@ -105,9 +145,57 @@ debian10:
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..
-    - make -j2
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
     - make check
     - make install
+
+
+fedora26:
+  image: fedora:26
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python-mako python-six matio-devel
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+
+
+fedora27:
+  image: fedora:27
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python-mako python-six matio-devel
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+
+
+fedora-rawhide:
+  image: fedora:rawhide
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - dnf upgrade -y --nogpgcheck
+    - yum install -y automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python-mako python-six matio-devel
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
 
 
 ubuntu14.04:
@@ -123,9 +211,11 @@ ubuntu14.04:
     - apt-get install -y --no-install-recommends build-essential libtool automake libhdf5-dev cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
     - cd build
     - cmake ..
-    - make -j2
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
     - make check
     - make install
+  allow_failure: true
 
 
 ubuntu16.04:
@@ -136,7 +226,8 @@ ubuntu16.04:
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..
-    - make -j2
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
     - make check
     - make install
 
@@ -149,86 +240,11 @@ ubuntu18.04:
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..
-    - make -j2
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
     - make check
     - make install
   allow_failure: true
-
-
-fedora26:
-  image: fedora:26
-  stage: build
-  before_script:
-    - source ~/.bash_profile
-  script:
-    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
-    - cd build
-    - cmake -DENABLE_OSMOSDR=ON ..
-    - make -j2
-    - make check
-    - make install
-
-
-fedora27:
-  image: fedora:27
-  stage: build
-  before_script:
-    - source ~/.bash_profile
-  script:
-    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
-    - cd build
-    - cmake -DENABLE_OSMOSDR=ON ..
-    - make -j2
-    - make check
-    - make install
-
-
-fedora-rawhide:
-  image: fedora:rawhide
-  stage: build
-  before_script:
-    - source ~/.bash_profile
-  script:
-    - yum install -y automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel gnutls-devel openssl-devel python-mako python-six matio-devel
-    - cd build
-    - cmake -DENABLE_OSMOSDR=ON ..
-    - make -j2
-    - make check
-    - make install
-  allow_failure: true
-
-
-archlinux:
-  image: base/devel:latest
-  stage: build
-  before_script:
-    - pwd
-  script:
-    - pacman -Syu --noconfirm
-    - pacman -S --noconfirm cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr blas lapack gflags google-glog gnutls openssl python2-mako python2-six libmatio gtest
-    - cd build
-    - cmake -DENABLE_OSMOSDR=ON ..
-    - make -j2
-    - make check
-    - make install
-  allow_failure: true
-
-
-centos7:
-  image: centos:centos7
-  stage: build
-  before_script:
-    - pwd
-  script:
-    - yum install -y wget
-    - wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    - rpm -Uvh epel-release-latest-7.noarch.rpm
-    - yum install -y make automake gcc gcc-c++ kernel-devel libtool automake hdf5-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel armadillo-devel gnutls-devel openssl-devel python-mako python-six
-    - cd build
-    - cmake -DENABLE_OSMOSDR=ON ..
-    - make -j2
-    - make check
-    - make install
 
 
 coverity-scan:
@@ -261,7 +277,8 @@ run-tests:
     - mkdir build64
     - cd build-test
     - cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
-    - make -j2
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
     # Execute Unit Tests
     - ../install/run_tests --gtest_output=xml
     - mv *.xml ../build64/
@@ -287,7 +304,8 @@ run-tests-i386:
     - mkdir build32
     - cd build-test
     - cmake -DENABLE_PACKAGING=ON -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
-    - make -j2
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
     # Execute Unit Tests
     - ../install/run_tests --gtest_output=xml
     - mv *.xml ../build32/
@@ -348,7 +366,7 @@ docker-access18:
   script:
     - mkdir docker-build
     - cd docker-build
-    - echo -e "FROM phusion/baseimage:0.10.0\nMAINTAINER carles.fernandez@cttc.es\nCMD [\"/sbin/my_init\"]\nWORKDIR /home/src\nRUN apt-get update && apt-get install -y build-essential cmake curl nano libarmadillo-dev libblas-dev libboost-chrono-dev libboost-dev libboost-date-time-dev libboost-filesystem-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev libgflags-dev libgoogle-glog-dev libgtest-dev libgnutls-openssl-dev liblapack-dev liblog4cpp5-dev libmatio-dev libuhd-dev git ca-certificates gnuradio-dev gr-osmosdr python-mako python-six texlive-latex-base texlive-fonts-recommended texlive-font-utils texlive-pictures epstool transfig octave && rm -rf /var/lib/apt/lists/*\nRUN git clone https://gitlab.com/gnss-sdr/gnss-sdr && cd gnss-sdr/build && git checkout $CI_COMMIT_SHA && cmake -DENABLE_PACKAGING=ON -DENABLE_INSTALL_TESTS=ON .. && make -j2 && make install\nRUN /usr/bin/volk_profile -v 8111\nRUN /usr/local/bin/volk_gnsssdr_profile\nRUN apt-get clean && rm -rf /tmp/* /var/tmp/*\nRUN rm -rf /home/src\nWORKDIR /home\nCMD [\"bash\"]" > Dockerfile
+    - echo -e "FROM phusion/baseimage:0.10.0\nMAINTAINER carles.fernandez@cttc.es\nCMD [\"/sbin/my_init\"]\nWORKDIR /home/src\nRUN apt-get update && apt-get install -y build-essential cmake curl nano libarmadillo-dev libblas-dev libboost-chrono-dev libboost-dev libboost-date-time-dev libboost-filesystem-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev libgflags-dev libgoogle-glog-dev libgtest-dev libgnutls-openssl-dev liblapack-dev liblog4cpp5-dev libmatio-dev libuhd-dev git ca-certificates gnuradio-dev gr-osmosdr python-mako python-six texlive-latex-base texlive-fonts-recommended texlive-font-utils texlive-pictures epstool transfig octave && rm -rf /var/lib/apt/lists/*\nRUN git clone https://gitlab.com/gnss-sdr/gnss-sdr && cd gnss-sdr/build && git checkout $CI_COMMIT_SHA && cmake -DENABLE_PACKAGING=ON -DENABLE_INSTALL_TESTS=ON .. && NPROC=$(grep -c ^processor /proc/cpuinfo) && make -j$(($NPROC+1)) && make install\nRUN /usr/bin/volk_profile -v 8111\nRUN /usr/local/bin/volk_gnsssdr_profile\nRUN apt-get clean && rm -rf /tmp/* /var/tmp/*\nRUN rm -rf /home/src\nWORKDIR /home\nCMD [\"bash\"]" > Dockerfile
     - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
     - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO .
     - docker tag $DOCKER_HUB_USER/$DOCKER_HUB_REPO:latest $DOCKER_HUB_USER/$DOCKER_HUB_REPO:access18

@@ -94,6 +94,25 @@ centos7:
   allow_failure: true
 
 
+crosscompile:
+  image: ubuntu:xenial
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y build-essential xz-utils curl
+    - curl https://sites.cttc.es/gnss_files/SDK/Rocko/oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh --output oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
+    - echo "3a59b721a1b018ce445366ba859a5988  oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh" > sdk.md5
+    - md5sum -c sdk.md5
+    - chmod +x ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
+    - sh ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh -y
+    - . /usr/local/oecore-x86_64/environment-setup-armv7ahf-neon-oe-linux-gnueabi
+    - cd build
+    - cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchains/oe-sdk_cross.cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+    - make
+    - make install DESTDIR=/usr/local/oecore-x86_64/sysroots/armv7ahf-neon-oe-linux-gnueabi/
+  allow_failure: true
+
+
 debian8.10:
   image: debian:8.10-slim
   stage: build

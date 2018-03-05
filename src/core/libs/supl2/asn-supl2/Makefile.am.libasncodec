@@ -1,0 +1,547 @@
+ASN_MODULE_SRCS=	\
+	SUPLINIT.c	\
+	Notification.c	\
+	NotificationType.c	\
+	EncodingType.c	\
+	FormatIndicator.c	\
+	SLPMode.c	\
+	MAC.c	\
+	KeyIdentity.c	\
+	SUPLSTART.c	\
+	SETCapabilities.c	\
+	PosTechnology.c	\
+	PrefMethod.c	\
+	PosProtocol.c	\
+	SUPLRESPONSE.c	\
+	SETAuthKey.c	\
+	KeyIdentity4.c	\
+	SUPLPOSINIT.c	\
+	RequestedAssistData.c	\
+	NavigationModel.c	\
+	SatelliteInfo.c	\
+	SatelliteInfoElement.c	\
+	SUPLPOS.c	\
+	PosPayLoad.c	\
+	SUPLEND.c	\
+	SUPLAUTHREQ.c	\
+	SUPLAUTHRESP.c	\
+	Ver2-SUPLNOTIFY.c	\
+	Ver2-SUPLNOTIFYRESPONSE.c	\
+	NotificationResponse.c	\
+	Ver2-SUPLSETINIT.c	\
+	Ver2-SUPLTRIGGEREDSTART.c	\
+	TriggerType.c	\
+	TriggerParams.c	\
+	PeriodicParams.c	\
+	AreaEventParams.c	\
+	AreaEventType.c	\
+	RepeatedReportingParams.c	\
+	GeographicTargetAreaList.c	\
+	GeographicTargetArea.c	\
+	AreaIdList.c	\
+	AreaIdSet.c	\
+	AreaId.c	\
+	GSMAreaId.c	\
+	WCDMAAreaId.c	\
+	CDMAAreaId.c	\
+	HRPDAreaId.c	\
+	UMBAreaId.c	\
+	LTEAreaId.c	\
+	WLANAreaId.c	\
+	WimaxAreaId.c	\
+	AreaIdSetType.c	\
+	GeoAreaMappingList.c	\
+	GeoAreaIndex.c	\
+	Ver2-SUPLTRIGGEREDRESPONSE.c	\
+	ReportingMode.c	\
+	SUPL-TRIGGERED-RESPONSE_RepMode.c	\
+	BatchRepConditions.c	\
+	BatchRepType.c	\
+	Ver2-SUPLREPORT.c	\
+	SessionList.c	\
+	SessionInformation.c	\
+	ReportDataList.c	\
+	ReportData.c	\
+	PositionData.c	\
+	GANSSsignalsInfo.c	\
+	GANSSSignalsDescription.c	\
+	ResultCode.c	\
+	TimeStamp.c	\
+	Ver2-SUPLTRIGGEREDSTOP.c	\
+	Ver2-SUPL-INIT-extension.c	\
+	NotificationMode.c	\
+	HistoricReporting.c	\
+	AllowedReportingType.c	\
+	ReportingCriteria.c	\
+	TimeWindow.c	\
+	ProtectionLevel.c	\
+	ProtLevel.c	\
+	BasicProtectionParams.c	\
+	Ver2-SUPL-START-extension.c	\
+	Ver2-SUPL-RESPONSE-extension.c	\
+	Ver2-SUPL-POS-INIT-extension.c	\
+	Ver2-SUPL-POS-extension.c	\
+	Ver2-SUPL-END-extension.c	\
+	Ver2-Notification-extension.c	\
+	Ver2-SETCapabilities-extension.c	\
+	ServiceCapabilities.c	\
+	ServicesSupported.c	\
+	EventTriggerCapabilities.c	\
+	GeoAreaShapesSupported.c	\
+	SessionCapabilities.c	\
+	SupportedBearers.c	\
+	Ver2-PosProtocol-extension.c	\
+	PosProtocolVersion3GPP.c	\
+	PosProtocolVersion3GPP2.c	\
+	Supported3GPP2PosProtocolVersion.c	\
+	Ver2-PosTechnology-extension.c	\
+	GANSSPositionMethods.c	\
+	GANSSPositionMethod.c	\
+	GANSSPositioningMethodTypes.c	\
+	Ver2-RequestedAssistData-extension.c	\
+	GanssRequestedCommonAssistanceDataList.c	\
+	GanssRequestedGenericAssistanceDataList.c	\
+	GanssReqGenericData.c	\
+	DGANSS-Sig-Id-Req.c	\
+	GanssNavigationModelData.c	\
+	SatellitesListRelatedDataList.c	\
+	SatellitesListRelatedData.c	\
+	GanssDataBits.c	\
+	ReqDataBitAssistanceList.c	\
+	GanssAdditionalDataChoices.c	\
+	ExtendedEphemeris.c	\
+	ExtendedEphCheck.c	\
+	GanssExtendedEphCheck.c	\
+	GPSTime.c	\
+	GANSSextEphTime.c	\
+	Ver2-PosPayLoad-extension.c	\
+	ULP-PDU.c	\
+	UlpMessage.c	\
+	Version.c	\
+	SessionID.c	\
+	SetSessionID.c	\
+	SETId.c	\
+	SlpSessionID.c	\
+	IPAddress.c	\
+	SLPAddress.c	\
+	FQDN.c	\
+	Ver.c	\
+	LocationId.c	\
+	Status.c	\
+	CellInfo.c	\
+	Position.c	\
+	PositionEstimate.c	\
+	AltitudeInfo.c	\
+	CdmaCellInformation.c	\
+	GsmCellInformation.c	\
+	WcdmaCellInformation.c	\
+	TimingAdvance.c	\
+	TAResolution.c	\
+	ChipRate.c	\
+	FrequencyInfo.c	\
+	FrequencyInfoFDD.c	\
+	FrequencyInfoTDD.c	\
+	UARFCN.c	\
+	NMR.c	\
+	NMRelement.c	\
+	MeasuredResultsList.c	\
+	MeasuredResults.c	\
+	CellMeasuredResultsList.c	\
+	UTRA-CarrierRSSI.c	\
+	CellMeasuredResults.c	\
+	CellParametersID.c	\
+	TGSN.c	\
+	PrimaryCCPCH-RSCP.c	\
+	TimeslotISCP.c	\
+	TimeslotISCP-List.c	\
+	PrimaryCPICH-Info.c	\
+	CPICH-Ec-N0.c	\
+	CPICH-RSCP.c	\
+	Pathloss.c	\
+	StatusCode.c	\
+	QoP.c	\
+	Velocity.c	\
+	Horvel.c	\
+	Horandvervel.c	\
+	Horveluncert.c	\
+	Horandveruncert.c	\
+	PosMethod.c	\
+	MultipleLocationIds.c	\
+	LocationIdData.c	\
+	RelativeTime.c	\
+	SupportedNetworkInformation.c	\
+	SupportedWLANInfo.c	\
+	SupportedWLANApsList.c	\
+	SupportedWLANApsChannel11a.c	\
+	SupportedWLANApsChannel11bg.c	\
+	SupportedWLANApData.c	\
+	SupportedWCDMAInfo.c	\
+	Ver2-CellInfo-extension.c	\
+	HrpdCellInformation.c	\
+	UmbCellInformation.c	\
+	LteCellInformation.c	\
+	MeasResultListEUTRA.c	\
+	MeasResultEUTRA.c	\
+	PhysCellId.c	\
+	TrackingAreaCode.c	\
+	CellGlobalIdEUTRA.c	\
+	PLMN-Identity.c	\
+	CellIdentity.c	\
+	MCC.c	\
+	MNC.c	\
+	MCC-MNC-Digit.c	\
+	RSRP-Range.c	\
+	RSRQ-Range.c	\
+	WlanAPInformation.c	\
+	RTD.c	\
+	RTDUnits.c	\
+	ReportedLocation.c	\
+	LocationEncodingDescriptor.c	\
+	LocationData.c	\
+	WimaxBSInformation.c	\
+	WimaxBsID.c	\
+	WimaxRTD.c	\
+	WimaxNMRList.c	\
+	WimaxNMR.c	\
+	UTRAN-GPSReferenceTimeAssistance.c	\
+	UTRAN-GPSReferenceTime.c	\
+	UTRANGPSDriftRate.c	\
+	UTRAN-GPSReferenceTimeResult.c	\
+	UTRAN-GANSSReferenceTimeAssistance.c	\
+	UTRAN-GANSSReferenceTime.c	\
+	UTRANGANSSDriftRate.c	\
+	UTRAN-GANSSReferenceTimeResult.c	\
+	SET-GANSSReferenceTime.c	\
+	GNSSPosTechnology.c	\
+	GANSSSignals.c	\
+	SPCSETKey.c	\
+	SPCTID.c	\
+	SPCSETKeylifetime.c	\
+	CauseCode.c	\
+	ThirdParty.c	\
+	ThirdPartyID.c	\
+	ApplicationID.c	\
+	ReportingCap.c	\
+	Ver2-ULP-Components_RepMode.c	\
+	BatchRepCap.c	\
+	Coordinate.c	\
+	CircularArea.c	\
+	EllipticalArea.c	\
+	PolygonArea.c	\
+	PolygonDescription.c
+
+ASN_MODULE_HDRS=	\
+	SUPLINIT.h	\
+	Notification.h	\
+	NotificationType.h	\
+	EncodingType.h	\
+	FormatIndicator.h	\
+	SLPMode.h	\
+	MAC.h	\
+	KeyIdentity.h	\
+	SUPLSTART.h	\
+	SETCapabilities.h	\
+	PosTechnology.h	\
+	PrefMethod.h	\
+	PosProtocol.h	\
+	SUPLRESPONSE.h	\
+	SETAuthKey.h	\
+	KeyIdentity4.h	\
+	SUPLPOSINIT.h	\
+	RequestedAssistData.h	\
+	NavigationModel.h	\
+	SatelliteInfo.h	\
+	SatelliteInfoElement.h	\
+	SUPLPOS.h	\
+	PosPayLoad.h	\
+	SUPLEND.h	\
+	SUPLAUTHREQ.h	\
+	SUPLAUTHRESP.h	\
+	Ver2-SUPLNOTIFY.h	\
+	Ver2-SUPLNOTIFYRESPONSE.h	\
+	NotificationResponse.h	\
+	Ver2-SUPLSETINIT.h	\
+	Ver2-SUPLTRIGGEREDSTART.h	\
+	TriggerType.h	\
+	TriggerParams.h	\
+	PeriodicParams.h	\
+	AreaEventParams.h	\
+	AreaEventType.h	\
+	RepeatedReportingParams.h	\
+	GeographicTargetAreaList.h	\
+	GeographicTargetArea.h	\
+	AreaIdList.h	\
+	AreaIdSet.h	\
+	AreaId.h	\
+	GSMAreaId.h	\
+	WCDMAAreaId.h	\
+	CDMAAreaId.h	\
+	HRPDAreaId.h	\
+	UMBAreaId.h	\
+	LTEAreaId.h	\
+	WLANAreaId.h	\
+	WimaxAreaId.h	\
+	AreaIdSetType.h	\
+	GeoAreaMappingList.h	\
+	GeoAreaIndex.h	\
+	Ver2-SUPLTRIGGEREDRESPONSE.h	\
+	ReportingMode.h	\
+	SUPL-TRIGGERED-RESPONSE_RepMode.h	\
+	BatchRepConditions.h	\
+	BatchRepType.h	\
+	Ver2-SUPLREPORT.h	\
+	SessionList.h	\
+	SessionInformation.h	\
+	ReportDataList.h	\
+	ReportData.h	\
+	PositionData.h	\
+	GANSSsignalsInfo.h	\
+	GANSSSignalsDescription.h	\
+	ResultCode.h	\
+	TimeStamp.h	\
+	Ver2-SUPLTRIGGEREDSTOP.h	\
+	Ver2-SUPL-INIT-extension.h	\
+	NotificationMode.h	\
+	HistoricReporting.h	\
+	AllowedReportingType.h	\
+	ReportingCriteria.h	\
+	TimeWindow.h	\
+	ProtectionLevel.h	\
+	ProtLevel.h	\
+	BasicProtectionParams.h	\
+	Ver2-SUPL-START-extension.h	\
+	Ver2-SUPL-RESPONSE-extension.h	\
+	Ver2-SUPL-POS-INIT-extension.h	\
+	Ver2-SUPL-POS-extension.h	\
+	Ver2-SUPL-END-extension.h	\
+	Ver2-Notification-extension.h	\
+	Ver2-SETCapabilities-extension.h	\
+	ServiceCapabilities.h	\
+	ServicesSupported.h	\
+	EventTriggerCapabilities.h	\
+	GeoAreaShapesSupported.h	\
+	SessionCapabilities.h	\
+	SupportedBearers.h	\
+	Ver2-PosProtocol-extension.h	\
+	PosProtocolVersion3GPP.h	\
+	PosProtocolVersion3GPP2.h	\
+	Supported3GPP2PosProtocolVersion.h	\
+	Ver2-PosTechnology-extension.h	\
+	GANSSPositionMethods.h	\
+	GANSSPositionMethod.h	\
+	GANSSPositioningMethodTypes.h	\
+	Ver2-RequestedAssistData-extension.h	\
+	GanssRequestedCommonAssistanceDataList.h	\
+	GanssRequestedGenericAssistanceDataList.h	\
+	GanssReqGenericData.h	\
+	DGANSS-Sig-Id-Req.h	\
+	GanssNavigationModelData.h	\
+	SatellitesListRelatedDataList.h	\
+	SatellitesListRelatedData.h	\
+	GanssDataBits.h	\
+	ReqDataBitAssistanceList.h	\
+	GanssAdditionalDataChoices.h	\
+	ExtendedEphemeris.h	\
+	ExtendedEphCheck.h	\
+	GanssExtendedEphCheck.h	\
+	GPSTime.h	\
+	GANSSextEphTime.h	\
+	Ver2-PosPayLoad-extension.h	\
+	ULP-PDU.h	\
+	UlpMessage.h	\
+	Version.h	\
+	SessionID.h	\
+	SetSessionID.h	\
+	SETId.h	\
+	SlpSessionID.h	\
+	IPAddress.h	\
+	SLPAddress.h	\
+	FQDN.h	\
+	Ver.h	\
+	LocationId.h	\
+	Status.h	\
+	CellInfo.h	\
+	Position.h	\
+	PositionEstimate.h	\
+	AltitudeInfo.h	\
+	CdmaCellInformation.h	\
+	GsmCellInformation.h	\
+	WcdmaCellInformation.h	\
+	TimingAdvance.h	\
+	TAResolution.h	\
+	ChipRate.h	\
+	FrequencyInfo.h	\
+	FrequencyInfoFDD.h	\
+	FrequencyInfoTDD.h	\
+	UARFCN.h	\
+	NMR.h	\
+	NMRelement.h	\
+	MeasuredResultsList.h	\
+	MeasuredResults.h	\
+	CellMeasuredResultsList.h	\
+	UTRA-CarrierRSSI.h	\
+	CellMeasuredResults.h	\
+	CellParametersID.h	\
+	TGSN.h	\
+	PrimaryCCPCH-RSCP.h	\
+	TimeslotISCP.h	\
+	TimeslotISCP-List.h	\
+	PrimaryCPICH-Info.h	\
+	CPICH-Ec-N0.h	\
+	CPICH-RSCP.h	\
+	Pathloss.h	\
+	StatusCode.h	\
+	QoP.h	\
+	Velocity.h	\
+	Horvel.h	\
+	Horandvervel.h	\
+	Horveluncert.h	\
+	Horandveruncert.h	\
+	PosMethod.h	\
+	MultipleLocationIds.h	\
+	LocationIdData.h	\
+	RelativeTime.h	\
+	SupportedNetworkInformation.h	\
+	SupportedWLANInfo.h	\
+	SupportedWLANApsList.h	\
+	SupportedWLANApsChannel11a.h	\
+	SupportedWLANApsChannel11bg.h	\
+	SupportedWLANApData.h	\
+	SupportedWCDMAInfo.h	\
+	Ver2-CellInfo-extension.h	\
+	HrpdCellInformation.h	\
+	UmbCellInformation.h	\
+	LteCellInformation.h	\
+	MeasResultListEUTRA.h	\
+	MeasResultEUTRA.h	\
+	PhysCellId.h	\
+	TrackingAreaCode.h	\
+	CellGlobalIdEUTRA.h	\
+	PLMN-Identity.h	\
+	CellIdentity.h	\
+	MCC.h	\
+	MNC.h	\
+	MCC-MNC-Digit.h	\
+	RSRP-Range.h	\
+	RSRQ-Range.h	\
+	WlanAPInformation.h	\
+	RTD.h	\
+	RTDUnits.h	\
+	ReportedLocation.h	\
+	LocationEncodingDescriptor.h	\
+	LocationData.h	\
+	WimaxBSInformation.h	\
+	WimaxBsID.h	\
+	WimaxRTD.h	\
+	WimaxNMRList.h	\
+	WimaxNMR.h	\
+	UTRAN-GPSReferenceTimeAssistance.h	\
+	UTRAN-GPSReferenceTime.h	\
+	UTRANGPSDriftRate.h	\
+	UTRAN-GPSReferenceTimeResult.h	\
+	UTRAN-GANSSReferenceTimeAssistance.h	\
+	UTRAN-GANSSReferenceTime.h	\
+	UTRANGANSSDriftRate.h	\
+	UTRAN-GANSSReferenceTimeResult.h	\
+	SET-GANSSReferenceTime.h	\
+	GNSSPosTechnology.h	\
+	GANSSSignals.h	\
+	SPCSETKey.h	\
+	SPCTID.h	\
+	SPCSETKeylifetime.h	\
+	CauseCode.h	\
+	ThirdParty.h	\
+	ThirdPartyID.h	\
+	ApplicationID.h	\
+	ReportingCap.h	\
+	Ver2-ULP-Components_RepMode.h	\
+	BatchRepCap.h	\
+	Coordinate.h	\
+	CircularArea.h	\
+	EllipticalArea.h	\
+	PolygonArea.h	\
+	PolygonDescription.h
+
+ASN_MODULE_HDRS+=OPEN_TYPE.h
+ASN_MODULE_SRCS+=OPEN_TYPE.c
+ASN_MODULE_HDRS+=constr_CHOICE.h
+ASN_MODULE_HDRS+=BOOLEAN.h
+ASN_MODULE_SRCS+=BOOLEAN.c
+ASN_MODULE_HDRS+=GeneralizedTime.h
+ASN_MODULE_SRCS+=GeneralizedTime.c
+ASN_MODULE_HDRS+=OCTET_STRING.h
+ASN_MODULE_HDRS+=IA5String.h
+ASN_MODULE_SRCS+=IA5String.c
+ASN_MODULE_HDRS+=INTEGER.h
+ASN_MODULE_SRCS+=INTEGER.c
+ASN_MODULE_HDRS+=NULL.h
+ASN_MODULE_SRCS+=NULL.c
+ASN_MODULE_HDRS+=NativeEnumerated.h
+ASN_MODULE_SRCS+=NativeEnumerated.c
+ASN_MODULE_HDRS+=NativeInteger.h
+ASN_MODULE_SRCS+=NativeInteger.c
+ASN_MODULE_HDRS+=UTCTime.h
+ASN_MODULE_SRCS+=UTCTime.c
+ASN_MODULE_HDRS+=VisibleString.h
+ASN_MODULE_SRCS+=VisibleString.c
+ASN_MODULE_HDRS+=asn_SEQUENCE_OF.h
+ASN_MODULE_SRCS+=asn_SEQUENCE_OF.c
+ASN_MODULE_HDRS+=asn_SET_OF.h
+ASN_MODULE_SRCS+=asn_SET_OF.c
+ASN_MODULE_SRCS+=constr_CHOICE.c
+ASN_MODULE_HDRS+=constr_SEQUENCE.h
+ASN_MODULE_SRCS+=constr_SEQUENCE.c
+ASN_MODULE_HDRS+=constr_SEQUENCE_OF.h
+ASN_MODULE_SRCS+=constr_SEQUENCE_OF.c
+ASN_MODULE_HDRS+=constr_SET_OF.h
+ASN_MODULE_SRCS+=constr_SET_OF.c
+ASN_MODULE_HDRS+=asn_application.h
+ASN_MODULE_SRCS+=asn_application.c
+ASN_MODULE_HDRS+=asn_ioc.h
+ASN_MODULE_HDRS+=asn_system.h
+ASN_MODULE_HDRS+=asn_codecs.h
+ASN_MODULE_HDRS+=asn_internal.h
+ASN_MODULE_SRCS+=asn_internal.c
+ASN_MODULE_HDRS+=asn_random_fill.h
+ASN_MODULE_SRCS+=asn_random_fill.c
+ASN_MODULE_HDRS+=asn_bit_data.h
+ASN_MODULE_SRCS+=asn_bit_data.c
+ASN_MODULE_SRCS+=OCTET_STRING.c
+ASN_MODULE_HDRS+=BIT_STRING.h
+ASN_MODULE_SRCS+=BIT_STRING.c
+ASN_MODULE_SRCS+=asn_codecs_prim.c
+ASN_MODULE_HDRS+=asn_codecs_prim.h
+ASN_MODULE_HDRS+=ber_tlv_length.h
+ASN_MODULE_SRCS+=ber_tlv_length.c
+ASN_MODULE_HDRS+=ber_tlv_tag.h
+ASN_MODULE_SRCS+=ber_tlv_tag.c
+ASN_MODULE_HDRS+=ber_decoder.h
+ASN_MODULE_SRCS+=ber_decoder.c
+ASN_MODULE_HDRS+=der_encoder.h
+ASN_MODULE_SRCS+=der_encoder.c
+ASN_MODULE_HDRS+=constr_TYPE.h
+ASN_MODULE_SRCS+=constr_TYPE.c
+ASN_MODULE_HDRS+=constraints.h
+ASN_MODULE_SRCS+=constraints.c
+ASN_MODULE_HDRS+=xer_support.h
+ASN_MODULE_SRCS+=xer_support.c
+ASN_MODULE_HDRS+=xer_decoder.h
+ASN_MODULE_SRCS+=xer_decoder.c
+ASN_MODULE_HDRS+=xer_encoder.h
+ASN_MODULE_SRCS+=xer_encoder.c
+ASN_MODULE_HDRS+=per_support.h
+ASN_MODULE_SRCS+=per_support.c
+ASN_MODULE_HDRS+=per_decoder.h
+ASN_MODULE_SRCS+=per_decoder.c
+ASN_MODULE_HDRS+=per_encoder.h
+ASN_MODULE_SRCS+=per_encoder.c
+ASN_MODULE_HDRS+=per_opentype.h
+ASN_MODULE_SRCS+=per_opentype.c
+
+ASN_MODULE_CFLAGS=-DASN_DISABLE_OER_SUPPORT 
+
+lib_LTLIBRARIES+=libasncodec.la
+libasncodec_la_SOURCES=$(ASN_MODULE_SRCS) $(ASN_MODULE_HDRS)
+libasncodec_la_CPPFLAGS=-I$(top_srcdir)/
+libasncodec_la_CFLAGS=$(ASN_MODULE_CFLAGS)
+libasncodec_la_LDFLAGS=-lm

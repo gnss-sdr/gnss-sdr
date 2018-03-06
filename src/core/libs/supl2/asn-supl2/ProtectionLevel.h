@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_ProtectionLevel_H_
-#define	_ProtectionLevel_H_
+#ifndef _ProtectionLevel_H_
+#define _ProtectionLevel_H_
 
 
 #include "asn_application.h"
@@ -16,29 +16,31 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct BasicProtectionParams;
+    /* Forward declarations */
+    struct BasicProtectionParams;
 
-/* ProtectionLevel */
-typedef struct ProtectionLevel {
-	ProtLevel_t	 protlevel;
-	struct BasicProtectionParams	*basicProtectionParams	/* OPTIONAL */;
-	/*
+    /* ProtectionLevel */
+    typedef struct ProtectionLevel
+    {
+        ProtLevel_t protlevel;
+        struct BasicProtectionParams *basicProtectionParams /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ProtectionLevel_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ProtectionLevel;
-extern asn_SEQUENCE_specifics_t asn_SPC_ProtectionLevel_specs_1;
-extern asn_TYPE_member_t asn_MBR_ProtectionLevel_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ProtectionLevel_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ProtectionLevel;
+    extern asn_SEQUENCE_specifics_t asn_SPC_ProtectionLevel_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ProtectionLevel_1[2];
 
 #ifdef __cplusplus
 }
@@ -47,5 +49,5 @@ extern asn_TYPE_member_t asn_MBR_ProtectionLevel_1[2];
 /* Referred external types */
 #include "BasicProtectionParams.h"
 
-#endif	/* _ProtectionLevel_H_ */
+#endif /* _ProtectionLevel_H_ */
 #include "asn_internal.h"

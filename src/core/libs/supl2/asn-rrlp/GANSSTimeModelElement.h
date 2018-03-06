@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GANSSTimeModelElement_H_
-#define	_GANSSTimeModelElement_H_
+#ifndef _GANSSTimeModelElement_H_
+#define _GANSSTimeModelElement_H_
 
 
 #include <asn_application.h>
@@ -18,30 +18,32 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSTimeModelElement */
-typedef struct GANSSTimeModelElement {
-	long	 ganssTimeModelRefTime;
-	TA0_t	 tA0;
-	TA1_t	*tA1	/* OPTIONAL */;
-	TA2_t	*tA2	/* OPTIONAL */;
-	long	 gnssTOID;
-	long	*weekNumber	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSTimeModelElement_t;
+    /* GANSSTimeModelElement */
+    typedef struct GANSSTimeModelElement
+    {
+        long ganssTimeModelRefTime;
+        TA0_t tA0;
+        TA1_t *tA1 /* OPTIONAL */;
+        TA2_t *tA2 /* OPTIONAL */;
+        long gnssTOID;
+        long *weekNumber /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSTimeModelElement;
-extern asn_SEQUENCE_specifics_t asn_SPC_GANSSTimeModelElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSSTimeModelElement_1[6];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSTimeModelElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSTimeModelElement;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GANSSTimeModelElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSSTimeModelElement_1[6];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSTimeModelElement_H_ */
+#endif /* _GANSSTimeModelElement_H_ */
 #include <asn_internal.h>

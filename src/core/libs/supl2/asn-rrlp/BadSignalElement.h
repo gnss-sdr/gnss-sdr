@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_BadSignalElement_H_
-#define	_BadSignalElement_H_
+#ifndef _BadSignalElement_H_
+#define _BadSignalElement_H_
 
 
 #include <asn_application.h>
@@ -16,26 +16,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* BadSignalElement */
-typedef struct BadSignalElement {
-	SVID_t	 badSVID;
-	long	*badSignalID	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} BadSignalElement_t;
+    /* BadSignalElement */
+    typedef struct BadSignalElement
+    {
+        SVID_t badSVID;
+        long *badSignalID /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_BadSignalElement;
-extern asn_SEQUENCE_specifics_t asn_SPC_BadSignalElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_BadSignalElement_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } BadSignalElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_BadSignalElement;
+    extern asn_SEQUENCE_specifics_t asn_SPC_BadSignalElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_BadSignalElement_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _BadSignalElement_H_ */
+#endif /* _BadSignalElement_H_ */
 #include <asn_internal.h>

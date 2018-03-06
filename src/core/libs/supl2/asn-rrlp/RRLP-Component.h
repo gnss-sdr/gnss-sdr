@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_RRLP_Component_H_
-#define	_RRLP_Component_H_
+#ifndef _RRLP_Component_H_
+#define _RRLP_Component_H_
 
 
 #include <asn_application.h>
@@ -19,49 +19,53 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum RRLP_Component_PR {
-	RRLP_Component_PR_NOTHING,	/* No components present */
-	RRLP_Component_PR_msrPositionReq,
-	RRLP_Component_PR_msrPositionRsp,
-	RRLP_Component_PR_assistanceData,
-	RRLP_Component_PR_assistanceDataAck,
-	RRLP_Component_PR_protocolError
-	/* Extensions may appear below */
-	
-} RRLP_Component_PR;
+    /* Dependencies */
+    typedef enum RRLP_Component_PR
+    {
+        RRLP_Component_PR_NOTHING, /* No components present */
+        RRLP_Component_PR_msrPositionReq,
+        RRLP_Component_PR_msrPositionRsp,
+        RRLP_Component_PR_assistanceData,
+        RRLP_Component_PR_assistanceDataAck,
+        RRLP_Component_PR_protocolError
+        /* Extensions may appear below */
 
-/* RRLP-Component */
-typedef struct RRLP_Component {
-	RRLP_Component_PR present;
-	union RRLP_Component_u {
-		MsrPosition_Req_t	 msrPositionReq;
-		MsrPosition_Rsp_t	 msrPositionRsp;
-		AssistanceData_t	 assistanceData;
-		NULL_t	 assistanceDataAck;
-		ProtocolError_t	 protocolError;
-		/*
+    } RRLP_Component_PR;
+
+    /* RRLP-Component */
+    typedef struct RRLP_Component
+    {
+        RRLP_Component_PR present;
+        union RRLP_Component_u
+        {
+            MsrPosition_Req_t msrPositionReq;
+            MsrPosition_Rsp_t msrPositionRsp;
+            AssistanceData_t assistanceData;
+            NULL_t assistanceDataAck;
+            ProtocolError_t protocolError;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} RRLP_Component_t;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_RRLP_Component;
-extern asn_CHOICE_specifics_t asn_SPC_RRLP_Component_specs_1;
-extern asn_TYPE_member_t asn_MBR_RRLP_Component_1[5];
-extern asn_per_constraints_t asn_PER_type_RRLP_Component_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } RRLP_Component_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_RRLP_Component;
+    extern asn_CHOICE_specifics_t asn_SPC_RRLP_Component_specs_1;
+    extern asn_TYPE_member_t asn_MBR_RRLP_Component_1[5];
+    extern asn_per_constraints_t asn_PER_type_RRLP_Component_constr_1;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _RRLP_Component_H_ */
+#endif /* _RRLP_Component_H_ */
 #include <asn_internal.h>

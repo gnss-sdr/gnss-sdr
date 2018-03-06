@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_OTD_MeasurementWithID_H_
-#define	_OTD_MeasurementWithID_H_
+#ifndef _OTD_MeasurementWithID_H_
+#define _OTD_MeasurementWithID_H_
 
 
 #include <asn_application.h>
@@ -18,28 +18,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* OTD-MeasurementWithID */
-typedef struct OTD_MeasurementWithID {
-	NeighborIdentity_t	 neighborIdentity;
-	ModuloTimeSlot_t	 nborTimeSlot;
-	EOTDQuality_t	 eotdQuality;
-	OTDValue_t	 otdValue;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} OTD_MeasurementWithID_t;
+    /* OTD-MeasurementWithID */
+    typedef struct OTD_MeasurementWithID
+    {
+        NeighborIdentity_t neighborIdentity;
+        ModuloTimeSlot_t nborTimeSlot;
+        EOTDQuality_t eotdQuality;
+        OTDValue_t otdValue;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasurementWithID;
-extern asn_SEQUENCE_specifics_t asn_SPC_OTD_MeasurementWithID_specs_1;
-extern asn_TYPE_member_t asn_MBR_OTD_MeasurementWithID_1[4];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } OTD_MeasurementWithID_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasurementWithID;
+    extern asn_SEQUENCE_specifics_t asn_SPC_OTD_MeasurementWithID_specs_1;
+    extern asn_TYPE_member_t asn_MBR_OTD_MeasurementWithID_1[4];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _OTD_MeasurementWithID_H_ */
+#endif /* _OTD_MeasurementWithID_H_ */
 #include <asn_internal.h>

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_TimeWindow_H_
-#define	_TimeWindow_H_
+#ifndef _TimeWindow_H_
+#define _TimeWindow_H_
 
 
 #include "asn_application.h"
@@ -16,26 +16,28 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* TimeWindow */
-typedef struct TimeWindow {
-	long	 startTime;
-	long	 stopTime;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} TimeWindow_t;
+    /* TimeWindow */
+    typedef struct TimeWindow
+    {
+        long startTime;
+        long stopTime;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_TimeWindow;
-extern asn_SEQUENCE_specifics_t asn_SPC_TimeWindow_specs_1;
-extern asn_TYPE_member_t asn_MBR_TimeWindow_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } TimeWindow_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_TimeWindow;
+    extern asn_SEQUENCE_specifics_t asn_SPC_TimeWindow_specs_1;
+    extern asn_TYPE_member_t asn_MBR_TimeWindow_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _TimeWindow_H_ */
+#endif /* _TimeWindow_H_ */
 #include "asn_internal.h"

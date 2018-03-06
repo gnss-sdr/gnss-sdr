@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_UTRAN_GANSSReferenceTimeResult_H_
-#define	_UTRAN_GANSSReferenceTimeResult_H_
+#ifndef _UTRAN_GANSSReferenceTimeResult_H_
+#define _UTRAN_GANSSReferenceTimeResult_H_
 
 
 #include "asn_application.h"
@@ -17,30 +17,32 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* UTRAN-GANSSReferenceTimeResult */
-typedef struct UTRAN_GANSSReferenceTimeResult {
-	long	 ganssTimeID;
-	SET_GANSSReferenceTime_t	 set_GANSSReferenceTime;
-	/*
+    /* UTRAN-GANSSReferenceTimeResult */
+    typedef struct UTRAN_GANSSReferenceTimeResult
+    {
+        long ganssTimeID;
+        SET_GANSSReferenceTime_t set_GANSSReferenceTime;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} UTRAN_GANSSReferenceTimeResult_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_UTRAN_GANSSReferenceTimeResult;
-extern asn_SEQUENCE_specifics_t asn_SPC_UTRAN_GANSSReferenceTimeResult_specs_1;
-extern asn_TYPE_member_t asn_MBR_UTRAN_GANSSReferenceTimeResult_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } UTRAN_GANSSReferenceTimeResult_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_UTRAN_GANSSReferenceTimeResult;
+    extern asn_SEQUENCE_specifics_t asn_SPC_UTRAN_GANSSReferenceTimeResult_specs_1;
+    extern asn_TYPE_member_t asn_MBR_UTRAN_GANSSReferenceTimeResult_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _UTRAN_GANSSReferenceTimeResult_H_ */
+#endif /* _UTRAN_GANSSReferenceTimeResult_H_ */
 #include "asn_internal.h"

@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_NavModelElement_H_
-#define	_NavModelElement_H_
+#ifndef _NavModelElement_H_
+#define _NavModelElement_H_
 
 
 #include <asn_application.h>
@@ -16,26 +16,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* NavModelElement */
-typedef struct NavModelElement {
-	SatelliteID_t	 satelliteID;
-	SatStatus_t	 satStatus;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} NavModelElement_t;
+    /* NavModelElement */
+    typedef struct NavModelElement
+    {
+        SatelliteID_t satelliteID;
+        SatStatus_t satStatus;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_NavModelElement;
-extern asn_SEQUENCE_specifics_t asn_SPC_NavModelElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_NavModelElement_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } NavModelElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_NavModelElement;
+    extern asn_SEQUENCE_specifics_t asn_SPC_NavModelElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_NavModelElement_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _NavModelElement_H_ */
+#endif /* _NavModelElement_H_ */
 #include <asn_internal.h>

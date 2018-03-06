@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GANSSDataBit_H_
-#define	_GANSSDataBit_H_
+#ifndef _GANSSDataBit_H_
+#define _GANSSDataBit_H_
 
 
 #include <asn_application.h>
@@ -14,30 +14,31 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSDataBit */
-typedef long	 GANSSDataBit_t;
+    /* GANSSDataBit */
+    typedef long GANSSDataBit_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_GANSSDataBit_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_GANSSDataBit;
-asn_struct_free_f GANSSDataBit_free;
-asn_struct_print_f GANSSDataBit_print;
-asn_constr_check_f GANSSDataBit_constraint;
-ber_type_decoder_f GANSSDataBit_decode_ber;
-der_type_encoder_f GANSSDataBit_encode_der;
-xer_type_decoder_f GANSSDataBit_decode_xer;
-xer_type_encoder_f GANSSDataBit_encode_xer;
-oer_type_decoder_f GANSSDataBit_decode_oer;
-oer_type_encoder_f GANSSDataBit_encode_oer;
-per_type_decoder_f GANSSDataBit_decode_uper;
-per_type_encoder_f GANSSDataBit_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_GANSSDataBit_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSDataBit;
+    asn_struct_free_f GANSSDataBit_free;
+    asn_struct_print_f GANSSDataBit_print;
+    asn_constr_check_f GANSSDataBit_constraint;
+    ber_type_decoder_f GANSSDataBit_decode_ber;
+    der_type_encoder_f GANSSDataBit_encode_der;
+    xer_type_decoder_f GANSSDataBit_decode_xer;
+    xer_type_encoder_f GANSSDataBit_encode_xer;
+    oer_type_decoder_f GANSSDataBit_decode_oer;
+    oer_type_encoder_f GANSSDataBit_encode_oer;
+    per_type_decoder_f GANSSDataBit_decode_uper;
+    per_type_encoder_f GANSSDataBit_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSDataBit_H_ */
+#endif /* _GANSSDataBit_H_ */
 #include <asn_internal.h>

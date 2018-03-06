@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SeqOfMsrAssistBTS_H_
-#define	_SeqOfMsrAssistBTS_H_
+#ifndef _SeqOfMsrAssistBTS_H_
+#define _SeqOfMsrAssistBTS_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,28 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct MsrAssistBTS;
+    /* Forward declarations */
+    struct MsrAssistBTS;
 
-/* SeqOfMsrAssistBTS */
-typedef struct SeqOfMsrAssistBTS {
-	A_SEQUENCE_OF(struct MsrAssistBTS) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfMsrAssistBTS_t;
+    /* SeqOfMsrAssistBTS */
+    typedef struct SeqOfMsrAssistBTS
+    {
+        A_SEQUENCE_OF(struct MsrAssistBTS)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfMsrAssistBTS;
-extern asn_SET_OF_specifics_t asn_SPC_SeqOfMsrAssistBTS_specs_1;
-extern asn_TYPE_member_t asn_MBR_SeqOfMsrAssistBTS_1[1];
-extern asn_per_constraints_t asn_PER_type_SeqOfMsrAssistBTS_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfMsrAssistBTS_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfMsrAssistBTS;
+    extern asn_SET_OF_specifics_t asn_SPC_SeqOfMsrAssistBTS_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SeqOfMsrAssistBTS_1[1];
+    extern asn_per_constraints_t asn_PER_type_SeqOfMsrAssistBTS_constr_1;
 
 #ifdef __cplusplus
 }
@@ -42,5 +45,5 @@ extern asn_per_constraints_t asn_PER_type_SeqOfMsrAssistBTS_constr_1;
 /* Referred external types */
 #include "MsrAssistBTS.h"
 
-#endif	/* _SeqOfMsrAssistBTS_H_ */
+#endif /* _SeqOfMsrAssistBTS_H_ */
 #include <asn_internal.h>

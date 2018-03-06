@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_NavModel_KeplerianSet_H_
-#define	_NavModel_KeplerianSet_H_
+#ifndef _NavModel_KeplerianSet_H_
+#define _NavModel_KeplerianSet_H_
 
 
 #include <asn_application.h>
@@ -15,40 +15,42 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* NavModel-KeplerianSet */
-typedef struct NavModel_KeplerianSet {
-	long	 keplerToeLSB;
-	long	 keplerW;
-	long	 keplerDeltaN;
-	long	 keplerM0;
-	long	 keplerOmegaDot;
-	long	 keplerELSB;
-	long	 keplerIDot;
-	long	 keplerAPowerHalfLSB;
-	long	 keplerI0;
-	long	 keplerOmega0;
-	long	 keplerCrs;
-	long	 keplerCis;
-	long	 keplerCus;
-	long	 keplerCrc;
-	long	 keplerCic;
-	long	 keplerCuc;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} NavModel_KeplerianSet_t;
+    /* NavModel-KeplerianSet */
+    typedef struct NavModel_KeplerianSet
+    {
+        long keplerToeLSB;
+        long keplerW;
+        long keplerDeltaN;
+        long keplerM0;
+        long keplerOmegaDot;
+        long keplerELSB;
+        long keplerIDot;
+        long keplerAPowerHalfLSB;
+        long keplerI0;
+        long keplerOmega0;
+        long keplerCrs;
+        long keplerCis;
+        long keplerCus;
+        long keplerCrc;
+        long keplerCic;
+        long keplerCuc;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_NavModel_KeplerianSet;
-extern asn_SEQUENCE_specifics_t asn_SPC_NavModel_KeplerianSet_specs_1;
-extern asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[16];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } NavModel_KeplerianSet_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_NavModel_KeplerianSet;
+    extern asn_SEQUENCE_specifics_t asn_SPC_NavModel_KeplerianSet_specs_1;
+    extern asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[16];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _NavModel_KeplerianSet_H_ */
+#endif /* _NavModel_KeplerianSet_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_StandardClockModelElement_H_
-#define	_StandardClockModelElement_H_
+#ifndef _StandardClockModelElement_H_
+#define _StandardClockModelElement_H_
 
 
 #include <asn_application.h>
@@ -15,34 +15,36 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* StandardClockModelElement */
-typedef struct StandardClockModelElement {
-	long	 stanClockTocLSB;
-	long	 stanClockAF2;
-	long	 stanClockAF1;
-	long	 stanClockAF0;
-	long	*stanClockTgd	/* OPTIONAL */;
-	long	*stanModelID	/* OPTIONAL */;
-	/*
+    /* StandardClockModelElement */
+    typedef struct StandardClockModelElement
+    {
+        long stanClockTocLSB;
+        long stanClockAF2;
+        long stanClockAF1;
+        long stanClockAF0;
+        long *stanClockTgd /* OPTIONAL */;
+        long *stanModelID /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} StandardClockModelElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_StandardClockModelElement;
-extern asn_SEQUENCE_specifics_t asn_SPC_StandardClockModelElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_StandardClockModelElement_1[6];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } StandardClockModelElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_StandardClockModelElement;
+    extern asn_SEQUENCE_specifics_t asn_SPC_StandardClockModelElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_StandardClockModelElement_1[6];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _StandardClockModelElement_H_ */
+#endif /* _StandardClockModelElement_H_ */
 #include <asn_internal.h>

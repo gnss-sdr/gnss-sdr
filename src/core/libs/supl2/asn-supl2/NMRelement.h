@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_NMRelement_H_
-#define	_NMRelement_H_
+#ifndef _NMRelement_H_
+#define _NMRelement_H_
 
 
 #include "asn_application.h"
@@ -16,31 +16,33 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* NMRelement */
-typedef struct NMRelement {
-	long	 aRFCN;
-	long	 bSIC;
-	long	 rxLev;
-	/*
+    /* NMRelement */
+    typedef struct NMRelement
+    {
+        long aRFCN;
+        long bSIC;
+        long rxLev;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} NMRelement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_NMRelement;
-extern asn_SEQUENCE_specifics_t asn_SPC_NMRelement_specs_1;
-extern asn_TYPE_member_t asn_MBR_NMRelement_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } NMRelement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_NMRelement;
+    extern asn_SEQUENCE_specifics_t asn_SPC_NMRelement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_NMRelement_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _NMRelement_H_ */
+#endif /* _NMRelement_H_ */
 #include "asn_internal.h"

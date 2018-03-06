@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GeoAreaMappingList_H_
-#define	_GeoAreaMappingList_H_
+#ifndef _GeoAreaMappingList_H_
+#define _GeoAreaMappingList_H_
 
 
 #include "asn_application.h"
@@ -17,26 +17,29 @@
 #include "constr_SEQUENCE_OF.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GeoAreaMappingList */
-typedef struct GeoAreaMappingList {
-	A_SEQUENCE_OF(GeoAreaIndex_t) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GeoAreaMappingList_t;
+    /* GeoAreaMappingList */
+    typedef struct GeoAreaMappingList
+    {
+        A_SEQUENCE_OF(GeoAreaIndex_t)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GeoAreaMappingList;
-extern asn_SET_OF_specifics_t asn_SPC_GeoAreaMappingList_specs_1;
-extern asn_TYPE_member_t asn_MBR_GeoAreaMappingList_1[1];
-extern asn_per_constraints_t asn_PER_type_GeoAreaMappingList_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GeoAreaMappingList_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GeoAreaMappingList;
+    extern asn_SET_OF_specifics_t asn_SPC_GeoAreaMappingList_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GeoAreaMappingList_1[1];
+    extern asn_per_constraints_t asn_PER_type_GeoAreaMappingList_constr_1;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GeoAreaMappingList_H_ */
+#endif /* _GeoAreaMappingList_H_ */
 #include "asn_internal.h"

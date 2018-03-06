@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GANSSIonoStormFlags_H_
-#define	_GANSSIonoStormFlags_H_
+#ifndef _GANSSIonoStormFlags_H_
+#define _GANSSIonoStormFlags_H_
 
 
 #include <asn_application.h>
@@ -15,29 +15,31 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSIonoStormFlags */
-typedef struct GANSSIonoStormFlags {
-	long	 ionoStormFlag1;
-	long	 ionoStormFlag2;
-	long	 ionoStormFlag3;
-	long	 ionoStormFlag4;
-	long	 ionoStormFlag5;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSIonoStormFlags_t;
+    /* GANSSIonoStormFlags */
+    typedef struct GANSSIonoStormFlags
+    {
+        long ionoStormFlag1;
+        long ionoStormFlag2;
+        long ionoStormFlag3;
+        long ionoStormFlag4;
+        long ionoStormFlag5;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSIonoStormFlags;
-extern asn_SEQUENCE_specifics_t asn_SPC_GANSSIonoStormFlags_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSSIonoStormFlags_1[5];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSIonoStormFlags_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSIonoStormFlags;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GANSSIonoStormFlags_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSSIonoStormFlags_1[5];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSIonoStormFlags_H_ */
+#endif /* _GANSSIonoStormFlags_H_ */
 #include <asn_internal.h>

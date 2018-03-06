@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_Rel_5_MsrPosition_Rsp_Extension_H_
-#define	_Rel_5_MsrPosition_Rsp_Extension_H_
+#ifndef _Rel_5_MsrPosition_Rsp_Extension_H_
+#define _Rel_5_MsrPosition_Rsp_Extension_H_
 
 
 #include <asn_application.h>
@@ -15,31 +15,33 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Extended_reference;
-struct OTD_MeasureInfo_5_Ext;
+    /* Forward declarations */
+    struct Extended_reference;
+    struct OTD_MeasureInfo_5_Ext;
 
-/* Rel-5-MsrPosition-Rsp-Extension */
-typedef struct Rel_5_MsrPosition_Rsp_Extension {
-	struct Extended_reference	*extended_reference	/* OPTIONAL */;
-	struct OTD_MeasureInfo_5_Ext	*otd_MeasureInfo_5_Ext	/* OPTIONAL */;
-	UlPseudoSegInd_t	*ulPseudoSegInd	/* OPTIONAL */;
-	/*
+    /* Rel-5-MsrPosition-Rsp-Extension */
+    typedef struct Rel_5_MsrPosition_Rsp_Extension
+    {
+        struct Extended_reference *extended_reference /* OPTIONAL */;
+        struct OTD_MeasureInfo_5_Ext *otd_MeasureInfo_5_Ext /* OPTIONAL */;
+        UlPseudoSegInd_t *ulPseudoSegInd /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Rel_5_MsrPosition_Rsp_Extension_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Rel_5_MsrPosition_Rsp_Extension;
-extern asn_SEQUENCE_specifics_t asn_SPC_Rel_5_MsrPosition_Rsp_Extension_specs_1;
-extern asn_TYPE_member_t asn_MBR_Rel_5_MsrPosition_Rsp_Extension_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Rel_5_MsrPosition_Rsp_Extension_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Rel_5_MsrPosition_Rsp_Extension;
+    extern asn_SEQUENCE_specifics_t asn_SPC_Rel_5_MsrPosition_Rsp_Extension_specs_1;
+    extern asn_TYPE_member_t asn_MBR_Rel_5_MsrPosition_Rsp_Extension_1[3];
 
 #ifdef __cplusplus
 }
@@ -49,5 +51,5 @@ extern asn_TYPE_member_t asn_MBR_Rel_5_MsrPosition_Rsp_Extension_1[3];
 #include "Extended-reference.h"
 #include "OTD-MeasureInfo-5-Ext.h"
 
-#endif	/* _Rel_5_MsrPosition_Rsp_Extension_H_ */
+#endif /* _Rel_5_MsrPosition_Rsp_Extension_H_ */
 #include <asn_internal.h>

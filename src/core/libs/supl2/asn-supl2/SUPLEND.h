@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SUPLEND_H_
-#define	_SUPLEND_H_
+#ifndef _SUPLEND_H_
+#define _SUPLEND_H_
 
 
 #include "asn_application.h"
@@ -17,32 +17,34 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Position;
-struct Ver2_SUPL_END_extension;
+    /* Forward declarations */
+    struct Position;
+    struct Ver2_SUPL_END_extension;
 
-/* SUPLEND */
-typedef struct SUPLEND {
-	struct Position	*position	/* OPTIONAL */;
-	StatusCode_t	*statusCode	/* OPTIONAL */;
-	Ver_t	*ver	/* OPTIONAL */;
-	/*
+    /* SUPLEND */
+    typedef struct SUPLEND
+    {
+        struct Position *position /* OPTIONAL */;
+        StatusCode_t *statusCode /* OPTIONAL */;
+        Ver_t *ver /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	struct Ver2_SUPL_END_extension	*ver2_SUPL_END_extension	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SUPLEND_t;
+        struct Ver2_SUPL_END_extension *ver2_SUPL_END_extension /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SUPLEND;
-extern asn_SEQUENCE_specifics_t asn_SPC_SUPLEND_specs_1;
-extern asn_TYPE_member_t asn_MBR_SUPLEND_1[4];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SUPLEND_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SUPLEND;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SUPLEND_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SUPLEND_1[4];
 
 #ifdef __cplusplus
 }
@@ -52,5 +54,5 @@ extern asn_TYPE_member_t asn_MBR_SUPLEND_1[4];
 #include "Position.h"
 #include "Ver2-SUPL-END-extension.h"
 
-#endif	/* _SUPLEND_H_ */
+#endif /* _SUPLEND_H_ */
 #include "asn_internal.h"

@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_AddionalAngleFields_H_
-#define	_AddionalAngleFields_H_
+#ifndef _AddionalAngleFields_H_
+#define _AddionalAngleFields_H_
 
 
 #include <asn_application.h>
@@ -15,26 +15,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* AddionalAngleFields */
-typedef struct AddionalAngleFields {
-	long	 azimuth;
-	long	 elevation;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} AddionalAngleFields_t;
+    /* AddionalAngleFields */
+    typedef struct AddionalAngleFields
+    {
+        long azimuth;
+        long elevation;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AddionalAngleFields;
-extern asn_SEQUENCE_specifics_t asn_SPC_AddionalAngleFields_specs_1;
-extern asn_TYPE_member_t asn_MBR_AddionalAngleFields_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AddionalAngleFields_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AddionalAngleFields;
+    extern asn_SEQUENCE_specifics_t asn_SPC_AddionalAngleFields_specs_1;
+    extern asn_TYPE_member_t asn_MBR_AddionalAngleFields_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _AddionalAngleFields_H_ */
+#endif /* _AddionalAngleFields_H_ */
 #include <asn_internal.h>

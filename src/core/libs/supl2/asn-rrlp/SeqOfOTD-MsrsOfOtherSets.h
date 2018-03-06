@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SeqOfOTD_MsrsOfOtherSets_H_
-#define	_SeqOfOTD_MsrsOfOtherSets_H_
+#ifndef _SeqOfOTD_MsrsOfOtherSets_H_
+#define _SeqOfOTD_MsrsOfOtherSets_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,28 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct OTD_MsrsOfOtherSets;
+    /* Forward declarations */
+    struct OTD_MsrsOfOtherSets;
 
-/* SeqOfOTD-MsrsOfOtherSets */
-typedef struct SeqOfOTD_MsrsOfOtherSets {
-	A_SEQUENCE_OF(struct OTD_MsrsOfOtherSets) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfOTD_MsrsOfOtherSets_t;
+    /* SeqOfOTD-MsrsOfOtherSets */
+    typedef struct SeqOfOTD_MsrsOfOtherSets
+    {
+        A_SEQUENCE_OF(struct OTD_MsrsOfOtherSets)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfOTD_MsrsOfOtherSets;
-extern asn_SET_OF_specifics_t asn_SPC_SeqOfOTD_MsrsOfOtherSets_specs_1;
-extern asn_TYPE_member_t asn_MBR_SeqOfOTD_MsrsOfOtherSets_1[1];
-extern asn_per_constraints_t asn_PER_type_SeqOfOTD_MsrsOfOtherSets_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfOTD_MsrsOfOtherSets_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfOTD_MsrsOfOtherSets;
+    extern asn_SET_OF_specifics_t asn_SPC_SeqOfOTD_MsrsOfOtherSets_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SeqOfOTD_MsrsOfOtherSets_1[1];
+    extern asn_per_constraints_t asn_PER_type_SeqOfOTD_MsrsOfOtherSets_constr_1;
 
 #ifdef __cplusplus
 }
@@ -42,5 +45,5 @@ extern asn_per_constraints_t asn_PER_type_SeqOfOTD_MsrsOfOtherSets_constr_1;
 /* Referred external types */
 #include "OTD-MsrsOfOtherSets.h"
 
-#endif	/* _SeqOfOTD_MsrsOfOtherSets_H_ */
+#endif /* _SeqOfOTD_MsrsOfOtherSets_H_ */
 #include <asn_internal.h>

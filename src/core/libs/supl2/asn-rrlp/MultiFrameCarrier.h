@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_MultiFrameCarrier_H_
-#define	_MultiFrameCarrier_H_
+#ifndef _MultiFrameCarrier_H_
+#define _MultiFrameCarrier_H_
 
 
 #include <asn_application.h>
@@ -16,26 +16,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* MultiFrameCarrier */
-typedef struct MultiFrameCarrier {
-	BCCHCarrier_t	 bcchCarrier;
-	MultiFrameOffset_t	 multiFrameOffset;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} MultiFrameCarrier_t;
+    /* MultiFrameCarrier */
+    typedef struct MultiFrameCarrier
+    {
+        BCCHCarrier_t bcchCarrier;
+        MultiFrameOffset_t multiFrameOffset;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MultiFrameCarrier;
-extern asn_SEQUENCE_specifics_t asn_SPC_MultiFrameCarrier_specs_1;
-extern asn_TYPE_member_t asn_MBR_MultiFrameCarrier_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } MultiFrameCarrier_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MultiFrameCarrier;
+    extern asn_SEQUENCE_specifics_t asn_SPC_MultiFrameCarrier_specs_1;
+    extern asn_TYPE_member_t asn_MBR_MultiFrameCarrier_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _MultiFrameCarrier_H_ */
+#endif /* _MultiFrameCarrier_H_ */
 #include <asn_internal.h>

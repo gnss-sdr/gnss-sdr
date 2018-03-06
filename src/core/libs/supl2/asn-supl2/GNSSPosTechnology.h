@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GNSSPosTechnology_H_
-#define	_GNSSPosTechnology_H_
+#ifndef _GNSSPosTechnology_H_
+#define _GNSSPosTechnology_H_
 
 
 #include "asn_application.h"
@@ -16,34 +16,36 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GNSSPosTechnology */
-typedef struct GNSSPosTechnology {
-	BOOLEAN_t	 gps;
-	BOOLEAN_t	 galileo;
-	BOOLEAN_t	 sbas;
-	BOOLEAN_t	 modernized_gps;
-	BOOLEAN_t	 qzss;
-	BOOLEAN_t	 glonass;
-	/*
+    /* GNSSPosTechnology */
+    typedef struct GNSSPosTechnology
+    {
+        BOOLEAN_t gps;
+        BOOLEAN_t galileo;
+        BOOLEAN_t sbas;
+        BOOLEAN_t modernized_gps;
+        BOOLEAN_t qzss;
+        BOOLEAN_t glonass;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GNSSPosTechnology_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GNSSPosTechnology;
-extern asn_SEQUENCE_specifics_t asn_SPC_GNSSPosTechnology_specs_1;
-extern asn_TYPE_member_t asn_MBR_GNSSPosTechnology_1[6];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GNSSPosTechnology_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GNSSPosTechnology;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GNSSPosTechnology_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GNSSPosTechnology_1[6];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GNSSPosTechnology_H_ */
+#endif /* _GNSSPosTechnology_H_ */
 #include "asn_internal.h"

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_LocationEncodingDescriptor_H_
-#define	_LocationEncodingDescriptor_H_
+#ifndef _LocationEncodingDescriptor_H_
+#define _LocationEncodingDescriptor_H_
 
 
 #include "asn_application.h"
@@ -15,38 +15,40 @@
 #include "NativeEnumerated.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum LocationEncodingDescriptor {
-	LocationEncodingDescriptor_lCI	= 0,
-	LocationEncodingDescriptor_aSN1	= 1
-	/*
+    /* Dependencies */
+    typedef enum LocationEncodingDescriptor
+    {
+        LocationEncodingDescriptor_lCI = 0,
+        LocationEncodingDescriptor_aSN1 = 1
+        /*
 	 * Enumeration is extensible
 	 */
-} e_LocationEncodingDescriptor;
+    } e_LocationEncodingDescriptor;
 
-/* LocationEncodingDescriptor */
-typedef long	 LocationEncodingDescriptor_t;
+    /* LocationEncodingDescriptor */
+    typedef long LocationEncodingDescriptor_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_LocationEncodingDescriptor_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_LocationEncodingDescriptor;
-extern const asn_INTEGER_specifics_t asn_SPC_LocationEncodingDescriptor_specs_1;
-asn_struct_free_f LocationEncodingDescriptor_free;
-asn_struct_print_f LocationEncodingDescriptor_print;
-asn_constr_check_f LocationEncodingDescriptor_constraint;
-ber_type_decoder_f LocationEncodingDescriptor_decode_ber;
-der_type_encoder_f LocationEncodingDescriptor_encode_der;
-xer_type_decoder_f LocationEncodingDescriptor_decode_xer;
-xer_type_encoder_f LocationEncodingDescriptor_encode_xer;
-per_type_decoder_f LocationEncodingDescriptor_decode_uper;
-per_type_encoder_f LocationEncodingDescriptor_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_LocationEncodingDescriptor_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_LocationEncodingDescriptor;
+    extern const asn_INTEGER_specifics_t asn_SPC_LocationEncodingDescriptor_specs_1;
+    asn_struct_free_f LocationEncodingDescriptor_free;
+    asn_struct_print_f LocationEncodingDescriptor_print;
+    asn_constr_check_f LocationEncodingDescriptor_constraint;
+    ber_type_decoder_f LocationEncodingDescriptor_decode_ber;
+    der_type_encoder_f LocationEncodingDescriptor_encode_der;
+    xer_type_decoder_f LocationEncodingDescriptor_decode_xer;
+    xer_type_encoder_f LocationEncodingDescriptor_encode_xer;
+    per_type_decoder_f LocationEncodingDescriptor_decode_uper;
+    per_type_encoder_f LocationEncodingDescriptor_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _LocationEncodingDescriptor_H_ */
+#endif /* _LocationEncodingDescriptor_H_ */
 #include "asn_internal.h"

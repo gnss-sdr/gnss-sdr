@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SupportedWCDMAInfo_H_
-#define	_SupportedWCDMAInfo_H_
+#ifndef _SupportedWCDMAInfo_H_
+#define _SupportedWCDMAInfo_H_
 
 
 #include "asn_application.h"
@@ -16,29 +16,31 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SupportedWCDMAInfo */
-typedef struct SupportedWCDMAInfo {
-	BOOLEAN_t	 mRL;
-	/*
+    /* SupportedWCDMAInfo */
+    typedef struct SupportedWCDMAInfo
+    {
+        BOOLEAN_t mRL;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SupportedWCDMAInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SupportedWCDMAInfo;
-extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWCDMAInfo_specs_1;
-extern asn_TYPE_member_t asn_MBR_SupportedWCDMAInfo_1[1];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SupportedWCDMAInfo_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SupportedWCDMAInfo;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWCDMAInfo_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SupportedWCDMAInfo_1[1];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SupportedWCDMAInfo_H_ */
+#endif /* _SupportedWCDMAInfo_H_ */
 #include "asn_internal.h"

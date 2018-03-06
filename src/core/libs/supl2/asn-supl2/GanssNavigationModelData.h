@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GanssNavigationModelData_H_
-#define	_GanssNavigationModelData_H_
+#ifndef _GanssNavigationModelData_H_
+#define _GanssNavigationModelData_H_
 
 
 #include "asn_application.h"
@@ -16,31 +16,33 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SatellitesListRelatedDataList;
+    /* Forward declarations */
+    struct SatellitesListRelatedDataList;
 
-/* GanssNavigationModelData */
-typedef struct GanssNavigationModelData {
-	long	 ganssWeek;
-	long	 ganssToe;
-	long	 t_toeLimit;
-	struct SatellitesListRelatedDataList	*satellitesListRelatedDataList	/* OPTIONAL */;
-	/*
+    /* GanssNavigationModelData */
+    typedef struct GanssNavigationModelData
+    {
+        long ganssWeek;
+        long ganssToe;
+        long t_toeLimit;
+        struct SatellitesListRelatedDataList *satellitesListRelatedDataList /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GanssNavigationModelData_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GanssNavigationModelData;
-extern asn_SEQUENCE_specifics_t asn_SPC_GanssNavigationModelData_specs_1;
-extern asn_TYPE_member_t asn_MBR_GanssNavigationModelData_1[4];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GanssNavigationModelData_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GanssNavigationModelData;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GanssNavigationModelData_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GanssNavigationModelData_1[4];
 
 #ifdef __cplusplus
 }
@@ -49,5 +51,5 @@ extern asn_TYPE_member_t asn_MBR_GanssNavigationModelData_1[4];
 /* Referred external types */
 #include "SatellitesListRelatedDataList.h"
 
-#endif	/* _GanssNavigationModelData_H_ */
+#endif /* _GanssNavigationModelData_H_ */
 #include "asn_internal.h"

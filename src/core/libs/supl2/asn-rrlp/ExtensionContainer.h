@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_ExtensionContainer_H_
-#define	_ExtensionContainer_H_
+#ifndef _ExtensionContainer_H_
+#define _ExtensionContainer_H_
 
 
 #include <asn_application.h>
@@ -14,29 +14,30 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ExtensionContainer */
-typedef long	 ExtensionContainer_t;
+    /* ExtensionContainer */
+    typedef long ExtensionContainer_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ExtensionContainer;
-asn_struct_free_f ExtensionContainer_free;
-asn_struct_print_f ExtensionContainer_print;
-asn_constr_check_f ExtensionContainer_constraint;
-ber_type_decoder_f ExtensionContainer_decode_ber;
-der_type_encoder_f ExtensionContainer_encode_der;
-xer_type_decoder_f ExtensionContainer_decode_xer;
-xer_type_encoder_f ExtensionContainer_encode_xer;
-oer_type_decoder_f ExtensionContainer_decode_oer;
-oer_type_encoder_f ExtensionContainer_encode_oer;
-per_type_decoder_f ExtensionContainer_decode_uper;
-per_type_encoder_f ExtensionContainer_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ExtensionContainer;
+    asn_struct_free_f ExtensionContainer_free;
+    asn_struct_print_f ExtensionContainer_print;
+    asn_constr_check_f ExtensionContainer_constraint;
+    ber_type_decoder_f ExtensionContainer_decode_ber;
+    der_type_encoder_f ExtensionContainer_encode_der;
+    xer_type_decoder_f ExtensionContainer_decode_xer;
+    xer_type_encoder_f ExtensionContainer_encode_xer;
+    oer_type_decoder_f ExtensionContainer_decode_oer;
+    oer_type_encoder_f ExtensionContainer_encode_oer;
+    per_type_decoder_f ExtensionContainer_decode_uper;
+    per_type_encoder_f ExtensionContainer_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _ExtensionContainer_H_ */
+#endif /* _ExtensionContainer_H_ */
 #include <asn_internal.h>

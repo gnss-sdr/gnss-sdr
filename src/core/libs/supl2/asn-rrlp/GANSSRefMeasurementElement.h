@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GANSSRefMeasurementElement_H_
-#define	_GANSSRefMeasurementElement_H_
+#ifndef _GANSSRefMeasurementElement_H_
+#define _GANSSRefMeasurementElement_H_
 
 
 #include <asn_application.h>
@@ -16,35 +16,37 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct AdditionalDopplerFields;
-struct AddionalAngleFields;
+    /* Forward declarations */
+    struct AdditionalDopplerFields;
+    struct AddionalAngleFields;
 
-/* GANSSRefMeasurementElement */
-typedef struct GANSSRefMeasurementElement {
-	SVID_t	 svID;
-	long	 doppler0;
-	struct AdditionalDopplerFields	*additionalDoppler	/* OPTIONAL */;
-	long	 codePhase;
-	long	 intCodePhase;
-	long	 codePhaseSearchWindow;
-	struct AddionalAngleFields	*additionalAngle	/* OPTIONAL */;
-	/*
+    /* GANSSRefMeasurementElement */
+    typedef struct GANSSRefMeasurementElement
+    {
+        SVID_t svID;
+        long doppler0;
+        struct AdditionalDopplerFields *additionalDoppler /* OPTIONAL */;
+        long codePhase;
+        long intCodePhase;
+        long codePhaseSearchWindow;
+        struct AddionalAngleFields *additionalAngle /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSRefMeasurementElement_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSRefMeasurementElement;
-extern asn_SEQUENCE_specifics_t asn_SPC_GANSSRefMeasurementElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSSRefMeasurementElement_1[7];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSRefMeasurementElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSRefMeasurementElement;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GANSSRefMeasurementElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSSRefMeasurementElement_1[7];
 
 #ifdef __cplusplus
 }
@@ -54,5 +56,5 @@ extern asn_TYPE_member_t asn_MBR_GANSSRefMeasurementElement_1[7];
 #include "AdditionalDopplerFields.h"
 #include "AddionalAngleFields.h"
 
-#endif	/* _GANSSRefMeasurementElement_H_ */
+#endif /* _GANSSRefMeasurementElement_H_ */
 #include <asn_internal.h>

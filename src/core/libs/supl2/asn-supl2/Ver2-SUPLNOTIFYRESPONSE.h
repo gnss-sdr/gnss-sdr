@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_Ver2_SUPLNOTIFYRESPONSE_H_
-#define	_Ver2_SUPLNOTIFYRESPONSE_H_
+#ifndef _Ver2_SUPLNOTIFYRESPONSE_H_
+#define _Ver2_SUPLNOTIFYRESPONSE_H_
 
 
 #include "asn_application.h"
@@ -16,29 +16,31 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Ver2-SUPLNOTIFYRESPONSE */
-typedef struct Ver2_SUPLNOTIFYRESPONSE {
-	NotificationResponse_t	*notificationResponse	/* OPTIONAL */;
-	/*
+    /* Ver2-SUPLNOTIFYRESPONSE */
+    typedef struct Ver2_SUPLNOTIFYRESPONSE
+    {
+        NotificationResponse_t *notificationResponse /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Ver2_SUPLNOTIFYRESPONSE_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Ver2_SUPLNOTIFYRESPONSE;
-extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_SUPLNOTIFYRESPONSE_specs_1;
-extern asn_TYPE_member_t asn_MBR_Ver2_SUPLNOTIFYRESPONSE_1[1];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Ver2_SUPLNOTIFYRESPONSE_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Ver2_SUPLNOTIFYRESPONSE;
+    extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_SUPLNOTIFYRESPONSE_specs_1;
+    extern asn_TYPE_member_t asn_MBR_Ver2_SUPLNOTIFYRESPONSE_1[1];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _Ver2_SUPLNOTIFYRESPONSE_H_ */
+#endif /* _Ver2_SUPLNOTIFYRESPONSE_H_ */
 #include "asn_internal.h"

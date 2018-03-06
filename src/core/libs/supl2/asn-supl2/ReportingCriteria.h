@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_ReportingCriteria_H_
-#define	_ReportingCriteria_H_
+#ifndef _ReportingCriteria_H_
+#define _ReportingCriteria_H_
 
 
 #include "asn_application.h"
@@ -16,30 +16,32 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct TimeWindow;
+    /* Forward declarations */
+    struct TimeWindow;
 
-/* ReportingCriteria */
-typedef struct ReportingCriteria {
-	struct TimeWindow	*timeWindow	/* OPTIONAL */;
-	long	*maxNumberofReports	/* OPTIONAL */;
-	long	*minTimeInterval	/* OPTIONAL */;
-	/*
+    /* ReportingCriteria */
+    typedef struct ReportingCriteria
+    {
+        struct TimeWindow *timeWindow /* OPTIONAL */;
+        long *maxNumberofReports /* OPTIONAL */;
+        long *minTimeInterval /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ReportingCriteria_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReportingCriteria;
-extern asn_SEQUENCE_specifics_t asn_SPC_ReportingCriteria_specs_1;
-extern asn_TYPE_member_t asn_MBR_ReportingCriteria_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReportingCriteria_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReportingCriteria;
+    extern asn_SEQUENCE_specifics_t asn_SPC_ReportingCriteria_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ReportingCriteria_1[3];
 
 #ifdef __cplusplus
 }
@@ -48,5 +50,5 @@ extern asn_TYPE_member_t asn_MBR_ReportingCriteria_1[3];
 /* Referred external types */
 #include "TimeWindow.h"
 
-#endif	/* _ReportingCriteria_H_ */
+#endif /* _ReportingCriteria_H_ */
 #include "asn_internal.h"

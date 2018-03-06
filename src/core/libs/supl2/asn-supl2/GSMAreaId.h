@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GSMAreaId_H_
-#define	_GSMAreaId_H_
+#ifndef _GSMAreaId_H_
+#define _GSMAreaId_H_
 
 
 #include "asn_application.h"
@@ -16,32 +16,34 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GSMAreaId */
-typedef struct GSMAreaId {
-	long	*refMCC	/* OPTIONAL */;
-	long	*refMNC	/* OPTIONAL */;
-	long	*refLAC	/* OPTIONAL */;
-	long	*refCI	/* OPTIONAL */;
-	/*
+    /* GSMAreaId */
+    typedef struct GSMAreaId
+    {
+        long *refMCC /* OPTIONAL */;
+        long *refMNC /* OPTIONAL */;
+        long *refLAC /* OPTIONAL */;
+        long *refCI /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GSMAreaId_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GSMAreaId;
-extern asn_SEQUENCE_specifics_t asn_SPC_GSMAreaId_specs_1;
-extern asn_TYPE_member_t asn_MBR_GSMAreaId_1[4];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GSMAreaId_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GSMAreaId;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GSMAreaId_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GSMAreaId_1[4];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GSMAreaId_H_ */
+#endif /* _GSMAreaId_H_ */
 #include "asn_internal.h"

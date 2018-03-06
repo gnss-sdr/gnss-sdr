@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GANSSSignals_H_
-#define	_GANSSSignals_H_
+#ifndef _GANSSSignals_H_
+#define _GANSSSignals_H_
 
 
 #include "asn_application.h"
@@ -15,40 +15,42 @@
 #include "BIT_STRING.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum GANSSSignals {
-	GANSSSignals_signal1	= 0,
-	GANSSSignals_signal2	= 1,
-	GANSSSignals_signal3	= 2,
-	GANSSSignals_signal4	= 3,
-	GANSSSignals_signal5	= 4,
-	GANSSSignals_signal6	= 5,
-	GANSSSignals_signal7	= 6,
-	GANSSSignals_signal8	= 7
-} e_GANSSSignals;
+    /* Dependencies */
+    typedef enum GANSSSignals
+    {
+        GANSSSignals_signal1 = 0,
+        GANSSSignals_signal2 = 1,
+        GANSSSignals_signal3 = 2,
+        GANSSSignals_signal4 = 3,
+        GANSSSignals_signal5 = 4,
+        GANSSSignals_signal6 = 5,
+        GANSSSignals_signal7 = 6,
+        GANSSSignals_signal8 = 7
+    } e_GANSSSignals;
 
-/* GANSSSignals */
-typedef BIT_STRING_t	 GANSSSignals_t;
+    /* GANSSSignals */
+    typedef BIT_STRING_t GANSSSignals_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_GANSSSignals_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_GANSSSignals;
-asn_struct_free_f GANSSSignals_free;
-asn_struct_print_f GANSSSignals_print;
-asn_constr_check_f GANSSSignals_constraint;
-ber_type_decoder_f GANSSSignals_decode_ber;
-der_type_encoder_f GANSSSignals_encode_der;
-xer_type_decoder_f GANSSSignals_decode_xer;
-xer_type_encoder_f GANSSSignals_encode_xer;
-per_type_decoder_f GANSSSignals_decode_uper;
-per_type_encoder_f GANSSSignals_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_GANSSSignals_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSSignals;
+    asn_struct_free_f GANSSSignals_free;
+    asn_struct_print_f GANSSSignals_print;
+    asn_constr_check_f GANSSSignals_constraint;
+    ber_type_decoder_f GANSSSignals_decode_ber;
+    der_type_encoder_f GANSSSignals_encode_der;
+    xer_type_decoder_f GANSSSignals_decode_xer;
+    xer_type_encoder_f GANSSSignals_encode_xer;
+    per_type_decoder_f GANSSSignals_decode_uper;
+    per_type_encoder_f GANSSSignals_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSSignals_H_ */
+#endif /* _GANSSSignals_H_ */
 #include "asn_internal.h"

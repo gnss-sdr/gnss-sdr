@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GANSSDiffCorrections_H_
-#define	_GANSSDiffCorrections_H_
+#ifndef _GANSSDiffCorrections_H_
+#define _GANSSDiffCorrections_H_
 
 
 #include <asn_application.h>
@@ -16,26 +16,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSDiffCorrections */
-typedef struct GANSSDiffCorrections {
-	long	 dganssRefTime;
-	SeqOfSgnTypeElement_t	 sgnTypeList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSDiffCorrections_t;
+    /* GANSSDiffCorrections */
+    typedef struct GANSSDiffCorrections
+    {
+        long dganssRefTime;
+        SeqOfSgnTypeElement_t sgnTypeList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSDiffCorrections;
-extern asn_SEQUENCE_specifics_t asn_SPC_GANSSDiffCorrections_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSSDiffCorrections_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSDiffCorrections_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSDiffCorrections;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GANSSDiffCorrections_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSSDiffCorrections_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSDiffCorrections_H_ */
+#endif /* _GANSSDiffCorrections_H_ */
 #include <asn_internal.h>

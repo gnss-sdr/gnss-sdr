@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_AssistBTSData_H_
-#define	_AssistBTSData_H_
+#ifndef _AssistBTSData_H_
+#define _AssistBTSData_H_
 
 
 #include <asn_application.h>
@@ -18,28 +18,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct CalcAssistanceBTS;
+    /* Forward declarations */
+    struct CalcAssistanceBTS;
 
-/* AssistBTSData */
-typedef struct AssistBTSData {
-	BSIC_t	 bsic;
-	MultiFrameOffset_t	 multiFrameOffset;
-	TimeSlotScheme_t	 timeSlotScheme;
-	RoughRTD_t	 roughRTD;
-	struct CalcAssistanceBTS	*calcAssistanceBTS	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} AssistBTSData_t;
+    /* AssistBTSData */
+    typedef struct AssistBTSData
+    {
+        BSIC_t bsic;
+        MultiFrameOffset_t multiFrameOffset;
+        TimeSlotScheme_t timeSlotScheme;
+        RoughRTD_t roughRTD;
+        struct CalcAssistanceBTS *calcAssistanceBTS /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AssistBTSData;
-extern asn_SEQUENCE_specifics_t asn_SPC_AssistBTSData_specs_1;
-extern asn_TYPE_member_t asn_MBR_AssistBTSData_1[5];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AssistBTSData_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AssistBTSData;
+    extern asn_SEQUENCE_specifics_t asn_SPC_AssistBTSData_specs_1;
+    extern asn_TYPE_member_t asn_MBR_AssistBTSData_1[5];
 
 #ifdef __cplusplus
 }
@@ -48,5 +50,5 @@ extern asn_TYPE_member_t asn_MBR_AssistBTSData_1[5];
 /* Referred external types */
 #include "CalcAssistanceBTS.h"
 
-#endif	/* _AssistBTSData_H_ */
+#endif /* _AssistBTSData_H_ */
 #include <asn_internal.h>

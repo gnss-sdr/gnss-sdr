@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GeographicTargetArea_H_
-#define	_GeographicTargetArea_H_
+#ifndef _GeographicTargetArea_H_
+#define _GeographicTargetArea_H_
 
 
 #include "asn_application.h"
@@ -18,45 +18,49 @@
 #include "constr_CHOICE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum GeographicTargetArea_PR {
-	GeographicTargetArea_PR_NOTHING,	/* No components present */
-	GeographicTargetArea_PR_circularArea,
-	GeographicTargetArea_PR_ellipticalArea,
-	GeographicTargetArea_PR_polygonArea
-	/* Extensions may appear below */
-	
-} GeographicTargetArea_PR;
+    /* Dependencies */
+    typedef enum GeographicTargetArea_PR
+    {
+        GeographicTargetArea_PR_NOTHING, /* No components present */
+        GeographicTargetArea_PR_circularArea,
+        GeographicTargetArea_PR_ellipticalArea,
+        GeographicTargetArea_PR_polygonArea
+        /* Extensions may appear below */
 
-/* GeographicTargetArea */
-typedef struct GeographicTargetArea {
-	GeographicTargetArea_PR present;
-	union GeographicTargetArea_u {
-		CircularArea_t	 circularArea;
-		EllipticalArea_t	 ellipticalArea;
-		PolygonArea_t	 polygonArea;
-		/*
+    } GeographicTargetArea_PR;
+
+    /* GeographicTargetArea */
+    typedef struct GeographicTargetArea
+    {
+        GeographicTargetArea_PR present;
+        union GeographicTargetArea_u
+        {
+            CircularArea_t circularArea;
+            EllipticalArea_t ellipticalArea;
+            PolygonArea_t polygonArea;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GeographicTargetArea_t;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GeographicTargetArea;
-extern asn_CHOICE_specifics_t asn_SPC_GeographicTargetArea_specs_1;
-extern asn_TYPE_member_t asn_MBR_GeographicTargetArea_1[3];
-extern asn_per_constraints_t asn_PER_type_GeographicTargetArea_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GeographicTargetArea_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GeographicTargetArea;
+    extern asn_CHOICE_specifics_t asn_SPC_GeographicTargetArea_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GeographicTargetArea_1[3];
+    extern asn_per_constraints_t asn_PER_type_GeographicTargetArea_constr_1;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GeographicTargetArea_H_ */
+#endif /* _GeographicTargetArea_H_ */
 #include "asn_internal.h"

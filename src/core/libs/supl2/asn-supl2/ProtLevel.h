@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_ProtLevel_H_
-#define	_ProtLevel_H_
+#ifndef _ProtLevel_H_
+#define _ProtLevel_H_
 
 
 #include "asn_application.h"
@@ -15,38 +15,40 @@
 #include "NativeEnumerated.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum ProtLevel {
-	ProtLevel_nullProtection	= 0,
-	ProtLevel_basicProtection	= 1
-	/*
+    /* Dependencies */
+    typedef enum ProtLevel
+    {
+        ProtLevel_nullProtection = 0,
+        ProtLevel_basicProtection = 1
+        /*
 	 * Enumeration is extensible
 	 */
-} e_ProtLevel;
+    } e_ProtLevel;
 
-/* ProtLevel */
-typedef long	 ProtLevel_t;
+    /* ProtLevel */
+    typedef long ProtLevel_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_ProtLevel_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_ProtLevel;
-extern const asn_INTEGER_specifics_t asn_SPC_ProtLevel_specs_1;
-asn_struct_free_f ProtLevel_free;
-asn_struct_print_f ProtLevel_print;
-asn_constr_check_f ProtLevel_constraint;
-ber_type_decoder_f ProtLevel_decode_ber;
-der_type_encoder_f ProtLevel_encode_der;
-xer_type_decoder_f ProtLevel_decode_xer;
-xer_type_encoder_f ProtLevel_encode_xer;
-per_type_decoder_f ProtLevel_decode_uper;
-per_type_encoder_f ProtLevel_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_ProtLevel_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_ProtLevel;
+    extern const asn_INTEGER_specifics_t asn_SPC_ProtLevel_specs_1;
+    asn_struct_free_f ProtLevel_free;
+    asn_struct_print_f ProtLevel_print;
+    asn_constr_check_f ProtLevel_constraint;
+    ber_type_decoder_f ProtLevel_decode_ber;
+    der_type_encoder_f ProtLevel_encode_der;
+    xer_type_decoder_f ProtLevel_decode_xer;
+    xer_type_encoder_f ProtLevel_encode_xer;
+    per_type_decoder_f ProtLevel_decode_uper;
+    per_type_encoder_f ProtLevel_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _ProtLevel_H_ */
+#endif /* _ProtLevel_H_ */
 #include "asn_internal.h"

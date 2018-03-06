@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_UTRAN_GPSReferenceTimeAssistance_H_
-#define	_UTRAN_GPSReferenceTimeAssistance_H_
+#ifndef _UTRAN_GPSReferenceTimeAssistance_H_
+#define _UTRAN_GPSReferenceTimeAssistance_H_
 
 
 #include "asn_application.h"
@@ -18,27 +18,29 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* UTRAN-GPSReferenceTimeAssistance */
-typedef struct UTRAN_GPSReferenceTimeAssistance {
-	UTRAN_GPSReferenceTime_t	 utran_GPSReferenceTime;
-	long	*gpsReferenceTimeUncertainty	/* OPTIONAL */;
-	UTRANGPSDriftRate_t	*utranGPSDriftRate	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} UTRAN_GPSReferenceTimeAssistance_t;
+    /* UTRAN-GPSReferenceTimeAssistance */
+    typedef struct UTRAN_GPSReferenceTimeAssistance
+    {
+        UTRAN_GPSReferenceTime_t utran_GPSReferenceTime;
+        long *gpsReferenceTimeUncertainty /* OPTIONAL */;
+        UTRANGPSDriftRate_t *utranGPSDriftRate /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_UTRAN_GPSReferenceTimeAssistance;
-extern asn_SEQUENCE_specifics_t asn_SPC_UTRAN_GPSReferenceTimeAssistance_specs_1;
-extern asn_TYPE_member_t asn_MBR_UTRAN_GPSReferenceTimeAssistance_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } UTRAN_GPSReferenceTimeAssistance_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_UTRAN_GPSReferenceTimeAssistance;
+    extern asn_SEQUENCE_specifics_t asn_SPC_UTRAN_GPSReferenceTimeAssistance_specs_1;
+    extern asn_TYPE_member_t asn_MBR_UTRAN_GPSReferenceTimeAssistance_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _UTRAN_GPSReferenceTimeAssistance_H_ */
+#endif /* _UTRAN_GPSReferenceTimeAssistance_H_ */
 #include "asn_internal.h"

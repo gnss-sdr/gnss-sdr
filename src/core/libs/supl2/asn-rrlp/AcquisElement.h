@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_AcquisElement_H_
-#define	_AcquisElement_H_
+#ifndef _AcquisElement_H_
+#define _AcquisElement_H_
 
 
 #include <asn_application.h>
@@ -16,32 +16,34 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct AddionalDopplerFields;
-struct AddionalAngleFields;
+    /* Forward declarations */
+    struct AddionalDopplerFields;
+    struct AddionalAngleFields;
 
-/* AcquisElement */
-typedef struct AcquisElement {
-	SatelliteID_t	 svid;
-	long	 doppler0;
-	struct AddionalDopplerFields	*addionalDoppler	/* OPTIONAL */;
-	long	 codePhase;
-	long	 intCodePhase;
-	long	 gpsBitNumber;
-	long	 codePhaseSearchWindow;
-	struct AddionalAngleFields	*addionalAngle	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} AcquisElement_t;
+    /* AcquisElement */
+    typedef struct AcquisElement
+    {
+        SatelliteID_t svid;
+        long doppler0;
+        struct AddionalDopplerFields *addionalDoppler /* OPTIONAL */;
+        long codePhase;
+        long intCodePhase;
+        long gpsBitNumber;
+        long codePhaseSearchWindow;
+        struct AddionalAngleFields *addionalAngle /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AcquisElement;
-extern asn_SEQUENCE_specifics_t asn_SPC_AcquisElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_AcquisElement_1[8];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AcquisElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AcquisElement;
+    extern asn_SEQUENCE_specifics_t asn_SPC_AcquisElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_AcquisElement_1[8];
 
 #ifdef __cplusplus
 }
@@ -51,5 +53,5 @@ extern asn_TYPE_member_t asn_MBR_AcquisElement_1[8];
 #include "AddionalDopplerFields.h"
 #include "AddionalAngleFields.h"
 
-#endif	/* _AcquisElement_H_ */
+#endif /* _AcquisElement_H_ */
 #include <asn_internal.h>

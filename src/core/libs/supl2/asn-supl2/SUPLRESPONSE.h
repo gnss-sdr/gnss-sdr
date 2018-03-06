@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SUPLRESPONSE_H_
-#define	_SUPLRESPONSE_H_
+#ifndef _SUPLRESPONSE_H_
+#define _SUPLRESPONSE_H_
 
 
 #include "asn_application.h"
@@ -17,34 +17,36 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SLPAddress;
-struct SETAuthKey;
-struct Ver2_SUPL_RESPONSE_extension;
+    /* Forward declarations */
+    struct SLPAddress;
+    struct SETAuthKey;
+    struct Ver2_SUPL_RESPONSE_extension;
 
-/* SUPLRESPONSE */
-typedef struct SUPLRESPONSE {
-	PosMethod_t	 posMethod;
-	struct SLPAddress	*sLPAddress	/* OPTIONAL */;
-	struct SETAuthKey	*sETAuthKey	/* OPTIONAL */;
-	KeyIdentity4_t	*keyIdentity4	/* OPTIONAL */;
-	/*
+    /* SUPLRESPONSE */
+    typedef struct SUPLRESPONSE
+    {
+        PosMethod_t posMethod;
+        struct SLPAddress *sLPAddress /* OPTIONAL */;
+        struct SETAuthKey *sETAuthKey /* OPTIONAL */;
+        KeyIdentity4_t *keyIdentity4 /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	struct Ver2_SUPL_RESPONSE_extension	*ver2_SUPL_RESPONSE_extension	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SUPLRESPONSE_t;
+        struct Ver2_SUPL_RESPONSE_extension *ver2_SUPL_RESPONSE_extension /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SUPLRESPONSE;
-extern asn_SEQUENCE_specifics_t asn_SPC_SUPLRESPONSE_specs_1;
-extern asn_TYPE_member_t asn_MBR_SUPLRESPONSE_1[5];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SUPLRESPONSE_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SUPLRESPONSE;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SUPLRESPONSE_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SUPLRESPONSE_1[5];
 
 #ifdef __cplusplus
 }
@@ -55,5 +57,5 @@ extern asn_TYPE_member_t asn_MBR_SUPLRESPONSE_1[5];
 #include "SETAuthKey.h"
 #include "Ver2-SUPL-RESPONSE-extension.h"
 
-#endif	/* _SUPLRESPONSE_H_ */
+#endif /* _SUPLRESPONSE_H_ */
 #include "asn_internal.h"

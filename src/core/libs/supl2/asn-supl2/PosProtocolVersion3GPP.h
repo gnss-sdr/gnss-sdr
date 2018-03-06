@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_PosProtocolVersion3GPP_H_
-#define	_PosProtocolVersion3GPP_H_
+#ifndef _PosProtocolVersion3GPP_H_
+#define _PosProtocolVersion3GPP_H_
 
 
 #include "asn_application.h"
@@ -16,31 +16,33 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* PosProtocolVersion3GPP */
-typedef struct PosProtocolVersion3GPP {
-	long	 majorVersionField;
-	long	 technicalVersionField;
-	long	 editorialVersionField;
-	/*
+    /* PosProtocolVersion3GPP */
+    typedef struct PosProtocolVersion3GPP
+    {
+        long majorVersionField;
+        long technicalVersionField;
+        long editorialVersionField;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} PosProtocolVersion3GPP_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PosProtocolVersion3GPP;
-extern asn_SEQUENCE_specifics_t asn_SPC_PosProtocolVersion3GPP_specs_1;
-extern asn_TYPE_member_t asn_MBR_PosProtocolVersion3GPP_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PosProtocolVersion3GPP_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PosProtocolVersion3GPP;
+    extern asn_SEQUENCE_specifics_t asn_SPC_PosProtocolVersion3GPP_specs_1;
+    extern asn_TYPE_member_t asn_MBR_PosProtocolVersion3GPP_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _PosProtocolVersion3GPP_H_ */
+#endif /* _PosProtocolVersion3GPP_H_ */
 #include "asn_internal.h"

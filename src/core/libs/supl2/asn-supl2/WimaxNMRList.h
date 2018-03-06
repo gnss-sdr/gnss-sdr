@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_WimaxNMRList_H_
-#define	_WimaxNMRList_H_
+#ifndef _WimaxNMRList_H_
+#define _WimaxNMRList_H_
 
 
 #include "asn_application.h"
@@ -16,25 +16,28 @@
 #include "constr_SEQUENCE_OF.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct WimaxNMR;
+    /* Forward declarations */
+    struct WimaxNMR;
 
-/* WimaxNMRList */
-typedef struct WimaxNMRList {
-	A_SEQUENCE_OF(struct WimaxNMR) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} WimaxNMRList_t;
+    /* WimaxNMRList */
+    typedef struct WimaxNMRList
+    {
+        A_SEQUENCE_OF(struct WimaxNMR)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_WimaxNMRList;
-extern asn_SET_OF_specifics_t asn_SPC_WimaxNMRList_specs_1;
-extern asn_TYPE_member_t asn_MBR_WimaxNMRList_1[1];
-extern asn_per_constraints_t asn_PER_type_WimaxNMRList_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } WimaxNMRList_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_WimaxNMRList;
+    extern asn_SET_OF_specifics_t asn_SPC_WimaxNMRList_specs_1;
+    extern asn_TYPE_member_t asn_MBR_WimaxNMRList_1[1];
+    extern asn_per_constraints_t asn_PER_type_WimaxNMRList_constr_1;
 
 #ifdef __cplusplus
 }
@@ -43,5 +46,5 @@ extern asn_per_constraints_t asn_PER_type_WimaxNMRList_constr_1;
 /* Referred external types */
 #include "WimaxNMR.h"
 
-#endif	/* _WimaxNMRList_H_ */
+#endif /* _WimaxNMRList_H_ */
 #include "asn_internal.h"

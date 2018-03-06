@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SeqOfAcquisElement_H_
-#define	_SeqOfAcquisElement_H_
+#ifndef _SeqOfAcquisElement_H_
+#define _SeqOfAcquisElement_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,28 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct AcquisElement;
+    /* Forward declarations */
+    struct AcquisElement;
 
-/* SeqOfAcquisElement */
-typedef struct SeqOfAcquisElement {
-	A_SEQUENCE_OF(struct AcquisElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfAcquisElement_t;
+    /* SeqOfAcquisElement */
+    typedef struct SeqOfAcquisElement
+    {
+        A_SEQUENCE_OF(struct AcquisElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfAcquisElement;
-extern asn_SET_OF_specifics_t asn_SPC_SeqOfAcquisElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_SeqOfAcquisElement_1[1];
-extern asn_per_constraints_t asn_PER_type_SeqOfAcquisElement_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfAcquisElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfAcquisElement;
+    extern asn_SET_OF_specifics_t asn_SPC_SeqOfAcquisElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SeqOfAcquisElement_1[1];
+    extern asn_per_constraints_t asn_PER_type_SeqOfAcquisElement_constr_1;
 
 #ifdef __cplusplus
 }
@@ -42,5 +45,5 @@ extern asn_per_constraints_t asn_PER_type_SeqOfAcquisElement_constr_1;
 /* Referred external types */
 #include "AcquisElement.h"
 
-#endif	/* _SeqOfAcquisElement_H_ */
+#endif /* _SeqOfAcquisElement_H_ */
 #include <asn_internal.h>

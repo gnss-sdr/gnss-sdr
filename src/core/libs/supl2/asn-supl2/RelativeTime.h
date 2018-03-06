@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_RelativeTime_H_
-#define	_RelativeTime_H_
+#ifndef _RelativeTime_H_
+#define _RelativeTime_H_
 
 
 #include "asn_application.h"
@@ -15,28 +15,29 @@
 #include "NativeInteger.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* RelativeTime */
-typedef long	 RelativeTime_t;
+    /* RelativeTime */
+    typedef long RelativeTime_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_RelativeTime_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_RelativeTime;
-asn_struct_free_f RelativeTime_free;
-asn_struct_print_f RelativeTime_print;
-asn_constr_check_f RelativeTime_constraint;
-ber_type_decoder_f RelativeTime_decode_ber;
-der_type_encoder_f RelativeTime_encode_der;
-xer_type_decoder_f RelativeTime_decode_xer;
-xer_type_encoder_f RelativeTime_encode_xer;
-per_type_decoder_f RelativeTime_decode_uper;
-per_type_encoder_f RelativeTime_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_RelativeTime_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_RelativeTime;
+    asn_struct_free_f RelativeTime_free;
+    asn_struct_print_f RelativeTime_print;
+    asn_constr_check_f RelativeTime_constraint;
+    ber_type_decoder_f RelativeTime_decode_ber;
+    der_type_encoder_f RelativeTime_encode_der;
+    xer_type_decoder_f RelativeTime_decode_xer;
+    xer_type_encoder_f RelativeTime_encode_xer;
+    per_type_decoder_f RelativeTime_decode_uper;
+    per_type_encoder_f RelativeTime_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _RelativeTime_H_ */
+#endif /* _RelativeTime_H_ */
 #include "asn_internal.h"

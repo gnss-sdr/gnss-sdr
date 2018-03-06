@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SatellitesListRelatedDataList_H_
-#define	_SatellitesListRelatedDataList_H_
+#ifndef _SatellitesListRelatedDataList_H_
+#define _SatellitesListRelatedDataList_H_
 
 
 #include "asn_application.h"
@@ -16,25 +16,28 @@
 #include "constr_SEQUENCE_OF.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SatellitesListRelatedData;
+    /* Forward declarations */
+    struct SatellitesListRelatedData;
 
-/* SatellitesListRelatedDataList */
-typedef struct SatellitesListRelatedDataList {
-	A_SEQUENCE_OF(struct SatellitesListRelatedData) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SatellitesListRelatedDataList_t;
+    /* SatellitesListRelatedDataList */
+    typedef struct SatellitesListRelatedDataList
+    {
+        A_SEQUENCE_OF(struct SatellitesListRelatedData)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SatellitesListRelatedDataList;
-extern asn_SET_OF_specifics_t asn_SPC_SatellitesListRelatedDataList_specs_1;
-extern asn_TYPE_member_t asn_MBR_SatellitesListRelatedDataList_1[1];
-extern asn_per_constraints_t asn_PER_type_SatellitesListRelatedDataList_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SatellitesListRelatedDataList_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SatellitesListRelatedDataList;
+    extern asn_SET_OF_specifics_t asn_SPC_SatellitesListRelatedDataList_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SatellitesListRelatedDataList_1[1];
+    extern asn_per_constraints_t asn_PER_type_SatellitesListRelatedDataList_constr_1;
 
 #ifdef __cplusplus
 }
@@ -43,5 +46,5 @@ extern asn_per_constraints_t asn_PER_type_SatellitesListRelatedDataList_constr_1
 /* Referred external types */
 #include "SatellitesListRelatedData.h"
 
-#endif	/* _SatellitesListRelatedDataList_H_ */
+#endif /* _SatellitesListRelatedDataList_H_ */
 #include "asn_internal.h"

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_PLMN_Identity_H_
-#define	_PLMN_Identity_H_
+#ifndef _PLMN_Identity_H_
+#define _PLMN_Identity_H_
 
 
 #include "asn_application.h"
@@ -16,25 +16,27 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct MCC;
+    /* Forward declarations */
+    struct MCC;
 
-/* PLMN-Identity */
-typedef struct PLMN_Identity {
-	struct MCC	*mcc	/* OPTIONAL */;
-	MNC_t	 mnc;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} PLMN_Identity_t;
+    /* PLMN-Identity */
+    typedef struct PLMN_Identity
+    {
+        struct MCC *mcc /* OPTIONAL */;
+        MNC_t mnc;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PLMN_Identity;
-extern asn_SEQUENCE_specifics_t asn_SPC_PLMN_Identity_specs_1;
-extern asn_TYPE_member_t asn_MBR_PLMN_Identity_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PLMN_Identity_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PLMN_Identity;
+    extern asn_SEQUENCE_specifics_t asn_SPC_PLMN_Identity_specs_1;
+    extern asn_TYPE_member_t asn_MBR_PLMN_Identity_1[2];
 
 #ifdef __cplusplus
 }
@@ -43,5 +45,5 @@ extern asn_TYPE_member_t asn_MBR_PLMN_Identity_1[2];
 /* Referred external types */
 #include "MCC.h"
 
-#endif	/* _PLMN_Identity_H_ */
+#endif /* _PLMN_Identity_H_ */
 #include "asn_internal.h"

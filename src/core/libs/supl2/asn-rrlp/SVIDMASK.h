@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SVIDMASK_H_
-#define	_SVIDMASK_H_
+#ifndef _SVIDMASK_H_
+#define _SVIDMASK_H_
 
 
 #include <asn_application.h>
@@ -14,30 +14,31 @@
 #include <BIT_STRING.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SVIDMASK */
-typedef BIT_STRING_t	 SVIDMASK_t;
+    /* SVIDMASK */
+    typedef BIT_STRING_t SVIDMASK_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_SVIDMASK_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_SVIDMASK;
-asn_struct_free_f SVIDMASK_free;
-asn_struct_print_f SVIDMASK_print;
-asn_constr_check_f SVIDMASK_constraint;
-ber_type_decoder_f SVIDMASK_decode_ber;
-der_type_encoder_f SVIDMASK_encode_der;
-xer_type_decoder_f SVIDMASK_decode_xer;
-xer_type_encoder_f SVIDMASK_encode_xer;
-oer_type_decoder_f SVIDMASK_decode_oer;
-oer_type_encoder_f SVIDMASK_encode_oer;
-per_type_decoder_f SVIDMASK_decode_uper;
-per_type_encoder_f SVIDMASK_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_SVIDMASK_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_SVIDMASK;
+    asn_struct_free_f SVIDMASK_free;
+    asn_struct_print_f SVIDMASK_print;
+    asn_constr_check_f SVIDMASK_constraint;
+    ber_type_decoder_f SVIDMASK_decode_ber;
+    der_type_encoder_f SVIDMASK_encode_der;
+    xer_type_decoder_f SVIDMASK_decode_xer;
+    xer_type_encoder_f SVIDMASK_encode_xer;
+    oer_type_decoder_f SVIDMASK_decode_oer;
+    oer_type_encoder_f SVIDMASK_encode_oer;
+    per_type_decoder_f SVIDMASK_decode_uper;
+    per_type_encoder_f SVIDMASK_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SVIDMASK_H_ */
+#endif /* _SVIDMASK_H_ */
 #include <asn_internal.h>

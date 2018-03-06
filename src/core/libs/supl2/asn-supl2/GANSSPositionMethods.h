@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GANSSPositionMethods_H_
-#define	_GANSSPositionMethods_H_
+#ifndef _GANSSPositionMethods_H_
+#define _GANSSPositionMethods_H_
 
 
 #include "asn_application.h"
@@ -16,25 +16,28 @@
 #include "constr_SEQUENCE_OF.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSSPositionMethod;
+    /* Forward declarations */
+    struct GANSSPositionMethod;
 
-/* GANSSPositionMethods */
-typedef struct GANSSPositionMethods {
-	A_SEQUENCE_OF(struct GANSSPositionMethod) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSPositionMethods_t;
+    /* GANSSPositionMethods */
+    typedef struct GANSSPositionMethods
+    {
+        A_SEQUENCE_OF(struct GANSSPositionMethod)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSPositionMethods;
-extern asn_SET_OF_specifics_t asn_SPC_GANSSPositionMethods_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSSPositionMethods_1[1];
-extern asn_per_constraints_t asn_PER_type_GANSSPositionMethods_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSPositionMethods_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSPositionMethods;
+    extern asn_SET_OF_specifics_t asn_SPC_GANSSPositionMethods_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSSPositionMethods_1[1];
+    extern asn_per_constraints_t asn_PER_type_GANSSPositionMethods_constr_1;
 
 #ifdef __cplusplus
 }
@@ -43,5 +46,5 @@ extern asn_per_constraints_t asn_PER_type_GANSSPositionMethods_constr_1;
 /* Referred external types */
 #include "GANSSPositionMethod.h"
 
-#endif	/* _GANSSPositionMethods_H_ */
+#endif /* _GANSSPositionMethods_H_ */
 #include "asn_internal.h"

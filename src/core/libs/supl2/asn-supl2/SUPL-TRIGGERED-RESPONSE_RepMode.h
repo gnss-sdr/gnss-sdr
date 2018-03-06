@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SUPL_TRIGGERED_RESPONSE_RepMode_H_
-#define	_SUPL_TRIGGERED_RESPONSE_RepMode_H_
+#ifndef _SUPL_TRIGGERED_RESPONSE_RepMode_H_
+#define _SUPL_TRIGGERED_RESPONSE_RepMode_H_
 
 
 #include "asn_application.h"
@@ -15,39 +15,41 @@
 #include "NativeEnumerated.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum SUPL_TRIGGERED_RESPONSE_RepMode {
-	SUPL_TRIGGERED_RESPONSE_RepMode_realtime	= 1,
-	SUPL_TRIGGERED_RESPONSE_RepMode_quasirealtime	= 2,
-	SUPL_TRIGGERED_RESPONSE_RepMode_batch	= 3
-	/*
+    /* Dependencies */
+    typedef enum SUPL_TRIGGERED_RESPONSE_RepMode
+    {
+        SUPL_TRIGGERED_RESPONSE_RepMode_realtime = 1,
+        SUPL_TRIGGERED_RESPONSE_RepMode_quasirealtime = 2,
+        SUPL_TRIGGERED_RESPONSE_RepMode_batch = 3
+        /*
 	 * Enumeration is extensible
 	 */
-} e_SUPL_TRIGGERED_RESPONSE_RepMode;
+    } e_SUPL_TRIGGERED_RESPONSE_RepMode;
 
-/* RepMode */
-typedef long	 SUPL_TRIGGERED_RESPONSE_RepMode_t;
+    /* RepMode */
+    typedef long SUPL_TRIGGERED_RESPONSE_RepMode_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_SUPL_TRIGGERED_RESPONSE_RepMode_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_SUPL_TRIGGERED_RESPONSE_RepMode;
-extern const asn_INTEGER_specifics_t asn_SPC_SUPL_TRIGGERED_RESPONSE_RepMode_specs_1;
-asn_struct_free_f SUPL_TRIGGERED_RESPONSE_RepMode_free;
-asn_struct_print_f SUPL_TRIGGERED_RESPONSE_RepMode_print;
-asn_constr_check_f SUPL_TRIGGERED_RESPONSE_RepMode_constraint;
-ber_type_decoder_f SUPL_TRIGGERED_RESPONSE_RepMode_decode_ber;
-der_type_encoder_f SUPL_TRIGGERED_RESPONSE_RepMode_encode_der;
-xer_type_decoder_f SUPL_TRIGGERED_RESPONSE_RepMode_decode_xer;
-xer_type_encoder_f SUPL_TRIGGERED_RESPONSE_RepMode_encode_xer;
-per_type_decoder_f SUPL_TRIGGERED_RESPONSE_RepMode_decode_uper;
-per_type_encoder_f SUPL_TRIGGERED_RESPONSE_RepMode_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_SUPL_TRIGGERED_RESPONSE_RepMode_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_SUPL_TRIGGERED_RESPONSE_RepMode;
+    extern const asn_INTEGER_specifics_t asn_SPC_SUPL_TRIGGERED_RESPONSE_RepMode_specs_1;
+    asn_struct_free_f SUPL_TRIGGERED_RESPONSE_RepMode_free;
+    asn_struct_print_f SUPL_TRIGGERED_RESPONSE_RepMode_print;
+    asn_constr_check_f SUPL_TRIGGERED_RESPONSE_RepMode_constraint;
+    ber_type_decoder_f SUPL_TRIGGERED_RESPONSE_RepMode_decode_ber;
+    der_type_encoder_f SUPL_TRIGGERED_RESPONSE_RepMode_encode_der;
+    xer_type_decoder_f SUPL_TRIGGERED_RESPONSE_RepMode_decode_xer;
+    xer_type_encoder_f SUPL_TRIGGERED_RESPONSE_RepMode_encode_xer;
+    per_type_decoder_f SUPL_TRIGGERED_RESPONSE_RepMode_decode_uper;
+    per_type_encoder_f SUPL_TRIGGERED_RESPONSE_RepMode_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SUPL_TRIGGERED_RESPONSE_RepMode_H_ */
+#endif /* _SUPL_TRIGGERED_RESPONSE_RepMode_H_ */
 #include "asn_internal.h"

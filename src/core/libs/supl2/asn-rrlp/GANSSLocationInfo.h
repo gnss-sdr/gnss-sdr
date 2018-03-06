@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GANSSLocationInfo_H_
-#define	_GANSSLocationInfo_H_
+#ifndef _GANSSLocationInfo_H_
+#define _GANSSLocationInfo_H_
 
 
 #include <asn_application.h>
@@ -20,36 +20,38 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReferenceFrame;
+    /* Forward declarations */
+    struct ReferenceFrame;
 
-/* GANSSLocationInfo */
-typedef struct GANSSLocationInfo {
-	struct ReferenceFrame	*referenceFrame	/* OPTIONAL */;
-	GANSSTODm_t	*ganssTODm	/* OPTIONAL */;
-	long	*ganssTODFrac	/* OPTIONAL */;
-	GANSSTODUncertainty_t	*ganssTODUncertainty	/* OPTIONAL */;
-	long	*ganssTimeID	/* OPTIONAL */;
-	FixType_t	 fixType;
-	PositionData_t	 posData;
-	long	*stationaryIndication	/* OPTIONAL */;
-	Ext_GeographicalInformation_t	 posEstimate;
-	/*
+    /* GANSSLocationInfo */
+    typedef struct GANSSLocationInfo
+    {
+        struct ReferenceFrame *referenceFrame /* OPTIONAL */;
+        GANSSTODm_t *ganssTODm /* OPTIONAL */;
+        long *ganssTODFrac /* OPTIONAL */;
+        GANSSTODUncertainty_t *ganssTODUncertainty /* OPTIONAL */;
+        long *ganssTimeID /* OPTIONAL */;
+        FixType_t fixType;
+        PositionData_t posData;
+        long *stationaryIndication /* OPTIONAL */;
+        Ext_GeographicalInformation_t posEstimate;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSLocationInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSLocationInfo;
-extern asn_SEQUENCE_specifics_t asn_SPC_GANSSLocationInfo_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSSLocationInfo_1[9];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSLocationInfo_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSLocationInfo;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GANSSLocationInfo_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSSLocationInfo_1[9];
 
 #ifdef __cplusplus
 }
@@ -58,5 +60,5 @@ extern asn_TYPE_member_t asn_MBR_GANSSLocationInfo_1[9];
 /* Referred external types */
 #include "ReferenceFrame.h"
 
-#endif	/* _GANSSLocationInfo_H_ */
+#endif /* _GANSSLocationInfo_H_ */
 #include <asn_internal.h>

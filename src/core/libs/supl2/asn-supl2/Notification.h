@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_Notification_H_
-#define	_Notification_H_
+#ifndef _Notification_H_
+#define _Notification_H_
 
 
 #include "asn_application.h"
@@ -19,34 +19,36 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Ver2_Notification_extension;
+    /* Forward declarations */
+    struct Ver2_Notification_extension;
 
-/* Notification */
-typedef struct Notification {
-	NotificationType_t	 notificationType;
-	EncodingType_t	*encodingType	/* OPTIONAL */;
-	OCTET_STRING_t	*requestorId	/* OPTIONAL */;
-	FormatIndicator_t	*requestorIdType	/* OPTIONAL */;
-	OCTET_STRING_t	*clientName	/* OPTIONAL */;
-	FormatIndicator_t	*clientNameType	/* OPTIONAL */;
-	/*
+    /* Notification */
+    typedef struct Notification
+    {
+        NotificationType_t notificationType;
+        EncodingType_t *encodingType /* OPTIONAL */;
+        OCTET_STRING_t *requestorId /* OPTIONAL */;
+        FormatIndicator_t *requestorIdType /* OPTIONAL */;
+        OCTET_STRING_t *clientName /* OPTIONAL */;
+        FormatIndicator_t *clientNameType /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	struct Ver2_Notification_extension	*ver2_Notification_extension	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Notification_t;
+        struct Ver2_Notification_extension *ver2_Notification_extension /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Notification;
-extern asn_SEQUENCE_specifics_t asn_SPC_Notification_specs_1;
-extern asn_TYPE_member_t asn_MBR_Notification_1[7];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Notification_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Notification;
+    extern asn_SEQUENCE_specifics_t asn_SPC_Notification_specs_1;
+    extern asn_TYPE_member_t asn_MBR_Notification_1[7];
 
 #ifdef __cplusplus
 }
@@ -55,5 +57,5 @@ extern asn_TYPE_member_t asn_MBR_Notification_1[7];
 /* Referred external types */
 #include "Ver2-Notification-extension.h"
 
-#endif	/* _Notification_H_ */
+#endif /* _Notification_H_ */
 #include "asn_internal.h"

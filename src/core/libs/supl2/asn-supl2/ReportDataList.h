@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_ReportDataList_H_
-#define	_ReportDataList_H_
+#ifndef _ReportDataList_H_
+#define _ReportDataList_H_
 
 
 #include "asn_application.h"
@@ -16,25 +16,28 @@
 #include "constr_SEQUENCE_OF.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReportData;
+    /* Forward declarations */
+    struct ReportData;
 
-/* ReportDataList */
-typedef struct ReportDataList {
-	A_SEQUENCE_OF(struct ReportData) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ReportDataList_t;
+    /* ReportDataList */
+    typedef struct ReportDataList
+    {
+        A_SEQUENCE_OF(struct ReportData)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReportDataList;
-extern asn_SET_OF_specifics_t asn_SPC_ReportDataList_specs_1;
-extern asn_TYPE_member_t asn_MBR_ReportDataList_1[1];
-extern asn_per_constraints_t asn_PER_type_ReportDataList_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReportDataList_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReportDataList;
+    extern asn_SET_OF_specifics_t asn_SPC_ReportDataList_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ReportDataList_1[1];
+    extern asn_per_constraints_t asn_PER_type_ReportDataList_constr_1;
 
 #ifdef __cplusplus
 }
@@ -43,5 +46,5 @@ extern asn_per_constraints_t asn_PER_type_ReportDataList_constr_1;
 /* Referred external types */
 #include "ReportData.h"
 
-#endif	/* _ReportDataList_H_ */
+#endif /* _ReportDataList_H_ */
 #include "asn_internal.h"

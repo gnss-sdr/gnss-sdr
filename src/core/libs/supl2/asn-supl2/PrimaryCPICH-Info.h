@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_PrimaryCPICH_Info_H_
-#define	_PrimaryCPICH_Info_H_
+#ifndef _PrimaryCPICH_Info_H_
+#define _PrimaryCPICH_Info_H_
 
 
 #include "asn_application.h"
@@ -16,25 +16,27 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* PrimaryCPICH-Info */
-typedef struct PrimaryCPICH_Info {
-	long	 primaryScramblingCode;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} PrimaryCPICH_Info_t;
+    /* PrimaryCPICH-Info */
+    typedef struct PrimaryCPICH_Info
+    {
+        long primaryScramblingCode;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PrimaryCPICH_Info;
-extern asn_SEQUENCE_specifics_t asn_SPC_PrimaryCPICH_Info_specs_1;
-extern asn_TYPE_member_t asn_MBR_PrimaryCPICH_Info_1[1];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PrimaryCPICH_Info_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PrimaryCPICH_Info;
+    extern asn_SEQUENCE_specifics_t asn_SPC_PrimaryCPICH_Info_specs_1;
+    extern asn_TYPE_member_t asn_MBR_PrimaryCPICH_Info_1[1];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _PrimaryCPICH_Info_H_ */
+#endif /* _PrimaryCPICH_Info_H_ */
 #include "asn_internal.h"

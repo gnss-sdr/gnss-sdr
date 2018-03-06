@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_WlanAPInformation_H_
-#define	_WlanAPInformation_H_
+#ifndef _WlanAPInformation_H_
+#define _WlanAPInformation_H_
 
 
 #include "asn_application.h"
@@ -18,52 +18,55 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum WlanAPInformation__apDeviceType {
-	WlanAPInformation__apDeviceType_wlan802_11a	= 0,
-	WlanAPInformation__apDeviceType_wlan802_11b	= 1,
-	WlanAPInformation__apDeviceType_wlan802_11g	= 2
-	/*
+    /* Dependencies */
+    typedef enum WlanAPInformation__apDeviceType
+    {
+        WlanAPInformation__apDeviceType_wlan802_11a = 0,
+        WlanAPInformation__apDeviceType_wlan802_11b = 1,
+        WlanAPInformation__apDeviceType_wlan802_11g = 2
+        /*
 	 * Enumeration is extensible
 	 */
-} e_WlanAPInformation__apDeviceType;
+    } e_WlanAPInformation__apDeviceType;
 
-/* Forward declarations */
-struct RTD;
-struct ReportedLocation;
+    /* Forward declarations */
+    struct RTD;
+    struct ReportedLocation;
 
-/* WlanAPInformation */
-typedef struct WlanAPInformation {
-	BIT_STRING_t	 apMACAddress;
-	long	*apTransmitPower	/* OPTIONAL */;
-	long	*apAntennaGain	/* OPTIONAL */;
-	long	*apSignaltoNoise	/* OPTIONAL */;
-	long	*apDeviceType	/* OPTIONAL */;
-	long	*apSignalStrength	/* OPTIONAL */;
-	long	*apChannelFrequency	/* OPTIONAL */;
-	struct RTD	*apRoundTripDelay	/* OPTIONAL */;
-	long	*setTransmitPower	/* OPTIONAL */;
-	long	*setAntennaGain	/* OPTIONAL */;
-	long	*setSignaltoNoise	/* OPTIONAL */;
-	long	*setSignalStrength	/* OPTIONAL */;
-	struct ReportedLocation	*apReportedLocation	/* OPTIONAL */;
-	/*
+    /* WlanAPInformation */
+    typedef struct WlanAPInformation
+    {
+        BIT_STRING_t apMACAddress;
+        long *apTransmitPower /* OPTIONAL */;
+        long *apAntennaGain /* OPTIONAL */;
+        long *apSignaltoNoise /* OPTIONAL */;
+        long *apDeviceType /* OPTIONAL */;
+        long *apSignalStrength /* OPTIONAL */;
+        long *apChannelFrequency /* OPTIONAL */;
+        struct RTD *apRoundTripDelay /* OPTIONAL */;
+        long *setTransmitPower /* OPTIONAL */;
+        long *setAntennaGain /* OPTIONAL */;
+        long *setSignaltoNoise /* OPTIONAL */;
+        long *setSignalStrength /* OPTIONAL */;
+        struct ReportedLocation *apReportedLocation /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} WlanAPInformation_t;
 
-/* Implementation */
-/* extern asn_TYPE_descriptor_t asn_DEF_apDeviceType_6;	// (Use -fall-defs-global to expose) */
-extern asn_TYPE_descriptor_t asn_DEF_WlanAPInformation;
-extern asn_SEQUENCE_specifics_t asn_SPC_WlanAPInformation_specs_1;
-extern asn_TYPE_member_t asn_MBR_WlanAPInformation_1[13];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } WlanAPInformation_t;
+
+    /* Implementation */
+    /* extern asn_TYPE_descriptor_t asn_DEF_apDeviceType_6;	// (Use -fall-defs-global to expose) */
+    extern asn_TYPE_descriptor_t asn_DEF_WlanAPInformation;
+    extern asn_SEQUENCE_specifics_t asn_SPC_WlanAPInformation_specs_1;
+    extern asn_TYPE_member_t asn_MBR_WlanAPInformation_1[13];
 
 #ifdef __cplusplus
 }
@@ -73,5 +76,5 @@ extern asn_TYPE_member_t asn_MBR_WlanAPInformation_1[13];
 #include "RTD.h"
 #include "ReportedLocation.h"
 
-#endif	/* _WlanAPInformation_H_ */
+#endif /* _WlanAPInformation_H_ */
 #include "asn_internal.h"

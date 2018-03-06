@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_ReferenceWGS84_H_
-#define	_ReferenceWGS84_H_
+#ifndef _ReferenceWGS84_H_
+#define _ReferenceWGS84_H_
 
 
 #include <asn_application.h>
@@ -16,27 +16,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ReferenceWGS84 */
-typedef struct ReferenceWGS84 {
-	RelDistance_t	 relativeNorth;
-	RelDistance_t	 relativeEast;
-	RelativeAlt_t	*relativeAlt	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ReferenceWGS84_t;
+    /* ReferenceWGS84 */
+    typedef struct ReferenceWGS84
+    {
+        RelDistance_t relativeNorth;
+        RelDistance_t relativeEast;
+        RelativeAlt_t *relativeAlt /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceWGS84;
-extern asn_SEQUENCE_specifics_t asn_SPC_ReferenceWGS84_specs_1;
-extern asn_TYPE_member_t asn_MBR_ReferenceWGS84_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReferenceWGS84_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceWGS84;
+    extern asn_SEQUENCE_specifics_t asn_SPC_ReferenceWGS84_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ReferenceWGS84_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _ReferenceWGS84_H_ */
+#endif /* _ReferenceWGS84_H_ */
 #include <asn_internal.h>

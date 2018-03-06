@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GPSTime_H_
-#define	_GPSTime_H_
+#ifndef _GPSTime_H_
+#define _GPSTime_H_
 
 
 #include <asn_application.h>
@@ -16,26 +16,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GPSTime */
-typedef struct GPSTime {
-	GPSTOW23b_t	 gpsTOW23b;
-	GPSWeek_t	 gpsWeek;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GPSTime_t;
+    /* GPSTime */
+    typedef struct GPSTime
+    {
+        GPSTOW23b_t gpsTOW23b;
+        GPSWeek_t gpsWeek;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GPSTime;
-extern asn_SEQUENCE_specifics_t asn_SPC_GPSTime_specs_1;
-extern asn_TYPE_member_t asn_MBR_GPSTime_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GPSTime_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GPSTime;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GPSTime_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GPSTime_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GPSTime_H_ */
+#endif /* _GPSTime_H_ */
 #include <asn_internal.h>

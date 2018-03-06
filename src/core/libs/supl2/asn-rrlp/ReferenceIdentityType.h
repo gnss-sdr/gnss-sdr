@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_ReferenceIdentityType_H_
-#define	_ReferenceIdentityType_H_
+#ifndef _ReferenceIdentityType_H_
+#define _ReferenceIdentityType_H_
 
 
 #include <asn_application.h>
@@ -19,43 +19,47 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum ReferenceIdentityType_PR {
-	ReferenceIdentityType_PR_NOTHING,	/* No components present */
-	ReferenceIdentityType_PR_bsicAndCarrier,
-	ReferenceIdentityType_PR_ci,
-	ReferenceIdentityType_PR_requestIndex,
-	ReferenceIdentityType_PR_systemInfoIndex,
-	ReferenceIdentityType_PR_ciAndLAC
-} ReferenceIdentityType_PR;
+    /* Dependencies */
+    typedef enum ReferenceIdentityType_PR
+    {
+        ReferenceIdentityType_PR_NOTHING, /* No components present */
+        ReferenceIdentityType_PR_bsicAndCarrier,
+        ReferenceIdentityType_PR_ci,
+        ReferenceIdentityType_PR_requestIndex,
+        ReferenceIdentityType_PR_systemInfoIndex,
+        ReferenceIdentityType_PR_ciAndLAC
+    } ReferenceIdentityType_PR;
 
-/* ReferenceIdentityType */
-typedef struct ReferenceIdentityType {
-	ReferenceIdentityType_PR present;
-	union ReferenceIdentityType_u {
-		BSICAndCarrier_t	 bsicAndCarrier;
-		CellID_t	 ci;
-		RequestIndex_t	 requestIndex;
-		SystemInfoIndex_t	 systemInfoIndex;
-		CellIDAndLAC_t	 ciAndLAC;
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ReferenceIdentityType_t;
+    /* ReferenceIdentityType */
+    typedef struct ReferenceIdentityType
+    {
+        ReferenceIdentityType_PR present;
+        union ReferenceIdentityType_u
+        {
+            BSICAndCarrier_t bsicAndCarrier;
+            CellID_t ci;
+            RequestIndex_t requestIndex;
+            SystemInfoIndex_t systemInfoIndex;
+            CellIDAndLAC_t ciAndLAC;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceIdentityType;
-extern asn_CHOICE_specifics_t asn_SPC_ReferenceIdentityType_specs_1;
-extern asn_TYPE_member_t asn_MBR_ReferenceIdentityType_1[5];
-extern asn_per_constraints_t asn_PER_type_ReferenceIdentityType_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReferenceIdentityType_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceIdentityType;
+    extern asn_CHOICE_specifics_t asn_SPC_ReferenceIdentityType_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ReferenceIdentityType_1[5];
+    extern asn_per_constraints_t asn_PER_type_ReferenceIdentityType_constr_1;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _ReferenceIdentityType_H_ */
+#endif /* _ReferenceIdentityType_H_ */
 #include <asn_internal.h>

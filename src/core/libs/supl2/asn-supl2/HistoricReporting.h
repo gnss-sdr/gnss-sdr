@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_HistoricReporting_H_
-#define	_HistoricReporting_H_
+#ifndef _HistoricReporting_H_
+#define _HistoricReporting_H_
 
 
 #include "asn_application.h"
@@ -16,29 +16,31 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReportingCriteria;
+    /* Forward declarations */
+    struct ReportingCriteria;
 
-/* HistoricReporting */
-typedef struct HistoricReporting {
-	AllowedReportingType_t	 allowedReportingType;
-	struct ReportingCriteria	*reportingCriteria	/* OPTIONAL */;
-	/*
+    /* HistoricReporting */
+    typedef struct HistoricReporting
+    {
+        AllowedReportingType_t allowedReportingType;
+        struct ReportingCriteria *reportingCriteria /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} HistoricReporting_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_HistoricReporting;
-extern asn_SEQUENCE_specifics_t asn_SPC_HistoricReporting_specs_1;
-extern asn_TYPE_member_t asn_MBR_HistoricReporting_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } HistoricReporting_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_HistoricReporting;
+    extern asn_SEQUENCE_specifics_t asn_SPC_HistoricReporting_specs_1;
+    extern asn_TYPE_member_t asn_MBR_HistoricReporting_1[2];
 
 #ifdef __cplusplus
 }
@@ -47,5 +49,5 @@ extern asn_TYPE_member_t asn_MBR_HistoricReporting_1[2];
 /* Referred external types */
 #include "ReportingCriteria.h"
 
-#endif	/* _HistoricReporting_H_ */
+#endif /* _HistoricReporting_H_ */
 #include "asn_internal.h"

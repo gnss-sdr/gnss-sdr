@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_WimaxBSInformation_H_
-#define	_WimaxBSInformation_H_
+#ifndef _WimaxBSInformation_H_
+#define _WimaxBSInformation_H_
 
 
 #include "asn_application.h"
@@ -16,31 +16,33 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct WimaxRTD;
-struct WimaxNMRList;
+    /* Forward declarations */
+    struct WimaxRTD;
+    struct WimaxNMRList;
 
-/* WimaxBSInformation */
-typedef struct WimaxBSInformation {
-	WimaxBsID_t	 wimaxBsID;
-	struct WimaxRTD	*wimaxRTD	/* OPTIONAL */;
-	struct WimaxNMRList	*wimaxNMRList	/* OPTIONAL */;
-	/*
+    /* WimaxBSInformation */
+    typedef struct WimaxBSInformation
+    {
+        WimaxBsID_t wimaxBsID;
+        struct WimaxRTD *wimaxRTD /* OPTIONAL */;
+        struct WimaxNMRList *wimaxNMRList /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} WimaxBSInformation_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_WimaxBSInformation;
-extern asn_SEQUENCE_specifics_t asn_SPC_WimaxBSInformation_specs_1;
-extern asn_TYPE_member_t asn_MBR_WimaxBSInformation_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } WimaxBSInformation_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_WimaxBSInformation;
+    extern asn_SEQUENCE_specifics_t asn_SPC_WimaxBSInformation_specs_1;
+    extern asn_TYPE_member_t asn_MBR_WimaxBSInformation_1[3];
 
 #ifdef __cplusplus
 }
@@ -50,5 +52,5 @@ extern asn_TYPE_member_t asn_MBR_WimaxBSInformation_1[3];
 #include "WimaxRTD.h"
 #include "WimaxNMRList.h"
 
-#endif	/* _WimaxBSInformation_H_ */
+#endif /* _WimaxBSInformation_H_ */
 #include "asn_internal.h"

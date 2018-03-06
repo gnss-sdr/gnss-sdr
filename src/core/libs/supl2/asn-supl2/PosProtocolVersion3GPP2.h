@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_PosProtocolVersion3GPP2_H_
-#define	_PosProtocolVersion3GPP2_H_
+#ifndef _PosProtocolVersion3GPP2_H_
+#define _PosProtocolVersion3GPP2_H_
 
 
 #include "asn_application.h"
@@ -16,25 +16,28 @@
 #include "constr_SEQUENCE_OF.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Supported3GPP2PosProtocolVersion;
+    /* Forward declarations */
+    struct Supported3GPP2PosProtocolVersion;
 
-/* PosProtocolVersion3GPP2 */
-typedef struct PosProtocolVersion3GPP2 {
-	A_SEQUENCE_OF(struct Supported3GPP2PosProtocolVersion) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} PosProtocolVersion3GPP2_t;
+    /* PosProtocolVersion3GPP2 */
+    typedef struct PosProtocolVersion3GPP2
+    {
+        A_SEQUENCE_OF(struct Supported3GPP2PosProtocolVersion)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PosProtocolVersion3GPP2;
-extern asn_SET_OF_specifics_t asn_SPC_PosProtocolVersion3GPP2_specs_1;
-extern asn_TYPE_member_t asn_MBR_PosProtocolVersion3GPP2_1[1];
-extern asn_per_constraints_t asn_PER_type_PosProtocolVersion3GPP2_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PosProtocolVersion3GPP2_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PosProtocolVersion3GPP2;
+    extern asn_SET_OF_specifics_t asn_SPC_PosProtocolVersion3GPP2_specs_1;
+    extern asn_TYPE_member_t asn_MBR_PosProtocolVersion3GPP2_1[1];
+    extern asn_per_constraints_t asn_PER_type_PosProtocolVersion3GPP2_constr_1;
 
 #ifdef __cplusplus
 }
@@ -43,5 +46,5 @@ extern asn_per_constraints_t asn_PER_type_PosProtocolVersion3GPP2_constr_1;
 /* Referred external types */
 #include "Supported3GPP2PosProtocolVersion.h"
 
-#endif	/* _PosProtocolVersion3GPP2_H_ */
+#endif /* _PosProtocolVersion3GPP2_H_ */
 #include "asn_internal.h"

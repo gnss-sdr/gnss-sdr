@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_Ver2_SUPL_INIT_extension_H_
-#define	_Ver2_SUPL_INIT_extension_H_
+#ifndef _Ver2_SUPL_INIT_extension_H_
+#define _Ver2_SUPL_INIT_extension_H_
 
 
 #include "asn_application.h"
@@ -18,39 +18,41 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SupportedNetworkInformation;
-struct SLPAddress;
-struct HistoricReporting;
-struct ProtectionLevel;
-struct GNSSPosTechnology;
+    /* Forward declarations */
+    struct SupportedNetworkInformation;
+    struct SLPAddress;
+    struct HistoricReporting;
+    struct ProtectionLevel;
+    struct GNSSPosTechnology;
 
-/* Ver2-SUPL-INIT-extension */
-typedef struct Ver2_SUPL_INIT_extension {
-	NotificationMode_t	*notificationMode	/* OPTIONAL */;
-	struct SupportedNetworkInformation	*supportedNetworkInformation	/* OPTIONAL */;
-	TriggerType_t	*triggerType	/* OPTIONAL */;
-	struct SLPAddress	*e_SLPAddress	/* OPTIONAL */;
-	struct HistoricReporting	*historicReporting	/* OPTIONAL */;
-	struct ProtectionLevel	*protectionLevel	/* OPTIONAL */;
-	struct GNSSPosTechnology	*gnssPosTechnology	/* OPTIONAL */;
-	long	*minimumMajorVersion	/* OPTIONAL */;
-	/*
+    /* Ver2-SUPL-INIT-extension */
+    typedef struct Ver2_SUPL_INIT_extension
+    {
+        NotificationMode_t *notificationMode /* OPTIONAL */;
+        struct SupportedNetworkInformation *supportedNetworkInformation /* OPTIONAL */;
+        TriggerType_t *triggerType /* OPTIONAL */;
+        struct SLPAddress *e_SLPAddress /* OPTIONAL */;
+        struct HistoricReporting *historicReporting /* OPTIONAL */;
+        struct ProtectionLevel *protectionLevel /* OPTIONAL */;
+        struct GNSSPosTechnology *gnssPosTechnology /* OPTIONAL */;
+        long *minimumMajorVersion /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Ver2_SUPL_INIT_extension_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Ver2_SUPL_INIT_extension;
-extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_SUPL_INIT_extension_specs_1;
-extern asn_TYPE_member_t asn_MBR_Ver2_SUPL_INIT_extension_1[8];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Ver2_SUPL_INIT_extension_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Ver2_SUPL_INIT_extension;
+    extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_SUPL_INIT_extension_specs_1;
+    extern asn_TYPE_member_t asn_MBR_Ver2_SUPL_INIT_extension_1[8];
 
 #ifdef __cplusplus
 }
@@ -63,5 +65,5 @@ extern asn_TYPE_member_t asn_MBR_Ver2_SUPL_INIT_extension_1[8];
 #include "ProtectionLevel.h"
 #include "GNSSPosTechnology.h"
 
-#endif	/* _Ver2_SUPL_INIT_extension_H_ */
+#endif /* _Ver2_SUPL_INIT_extension_H_ */
 #include "asn_internal.h"

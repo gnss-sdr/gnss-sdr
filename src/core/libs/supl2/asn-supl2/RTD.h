@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_RTD_H_
-#define	_RTD_H_
+#ifndef _RTD_H_
+#define _RTD_H_
 
 
 #include "asn_application.h"
@@ -17,31 +17,33 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* RTD */
-typedef struct RTD {
-	long	 rTDValue;
-	RTDUnits_t	 rTDUnits;
-	long	*rTDAccuracy	/* OPTIONAL */;
-	/*
+    /* RTD */
+    typedef struct RTD
+    {
+        long rTDValue;
+        RTDUnits_t rTDUnits;
+        long *rTDAccuracy /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} RTD_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_RTD;
-extern asn_SEQUENCE_specifics_t asn_SPC_RTD_specs_1;
-extern asn_TYPE_member_t asn_MBR_RTD_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } RTD_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_RTD;
+    extern asn_SEQUENCE_specifics_t asn_SPC_RTD_specs_1;
+    extern asn_TYPE_member_t asn_MBR_RTD_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _RTD_H_ */
+#endif /* _RTD_H_ */
 #include "asn_internal.h"

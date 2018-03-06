@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_MCC_MNC_Digit_H_
-#define	_MCC_MNC_Digit_H_
+#ifndef _MCC_MNC_Digit_H_
+#define _MCC_MNC_Digit_H_
 
 
 #include "asn_application.h"
@@ -15,28 +15,29 @@
 #include "NativeInteger.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* MCC-MNC-Digit */
-typedef long	 MCC_MNC_Digit_t;
+    /* MCC-MNC-Digit */
+    typedef long MCC_MNC_Digit_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_MCC_MNC_Digit_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_MCC_MNC_Digit;
-asn_struct_free_f MCC_MNC_Digit_free;
-asn_struct_print_f MCC_MNC_Digit_print;
-asn_constr_check_f MCC_MNC_Digit_constraint;
-ber_type_decoder_f MCC_MNC_Digit_decode_ber;
-der_type_encoder_f MCC_MNC_Digit_encode_der;
-xer_type_decoder_f MCC_MNC_Digit_decode_xer;
-xer_type_encoder_f MCC_MNC_Digit_encode_xer;
-per_type_decoder_f MCC_MNC_Digit_decode_uper;
-per_type_encoder_f MCC_MNC_Digit_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_MCC_MNC_Digit_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_MCC_MNC_Digit;
+    asn_struct_free_f MCC_MNC_Digit_free;
+    asn_struct_print_f MCC_MNC_Digit_print;
+    asn_constr_check_f MCC_MNC_Digit_constraint;
+    ber_type_decoder_f MCC_MNC_Digit_decode_ber;
+    der_type_encoder_f MCC_MNC_Digit_encode_der;
+    xer_type_decoder_f MCC_MNC_Digit_decode_xer;
+    xer_type_encoder_f MCC_MNC_Digit_encode_xer;
+    per_type_decoder_f MCC_MNC_Digit_decode_uper;
+    per_type_encoder_f MCC_MNC_Digit_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _MCC_MNC_Digit_H_ */
+#endif /* _MCC_MNC_Digit_H_ */
 #include "asn_internal.h"

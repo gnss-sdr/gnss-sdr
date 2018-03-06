@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_Ver2_SUPLTRIGGEREDSTART_H_
-#define	_Ver2_SUPLTRIGGEREDSTART_H_
+#ifndef _Ver2_SUPLTRIGGEREDSTART_H_
+#define _Ver2_SUPLTRIGGEREDSTART_H_
 
 
 #include "asn_application.h"
@@ -20,45 +20,47 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct QoP;
-struct MultipleLocationIds;
-struct ThirdParty;
-struct ApplicationID;
-struct TriggerParams;
-struct Position;
-struct ReportingCap;
+    /* Forward declarations */
+    struct QoP;
+    struct MultipleLocationIds;
+    struct ThirdParty;
+    struct ApplicationID;
+    struct TriggerParams;
+    struct Position;
+    struct ReportingCap;
 
-/* Ver2-SUPLTRIGGEREDSTART */
-typedef struct Ver2_SUPLTRIGGEREDSTART {
-	SETCapabilities_t	 sETCapabilities;
-	LocationId_t	 locationId;
-	Ver_t	*ver	/* OPTIONAL */;
-	struct QoP	*qoP	/* OPTIONAL */;
-	struct MultipleLocationIds	*multipleLocationIds	/* OPTIONAL */;
-	struct ThirdParty	*thirdParty	/* OPTIONAL */;
-	struct ApplicationID	*applicationID	/* OPTIONAL */;
-	TriggerType_t	*triggerType	/* OPTIONAL */;
-	struct TriggerParams	*triggerParams	/* OPTIONAL */;
-	struct Position	*position	/* OPTIONAL */;
-	struct ReportingCap	*reportingCap	/* OPTIONAL */;
-	CauseCode_t	*causeCode	/* OPTIONAL */;
-	/*
+    /* Ver2-SUPLTRIGGEREDSTART */
+    typedef struct Ver2_SUPLTRIGGEREDSTART
+    {
+        SETCapabilities_t sETCapabilities;
+        LocationId_t locationId;
+        Ver_t *ver /* OPTIONAL */;
+        struct QoP *qoP /* OPTIONAL */;
+        struct MultipleLocationIds *multipleLocationIds /* OPTIONAL */;
+        struct ThirdParty *thirdParty /* OPTIONAL */;
+        struct ApplicationID *applicationID /* OPTIONAL */;
+        TriggerType_t *triggerType /* OPTIONAL */;
+        struct TriggerParams *triggerParams /* OPTIONAL */;
+        struct Position *position /* OPTIONAL */;
+        struct ReportingCap *reportingCap /* OPTIONAL */;
+        CauseCode_t *causeCode /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Ver2_SUPLTRIGGEREDSTART_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Ver2_SUPLTRIGGEREDSTART;
-extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_SUPLTRIGGEREDSTART_specs_1;
-extern asn_TYPE_member_t asn_MBR_Ver2_SUPLTRIGGEREDSTART_1[12];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Ver2_SUPLTRIGGEREDSTART_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Ver2_SUPLTRIGGEREDSTART;
+    extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_SUPLTRIGGEREDSTART_specs_1;
+    extern asn_TYPE_member_t asn_MBR_Ver2_SUPLTRIGGEREDSTART_1[12];
 
 #ifdef __cplusplus
 }
@@ -73,5 +75,5 @@ extern asn_TYPE_member_t asn_MBR_Ver2_SUPLTRIGGEREDSTART_1[12];
 #include "Position.h"
 #include "ReportingCap.h"
 
-#endif	/* _Ver2_SUPLTRIGGEREDSTART_H_ */
+#endif /* _Ver2_SUPLTRIGGEREDSTART_H_ */
 #include "asn_internal.h"

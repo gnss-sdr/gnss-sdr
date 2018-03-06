@@ -9,27 +9,28 @@
  * will do).
  * This type may be used when integer range is limited by subtype constraints.
  */
-#ifndef	_NativeEnumerated_H_
-#define	_NativeEnumerated_H_
+#ifndef _NativeEnumerated_H_
+#define _NativeEnumerated_H_
 
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-extern asn_TYPE_descriptor_t asn_DEF_NativeEnumerated;
-extern asn_TYPE_operation_t asn_OP_NativeEnumerated;
+    extern asn_TYPE_descriptor_t asn_DEF_NativeEnumerated;
+    extern asn_TYPE_operation_t asn_OP_NativeEnumerated;
 
-xer_type_encoder_f NativeEnumerated_encode_xer;
-oer_type_decoder_f NativeEnumerated_decode_oer;
-oer_type_encoder_f NativeEnumerated_encode_oer;
-per_type_decoder_f NativeEnumerated_decode_uper;
-per_type_encoder_f NativeEnumerated_encode_uper;
+    xer_type_encoder_f NativeEnumerated_encode_xer;
+    oer_type_decoder_f NativeEnumerated_decode_oer;
+    oer_type_encoder_f NativeEnumerated_encode_oer;
+    per_type_decoder_f NativeEnumerated_decode_uper;
+    per_type_encoder_f NativeEnumerated_encode_uper;
 
-#define NativeEnumerated_free       NativeInteger_free
-#define NativeEnumerated_print      NativeInteger_print
-#define NativeEnumerated_compare    NativeInteger_compare
+#define NativeEnumerated_free NativeInteger_free
+#define NativeEnumerated_print NativeInteger_print
+#define NativeEnumerated_compare NativeInteger_compare
 #define NativeEnumerated_random_fill NativeInteger_random_fill
 #define NativeEnumerated_constraint asn_generic_no_constraint
 #define NativeEnumerated_decode_ber NativeInteger_decode_ber
@@ -40,4 +41,4 @@ per_type_encoder_f NativeEnumerated_encode_uper;
 }
 #endif
 
-#endif	/* _NativeEnumerated_H_ */
+#endif /* _NativeEnumerated_H_ */

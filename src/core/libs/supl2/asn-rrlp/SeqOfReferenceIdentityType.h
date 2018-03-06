@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SeqOfReferenceIdentityType_H_
-#define	_SeqOfReferenceIdentityType_H_
+#ifndef _SeqOfReferenceIdentityType_H_
+#define _SeqOfReferenceIdentityType_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,28 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReferenceIdentityType;
+    /* Forward declarations */
+    struct ReferenceIdentityType;
 
-/* SeqOfReferenceIdentityType */
-typedef struct SeqOfReferenceIdentityType {
-	A_SEQUENCE_OF(struct ReferenceIdentityType) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfReferenceIdentityType_t;
+    /* SeqOfReferenceIdentityType */
+    typedef struct SeqOfReferenceIdentityType
+    {
+        A_SEQUENCE_OF(struct ReferenceIdentityType)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfReferenceIdentityType;
-extern asn_SET_OF_specifics_t asn_SPC_SeqOfReferenceIdentityType_specs_1;
-extern asn_TYPE_member_t asn_MBR_SeqOfReferenceIdentityType_1[1];
-extern asn_per_constraints_t asn_PER_type_SeqOfReferenceIdentityType_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfReferenceIdentityType_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfReferenceIdentityType;
+    extern asn_SET_OF_specifics_t asn_SPC_SeqOfReferenceIdentityType_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SeqOfReferenceIdentityType_1[1];
+    extern asn_per_constraints_t asn_PER_type_SeqOfReferenceIdentityType_constr_1;
 
 #ifdef __cplusplus
 }
@@ -42,5 +45,5 @@ extern asn_per_constraints_t asn_PER_type_SeqOfReferenceIdentityType_constr_1;
 /* Referred external types */
 #include "ReferenceIdentityType.h"
 
-#endif	/* _SeqOfReferenceIdentityType_H_ */
+#endif /* _SeqOfReferenceIdentityType_H_ */
 #include <asn_internal.h>

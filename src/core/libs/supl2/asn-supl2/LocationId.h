@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_LocationId_H_
-#define	_LocationId_H_
+#ifndef _LocationId_H_
+#define _LocationId_H_
 
 
 #include "asn_application.h"
@@ -17,30 +17,32 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* LocationId */
-typedef struct LocationId {
-	CellInfo_t	 cellInfo;
-	Status_t	 status;
-	/*
+    /* LocationId */
+    typedef struct LocationId
+    {
+        CellInfo_t cellInfo;
+        Status_t status;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} LocationId_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_LocationId;
-extern asn_SEQUENCE_specifics_t asn_SPC_LocationId_specs_1;
-extern asn_TYPE_member_t asn_MBR_LocationId_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } LocationId_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_LocationId;
+    extern asn_SEQUENCE_specifics_t asn_SPC_LocationId_specs_1;
+    extern asn_TYPE_member_t asn_MBR_LocationId_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _LocationId_H_ */
+#endif /* _LocationId_H_ */
 #include "asn_internal.h"

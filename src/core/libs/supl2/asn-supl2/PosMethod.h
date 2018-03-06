@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_PosMethod_H_
-#define	_PosMethod_H_
+#ifndef _PosMethod_H_
+#define _PosMethod_H_
 
 
 #include "asn_application.h"
@@ -15,53 +15,55 @@
 #include "NativeEnumerated.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum PosMethod {
-	PosMethod_agpsSETassisted	= 0,
-	PosMethod_agpsSETbased	= 1,
-	PosMethod_agpsSETassistedpref	= 2,
-	PosMethod_agpsSETbasedpref	= 3,
-	PosMethod_autonomousGPS	= 4,
-	PosMethod_aFLT	= 5,
-	PosMethod_eCID	= 6,
-	PosMethod_eOTD	= 7,
-	PosMethod_oTDOA	= 8,
-	PosMethod_noPosition	= 9,
-	/*
+    /* Dependencies */
+    typedef enum PosMethod
+    {
+        PosMethod_agpsSETassisted = 0,
+        PosMethod_agpsSETbased = 1,
+        PosMethod_agpsSETassistedpref = 2,
+        PosMethod_agpsSETbasedpref = 3,
+        PosMethod_autonomousGPS = 4,
+        PosMethod_aFLT = 5,
+        PosMethod_eCID = 6,
+        PosMethod_eOTD = 7,
+        PosMethod_oTDOA = 8,
+        PosMethod_noPosition = 9,
+        /*
 	 * Enumeration is extensible
 	 */
-	PosMethod_ver2_historicalDataRetrieval	= 10,
-	PosMethod_ver2_agnssSETassisted	= 11,
-	PosMethod_ver2_agnssSETbased	= 12,
-	PosMethod_ver2_agnssSETassistedpref	= 13,
-	PosMethod_ver2_agnssSETbasedpref	= 14,
-	PosMethod_ver2_autonomousGNSS	= 15,
-	PosMethod_ver2_sessioninfoquery	= 16
-} e_PosMethod;
+        PosMethod_ver2_historicalDataRetrieval = 10,
+        PosMethod_ver2_agnssSETassisted = 11,
+        PosMethod_ver2_agnssSETbased = 12,
+        PosMethod_ver2_agnssSETassistedpref = 13,
+        PosMethod_ver2_agnssSETbasedpref = 14,
+        PosMethod_ver2_autonomousGNSS = 15,
+        PosMethod_ver2_sessioninfoquery = 16
+    } e_PosMethod;
 
-/* PosMethod */
-typedef long	 PosMethod_t;
+    /* PosMethod */
+    typedef long PosMethod_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_PosMethod_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_PosMethod;
-extern const asn_INTEGER_specifics_t asn_SPC_PosMethod_specs_1;
-asn_struct_free_f PosMethod_free;
-asn_struct_print_f PosMethod_print;
-asn_constr_check_f PosMethod_constraint;
-ber_type_decoder_f PosMethod_decode_ber;
-der_type_encoder_f PosMethod_encode_der;
-xer_type_decoder_f PosMethod_decode_xer;
-xer_type_encoder_f PosMethod_encode_xer;
-per_type_decoder_f PosMethod_decode_uper;
-per_type_encoder_f PosMethod_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_PosMethod_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_PosMethod;
+    extern const asn_INTEGER_specifics_t asn_SPC_PosMethod_specs_1;
+    asn_struct_free_f PosMethod_free;
+    asn_struct_print_f PosMethod_print;
+    asn_constr_check_f PosMethod_constraint;
+    ber_type_decoder_f PosMethod_decode_ber;
+    der_type_encoder_f PosMethod_encode_der;
+    xer_type_decoder_f PosMethod_decode_xer;
+    xer_type_encoder_f PosMethod_encode_xer;
+    per_type_decoder_f PosMethod_decode_uper;
+    per_type_encoder_f PosMethod_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _PosMethod_H_ */
+#endif /* _PosMethod_H_ */
 #include "asn_internal.h"

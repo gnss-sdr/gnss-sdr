@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_OTD_MsrElementRest_H_
-#define	_OTD_MsrElementRest_H_
+#ifndef _OTD_MsrElementRest_H_
+#define _OTD_MsrElementRest_H_
 
 
 #include <asn_application.h>
@@ -17,30 +17,32 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct TOA_MeasurementsOfRef;
-struct SeqOfOTD_MsrsOfOtherSets;
+    /* Forward declarations */
+    struct TOA_MeasurementsOfRef;
+    struct SeqOfOTD_MsrsOfOtherSets;
 
-/* OTD-MsrElementRest */
-typedef struct OTD_MsrElementRest {
-	long	 refFrameNumber;
-	ModuloTimeSlot_t	 referenceTimeSlot;
-	struct TOA_MeasurementsOfRef	*toaMeasurementsOfRef	/* OPTIONAL */;
-	StdResolution_t	 stdResolution;
-	long	*taCorrection	/* OPTIONAL */;
-	struct SeqOfOTD_MsrsOfOtherSets	*otd_MsrsOfOtherSets	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} OTD_MsrElementRest_t;
+    /* OTD-MsrElementRest */
+    typedef struct OTD_MsrElementRest
+    {
+        long refFrameNumber;
+        ModuloTimeSlot_t referenceTimeSlot;
+        struct TOA_MeasurementsOfRef *toaMeasurementsOfRef /* OPTIONAL */;
+        StdResolution_t stdResolution;
+        long *taCorrection /* OPTIONAL */;
+        struct SeqOfOTD_MsrsOfOtherSets *otd_MsrsOfOtherSets /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTD_MsrElementRest;
-extern asn_SEQUENCE_specifics_t asn_SPC_OTD_MsrElementRest_specs_1;
-extern asn_TYPE_member_t asn_MBR_OTD_MsrElementRest_1[6];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } OTD_MsrElementRest_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTD_MsrElementRest;
+    extern asn_SEQUENCE_specifics_t asn_SPC_OTD_MsrElementRest_specs_1;
+    extern asn_TYPE_member_t asn_MBR_OTD_MsrElementRest_1[6];
 
 #ifdef __cplusplus
 }
@@ -50,5 +52,5 @@ extern asn_TYPE_member_t asn_MBR_OTD_MsrElementRest_1[6];
 #include "TOA-MeasurementsOfRef.h"
 #include "SeqOfOTD-MsrsOfOtherSets.h"
 
-#endif	/* _OTD_MsrElementRest_H_ */
+#endif /* _OTD_MsrElementRest_H_ */
 #include <asn_internal.h>

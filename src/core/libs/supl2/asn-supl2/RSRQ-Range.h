@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_RSRQ_Range_H_
-#define	_RSRQ_Range_H_
+#ifndef _RSRQ_Range_H_
+#define _RSRQ_Range_H_
 
 
 #include "asn_application.h"
@@ -15,28 +15,29 @@
 #include "NativeInteger.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* RSRQ-Range */
-typedef long	 RSRQ_Range_t;
+    /* RSRQ-Range */
+    typedef long RSRQ_Range_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_RSRQ_Range_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_RSRQ_Range;
-asn_struct_free_f RSRQ_Range_free;
-asn_struct_print_f RSRQ_Range_print;
-asn_constr_check_f RSRQ_Range_constraint;
-ber_type_decoder_f RSRQ_Range_decode_ber;
-der_type_encoder_f RSRQ_Range_encode_der;
-xer_type_decoder_f RSRQ_Range_decode_xer;
-xer_type_encoder_f RSRQ_Range_encode_xer;
-per_type_decoder_f RSRQ_Range_decode_uper;
-per_type_encoder_f RSRQ_Range_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_RSRQ_Range_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_RSRQ_Range;
+    asn_struct_free_f RSRQ_Range_free;
+    asn_struct_print_f RSRQ_Range_print;
+    asn_constr_check_f RSRQ_Range_constraint;
+    ber_type_decoder_f RSRQ_Range_decode_ber;
+    der_type_encoder_f RSRQ_Range_encode_der;
+    xer_type_decoder_f RSRQ_Range_decode_xer;
+    xer_type_encoder_f RSRQ_Range_encode_xer;
+    per_type_decoder_f RSRQ_Range_decode_uper;
+    per_type_encoder_f RSRQ_Range_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _RSRQ_Range_H_ */
+#endif /* _RSRQ_Range_H_ */
 #include "asn_internal.h"

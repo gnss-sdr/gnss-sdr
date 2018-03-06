@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_ControlHeader_H_
-#define	_ControlHeader_H_
+#ifndef _ControlHeader_H_
+#define _ControlHeader_H_
 
 
 #include <asn_application.h>
@@ -14,40 +14,42 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReferenceTime;
-struct RefLocation;
-struct DGPSCorrections;
-struct NavigationModel;
-struct IonosphericModel;
-struct UTCModel;
-struct Almanac;
-struct AcquisAssist;
-struct SeqOf_BadSatelliteSet;
+    /* Forward declarations */
+    struct ReferenceTime;
+    struct RefLocation;
+    struct DGPSCorrections;
+    struct NavigationModel;
+    struct IonosphericModel;
+    struct UTCModel;
+    struct Almanac;
+    struct AcquisAssist;
+    struct SeqOf_BadSatelliteSet;
 
-/* ControlHeader */
-typedef struct ControlHeader {
-	struct ReferenceTime	*referenceTime	/* OPTIONAL */;
-	struct RefLocation	*refLocation	/* OPTIONAL */;
-	struct DGPSCorrections	*dgpsCorrections	/* OPTIONAL */;
-	struct NavigationModel	*navigationModel	/* OPTIONAL */;
-	struct IonosphericModel	*ionosphericModel	/* OPTIONAL */;
-	struct UTCModel	*utcModel	/* OPTIONAL */;
-	struct Almanac	*almanac	/* OPTIONAL */;
-	struct AcquisAssist	*acquisAssist	/* OPTIONAL */;
-	struct SeqOf_BadSatelliteSet	*realTimeIntegrity	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ControlHeader_t;
+    /* ControlHeader */
+    typedef struct ControlHeader
+    {
+        struct ReferenceTime *referenceTime /* OPTIONAL */;
+        struct RefLocation *refLocation /* OPTIONAL */;
+        struct DGPSCorrections *dgpsCorrections /* OPTIONAL */;
+        struct NavigationModel *navigationModel /* OPTIONAL */;
+        struct IonosphericModel *ionosphericModel /* OPTIONAL */;
+        struct UTCModel *utcModel /* OPTIONAL */;
+        struct Almanac *almanac /* OPTIONAL */;
+        struct AcquisAssist *acquisAssist /* OPTIONAL */;
+        struct SeqOf_BadSatelliteSet *realTimeIntegrity /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ControlHeader;
-extern asn_SEQUENCE_specifics_t asn_SPC_ControlHeader_specs_1;
-extern asn_TYPE_member_t asn_MBR_ControlHeader_1[9];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ControlHeader_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ControlHeader;
+    extern asn_SEQUENCE_specifics_t asn_SPC_ControlHeader_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ControlHeader_1[9];
 
 #ifdef __cplusplus
 }
@@ -64,5 +66,5 @@ extern asn_TYPE_member_t asn_MBR_ControlHeader_1[9];
 #include "AcquisAssist.h"
 #include "SeqOf-BadSatelliteSet.h"
 
-#endif	/* _ControlHeader_H_ */
+#endif /* _ControlHeader_H_ */
 #include <asn_internal.h>

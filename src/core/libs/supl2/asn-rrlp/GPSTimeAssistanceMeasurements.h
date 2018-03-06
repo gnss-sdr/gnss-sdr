@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GPSTimeAssistanceMeasurements_H_
-#define	_GPSTimeAssistanceMeasurements_H_
+#ifndef _GPSTimeAssistanceMeasurements_H_
+#define _GPSTimeAssistanceMeasurements_H_
 
 
 #include <asn_application.h>
@@ -16,28 +16,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GPSTimeAssistanceMeasurements */
-typedef struct GPSTimeAssistanceMeasurements {
-	long	 referenceFrameMSB;
-	long	*gpsTowSubms	/* OPTIONAL */;
-	long	*deltaTow	/* OPTIONAL */;
-	GPSReferenceTimeUncertainty_t	*gpsReferenceTimeUncertainty	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GPSTimeAssistanceMeasurements_t;
+    /* GPSTimeAssistanceMeasurements */
+    typedef struct GPSTimeAssistanceMeasurements
+    {
+        long referenceFrameMSB;
+        long *gpsTowSubms /* OPTIONAL */;
+        long *deltaTow /* OPTIONAL */;
+        GPSReferenceTimeUncertainty_t *gpsReferenceTimeUncertainty /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GPSTimeAssistanceMeasurements;
-extern asn_SEQUENCE_specifics_t asn_SPC_GPSTimeAssistanceMeasurements_specs_1;
-extern asn_TYPE_member_t asn_MBR_GPSTimeAssistanceMeasurements_1[4];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GPSTimeAssistanceMeasurements_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GPSTimeAssistanceMeasurements;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GPSTimeAssistanceMeasurements_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GPSTimeAssistanceMeasurements_1[4];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GPSTimeAssistanceMeasurements_H_ */
+#endif /* _GPSTimeAssistanceMeasurements_H_ */
 #include <asn_internal.h>

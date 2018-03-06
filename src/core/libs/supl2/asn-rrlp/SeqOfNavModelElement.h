@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SeqOfNavModelElement_H_
-#define	_SeqOfNavModelElement_H_
+#ifndef _SeqOfNavModelElement_H_
+#define _SeqOfNavModelElement_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,28 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct NavModelElement;
+    /* Forward declarations */
+    struct NavModelElement;
 
-/* SeqOfNavModelElement */
-typedef struct SeqOfNavModelElement {
-	A_SEQUENCE_OF(struct NavModelElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfNavModelElement_t;
+    /* SeqOfNavModelElement */
+    typedef struct SeqOfNavModelElement
+    {
+        A_SEQUENCE_OF(struct NavModelElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfNavModelElement;
-extern asn_SET_OF_specifics_t asn_SPC_SeqOfNavModelElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_SeqOfNavModelElement_1[1];
-extern asn_per_constraints_t asn_PER_type_SeqOfNavModelElement_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfNavModelElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfNavModelElement;
+    extern asn_SET_OF_specifics_t asn_SPC_SeqOfNavModelElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SeqOfNavModelElement_1[1];
+    extern asn_per_constraints_t asn_PER_type_SeqOfNavModelElement_constr_1;
 
 #ifdef __cplusplus
 }
@@ -42,5 +45,5 @@ extern asn_per_constraints_t asn_PER_type_SeqOfNavModelElement_constr_1;
 /* Referred external types */
 #include "NavModelElement.h"
 
-#endif	/* _SeqOfNavModelElement_H_ */
+#endif /* _SeqOfNavModelElement_H_ */
 #include <asn_internal.h>

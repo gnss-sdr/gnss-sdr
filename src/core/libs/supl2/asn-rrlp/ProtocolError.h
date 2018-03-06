@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_ProtocolError_H_
-#define	_ProtocolError_H_
+#ifndef _ProtocolError_H_
+#define _ProtocolError_H_
 
 
 #include <asn_application.h>
@@ -16,30 +16,32 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Rel_5_ProtocolError_Extension;
+    /* Forward declarations */
+    struct Rel_5_ProtocolError_Extension;
 
-/* ProtocolError */
-typedef struct ProtocolError {
-	ErrorCodes_t	 errorCause;
-	ExtensionContainer_t	*extensionContainer	/* OPTIONAL */;
-	/*
+    /* ProtocolError */
+    typedef struct ProtocolError
+    {
+        ErrorCodes_t errorCause;
+        ExtensionContainer_t *extensionContainer /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	struct Rel_5_ProtocolError_Extension	*rel_5_ProtocolError_Extension	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ProtocolError_t;
+        struct Rel_5_ProtocolError_Extension *rel_5_ProtocolError_Extension /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolError;
-extern asn_SEQUENCE_specifics_t asn_SPC_ProtocolError_specs_1;
-extern asn_TYPE_member_t asn_MBR_ProtocolError_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ProtocolError_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ProtocolError;
+    extern asn_SEQUENCE_specifics_t asn_SPC_ProtocolError_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ProtocolError_1[3];
 
 #ifdef __cplusplus
 }
@@ -48,5 +50,5 @@ extern asn_TYPE_member_t asn_MBR_ProtocolError_1[3];
 /* Referred external types */
 #include "Rel-5-ProtocolError-Extension.h"
 
-#endif	/* _ProtocolError_H_ */
+#endif /* _ProtocolError_H_ */
 #include <asn_internal.h>

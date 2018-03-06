@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GANSS_ControlHeader_H_
-#define	_GANSS_ControlHeader_H_
+#ifndef _GANSS_ControlHeader_H_
+#define _GANSS_ControlHeader_H_
 
 
 #include <asn_application.h>
@@ -14,26 +14,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSSCommonAssistData;
-struct SeqOfGANSSGenericAssistDataElement;
+    /* Forward declarations */
+    struct GANSSCommonAssistData;
+    struct SeqOfGANSSGenericAssistDataElement;
 
-/* GANSS-ControlHeader */
-typedef struct GANSS_ControlHeader {
-	struct GANSSCommonAssistData	*ganssCommonAssistData	/* OPTIONAL */;
-	struct SeqOfGANSSGenericAssistDataElement	*ganssGenericAssistDataList	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSS_ControlHeader_t;
+    /* GANSS-ControlHeader */
+    typedef struct GANSS_ControlHeader
+    {
+        struct GANSSCommonAssistData *ganssCommonAssistData /* OPTIONAL */;
+        struct SeqOfGANSSGenericAssistDataElement *ganssGenericAssistDataList /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSS_ControlHeader;
-extern asn_SEQUENCE_specifics_t asn_SPC_GANSS_ControlHeader_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSS_ControlHeader_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSS_ControlHeader_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSS_ControlHeader;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GANSS_ControlHeader_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSS_ControlHeader_1[2];
 
 #ifdef __cplusplus
 }
@@ -43,5 +45,5 @@ extern asn_TYPE_member_t asn_MBR_GANSS_ControlHeader_1[2];
 #include "GANSSCommonAssistData.h"
 #include "SeqOfGANSSGenericAssistDataElement.h"
 
-#endif	/* _GANSS_ControlHeader_H_ */
+#endif /* _GANSS_ControlHeader_H_ */
 #include <asn_internal.h>

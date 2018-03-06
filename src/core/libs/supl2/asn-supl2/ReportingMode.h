@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_ReportingMode_H_
-#define	_ReportingMode_H_
+#ifndef _ReportingMode_H_
+#define _ReportingMode_H_
 
 
 #include "asn_application.h"
@@ -16,31 +16,33 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct BatchRepConditions;
-struct BatchRepType;
+    /* Forward declarations */
+    struct BatchRepConditions;
+    struct BatchRepType;
 
-/* ReportingMode */
-typedef struct ReportingMode {
-	SUPL_TRIGGERED_RESPONSE_RepMode_t	 repMode;
-	struct BatchRepConditions	*batchRepConditions	/* OPTIONAL */;
-	struct BatchRepType	*batchRepType	/* OPTIONAL */;
-	/*
+    /* ReportingMode */
+    typedef struct ReportingMode
+    {
+        SUPL_TRIGGERED_RESPONSE_RepMode_t repMode;
+        struct BatchRepConditions *batchRepConditions /* OPTIONAL */;
+        struct BatchRepType *batchRepType /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ReportingMode_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReportingMode;
-extern asn_SEQUENCE_specifics_t asn_SPC_ReportingMode_specs_1;
-extern asn_TYPE_member_t asn_MBR_ReportingMode_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReportingMode_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReportingMode;
+    extern asn_SEQUENCE_specifics_t asn_SPC_ReportingMode_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ReportingMode_1[3];
 
 #ifdef __cplusplus
 }
@@ -50,5 +52,5 @@ extern asn_TYPE_member_t asn_MBR_ReportingMode_1[3];
 #include "BatchRepConditions.h"
 #include "BatchRepType.h"
 
-#endif	/* _ReportingMode_H_ */
+#endif /* _ReportingMode_H_ */
 #include "asn_internal.h"

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_MeasResultEUTRA_H_
-#define	_MeasResultEUTRA_H_
+#ifndef _MeasResultEUTRA_H_
+#define _MeasResultEUTRA_H_
 
 
 #include "asn_application.h"
@@ -20,43 +20,47 @@
 #include "RSRQ-Range.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* MeasResultEUTRA */
-typedef struct MeasResultEUTRA {
-	PhysCellId_t	 physCellId;
-	struct MeasResultEUTRA__cgi_Info {
-		CellGlobalIdEUTRA_t	 cellGlobalId;
-		TrackingAreaCode_t	 trackingAreaCode;
-		
-		/* Context for parsing across buffer boundaries */
-		asn_struct_ctx_t _asn_ctx;
-	} *cgi_Info;
-	struct MeasResultEUTRA__measResult {
-		RSRP_Range_t	*rsrpResult	/* OPTIONAL */;
-		RSRQ_Range_t	*rsrqResult	/* OPTIONAL */;
-		/*
+    /* MeasResultEUTRA */
+    typedef struct MeasResultEUTRA
+    {
+        PhysCellId_t physCellId;
+        struct MeasResultEUTRA__cgi_Info
+        {
+            CellGlobalIdEUTRA_t cellGlobalId;
+            TrackingAreaCode_t trackingAreaCode;
+
+            /* Context for parsing across buffer boundaries */
+            asn_struct_ctx_t _asn_ctx;
+        } * cgi_Info;
+        struct MeasResultEUTRA__measResult
+        {
+            RSRP_Range_t *rsrpResult /* OPTIONAL */;
+            RSRQ_Range_t *rsrqResult /* OPTIONAL */;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-		
-		/* Context for parsing across buffer boundaries */
-		asn_struct_ctx_t _asn_ctx;
-	} measResult;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} MeasResultEUTRA_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MeasResultEUTRA;
-extern asn_SEQUENCE_specifics_t asn_SPC_MeasResultEUTRA_specs_1;
-extern asn_TYPE_member_t asn_MBR_MeasResultEUTRA_1[3];
+            /* Context for parsing across buffer boundaries */
+            asn_struct_ctx_t _asn_ctx;
+        } measResult;
+
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } MeasResultEUTRA_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MeasResultEUTRA;
+    extern asn_SEQUENCE_specifics_t asn_SPC_MeasResultEUTRA_specs_1;
+    extern asn_TYPE_member_t asn_MBR_MeasResultEUTRA_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _MeasResultEUTRA_H_ */
+#endif /* _MeasResultEUTRA_H_ */
 #include "asn_internal.h"

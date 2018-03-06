@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_FrameNumber_H_
-#define	_FrameNumber_H_
+#ifndef _FrameNumber_H_
+#define _FrameNumber_H_
 
 
 #include <asn_application.h>
@@ -14,30 +14,31 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* FrameNumber */
-typedef long	 FrameNumber_t;
+    /* FrameNumber */
+    typedef long FrameNumber_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_FrameNumber_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_FrameNumber;
-asn_struct_free_f FrameNumber_free;
-asn_struct_print_f FrameNumber_print;
-asn_constr_check_f FrameNumber_constraint;
-ber_type_decoder_f FrameNumber_decode_ber;
-der_type_encoder_f FrameNumber_encode_der;
-xer_type_decoder_f FrameNumber_decode_xer;
-xer_type_encoder_f FrameNumber_encode_xer;
-oer_type_decoder_f FrameNumber_decode_oer;
-oer_type_encoder_f FrameNumber_encode_oer;
-per_type_decoder_f FrameNumber_decode_uper;
-per_type_encoder_f FrameNumber_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_FrameNumber_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_FrameNumber;
+    asn_struct_free_f FrameNumber_free;
+    asn_struct_print_f FrameNumber_print;
+    asn_constr_check_f FrameNumber_constraint;
+    ber_type_decoder_f FrameNumber_decode_ber;
+    der_type_encoder_f FrameNumber_encode_der;
+    xer_type_decoder_f FrameNumber_decode_xer;
+    xer_type_encoder_f FrameNumber_encode_xer;
+    oer_type_decoder_f FrameNumber_decode_oer;
+    oer_type_encoder_f FrameNumber_encode_oer;
+    per_type_decoder_f FrameNumber_decode_uper;
+    per_type_encoder_f FrameNumber_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _FrameNumber_H_ */
+#endif /* _FrameNumber_H_ */
 #include <asn_internal.h>

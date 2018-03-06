@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SeqOfSatElement_H_
-#define	_SeqOfSatElement_H_
+#ifndef _SeqOfSatElement_H_
+#define _SeqOfSatElement_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,28 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SatElement;
+    /* Forward declarations */
+    struct SatElement;
 
-/* SeqOfSatElement */
-typedef struct SeqOfSatElement {
-	A_SEQUENCE_OF(struct SatElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfSatElement_t;
+    /* SeqOfSatElement */
+    typedef struct SeqOfSatElement
+    {
+        A_SEQUENCE_OF(struct SatElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfSatElement;
-extern asn_SET_OF_specifics_t asn_SPC_SeqOfSatElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_SeqOfSatElement_1[1];
-extern asn_per_constraints_t asn_PER_type_SeqOfSatElement_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfSatElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfSatElement;
+    extern asn_SET_OF_specifics_t asn_SPC_SeqOfSatElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SeqOfSatElement_1[1];
+    extern asn_per_constraints_t asn_PER_type_SeqOfSatElement_constr_1;
 
 #ifdef __cplusplus
 }
@@ -42,5 +45,5 @@ extern asn_per_constraints_t asn_PER_type_SeqOfSatElement_constr_1;
 /* Referred external types */
 #include "SatElement.h"
 
-#endif	/* _SeqOfSatElement_H_ */
+#endif /* _SeqOfSatElement_H_ */
 #include <asn_internal.h>

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GanssExtendedEphCheck_H_
-#define	_GanssExtendedEphCheck_H_
+#ifndef _GanssExtendedEphCheck_H_
+#define _GanssExtendedEphCheck_H_
 
 
 #include "asn_application.h"
@@ -16,30 +16,32 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GanssExtendedEphCheck */
-typedef struct GanssExtendedEphCheck {
-	GANSSextEphTime_t	 beginTime;
-	GANSSextEphTime_t	 endTime;
-	/*
+    /* GanssExtendedEphCheck */
+    typedef struct GanssExtendedEphCheck
+    {
+        GANSSextEphTime_t beginTime;
+        GANSSextEphTime_t endTime;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GanssExtendedEphCheck_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GanssExtendedEphCheck;
-extern asn_SEQUENCE_specifics_t asn_SPC_GanssExtendedEphCheck_specs_1;
-extern asn_TYPE_member_t asn_MBR_GanssExtendedEphCheck_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GanssExtendedEphCheck_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GanssExtendedEphCheck;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GanssExtendedEphCheck_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GanssExtendedEphCheck_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GanssExtendedEphCheck_H_ */
+#endif /* _GanssExtendedEphCheck_H_ */
 #include "asn_internal.h"

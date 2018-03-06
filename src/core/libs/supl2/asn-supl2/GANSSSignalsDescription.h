@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GANSSSignalsDescription_H_
-#define	_GANSSSignalsDescription_H_
+#ifndef _GANSSSignalsDescription_H_
+#define _GANSSSignalsDescription_H_
 
 
 #include "asn_application.h"
@@ -17,30 +17,32 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSSignalsDescription */
-typedef struct GANSSSignalsDescription {
-	long	 ganssId;
-	GANSSSignals_t	 gANSSSignals;
-	/*
+    /* GANSSSignalsDescription */
+    typedef struct GANSSSignalsDescription
+    {
+        long ganssId;
+        GANSSSignals_t gANSSSignals;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSSignalsDescription_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSSignalsDescription;
-extern asn_SEQUENCE_specifics_t asn_SPC_GANSSSignalsDescription_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSSSignalsDescription_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSSignalsDescription_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSSignalsDescription;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GANSSSignalsDescription_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSSSignalsDescription_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSSignalsDescription_H_ */
+#endif /* _GANSSSignalsDescription_H_ */
 #include "asn_internal.h"

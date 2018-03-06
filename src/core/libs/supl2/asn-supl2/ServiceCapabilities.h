@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_ServiceCapabilities_H_
-#define	_ServiceCapabilities_H_
+#ifndef _ServiceCapabilities_H_
+#define _ServiceCapabilities_H_
 
 
 #include "asn_application.h"
@@ -17,32 +17,34 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReportingCap;
-struct EventTriggerCapabilities;
+    /* Forward declarations */
+    struct ReportingCap;
+    struct EventTriggerCapabilities;
 
-/* ServiceCapabilities */
-typedef struct ServiceCapabilities {
-	ServicesSupported_t	 servicesSupported;
-	struct ReportingCap	*reportingCapabilities	/* OPTIONAL */;
-	struct EventTriggerCapabilities	*eventTriggerCapabilities	/* OPTIONAL */;
-	SessionCapabilities_t	 sessionCapabilities;
-	/*
+    /* ServiceCapabilities */
+    typedef struct ServiceCapabilities
+    {
+        ServicesSupported_t servicesSupported;
+        struct ReportingCap *reportingCapabilities /* OPTIONAL */;
+        struct EventTriggerCapabilities *eventTriggerCapabilities /* OPTIONAL */;
+        SessionCapabilities_t sessionCapabilities;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ServiceCapabilities_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ServiceCapabilities;
-extern asn_SEQUENCE_specifics_t asn_SPC_ServiceCapabilities_specs_1;
-extern asn_TYPE_member_t asn_MBR_ServiceCapabilities_1[4];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ServiceCapabilities_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ServiceCapabilities;
+    extern asn_SEQUENCE_specifics_t asn_SPC_ServiceCapabilities_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ServiceCapabilities_1[4];
 
 #ifdef __cplusplus
 }
@@ -52,5 +54,5 @@ extern asn_TYPE_member_t asn_MBR_ServiceCapabilities_1[4];
 #include "ReportingCap.h"
 #include "EventTriggerCapabilities.h"
 
-#endif	/* _ServiceCapabilities_H_ */
+#endif /* _ServiceCapabilities_H_ */
 #include "asn_internal.h"

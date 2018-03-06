@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SeqOfGPS_MsrSetElement_H_
-#define	_SeqOfGPS_MsrSetElement_H_
+#ifndef _SeqOfGPS_MsrSetElement_H_
+#define _SeqOfGPS_MsrSetElement_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,28 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GPS_MsrSetElement;
+    /* Forward declarations */
+    struct GPS_MsrSetElement;
 
-/* SeqOfGPS-MsrSetElement */
-typedef struct SeqOfGPS_MsrSetElement {
-	A_SEQUENCE_OF(struct GPS_MsrSetElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfGPS_MsrSetElement_t;
+    /* SeqOfGPS-MsrSetElement */
+    typedef struct SeqOfGPS_MsrSetElement
+    {
+        A_SEQUENCE_OF(struct GPS_MsrSetElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfGPS_MsrSetElement;
-extern asn_SET_OF_specifics_t asn_SPC_SeqOfGPS_MsrSetElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_SeqOfGPS_MsrSetElement_1[1];
-extern asn_per_constraints_t asn_PER_type_SeqOfGPS_MsrSetElement_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfGPS_MsrSetElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfGPS_MsrSetElement;
+    extern asn_SET_OF_specifics_t asn_SPC_SeqOfGPS_MsrSetElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SeqOfGPS_MsrSetElement_1[1];
+    extern asn_per_constraints_t asn_PER_type_SeqOfGPS_MsrSetElement_constr_1;
 
 #ifdef __cplusplus
 }
@@ -42,5 +45,5 @@ extern asn_per_constraints_t asn_PER_type_SeqOfGPS_MsrSetElement_constr_1;
 /* Referred external types */
 #include "GPS-MsrSetElement.h"
 
-#endif	/* _SeqOfGPS_MsrSetElement_H_ */
+#endif /* _SeqOfGPS_MsrSetElement_H_ */
 #include <asn_internal.h>

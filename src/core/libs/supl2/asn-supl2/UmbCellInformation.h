@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_UmbCellInformation_H_
-#define	_UmbCellInformation_H_
+#ifndef _UmbCellInformation_H_
+#define _UmbCellInformation_H_
 
 
 #include "asn_application.h"
@@ -17,35 +17,37 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* UmbCellInformation */
-typedef struct UmbCellInformation {
-	BIT_STRING_t	 refSECTORID;
-	long	 refMCC;
-	long	 refMNC;
-	long	 refBASELAT;
-	long	 reBASELONG;
-	long	 refWeekNumber;
-	long	 refSeconds;
-	/*
+    /* UmbCellInformation */
+    typedef struct UmbCellInformation
+    {
+        BIT_STRING_t refSECTORID;
+        long refMCC;
+        long refMNC;
+        long refBASELAT;
+        long reBASELONG;
+        long refWeekNumber;
+        long refSeconds;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} UmbCellInformation_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_UmbCellInformation;
-extern asn_SEQUENCE_specifics_t asn_SPC_UmbCellInformation_specs_1;
-extern asn_TYPE_member_t asn_MBR_UmbCellInformation_1[7];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } UmbCellInformation_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_UmbCellInformation;
+    extern asn_SEQUENCE_specifics_t asn_SPC_UmbCellInformation_specs_1;
+    extern asn_TYPE_member_t asn_MBR_UmbCellInformation_1[7];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _UmbCellInformation_H_ */
+#endif /* _UmbCellInformation_H_ */
 #include "asn_internal.h"

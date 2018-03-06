@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_Velocity_H_
-#define	_Velocity_H_
+#ifndef _Velocity_H_
+#define _Velocity_H_
 
 
 #include "asn_application.h"
@@ -19,47 +19,51 @@
 #include "constr_CHOICE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum Velocity_PR {
-	Velocity_PR_NOTHING,	/* No components present */
-	Velocity_PR_horvel,
-	Velocity_PR_horandvervel,
-	Velocity_PR_horveluncert,
-	Velocity_PR_horandveruncert
-	/* Extensions may appear below */
-	
-} Velocity_PR;
+    /* Dependencies */
+    typedef enum Velocity_PR
+    {
+        Velocity_PR_NOTHING, /* No components present */
+        Velocity_PR_horvel,
+        Velocity_PR_horandvervel,
+        Velocity_PR_horveluncert,
+        Velocity_PR_horandveruncert
+        /* Extensions may appear below */
 
-/* Velocity */
-typedef struct Velocity {
-	Velocity_PR present;
-	union Velocity_u {
-		Horvel_t	 horvel;
-		Horandvervel_t	 horandvervel;
-		Horveluncert_t	 horveluncert;
-		Horandveruncert_t	 horandveruncert;
-		/*
+    } Velocity_PR;
+
+    /* Velocity */
+    typedef struct Velocity
+    {
+        Velocity_PR present;
+        union Velocity_u
+        {
+            Horvel_t horvel;
+            Horandvervel_t horandvervel;
+            Horveluncert_t horveluncert;
+            Horandveruncert_t horandveruncert;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Velocity_t;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Velocity;
-extern asn_CHOICE_specifics_t asn_SPC_Velocity_specs_1;
-extern asn_TYPE_member_t asn_MBR_Velocity_1[4];
-extern asn_per_constraints_t asn_PER_type_Velocity_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Velocity_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Velocity;
+    extern asn_CHOICE_specifics_t asn_SPC_Velocity_specs_1;
+    extern asn_TYPE_member_t asn_MBR_Velocity_1[4];
+    extern asn_per_constraints_t asn_PER_type_Velocity_constr_1;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _Velocity_H_ */
+#endif /* _Velocity_H_ */
 #include "asn_internal.h"

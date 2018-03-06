@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_MsrPosition_Rsp_H_
-#define	_MsrPosition_Rsp_H_
+#ifndef _MsrPosition_Rsp_H_
+#define _MsrPosition_Rsp_H_
 
 
 #include <asn_application.h>
@@ -15,43 +15,45 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct MultipleSets;
-struct ReferenceIdentity;
-struct OTD_MeasureInfo;
-struct LocationInfo;
-struct GPS_MeasureInfo;
-struct LocationError;
-struct Rel_98_MsrPosition_Rsp_Extension;
-struct Rel_5_MsrPosition_Rsp_Extension;
+    /* Forward declarations */
+    struct MultipleSets;
+    struct ReferenceIdentity;
+    struct OTD_MeasureInfo;
+    struct LocationInfo;
+    struct GPS_MeasureInfo;
+    struct LocationError;
+    struct Rel_98_MsrPosition_Rsp_Extension;
+    struct Rel_5_MsrPosition_Rsp_Extension;
 
-/* MsrPosition-Rsp */
-typedef struct MsrPosition_Rsp {
-	struct MultipleSets	*multipleSets	/* OPTIONAL */;
-	struct ReferenceIdentity	*referenceIdentity	/* OPTIONAL */;
-	struct OTD_MeasureInfo	*otd_MeasureInfo	/* OPTIONAL */;
-	struct LocationInfo	*locationInfo	/* OPTIONAL */;
-	struct GPS_MeasureInfo	*gps_MeasureInfo	/* OPTIONAL */;
-	struct LocationError	*locationError	/* OPTIONAL */;
-	ExtensionContainer_t	*extensionContainer	/* OPTIONAL */;
-	/*
+    /* MsrPosition-Rsp */
+    typedef struct MsrPosition_Rsp
+    {
+        struct MultipleSets *multipleSets /* OPTIONAL */;
+        struct ReferenceIdentity *referenceIdentity /* OPTIONAL */;
+        struct OTD_MeasureInfo *otd_MeasureInfo /* OPTIONAL */;
+        struct LocationInfo *locationInfo /* OPTIONAL */;
+        struct GPS_MeasureInfo *gps_MeasureInfo /* OPTIONAL */;
+        struct LocationError *locationError /* OPTIONAL */;
+        ExtensionContainer_t *extensionContainer /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	struct Rel_98_MsrPosition_Rsp_Extension	*rel_98_MsrPosition_Rsp_Extension	/* OPTIONAL */;
-	struct Rel_5_MsrPosition_Rsp_Extension	*rel_5_MsrPosition_Rsp_Extension	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} MsrPosition_Rsp_t;
+        struct Rel_98_MsrPosition_Rsp_Extension *rel_98_MsrPosition_Rsp_Extension /* OPTIONAL */;
+        struct Rel_5_MsrPosition_Rsp_Extension *rel_5_MsrPosition_Rsp_Extension /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MsrPosition_Rsp;
-extern asn_SEQUENCE_specifics_t asn_SPC_MsrPosition_Rsp_specs_1;
-extern asn_TYPE_member_t asn_MBR_MsrPosition_Rsp_1[9];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } MsrPosition_Rsp_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MsrPosition_Rsp;
+    extern asn_SEQUENCE_specifics_t asn_SPC_MsrPosition_Rsp_specs_1;
+    extern asn_TYPE_member_t asn_MBR_MsrPosition_Rsp_1[9];
 
 #ifdef __cplusplus
 }
@@ -67,5 +69,5 @@ extern asn_TYPE_member_t asn_MBR_MsrPosition_Rsp_1[9];
 #include "Rel-98-MsrPosition-Rsp-Extension.h"
 #include "Rel-5-MsrPosition-Rsp-Extension.h"
 
-#endif	/* _MsrPosition_Rsp_H_ */
+#endif /* _MsrPosition_Rsp_H_ */
 #include <asn_internal.h>

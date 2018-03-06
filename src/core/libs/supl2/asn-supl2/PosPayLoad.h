@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_PosPayLoad_H_
-#define	_PosPayLoad_H_
+#ifndef _PosPayLoad_H_
+#define _PosPayLoad_H_
 
 
 #include "asn_application.h"
@@ -17,46 +17,50 @@
 #include "constr_CHOICE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum PosPayLoad_PR {
-	PosPayLoad_PR_NOTHING,	/* No components present */
-	PosPayLoad_PR_tia801payload,
-	PosPayLoad_PR_rrcPayload,
-	PosPayLoad_PR_rrlpPayload,
-	/* Extensions may appear below */
-	PosPayLoad_PR_ver2_PosPayLoad_extension
-} PosPayLoad_PR;
+    /* Dependencies */
+    typedef enum PosPayLoad_PR
+    {
+        PosPayLoad_PR_NOTHING, /* No components present */
+        PosPayLoad_PR_tia801payload,
+        PosPayLoad_PR_rrcPayload,
+        PosPayLoad_PR_rrlpPayload,
+        /* Extensions may appear below */
+        PosPayLoad_PR_ver2_PosPayLoad_extension
+    } PosPayLoad_PR;
 
-/* PosPayLoad */
-typedef struct PosPayLoad {
-	PosPayLoad_PR present;
-	union PosPayLoad_u {
-		OCTET_STRING_t	 tia801payload;
-		OCTET_STRING_t	 rrcPayload;
-		OCTET_STRING_t	 rrlpPayload;
-		/*
+    /* PosPayLoad */
+    typedef struct PosPayLoad
+    {
+        PosPayLoad_PR present;
+        union PosPayLoad_u
+        {
+            OCTET_STRING_t tia801payload;
+            OCTET_STRING_t rrcPayload;
+            OCTET_STRING_t rrlpPayload;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-		Ver2_PosPayLoad_extension_t	 ver2_PosPayLoad_extension;
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} PosPayLoad_t;
+            Ver2_PosPayLoad_extension_t ver2_PosPayLoad_extension;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PosPayLoad;
-extern asn_CHOICE_specifics_t asn_SPC_PosPayLoad_specs_1;
-extern asn_TYPE_member_t asn_MBR_PosPayLoad_1[4];
-extern asn_per_constraints_t asn_PER_type_PosPayLoad_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PosPayLoad_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PosPayLoad;
+    extern asn_CHOICE_specifics_t asn_SPC_PosPayLoad_specs_1;
+    extern asn_TYPE_member_t asn_MBR_PosPayLoad_1[4];
+    extern asn_per_constraints_t asn_PER_type_PosPayLoad_constr_1;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _PosPayLoad_H_ */
+#endif /* _PosPayLoad_H_ */
 #include "asn_internal.h"

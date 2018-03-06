@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_UlpMessage_H_
-#define	_UlpMessage_H_
+#ifndef _UlpMessage_H_
+#define _UlpMessage_H_
 
 
 #include "asn_application.h"
@@ -30,68 +30,72 @@
 #include "constr_CHOICE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum UlpMessage_PR {
-	UlpMessage_PR_NOTHING,	/* No components present */
-	UlpMessage_PR_msSUPLINIT,
-	UlpMessage_PR_msSUPLSTART,
-	UlpMessage_PR_msSUPLRESPONSE,
-	UlpMessage_PR_msSUPLPOSINIT,
-	UlpMessage_PR_msSUPLPOS,
-	UlpMessage_PR_msSUPLEND,
-	UlpMessage_PR_msSUPLAUTHREQ,
-	UlpMessage_PR_msSUPLAUTHRESP,
-	/* Extensions may appear below */
-	UlpMessage_PR_msSUPLTRIGGEREDSTART,
-	UlpMessage_PR_msSUPLTRIGGEREDRESPONSE,
-	UlpMessage_PR_msSUPLTRIGGEREDSTOP,
-	UlpMessage_PR_msSUPLNOTIFY,
-	UlpMessage_PR_msSUPLNOTIFYRESPONSE,
-	UlpMessage_PR_msSUPLSETINIT,
-	UlpMessage_PR_msSUPLREPORT
-} UlpMessage_PR;
+    /* Dependencies */
+    typedef enum UlpMessage_PR
+    {
+        UlpMessage_PR_NOTHING, /* No components present */
+        UlpMessage_PR_msSUPLINIT,
+        UlpMessage_PR_msSUPLSTART,
+        UlpMessage_PR_msSUPLRESPONSE,
+        UlpMessage_PR_msSUPLPOSINIT,
+        UlpMessage_PR_msSUPLPOS,
+        UlpMessage_PR_msSUPLEND,
+        UlpMessage_PR_msSUPLAUTHREQ,
+        UlpMessage_PR_msSUPLAUTHRESP,
+        /* Extensions may appear below */
+        UlpMessage_PR_msSUPLTRIGGEREDSTART,
+        UlpMessage_PR_msSUPLTRIGGEREDRESPONSE,
+        UlpMessage_PR_msSUPLTRIGGEREDSTOP,
+        UlpMessage_PR_msSUPLNOTIFY,
+        UlpMessage_PR_msSUPLNOTIFYRESPONSE,
+        UlpMessage_PR_msSUPLSETINIT,
+        UlpMessage_PR_msSUPLREPORT
+    } UlpMessage_PR;
 
-/* UlpMessage */
-typedef struct UlpMessage {
-	UlpMessage_PR present;
-	union UlpMessage_u {
-		SUPLINIT_t	 msSUPLINIT;
-		SUPLSTART_t	 msSUPLSTART;
-		SUPLRESPONSE_t	 msSUPLRESPONSE;
-		SUPLPOSINIT_t	 msSUPLPOSINIT;
-		SUPLPOS_t	 msSUPLPOS;
-		SUPLEND_t	 msSUPLEND;
-		SUPLAUTHREQ_t	 msSUPLAUTHREQ;
-		SUPLAUTHRESP_t	 msSUPLAUTHRESP;
-		/*
+    /* UlpMessage */
+    typedef struct UlpMessage
+    {
+        UlpMessage_PR present;
+        union UlpMessage_u
+        {
+            SUPLINIT_t msSUPLINIT;
+            SUPLSTART_t msSUPLSTART;
+            SUPLRESPONSE_t msSUPLRESPONSE;
+            SUPLPOSINIT_t msSUPLPOSINIT;
+            SUPLPOS_t msSUPLPOS;
+            SUPLEND_t msSUPLEND;
+            SUPLAUTHREQ_t msSUPLAUTHREQ;
+            SUPLAUTHRESP_t msSUPLAUTHRESP;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-		Ver2_SUPLTRIGGEREDSTART_t	 msSUPLTRIGGEREDSTART;
-		Ver2_SUPLTRIGGEREDRESPONSE_t	 msSUPLTRIGGEREDRESPONSE;
-		Ver2_SUPLTRIGGEREDSTOP_t	 msSUPLTRIGGEREDSTOP;
-		Ver2_SUPLNOTIFY_t	 msSUPLNOTIFY;
-		Ver2_SUPLNOTIFYRESPONSE_t	 msSUPLNOTIFYRESPONSE;
-		Ver2_SUPLSETINIT_t	 msSUPLSETINIT;
-		Ver2_SUPLREPORT_t	 msSUPLREPORT;
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} UlpMessage_t;
+            Ver2_SUPLTRIGGEREDSTART_t msSUPLTRIGGEREDSTART;
+            Ver2_SUPLTRIGGEREDRESPONSE_t msSUPLTRIGGEREDRESPONSE;
+            Ver2_SUPLTRIGGEREDSTOP_t msSUPLTRIGGEREDSTOP;
+            Ver2_SUPLNOTIFY_t msSUPLNOTIFY;
+            Ver2_SUPLNOTIFYRESPONSE_t msSUPLNOTIFYRESPONSE;
+            Ver2_SUPLSETINIT_t msSUPLSETINIT;
+            Ver2_SUPLREPORT_t msSUPLREPORT;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_UlpMessage;
-extern asn_CHOICE_specifics_t asn_SPC_UlpMessage_specs_1;
-extern asn_TYPE_member_t asn_MBR_UlpMessage_1[15];
-extern asn_per_constraints_t asn_PER_type_UlpMessage_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } UlpMessage_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_UlpMessage;
+    extern asn_CHOICE_specifics_t asn_SPC_UlpMessage_specs_1;
+    extern asn_TYPE_member_t asn_MBR_UlpMessage_1[15];
+    extern asn_per_constraints_t asn_PER_type_UlpMessage_constr_1;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _UlpMessage_H_ */
+#endif /* _UlpMessage_H_ */
 #include "asn_internal.h"

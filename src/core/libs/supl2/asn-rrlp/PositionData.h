@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_PositionData_H_
-#define	_PositionData_H_
+#ifndef _PositionData_H_
+#define _PositionData_H_
 
 
 #include <asn_application.h>
@@ -14,37 +14,39 @@
 #include <BIT_STRING.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum PositionData {
-	PositionData_e_otd	= 0,
-	PositionData_gps	= 1,
-	PositionData_galileo	= 2
-} e_PositionData;
+    /* Dependencies */
+    typedef enum PositionData
+    {
+        PositionData_e_otd = 0,
+        PositionData_gps = 1,
+        PositionData_galileo = 2
+    } e_PositionData;
 
-/* PositionData */
-typedef BIT_STRING_t	 PositionData_t;
+    /* PositionData */
+    typedef BIT_STRING_t PositionData_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_PositionData_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_PositionData;
-asn_struct_free_f PositionData_free;
-asn_struct_print_f PositionData_print;
-asn_constr_check_f PositionData_constraint;
-ber_type_decoder_f PositionData_decode_ber;
-der_type_encoder_f PositionData_encode_der;
-xer_type_decoder_f PositionData_decode_xer;
-xer_type_encoder_f PositionData_encode_xer;
-oer_type_decoder_f PositionData_decode_oer;
-oer_type_encoder_f PositionData_encode_oer;
-per_type_decoder_f PositionData_decode_uper;
-per_type_encoder_f PositionData_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_PositionData_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_PositionData;
+    asn_struct_free_f PositionData_free;
+    asn_struct_print_f PositionData_print;
+    asn_constr_check_f PositionData_constraint;
+    ber_type_decoder_f PositionData_decode_ber;
+    der_type_encoder_f PositionData_encode_der;
+    xer_type_decoder_f PositionData_decode_xer;
+    xer_type_encoder_f PositionData_encode_xer;
+    oer_type_decoder_f PositionData_decode_oer;
+    oer_type_encoder_f PositionData_encode_oer;
+    per_type_decoder_f PositionData_decode_uper;
+    per_type_encoder_f PositionData_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _PositionData_H_ */
+#endif /* _PositionData_H_ */
 #include <asn_internal.h>

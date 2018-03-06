@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SUPLPOS_H_
-#define	_SUPLPOS_H_
+#ifndef _SUPLPOS_H_
+#define _SUPLPOS_H_
 
 
 #include "asn_application.h"
@@ -16,31 +16,33 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Velocity;
-struct Ver2_SUPL_POS_extension;
+    /* Forward declarations */
+    struct Velocity;
+    struct Ver2_SUPL_POS_extension;
 
-/* SUPLPOS */
-typedef struct SUPLPOS {
-	PosPayLoad_t	 posPayLoad;
-	struct Velocity	*velocity	/* OPTIONAL */;
-	/*
+    /* SUPLPOS */
+    typedef struct SUPLPOS
+    {
+        PosPayLoad_t posPayLoad;
+        struct Velocity *velocity /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	struct Ver2_SUPL_POS_extension	*ver2_SUPL_POS_extension	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SUPLPOS_t;
+        struct Ver2_SUPL_POS_extension *ver2_SUPL_POS_extension /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SUPLPOS;
-extern asn_SEQUENCE_specifics_t asn_SPC_SUPLPOS_specs_1;
-extern asn_TYPE_member_t asn_MBR_SUPLPOS_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SUPLPOS_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SUPLPOS;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SUPLPOS_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SUPLPOS_1[3];
 
 #ifdef __cplusplus
 }
@@ -50,5 +52,5 @@ extern asn_TYPE_member_t asn_MBR_SUPLPOS_1[3];
 #include "Velocity.h"
 #include "Ver2-SUPL-POS-extension.h"
 
-#endif	/* _SUPLPOS_H_ */
+#endif /* _SUPLPOS_H_ */
 #include "asn_internal.h"

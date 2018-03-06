@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GANSSRealTimeIntegrity_H_
-#define	_GANSSRealTimeIntegrity_H_
+#ifndef _GANSSRealTimeIntegrity_H_
+#define _GANSSRealTimeIntegrity_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSRealTimeIntegrity */
-typedef struct GANSSRealTimeIntegrity {
-	SeqOfBadSignalElement_t	 ganssBadSignalList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSRealTimeIntegrity_t;
+    /* GANSSRealTimeIntegrity */
+    typedef struct GANSSRealTimeIntegrity
+    {
+        SeqOfBadSignalElement_t ganssBadSignalList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSRealTimeIntegrity;
-extern asn_SEQUENCE_specifics_t asn_SPC_GANSSRealTimeIntegrity_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSSRealTimeIntegrity_1[1];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSRealTimeIntegrity_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSRealTimeIntegrity;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GANSSRealTimeIntegrity_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSSRealTimeIntegrity_1[1];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSRealTimeIntegrity_H_ */
+#endif /* _GANSSRealTimeIntegrity_H_ */
 #include <asn_internal.h>

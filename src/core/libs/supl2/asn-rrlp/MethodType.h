@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_MethodType_H_
-#define	_MethodType_H_
+#ifndef _MethodType_H_
+#define _MethodType_H_
 
 
 #include <asn_application.h>
@@ -16,41 +16,45 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum MethodType_PR {
-	MethodType_PR_NOTHING,	/* No components present */
-	MethodType_PR_msAssisted,
-	MethodType_PR_msBased,
-	MethodType_PR_msBasedPref,
-	MethodType_PR_msAssistedPref
-} MethodType_PR;
+    /* Dependencies */
+    typedef enum MethodType_PR
+    {
+        MethodType_PR_NOTHING, /* No components present */
+        MethodType_PR_msAssisted,
+        MethodType_PR_msBased,
+        MethodType_PR_msBasedPref,
+        MethodType_PR_msAssistedPref
+    } MethodType_PR;
 
-/* MethodType */
-typedef struct MethodType {
-	MethodType_PR present;
-	union MethodType_u {
-		AccuracyOpt_t	 msAssisted;
-		Accuracy_t	 msBased;
-		Accuracy_t	 msBasedPref;
-		Accuracy_t	 msAssistedPref;
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} MethodType_t;
+    /* MethodType */
+    typedef struct MethodType
+    {
+        MethodType_PR present;
+        union MethodType_u
+        {
+            AccuracyOpt_t msAssisted;
+            Accuracy_t msBased;
+            Accuracy_t msBasedPref;
+            Accuracy_t msAssistedPref;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MethodType;
-extern asn_CHOICE_specifics_t asn_SPC_MethodType_specs_1;
-extern asn_TYPE_member_t asn_MBR_MethodType_1[4];
-extern asn_per_constraints_t asn_PER_type_MethodType_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } MethodType_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MethodType;
+    extern asn_CHOICE_specifics_t asn_SPC_MethodType_specs_1;
+    extern asn_TYPE_member_t asn_MBR_MethodType_1[4];
+    extern asn_per_constraints_t asn_PER_type_MethodType_constr_1;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _MethodType_H_ */
+#endif /* _MethodType_H_ */
 #include <asn_internal.h>

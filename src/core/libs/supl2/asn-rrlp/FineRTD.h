@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_FineRTD_H_
-#define	_FineRTD_H_
+#ifndef _FineRTD_H_
+#define _FineRTD_H_
 
 
 #include <asn_application.h>
@@ -14,30 +14,31 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* FineRTD */
-typedef long	 FineRTD_t;
+    /* FineRTD */
+    typedef long FineRTD_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_FineRTD_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_FineRTD;
-asn_struct_free_f FineRTD_free;
-asn_struct_print_f FineRTD_print;
-asn_constr_check_f FineRTD_constraint;
-ber_type_decoder_f FineRTD_decode_ber;
-der_type_encoder_f FineRTD_encode_der;
-xer_type_decoder_f FineRTD_decode_xer;
-xer_type_encoder_f FineRTD_encode_xer;
-oer_type_decoder_f FineRTD_decode_oer;
-oer_type_encoder_f FineRTD_encode_oer;
-per_type_decoder_f FineRTD_decode_uper;
-per_type_encoder_f FineRTD_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_FineRTD_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_FineRTD;
+    asn_struct_free_f FineRTD_free;
+    asn_struct_print_f FineRTD_print;
+    asn_constr_check_f FineRTD_constraint;
+    ber_type_decoder_f FineRTD_decode_ber;
+    der_type_encoder_f FineRTD_encode_der;
+    xer_type_decoder_f FineRTD_decode_xer;
+    xer_type_encoder_f FineRTD_encode_xer;
+    oer_type_decoder_f FineRTD_decode_oer;
+    oer_type_encoder_f FineRTD_encode_oer;
+    per_type_decoder_f FineRTD_decode_uper;
+    per_type_encoder_f FineRTD_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _FineRTD_H_ */
+#endif /* _FineRTD_H_ */
 #include <asn_internal.h>

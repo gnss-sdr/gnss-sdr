@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_Ver2_SETCapabilities_extension_H_
-#define	_Ver2_SETCapabilities_extension_H_
+#ifndef _Ver2_SETCapabilities_extension_H_
+#define _Ver2_SETCapabilities_extension_H_
 
 
 #include "asn_application.h"
@@ -15,30 +15,32 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ServiceCapabilities;
-struct SupportedBearers;
+    /* Forward declarations */
+    struct ServiceCapabilities;
+    struct SupportedBearers;
 
-/* Ver2-SETCapabilities-extension */
-typedef struct Ver2_SETCapabilities_extension {
-	struct ServiceCapabilities	*serviceCapabilities	/* OPTIONAL */;
-	/*
+    /* Ver2-SETCapabilities-extension */
+    typedef struct Ver2_SETCapabilities_extension
+    {
+        struct ServiceCapabilities *serviceCapabilities /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	struct SupportedBearers	*supportedBearers	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Ver2_SETCapabilities_extension_t;
+        struct SupportedBearers *supportedBearers /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Ver2_SETCapabilities_extension;
-extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_SETCapabilities_extension_specs_1;
-extern asn_TYPE_member_t asn_MBR_Ver2_SETCapabilities_extension_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Ver2_SETCapabilities_extension_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Ver2_SETCapabilities_extension;
+    extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_SETCapabilities_extension_specs_1;
+    extern asn_TYPE_member_t asn_MBR_Ver2_SETCapabilities_extension_1[2];
 
 #ifdef __cplusplus
 }
@@ -48,5 +50,5 @@ extern asn_TYPE_member_t asn_MBR_Ver2_SETCapabilities_extension_1[2];
 #include "ServiceCapabilities.h"
 #include "SupportedBearers.h"
 
-#endif	/* _Ver2_SETCapabilities_extension_H_ */
+#endif /* _Ver2_SETCapabilities_extension_H_ */
 #include "asn_internal.h"

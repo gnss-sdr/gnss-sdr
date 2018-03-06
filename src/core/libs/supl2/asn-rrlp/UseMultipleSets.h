@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_UseMultipleSets_H_
-#define	_UseMultipleSets_H_
+#ifndef _UseMultipleSets_H_
+#define _UseMultipleSets_H_
 
 
 #include <asn_application.h>
@@ -14,37 +14,39 @@
 #include <NativeEnumerated.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum UseMultipleSets {
-	UseMultipleSets_multipleSets	= 0,
-	UseMultipleSets_oneSet	= 1
-} e_UseMultipleSets;
+    /* Dependencies */
+    typedef enum UseMultipleSets
+    {
+        UseMultipleSets_multipleSets = 0,
+        UseMultipleSets_oneSet = 1
+    } e_UseMultipleSets;
 
-/* UseMultipleSets */
-typedef long	 UseMultipleSets_t;
+    /* UseMultipleSets */
+    typedef long UseMultipleSets_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_UseMultipleSets_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_UseMultipleSets;
-extern const asn_INTEGER_specifics_t asn_SPC_UseMultipleSets_specs_1;
-asn_struct_free_f UseMultipleSets_free;
-asn_struct_print_f UseMultipleSets_print;
-asn_constr_check_f UseMultipleSets_constraint;
-ber_type_decoder_f UseMultipleSets_decode_ber;
-der_type_encoder_f UseMultipleSets_encode_der;
-xer_type_decoder_f UseMultipleSets_decode_xer;
-xer_type_encoder_f UseMultipleSets_encode_xer;
-oer_type_decoder_f UseMultipleSets_decode_oer;
-oer_type_encoder_f UseMultipleSets_encode_oer;
-per_type_decoder_f UseMultipleSets_decode_uper;
-per_type_encoder_f UseMultipleSets_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_UseMultipleSets_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_UseMultipleSets;
+    extern const asn_INTEGER_specifics_t asn_SPC_UseMultipleSets_specs_1;
+    asn_struct_free_f UseMultipleSets_free;
+    asn_struct_print_f UseMultipleSets_print;
+    asn_constr_check_f UseMultipleSets_constraint;
+    ber_type_decoder_f UseMultipleSets_decode_ber;
+    der_type_encoder_f UseMultipleSets_encode_der;
+    xer_type_decoder_f UseMultipleSets_decode_xer;
+    xer_type_encoder_f UseMultipleSets_encode_xer;
+    oer_type_decoder_f UseMultipleSets_decode_oer;
+    oer_type_encoder_f UseMultipleSets_encode_oer;
+    per_type_decoder_f UseMultipleSets_decode_uper;
+    per_type_encoder_f UseMultipleSets_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _UseMultipleSets_H_ */
+#endif /* _UseMultipleSets_H_ */
 #include <asn_internal.h>

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SupportedWLANApsChannel11a_H_
-#define	_SupportedWLANApsChannel11a_H_
+#ifndef _SupportedWLANApsChannel11a_H_
+#define _SupportedWLANApsChannel11a_H_
 
 
 #include "asn_application.h"
@@ -16,40 +16,42 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SupportedWLANApsChannel11a */
-typedef struct SupportedWLANApsChannel11a {
-	BOOLEAN_t	 ch34;
-	BOOLEAN_t	 ch36;
-	BOOLEAN_t	 ch38;
-	BOOLEAN_t	 ch40;
-	BOOLEAN_t	 ch42;
-	BOOLEAN_t	 ch44;
-	BOOLEAN_t	 ch46;
-	BOOLEAN_t	 ch48;
-	BOOLEAN_t	 ch52;
-	BOOLEAN_t	 ch56;
-	BOOLEAN_t	 ch60;
-	BOOLEAN_t	 ch64;
-	BOOLEAN_t	 ch149;
-	BOOLEAN_t	 ch153;
-	BOOLEAN_t	 ch157;
-	BOOLEAN_t	 ch161;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SupportedWLANApsChannel11a_t;
+    /* SupportedWLANApsChannel11a */
+    typedef struct SupportedWLANApsChannel11a
+    {
+        BOOLEAN_t ch34;
+        BOOLEAN_t ch36;
+        BOOLEAN_t ch38;
+        BOOLEAN_t ch40;
+        BOOLEAN_t ch42;
+        BOOLEAN_t ch44;
+        BOOLEAN_t ch46;
+        BOOLEAN_t ch48;
+        BOOLEAN_t ch52;
+        BOOLEAN_t ch56;
+        BOOLEAN_t ch60;
+        BOOLEAN_t ch64;
+        BOOLEAN_t ch149;
+        BOOLEAN_t ch153;
+        BOOLEAN_t ch157;
+        BOOLEAN_t ch161;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SupportedWLANApsChannel11a;
-extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWLANApsChannel11a_specs_1;
-extern asn_TYPE_member_t asn_MBR_SupportedWLANApsChannel11a_1[16];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SupportedWLANApsChannel11a_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SupportedWLANApsChannel11a;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWLANApsChannel11a_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SupportedWLANApsChannel11a_1[16];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SupportedWLANApsChannel11a_H_ */
+#endif /* _SupportedWLANApsChannel11a_H_ */
 #include "asn_internal.h"

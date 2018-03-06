@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_TrackingAreaCode_H_
-#define	_TrackingAreaCode_H_
+#ifndef _TrackingAreaCode_H_
+#define _TrackingAreaCode_H_
 
 
 #include "asn_application.h"
@@ -15,28 +15,29 @@
 #include "BIT_STRING.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* TrackingAreaCode */
-typedef BIT_STRING_t	 TrackingAreaCode_t;
+    /* TrackingAreaCode */
+    typedef BIT_STRING_t TrackingAreaCode_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_TrackingAreaCode_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_TrackingAreaCode;
-asn_struct_free_f TrackingAreaCode_free;
-asn_struct_print_f TrackingAreaCode_print;
-asn_constr_check_f TrackingAreaCode_constraint;
-ber_type_decoder_f TrackingAreaCode_decode_ber;
-der_type_encoder_f TrackingAreaCode_encode_der;
-xer_type_decoder_f TrackingAreaCode_decode_xer;
-xer_type_encoder_f TrackingAreaCode_encode_xer;
-per_type_decoder_f TrackingAreaCode_decode_uper;
-per_type_encoder_f TrackingAreaCode_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_TrackingAreaCode_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_TrackingAreaCode;
+    asn_struct_free_f TrackingAreaCode_free;
+    asn_struct_print_f TrackingAreaCode_print;
+    asn_constr_check_f TrackingAreaCode_constraint;
+    ber_type_decoder_f TrackingAreaCode_decode_ber;
+    der_type_encoder_f TrackingAreaCode_encode_der;
+    xer_type_decoder_f TrackingAreaCode_decode_xer;
+    xer_type_encoder_f TrackingAreaCode_encode_xer;
+    per_type_decoder_f TrackingAreaCode_decode_uper;
+    per_type_encoder_f TrackingAreaCode_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _TrackingAreaCode_H_ */
+#endif /* _TrackingAreaCode_H_ */
 #include "asn_internal.h"

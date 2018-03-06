@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_RefQuality_H_
-#define	_RefQuality_H_
+#ifndef _RefQuality_H_
+#define _RefQuality_H_
 
 
 #include <asn_application.h>
@@ -14,30 +14,31 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* RefQuality */
-typedef long	 RefQuality_t;
+    /* RefQuality */
+    typedef long RefQuality_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_RefQuality_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_RefQuality;
-asn_struct_free_f RefQuality_free;
-asn_struct_print_f RefQuality_print;
-asn_constr_check_f RefQuality_constraint;
-ber_type_decoder_f RefQuality_decode_ber;
-der_type_encoder_f RefQuality_encode_der;
-xer_type_decoder_f RefQuality_decode_xer;
-xer_type_encoder_f RefQuality_encode_xer;
-oer_type_decoder_f RefQuality_decode_oer;
-oer_type_encoder_f RefQuality_encode_oer;
-per_type_decoder_f RefQuality_decode_uper;
-per_type_encoder_f RefQuality_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_RefQuality_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_RefQuality;
+    asn_struct_free_f RefQuality_free;
+    asn_struct_print_f RefQuality_print;
+    asn_constr_check_f RefQuality_constraint;
+    ber_type_decoder_f RefQuality_decode_ber;
+    der_type_encoder_f RefQuality_encode_der;
+    xer_type_decoder_f RefQuality_decode_xer;
+    xer_type_encoder_f RefQuality_encode_xer;
+    oer_type_decoder_f RefQuality_decode_oer;
+    oer_type_encoder_f RefQuality_encode_oer;
+    per_type_decoder_f RefQuality_decode_uper;
+    per_type_encoder_f RefQuality_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _RefQuality_H_ */
+#endif /* _RefQuality_H_ */
 #include <asn_internal.h>

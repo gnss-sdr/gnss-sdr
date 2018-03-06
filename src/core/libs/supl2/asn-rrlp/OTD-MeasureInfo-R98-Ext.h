@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_OTD_MeasureInfo_R98_Ext_H_
-#define	_OTD_MeasureInfo_R98_Ext_H_
+#ifndef _OTD_MeasureInfo_R98_Ext_H_
+#define _OTD_MeasureInfo_R98_Ext_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* OTD-MeasureInfo-R98-Ext */
-typedef struct OTD_MeasureInfo_R98_Ext {
-	OTD_MsrElementFirst_R98_Ext_t	 otdMsrFirstSets_R98_Ext;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} OTD_MeasureInfo_R98_Ext_t;
+    /* OTD-MeasureInfo-R98-Ext */
+    typedef struct OTD_MeasureInfo_R98_Ext
+    {
+        OTD_MsrElementFirst_R98_Ext_t otdMsrFirstSets_R98_Ext;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasureInfo_R98_Ext;
-extern asn_SEQUENCE_specifics_t asn_SPC_OTD_MeasureInfo_R98_Ext_specs_1;
-extern asn_TYPE_member_t asn_MBR_OTD_MeasureInfo_R98_Ext_1[1];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } OTD_MeasureInfo_R98_Ext_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTD_MeasureInfo_R98_Ext;
+    extern asn_SEQUENCE_specifics_t asn_SPC_OTD_MeasureInfo_R98_Ext_specs_1;
+    extern asn_TYPE_member_t asn_MBR_OTD_MeasureInfo_R98_Ext_1[1];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _OTD_MeasureInfo_R98_Ext_H_ */
+#endif /* _OTD_MeasureInfo_R98_Ext_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GANSS_SgnElement_H_
-#define	_GANSS_SgnElement_H_
+#ifndef _GANSS_SgnElement_H_
+#define _GANSS_SgnElement_H_
 
 
 #include <asn_application.h>
@@ -17,33 +17,35 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSS-SgnElement */
-typedef struct GANSS_SgnElement {
-	SVID_t	 svID;
-	long	 cNo;
-	MpathIndic_t	 mpathDet;
-	long	*carrierQualityInd	/* OPTIONAL */;
-	long	 codePhase;
-	long	*integerCodePhase	/* OPTIONAL */;
-	long	 codePhaseRMSError;
-	long	*doppler	/* OPTIONAL */;
-	long	*adr	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSS_SgnElement_t;
+    /* GANSS-SgnElement */
+    typedef struct GANSS_SgnElement
+    {
+        SVID_t svID;
+        long cNo;
+        MpathIndic_t mpathDet;
+        long *carrierQualityInd /* OPTIONAL */;
+        long codePhase;
+        long *integerCodePhase /* OPTIONAL */;
+        long codePhaseRMSError;
+        long *doppler /* OPTIONAL */;
+        long *adr /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSS_SgnElement;
-extern asn_SEQUENCE_specifics_t asn_SPC_GANSS_SgnElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSS_SgnElement_1[9];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSS_SgnElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSS_SgnElement;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GANSS_SgnElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSS_SgnElement_1[9];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSS_SgnElement_H_ */
+#endif /* _GANSS_SgnElement_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_NavigationModel_H_
-#define	_NavigationModel_H_
+#ifndef _NavigationModel_H_
+#define _NavigationModel_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* NavigationModel */
-typedef struct NavigationModel {
-	SeqOfNavModelElement_t	 navModelList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} NavigationModel_t;
+    /* NavigationModel */
+    typedef struct NavigationModel
+    {
+        SeqOfNavModelElement_t navModelList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_NavigationModel;
-extern asn_SEQUENCE_specifics_t asn_SPC_NavigationModel_specs_1;
-extern asn_TYPE_member_t asn_MBR_NavigationModel_1[1];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } NavigationModel_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_NavigationModel;
+    extern asn_SEQUENCE_specifics_t asn_SPC_NavigationModel_specs_1;
+    extern asn_TYPE_member_t asn_MBR_NavigationModel_1[1];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _NavigationModel_H_ */
+#endif /* _NavigationModel_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_ReferenceTime_H_
-#define	_ReferenceTime_H_
+#ifndef _ReferenceTime_H_
+#define _ReferenceTime_H_
 
 
 #include <asn_application.h>
@@ -15,27 +15,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GSMTime;
-struct GPSTOWAssist;
+    /* Forward declarations */
+    struct GSMTime;
+    struct GPSTOWAssist;
 
-/* ReferenceTime */
-typedef struct ReferenceTime {
-	GPSTime_t	 gpsTime;
-	struct GSMTime	*gsmTime	/* OPTIONAL */;
-	struct GPSTOWAssist	*gpsTowAssist	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ReferenceTime_t;
+    /* ReferenceTime */
+    typedef struct ReferenceTime
+    {
+        GPSTime_t gpsTime;
+        struct GSMTime *gsmTime /* OPTIONAL */;
+        struct GPSTOWAssist *gpsTowAssist /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceTime;
-extern asn_SEQUENCE_specifics_t asn_SPC_ReferenceTime_specs_1;
-extern asn_TYPE_member_t asn_MBR_ReferenceTime_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReferenceTime_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceTime;
+    extern asn_SEQUENCE_specifics_t asn_SPC_ReferenceTime_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ReferenceTime_1[3];
 
 #ifdef __cplusplus
 }
@@ -45,5 +47,5 @@ extern asn_TYPE_member_t asn_MBR_ReferenceTime_1[3];
 #include "GSMTime.h"
 #include "GPSTOWAssist.h"
 
-#endif	/* _ReferenceTime_H_ */
+#endif /* _ReferenceTime_H_ */
 #include <asn_internal.h>

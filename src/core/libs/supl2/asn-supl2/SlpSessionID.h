@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SlpSessionID_H_
-#define	_SlpSessionID_H_
+#ifndef _SlpSessionID_H_
+#define _SlpSessionID_H_
 
 
 #include "asn_application.h"
@@ -17,26 +17,28 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SlpSessionID */
-typedef struct SlpSessionID {
-	OCTET_STRING_t	 sessionID;
-	SLPAddress_t	 slpId;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SlpSessionID_t;
+    /* SlpSessionID */
+    typedef struct SlpSessionID
+    {
+        OCTET_STRING_t sessionID;
+        SLPAddress_t slpId;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SlpSessionID;
-extern asn_SEQUENCE_specifics_t asn_SPC_SlpSessionID_specs_1;
-extern asn_TYPE_member_t asn_MBR_SlpSessionID_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SlpSessionID_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SlpSessionID;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SlpSessionID_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SlpSessionID_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SlpSessionID_H_ */
+#endif /* _SlpSessionID_H_ */
 #include "asn_internal.h"

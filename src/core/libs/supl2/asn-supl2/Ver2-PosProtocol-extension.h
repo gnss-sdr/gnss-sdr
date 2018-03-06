@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_Ver2_PosProtocol_extension_H_
-#define	_Ver2_PosProtocol_extension_H_
+#ifndef _Ver2_PosProtocol_extension_H_
+#define _Ver2_PosProtocol_extension_H_
 
 
 #include "asn_application.h"
@@ -16,33 +16,35 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct PosProtocolVersion3GPP;
-struct PosProtocolVersion3GPP2;
+    /* Forward declarations */
+    struct PosProtocolVersion3GPP;
+    struct PosProtocolVersion3GPP2;
 
-/* Ver2-PosProtocol-extension */
-typedef struct Ver2_PosProtocol_extension {
-	BOOLEAN_t	 lpp;
-	struct PosProtocolVersion3GPP	*posProtocolVersionRRLP	/* OPTIONAL */;
-	struct PosProtocolVersion3GPP	*posProtocolVersionRRC	/* OPTIONAL */;
-	struct PosProtocolVersion3GPP2	*posProtocolVersionTIA801	/* OPTIONAL */;
-	struct PosProtocolVersion3GPP	*posProtocolVersionLPP	/* OPTIONAL */;
-	/*
+    /* Ver2-PosProtocol-extension */
+    typedef struct Ver2_PosProtocol_extension
+    {
+        BOOLEAN_t lpp;
+        struct PosProtocolVersion3GPP *posProtocolVersionRRLP /* OPTIONAL */;
+        struct PosProtocolVersion3GPP *posProtocolVersionRRC /* OPTIONAL */;
+        struct PosProtocolVersion3GPP2 *posProtocolVersionTIA801 /* OPTIONAL */;
+        struct PosProtocolVersion3GPP *posProtocolVersionLPP /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Ver2_PosProtocol_extension_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Ver2_PosProtocol_extension;
-extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_PosProtocol_extension_specs_1;
-extern asn_TYPE_member_t asn_MBR_Ver2_PosProtocol_extension_1[5];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Ver2_PosProtocol_extension_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Ver2_PosProtocol_extension;
+    extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_PosProtocol_extension_specs_1;
+    extern asn_TYPE_member_t asn_MBR_Ver2_PosProtocol_extension_1[5];
 
 #ifdef __cplusplus
 }
@@ -52,5 +54,5 @@ extern asn_TYPE_member_t asn_MBR_Ver2_PosProtocol_extension_1[5];
 #include "PosProtocolVersion3GPP.h"
 #include "PosProtocolVersion3GPP2.h"
 
-#endif	/* _Ver2_PosProtocol_extension_H_ */
+#endif /* _Ver2_PosProtocol_extension_H_ */
 #include "asn_internal.h"

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GanssReqGenericData_H_
-#define	_GanssReqGenericData_H_
+#ifndef _GanssReqGenericData_H_
+#define _GanssReqGenericData_H_
 
 
 #include "asn_application.h"
@@ -19,45 +19,47 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GanssNavigationModelData;
-struct GanssDataBits;
-struct GanssAdditionalDataChoices;
-struct ExtendedEphemeris;
-struct GanssExtendedEphCheck;
+    /* Forward declarations */
+    struct GanssNavigationModelData;
+    struct GanssDataBits;
+    struct GanssAdditionalDataChoices;
+    struct ExtendedEphemeris;
+    struct GanssExtendedEphCheck;
 
-/* GanssReqGenericData */
-typedef struct GanssReqGenericData {
-	long	 ganssId;
-	BIT_STRING_t	*ganssSBASid	/* OPTIONAL */;
-	BOOLEAN_t	 ganssRealTimeIntegrity;
-	DGANSS_Sig_Id_Req_t	*ganssDifferentialCorrection	/* OPTIONAL */;
-	BOOLEAN_t	 ganssAlmanac;
-	struct GanssNavigationModelData	*ganssNavigationModelData	/* OPTIONAL */;
-	BIT_STRING_t	*ganssTimeModels	/* OPTIONAL */;
-	BOOLEAN_t	 ganssReferenceMeasurementInfo;
-	struct GanssDataBits	*ganssDataBits	/* OPTIONAL */;
-	BOOLEAN_t	 ganssUTCModel;
-	struct GanssAdditionalDataChoices	*ganssAdditionalDataChoices	/* OPTIONAL */;
-	BOOLEAN_t	 ganssAuxiliaryInformation;
-	struct ExtendedEphemeris	*ganssExtendedEphemeris	/* OPTIONAL */;
-	struct GanssExtendedEphCheck	*ganssExtendedEphemerisCheck	/* OPTIONAL */;
-	/*
+    /* GanssReqGenericData */
+    typedef struct GanssReqGenericData
+    {
+        long ganssId;
+        BIT_STRING_t *ganssSBASid /* OPTIONAL */;
+        BOOLEAN_t ganssRealTimeIntegrity;
+        DGANSS_Sig_Id_Req_t *ganssDifferentialCorrection /* OPTIONAL */;
+        BOOLEAN_t ganssAlmanac;
+        struct GanssNavigationModelData *ganssNavigationModelData /* OPTIONAL */;
+        BIT_STRING_t *ganssTimeModels /* OPTIONAL */;
+        BOOLEAN_t ganssReferenceMeasurementInfo;
+        struct GanssDataBits *ganssDataBits /* OPTIONAL */;
+        BOOLEAN_t ganssUTCModel;
+        struct GanssAdditionalDataChoices *ganssAdditionalDataChoices /* OPTIONAL */;
+        BOOLEAN_t ganssAuxiliaryInformation;
+        struct ExtendedEphemeris *ganssExtendedEphemeris /* OPTIONAL */;
+        struct GanssExtendedEphCheck *ganssExtendedEphemerisCheck /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GanssReqGenericData_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GanssReqGenericData;
-extern asn_SEQUENCE_specifics_t asn_SPC_GanssReqGenericData_specs_1;
-extern asn_TYPE_member_t asn_MBR_GanssReqGenericData_1[14];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GanssReqGenericData_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GanssReqGenericData;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GanssReqGenericData_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GanssReqGenericData_1[14];
 
 #ifdef __cplusplus
 }
@@ -70,5 +72,5 @@ extern asn_TYPE_member_t asn_MBR_GanssReqGenericData_1[14];
 #include "ExtendedEphemeris.h"
 #include "GanssExtendedEphCheck.h"
 
-#endif	/* _GanssReqGenericData_H_ */
+#endif /* _GanssReqGenericData_H_ */
 #include "asn_internal.h"

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_UTRAN_GPSReferenceTime_H_
-#define	_UTRAN_GPSReferenceTime_H_
+#ifndef _UTRAN_GPSReferenceTime_H_
+#define _UTRAN_GPSReferenceTime_H_
 
 
 #include "asn_application.h"
@@ -19,60 +19,68 @@
 #include "constr_CHOICE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum UTRAN_GPSReferenceTime__modeSpecificInfo_PR {
-	UTRAN_GPSReferenceTime__modeSpecificInfo_PR_NOTHING,	/* No components present */
-	UTRAN_GPSReferenceTime__modeSpecificInfo_PR_fdd,
-	UTRAN_GPSReferenceTime__modeSpecificInfo_PR_tdd
-} UTRAN_GPSReferenceTime__modeSpecificInfo_PR;
+    /* Dependencies */
+    typedef enum UTRAN_GPSReferenceTime__modeSpecificInfo_PR
+    {
+        UTRAN_GPSReferenceTime__modeSpecificInfo_PR_NOTHING, /* No components present */
+        UTRAN_GPSReferenceTime__modeSpecificInfo_PR_fdd,
+        UTRAN_GPSReferenceTime__modeSpecificInfo_PR_tdd
+    } UTRAN_GPSReferenceTime__modeSpecificInfo_PR;
 
-/* UTRAN-GPSReferenceTime */
-typedef struct UTRAN_GPSReferenceTime {
-	struct UTRAN_GPSReferenceTime__utran_GPSTimingOfCell {
-		long	 ms_part;
-		unsigned long	 ls_part;
-		
-		/* Context for parsing across buffer boundaries */
-		asn_struct_ctx_t _asn_ctx;
-	} utran_GPSTimingOfCell;
-	struct UTRAN_GPSReferenceTime__modeSpecificInfo {
-		UTRAN_GPSReferenceTime__modeSpecificInfo_PR present;
-		union UTRAN_GPSReferenceTime__modeSpecificInfo_u {
-			struct UTRAN_GPSReferenceTime__modeSpecificInfo__fdd {
-				PrimaryCPICH_Info_t	 referenceIdentity;
-				
-				/* Context for parsing across buffer boundaries */
-				asn_struct_ctx_t _asn_ctx;
-			} fdd;
-			struct UTRAN_GPSReferenceTime__modeSpecificInfo__tdd {
-				CellParametersID_t	 referenceIdentity;
-				
-				/* Context for parsing across buffer boundaries */
-				asn_struct_ctx_t _asn_ctx;
-			} tdd;
-		} choice;
-		
-		/* Context for parsing across buffer boundaries */
-		asn_struct_ctx_t _asn_ctx;
-	} *modeSpecificInfo;
-	long	 sfn;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} UTRAN_GPSReferenceTime_t;
+    /* UTRAN-GPSReferenceTime */
+    typedef struct UTRAN_GPSReferenceTime
+    {
+        struct UTRAN_GPSReferenceTime__utran_GPSTimingOfCell
+        {
+            long ms_part;
+            unsigned long ls_part;
 
-/* Implementation */
-/* extern asn_TYPE_descriptor_t asn_DEF_ls_part_4;	// (Use -fall-defs-global to expose) */
-extern asn_TYPE_descriptor_t asn_DEF_UTRAN_GPSReferenceTime;
-extern asn_SEQUENCE_specifics_t asn_SPC_UTRAN_GPSReferenceTime_specs_1;
-extern asn_TYPE_member_t asn_MBR_UTRAN_GPSReferenceTime_1[3];
+            /* Context for parsing across buffer boundaries */
+            asn_struct_ctx_t _asn_ctx;
+        } utran_GPSTimingOfCell;
+        struct UTRAN_GPSReferenceTime__modeSpecificInfo
+        {
+            UTRAN_GPSReferenceTime__modeSpecificInfo_PR present;
+            union UTRAN_GPSReferenceTime__modeSpecificInfo_u
+            {
+                struct UTRAN_GPSReferenceTime__modeSpecificInfo__fdd
+                {
+                    PrimaryCPICH_Info_t referenceIdentity;
+
+                    /* Context for parsing across buffer boundaries */
+                    asn_struct_ctx_t _asn_ctx;
+                } fdd;
+                struct UTRAN_GPSReferenceTime__modeSpecificInfo__tdd
+                {
+                    CellParametersID_t referenceIdentity;
+
+                    /* Context for parsing across buffer boundaries */
+                    asn_struct_ctx_t _asn_ctx;
+                } tdd;
+            } choice;
+
+            /* Context for parsing across buffer boundaries */
+            asn_struct_ctx_t _asn_ctx;
+        } * modeSpecificInfo;
+        long sfn;
+
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } UTRAN_GPSReferenceTime_t;
+
+    /* Implementation */
+    /* extern asn_TYPE_descriptor_t asn_DEF_ls_part_4;	// (Use -fall-defs-global to expose) */
+    extern asn_TYPE_descriptor_t asn_DEF_UTRAN_GPSReferenceTime;
+    extern asn_SEQUENCE_specifics_t asn_SPC_UTRAN_GPSReferenceTime_specs_1;
+    extern asn_TYPE_member_t asn_MBR_UTRAN_GPSReferenceTime_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _UTRAN_GPSReferenceTime_H_ */
+#endif /* _UTRAN_GPSReferenceTime_H_ */
 #include "asn_internal.h"

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_UTRA_CarrierRSSI_H_
-#define	_UTRA_CarrierRSSI_H_
+#ifndef _UTRA_CarrierRSSI_H_
+#define _UTRA_CarrierRSSI_H_
 
 
 #include "asn_application.h"
@@ -15,28 +15,29 @@
 #include "NativeInteger.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* UTRA-CarrierRSSI */
-typedef long	 UTRA_CarrierRSSI_t;
+    /* UTRA-CarrierRSSI */
+    typedef long UTRA_CarrierRSSI_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_UTRA_CarrierRSSI_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_UTRA_CarrierRSSI;
-asn_struct_free_f UTRA_CarrierRSSI_free;
-asn_struct_print_f UTRA_CarrierRSSI_print;
-asn_constr_check_f UTRA_CarrierRSSI_constraint;
-ber_type_decoder_f UTRA_CarrierRSSI_decode_ber;
-der_type_encoder_f UTRA_CarrierRSSI_encode_der;
-xer_type_decoder_f UTRA_CarrierRSSI_decode_xer;
-xer_type_encoder_f UTRA_CarrierRSSI_encode_xer;
-per_type_decoder_f UTRA_CarrierRSSI_decode_uper;
-per_type_encoder_f UTRA_CarrierRSSI_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_UTRA_CarrierRSSI_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_UTRA_CarrierRSSI;
+    asn_struct_free_f UTRA_CarrierRSSI_free;
+    asn_struct_print_f UTRA_CarrierRSSI_print;
+    asn_constr_check_f UTRA_CarrierRSSI_constraint;
+    ber_type_decoder_f UTRA_CarrierRSSI_decode_ber;
+    der_type_encoder_f UTRA_CarrierRSSI_encode_der;
+    xer_type_decoder_f UTRA_CarrierRSSI_decode_xer;
+    xer_type_encoder_f UTRA_CarrierRSSI_encode_xer;
+    per_type_decoder_f UTRA_CarrierRSSI_decode_uper;
+    per_type_encoder_f UTRA_CarrierRSSI_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _UTRA_CarrierRSSI_H_ */
+#endif /* _UTRA_CarrierRSSI_H_ */
 #include "asn_internal.h"

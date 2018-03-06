@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SeqOfSgnTypeElement_H_
-#define	_SeqOfSgnTypeElement_H_
+#ifndef _SeqOfSgnTypeElement_H_
+#define _SeqOfSgnTypeElement_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,28 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SgnTypeElement;
+    /* Forward declarations */
+    struct SgnTypeElement;
 
-/* SeqOfSgnTypeElement */
-typedef struct SeqOfSgnTypeElement {
-	A_SEQUENCE_OF(struct SgnTypeElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfSgnTypeElement_t;
+    /* SeqOfSgnTypeElement */
+    typedef struct SeqOfSgnTypeElement
+    {
+        A_SEQUENCE_OF(struct SgnTypeElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfSgnTypeElement;
-extern asn_SET_OF_specifics_t asn_SPC_SeqOfSgnTypeElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_SeqOfSgnTypeElement_1[1];
-extern asn_per_constraints_t asn_PER_type_SeqOfSgnTypeElement_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfSgnTypeElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfSgnTypeElement;
+    extern asn_SET_OF_specifics_t asn_SPC_SeqOfSgnTypeElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SeqOfSgnTypeElement_1[1];
+    extern asn_per_constraints_t asn_PER_type_SeqOfSgnTypeElement_constr_1;
 
 #ifdef __cplusplus
 }
@@ -42,5 +45,5 @@ extern asn_per_constraints_t asn_PER_type_SeqOfSgnTypeElement_constr_1;
 /* Referred external types */
 #include "SgnTypeElement.h"
 
-#endif	/* _SeqOfSgnTypeElement_H_ */
+#endif /* _SeqOfSgnTypeElement_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_TimeRelation_H_
-#define	_TimeRelation_H_
+#ifndef _TimeRelation_H_
+#define _TimeRelation_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GSMTime;
+    /* Forward declarations */
+    struct GSMTime;
 
-/* TimeRelation */
-typedef struct TimeRelation {
-	GPSTOW23b_t	 gpsTOW;
-	struct GSMTime	*gsmTime	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} TimeRelation_t;
+    /* TimeRelation */
+    typedef struct TimeRelation
+    {
+        GPSTOW23b_t gpsTOW;
+        struct GSMTime *gsmTime /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_TimeRelation;
-extern asn_SEQUENCE_specifics_t asn_SPC_TimeRelation_specs_1;
-extern asn_TYPE_member_t asn_MBR_TimeRelation_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } TimeRelation_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_TimeRelation;
+    extern asn_SEQUENCE_specifics_t asn_SPC_TimeRelation_specs_1;
+    extern asn_TYPE_member_t asn_MBR_TimeRelation_1[2];
 
 #ifdef __cplusplus
 }
@@ -42,5 +44,5 @@ extern asn_TYPE_member_t asn_MBR_TimeRelation_1[2];
 /* Referred external types */
 #include "GSMTime.h"
 
-#endif	/* _TimeRelation_H_ */
+#endif /* _TimeRelation_H_ */
 #include <asn_internal.h>

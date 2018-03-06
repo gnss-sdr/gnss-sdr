@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_PosTechnology_H_
-#define	_PosTechnology_H_
+#ifndef _PosTechnology_H_
+#define _PosTechnology_H_
 
 
 #include "asn_application.h"
@@ -16,35 +16,37 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Ver2_PosTechnology_extension;
+    /* Forward declarations */
+    struct Ver2_PosTechnology_extension;
 
-/* PosTechnology */
-typedef struct PosTechnology {
-	BOOLEAN_t	 agpsSETassisted;
-	BOOLEAN_t	 agpsSETBased;
-	BOOLEAN_t	 autonomousGPS;
-	BOOLEAN_t	 aFLT;
-	BOOLEAN_t	 eCID;
-	BOOLEAN_t	 eOTD;
-	BOOLEAN_t	 oTDOA;
-	/*
+    /* PosTechnology */
+    typedef struct PosTechnology
+    {
+        BOOLEAN_t agpsSETassisted;
+        BOOLEAN_t agpsSETBased;
+        BOOLEAN_t autonomousGPS;
+        BOOLEAN_t aFLT;
+        BOOLEAN_t eCID;
+        BOOLEAN_t eOTD;
+        BOOLEAN_t oTDOA;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	struct Ver2_PosTechnology_extension	*ver2_PosTechnology_extension	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} PosTechnology_t;
+        struct Ver2_PosTechnology_extension *ver2_PosTechnology_extension /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PosTechnology;
-extern asn_SEQUENCE_specifics_t asn_SPC_PosTechnology_specs_1;
-extern asn_TYPE_member_t asn_MBR_PosTechnology_1[8];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PosTechnology_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PosTechnology;
+    extern asn_SEQUENCE_specifics_t asn_SPC_PosTechnology_specs_1;
+    extern asn_TYPE_member_t asn_MBR_PosTechnology_1[8];
 
 #ifdef __cplusplus
 }
@@ -53,5 +55,5 @@ extern asn_TYPE_member_t asn_MBR_PosTechnology_1[8];
 /* Referred external types */
 #include "Ver2-PosTechnology-extension.h"
 
-#endif	/* _PosTechnology_H_ */
+#endif /* _PosTechnology_H_ */
 #include "asn_internal.h"

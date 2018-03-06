@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_TriggerParams_H_
-#define	_TriggerParams_H_
+#ifndef _TriggerParams_H_
+#define _TriggerParams_H_
 
 
 #include "asn_application.h"
@@ -17,43 +17,47 @@
 #include "constr_CHOICE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum TriggerParams_PR {
-	TriggerParams_PR_NOTHING,	/* No components present */
-	TriggerParams_PR_periodicParams,
-	TriggerParams_PR_areaEventParams
-	/* Extensions may appear below */
-	
-} TriggerParams_PR;
+    /* Dependencies */
+    typedef enum TriggerParams_PR
+    {
+        TriggerParams_PR_NOTHING, /* No components present */
+        TriggerParams_PR_periodicParams,
+        TriggerParams_PR_areaEventParams
+        /* Extensions may appear below */
 
-/* TriggerParams */
-typedef struct TriggerParams {
-	TriggerParams_PR present;
-	union TriggerParams_u {
-		PeriodicParams_t	 periodicParams;
-		AreaEventParams_t	 areaEventParams;
-		/*
+    } TriggerParams_PR;
+
+    /* TriggerParams */
+    typedef struct TriggerParams
+    {
+        TriggerParams_PR present;
+        union TriggerParams_u
+        {
+            PeriodicParams_t periodicParams;
+            AreaEventParams_t areaEventParams;
+            /*
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} TriggerParams_t;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_TriggerParams;
-extern asn_CHOICE_specifics_t asn_SPC_TriggerParams_specs_1;
-extern asn_TYPE_member_t asn_MBR_TriggerParams_1[2];
-extern asn_per_constraints_t asn_PER_type_TriggerParams_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } TriggerParams_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_TriggerParams;
+    extern asn_CHOICE_specifics_t asn_SPC_TriggerParams_specs_1;
+    extern asn_TYPE_member_t asn_MBR_TriggerParams_1[2];
+    extern asn_per_constraints_t asn_PER_type_TriggerParams_constr_1;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _TriggerParams_H_ */
+#endif /* _TriggerParams_H_ */
 #include "asn_internal.h"

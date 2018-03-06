@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_AcquisAssist_H_
-#define	_AcquisAssist_H_
+#ifndef _AcquisAssist_H_
+#define _AcquisAssist_H_
 
 
 #include <asn_application.h>
@@ -16,26 +16,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* AcquisAssist */
-typedef struct AcquisAssist {
-	TimeRelation_t	 timeRelation;
-	SeqOfAcquisElement_t	 acquisList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} AcquisAssist_t;
+    /* AcquisAssist */
+    typedef struct AcquisAssist
+    {
+        TimeRelation_t timeRelation;
+        SeqOfAcquisElement_t acquisList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AcquisAssist;
-extern asn_SEQUENCE_specifics_t asn_SPC_AcquisAssist_specs_1;
-extern asn_TYPE_member_t asn_MBR_AcquisAssist_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AcquisAssist_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_AcquisAssist;
+    extern asn_SEQUENCE_specifics_t asn_SPC_AcquisAssist_specs_1;
+    extern asn_TYPE_member_t asn_MBR_AcquisAssist_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _AcquisAssist_H_ */
+#endif /* _AcquisAssist_H_ */
 #include <asn_internal.h>

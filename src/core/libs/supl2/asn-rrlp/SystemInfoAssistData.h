@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SystemInfoAssistData_H_
-#define	_SystemInfoAssistData_H_
+#ifndef _SystemInfoAssistData_H_
+#define _SystemInfoAssistData_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SystemInfoAssistData */
-typedef struct SystemInfoAssistData {
-	SeqOfSystemInfoAssistBTS_t	 systemInfoAssistList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SystemInfoAssistData_t;
+    /* SystemInfoAssistData */
+    typedef struct SystemInfoAssistData
+    {
+        SeqOfSystemInfoAssistBTS_t systemInfoAssistList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SystemInfoAssistData;
-extern asn_SEQUENCE_specifics_t asn_SPC_SystemInfoAssistData_specs_1;
-extern asn_TYPE_member_t asn_MBR_SystemInfoAssistData_1[1];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SystemInfoAssistData_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SystemInfoAssistData;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SystemInfoAssistData_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SystemInfoAssistData_1[1];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SystemInfoAssistData_H_ */
+#endif /* _SystemInfoAssistData_H_ */
 #include <asn_internal.h>

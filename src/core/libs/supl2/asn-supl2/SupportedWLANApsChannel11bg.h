@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SupportedWLANApsChannel11bg_H_
-#define	_SupportedWLANApsChannel11bg_H_
+#ifndef _SupportedWLANApsChannel11bg_H_
+#define _SupportedWLANApsChannel11bg_H_
 
 
 #include "asn_application.h"
@@ -16,38 +16,40 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SupportedWLANApsChannel11bg */
-typedef struct SupportedWLANApsChannel11bg {
-	BOOLEAN_t	 ch1;
-	BOOLEAN_t	 ch2;
-	BOOLEAN_t	 ch3;
-	BOOLEAN_t	 ch4;
-	BOOLEAN_t	 ch5;
-	BOOLEAN_t	 ch6;
-	BOOLEAN_t	 ch7;
-	BOOLEAN_t	 ch8;
-	BOOLEAN_t	 ch9;
-	BOOLEAN_t	 ch10;
-	BOOLEAN_t	 ch11;
-	BOOLEAN_t	 ch12;
-	BOOLEAN_t	 ch13;
-	BOOLEAN_t	 ch14;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SupportedWLANApsChannel11bg_t;
+    /* SupportedWLANApsChannel11bg */
+    typedef struct SupportedWLANApsChannel11bg
+    {
+        BOOLEAN_t ch1;
+        BOOLEAN_t ch2;
+        BOOLEAN_t ch3;
+        BOOLEAN_t ch4;
+        BOOLEAN_t ch5;
+        BOOLEAN_t ch6;
+        BOOLEAN_t ch7;
+        BOOLEAN_t ch8;
+        BOOLEAN_t ch9;
+        BOOLEAN_t ch10;
+        BOOLEAN_t ch11;
+        BOOLEAN_t ch12;
+        BOOLEAN_t ch13;
+        BOOLEAN_t ch14;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SupportedWLANApsChannel11bg;
-extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWLANApsChannel11bg_specs_1;
-extern asn_TYPE_member_t asn_MBR_SupportedWLANApsChannel11bg_1[14];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SupportedWLANApsChannel11bg_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SupportedWLANApsChannel11bg;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWLANApsChannel11bg_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SupportedWLANApsChannel11bg_1[14];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SupportedWLANApsChannel11bg_H_ */
+#endif /* _SupportedWLANApsChannel11bg_H_ */
 #include "asn_internal.h"

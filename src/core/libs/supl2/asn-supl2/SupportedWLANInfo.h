@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SupportedWLANInfo_H_
-#define	_SupportedWLANInfo_H_
+#ifndef _SupportedWLANInfo_H_
+#define _SupportedWLANInfo_H_
 
 
 #include "asn_application.h"
@@ -16,40 +16,42 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SupportedWLANInfo */
-typedef struct SupportedWLANInfo {
-	BOOLEAN_t	 apTP;
-	BOOLEAN_t	 apAG;
-	BOOLEAN_t	 apSN;
-	BOOLEAN_t	 apDevType;
-	BOOLEAN_t	 apRSSI;
-	BOOLEAN_t	 apChanFreq;
-	BOOLEAN_t	 apRTD;
-	BOOLEAN_t	 setTP;
-	BOOLEAN_t	 setAG;
-	BOOLEAN_t	 setSN;
-	BOOLEAN_t	 setRSSI;
-	BOOLEAN_t	 apRepLoc;
-	/*
+    /* SupportedWLANInfo */
+    typedef struct SupportedWLANInfo
+    {
+        BOOLEAN_t apTP;
+        BOOLEAN_t apAG;
+        BOOLEAN_t apSN;
+        BOOLEAN_t apDevType;
+        BOOLEAN_t apRSSI;
+        BOOLEAN_t apChanFreq;
+        BOOLEAN_t apRTD;
+        BOOLEAN_t setTP;
+        BOOLEAN_t setAG;
+        BOOLEAN_t setSN;
+        BOOLEAN_t setRSSI;
+        BOOLEAN_t apRepLoc;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SupportedWLANInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SupportedWLANInfo;
-extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWLANInfo_specs_1;
-extern asn_TYPE_member_t asn_MBR_SupportedWLANInfo_1[12];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SupportedWLANInfo_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SupportedWLANInfo;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWLANInfo_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SupportedWLANInfo_1[12];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SupportedWLANInfo_H_ */
+#endif /* _SupportedWLANInfo_H_ */
 #include "asn_internal.h"

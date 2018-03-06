@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GPS_AssistData_H_
-#define	_GPS_AssistData_H_
+#ifndef _GPS_AssistData_H_
+#define _GPS_AssistData_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GPS-AssistData */
-typedef struct GPS_AssistData {
-	ControlHeader_t	 controlHeader;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GPS_AssistData_t;
+    /* GPS-AssistData */
+    typedef struct GPS_AssistData
+    {
+        ControlHeader_t controlHeader;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GPS_AssistData;
-extern asn_SEQUENCE_specifics_t asn_SPC_GPS_AssistData_specs_1;
-extern asn_TYPE_member_t asn_MBR_GPS_AssistData_1[1];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GPS_AssistData_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GPS_AssistData;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GPS_AssistData_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GPS_AssistData_1[1];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GPS_AssistData_H_ */
+#endif /* _GPS_AssistData_H_ */
 #include <asn_internal.h>

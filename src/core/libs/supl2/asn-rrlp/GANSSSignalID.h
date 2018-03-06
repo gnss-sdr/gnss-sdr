@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GANSSSignalID_H_
-#define	_GANSSSignalID_H_
+#ifndef _GANSSSignalID_H_
+#define _GANSSSignalID_H_
 
 
 #include <asn_application.h>
@@ -14,30 +14,31 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSSignalID */
-typedef long	 GANSSSignalID_t;
+    /* GANSSSignalID */
+    typedef long GANSSSignalID_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_GANSSSignalID_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_GANSSSignalID;
-asn_struct_free_f GANSSSignalID_free;
-asn_struct_print_f GANSSSignalID_print;
-asn_constr_check_f GANSSSignalID_constraint;
-ber_type_decoder_f GANSSSignalID_decode_ber;
-der_type_encoder_f GANSSSignalID_encode_der;
-xer_type_decoder_f GANSSSignalID_decode_xer;
-xer_type_encoder_f GANSSSignalID_encode_xer;
-oer_type_decoder_f GANSSSignalID_decode_oer;
-oer_type_encoder_f GANSSSignalID_encode_oer;
-per_type_decoder_f GANSSSignalID_decode_uper;
-per_type_encoder_f GANSSSignalID_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_GANSSSignalID_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSSignalID;
+    asn_struct_free_f GANSSSignalID_free;
+    asn_struct_print_f GANSSSignalID_print;
+    asn_constr_check_f GANSSSignalID_constraint;
+    ber_type_decoder_f GANSSSignalID_decode_ber;
+    der_type_encoder_f GANSSSignalID_encode_der;
+    xer_type_decoder_f GANSSSignalID_decode_xer;
+    xer_type_encoder_f GANSSSignalID_encode_xer;
+    oer_type_decoder_f GANSSSignalID_decode_oer;
+    oer_type_encoder_f GANSSSignalID_encode_oer;
+    per_type_decoder_f GANSSSignalID_decode_uper;
+    per_type_encoder_f GANSSSignalID_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSSignalID_H_ */
+#endif /* _GANSSSignalID_H_ */
 #include <asn_internal.h>

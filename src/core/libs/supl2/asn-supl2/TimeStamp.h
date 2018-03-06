@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_TimeStamp_H_
-#define	_TimeStamp_H_
+#ifndef _TimeStamp_H_
+#define _TimeStamp_H_
 
 
 #include "asn_application.h"
@@ -17,37 +17,41 @@
 #include "constr_CHOICE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum TimeStamp_PR {
-	TimeStamp_PR_NOTHING,	/* No components present */
-	TimeStamp_PR_absoluteTime,
-	TimeStamp_PR_relativeTime
-} TimeStamp_PR;
+    /* Dependencies */
+    typedef enum TimeStamp_PR
+    {
+        TimeStamp_PR_NOTHING, /* No components present */
+        TimeStamp_PR_absoluteTime,
+        TimeStamp_PR_relativeTime
+    } TimeStamp_PR;
 
-/* TimeStamp */
-typedef struct TimeStamp {
-	TimeStamp_PR present;
-	union TimeStamp_u {
-		UTCTime_t	 absoluteTime;
-		long	 relativeTime;
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} TimeStamp_t;
+    /* TimeStamp */
+    typedef struct TimeStamp
+    {
+        TimeStamp_PR present;
+        union TimeStamp_u
+        {
+            UTCTime_t absoluteTime;
+            long relativeTime;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_TimeStamp;
-extern asn_CHOICE_specifics_t asn_SPC_TimeStamp_specs_1;
-extern asn_TYPE_member_t asn_MBR_TimeStamp_1[2];
-extern asn_per_constraints_t asn_PER_type_TimeStamp_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } TimeStamp_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_TimeStamp;
+    extern asn_CHOICE_specifics_t asn_SPC_TimeStamp_specs_1;
+    extern asn_TYPE_member_t asn_MBR_TimeStamp_1[2];
+    extern asn_per_constraints_t asn_PER_type_TimeStamp_constr_1;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _TimeStamp_H_ */
+#endif /* _TimeStamp_H_ */
 #include "asn_internal.h"

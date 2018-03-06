@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_Ver2_Notification_extension_H_
-#define	_Ver2_Notification_extension_H_
+#ifndef _Ver2_Notification_extension_H_
+#define _Ver2_Notification_extension_H_
 
 
 #include "asn_application.h"
@@ -16,29 +16,31 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Ver2-Notification-extension */
-typedef struct Ver2_Notification_extension {
-	NULL_t	*emergencyCallLocation	/* OPTIONAL */;
-	/*
+    /* Ver2-Notification-extension */
+    typedef struct Ver2_Notification_extension
+    {
+        NULL_t *emergencyCallLocation /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Ver2_Notification_extension_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Ver2_Notification_extension;
-extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_Notification_extension_specs_1;
-extern asn_TYPE_member_t asn_MBR_Ver2_Notification_extension_1[1];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Ver2_Notification_extension_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Ver2_Notification_extension;
+    extern asn_SEQUENCE_specifics_t asn_SPC_Ver2_Notification_extension_specs_1;
+    extern asn_TYPE_member_t asn_MBR_Ver2_Notification_extension_1[1];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _Ver2_Notification_extension_H_ */
+#endif /* _Ver2_Notification_extension_H_ */
 #include "asn_internal.h"

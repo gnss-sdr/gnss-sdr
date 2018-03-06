@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_ThirdParty_H_
-#define	_ThirdParty_H_
+#ifndef _ThirdParty_H_
+#define _ThirdParty_H_
 
 
 #include "asn_application.h"
@@ -16,25 +16,28 @@
 #include "constr_SEQUENCE_OF.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ThirdPartyID;
+    /* Forward declarations */
+    struct ThirdPartyID;
 
-/* ThirdParty */
-typedef struct ThirdParty {
-	A_SEQUENCE_OF(struct ThirdPartyID) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ThirdParty_t;
+    /* ThirdParty */
+    typedef struct ThirdParty
+    {
+        A_SEQUENCE_OF(struct ThirdPartyID)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ThirdParty;
-extern asn_SET_OF_specifics_t asn_SPC_ThirdParty_specs_1;
-extern asn_TYPE_member_t asn_MBR_ThirdParty_1[1];
-extern asn_per_constraints_t asn_PER_type_ThirdParty_constr_1;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ThirdParty_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ThirdParty;
+    extern asn_SET_OF_specifics_t asn_SPC_ThirdParty_specs_1;
+    extern asn_TYPE_member_t asn_MBR_ThirdParty_1[1];
+    extern asn_per_constraints_t asn_PER_type_ThirdParty_constr_1;
 
 #ifdef __cplusplus
 }
@@ -43,5 +46,5 @@ extern asn_per_constraints_t asn_PER_type_ThirdParty_constr_1;
 /* Referred external types */
 #include "ThirdPartyID.h"
 
-#endif	/* _ThirdParty_H_ */
+#endif /* _ThirdParty_H_ */
 #include "asn_internal.h"

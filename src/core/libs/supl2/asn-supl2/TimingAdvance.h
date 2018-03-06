@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_TimingAdvance_H_
-#define	_TimingAdvance_H_
+#ifndef _TimingAdvance_H_
+#define _TimingAdvance_H_
 
 
 #include "asn_application.h"
@@ -18,31 +18,33 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* TimingAdvance */
-typedef struct TimingAdvance {
-	long	 tA;
-	TAResolution_t	*tAResolution	/* OPTIONAL */;
-	ChipRate_t	*chipRate	/* OPTIONAL */;
-	/*
+    /* TimingAdvance */
+    typedef struct TimingAdvance
+    {
+        long tA;
+        TAResolution_t *tAResolution /* OPTIONAL */;
+        ChipRate_t *chipRate /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} TimingAdvance_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_TimingAdvance;
-extern asn_SEQUENCE_specifics_t asn_SPC_TimingAdvance_specs_1;
-extern asn_TYPE_member_t asn_MBR_TimingAdvance_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } TimingAdvance_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_TimingAdvance;
+    extern asn_SEQUENCE_specifics_t asn_SPC_TimingAdvance_specs_1;
+    extern asn_TYPE_member_t asn_MBR_TimingAdvance_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _TimingAdvance_H_ */
+#endif /* _TimingAdvance_H_ */
 #include "asn_internal.h"

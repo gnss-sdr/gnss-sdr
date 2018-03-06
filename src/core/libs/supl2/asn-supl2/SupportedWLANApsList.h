@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SupportedWLANApsList_H_
-#define	_SupportedWLANApsList_H_
+#ifndef _SupportedWLANApsList_H_
+#define _SupportedWLANApsList_H_
 
 
 #include "asn_application.h"
@@ -17,37 +17,41 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SupportedWLANApsChannel11a;
-struct SupportedWLANApsChannel11bg;
-struct SupportedWLANApData;
+    /* Forward declarations */
+    struct SupportedWLANApsChannel11a;
+    struct SupportedWLANApsChannel11bg;
+    struct SupportedWLANApData;
 
-/* SupportedWLANApsList */
-typedef struct SupportedWLANApsList {
-	struct SupportedWLANApsList__supportedWLANApDataList {
-		A_SEQUENCE_OF(struct SupportedWLANApData) list;
-		
-		/* Context for parsing across buffer boundaries */
-		asn_struct_ctx_t _asn_ctx;
-	} supportedWLANApDataList;
-	struct SupportedWLANApsChannel11a	*supportedWLANapsChannel11a	/* OPTIONAL */;
-	struct SupportedWLANApsChannel11bg	*supportedWLANapsChannel11bg	/* OPTIONAL */;
-	/*
+    /* SupportedWLANApsList */
+    typedef struct SupportedWLANApsList
+    {
+        struct SupportedWLANApsList__supportedWLANApDataList
+        {
+            A_SEQUENCE_OF(struct SupportedWLANApData)
+            list;
+
+            /* Context for parsing across buffer boundaries */
+            asn_struct_ctx_t _asn_ctx;
+        } supportedWLANApDataList;
+        struct SupportedWLANApsChannel11a *supportedWLANapsChannel11a /* OPTIONAL */;
+        struct SupportedWLANApsChannel11bg *supportedWLANapsChannel11bg /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SupportedWLANApsList_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SupportedWLANApsList;
-extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWLANApsList_specs_1;
-extern asn_TYPE_member_t asn_MBR_SupportedWLANApsList_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SupportedWLANApsList_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SupportedWLANApsList;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWLANApsList_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SupportedWLANApsList_1[3];
 
 #ifdef __cplusplus
 }
@@ -58,5 +62,5 @@ extern asn_TYPE_member_t asn_MBR_SupportedWLANApsList_1[3];
 #include "SupportedWLANApsChannel11bg.h"
 #include "SupportedWLANApData.h"
 
-#endif	/* _SupportedWLANApsList_H_ */
+#endif /* _SupportedWLANApsList_H_ */
 #include "asn_internal.h"

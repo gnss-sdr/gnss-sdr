@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_MeasuredResults_H_
-#define	_MeasuredResults_H_
+#ifndef _MeasuredResults_H_
+#define _MeasuredResults_H_
 
 
 #include "asn_application.h"
@@ -16,27 +16,29 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct FrequencyInfo;
-struct CellMeasuredResultsList;
+    /* Forward declarations */
+    struct FrequencyInfo;
+    struct CellMeasuredResultsList;
 
-/* MeasuredResults */
-typedef struct MeasuredResults {
-	struct FrequencyInfo	*frequencyInfo	/* OPTIONAL */;
-	UTRA_CarrierRSSI_t	*utra_CarrierRSSI	/* OPTIONAL */;
-	struct CellMeasuredResultsList	*cellMeasuredResultsList	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} MeasuredResults_t;
+    /* MeasuredResults */
+    typedef struct MeasuredResults
+    {
+        struct FrequencyInfo *frequencyInfo /* OPTIONAL */;
+        UTRA_CarrierRSSI_t *utra_CarrierRSSI /* OPTIONAL */;
+        struct CellMeasuredResultsList *cellMeasuredResultsList /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MeasuredResults;
-extern asn_SEQUENCE_specifics_t asn_SPC_MeasuredResults_specs_1;
-extern asn_TYPE_member_t asn_MBR_MeasuredResults_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } MeasuredResults_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MeasuredResults;
+    extern asn_SEQUENCE_specifics_t asn_SPC_MeasuredResults_specs_1;
+    extern asn_TYPE_member_t asn_MBR_MeasuredResults_1[3];
 
 #ifdef __cplusplus
 }
@@ -46,5 +48,5 @@ extern asn_TYPE_member_t asn_MBR_MeasuredResults_1[3];
 #include "FrequencyInfo.h"
 #include "CellMeasuredResultsList.h"
 
-#endif	/* _MeasuredResults_H_ */
+#endif /* _MeasuredResults_H_ */
 #include "asn_internal.h"

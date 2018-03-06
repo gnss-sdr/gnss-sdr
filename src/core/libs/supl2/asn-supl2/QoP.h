@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_QoP_H_
-#define	_QoP_H_
+#ifndef _QoP_H_
+#define _QoP_H_
 
 
 #include "asn_application.h"
@@ -16,32 +16,34 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* QoP */
-typedef struct QoP {
-	long	 horacc;
-	long	*veracc	/* OPTIONAL */;
-	long	*maxLocAge	/* OPTIONAL */;
-	long	*delay	/* OPTIONAL */;
-	/*
+    /* QoP */
+    typedef struct QoP
+    {
+        long horacc;
+        long *veracc /* OPTIONAL */;
+        long *maxLocAge /* OPTIONAL */;
+        long *delay /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} QoP_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_QoP;
-extern asn_SEQUENCE_specifics_t asn_SPC_QoP_specs_1;
-extern asn_TYPE_member_t asn_MBR_QoP_1[4];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } QoP_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_QoP;
+    extern asn_SEQUENCE_specifics_t asn_SPC_QoP_specs_1;
+    extern asn_TYPE_member_t asn_MBR_QoP_1[4];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _QoP_H_ */
+#endif /* _QoP_H_ */
 #include "asn_internal.h"

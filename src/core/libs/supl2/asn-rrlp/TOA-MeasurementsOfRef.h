@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_TOA_MeasurementsOfRef_H_
-#define	_TOA_MeasurementsOfRef_H_
+#ifndef _TOA_MeasurementsOfRef_H_
+#define _TOA_MeasurementsOfRef_H_
 
 
 #include <asn_application.h>
@@ -16,26 +16,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* TOA-MeasurementsOfRef */
-typedef struct TOA_MeasurementsOfRef {
-	RefQuality_t	 refQuality;
-	NumOfMeasurements_t	 numOfMeasurements;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} TOA_MeasurementsOfRef_t;
+    /* TOA-MeasurementsOfRef */
+    typedef struct TOA_MeasurementsOfRef
+    {
+        RefQuality_t refQuality;
+        NumOfMeasurements_t numOfMeasurements;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_TOA_MeasurementsOfRef;
-extern asn_SEQUENCE_specifics_t asn_SPC_TOA_MeasurementsOfRef_specs_1;
-extern asn_TYPE_member_t asn_MBR_TOA_MeasurementsOfRef_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } TOA_MeasurementsOfRef_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_TOA_MeasurementsOfRef;
+    extern asn_SEQUENCE_specifics_t asn_SPC_TOA_MeasurementsOfRef_specs_1;
+    extern asn_TYPE_member_t asn_MBR_TOA_MeasurementsOfRef_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _TOA_MeasurementsOfRef_H_ */
+#endif /* _TOA_MeasurementsOfRef_H_ */
 #include <asn_internal.h>

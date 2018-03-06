@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_SgnTypeElement_H_
-#define	_SgnTypeElement_H_
+#ifndef _SgnTypeElement_H_
+#define _SgnTypeElement_H_
 
 
 #include <asn_application.h>
@@ -17,27 +17,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SgnTypeElement */
-typedef struct SgnTypeElement {
-	GANSSSignalID_t	*ganssSignalID	/* OPTIONAL */;
-	long	 ganssStatusHealth;
-	SeqOfDGANSSSgnElement_t	 dganssSgnList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SgnTypeElement_t;
+    /* SgnTypeElement */
+    typedef struct SgnTypeElement
+    {
+        GANSSSignalID_t *ganssSignalID /* OPTIONAL */;
+        long ganssStatusHealth;
+        SeqOfDGANSSSgnElement_t dganssSgnList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SgnTypeElement;
-extern asn_SEQUENCE_specifics_t asn_SPC_SgnTypeElement_specs_1;
-extern asn_TYPE_member_t asn_MBR_SgnTypeElement_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SgnTypeElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SgnTypeElement;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SgnTypeElement_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SgnTypeElement_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SgnTypeElement_H_ */
+#endif /* _SgnTypeElement_H_ */
 #include <asn_internal.h>

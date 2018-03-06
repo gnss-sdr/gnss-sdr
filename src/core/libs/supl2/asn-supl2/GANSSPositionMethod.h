@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_GANSSPositionMethod_H_
-#define	_GANSSPositionMethod_H_
+#ifndef _GANSSPositionMethod_H_
+#define _GANSSPositionMethod_H_
 
 
 #include "asn_application.h"
@@ -19,32 +19,34 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSPositionMethod */
-typedef struct GANSSPositionMethod {
-	long	 ganssId;
-	BIT_STRING_t	*ganssSBASid	/* OPTIONAL */;
-	GANSSPositioningMethodTypes_t	 gANSSPositioningMethodTypes;
-	GANSSSignals_t	 gANSSSignals;
-	/*
+    /* GANSSPositionMethod */
+    typedef struct GANSSPositionMethod
+    {
+        long ganssId;
+        BIT_STRING_t *ganssSBASid /* OPTIONAL */;
+        GANSSPositioningMethodTypes_t gANSSPositioningMethodTypes;
+        GANSSSignals_t gANSSSignals;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSPositionMethod_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSPositionMethod;
-extern asn_SEQUENCE_specifics_t asn_SPC_GANSSPositionMethod_specs_1;
-extern asn_TYPE_member_t asn_MBR_GANSSPositionMethod_1[4];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSPositionMethod_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSPositionMethod;
+    extern asn_SEQUENCE_specifics_t asn_SPC_GANSSPositionMethod_specs_1;
+    extern asn_TYPE_member_t asn_MBR_GANSSPositionMethod_1[4];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSPositionMethod_H_ */
+#endif /* _GANSSPositionMethod_H_ */
 #include "asn_internal.h"

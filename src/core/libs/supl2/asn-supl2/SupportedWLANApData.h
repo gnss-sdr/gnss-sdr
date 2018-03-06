@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_SupportedWLANApData_H_
-#define	_SupportedWLANApData_H_
+#ifndef _SupportedWLANApData_H_
+#define _SupportedWLANApData_H_
 
 
 #include "asn_application.h"
@@ -17,41 +17,44 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum SupportedWLANApData__apDevType {
-	SupportedWLANApData__apDevType_wlan802_11a	= 0,
-	SupportedWLANApData__apDevType_wlan802_11b	= 1,
-	SupportedWLANApData__apDevType_wlan802_11g	= 2
-	/*
+    /* Dependencies */
+    typedef enum SupportedWLANApData__apDevType
+    {
+        SupportedWLANApData__apDevType_wlan802_11a = 0,
+        SupportedWLANApData__apDevType_wlan802_11b = 1,
+        SupportedWLANApData__apDevType_wlan802_11g = 2
+        /*
 	 * Enumeration is extensible
 	 */
-} e_SupportedWLANApData__apDevType;
+    } e_SupportedWLANApData__apDevType;
 
-/* SupportedWLANApData */
-typedef struct SupportedWLANApData {
-	BIT_STRING_t	 apMACAddress;
-	long	 apDevType;
-	/*
+    /* SupportedWLANApData */
+    typedef struct SupportedWLANApData
+    {
+        BIT_STRING_t apMACAddress;
+        long apDevType;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SupportedWLANApData_t;
 
-/* Implementation */
-/* extern asn_TYPE_descriptor_t asn_DEF_apDevType_3;	// (Use -fall-defs-global to expose) */
-extern asn_TYPE_descriptor_t asn_DEF_SupportedWLANApData;
-extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWLANApData_specs_1;
-extern asn_TYPE_member_t asn_MBR_SupportedWLANApData_1[2];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SupportedWLANApData_t;
+
+    /* Implementation */
+    /* extern asn_TYPE_descriptor_t asn_DEF_apDevType_3;	// (Use -fall-defs-global to expose) */
+    extern asn_TYPE_descriptor_t asn_DEF_SupportedWLANApData;
+    extern asn_SEQUENCE_specifics_t asn_SPC_SupportedWLANApData_specs_1;
+    extern asn_TYPE_member_t asn_MBR_SupportedWLANApData_1[2];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SupportedWLANApData_H_ */
+#endif /* _SupportedWLANApData_H_ */
 #include "asn_internal.h"

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_PeriodicParams_H_
-#define	_PeriodicParams_H_
+#ifndef _PeriodicParams_H_
+#define _PeriodicParams_H_
 
 
 #include "asn_application.h"
@@ -16,31 +16,33 @@
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* PeriodicParams */
-typedef struct PeriodicParams {
-	long	 numberOfFixes;
-	long	 intervalBetweenFixes;
-	long	*startTime	/* OPTIONAL */;
-	/*
+    /* PeriodicParams */
+    typedef struct PeriodicParams
+    {
+        long numberOfFixes;
+        long intervalBetweenFixes;
+        long *startTime /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} PeriodicParams_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PeriodicParams;
-extern asn_SEQUENCE_specifics_t asn_SPC_PeriodicParams_specs_1;
-extern asn_TYPE_member_t asn_MBR_PeriodicParams_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PeriodicParams_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PeriodicParams;
+    extern asn_SEQUENCE_specifics_t asn_SPC_PeriodicParams_specs_1;
+    extern asn_TYPE_member_t asn_MBR_PeriodicParams_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _PeriodicParams_H_ */
+#endif /* _PeriodicParams_H_ */
 #include "asn_internal.h"

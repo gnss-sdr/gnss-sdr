@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_MsrPosition_Req_H_
-#define	_MsrPosition_Req_H_
+#ifndef _MsrPosition_Req_H_
+#define _MsrPosition_Req_H_
 
 
 #include <asn_application.h>
@@ -16,40 +16,42 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct ReferenceAssistData;
-struct MsrAssistData;
-struct SystemInfoAssistData;
-struct GPS_AssistData;
-struct Rel98_MsrPosition_Req_Extension;
-struct Rel5_MsrPosition_Req_Extension;
+    /* Forward declarations */
+    struct ReferenceAssistData;
+    struct MsrAssistData;
+    struct SystemInfoAssistData;
+    struct GPS_AssistData;
+    struct Rel98_MsrPosition_Req_Extension;
+    struct Rel5_MsrPosition_Req_Extension;
 
-/* MsrPosition-Req */
-typedef struct MsrPosition_Req {
-	PositionInstruct_t	 positionInstruct;
-	struct ReferenceAssistData	*referenceAssistData	/* OPTIONAL */;
-	struct MsrAssistData	*msrAssistData	/* OPTIONAL */;
-	struct SystemInfoAssistData	*systemInfoAssistData	/* OPTIONAL */;
-	struct GPS_AssistData	*gps_AssistData	/* OPTIONAL */;
-	ExtensionContainer_t	*extensionContainer	/* OPTIONAL */;
-	/*
+    /* MsrPosition-Req */
+    typedef struct MsrPosition_Req
+    {
+        PositionInstruct_t positionInstruct;
+        struct ReferenceAssistData *referenceAssistData /* OPTIONAL */;
+        struct MsrAssistData *msrAssistData /* OPTIONAL */;
+        struct SystemInfoAssistData *systemInfoAssistData /* OPTIONAL */;
+        struct GPS_AssistData *gps_AssistData /* OPTIONAL */;
+        ExtensionContainer_t *extensionContainer /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	struct Rel98_MsrPosition_Req_Extension	*rel98_MsrPosition_Req_extension	/* OPTIONAL */;
-	struct Rel5_MsrPosition_Req_Extension	*rel5_MsrPosition_Req_extension	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} MsrPosition_Req_t;
+        struct Rel98_MsrPosition_Req_Extension *rel98_MsrPosition_Req_extension /* OPTIONAL */;
+        struct Rel5_MsrPosition_Req_Extension *rel5_MsrPosition_Req_extension /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MsrPosition_Req;
-extern asn_SEQUENCE_specifics_t asn_SPC_MsrPosition_Req_specs_1;
-extern asn_TYPE_member_t asn_MBR_MsrPosition_Req_1[8];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } MsrPosition_Req_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MsrPosition_Req;
+    extern asn_SEQUENCE_specifics_t asn_SPC_MsrPosition_Req_specs_1;
+    extern asn_TYPE_member_t asn_MBR_MsrPosition_Req_1[8];
 
 #ifdef __cplusplus
 }
@@ -63,5 +65,5 @@ extern asn_TYPE_member_t asn_MBR_MsrPosition_Req_1[8];
 #include "Rel98-MsrPosition-Req-Extension.h"
 #include "Rel5-MsrPosition-Req-Extension.h"
 
-#endif	/* _MsrPosition_Req_H_ */
+#endif /* _MsrPosition_Req_H_ */
 #include <asn_internal.h>

@@ -5,8 +5,8 @@
  * 	`asn1c -S ../../skeletons -pdu=ULP-PDU -pdu=SUPLINIT -fcompound-names -no-gen-OER`
  */
 
-#ifndef	_RTDUnits_H_
-#define	_RTDUnits_H_
+#ifndef _RTDUnits_H_
+#define _RTDUnits_H_
 
 
 #include "asn_application.h"
@@ -15,41 +15,43 @@
 #include "NativeEnumerated.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum RTDUnits {
-	RTDUnits_microseconds	= 0,
-	RTDUnits_hundredsofnanoseconds	= 1,
-	RTDUnits_tensofnanoseconds	= 2,
-	RTDUnits_nanoseconds	= 3,
-	RTDUnits_tenthsofnanoseconds	= 4
-	/*
+    /* Dependencies */
+    typedef enum RTDUnits
+    {
+        RTDUnits_microseconds = 0,
+        RTDUnits_hundredsofnanoseconds = 1,
+        RTDUnits_tensofnanoseconds = 2,
+        RTDUnits_nanoseconds = 3,
+        RTDUnits_tenthsofnanoseconds = 4
+        /*
 	 * Enumeration is extensible
 	 */
-} e_RTDUnits;
+    } e_RTDUnits;
 
-/* RTDUnits */
-typedef long	 RTDUnits_t;
+    /* RTDUnits */
+    typedef long RTDUnits_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_RTDUnits_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_RTDUnits;
-extern const asn_INTEGER_specifics_t asn_SPC_RTDUnits_specs_1;
-asn_struct_free_f RTDUnits_free;
-asn_struct_print_f RTDUnits_print;
-asn_constr_check_f RTDUnits_constraint;
-ber_type_decoder_f RTDUnits_decode_ber;
-der_type_encoder_f RTDUnits_encode_der;
-xer_type_decoder_f RTDUnits_decode_xer;
-xer_type_encoder_f RTDUnits_encode_xer;
-per_type_decoder_f RTDUnits_decode_uper;
-per_type_encoder_f RTDUnits_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_RTDUnits_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_RTDUnits;
+    extern const asn_INTEGER_specifics_t asn_SPC_RTDUnits_specs_1;
+    asn_struct_free_f RTDUnits_free;
+    asn_struct_print_f RTDUnits_print;
+    asn_constr_check_f RTDUnits_constraint;
+    ber_type_decoder_f RTDUnits_decode_ber;
+    der_type_encoder_f RTDUnits_encode_der;
+    xer_type_decoder_f RTDUnits_decode_xer;
+    xer_type_encoder_f RTDUnits_encode_xer;
+    per_type_decoder_f RTDUnits_decode_uper;
+    per_type_encoder_f RTDUnits_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _RTDUnits_H_ */
+#endif /* _RTDUnits_H_ */
 #include "asn_internal.h"

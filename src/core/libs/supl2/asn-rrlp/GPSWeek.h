@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_GPSWeek_H_
-#define	_GPSWeek_H_
+#ifndef _GPSWeek_H_
+#define _GPSWeek_H_
 
 
 #include <asn_application.h>
@@ -14,30 +14,31 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GPSWeek */
-typedef long	 GPSWeek_t;
+    /* GPSWeek */
+    typedef long GPSWeek_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_GPSWeek_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_GPSWeek;
-asn_struct_free_f GPSWeek_free;
-asn_struct_print_f GPSWeek_print;
-asn_constr_check_f GPSWeek_constraint;
-ber_type_decoder_f GPSWeek_decode_ber;
-der_type_encoder_f GPSWeek_encode_der;
-xer_type_decoder_f GPSWeek_decode_xer;
-xer_type_encoder_f GPSWeek_encode_xer;
-oer_type_decoder_f GPSWeek_decode_oer;
-oer_type_encoder_f GPSWeek_encode_oer;
-per_type_decoder_f GPSWeek_decode_uper;
-per_type_encoder_f GPSWeek_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_GPSWeek_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_GPSWeek;
+    asn_struct_free_f GPSWeek_free;
+    asn_struct_print_f GPSWeek_print;
+    asn_constr_check_f GPSWeek_constraint;
+    ber_type_decoder_f GPSWeek_decode_ber;
+    der_type_encoder_f GPSWeek_encode_der;
+    xer_type_decoder_f GPSWeek_decode_xer;
+    xer_type_encoder_f GPSWeek_encode_xer;
+    oer_type_decoder_f GPSWeek_decode_oer;
+    oer_type_encoder_f GPSWeek_encode_oer;
+    per_type_decoder_f GPSWeek_decode_uper;
+    per_type_encoder_f GPSWeek_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GPSWeek_H_ */
+#endif /* _GPSWeek_H_ */
 #include <asn_internal.h>

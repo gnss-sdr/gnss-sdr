@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_AntiSpoofFlag_H_
-#define	_AntiSpoofFlag_H_
+#ifndef _AntiSpoofFlag_H_
+#define _AntiSpoofFlag_H_
 
 
 #include <asn_application.h>
@@ -14,30 +14,31 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* AntiSpoofFlag */
-typedef long	 AntiSpoofFlag_t;
+    /* AntiSpoofFlag */
+    typedef long AntiSpoofFlag_t;
 
-/* Implementation */
-extern asn_per_constraints_t asn_PER_type_AntiSpoofFlag_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_AntiSpoofFlag;
-asn_struct_free_f AntiSpoofFlag_free;
-asn_struct_print_f AntiSpoofFlag_print;
-asn_constr_check_f AntiSpoofFlag_constraint;
-ber_type_decoder_f AntiSpoofFlag_decode_ber;
-der_type_encoder_f AntiSpoofFlag_encode_der;
-xer_type_decoder_f AntiSpoofFlag_decode_xer;
-xer_type_encoder_f AntiSpoofFlag_encode_xer;
-oer_type_decoder_f AntiSpoofFlag_decode_oer;
-oer_type_encoder_f AntiSpoofFlag_encode_oer;
-per_type_decoder_f AntiSpoofFlag_decode_uper;
-per_type_encoder_f AntiSpoofFlag_encode_uper;
+    /* Implementation */
+    extern asn_per_constraints_t asn_PER_type_AntiSpoofFlag_constr_1;
+    extern asn_TYPE_descriptor_t asn_DEF_AntiSpoofFlag;
+    asn_struct_free_f AntiSpoofFlag_free;
+    asn_struct_print_f AntiSpoofFlag_print;
+    asn_constr_check_f AntiSpoofFlag_constraint;
+    ber_type_decoder_f AntiSpoofFlag_decode_ber;
+    der_type_encoder_f AntiSpoofFlag_encode_der;
+    xer_type_decoder_f AntiSpoofFlag_decode_xer;
+    xer_type_encoder_f AntiSpoofFlag_encode_xer;
+    oer_type_decoder_f AntiSpoofFlag_decode_oer;
+    oer_type_encoder_f AntiSpoofFlag_encode_oer;
+    per_type_decoder_f AntiSpoofFlag_decode_uper;
+    per_type_encoder_f AntiSpoofFlag_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _AntiSpoofFlag_H_ */
+#endif /* _AntiSpoofFlag_H_ */
 #include <asn_internal.h>

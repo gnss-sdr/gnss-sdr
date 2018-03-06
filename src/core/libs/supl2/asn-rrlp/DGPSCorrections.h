@@ -4,8 +4,8 @@
  * 	found in "../ulp.asn1"
  */
 
-#ifndef	_DGPSCorrections_H_
-#define	_DGPSCorrections_H_
+#ifndef _DGPSCorrections_H_
+#define _DGPSCorrections_H_
 
 
 #include <asn_application.h>
@@ -16,27 +16,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* DGPSCorrections */
-typedef struct DGPSCorrections {
-	long	 gpsTOW;
-	long	 status;
-	SeqOfSatElement_t	 satList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} DGPSCorrections_t;
+    /* DGPSCorrections */
+    typedef struct DGPSCorrections
+    {
+        long gpsTOW;
+        long status;
+        SeqOfSatElement_t satList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_DGPSCorrections;
-extern asn_SEQUENCE_specifics_t asn_SPC_DGPSCorrections_specs_1;
-extern asn_TYPE_member_t asn_MBR_DGPSCorrections_1[3];
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } DGPSCorrections_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_DGPSCorrections;
+    extern asn_SEQUENCE_specifics_t asn_SPC_DGPSCorrections_specs_1;
+    extern asn_TYPE_member_t asn_MBR_DGPSCorrections_1[3];
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _DGPSCorrections_H_ */
+#endif /* _DGPSCorrections_H_ */
 #include <asn_internal.h>

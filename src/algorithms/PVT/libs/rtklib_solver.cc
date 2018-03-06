@@ -132,7 +132,7 @@ bool rtklib_solver::get_PVT(const std::map<int,Gnss_Synchro> & gnss_observables_
 
     for(gnss_observables_iter = gnss_observables_map.cbegin();
             gnss_observables_iter != gnss_observables_map.cend();
-            gnss_observables_iter++)
+            gnss_observables_iter++) //CHECK INCONSISTENCY when combining GLONASS + other system
         {
             switch(gnss_observables_iter->second.System)
             {

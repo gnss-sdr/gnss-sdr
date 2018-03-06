@@ -194,7 +194,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     P1_C1 = nav->cbias[obs->sat-1][1];
     P2_C2 = nav->cbias[obs->sat-1][2];
 
-    std::string d_dump_filename = "/home/antonio/data/dump_prange.dat";
+    std::string d_dump_filename = "/home/aramos/dump_prange.dat";
     std::ofstream d_file;
     d_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
     d_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary | std::ios::app);
@@ -208,7 +208,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     /* if no P1-P2 DCB, use TGD instead */
     if(P1_P2 == 0.0 and sys == SYS_GPS)
     {
-        P1_P2 = (gamma_ - 1.0) * gettgd(obs->sat, nav);
+        P1_P2 = gettgd(obs->sat, nav);
     }
     else if(P1_P2 == 0.0 and sys == SYS_GAL)
     {
@@ -247,7 +247,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         else if(obs->code[i] != CODE_NONE and obs->code[j] == CODE_NONE)
         {//CHECK!!
             P1 += P1_C1; /* C1->P1 */
-            PC = P1 + P1_P2 / (gamma_ - 1.0);
+            PC = P1 + P1_P2;
         }
         else if(obs->code[i] == CODE_NONE and obs->code[j] != CODE_NONE)
         {
@@ -255,7 +255,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             {//CHECK!!
                 P2 += P2_C2; /* C2->P2 */
                 //PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
-                PC = P2 + P1_P2 / (gamma_ - 1.0) - ISCl2;
+                PC = P2 + P1_P2 - ISCl2;
             }
             else if(sys == SYS_GAL)
             {
@@ -267,8 +267,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         {
             if(obs->code[j] == CODE_L2S) /* L1 + L2 */
             {
-                //PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2 / (gamma_ - 1.0);
-                PC = (P1 + P2) / 2.0;
+                PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
             }
             if(obs->code[j] == CODE_L5X) /* L1 + L5 */
             {

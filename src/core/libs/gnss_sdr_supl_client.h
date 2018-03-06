@@ -36,7 +36,7 @@
 
 extern "C"
 {
-#include "supl.h"
+#include "supl2.h"
 }
 #include "GPS_L1_CA.h"
 #include "gps_ephemeris.h"

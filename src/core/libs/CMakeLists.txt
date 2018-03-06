@@ -16,7 +16,9 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(supl)
+#add_subdirectory(supl)
+add_subdirectory(supl2)
+
 
 if(OPENSSL_FOUND)
     add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
@@ -32,9 +34,9 @@ set(CORE_LIBS_SOURCES
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+    ${CMAKE_SOURCE_DIR}/src/core/libs/supl2
+    ${CMAKE_SOURCE_DIR}/src/core/libs/supl2/asn-rrlp
+    ${CMAKE_SOURCE_DIR}/src/core/libs/supl2/asn-supl2
     ${GLOG_INCLUDE_DIRS}
     ${GFlags_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
@@ -44,4 +46,4 @@ file(GLOB CORE_LIBS_HEADERS "*.h")
 list(SORT CORE_LIBS_HEADERS)
 add_library(rx_core_lib ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
 source_group(Headers FILES ${CORE_LIBS_HEADERS})
-target_link_libraries(rx_core_lib supl_library) 
+target_link_libraries(rx_core_lib supl2_library) 

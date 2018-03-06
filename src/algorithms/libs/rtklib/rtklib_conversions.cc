@@ -192,9 +192,9 @@ eph_t eph_to_rtklib(const Gps_Ephemeris & gps_eph)
     rtklib_sat.f1 = gps_eph.d_A_f1;
     rtklib_sat.f2 = gps_eph.d_A_f2;
     rtklib_sat.tgd[0] = gps_eph.d_TGD;
-    rtklib_sat.tgd[1] = 0;
-    rtklib_sat.tgd[2] = 0;
-    rtklib_sat.tgd[3] = 0;
+    rtklib_sat.tgd[1] = 0.0;
+    rtklib_sat.tgd[2] = 0.0;
+    rtklib_sat.tgd[3] = 0.0;
     rtklib_sat.toes = gps_eph.d_Toe;
     rtklib_sat.toc = gpst2time(rtklib_sat.week, gps_eph.d_Toc);
     rtklib_sat.ttr = gpst2time(rtklib_sat.week, gps_eph.d_TOW);

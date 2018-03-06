@@ -52,12 +52,13 @@
 #include "control_message_factory.h"
 
 
-class ControlThreadTest: public ::testing::Test
+class ControlThreadTest : public ::testing::Test
 {
 public:
     static int stop_receiver();
-    typedef struct  {
-        long mtype; // required by SysV message
+    typedef struct
+    {
+        long mtype;  // required by SysV message
         double message;
     } message_buffer;
 };
@@ -73,7 +74,9 @@ int ControlThreadTest::stop_receiver()
     key_t key_stop = 1102;
 
     // wait for the receiver control queue to be created
-    while(((msqid_stop = msgget(key_stop, 0644))) == -1){ }
+    while (((msqid_stop = msgget(key_stop, 0644))) == -1)
+        {
+        }
 
     // wait for a couple of seconds
     std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -92,7 +95,7 @@ TEST_F(ControlThreadTest, InstantiateRunControlMessages)
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     std::string path = std::string(TEST_PATH);
     std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-    const char * file_name = file.c_str();
+    const char* file_name = file.c_str();
     config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -122,23 +125,23 @@ TEST_F(ControlThreadTest, InstantiateRunControlMessages)
 
     std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
 
-    control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(1,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(0, 0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(1, 0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(200, 0));
 
     control_thread->set_control_queue(control_queue);
     try
-    {
+        {
             control_thread->run();
-    }
-    catch(const boost::exception & e)
-    {
+        }
+    catch (const boost::exception& e)
+        {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
-    }
-    catch(const std::exception & ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
-    }
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "STD exception: " << ex.what();
+        }
 
     unsigned int expected3 = 3;
     unsigned int expected1 = 1;
@@ -153,7 +156,7 @@ TEST_F(ControlThreadTest, InstantiateRunControlMessages2)
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     std::string path = std::string(TEST_PATH);
     std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-    const char * file_name = file.c_str();
+    const char* file_name = file.c_str();
     config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -183,26 +186,26 @@ TEST_F(ControlThreadTest, InstantiateRunControlMessages2)
 
     std::unique_ptr<ControlMessageFactory> control_msg_factory2(new ControlMessageFactory());
 
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(2,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(1,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(3,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(200,0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(0, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(2, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(1, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(3, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(200, 0));
 
     control_thread2->set_control_queue(control_queue2);
 
     try
-    {
+        {
             control_thread2->run();
-    }
-    catch(const boost::exception & e)
-    {
+        }
+    catch (const boost::exception& e)
+        {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
-    }
-    catch(const std::exception & ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
-    }
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "STD exception: " << ex.what();
+        }
 
     unsigned int expected5 = 5;
     unsigned int expected1 = 1;
@@ -211,14 +214,13 @@ TEST_F(ControlThreadTest, InstantiateRunControlMessages2)
 }
 
 
-
 TEST_F(ControlThreadTest, StopReceiverProgrammatically)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     std::string path = std::string(TEST_PATH);
     std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-    const char * file_name = file.c_str();
+    const char* file_name = file.c_str();
     config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -249,17 +251,17 @@ TEST_F(ControlThreadTest, StopReceiverProgrammatically)
     std::thread stop_receiver_thread(stop_receiver);
 
     try
-    {
+        {
             control_thread->run();
-    }
-    catch(const boost::exception & e)
-    {
+        }
+    catch (const boost::exception& e)
+        {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
-    }
-    catch(const std::exception & ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
-    }
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "STD exception: " << ex.what();
+        }
 
     stop_receiver_thread.join();
 }

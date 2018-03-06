@@ -40,8 +40,8 @@ unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int a
 
 
 unpack_spir_gss6450_samples::unpack_spir_gss6450_samples(unsigned int adc_nbit) : gr::sync_interpolator("unpack_spir_gss6450_samples",
-        gr::io_signature::make(1, 1, sizeof(int)),
-        gr::io_signature::make(1, 1, sizeof(gr_complex)), 16 / adc_nbit)
+                                                                                      gr::io_signature::make(1, 1, sizeof(int)),
+                                                                                      gr::io_signature::make(1, 1, sizeof(gr_complex)), 16 / adc_nbit)
 {
     adc_bits = adc_nbit;
     samples_per_int = 16 / adc_bits;
@@ -53,43 +53,50 @@ unpack_spir_gss6450_samples::unpack_spir_gss6450_samples(unsigned int adc_nbit) 
 
 
 unpack_spir_gss6450_samples::~unpack_spir_gss6450_samples()
-{}
+{
+}
 
 
 int unpack_spir_gss6450_samples::work(int noutput_items,
-                      gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+    gr_vector_const_void_star& input_items, gr_vector_void_star& output_items)
 {
     const int* in = reinterpret_cast<const int*>(input_items[0]);
     gr_complex* out = reinterpret_cast<gr_complex*>(output_items[0]);
     unsigned int n_sample = 0;
     unsigned int in_counter = 0;
     std::bitset<32> bs;
-    for(int i = 0; i < noutput_items; i++)
-    {
-        bs = in[in_counter];
-        int i_shift = adc_bits * 2 * (samples_per_int - n_sample - 1) + adc_bits;
-        int q_shift = adc_bits * 2 * (samples_per_int - n_sample - 1);
-        for(unsigned int k = 0; k < adc_bits; k++)
+    for (int i = 0; i < noutput_items; i++)
         {
-            i_data[k] = bs[i_shift + k];
-            q_data[k] = bs[q_shift + k];
+            bs = in[in_counter];
+            int i_shift = adc_bits * 2 * (samples_per_int - n_sample - 1) + adc_bits;
+            int q_shift = adc_bits * 2 * (samples_per_int - n_sample - 1);
+            for (unsigned int k = 0; k < adc_bits; k++)
+                {
+                    i_data[k] = bs[i_shift + k];
+                    q_data[k] = bs[q_shift + k];
+                }
+            out[i] = gr_complex(static_cast<float>(compute_two_complement(i_data.to_ulong())) + 0.5,
+                static_cast<float>(compute_two_complement(q_data.to_ulong())) + 0.5);
+            n_sample++;
+            if (n_sample == samples_per_int)
+                {
+                    n_sample = 0;
+                    in_counter++;
+                }
         }
-        out[i] = gr_complex(static_cast<float>(compute_two_complement(i_data.to_ulong())) + 0.5,
-                            static_cast<float>(compute_two_complement(q_data.to_ulong())) + 0.5);
-        n_sample++;
-        if(n_sample == samples_per_int)
-        {
-            n_sample = 0;
-            in_counter++;
-        }
-    }
     return noutput_items;
 }
 
 int unpack_spir_gss6450_samples::compute_two_complement(unsigned long data)
 {
     int res = 0;
-    if( static_cast<int>(data) < two_compl_thres) { res = static_cast<int>(data); }
-    else { res = static_cast<int>(data) - adc_bits_two_pow; }
+    if (static_cast<int>(data) < two_compl_thres)
+        {
+            res = static_cast<int>(data);
+        }
+    else
+        {
+            res = static_cast<int>(data) - adc_bits_two_pow;
+        }
     return res;
 }

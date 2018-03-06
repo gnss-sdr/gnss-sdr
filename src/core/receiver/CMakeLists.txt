@@ -90,8 +90,6 @@ if(ENABLE_FMCOMMS2)
 	set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
 endif(ENABLE_FMCOMMS2)
 
-add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
-
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13" )
      add_definitions( -DGR_GREATER_38=1 )
 endif(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13" )
@@ -163,8 +161,6 @@ target_link_libraries(gnss_rx ${Boost_LIBRARIES}
                               conditioner_adapters
                               resampler_adapters
                               acq_adapters
-                              tracking_lib
-#                              acquisition_lib
                               tracking_adapters
                               channel_adapters
                               telemetry_decoder_libswiftcnav

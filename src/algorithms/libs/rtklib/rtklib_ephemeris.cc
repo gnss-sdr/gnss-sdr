@@ -57,41 +57,40 @@
 
 /* constants ------------------------------------------------------*/
 
-const double RE_GLO = 6378136.0; /* radius of earth (m)            ref [2] */
-const double MU_GPS = 3.9860050e14;     /* gravitational constant         ref [1] */
-const double MU_GLO = 3.9860044e14;    /* gravitational constant         ref [2] */
-const double MU_GAL = 3.986004418e14;   /* earth gravitational constant   ref [7] */
-const double MU_BDS = 3.986004418e14;   /* earth gravitational constant   ref [9] */
-const double J2_GLO =  1.0826257e-3;     /* 2nd zonal harmonic of geopot   ref [2] */
+const double RE_GLO = 6378136.0;      /* radius of earth (m)            ref [2] */
+const double MU_GPS = 3.9860050e14;   /* gravitational constant         ref [1] */
+const double MU_GLO = 3.9860044e14;   /* gravitational constant         ref [2] */
+const double MU_GAL = 3.986004418e14; /* earth gravitational constant   ref [7] */
+const double MU_BDS = 3.986004418e14; /* earth gravitational constant   ref [9] */
+const double J2_GLO = 1.0826257e-3;   /* 2nd zonal harmonic of geopot   ref [2] */
 
-const double OMGE_GLO = 7.292115e-5;      /* earth angular velocity (rad/s) ref [2] */
-const double OMGE_GAL = 7.2921151467e-5;  /* earth angular velocity (rad/s) ref [7] */
-const double OMGE_BDS = 7.292115e-5;      /* earth angular velocity (rad/s) ref [9] */
+const double OMGE_GLO = 7.292115e-5;     /* earth angular velocity (rad/s) ref [2] */
+const double OMGE_GAL = 7.2921151467e-5; /* earth angular velocity (rad/s) ref [7] */
+const double OMGE_BDS = 7.292115e-5;     /* earth angular velocity (rad/s) ref [9] */
 
 const double SIN_5 = -0.0871557427476582; /* sin(-5.0 deg) */
-const double COS_5 = 0.9961946980917456; /* cos(-5.0 deg) */
+const double COS_5 = 0.9961946980917456;  /* cos(-5.0 deg) */
 
-const double ERREPH_GLO = 5.0;            /* error of glonass ephemeris (m) */
-const double TSTEP = 60.0;             /* integration step glonass ephemeris (s) */
-const double RTOL_KEPLER = 1e-13;         /* relative tolerance for Kepler equation */
+const double ERREPH_GLO = 5.0;    /* error of glonass ephemeris (m) */
+const double TSTEP = 60.0;        /* integration step glonass ephemeris (s) */
+const double RTOL_KEPLER = 1e-13; /* relative tolerance for Kepler equation */
 
-const double DEFURASSR = 0.15;            /* default accurary of ssr corr (m) */
-const double MAXECORSSR = 10.0;           /* max orbit correction of ssr (m) */
-const double MAXCCORSSR = 1e-6 * SPEED_OF_LIGHT;  /* max clock correction of ssr (m) */
-const double MAXAGESSR = 90.0;            /* max age of ssr orbit and clock (s) */
-const double MAXAGESSR_HRCLK = 10.0;      /* max age of ssr high-rate clock (s) */
-const double STD_BRDCCLK = 30.0;          /* error of broadcast clock (m) */
+const double DEFURASSR = 0.15;                   /* default accurary of ssr corr (m) */
+const double MAXECORSSR = 10.0;                  /* max orbit correction of ssr (m) */
+const double MAXCCORSSR = 1e-6 * SPEED_OF_LIGHT; /* max clock correction of ssr (m) */
+const double MAXAGESSR = 90.0;                   /* max age of ssr orbit and clock (s) */
+const double MAXAGESSR_HRCLK = 10.0;             /* max age of ssr high-rate clock (s) */
+const double STD_BRDCCLK = 30.0;                 /* error of broadcast clock (m) */
 
-const int MAX_ITER_KEPLER = 30;        /* max number of iteration of Kelpler */
+const int MAX_ITER_KEPLER = 30; /* max number of iteration of Kelpler */
 
 
 /* variance by ura ephemeris (ref [1] 20.3.3.3.1.1) --------------------------*/
 double var_uraeph(int ura)
 {
     const double ura_value[] = {
-            2.4, 3.4, 4.85, 6.85, 9.65, 13.65, 24.0, 48.0, 96.0, 192.0, 384.0, 768.0, 1536.0,
-            3072.0, 6144.0
-    };
+        2.4, 3.4, 4.85, 6.85, 9.65, 13.65, 24.0, 48.0, 96.0, 192.0, 384.0, 768.0, 1536.0,
+        3072.0, 6144.0};
     return ura < 0 || 14 < ura ? std::pow(6144.0, 2.0) : std::pow(ura_value[ura], 2.0);
 }
 
@@ -140,13 +139,13 @@ void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts)
         }
     if (n >= MAX_ITER_KEPLER)
         {
-            trace(2, "alm2pos: kepler iteration overflow sat=%2d\n",  alm->sat);
+            trace(2, "alm2pos: kepler iteration overflow sat=%2d\n", alm->sat);
             return;
         }
     sinE = sin(E);
     cosE = cos(E);
     u = atan2(sqrt(1.0 - alm->e * alm->e) * sinE, cosE - alm->e) + alm->omg;
-    r = alm->A * (1.0 - alm->e*cosE);
+    r = alm->A * (1.0 - alm->e * cosE);
     i = alm->i0;
     O = alm->OMG0 + (alm->OMGd - DEFAULT_OMEGA_EARTH_DOT) * tk - DEFAULT_OMEGA_EARTH_DOT * alm->toas;
     x = r * cos(u);
@@ -182,7 +181,7 @@ double eph2clk(gtime_t time, const eph_t *eph)
         {
             t -= eph->f0 + eph->f1 * t + eph->f2 * t * t;
         }
-    return eph->f0 + eph->f1 * t + eph->f2 * t *t;
+    return eph->f0 + eph->f1 * t + eph->f2 * t * t;
 }
 
 
@@ -200,7 +199,7 @@ double eph2clk(gtime_t time, const eph_t *eph)
  *          (tgd or bgd)
  *-----------------------------------------------------------------------------*/
 void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
-        double *var)
+    double *var)
 {
     double tk, M, E, Ek, sinE, cosE, u, r, i, O, sin2u, cos2u, x, y, sinO, cosO, cosi, mu, omge;
     double xg, yg, zg, sino, coso;
@@ -213,14 +212,23 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             rs[0] = rs[1] = rs[2] = *dts = *var = 0.0;
             return;
         }
-    tk = timediff(time , eph->toe);
+    tk = timediff(time, eph->toe);
 
     switch ((sys = satsys(eph->sat, &prn)))
-    {
-    case SYS_GAL: mu = MU_GAL; omge = OMGE_GAL; break;
-    case SYS_BDS: mu = MU_BDS; omge = OMGE_BDS; break;
-    default:      mu = MU_GPS; omge = DEFAULT_OMEGA_EARTH_DOT;     break;
-    }
+        {
+        case SYS_GAL:
+            mu = MU_GAL;
+            omge = OMGE_GAL;
+            break;
+        case SYS_BDS:
+            mu = MU_BDS;
+            omge = OMGE_BDS;
+            break;
+        default:
+            mu = MU_GPS;
+            omge = DEFAULT_OMEGA_EARTH_DOT;
+            break;
+        }
     M = eph->M0 + (sqrt(mu / (eph->A * eph->A * eph->A)) + eph->deln) * tk;
 
     for (n = 0, E = M, Ek = 0.0; fabs(E - Ek) > RTOL_KEPLER && n < MAX_ITER_KEPLER; n++)
@@ -238,10 +246,11 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
 
     trace(4, "kepler: sat=%2d e=%8.5f n=%2d del=%10.3e\n", eph->sat, eph->e, n, E - Ek);
 
-    u = atan2(sqrt(1.0 - eph->e*eph->e) * sinE, cosE-eph->e) + eph->omg;
+    u = atan2(sqrt(1.0 - eph->e * eph->e) * sinE, cosE - eph->e) + eph->omg;
     r = eph->A * (1.0 - eph->e * cosE);
     i = eph->i0 + eph->idot * tk;
-    sin2u = sin(2.0 * u); cos2u = cos(2.0 * u);
+    sin2u = sin(2.0 * u);
+    cos2u = cos(2.0 * u);
     u += eph->cus * sin2u + eph->cuc * cos2u;
     r += eph->crs * sin2u + eph->crc * cos2u;
     i += eph->cis * sin2u + eph->cic * cos2u;
@@ -260,7 +269,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             zg = y * sin(i);
             sino = sin(omge * tk);
             coso = cos(omge * tk);
-            rs[0] =  xg * coso + yg * sino * COS_5 + zg * sino * SIN_5;
+            rs[0] = xg * coso + yg * sino * COS_5 + zg * sino * SIN_5;
             rs[1] = -xg * sino + yg * coso * COS_5 + zg * coso * SIN_5;
             rs[2] = -yg * SIN_5 + zg * COS_5;
         }
@@ -270,14 +279,14 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             sinO = sin(O);
             cosO = cos(O);
             rs[0] = x * cosO - y * cosi * sinO;
-            rs[1] = x * sinO + y *cosi * cosO;
+            rs[1] = x * sinO + y * cosi * cosO;
             rs[2] = y * sin(i);
         }
     tk = timediff(time, eph->toc);
     *dts = eph->f0 + eph->f1 * tk + eph->f2 * tk * tk;
 
     /* relativity correction */
-    *dts -= 2.0 * sqrt(mu * eph->A) * eph-> e* sinE / std::pow(SPEED_OF_LIGHT, 2.0);
+    *dts -= 2.0 * sqrt(mu * eph->A) * eph->e * sinE / std::pow(SPEED_OF_LIGHT, 2.0);
 
     /* position and clock error variance */
     *var = var_uraeph(eph->sva);
@@ -296,10 +305,11 @@ void deq(const double *x, double *xdot, const double *acc)
         }
     /* ref [2] A.3.1.2 with bug fix for xdot[4],xdot[5] */
     a = 1.5 * J2_GLO * MU_GLO * std::pow(RE_GLO, 2.0) / r2 / r3; /* 3/2*J2*mu*Ae^2/r^5 */
-    b = 5.0 * x[2] * x[2] / r2;                    /* 5*z^2/r^2 */
-    c = -MU_GLO / r3 - a * (1.0 - b);                /* -mu/r^3-a(1-b) */
+    b = 5.0 * x[2] * x[2] / r2;                                  /* 5*z^2/r^2 */
+    c = -MU_GLO / r3 - a * (1.0 - b);                            /* -mu/r^3-a(1-b) */
     xdot[0] = x[3];
-    xdot[1] = x[4]; xdot[2] = x[5];
+    xdot[1] = x[4];
+    xdot[2] = x[5];
     xdot[3] = (c + omg2) * x[0] + 2.0 * OMGE_GLO * x[4] + acc[0];
     xdot[4] = (c + omg2) * x[1] - 2.0 * OMGE_GLO * x[3] + acc[1];
     xdot[5] = (c - 2.0 * a) * x[2] + acc[2];
@@ -312,9 +322,12 @@ void glorbit(double t, double *x, const double *acc)
     double k1[6], k2[6], k3[6], k4[6], w[6];
     int i;
 
-    deq(x, k1, acc); for (i = 0; i< 6; i++) w[i] = x[i] + k1[i] * t / 2.0;
-    deq(w, k2, acc); for (i = 0; i < 6; i++) w[i] = x[i] + k2[i] * t / 2.0;
-    deq(w, k3, acc); for (i = 0; i < 6; i++) w[i] = x[i] + k3[i] * t;
+    deq(x, k1, acc);
+    for (i = 0; i < 6; i++) w[i] = x[i] + k1[i] * t / 2.0;
+    deq(w, k2, acc);
+    for (i = 0; i < 6; i++) w[i] = x[i] + k2[i] * t / 2.0;
+    deq(w, k3, acc);
+    for (i = 0; i < 6; i++) w[i] = x[i] + k3[i] * t;
     deq(w, k4, acc);
     for (i = 0; i < 6; i++) x[i] += (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]) * t / 6.0;
 }
@@ -355,7 +368,7 @@ double geph2clk(gtime_t time, const geph_t *geph)
  * notes  : see ref [2]
  *-----------------------------------------------------------------------------*/
 void geph2pos(gtime_t time, const geph_t *geph, double *rs, double *dts,
-                     double *var)
+    double *var)
 {
     double t, tt, x[6];
     int i;
@@ -368,10 +381,10 @@ void geph2pos(gtime_t time, const geph_t *geph, double *rs, double *dts,
 
     for (i = 0; i < 3; i++)
         {
-            x[i  ] = geph->pos[i];
-            x[i+3] = geph->vel[i];
+            x[i] = geph->pos[i];
+            x[i + 3] = geph->vel[i];
         }
-    for (tt = t < 0.0 ? - TSTEP : TSTEP; fabs(t) > 1e-9; t -= tt)
+    for (tt = t < 0.0 ? -TSTEP : TSTEP; fabs(t) > 1e-9; t -= tt)
         {
             if (fabs(t) < TSTEP) tt = t;
             glorbit(tt, x, geph->acc);
@@ -400,7 +413,7 @@ double seph2clk(gtime_t time, const seph_t *seph)
 
     for (i = 0; i < 2; i++)
         {
-            t-=seph->af0 + seph->af1 * t;
+            t -= seph->af0 + seph->af1 * t;
         }
     return seph->af0 + seph->af1 * t;
 }
@@ -417,7 +430,7 @@ double seph2clk(gtime_t time, const seph_t *seph)
  * notes  : see ref [3]
  *-----------------------------------------------------------------------------*/
 void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
-        double *var)
+    double *var)
 {
     double t;
     int i;
@@ -445,12 +458,20 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
     trace(4, "seleph  : time=%s sat=%2d iode=%d\n", time_str(time, 3), sat, iode);
 
     switch (satsys(sat, NULL))
-    {
-    case SYS_QZS: tmax = MAXDTOE_QZS + 1.0; break;
-    case SYS_GAL: tmax = MAXDTOE_GAL + 1.0; break;
-    case SYS_BDS: tmax = MAXDTOE_BDS + 1.0; break;
-    default: tmax = MAXDTOE + 1.0; break;
-    }
+        {
+        case SYS_QZS:
+            tmax = MAXDTOE_QZS + 1.0;
+            break;
+        case SYS_GAL:
+            tmax = MAXDTOE_GAL + 1.0;
+            break;
+        case SYS_BDS:
+            tmax = MAXDTOE_BDS + 1.0;
+            break;
+        default:
+            tmax = MAXDTOE + 1.0;
+            break;
+        }
     tmin = tmax + 1.0;
 
     for (i = 0; i < nav->n; i++)
@@ -459,12 +480,16 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
             if (iode >= 0 && nav->eph[i].iode != iode) continue;
             if ((t = fabs(timediff(nav->eph[i].toe, time))) > tmax) continue;
             if (iode >= 0) return nav->eph + i;
-            if (t <= tmin) {j = i; tmin = t;} /* toe closest to time */
+            if (t <= tmin)
+                {
+                    j = i;
+                    tmin = t;
+                } /* toe closest to time */
         }
-    if (iode >= 0 || j<0)
+    if (iode >= 0 || j < 0)
         {
             trace(3, "no broadcast ephemeris: %s sat=%2d iode=%3d\n", time_str(time, 0),
-                    sat, iode);
+                sat, iode);
             return NULL;
         }
     return nav->eph + j;
@@ -485,12 +510,16 @@ geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav)
             if (iode >= 0 && nav->geph[i].iode != iode) continue;
             if ((t = fabs(timediff(nav->geph[i].toe, time))) > tmax) continue;
             if (iode >= 0) return nav->geph + i;
-            if (t <= tmin) {j = i; tmin = t;} /* toe closest to time */
+            if (t <= tmin)
+                {
+                    j = i;
+                    tmin = t;
+                } /* toe closest to time */
         }
     if (iode >= 0 || j < 0)
         {
             trace(3, "no glonass ephemeris  : %s sat=%2d iode=%2d\n", time_str(time, 0),
-                    sat, iode);
+                sat, iode);
             return NULL;
         }
     return nav->geph + j;
@@ -509,7 +538,11 @@ seph_t *selseph(gtime_t time, int sat, const nav_t *nav)
         {
             if (nav->seph[i].sat != sat) continue;
             if ((t = fabs(timediff(nav->seph[i].t0, time))) > tmax) continue;
-            if (t <= tmin) {j = i; tmin = t;} /* toe closest to time */
+            if (t <= tmin)
+                {
+                    j = i;
+                    tmin = t;
+                } /* toe closest to time */
         }
     if (j < 0)
         {
@@ -522,9 +555,9 @@ seph_t *selseph(gtime_t time, int sat, const nav_t *nav)
 
 /* satellite clock with broadcast ephemeris ----------------------------------*/
 int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-        double *dts)
+    double *dts)
 {
-    eph_t  *eph;
+    eph_t *eph;
     geph_t *geph;
     seph_t *seph;
     int sys;
@@ -548,7 +581,8 @@ int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
             if (!(seph = selseph(teph, sat, nav))) return 0;
             *dts = seph2clk(time, seph);
         }
-    else return 0;
+    else
+        return 0;
 
     return 1;
 }
@@ -556,9 +590,9 @@ int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 
 /* satellite position and clock by broadcast ephemeris -----------------------*/
 int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-        int iode, double *rs, double *dts, double *var, int *svh)
+    int iode, double *rs, double *dts, double *var, int *svh)
 {
-    eph_t  *eph;
+    eph_t *eph;
     geph_t *geph;
     seph_t *seph;
     double rst[3], dtst[1], tt = 1e-3;
@@ -596,7 +630,8 @@ int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
             seph2pos(time, seph, rst, dtst, var);
             *svh = seph->svh;
         }
-    else return 0;
+    else
+        return 0;
 
     /* satellite velocity and clock drift by differential approx */
     for (i = 0; i < 3; i++) rs[i + 3] = (rst[i] - rs[i]) / tt;
@@ -608,7 +643,7 @@ int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 
 /* satellite position and clock with sbas correction -------------------------*/
 int satpos_sbas(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-        double *rs, double *dts, double *var, int *svh)
+    double *rs, double *dts, double *var, int *svh)
 {
     const sbssatp_t *sbs;
     int i;
@@ -640,7 +675,7 @@ int satpos_sbas(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 
 /* satellite position and clock with ssr correction --------------------------*/
 int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
-        int opt, double *rs, double *dts, double *var, int *svh)
+    int opt, double *rs, double *dts, double *var, int *svh)
 {
     const ssr_t *ssr;
     eph_t *eph;
@@ -665,7 +700,7 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     if (ssr->iod[0] != ssr->iod[1])
         {
             trace(2, "inconsist ssr correction: %s sat=%2d iod=%d %d\n",
-                    time_str(time, 0), sat, ssr->iod[0], ssr->iod[1]);
+                time_str(time, 0), sat, ssr->iod[0], ssr->iod[1]);
             *svh = -1;
             return 0;
         }
@@ -677,7 +712,7 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     if (fabs(t1) > MAXAGESSR || fabs(t2) > MAXAGESSR)
         {
             trace(2, "age of ssr error: %s sat=%2d t=%.0f %.0f\n", time_str(time, 0),
-                    sat, t1, t2);
+                sat, t1, t2);
             *svh = -1;
             return 0;
         }
@@ -695,7 +730,7 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     if (norm_rtk(deph, 3) > MAXECORSSR || fabs(dclk) > MAXCCORSSR)
         {
             trace(3, "invalid ssr correction: %s deph=%.1f dclk=%.1f\n",
-                    time_str(time, 0), norm_rtk(deph, 3), dclk);
+                time_str(time, 0), norm_rtk(deph, 3), dclk);
             *svh = -1;
             return 0;
         }
@@ -709,9 +744,9 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
             if (!(eph = seleph(teph, sat, ssr->iode, nav))) return 0;
 
             /* satellite clock by clock parameters */
-            tk=timediff(time, eph->toc);
-            dts[0] = eph->f0 + eph->f1*tk + eph->f2 * tk * tk;
-            dts[1] = eph->f1 + 2.0*eph->f2 * tk;
+            tk = timediff(time, eph->toc);
+            dts[0] = eph->f0 + eph->f1 * tk + eph->f2 * tk * tk;
+            dts[1] = eph->f1 + 2.0 * eph->f2 * tk;
 
             /* relativity correction */
             dts[0] -= 2.0 * dot(rs, rs + 3, 3) / SPEED_OF_LIGHT / SPEED_OF_LIGHT;
@@ -742,7 +777,7 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     *var = var_urassr(ssr->ura);
 
     trace(5, "satpos_ssr: %s sat=%2d deph=%6.3f %6.3f %6.3f er=%6.3f %6.3f %6.3f dclk=%6.3f var=%6.3f\n",
-            time_str(time, 2), sat, deph[0], deph[1], deph[2], er[0], er[1], er[2], dclk, *var);
+        time_str(time, 2), sat, deph[0], deph[1], deph[2], er[0], er[1], er[2], dclk, *var);
 
     return 1;
 }
@@ -765,25 +800,32 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
  *          satellite clock does not include code bias correction (tgd or bgd)
  *-----------------------------------------------------------------------------*/
 int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
-        const nav_t *nav, double *rs, double *dts, double *var,
-        int *svh)
+    const nav_t *nav, double *rs, double *dts, double *var,
+    int *svh)
 {
     trace(4, "satpos  : time=%s sat=%2d ephopt=%d\n", time_str(time, 3), sat, ephopt);
 
     *svh = 0;
 
     switch (ephopt)
-    {
-    case EPHOPT_BRDC  : return ephpos     (time, teph, sat, nav, -1, rs, dts, var, svh);
-    case EPHOPT_SBAS  : return satpos_sbas(time, teph, sat, nav, rs, dts, var, svh);
-    case EPHOPT_SSRAPC: return satpos_ssr (time, teph, sat, nav, 0, rs, dts, var, svh);
-    case EPHOPT_SSRCOM: return satpos_ssr (time, teph, sat, nav, 1, rs, dts, var, svh);
-    case EPHOPT_PREC  :
-        if (!peph2pos(time, sat, nav, 1, rs, dts, var)) break; else return 1;
-        //TODO: enable lex
-        //case EPHOPT_LEX   :
-        //    if (!lexeph2pos(time, sat, nav, rs, dts, var)) break; else return 1;
-    }
+        {
+        case EPHOPT_BRDC:
+            return ephpos(time, teph, sat, nav, -1, rs, dts, var, svh);
+        case EPHOPT_SBAS:
+            return satpos_sbas(time, teph, sat, nav, rs, dts, var, svh);
+        case EPHOPT_SSRAPC:
+            return satpos_ssr(time, teph, sat, nav, 0, rs, dts, var, svh);
+        case EPHOPT_SSRCOM:
+            return satpos_ssr(time, teph, sat, nav, 1, rs, dts, var, svh);
+        case EPHOPT_PREC:
+            if (!peph2pos(time, sat, nav, 1, rs, dts, var))
+                break;
+            else
+                return 1;
+            //TODO: enable lex
+            //case EPHOPT_LEX   :
+            //    if (!lexeph2pos(time, sat, nav, rs, dts, var)) break; else return 1;
+        }
     *svh = -1;
     return 0;
 }
@@ -814,7 +856,7 @@ int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
  *          signal transmission time
  *-----------------------------------------------------------------------------*/
 void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
-        int ephopt, double *rs, double *dts, double *var, int *svh)
+    int ephopt, double *rs, double *dts, double *var, int *svh)
 {
     gtime_t time[MAXOBS] = {};
     double dt, pr;
@@ -824,13 +866,14 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
 
     for (i = 0; i < n && i < MAXOBS; i++)
         {
-            for (j = 0; j < 6; j++) rs [j + i * 6] = 0.0;
+            for (j = 0; j < 6; j++) rs[j + i * 6] = 0.0;
             for (j = 0; j < 2; j++) dts[j + i * 2] = 0.0;
             var[i] = 0.0;
             svh[i] = 0;
 
             /* search any pseudorange */
-            for (j = 0, pr = 0.0; j < NFREQ; j++) if ((pr = obs[i].P[j]) != 0.0) break;
+            for (j = 0, pr = 0.0; j < NFREQ; j++)
+                if ((pr = obs[i].P[j]) != 0.0) break;
 
             if (j >= NFREQ)
                 {
@@ -866,7 +909,7 @@ void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
     for (i = 0; i < n && i < MAXOBS; i++)
         {
             trace(4, "%s sat=%2d rs=%13.3f %13.3f %13.3f dts=%12.3f var=%7.3f svh=%02X\n",
-                    time_str(time[i], 6), obs[i].sat, rs[i * 6], rs[1 + i * 6], rs[2 + i * 6],
-                    dts[i * 2] * 1e9, var[i], svh[i]);
+                time_str(time[i], 6), obs[i].sat, rs[i * 6], rs[1 + i * 6], rs[2 + i * 6],
+                dts[i * 2] * 1e9, var[i], svh[i]);
         }
 }

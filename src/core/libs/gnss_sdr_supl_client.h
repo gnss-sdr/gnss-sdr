@@ -34,7 +34,8 @@
 #ifndef GNSS_SDR_SUPL_CLIENT_H_
 #define GNSS_SDR_SUPL_CLIENT_H_
 
-extern "C" {
+extern "C"
+{
 #include "supl.h"
 }
 #include "GPS_L1_CA.h"
@@ -68,15 +69,16 @@ private:
     supl_ctx_t ctx;
     // assistance data
     supl_assist_t assist;
+
 public:
     // SUPL SERVER INFO
     std::string server_name;
     int server_port;
     int request;
     // ephemeris map
-    std::map<int,Gps_Ephemeris> gps_ephemeris_map;
+    std::map<int, Gps_Ephemeris> gps_ephemeris_map;
     // almanac map
-    std::map<int,Gps_Almanac> gps_almanac_map;
+    std::map<int, Gps_Almanac> gps_almanac_map;
 
     // ionospheric model
     Gps_Iono gps_iono;
@@ -87,7 +89,7 @@ public:
     // reference location
     Gps_Ref_Location gps_ref_loc;
     // Acquisition Assistance map
-    std::map<int,Gps_Acq_Assist> gps_acq_map;
+    std::map<int, Gps_Acq_Assist> gps_acq_map;
 
     /*
      * \brief Initiates the TCP SSL SUPL connection to the SUPL server and request assistance data using the provided GSM Base station parameters
@@ -113,7 +115,7 @@ public:
      * \brief Save ephemeris map to XML file.
      */
     bool save_ephemeris_map_xml(const std::string file_name,
-                                std::map<int,Gps_Ephemeris> eph_map);
+        std::map<int, Gps_Ephemeris> eph_map);
 
     /*!
      * \brief Read utc model from XML file
@@ -125,7 +127,7 @@ public:
      * To be called by ControlThread::gps_utc_model_data_write_to_XML()
      */
     bool save_utc_map_xml(const std::string file_name,
-                          std::map<int, Gps_Utc_Model> utc_map);
+        std::map<int, Gps_Utc_Model> utc_map);
 
     /*!
      * \brief Read iono from XML file
@@ -136,7 +138,7 @@ public:
      * \brief Save iono map to XML file
      */
     bool save_iono_map_xml(const std::string file_name,
-                           std::map<int, Gps_Iono> iono_map);
+        std::map<int, Gps_Iono> iono_map);
 
     /*!
      * \brief Read ref time from XML file
@@ -147,7 +149,7 @@ public:
      * \brief Save ref time map to XML file
      */
     bool save_ref_time_map_xml(const std::string file_name,
-                               std::map<int, Gps_Ref_Time> ref_time_map);
+        std::map<int, Gps_Ref_Time> ref_time_map);
 
     /*!
      * \brief Read ref location from XML file
@@ -158,7 +160,7 @@ public:
      * \brief Save ref location map to XML file
      */
     bool save_ref_location_map_xml(std::string file_name,
-                                   std::map<int, Gps_Ref_Location> ref_location_map);
+        std::map<int, Gps_Ref_Location> ref_location_map);
 
     /*
      * Prints SUPL data to std::cout. Use it for debug purposes only.

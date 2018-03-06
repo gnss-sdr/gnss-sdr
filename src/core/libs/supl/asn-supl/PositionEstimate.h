@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_PositionEstimate_H_
-#define	_PositionEstimate_H_
+#ifndef _PositionEstimate_H_
+#define _PositionEstimate_H_
 
 
 #include <asn_application.h>
@@ -16,45 +16,49 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum latitudeSign {
-	latitudeSign_north	= 0,
-	latitudeSign_south	= 1
-} e_latitudeSign;
+    /* Dependencies */
+    typedef enum latitudeSign
+    {
+        latitudeSign_north = 0,
+        latitudeSign_south = 1
+    } e_latitudeSign;
 
-/* Forward declarations */
-struct AltitudeInfo;
+    /* Forward declarations */
+    struct AltitudeInfo;
 
-/* PositionEstimate */
-typedef struct PositionEstimate {
-	ENUMERATED_t	 latitudeSign;
-	long	 latitude;
-	long	 longitude;
-	struct uncertainty {
-		long	 uncertaintySemiMajor;
-		long	 uncertaintySemiMinor;
-		long	 orientationMajorAxis;
-		
-		/* Context for parsing across buffer boundaries */
-		asn_struct_ctx_t _asn_ctx;
-	} *uncertainty;
-	long	*confidence	/* OPTIONAL */;
-	struct AltitudeInfo	*altitudeInfo	/* OPTIONAL */;
-	/*
+    /* PositionEstimate */
+    typedef struct PositionEstimate
+    {
+        ENUMERATED_t latitudeSign;
+        long latitude;
+        long longitude;
+        struct uncertainty
+        {
+            long uncertaintySemiMajor;
+            long uncertaintySemiMinor;
+            long orientationMajorAxis;
+
+            /* Context for parsing across buffer boundaries */
+            asn_struct_ctx_t _asn_ctx;
+        } * uncertainty;
+        long *confidence /* OPTIONAL */;
+        struct AltitudeInfo *altitudeInfo /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} PositionEstimate_t;
 
-/* Implementation */
-/* extern asn_TYPE_descriptor_t asn_DEF_latitudeSign_2;	// (Use -fall-defs-global to expose) */
-extern asn_TYPE_descriptor_t asn_DEF_PositionEstimate;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PositionEstimate_t;
+
+    /* Implementation */
+    /* extern asn_TYPE_descriptor_t asn_DEF_latitudeSign_2;	// (Use -fall-defs-global to expose) */
+    extern asn_TYPE_descriptor_t asn_DEF_PositionEstimate;
 
 #ifdef __cplusplus
 }
@@ -63,5 +67,5 @@ extern asn_TYPE_descriptor_t asn_DEF_PositionEstimate;
 /* Referred external types */
 #include "AltitudeInfo.h"
 
-#endif	/* _PositionEstimate_H_ */
+#endif /* _PositionEstimate_H_ */
 #include <asn_internal.h>

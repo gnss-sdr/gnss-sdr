@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_LocationError_H_
-#define	_LocationError_H_
+#ifndef _LocationError_H_
+#define _LocationError_H_
 
 
 #include <asn_application.h>
@@ -15,27 +15,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct AdditionalAssistanceData;
+    /* Forward declarations */
+    struct AdditionalAssistanceData;
 
-/* LocationError */
-typedef struct LocationError {
-	LocErrorReason_t	 locErrorReason;
-	struct AdditionalAssistanceData	*additionalAssistanceData	/* OPTIONAL */;
-	/*
+    /* LocationError */
+    typedef struct LocationError
+    {
+        LocErrorReason_t locErrorReason;
+        struct AdditionalAssistanceData *additionalAssistanceData /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} LocationError_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_LocationError;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } LocationError_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_LocationError;
 
 #ifdef __cplusplus
 }
@@ -44,5 +46,5 @@ extern asn_TYPE_descriptor_t asn_DEF_LocationError;
 /* Referred external types */
 #include "AdditionalAssistanceData.h"
 
-#endif	/* _LocationError_H_ */
+#endif /* _LocationError_H_ */
 #include <asn_internal.h>

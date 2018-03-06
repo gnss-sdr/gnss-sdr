@@ -50,12 +50,12 @@ class ConfigurationInterface;
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GPS L5i signals
  */
-class GpsL5iPcpsAcquisition: public AcquisitionInterface
+class GpsL5iPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GpsL5iPcpsAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL5iPcpsAcquisition();
 
@@ -156,8 +156,8 @@ private:
     bool dump_;
     bool blocking_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float>* code_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

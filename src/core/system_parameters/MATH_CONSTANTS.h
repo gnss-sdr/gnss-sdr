@@ -43,8 +43,8 @@
         ONE_PI_TWO_PX = (1/Pi)*2^X
 */
 
-const double PI = 3.1415926535897932;             //!<  pi
-const double PI_2 = 2.0 * PI;                     //!<  2 * pi
+const double PI = 3.1415926535897932;  //!<  pi
+const double PI_2 = 2.0 * PI;          //!<  2 * pi
 
 const double TWO_P4 = (16);                       //!< 2^4
 const double TWO_P11 = (2048);                    //!< 2^11
@@ -106,13 +106,13 @@ const double PI_TWO_N31 = (1.462918079267160e-009);  //!< Pi*2^-31
 const double PI_TWO_N38 = (1.142904749427469e-011);  //!< Pi*2^-38
 const double PI_TWO_N23 = (3.745070282923929e-007);  //!< Pi*2^-23
 
-const double D2R = (PI/180.0);          //!< deg to rad
-const double R2D = (180.0/PI);          //!< rad to deg
+const double D2R = (PI / 180.0);        //!< deg to rad
+const double R2D = (180.0 / PI);        //!< rad to deg
 const double SC2RAD = 3.1415926535898;  //!<  semi-circle to radian (IS-GPS)
 const double AS2R = (D2R / 3600.0);     //!<  arc sec to radian
 
-const double DEFAULT_OMEGA_EARTH_DOT = 7.2921151467e-5; //!<  Default Earth rotation rate, [rad/s]
-const double SPEED_OF_LIGHT = 299792458.0;              //!<  [m/s]
-const double AU = 149597870691.0;                       //!<  1 Astronomical Unit AU (m) distance from Earth to the Sun.
+const double DEFAULT_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!<  Default Earth rotation rate, [rad/s]
+const double SPEED_OF_LIGHT = 299792458.0;               //!<  [m/s]
+const double AU = 149597870691.0;                        //!<  1 Astronomical Unit AU (m) distance from Earth to the Sun.
 
 #endif /* GNSS_SDR_MATH_CONSTANTS_H_ */

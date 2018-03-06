@@ -51,9 +51,9 @@ class GpsL2MDllPllTracking : public TrackingInterface
 {
 public:
     GpsL2MDllPllTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL2MDllPllTracking();
 
@@ -100,4 +100,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif // GNSS_SDR_gps_l2_m_dll_pll_tracking_H_
+#endif  // GNSS_SDR_gps_l2_m_dll_pll_tracking_H_

@@ -40,7 +40,8 @@
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 
-template<typename Data>class concurrent_queue;
+template <typename Data>
+class concurrent_queue;
 
 /*!
  * \brief This abstract class represents an interface to a tracking block.

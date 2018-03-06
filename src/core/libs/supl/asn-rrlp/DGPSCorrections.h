@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_DGPSCorrections_H_
-#define	_DGPSCorrections_H_
+#ifndef _DGPSCorrections_H_
+#define _DGPSCorrections_H_
 
 
 #include <asn_application.h>
@@ -16,25 +16,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* DGPSCorrections */
-typedef struct DGPSCorrections {
-	long	 gpsTOW;
-	long	 status;
-	SeqOfSatElement_t	 satList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} DGPSCorrections_t;
+    /* DGPSCorrections */
+    typedef struct DGPSCorrections
+    {
+        long gpsTOW;
+        long status;
+        SeqOfSatElement_t satList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_DGPSCorrections;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } DGPSCorrections_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_DGPSCorrections;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _DGPSCorrections_H_ */
+#endif /* _DGPSCorrections_H_ */
 #include <asn_internal.h>

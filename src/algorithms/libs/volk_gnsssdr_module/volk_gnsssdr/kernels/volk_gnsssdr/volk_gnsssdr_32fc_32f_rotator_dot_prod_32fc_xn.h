@@ -85,11 +85,11 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic(lv_32f
     unsigned int n;
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            result[n_vec] = lv_cmake(0,0);
+            result[n_vec] = lv_cmake(0, 0);
         }
     for (n = 0; n < num_points; n++)
         {
-            tmp32_1 = *in_common++ * (*phase);//if(n<10 || n >= 8108) printf("generic phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
+            tmp32_1 = *in_common++ * (*phase);  //if(n<10 || n >= 8108) printf("generic phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
 
             // Regenerate phase
             if (n % 256 == 0)
@@ -126,7 +126,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic_reload
     unsigned int j;
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            result[n_vec] = lv_cmake(0,0);
+            result[n_vec] = lv_cmake(0, 0);
         }
 
     for (n = 0; n < num_points / ROTATOR_RELOAD; n++)
@@ -141,7 +141,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic_reload
                             result[n_vec] += tmp32_2;
                         }
                 }
-            /* Regenerate phase */
+                /* Regenerate phase */
 #ifdef __cplusplus
             (*phase) /= std::abs((*phase));
 #else
@@ -175,8 +175,8 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_
     const unsigned int sixteenthPoints = num_points / 16;
 
     const float* aPtr = (float*)in_common;
-    const float* bPtr[ num_a_vectors];
-    for( vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind )
+    const float* bPtr[num_a_vectors];
+    for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)
         {
             bPtr[vec_ind] = in_a[vec_ind];
         }
@@ -194,7 +194,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_
     __m256 dotProdVal2[num_a_vectors];
     __m256 dotProdVal3[num_a_vectors];
 
-    for( vec_ind = 0; vec_ind < num_a_vectors; vec_ind++ )
+    for (vec_ind = 0; vec_ind < num_a_vectors; vec_ind++)
         {
             dotProdVal0[vec_ind] = _mm256_setzero_ps();
             dotProdVal1[vec_ind] = _mm256_setzero_ps();
@@ -204,57 +204,62 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_
 
     // Set up the complex rotator
     __m256 z0, z1, z2, z3;
-    __VOLK_ATTR_ALIGNED(32) lv_32fc_t phase_vec[16];
-    for( vec_ind = 0; vec_ind < 16; ++vec_ind )
+    __VOLK_ATTR_ALIGNED(32)
+    lv_32fc_t phase_vec[16];
+    for (vec_ind = 0; vec_ind < 16; ++vec_ind)
         {
             phase_vec[vec_ind] = _phase;
             _phase *= phase_inc;
         }
 
-    z0 = _mm256_load_ps( (float *)phase_vec );
-    z1 = _mm256_load_ps( (float *)(phase_vec + 4) );
-    z2 = _mm256_load_ps( (float *)(phase_vec + 8) );
-    z3 = _mm256_load_ps( (float *)(phase_vec + 12) );
+    z0 = _mm256_load_ps((float*)phase_vec);
+    z1 = _mm256_load_ps((float*)(phase_vec + 4));
+    z2 = _mm256_load_ps((float*)(phase_vec + 8));
+    z3 = _mm256_load_ps((float*)(phase_vec + 12));
 
-    lv_32fc_t dz = phase_inc; dz *= dz; dz *= dz; dz *= dz; dz *= dz; // dz = phase_inc^16;
+    lv_32fc_t dz = phase_inc;
+    dz *= dz;
+    dz *= dz;
+    dz *= dz;
+    dz *= dz;  // dz = phase_inc^16;
 
-    for( vec_ind = 0; vec_ind < 4; ++vec_ind )
+    for (vec_ind = 0; vec_ind < 4; ++vec_ind)
         {
             phase_vec[vec_ind] = dz;
         }
 
-    __m256 dz_reg = _mm256_load_ps( (float *)phase_vec );
-    dz_reg = _mm256_complexnormalise_ps( dz_reg );
+    __m256 dz_reg = _mm256_load_ps((float*)phase_vec);
+    dz_reg = _mm256_complexnormalise_ps(dz_reg);
 
-    for(;number < sixteenthPoints; number++)
+    for (; number < sixteenthPoints; number++)
         {
             a0Val = _mm256_loadu_ps(aPtr);
-            a1Val = _mm256_loadu_ps(aPtr+8);
-            a2Val = _mm256_loadu_ps(aPtr+16);
-            a3Val = _mm256_loadu_ps(aPtr+24);
+            a1Val = _mm256_loadu_ps(aPtr + 8);
+            a2Val = _mm256_loadu_ps(aPtr + 16);
+            a3Val = _mm256_loadu_ps(aPtr + 24);
 
-            a0Val = _mm256_complexmul_ps( a0Val, z0 );
-            a1Val = _mm256_complexmul_ps( a1Val, z1 );
-            a2Val = _mm256_complexmul_ps( a2Val, z2 );
-            a3Val = _mm256_complexmul_ps( a3Val, z3 );
+            a0Val = _mm256_complexmul_ps(a0Val, z0);
+            a1Val = _mm256_complexmul_ps(a1Val, z1);
+            a2Val = _mm256_complexmul_ps(a2Val, z2);
+            a3Val = _mm256_complexmul_ps(a3Val, z3);
 
-            z0 = _mm256_complexmul_ps( z0, dz_reg );
-            z1 = _mm256_complexmul_ps( z1, dz_reg );
-            z2 = _mm256_complexmul_ps( z2, dz_reg );
-            z3 = _mm256_complexmul_ps( z3, dz_reg );
+            z0 = _mm256_complexmul_ps(z0, dz_reg);
+            z1 = _mm256_complexmul_ps(z1, dz_reg);
+            z2 = _mm256_complexmul_ps(z2, dz_reg);
+            z3 = _mm256_complexmul_ps(z3, dz_reg);
 
-            for( vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind )
+            for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)
                 {
-                    x0Val[vec_ind] = _mm256_loadu_ps(bPtr[vec_ind]); // t0|t1|t2|t3|t4|t5|t6|t7
-                    x1Val[vec_ind] = _mm256_loadu_ps(bPtr[vec_ind]+8);
-                    x0loVal[vec_ind] = _mm256_unpacklo_ps(x0Val[vec_ind], x0Val[vec_ind]); // t0|t0|t1|t1|t4|t4|t5|t5
-                    x0hiVal[vec_ind] = _mm256_unpackhi_ps(x0Val[vec_ind], x0Val[vec_ind]); // t2|t2|t3|t3|t6|t6|t7|t7
+                    x0Val[vec_ind] = _mm256_loadu_ps(bPtr[vec_ind]);  // t0|t1|t2|t3|t4|t5|t6|t7
+                    x1Val[vec_ind] = _mm256_loadu_ps(bPtr[vec_ind] + 8);
+                    x0loVal[vec_ind] = _mm256_unpacklo_ps(x0Val[vec_ind], x0Val[vec_ind]);  // t0|t0|t1|t1|t4|t4|t5|t5
+                    x0hiVal[vec_ind] = _mm256_unpackhi_ps(x0Val[vec_ind], x0Val[vec_ind]);  // t2|t2|t3|t3|t6|t6|t7|t7
                     x1loVal[vec_ind] = _mm256_unpacklo_ps(x1Val[vec_ind], x1Val[vec_ind]);
                     x1hiVal[vec_ind] = _mm256_unpackhi_ps(x1Val[vec_ind], x1Val[vec_ind]);
 
                     // TODO: it may be possible to rearrange swizzling to better pipeline data
-                    b0Val[vec_ind] = _mm256_permute2f128_ps(x0loVal[vec_ind], x0hiVal[vec_ind], 0x20); // t0|t0|t1|t1|t2|t2|t3|t3
-                    b1Val[vec_ind] = _mm256_permute2f128_ps(x0loVal[vec_ind], x0hiVal[vec_ind], 0x31); // t4|t4|t5|t5|t6|t6|t7|t7
+                    b0Val[vec_ind] = _mm256_permute2f128_ps(x0loVal[vec_ind], x0hiVal[vec_ind], 0x20);  // t0|t0|t1|t1|t2|t2|t3|t3
+                    b1Val[vec_ind] = _mm256_permute2f128_ps(x0loVal[vec_ind], x0hiVal[vec_ind], 0x31);  // t4|t4|t5|t5|t6|t6|t7|t7
                     b2Val[vec_ind] = _mm256_permute2f128_ps(x1loVal[vec_ind], x1hiVal[vec_ind], 0x20);
                     b3Val[vec_ind] = _mm256_permute2f128_ps(x1loVal[vec_ind], x1hiVal[vec_ind], 0x31);
 
@@ -274,43 +279,44 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_
             // Force the rotators back onto the unit circle
             if ((number % 64) == 0)
                 {
-                    z0 = _mm256_complexnormalise_ps( z0 );
-                    z1 = _mm256_complexnormalise_ps( z1 );
-                    z2 = _mm256_complexnormalise_ps( z2 );
-                    z3 = _mm256_complexnormalise_ps( z3 );
+                    z0 = _mm256_complexnormalise_ps(z0);
+                    z1 = _mm256_complexnormalise_ps(z1);
+                    z2 = _mm256_complexnormalise_ps(z2);
+                    z3 = _mm256_complexnormalise_ps(z3);
                 }
 
             aPtr += 32;
         }
-    __VOLK_ATTR_ALIGNED(32) lv_32fc_t dotProductVector[4];
+    __VOLK_ATTR_ALIGNED(32)
+    lv_32fc_t dotProductVector[4];
 
-    for( vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind )
+    for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)
         {
             dotProdVal0[vec_ind] = _mm256_add_ps(dotProdVal0[vec_ind], dotProdVal1[vec_ind]);
             dotProdVal0[vec_ind] = _mm256_add_ps(dotProdVal0[vec_ind], dotProdVal2[vec_ind]);
             dotProdVal0[vec_ind] = _mm256_add_ps(dotProdVal0[vec_ind], dotProdVal3[vec_ind]);
 
-            _mm256_store_ps((float *)dotProductVector, dotProdVal0[vec_ind]); // Store the results back into the dot product vector
+            _mm256_store_ps((float*)dotProductVector, dotProdVal0[vec_ind]);  // Store the results back into the dot product vector
 
-            result[ vec_ind ] = lv_cmake( 0, 0 );
-            for( i = 0; i < 4; ++i )
+            result[vec_ind] = lv_cmake(0, 0);
+            for (i = 0; i < 4; ++i)
                 {
                     result[vec_ind] += dotProductVector[i];
                 }
         }
 
-    z0 = _mm256_complexnormalise_ps( z0 );
+    z0 = _mm256_complexnormalise_ps(z0);
     _mm256_store_ps((float*)phase_vec, z0);
     _phase = phase_vec[0];
     _mm256_zeroupper();
 
-    number = sixteenthPoints*16;
-    for(;number < num_points; number++)
+    number = sixteenthPoints * 16;
+    for (; number < num_points; number++)
         {
-            wo = (*aPtr++)*_phase;
+            wo = (*aPtr++) * _phase;
             _phase *= phase_inc;
 
-            for( vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind )
+            for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)
                 {
                     result[vec_ind] += wo * in_a[vec_ind][number];
                 }
@@ -333,8 +339,8 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_
     const unsigned int sixteenthPoints = num_points / 16;
 
     const float* aPtr = (float*)in_common;
-    const float* bPtr[ num_a_vectors];
-    for( vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind )
+    const float* bPtr[num_a_vectors];
+    for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)
         {
             bPtr[vec_ind] = in_a[vec_ind];
         }
@@ -352,7 +358,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_
     __m256 dotProdVal2[num_a_vectors];
     __m256 dotProdVal3[num_a_vectors];
 
-    for( vec_ind = 0; vec_ind < num_a_vectors; vec_ind++ )
+    for (vec_ind = 0; vec_ind < num_a_vectors; vec_ind++)
         {
             dotProdVal0[vec_ind] = _mm256_setzero_ps();
             dotProdVal1[vec_ind] = _mm256_setzero_ps();
@@ -362,58 +368,62 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_
 
     // Set up the complex rotator
     __m256 z0, z1, z2, z3;
-    __VOLK_ATTR_ALIGNED(32) lv_32fc_t phase_vec[16];
-    for( vec_ind = 0; vec_ind < 16; ++vec_ind )
+    __VOLK_ATTR_ALIGNED(32)
+    lv_32fc_t phase_vec[16];
+    for (vec_ind = 0; vec_ind < 16; ++vec_ind)
         {
             phase_vec[vec_ind] = _phase;
             _phase *= phase_inc;
         }
 
-    z0 = _mm256_load_ps( (float *)phase_vec );
-    z1 = _mm256_load_ps( (float *)(phase_vec + 4) );
-    z2 = _mm256_load_ps( (float *)(phase_vec + 8) );
-    z3 = _mm256_load_ps( (float *)(phase_vec + 12) );
+    z0 = _mm256_load_ps((float*)phase_vec);
+    z1 = _mm256_load_ps((float*)(phase_vec + 4));
+    z2 = _mm256_load_ps((float*)(phase_vec + 8));
+    z3 = _mm256_load_ps((float*)(phase_vec + 12));
 
-    lv_32fc_t dz = phase_inc; dz *= dz; dz *= dz; dz *= dz; dz *= dz; // dz = phase_inc^16;
+    lv_32fc_t dz = phase_inc;
+    dz *= dz;
+    dz *= dz;
+    dz *= dz;
+    dz *= dz;  // dz = phase_inc^16;
 
-    for( vec_ind = 0; vec_ind < 4; ++vec_ind )
+    for (vec_ind = 0; vec_ind < 4; ++vec_ind)
         {
             phase_vec[vec_ind] = dz;
         }
 
-    __m256 dz_reg = _mm256_load_ps( (float *)phase_vec );
-    dz_reg = _mm256_complexnormalise_ps( dz_reg );
+    __m256 dz_reg = _mm256_load_ps((float*)phase_vec);
+    dz_reg = _mm256_complexnormalise_ps(dz_reg);
 
-    for(;number < sixteenthPoints; number++)
+    for (; number < sixteenthPoints; number++)
         {
-
             a0Val = _mm256_load_ps(aPtr);
-            a1Val = _mm256_load_ps(aPtr+8);
-            a2Val = _mm256_load_ps(aPtr+16);
-            a3Val = _mm256_load_ps(aPtr+24);
+            a1Val = _mm256_load_ps(aPtr + 8);
+            a2Val = _mm256_load_ps(aPtr + 16);
+            a3Val = _mm256_load_ps(aPtr + 24);
 
-            a0Val = _mm256_complexmul_ps( a0Val, z0 );
-            a1Val = _mm256_complexmul_ps( a1Val, z1 );
-            a2Val = _mm256_complexmul_ps( a2Val, z2 );
-            a3Val = _mm256_complexmul_ps( a3Val, z3 );
+            a0Val = _mm256_complexmul_ps(a0Val, z0);
+            a1Val = _mm256_complexmul_ps(a1Val, z1);
+            a2Val = _mm256_complexmul_ps(a2Val, z2);
+            a3Val = _mm256_complexmul_ps(a3Val, z3);
 
-            z0 = _mm256_complexmul_ps( z0, dz_reg );
-            z1 = _mm256_complexmul_ps( z1, dz_reg );
-            z2 = _mm256_complexmul_ps( z2, dz_reg );
-            z3 = _mm256_complexmul_ps( z3, dz_reg );
+            z0 = _mm256_complexmul_ps(z0, dz_reg);
+            z1 = _mm256_complexmul_ps(z1, dz_reg);
+            z2 = _mm256_complexmul_ps(z2, dz_reg);
+            z3 = _mm256_complexmul_ps(z3, dz_reg);
 
-            for( vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind )
+            for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)
                 {
-                    x0Val[vec_ind] = _mm256_loadu_ps(bPtr[vec_ind]); // t0|t1|t2|t3|t4|t5|t6|t7
-                    x1Val[vec_ind] = _mm256_loadu_ps(bPtr[vec_ind]+8);
-                    x0loVal[vec_ind] = _mm256_unpacklo_ps(x0Val[vec_ind], x0Val[vec_ind]); // t0|t0|t1|t1|t4|t4|t5|t5
-                    x0hiVal[vec_ind] = _mm256_unpackhi_ps(x0Val[vec_ind], x0Val[vec_ind]); // t2|t2|t3|t3|t6|t6|t7|t7
+                    x0Val[vec_ind] = _mm256_loadu_ps(bPtr[vec_ind]);  // t0|t1|t2|t3|t4|t5|t6|t7
+                    x1Val[vec_ind] = _mm256_loadu_ps(bPtr[vec_ind] + 8);
+                    x0loVal[vec_ind] = _mm256_unpacklo_ps(x0Val[vec_ind], x0Val[vec_ind]);  // t0|t0|t1|t1|t4|t4|t5|t5
+                    x0hiVal[vec_ind] = _mm256_unpackhi_ps(x0Val[vec_ind], x0Val[vec_ind]);  // t2|t2|t3|t3|t6|t6|t7|t7
                     x1loVal[vec_ind] = _mm256_unpacklo_ps(x1Val[vec_ind], x1Val[vec_ind]);
                     x1hiVal[vec_ind] = _mm256_unpackhi_ps(x1Val[vec_ind], x1Val[vec_ind]);
 
                     // TODO: it may be possible to rearrange swizzling to better pipeline data
-                    b0Val[vec_ind] = _mm256_permute2f128_ps(x0loVal[vec_ind], x0hiVal[vec_ind], 0x20); // t0|t0|t1|t1|t2|t2|t3|t3
-                    b1Val[vec_ind] = _mm256_permute2f128_ps(x0loVal[vec_ind], x0hiVal[vec_ind], 0x31); // t4|t4|t5|t5|t6|t6|t7|t7
+                    b0Val[vec_ind] = _mm256_permute2f128_ps(x0loVal[vec_ind], x0hiVal[vec_ind], 0x20);  // t0|t0|t1|t1|t2|t2|t3|t3
+                    b1Val[vec_ind] = _mm256_permute2f128_ps(x0loVal[vec_ind], x0hiVal[vec_ind], 0x31);  // t4|t4|t5|t5|t6|t6|t7|t7
                     b2Val[vec_ind] = _mm256_permute2f128_ps(x1loVal[vec_ind], x1hiVal[vec_ind], 0x20);
                     b3Val[vec_ind] = _mm256_permute2f128_ps(x1loVal[vec_ind], x1hiVal[vec_ind], 0x31);
 
@@ -433,43 +443,44 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_
             // Force the rotators back onto the unit circle
             if ((number % 64) == 0)
                 {
-                    z0 = _mm256_complexnormalise_ps( z0 );
-                    z1 = _mm256_complexnormalise_ps( z1 );
-                    z2 = _mm256_complexnormalise_ps( z2 );
-                    z3 = _mm256_complexnormalise_ps( z3 );
+                    z0 = _mm256_complexnormalise_ps(z0);
+                    z1 = _mm256_complexnormalise_ps(z1);
+                    z2 = _mm256_complexnormalise_ps(z2);
+                    z3 = _mm256_complexnormalise_ps(z3);
                 }
 
             aPtr += 32;
         }
-    __VOLK_ATTR_ALIGNED(32) lv_32fc_t dotProductVector[4];
+    __VOLK_ATTR_ALIGNED(32)
+    lv_32fc_t dotProductVector[4];
 
-    for( vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind )
+    for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)
         {
             dotProdVal0[vec_ind] = _mm256_add_ps(dotProdVal0[vec_ind], dotProdVal1[vec_ind]);
             dotProdVal0[vec_ind] = _mm256_add_ps(dotProdVal0[vec_ind], dotProdVal2[vec_ind]);
             dotProdVal0[vec_ind] = _mm256_add_ps(dotProdVal0[vec_ind], dotProdVal3[vec_ind]);
 
-            _mm256_store_ps((float *)dotProductVector, dotProdVal0[vec_ind]); // Store the results back into the dot product vector
+            _mm256_store_ps((float*)dotProductVector, dotProdVal0[vec_ind]);  // Store the results back into the dot product vector
 
-            result[ vec_ind ] = lv_cmake( 0, 0 );
-            for( i = 0; i < 4; ++i )
+            result[vec_ind] = lv_cmake(0, 0);
+            for (i = 0; i < 4; ++i)
                 {
                     result[vec_ind] += dotProductVector[i];
                 }
         }
 
-    z0 = _mm256_complexnormalise_ps( z0 );
+    z0 = _mm256_complexnormalise_ps(z0);
     _mm256_store_ps((float*)phase_vec, z0);
     _phase = phase_vec[0];
     _mm256_zeroupper();
 
-    number = sixteenthPoints*16;
-    for(;number < num_points; number++)
+    number = sixteenthPoints * 16;
+    for (; number < num_points; number++)
         {
-            wo = (*aPtr++)*_phase;
+            wo = (*aPtr++) * _phase;
             _phase *= phase_inc;
 
-            for( vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind )
+            for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)
                 {
                     result[vec_ind] += wo * in_a[vec_ind][number];
                 }
@@ -482,5 +493,3 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_
 #endif /* LV_HAVE_AVX */
 
 #endif /* INCLUDED_volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_H */
-
-

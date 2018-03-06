@@ -48,12 +48,12 @@ class ConfigurationInterface;
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GPS L1 C/A signals
  */
-class GlonassL1CaPcpsAcquisition: public AcquisitionInterface
+class GlonassL1CaPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GlonassL1CaPcpsAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GlonassL1CaPcpsAcquisition();
 
@@ -155,8 +155,8 @@ private:
     bool dump_;
     bool blocking_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float>* code_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

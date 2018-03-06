@@ -48,26 +48,34 @@
 #include <complex>
 #include <stdint.h>
 
-typedef std::complex<int8_t>  lv_8sc_t;
+typedef std::complex<int8_t> lv_8sc_t;
 typedef std::complex<int16_t> lv_16sc_t;
 typedef std::complex<int32_t> lv_32sc_t;
 typedef std::complex<int64_t> lv_64sc_t;
-typedef std::complex<float>   lv_32fc_t;
-typedef std::complex<double>  lv_64fc_t;
+typedef std::complex<float> lv_32fc_t;
+typedef std::complex<double> lv_64fc_t;
 
-template <typename T> inline std::complex<T> lv_cmake(const T &r, const T &i){
+template <typename T>
+inline std::complex<T> lv_cmake(const T &r, const T &i)
+{
     return std::complex<T>(r, i);
 }
 
-template <typename T> inline typename T::value_type lv_creal(const T &x){
+template <typename T>
+inline typename T::value_type lv_creal(const T &x)
+{
     return x.real();
 }
 
-template <typename T> inline typename T::value_type lv_cimag(const T &x){
+template <typename T>
+inline typename T::value_type lv_cimag(const T &x)
+{
     return x.imag();
 }
 
-template <typename T> inline T lv_conj(const T &x){
+template <typename T>
+inline T lv_conj(const T &x)
+{
     return std::conj(x);
 }
 
@@ -80,14 +88,14 @@ template <typename T> inline T lv_conj(const T &x){
 
 #include <complex.h>
 
-typedef char complex         lv_8sc_t;
-typedef short complex        lv_16sc_t;
-typedef long complex         lv_32sc_t;
-typedef long long complex    lv_64sc_t;
-typedef float complex        lv_32fc_t;
-typedef double complex       lv_64fc_t;
+typedef char complex lv_8sc_t;
+typedef short complex lv_16sc_t;
+typedef long complex lv_32sc_t;
+typedef long long complex lv_64sc_t;
+typedef float complex lv_32fc_t;
+typedef double complex lv_64fc_t;
 
-#define lv_cmake(r, i) ((r) + _Complex_I*(i))
+#define lv_cmake(r, i) ((r) + _Complex_I * (i))
 
 // When GNUC is available, use the complex extensions.
 // The extensions always return the correct value type.

@@ -57,10 +57,10 @@
 #include "rtklib_rtkcmn.h"
 
 /* constants -----------------------------------------------------------------*/
-const int NX = 4 + 3;          //!< # of estimated parameters
-const int MAXITR = 10;         //!< max number of iteration for point pos
-const double ERR_ION = 5.0;    //!< ionospheric delay std (m)
-const double ERR_TROP = 3.0;   //!< tropspheric delay std (m)
+const int NX = 4 + 3;         //!< # of estimated parameters
+const int MAXITR = 10;        //!< max number of iteration for point pos
+const double ERR_ION = 5.0;   //!< ionospheric delay std (m)
+const double ERR_TROP = 3.0;  //!< tropspheric delay std (m)
 
 
 /* pseudorange measurement error variance ------------------------------------*/
@@ -77,7 +77,7 @@ double getiscl5q(int sat, const nav_t *nav);
 
 /* psendorange with code bias correction -------------------------------------*/
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
-                     int iter, const prcopt_t *opt, double *var);
+    int iter, const prcopt_t *opt, double *var);
 
 /* ionospheric correction ------------------------------------------------------
 * compute ionospheric correction
@@ -92,7 +92,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 * return : status(1:ok,0:error)
 *-----------------------------------------------------------------------------*/
 int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
-                    const double *azel, int ionoopt, double *ion, double *var);
+    const double *azel, int ionoopt, double *ion, double *var);
 /* tropospheric correction -----------------------------------------------------
 * compute tropospheric correction
 * args   : gtime_t time     I   time
@@ -105,41 +105,41 @@ int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
 * return : status(1:ok,0:error)
 *-----------------------------------------------------------------------------*/
 int tropcorr(gtime_t time, const nav_t *nav, const double *pos,
-                    const double *azel, int tropopt, double *trp, double *var);
+    const double *azel, int tropopt, double *trp, double *var);
 
 /* pseudorange residuals -----------------------------------------------------*/
 int rescode(int iter, const obsd_t *obs, int n, const double *rs,
-                   const double *dts, const double *vare, const int *svh,
-                   const nav_t *nav, const double *x, const prcopt_t *opt,
-                   double *v, double *H, double *var, double *azel, int *vsat,
-                   double *resp, int *ns);
+    const double *dts, const double *vare, const int *svh,
+    const nav_t *nav, const double *x, const prcopt_t *opt,
+    double *v, double *H, double *var, double *azel, int *vsat,
+    double *resp, int *ns);
 
 /* validate solution ---------------------------------------------------------*/
 int valsol(const double *azel, const int *vsat, int n,
-                  const prcopt_t *opt, const double *v, int nv, int nx,
-                  char *msg);
+    const prcopt_t *opt, const double *v, int nv, int nx,
+    char *msg);
 
 /* estimate receiver position ------------------------------------------------*/
 int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
-                  const double *vare, const int *svh, const nav_t *nav,
-                  const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
-                  double *resp, char *msg);
+    const double *vare, const int *svh, const nav_t *nav,
+    const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
+    double *resp, char *msg);
 
 /* raim fde (failure detection and exclution) -------------------------------*/
 int raim_fde(const obsd_t *obs, int n, const double *rs,
-                    const double *dts, const double *vare, const int *svh,
-                    const nav_t *nav, const prcopt_t *opt, sol_t *sol,
-                    double *azel, int *vsat, double *resp, char *msg);
+    const double *dts, const double *vare, const int *svh,
+    const nav_t *nav, const prcopt_t *opt, sol_t *sol,
+    double *azel, int *vsat, double *resp, char *msg);
 
 /* doppler residuals ---------------------------------------------------------*/
 int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
-                  const nav_t *nav, const double *rr, const double *x,
-                  const double *azel, const int *vsat, double *v, double *H);
+    const nav_t *nav, const double *rr, const double *x,
+    const double *azel, const int *vsat, double *v, double *H);
 
 /* estimate receiver velocity ------------------------------------------------*/
 void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
-                   const nav_t *nav, const prcopt_t *opt, sol_t *sol,
-                   const double *azel, const int *vsat);
+    const nav_t *nav, const prcopt_t *opt, sol_t *sol,
+    const double *azel, const int *vsat);
 
 /*!
 * \brief single-point positioning
@@ -159,7 +159,7 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
 *          and receiver bias)
 */
 int pntpos(const obsd_t *obs, int n, const nav_t *nav,
-                  const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
-                  char *msg);
+    const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
+    char *msg);
 
 #endif /* GNSS_SDR_RTKLIB_PNTPOS_H_ */

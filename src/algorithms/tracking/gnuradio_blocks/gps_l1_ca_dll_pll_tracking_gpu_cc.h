@@ -48,56 +48,55 @@
 class Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc;
 
 typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>
-        gps_l1_ca_dll_pll_tracking_gpu_cc_sptr;
+    gps_l1_ca_dll_pll_tracking_gpu_cc_sptr;
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
 gps_l1_ca_dll_pll_make_tracking_gpu_cc(long if_freq,
-                                   long fs_in, 
-                                   unsigned int vector_length,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float early_late_space_chips);
-
+    long fs_in,
+    unsigned int vector_length,
+    bool dump,
+    std::string dump_filename,
+    float pll_bw_hz,
+    float dll_bw_hz,
+    float early_late_space_chips);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc: public gr::block
+class Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc : public gr::block
 {
 public:
     ~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc();
 
     void set_channel(unsigned int channel);
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
     friend gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
     gps_l1_ca_dll_pll_make_tracking_gpu_cc(long if_freq,
-            long fs_in,
-            unsigned int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips);
+        long fs_in,
+        unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float early_late_space_chips);
 
     Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(long if_freq,
-            long fs_in, 
-            unsigned int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips);
+        long fs_in,
+        unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float early_late_space_chips);
     void update_local_code();
     void update_local_carrier();
 
@@ -105,7 +104,7 @@ private:
     unsigned int d_vector_length;
     bool d_dump;
 
-    Gnss_Synchro* d_acquisition_gnss_synchro;
+    Gnss_Synchro *d_acquisition_gnss_synchro;
     unsigned int d_channel;
 
     long d_if_freq;
@@ -116,11 +115,11 @@ private:
 
 
     //GPU HOST PINNED MEMORY IN/OUT VECTORS
-    gr_complex* in_gpu;
-    float* d_local_code_shift_chips;
-    gr_complex* d_correlator_outs;
+    gr_complex *in_gpu;
+    float *d_local_code_shift_chips;
+    gr_complex *d_correlator_outs;
     cuda_multicorrelator *multicorrelator_gpu;
-    gr_complex* d_ca_code;
+    gr_complex *d_ca_code;
 
     gr_complex *d_Early;
     gr_complex *d_Prompt;
@@ -158,7 +157,7 @@ private:
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
-    gr_complex* d_Prompt_buffer;
+    gr_complex *d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
@@ -176,4 +175,4 @@ private:
     std::string sys;
 };
 
-#endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H
+#endif  //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H

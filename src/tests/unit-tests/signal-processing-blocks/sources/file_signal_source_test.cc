@@ -67,5 +67,5 @@ TEST(FileSignalSource, InstantiateFileNotExists)
     config->set_property("Test.item_type", "gr_complex");
     config->set_property("Test.repeat", "false");
 
-    EXPECT_THROW({auto uptr = std::make_shared<FileSignalSource>(config.get(), "Test", 1, 1, queue);}, std::exception);
+    EXPECT_THROW({ auto uptr = std::make_shared<FileSignalSource>(config.get(), "Test", 1, 1, queue); }, std::exception);
 }

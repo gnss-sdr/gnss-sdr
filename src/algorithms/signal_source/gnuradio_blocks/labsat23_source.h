@@ -46,12 +46,12 @@ labsat23_source_sptr labsat23_make_source(const char *signal_file_basename, int 
 /*!
  * \brief This class implements conversion between Labsat2 and 3 format byte packet samples to gr_complex
  */
-class labsat23_source: public gr::block
+class labsat23_source : public gr::block
 {
 private:
     friend labsat23_source_sptr labsat23_make_source_sptr(const char *signal_file_basename, int channel_selector);
     std::string generate_filename();
-    void decode_samples_one_channel(int16_t input_short, gr_complex* out, int type);
+    void decode_samples_one_channel(int16_t input_short, gr_complex *out, int type);
     int getBit(uint8_t byte, int position);
     bool d_header_parsed;
     uint8_t d_channel_selector;
@@ -67,9 +67,9 @@ public:
     labsat23_source(const char *signal_file_basename, int channel_selector);
     ~labsat23_source();
     int general_work(int noutput_items,
-                     gr_vector_int &ninput_items,
-                     gr_vector_const_void_star &input_items,
-                     gr_vector_void_star &output_items);
+        gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif

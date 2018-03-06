@@ -50,26 +50,26 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    for(int i = 0; i < FLAGS_size_carrier_test; i++)
-         {
-             output[i] = std::complex<float>(cos(phase), sin(phase));
-             phase += phase_step;
-         }
+    for (int i = 0; i < FLAGS_size_carrier_test; i++)
+        {
+            output[i] = std::complex<float>(cos(phase), sin(phase));
+            phase += phase_step;
+        }
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "A " << FLAGS_size_carrier_test
-              << "-length complex carrier in standard C++ (dynamic allocation) generated in " <<  elapsed_seconds.count() * 1e6
+              << "-length complex carrier in standard C++ (dynamic allocation) generated in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
 
-    std::complex<float> expected(1,0);
+    std::complex<float> expected(1, 0);
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
-    for(int i = 0; i < FLAGS_size_carrier_test; i++)
+    for (int i = 0; i < FLAGS_size_carrier_test; i++)
         {
             mag[i] = output[i] * std::conj(output[i]);
         }
     delete[] output;
-    for(int i = 0; i < FLAGS_size_carrier_test; i++)
+    for (int i = 0; i < FLAGS_size_carrier_test; i++)
         {
             ASSERT_FLOAT_EQ(std::norm(expected), std::norm(mag[i]));
         }
@@ -101,16 +101,14 @@ TEST(ComplexCarrierTest, C11ComplexImplementation)
               << "-length complex carrier in standard C++ (declaration) generated in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
-    std::complex<float> expected(1,0);
+    std::complex<float> expected(1, 0);
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
-    for(int i = 0; i < FLAGS_size_carrier_test; i++)
+    for (int i = 0; i < FLAGS_size_carrier_test; i++)
         {
             mag[i] = output[i] * std::conj(output[i]);
             ASSERT_FLOAT_EQ(std::norm(expected), std::norm(mag[i]));
         }
 }
-
-
 
 
 TEST(ComplexCarrierTest, OwnComplexImplementation)
@@ -129,14 +127,14 @@ TEST(ComplexCarrierTest, OwnComplexImplementation)
               << "-length complex carrier using fixed point generated in " << elapsed_seconds.count() * 1e6
               << " microseconds" << std::endl;
 
-    std::complex<float> expected(1,0);
+    std::complex<float> expected(1, 0);
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
-    for(int i = 0; i < FLAGS_size_carrier_test; i++)
+    for (int i = 0; i < FLAGS_size_carrier_test; i++)
         {
             mag[i] = output[i] * std::conj(output[i]);
         }
     delete[] output;
-    for(int i = 0; i < FLAGS_size_carrier_test; i++)
+    for (int i = 0; i < FLAGS_size_carrier_test; i++)
         {
             ASSERT_NEAR(std::norm(expected), std::norm(mag[i]), 0.0001);
         }

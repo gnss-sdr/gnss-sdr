@@ -128,6 +128,8 @@ $ git pull --rebase upstream next
 
 ### How to submit a pull request
 
+Before submitting you code, please be sure to [apply clang-format](http://gnss-sdr.org/coding-style/#use-tools-for-automated-code-formatting).
+
 When the contribution is ready, you can [submit a pull
 request](https://github.com/gnss-sdr/gnss-sdr/compare/). Head to your
 GitHub repository, switch to your `my_feature` branch, and click the

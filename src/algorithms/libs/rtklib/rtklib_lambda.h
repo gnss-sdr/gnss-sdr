@@ -64,24 +64,32 @@
 #include "rtklib.h"
 
 /* constants/macros ----------------------------------------------------------*/
-const int LOOPMAX =   10000;           /* maximum count of search loop */
-#define SGN_LAMBDA(x)      ((x)<=0.0?-1.0:1.0)
-#define ROUND_LAMBDA(x)    (floor((x)+0.5))
-#define SWAP_LAMBDA(x,y)   do {double tmp_; tmp_=x; x=y; y=tmp_;} while (0)
+const int LOOPMAX = 10000; /* maximum count of search loop */
+#define SGN_LAMBDA(x) ((x) <= 0.0 ? -1.0 : 1.0)
+#define ROUND_LAMBDA(x) (floor((x) + 0.5))
+#define SWAP_LAMBDA(x, y) \
+    do                    \
+        {                 \
+            double tmp_;  \
+            tmp_ = x;     \
+            x = y;        \
+            y = tmp_;     \
+        }                 \
+    while (0)
 
 int LD(int n, const double *Q, double *L, double *D);
 void gauss(int n, double *L, double *Z, int i, int j);
 void perm(int n, double *L, double *D, int j, double del, double *Z);
 void reduction(int n, double *L, double *D, double *Z);
 int search(int n, int m, const double *L, const double *D,
-                  const double *zs, double *zn, double *s);
+    const double *zs, double *zn, double *s);
 
 int lambda(int n, int m, const double *a, const double *Q, double *F, double *s);
 
 int lambda_reduction(int n, const double *Q, double *Z);
 
 int lambda_search(int n, int m, const double *a, const double *Q,
-                         double *F, double *s);
+    double *F, double *s);
 
 
 #endif

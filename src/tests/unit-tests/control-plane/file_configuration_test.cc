@@ -34,7 +34,6 @@
 #include "file_configuration.h"
 
 
-
 TEST(FileConfigurationTest, OverridedProperties)
 {
     std::string path = std::string(TEST_PATH);
@@ -50,7 +49,6 @@ TEST(FileConfigurationTest, OverridedProperties)
 }
 
 
-
 TEST(FileConfigurationTest, LoadFromNonExistentFile)
 {
     std::unique_ptr<ConfigurationInterface> configuration(new FileConfiguration("./i_dont_exist.conf"));
@@ -58,7 +56,6 @@ TEST(FileConfigurationTest, LoadFromNonExistentFile)
     std::string value = configuration->property("whatever.whatever", default_value);
     EXPECT_STREQ("default_value", value.c_str());
 }
-
 
 
 TEST(FileConfigurationTest, PropertyDoesNotExist)

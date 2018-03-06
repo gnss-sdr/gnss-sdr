@@ -73,11 +73,11 @@ const double GMS = 1.327124E+20;    /* sun gravitational constant */
 const double GMM = 4.902801E+12;    /* moon gravitational constant */
 
 void tide_pl(const double *eu, const double *rp, double GMp,
-        const double *pos, double *dr);
+    const double *pos, double *dr);
 
 void tide_solid(const double *rsun, const double *rmoon,
-        const double *pos, const double *E, double gmst, int opt,
-        double *dr);
+    const double *pos, const double *E, double gmst, int opt,
+    double *dr);
 
 void tide_oload(gtime_t tut, const double *odisp, double *denu);
 
@@ -85,8 +85,8 @@ void iers_mean_pole(gtime_t tut, double *xp_bar, double *yp_bar);
 
 
 void tide_pole(gtime_t tut, const double *pos, const double *erpv,
-        double *denu);
+    double *denu);
 
 void tidedisp(gtime_t tutc, const double *rr, int opt, const erp_t *erp,
-        const double *odisp, double *dr);
+    const double *odisp, double *dr);
 #endif

@@ -68,7 +68,7 @@ static inline void volk_gnsssdr_16ic_conjugate_16ic_generic(lv_16sc_t* cVector, 
     const lv_16sc_t* aPtr = aVector;
     unsigned int number;
 
-    for(number = 0; number < num_points; number++)
+    for (number = 0; number < num_points; number++)
         {
             *cPtr++ = lv_conj(*aPtr++);
         }
@@ -231,4 +231,3 @@ static inline void volk_gnsssdr_16ic_conjugate_16ic_u_avx2(lv_16sc_t* cVector, c
 //#endif /* LV_HAVE_NEON */
 
 #endif /* INCLUDED_volk_gnsssdr_16ic_conjugate_16ic_H */
-

@@ -34,41 +34,43 @@
 #include "control_message_factory.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-#include <algorithm> // for min
-#include <cstring>  // for memcpy
+#include <algorithm>  // for min
+#include <cstring>    // for memcpy
 
-gnss_sdr_valve::gnss_sdr_valve (size_t sizeof_stream_item,
-        unsigned long long nitems,
-        gr::msg_queue::sptr queue) : gr::sync_block("valve",
-                gr::io_signature::make(1, 1, sizeof_stream_item),
-                gr::io_signature::make(1, 1, sizeof_stream_item) ),
-                d_nitems(nitems), d_ncopied_items(0), d_queue(queue)
-{}
+gnss_sdr_valve::gnss_sdr_valve(size_t sizeof_stream_item,
+    unsigned long long nitems,
+    gr::msg_queue::sptr queue) : gr::sync_block("valve",
+                                     gr::io_signature::make(1, 1, sizeof_stream_item),
+                                     gr::io_signature::make(1, 1, sizeof_stream_item)),
+                                 d_nitems(nitems),
+                                 d_ncopied_items(0),
+                                 d_queue(queue)
+{
+}
 
 
-boost::shared_ptr<gr::block> gnss_sdr_make_valve (size_t sizeof_stream_item, unsigned long long nitems, gr::msg_queue::sptr queue)
+boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, unsigned long long nitems, gr::msg_queue::sptr queue)
 {
     boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, queue));
     return valve_;
 }
 
 
-
-int gnss_sdr_valve::work (int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+int gnss_sdr_valve::work(int noutput_items,
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
 {
     if (d_ncopied_items >= d_nitems)
         {
-            ControlMessageFactory* cmf = new ControlMessageFactory();
-            d_queue->handle(cmf->GetQueueMessage(200,0));
-            LOG(INFO) << "Stopping receiver, "<< d_ncopied_items << " samples processed";
+            ControlMessageFactory *cmf = new ControlMessageFactory();
+            d_queue->handle(cmf->GetQueueMessage(200, 0));
+            LOG(INFO) << "Stopping receiver, " << d_ncopied_items << " samples processed";
             delete cmf;
-            return -1;    // Done!
+            return -1;  // Done!
         }
     unsigned long long n = std::min(d_nitems - d_ncopied_items, static_cast<long long unsigned int>(noutput_items));
     if (n == 0) return 0;
-    memcpy (output_items[0], input_items[0], n * input_signature()->sizeof_stream_item(0));
+    memcpy(output_items[0], input_items[0], n * input_signature()->sizeof_stream_item(0));
     //for(long long i = 0; i++; i<n)
     //    {
     //        output_items[i] = input_items[i];

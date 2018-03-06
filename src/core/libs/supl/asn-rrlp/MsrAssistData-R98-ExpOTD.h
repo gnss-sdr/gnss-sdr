@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_MsrAssistData_R98_ExpOTD_H_
-#define	_MsrAssistData_R98_ExpOTD_H_
+#ifndef _MsrAssistData_R98_ExpOTD_H_
+#define _MsrAssistData_R98_ExpOTD_H_
 
 
 #include <asn_application.h>
@@ -15,23 +15,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* MsrAssistData-R98-ExpOTD */
-typedef struct MsrAssistData_R98_ExpOTD {
-	SeqOfMsrAssistBTS_R98_ExpOTD_t	 msrAssistList_R98_ExpOTD;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} MsrAssistData_R98_ExpOTD_t;
+    /* MsrAssistData-R98-ExpOTD */
+    typedef struct MsrAssistData_R98_ExpOTD
+    {
+        SeqOfMsrAssistBTS_R98_ExpOTD_t msrAssistList_R98_ExpOTD;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MsrAssistData_R98_ExpOTD;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } MsrAssistData_R98_ExpOTD_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_MsrAssistData_R98_ExpOTD;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _MsrAssistData_R98_ExpOTD_H_ */
+#endif /* _MsrAssistData_R98_ExpOTD_H_ */
 #include <asn_internal.h>

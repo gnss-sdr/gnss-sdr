@@ -42,12 +42,12 @@
 
 class ConfigurationInterface;
 
-class Fmcomms2SignalSource: public GNSSBlockInterface
+class Fmcomms2SignalSource : public GNSSBlockInterface
 {
 public:
     Fmcomms2SignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~Fmcomms2SignalSource();
 
@@ -78,11 +78,11 @@ private:
     std::string role_;
 
     // Front-end settings
-    std::string uri_;//device direction
-    unsigned long freq_; //frequency of local oscilator
+    std::string uri_;     //device direction
+    unsigned long freq_;  //frequency of local oscilator
     unsigned long sample_rate_;
     unsigned long bandwidth_;
-    unsigned long buffer_size_; //reception buffer
+    unsigned long buffer_size_;  //reception buffer
     bool rx1_en_;
     bool rx2_en_;
     bool quadrature_;

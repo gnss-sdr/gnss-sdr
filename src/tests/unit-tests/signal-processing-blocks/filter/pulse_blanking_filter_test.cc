@@ -46,9 +46,9 @@
 #include "file_signal_source.h"
 
 
-DEFINE_int32(pb_filter_test_nsamples, 1000000 , "Number of samples to filter in the tests (max: 2147483647)");
+DEFINE_int32(pb_filter_test_nsamples, 1000000, "Number of samples to filter in the tests (max: 2147483647)");
 
-class PulseBlankingFilterTest: public ::testing::Test
+class PulseBlankingFilterTest : public ::testing::Test
 {
 protected:
     PulseBlankingFilterTest()
@@ -59,7 +59,8 @@ protected:
         nsamples = FLAGS_pb_filter_test_nsamples;
     }
     ~PulseBlankingFilterTest()
-    {}
+    {
+    }
 
     void init();
     void configure_gr_complex_gr_complex();
@@ -105,7 +106,7 @@ TEST_F(PulseBlankingFilterTest, ConnectAndRun)
     configure_gr_complex_gr_complex();
     std::shared_ptr<PulseBlankingFilter> filter = std::make_shared<PulseBlankingFilter>(config.get(), "InputFilter", 1, 1);
     item_size = sizeof(gr_complex);
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         filter->connect(top_block);
         boost::shared_ptr<gr::block> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
@@ -115,14 +116,14 @@ TEST_F(PulseBlankingFilterTest, ConnectAndRun)
         top_block->connect(valve, 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
     }) << "Failure connecting the top_block.";
-    
-    EXPECT_NO_THROW( {
+
+    EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
-        top_block->run(); // Start threads and wait
+        top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout <<  "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6  << " microseconds" << std::endl;
+    std::cout << "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 
@@ -145,9 +146,9 @@ TEST_F(PulseBlankingFilterTest, ConnectAndRunGrcomplex)
     config2->set_property("Test_Source.repeat", "true");
 
     item_size = sizeof(gr_complex);
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         filter->connect(top_block);
-        
+
         boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
         source->connect(top_block);
 
@@ -157,11 +158,11 @@ TEST_F(PulseBlankingFilterTest, ConnectAndRunGrcomplex)
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
     }) << "Failure connecting the top_block.";
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
-        top_block->run(); // Start threads and wait
+        top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
-    std::cout <<  "Filtered " << nsamples << " gr_complex samples in " << elapsed_seconds.count() * 1e6  << " microseconds" << std::endl;
+    std::cout << "Filtered " << nsamples << " gr_complex samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }

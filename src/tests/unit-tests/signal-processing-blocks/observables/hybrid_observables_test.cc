@@ -76,8 +76,7 @@ private:
 
 public:
     int rx_message;
-    ~HybridObservablesTest_msg_rx(); //!< Default destructor
-
+    ~HybridObservablesTest_msg_rx();  //!< Default destructor
 };
 
 HybridObservablesTest_msg_rx_sptr HybridObservablesTest_msg_rx_make()
@@ -88,19 +87,18 @@ HybridObservablesTest_msg_rx_sptr HybridObservablesTest_msg_rx_make()
 void HybridObservablesTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
-    {
+        {
             long int message = pmt::to_long(msg);
             rx_message = message;
-    }
-    catch(boost::bad_any_cast& e)
-    {
+        }
+    catch (boost::bad_any_cast& e)
+        {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
-    }
+        }
 }
 
-HybridObservablesTest_msg_rx::HybridObservablesTest_msg_rx() :
-            gr::block("HybridObservablesTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+HybridObservablesTest_msg_rx::HybridObservablesTest_msg_rx() : gr::block("HybridObservablesTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&HybridObservablesTest_msg_rx::msg_handler_events, this, _1));
@@ -108,7 +106,8 @@ HybridObservablesTest_msg_rx::HybridObservablesTest_msg_rx() :
 }
 
 HybridObservablesTest_msg_rx::~HybridObservablesTest_msg_rx()
-{}
+{
+}
 
 
 // ###########################################################
@@ -130,8 +129,7 @@ private:
 
 public:
     int rx_message;
-    ~HybridObservablesTest_tlm_msg_rx(); //!< Default destructor
-
+    ~HybridObservablesTest_tlm_msg_rx();  //!< Default destructor
 };
 
 HybridObservablesTest_tlm_msg_rx_sptr HybridObservablesTest_tlm_msg_rx_make()
@@ -142,19 +140,18 @@ HybridObservablesTest_tlm_msg_rx_sptr HybridObservablesTest_tlm_msg_rx_make()
 void HybridObservablesTest_tlm_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
-    {
+        {
             long int message = pmt::to_long(msg);
             rx_message = message;
-    }
-    catch(boost::bad_any_cast& e)
-    {
+        }
+    catch (boost::bad_any_cast& e)
+        {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
-    }
+        }
 }
 
-HybridObservablesTest_tlm_msg_rx::HybridObservablesTest_tlm_msg_rx() :
-            gr::block("HybridObservablesTest_tlm_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+HybridObservablesTest_tlm_msg_rx::HybridObservablesTest_tlm_msg_rx() : gr::block("HybridObservablesTest_tlm_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&HybridObservablesTest_tlm_msg_rx::msg_handler_events, this, _1));
@@ -162,15 +159,15 @@ HybridObservablesTest_tlm_msg_rx::HybridObservablesTest_tlm_msg_rx() :
 }
 
 HybridObservablesTest_tlm_msg_rx::~HybridObservablesTest_tlm_msg_rx()
-{}
+{
+}
 
 
 // ###########################################################
 
 
-class HybridObservablesTest: public ::testing::Test
+class HybridObservablesTest : public ::testing::Test
 {
-
 public:
     std::string generator_binary;
     std::string p1;
@@ -209,7 +206,8 @@ public:
     }
 
     ~HybridObservablesTest()
-    {}
+    {
+    }
 
     void configure_receiver();
 
@@ -227,7 +225,7 @@ int HybridObservablesTest::configure_generator()
     generator_binary = FLAGS_generator_binary;
 
     p1 = std::string("-rinex_nav_file=") + FLAGS_rinex_nav_file;
-    if(FLAGS_dynamic_position.empty())
+    if (FLAGS_dynamic_position.empty())
         {
             p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(FLAGS_duration * 10);
         }
@@ -235,9 +233,9 @@ int HybridObservablesTest::configure_generator()
         {
             p2 = std::string("-obs_pos_file=") + std::string(FLAGS_dynamic_position);
         }
-    p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs; // RINEX 2.10 observation file output
-    p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data; // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
-    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq); //Baseband sampling frequency [MSps]
+    p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  //Baseband sampling frequency [MSps]
     return 0;
 }
 
@@ -246,7 +244,7 @@ int HybridObservablesTest::generate_signal()
 {
     int child_status;
 
-    char *const parmList[] = { &generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL };
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL};
 
     int pid;
     if ((pid = fork()) == -1)
@@ -260,7 +258,7 @@ int HybridObservablesTest::generate_signal()
 
     waitpid(pid, &child_status, 0);
 
-    std::cout << "Signal and Observables RINEX and RAW files created."  << std::endl;
+    std::cout << "Signal and Observables RINEX and RAW files created." << std::endl;
     return 0;
 }
 
@@ -290,10 +288,8 @@ void HybridObservablesTest::configure_receiver()
     config->set_property("Tracking_1C.dll_bw_hz", "0.5");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
 
-    config->set_property("TelemetryDecoder_1C.dump","true");
-    config->set_property("Observables.dump","true");
-
-
+    config->set_property("TelemetryDecoder_1C.dump", "true");
+    config->set_property("Observables.dump", "true");
 }
 
 void HybridObservablesTest::check_results_carrier_phase(
@@ -360,7 +356,7 @@ void HybridObservablesTest::check_results_carrier_phase(
               << " (max,min) = " << max_error_ch0
               << "," << min_error_ch0
               << " [cycles]" << std::endl;
-    std::cout.precision (ss);
+    std::cout.precision(ss);
 
     ASSERT_LT(rmse_ch0,        5e-2);
     ASSERT_LT(error_mean_ch0,  5e-2);
@@ -377,7 +373,7 @@ void HybridObservablesTest::check_results_carrier_phase(
               << " (max,min) = " << max_error_ch1
               << "," << min_error_ch1
               << " [cycles]" << std::endl;
-    std::cout.precision (ss);
+    std::cout.precision(ss);
 
     ASSERT_LT(rmse_ch1,        5e-2);
     ASSERT_LT(error_mean_ch1,  5e-2);
@@ -440,7 +436,7 @@ void HybridObservablesTest::check_results_code_psudorange(
               << " (max,min) = " << max_error
               << "," << min_error
               << " [meters]" << std::endl;
-    std::cout.precision (ss);
+    std::cout.precision(ss);
 
     ASSERT_LT(rmse,        0.5);
     ASSERT_LT(error_mean,  0.5);
@@ -472,7 +468,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     tracking_true_obs_reader true_obs_data_ch1;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
     int test_satellite_PRN2 = FLAGS_test_satellite_PRN2;
-    std::cout << "Testing satellite PRNs " << test_satellite_PRN <<","<<test_satellite_PRN << std::endl;
+    std::cout << "Testing satellite PRNs " << test_satellite_PRN << "," << test_satellite_PRN << std::endl;
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
     true_obs_file.append(std::to_string(test_satellite_PRN));
     true_obs_file.append(".dat");
@@ -503,16 +499,16 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     // load acquisition data based on the first epoch of the true observations
     ASSERT_NO_THROW({
         if (true_obs_data_ch0.read_binary_obs() == false)
-        {
-            throw std::exception();
-        };
+            {
+                throw std::exception();
+            };
     }) << "Failure reading true observables file";
 
     ASSERT_NO_THROW({
         if (true_obs_data_ch1.read_binary_obs() == false)
-        {
-            throw std::exception();
-        };
+            {
+                throw std::exception();
+            };
     }) << "Failure reading true observables file";
 
     //restart the epoch counter
@@ -532,10 +528,10 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     gnss_synchro_ch1.Acq_samplestamp_samples = 0;
 
     //telemetry decoders
-    std::shared_ptr<TelemetryDecoderInterface> tlm_ch0(new GpsL1CaTelemetryDecoder(config.get(), "TelemetryDecoder_1C",1, 1));
-    std::shared_ptr<TelemetryDecoderInterface> tlm_ch1(new GpsL1CaTelemetryDecoder(config.get(), "TelemetryDecoder_1C",1, 1));
+    std::shared_ptr<TelemetryDecoderInterface> tlm_ch0(new GpsL1CaTelemetryDecoder(config.get(), "TelemetryDecoder_1C", 1, 1));
+    std::shared_ptr<TelemetryDecoderInterface> tlm_ch1(new GpsL1CaTelemetryDecoder(config.get(), "TelemetryDecoder_1C", 1, 1));
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         tlm_ch0->set_channel(0);
         tlm_ch1->set_channel(1);
 
@@ -549,26 +545,26 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     //Observables
     std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables",3, 2));
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         tracking_ch0->set_channel(gnss_synchro_ch0.Channel_ID);
         tracking_ch1->set_channel(gnss_synchro_ch1.Channel_ID);
     }) << "Failure setting channel.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         tracking_ch0->set_gnss_synchro(&gnss_synchro_ch0);
         tracking_ch1->set_gnss_synchro(&gnss_synchro_ch1);
     }) << "Failure setting gnss_synchro.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         tracking_ch0->connect(top_block);
         tracking_ch1->connect(top_block);
     }) << "Failure connecting tracking to the top_block.";
 
-    ASSERT_NO_THROW( {
-        std::string file =  "./" + filename_raw_data;
-        const char * file_name = file.c_str();
+    ASSERT_NO_THROW({
+        std::string file = "./" + filename_raw_data;
+        const char* file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
-        gr::blocks::interleaved_char_to_complex::sptr  gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
+        gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
         gr::blocks::null_sink::sptr sink_ch0 = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
         gr::blocks::null_sink::sptr sink_ch1 = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
         gnss_sdr_sample_counter_sptr samp_counter = gnss_sdr_make_sample_counter(static_cast<double>(baseband_sampling_freq));
@@ -595,9 +591,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     tracking_ch0->start_tracking();
     tracking_ch1->start_tracking();
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
-        top_block->run(); // Start threads and wait
+        top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
@@ -646,12 +642,12 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             true_ch1(epoch_counter, 2) = true_observables.doppler_l1_hz[1];
             true_ch1(epoch_counter, 3) = true_observables.acc_carrier_phase_l1_cycles[1];
 
-            epoch_counter++;
-        }
+                epoch_counter++;
+            }
     });
 
     //read measured values
-    observables_dump_reader estimated_observables(2); //two channels
+    observables_dump_reader estimated_observables(2);  //two channels
     ASSERT_NO_THROW({
         if(estimated_observables.open_obs_file(std::string("./observables.dat")) == false)
         {
@@ -730,4 +726,3 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
     std::cout <<  "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;
 }
-

@@ -39,16 +39,15 @@
 using google::LogMessage;
 
 Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams,
-        unsigned int out_streams) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams)
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
     std::string input_type = configuration->property(role + ".input_item_type", default_item_type);
     std::string output_type = configuration->property(role + ".output_item_type", default_item_type);
-    if(input_type.compare(output_type) != 0)
+    if (input_type.compare(output_type) != 0)
         {
             LOG(WARNING) << "input_item_type and output_item_type are different in a Pass_Through implementation! Taking "
                          << input_type
@@ -58,46 +57,46 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
     item_type_ = configuration->property(role + ".item_type", input_type);
     inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
-    if(item_type_.compare("float") == 0)
+    if (item_type_.compare("float") == 0)
         {
             item_size_ = sizeof(float);
         }
-    else if(item_type_.compare("gr_complex") == 0)
+    else if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     conjugate_cc_ = make_conjugate_cc();
                 }
         }
-    else if(item_type_.compare("short") == 0)
+    else if (item_type_.compare("short") == 0)
         {
             item_size_ = sizeof(int16_t);
         }
-    else if(item_type_.compare("ishort") == 0)
+    else if (item_type_.compare("ishort") == 0)
         {
             item_size_ = sizeof(int16_t);
         }
-    else if(item_type_.compare("cshort") == 0)
+    else if (item_type_.compare("cshort") == 0)
         {
             item_size_ = sizeof(lv_16sc_t);
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     conjugate_sc_ = make_conjugate_sc();
                 }
         }
-    else if(item_type_.compare("byte") == 0)
+    else if (item_type_.compare("byte") == 0)
         {
             item_size_ = sizeof(int8_t);
         }
-    else if(item_type_.compare("ibyte") == 0)
+    else if (item_type_.compare("ibyte") == 0)
         {
             item_size_ = sizeof(int8_t);
         }
-    else if(item_type_.compare("cbyte") == 0)
+    else if (item_type_.compare("cbyte") == 0)
         {
             item_size_ = sizeof(lv_8sc_t);
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     conjugate_ic_ = make_conjugate_ic();
                 }
@@ -113,41 +112,42 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
 }
 
 
-
 Pass_Through::~Pass_Through()
-{}
-
+{
+}
 
 
 void Pass_Through::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
-
 void Pass_Through::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     // Nothing to disconnect
 }
 
 
-
 gr::basic_block_sptr Pass_Through::get_left_block()
 {
-    if(inverted_spectrum)
+    if (inverted_spectrum)
         {
-            if(item_type_.compare("gr_complex") == 0)
+            if (item_type_.compare("gr_complex") == 0)
                 {
                     return conjugate_cc_;
                 }
-            else if(item_type_.compare("cshort") == 0)
+            else if (item_type_.compare("cshort") == 0)
                 {
                     return conjugate_sc_;
                 }
-            else if(item_type_.compare("cbyte") == 0)
+            else if (item_type_.compare("cbyte") == 0)
                 {
                     return conjugate_ic_;
                 }
@@ -162,20 +162,19 @@ gr::basic_block_sptr Pass_Through::get_left_block()
 }
 
 
-
 gr::basic_block_sptr Pass_Through::get_right_block()
 {
-    if(inverted_spectrum)
+    if (inverted_spectrum)
         {
-            if(item_type_.compare("gr_complex") == 0)
+            if (item_type_.compare("gr_complex") == 0)
                 {
                     return conjugate_cc_;
                 }
-            else if(item_type_.compare("cshort") == 0)
+            else if (item_type_.compare("cshort") == 0)
                 {
                     return conjugate_sc_;
                 }
-            else if(item_type_.compare("cbyte") == 0)
+            else if (item_type_.compare("cbyte") == 0)
                 {
                     return conjugate_ic_;
                 }

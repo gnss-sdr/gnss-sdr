@@ -34,7 +34,7 @@
 bool tracking_dump_reader::read_binary_obs()
 {
     try
-    {
+        {
             d_dump_file.read(reinterpret_cast<char *>(&abs_E), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&abs_P), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&abs_L), sizeof(float));
@@ -55,11 +55,11 @@ bool tracking_dump_reader::read_binary_obs()
             d_dump_file.read(reinterpret_cast<char *>(&aux1), sizeof(double));
             d_dump_file.read(reinterpret_cast<char *>(&aux2), sizeof(double));
             d_dump_file.read(reinterpret_cast<char *>(&PRN), sizeof(unsigned int));
-    }
+        }
     catch (const std::ifstream::failure &e)
-    {
+        {
             return false;
-    }
+        }
     return true;
 }
 
@@ -85,7 +85,7 @@ long int tracking_dump_reader::num_epochs()
     int number_of_double_vars = 11;
     int number_of_float_vars = 5;
     int epoch_size_bytes = sizeof(unsigned long int) + sizeof(double) * number_of_double_vars +
-            sizeof(float) * number_of_float_vars + sizeof(unsigned int);
+                           sizeof(float) * number_of_float_vars + sizeof(unsigned int);
     std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
         {
@@ -105,18 +105,18 @@ bool tracking_dump_reader::open_obs_file(std::string out_file)
     if (d_dump_file.is_open() == false)
         {
             try
-            {
+                {
                     d_dump_filename = out_file;
-                    d_dump_file.exceptions( std::ifstream::failbit | std::ifstream::badbit );
+                    d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
                     std::cout << "Tracking dump enabled, Log file: " << d_dump_filename.c_str() << std::endl;
                     return true;
-            }
-            catch (const std::ifstream::failure & e)
-            {
+                }
+            catch (const std::ifstream::failure &e)
+                {
                     std::cout << "Problem opening Tracking dump Log file: " << d_dump_filename.c_str() << std::endl;
                     return false;
-            }
+                }
         }
     else
         {

@@ -59,8 +59,8 @@
 #include "rtklib_rtcm2.h"
 #include "rtklib_rtcm3.h"
 
-#define RTCM2PREAMB 0x66        /* rtcm ver.2 frame preamble */
-#define RTCM3PREAMB 0xD3        /* rtcm ver.3 frame preamble */
+#define RTCM2PREAMB 0x66 /* rtcm ver.2 frame preamble */
+#define RTCM3PREAMB 0xD3 /* rtcm ver.3 frame preamble */
 
 
 int init_rtcm(rtcm_t *rtcm);

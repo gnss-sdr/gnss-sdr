@@ -48,12 +48,12 @@ class ConfigurationInterface;
 * \brief This class generates synthesized GNSS signal.
 *
 */
-class SignalGenerator: public GNSSBlockInterface
+class SignalGenerator : public GNSSBlockInterface
 {
 public:
     SignalGenerator(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~SignalGenerator();
 

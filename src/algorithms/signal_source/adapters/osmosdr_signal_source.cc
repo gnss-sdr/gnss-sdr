@@ -39,15 +39,12 @@
 #include <iostream>
 
 
-
 using google::LogMessage;
 
 
 OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                role_(role), in_stream_(in_stream), out_stream_(out_stream),
-                queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -56,7 +53,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
     samples_ = configuration->property(role + ".samples", 0);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename",
-            default_dump_file);
+        default_dump_file);
 
     // OSMOSDR Driver parameters
     AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
@@ -66,7 +63,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
     if_gain_ = configuration->property(role + ".if_gain", 40.0);
     sample_rate_ = configuration->property(role + ".sampling_frequency", 2.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    osmosdr_args_ = configuration->property(role + ".osmosdr_args", std::string( ));
+    osmosdr_args_ = configuration->property(role + ".osmosdr_args", std::string());
     antenna_ = configuration->property(role + ".antenna", empty);
 
     if (item_type_.compare("short") == 0)
@@ -83,23 +80,23 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
             if (!antenna_.empty())
                 {
                     osmosdr_source_->set_antenna(antenna_, 0);
-                    std::cout << boost::format("Set RX Antenna : %s") % (osmosdr_source_->get_antenna(0)) << std::endl ;
+                    std::cout << boost::format("Set RX Antenna : %s") % (osmosdr_source_->get_antenna(0)) << std::endl;
                     LOG(INFO) << boost::format("Set RX Antenna : %s") % (osmosdr_source_->get_antenna(0));
                 }
 
             // 2 set sampling rate
             osmosdr_source_->set_sample_rate(sample_rate_);
-            std::cout << boost::format("Actual RX Rate: %f [SPS]...") % (osmosdr_source_->get_sample_rate()) << std::endl ;
+            std::cout << boost::format("Actual RX Rate: %f [SPS]...") % (osmosdr_source_->get_sample_rate()) << std::endl;
             LOG(INFO) << boost::format("Actual RX Rate: %f [SPS]...") % (osmosdr_source_->get_sample_rate());
 
             // 3. set rx frequency
             osmosdr_source_->set_center_freq(freq_);
-            std::cout << boost::format("Actual RX Freq: %f [Hz]...") % (osmosdr_source_->get_center_freq()) << std::endl ;
+            std::cout << boost::format("Actual RX Freq: %f [Hz]...") % (osmosdr_source_->get_center_freq()) << std::endl;
             LOG(INFO) << boost::format("Actual RX Freq: %f [Hz]...") % (osmosdr_source_->get_center_freq());
 
             // TODO: Assign the remnant IF from the PLL tune error
             std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (osmosdr_source_->get_center_freq() - freq_) << std::endl;
-            LOG(INFO) <<  boost::format("PLL Frequency tune error %f [Hz]...") % (osmosdr_source_->get_center_freq() - freq_) ;
+            LOG(INFO) << boost::format("PLL Frequency tune error %f [Hz]...") % (osmosdr_source_->get_center_freq() - freq_);
 
             // 4. set rx gain
             if (this->AGC_enabled_ == true)
@@ -116,10 +113,9 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
                     osmosdr_source_->set_bb_gain(if_gain_, 0);
                     if (!osmosdr_args_.empty() && (osmosdr_args_.find("bladerf") != std::string::npos))
                         {
-                            std::cout << boost::format("Actual LNA Gain: %f dB...") % osmosdr_source_->get_gain("LNA",0) << std::endl;
-                            std::cout << boost::format("Actual VGA1 Gain: %f dB...") % osmosdr_source_->get_gain("VGA1",0) << std::endl;
-                            std::cout << boost::format("Actual VGA2 Gain: %f dB...") % osmosdr_source_->get_gain("VGA2",0) << std::endl;
-    
+                            std::cout << boost::format("Actual LNA Gain: %f dB...") % osmosdr_source_->get_gain("LNA", 0) << std::endl;
+                            std::cout << boost::format("Actual VGA1 Gain: %f dB...") % osmosdr_source_->get_gain("VGA1", 0) << std::endl;
+                            std::cout << boost::format("Actual VGA2 Gain: %f dB...") % osmosdr_source_->get_gain("VGA2", 0) << std::endl;
                         }
                     else
                         {
@@ -127,7 +123,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
                             LOG(INFO) << boost::format("Actual RX Gain: %f dB...") % osmosdr_source_->get_gain();
                         }
                 }
-            
+
             // Get actual bandwidth
             std::cout << boost::format("Actual Bandwidth: %f [Hz]...") % osmosdr_source_->get_bandwidth(0) << std::endl;
         }
@@ -153,27 +149,27 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
 }
 
 
-
 OsmosdrSignalSource::~OsmosdrSignalSource()
-{}
+{
+}
 
 
 void OsmosdrSignalSource::driver_instance()
 {
     try
-    {
+        {
             if (!osmosdr_args_.empty())
                 {
                     std::cout << "OsmoSdr arguments: " << osmosdr_args_ << std::endl;
                     LOG(INFO) << "OsmoSdr arguments: " << osmosdr_args_;
                 }
             osmosdr_source_ = osmosdr::source::make(osmosdr_args_);
-    }
-    catch( const boost::exception & e )
-    {
+        }
+    catch (const boost::exception& e)
+        {
             LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
-            throw std::invalid_argument( "Wrong OsmoSdr arguments" );
-    }
+            throw std::invalid_argument("Wrong OsmoSdr arguments");
+        }
 }
 
 
@@ -200,7 +196,6 @@ void OsmosdrSignalSource::connect(gr::top_block_sptr top_block)
 }
 
 
-
 void OsmosdrSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (samples_ != 0)
@@ -221,13 +216,11 @@ void OsmosdrSignalSource::disconnect(gr::top_block_sptr top_block)
 }
 
 
-
 gr::basic_block_sptr OsmosdrSignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
     return gr::basic_block_sptr();
 }
-
 
 
 gr::basic_block_sptr OsmosdrSignalSource::get_right_block()

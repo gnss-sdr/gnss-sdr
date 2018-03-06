@@ -45,12 +45,12 @@ class ConfigurationInterface;
  * \brief This class adapts a PCPS acquisition block to an
  *  AcquisitionInterface for Galileo E1 Signals
  */
-class GalileoE1PcpsQuickSyncAmbiguousAcquisition: public AcquisitionInterface
+class GalileoE1PcpsQuickSyncAmbiguousAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE1PcpsQuickSyncAmbiguousAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GalileoE1PcpsQuickSyncAmbiguousAcquisition();
 
@@ -149,8 +149,8 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float>* code_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

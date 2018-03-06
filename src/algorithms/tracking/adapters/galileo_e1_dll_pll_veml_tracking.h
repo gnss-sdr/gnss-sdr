@@ -52,9 +52,9 @@ class GalileoE1DllPllVemlTracking : public TrackingInterface
 {
 public:
     GalileoE1DllPllVemlTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GalileoE1DllPllVemlTracking();
 
@@ -102,4 +102,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif // GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
+#endif  // GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_

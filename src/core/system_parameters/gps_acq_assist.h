@@ -33,7 +33,6 @@
 #define GNSS_SDR_GPS_ACQ_ASSIST_H_
 
 
-
 /*!
  * \brief This class is a storage for the GPS GSM RRLL acquisition assistance data as described in
  * Digital cellular telecommunications system (Phase 2+);
@@ -45,17 +44,17 @@
 class Gps_Acq_Assist
 {
 public:
-    unsigned int i_satellite_PRN; //!< SV PRN NUMBER
-    double d_TOW;                 //!< Time Of Week assigned to the acquisition data
-    double d_Doppler0;            //!< Doppler (0 order term) [Hz]
-    double d_Doppler1;            //!< Doppler (1 order term) [Hz]
-    double dopplerUncertainty;    //!< Doppler Uncertainty [Hz]
-    double Code_Phase;            //!< Code phase [chips]
-    double Code_Phase_int;        //!< Integer Code Phase [1 C/A code period]
-    double GPS_Bit_Number;        //!< GPS Bit Number
-    double Code_Phase_window;     //!< Code Phase search window [chips]
-    double Azimuth;               //!< Satellite Azimuth [deg]
-    double Elevation;             //!< Satellite Elevation [deg]
+    unsigned int i_satellite_PRN;  //!< SV PRN NUMBER
+    double d_TOW;                  //!< Time Of Week assigned to the acquisition data
+    double d_Doppler0;             //!< Doppler (0 order term) [Hz]
+    double d_Doppler1;             //!< Doppler (1 order term) [Hz]
+    double dopplerUncertainty;     //!< Doppler Uncertainty [Hz]
+    double Code_Phase;             //!< Code phase [chips]
+    double Code_Phase_int;         //!< Integer Code Phase [1 C/A code period]
+    double GPS_Bit_Number;         //!< GPS Bit Number
+    double Code_Phase_window;      //!< Code Phase search window [chips]
+    double Azimuth;                //!< Satellite Azimuth [deg]
+    double Elevation;              //!< Satellite Elevation [deg]
 
     /*!
      * Default constructor

@@ -45,12 +45,12 @@ class Tracking_loop_filter
 {
 private:
     // Store the last inputs and outputs:
-    std::vector< float > d_inputs;
-    std::vector< float > d_outputs;
+    std::vector<float> d_inputs;
+    std::vector<float> d_outputs;
 
     // Store the filter coefficients:
-    std::vector< float > d_input_coefficients;
-    std::vector< float > d_output_coefficients;
+    std::vector<float> d_input_coefficients;
+    std::vector<float> d_output_coefficients;
 
     // The loop order:
     int d_loop_order;
@@ -79,17 +79,17 @@ public:
     bool get_include_last_integrator(void) const;
     int get_order(void) const;
 
-    void set_noise_bandwidth( float noise_bandwidth );
-    void set_update_interval( float update_interval );
-    void set_include_last_integrator( bool include_last_integrator );
-    void set_order( int loop_order );
+    void set_noise_bandwidth(float noise_bandwidth);
+    void set_update_interval(float update_interval);
+    void set_include_last_integrator(bool include_last_integrator);
+    void set_order(int loop_order);
 
     void initialize(float initial_output = 0.0);
-    float apply(float current_input );
+    float apply(float current_input);
 
     Tracking_loop_filter(float update_interval, float noise_bandwidth,
-            int loop_order = 2,
-            bool include_last_integrator = false );
+        int loop_order = 2,
+        bool include_last_integrator = false);
 
     Tracking_loop_filter();
     ~Tracking_loop_filter();

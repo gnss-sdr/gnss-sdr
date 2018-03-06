@@ -43,12 +43,12 @@ class ConfigurationInterface;
  * \brief Adapts an I/Q interleaved short integer sample stream to a gr_complex (float) stream
  *
  */
-class IshortToComplex: public GNSSBlockInterface
+class IshortToComplex : public GNSSBlockInterface
 {
 public:
     IshortToComplex(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~IshortToComplex();
 

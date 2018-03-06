@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOf_BadSatelliteSet_H_
-#define	_SeqOf_BadSatelliteSet_H_
+#ifndef _SeqOf_BadSatelliteSet_H_
+#define _SeqOf_BadSatelliteSet_H_
 
 
 #include <asn_application.h>
@@ -16,23 +16,26 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SeqOf-BadSatelliteSet */
-typedef struct SeqOf_BadSatelliteSet {
-	A_SEQUENCE_OF(SatelliteID_t) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOf_BadSatelliteSet_t;
+    /* SeqOf-BadSatelliteSet */
+    typedef struct SeqOf_BadSatelliteSet
+    {
+        A_SEQUENCE_OF(SatelliteID_t)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOf_BadSatelliteSet;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOf_BadSatelliteSet_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOf_BadSatelliteSet;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SeqOf_BadSatelliteSet_H_ */
+#endif /* _SeqOf_BadSatelliteSet_H_ */
 #include <asn_internal.h>

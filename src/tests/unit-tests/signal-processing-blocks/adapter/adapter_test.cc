@@ -47,7 +47,7 @@
 #include "in_memory_configuration.h"
 
 
-class DataTypeAdapter: public ::testing::Test
+class DataTypeAdapter : public ::testing::Test
 {
 public:
     DataTypeAdapter();
@@ -81,7 +81,8 @@ DataTypeAdapter::DataTypeAdapter()
 
 
 DataTypeAdapter::~DataTypeAdapter()
-{}
+{
+}
 
 
 int DataTypeAdapter::run_ishort_to_cshort_block()
@@ -93,7 +94,7 @@ int DataTypeAdapter::run_ishort_to_cshort_block()
     EXPECT_EQ(expected_implementation, ishort_to_cshort->implementation());
 
     std::ofstream ofs(file_name_input.c_str(), std::ofstream::binary);
-    for(std::vector<short>::const_iterator i = input_data_shorts.cbegin(); i != input_data_shorts.cend(); ++i)
+    for (std::vector<short>::const_iterator i = input_data_shorts.cbegin(); i != input_data_shorts.cend(); ++i)
         {
             short aux = *i;
             ofs.write(reinterpret_cast<const char*>(&aux), sizeof(short));
@@ -104,7 +105,7 @@ int DataTypeAdapter::run_ishort_to_cshort_block()
     auto file_source = gr::blocks::file_source::make(sizeof(short), file_name_input.c_str());
     auto sink = gr::blocks::file_sink::make(sizeof(lv_16sc_t), file_name_output.c_str(), false);
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         top_block->connect(file_source, 0, ishort_to_cshort->get_left_block(), 0);
         top_block->connect(ishort_to_cshort->get_right_block(), 0, sink, 0);
         top_block->run();
@@ -122,7 +123,7 @@ int DataTypeAdapter::run_ishort_to_complex_block()
     EXPECT_EQ(expected_implementation, ishort_to_complex->implementation());
 
     std::ofstream ofs(file_name_input.c_str(), std::ofstream::binary);
-    for(std::vector<short>::const_iterator i = input_data_shorts.cbegin(); i != input_data_shorts.cend(); ++i)
+    for (std::vector<short>::const_iterator i = input_data_shorts.cbegin(); i != input_data_shorts.cend(); ++i)
         {
             short aux = *i;
             ofs.write(reinterpret_cast<const char*>(&aux), sizeof(short));
@@ -133,7 +134,7 @@ int DataTypeAdapter::run_ishort_to_complex_block()
     auto file_source = gr::blocks::file_source::make(sizeof(short), file_name_input.c_str());
     auto sink = gr::blocks::file_sink::make(sizeof(gr_complex), file_name_output.c_str(), false);
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         top_block->connect(file_source, 0, ishort_to_complex->get_left_block(), 0);
         top_block->connect(ishort_to_complex->get_right_block(), 0, sink, 0);
         top_block->run();
@@ -151,7 +152,7 @@ int DataTypeAdapter::run_ibyte_to_cshort_block()
     EXPECT_EQ(expected_implementation, ibyte_to_cshort->implementation());
 
     std::ofstream ofs(file_name_input.c_str());
-    for(std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
+    for (std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
         {
             ofs << *i;
         }
@@ -161,7 +162,7 @@ int DataTypeAdapter::run_ibyte_to_cshort_block()
     auto file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name_input.c_str());
     auto sink = gr::blocks::file_sink::make(sizeof(lv_16sc_t), file_name_output.c_str(), false);
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         top_block->connect(file_source, 0, ibyte_to_cshort->get_left_block(), 0);
         top_block->connect(ibyte_to_cshort->get_right_block(), 0, sink, 0);
         top_block->run();
@@ -178,8 +179,8 @@ int DataTypeAdapter::run_ibyte_to_complex_block()
     std::string expected_implementation = "Ibyte_To_Complex";
     EXPECT_EQ(expected_implementation, ibyte_to_complex->implementation());
 
-    std::ofstream ofs(file_name_input.c_str() );
-    for(std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
+    std::ofstream ofs(file_name_input.c_str());
+    for (std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
         {
             ofs << *i;
         }
@@ -189,7 +190,7 @@ int DataTypeAdapter::run_ibyte_to_complex_block()
     auto file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name_input.c_str());
     auto sink = gr::blocks::file_sink::make(sizeof(gr_complex), file_name_output.c_str(), false);
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         top_block->connect(file_source, 0, ibyte_to_complex->get_left_block(), 0);
         top_block->connect(ibyte_to_complex->get_right_block(), 0, sink, 0);
         top_block->run();
@@ -207,7 +208,7 @@ int DataTypeAdapter::run_ibyte_to_cbyte_block()
     EXPECT_EQ(expected_implementation, ibyte_to_cbyte->implementation());
 
     std::ofstream ofs(file_name_input.c_str());
-    for(std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
+    for (std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
         {
             ofs << *i;
         }
@@ -217,7 +218,7 @@ int DataTypeAdapter::run_ibyte_to_cbyte_block()
     auto file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name_input.c_str());
     auto sink = gr::blocks::file_sink::make(sizeof(short), file_name_output.c_str(), false);
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         top_block->connect(file_source, 0, ibyte_to_cbyte->get_left_block(), 0);
         top_block->connect(ibyte_to_cbyte->get_right_block(), 0, sink, 0);
         top_block->run();
@@ -235,7 +236,7 @@ int DataTypeAdapter::run_byte_to_short_block()
     EXPECT_EQ(expected_implementation, byte_to_short->implementation());
 
     std::ofstream ofs(file_name_input.c_str());
-    for(std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
+    for (std::vector<int8_t>::const_iterator i = input_data_bytes.cbegin(); i != input_data_bytes.cend(); ++i)
         {
             ofs << *i;
         }
@@ -245,7 +246,7 @@ int DataTypeAdapter::run_byte_to_short_block()
     auto file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name_input.c_str());
     auto sink = gr::blocks::file_sink::make(sizeof(int16_t), file_name_output.c_str(), false);
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         top_block->connect(file_source, 0, byte_to_short->get_left_block(), 0);
         top_block->connect(byte_to_short->get_right_block(), 0, sink, 0);
         top_block->run();
@@ -257,22 +258,22 @@ int DataTypeAdapter::run_byte_to_short_block()
 TEST_F(DataTypeAdapter, ByteToShortValidationOfResults)
 {
     run_byte_to_short_block();
-    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in );
+    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in);
 
     int16_t iSample;
     int i = 0;
     try
-    {
-            while(ifs.read(reinterpret_cast<char *>(&iSample), sizeof(int16_t)))
+        {
+            while (ifs.read(reinterpret_cast<char*>(&iSample), sizeof(int16_t)))
                 {
-                    EXPECT_EQ(input_data_bytes.at(i), static_cast<int8_t>(iSample / 256)); // Scale down!
+                    EXPECT_EQ(input_data_bytes.at(i), static_cast<int8_t>(iSample / 256));  // Scale down!
                     i++;
                 }
-    }
-    catch(std::system_error& e)
-    {
+        }
+    catch (std::system_error& e)
+        {
             std::cerr << e.code().message() << std::endl;
-    }
+        }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
     ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
@@ -282,23 +283,23 @@ TEST_F(DataTypeAdapter, ByteToShortValidationOfResults)
 TEST_F(DataTypeAdapter, IbyteToCbyteValidationOfResults)
 {
     run_ibyte_to_cbyte_block();
-    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in );
+    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in);
     lv_8sc_t iSample;
     int i = 0;
     try
-    {
-            while(ifs.read(reinterpret_cast<char *>(&iSample), sizeof(lv_8sc_t)))
+        {
+            while (ifs.read(reinterpret_cast<char*>(&iSample), sizeof(lv_8sc_t)))
                 {
                     EXPECT_EQ(input_data_bytes.at(i), iSample.real());
                     i++;
                     EXPECT_EQ(input_data_bytes.at(i), iSample.imag());
                     i++;
                 }
-    }
-    catch(std::system_error& e)
-    {
+        }
+    catch (std::system_error& e)
+        {
             std::cerr << e.code().message() << std::endl;
-    }
+        }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
     ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
@@ -308,23 +309,23 @@ TEST_F(DataTypeAdapter, IbyteToCbyteValidationOfResults)
 TEST_F(DataTypeAdapter, IbyteToComplexValidationOfResults)
 {
     run_ibyte_to_cbyte_block();
-    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in );
+    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in);
     gr_complex iSample;
     int i = 0;
     try
-    {
-            while(ifs.read(reinterpret_cast<char *>(&iSample), sizeof(gr_complex)))
+        {
+            while (ifs.read(reinterpret_cast<char*>(&iSample), sizeof(gr_complex)))
                 {
                     EXPECT_EQ(input_data_bytes.at(i), static_cast<int8_t>(iSample.real()));
                     i++;
-                    EXPECT_EQ(input_data_bytes.at(i),  static_cast<int8_t>(iSample.imag()));
+                    EXPECT_EQ(input_data_bytes.at(i), static_cast<int8_t>(iSample.imag()));
                     i++;
                 }
-    }
-    catch(std::system_error& e)
-    {
+        }
+    catch (std::system_error& e)
+        {
             std::cerr << e.code().message() << std::endl;
-    }
+        }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
     ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
@@ -334,23 +335,23 @@ TEST_F(DataTypeAdapter, IbyteToComplexValidationOfResults)
 TEST_F(DataTypeAdapter, IbyteToCshortValidationOfResults)
 {
     run_ibyte_to_cshort_block();
-    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in );
+    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in);
     lv_16sc_t iSample;
     int i = 0;
     try
-    {
-            while(ifs.read(reinterpret_cast<char *>(&iSample), sizeof(lv_16sc_t)))
+        {
+            while (ifs.read(reinterpret_cast<char*>(&iSample), sizeof(lv_16sc_t)))
                 {
                     EXPECT_EQ(input_data_bytes.at(i), static_cast<int8_t>(iSample.real()));
                     i++;
-                    EXPECT_EQ(input_data_bytes.at(i),  static_cast<int8_t>(iSample.imag()));
+                    EXPECT_EQ(input_data_bytes.at(i), static_cast<int8_t>(iSample.imag()));
                     i++;
                 }
-    }
-    catch(std::system_error& e)
-    {
+        }
+    catch (std::system_error& e)
+        {
             std::cerr << e.code().message() << std::endl;
-    }
+        }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
     ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
@@ -360,23 +361,23 @@ TEST_F(DataTypeAdapter, IbyteToCshortValidationOfResults)
 TEST_F(DataTypeAdapter, IshortToComplexValidationOfResults)
 {
     run_ishort_to_complex_block();
-    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in );
+    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in);
     gr_complex iSample;
     int i = 0;
     try
-    {
-            while(ifs.read(reinterpret_cast<char *>(&iSample), sizeof(gr_complex)))
+        {
+            while (ifs.read(reinterpret_cast<char*>(&iSample), sizeof(gr_complex)))
                 {
                     EXPECT_EQ(input_data_shorts.at(i), static_cast<short>(iSample.real()));
                     i++;
-                    EXPECT_EQ(input_data_shorts.at(i),  static_cast<short>(iSample.imag()));
+                    EXPECT_EQ(input_data_shorts.at(i), static_cast<short>(iSample.imag()));
                     i++;
                 }
-    }
-    catch(std::system_error& e)
-    {
+        }
+    catch (std::system_error& e)
+        {
             std::cerr << e.code().message() << std::endl;
-    }
+        }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
     ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";
@@ -386,23 +387,23 @@ TEST_F(DataTypeAdapter, IshortToComplexValidationOfResults)
 TEST_F(DataTypeAdapter, IshortToCshortValidationOfResults)
 {
     run_ishort_to_cshort_block();
-    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in );
+    std::ifstream ifs(file_name_output.data(), std::ifstream::binary | std::ifstream::in);
     lv_16sc_t iSample;
     int i = 0;
     try
-    {
-            while(ifs.read(reinterpret_cast<char *>(&iSample), sizeof(lv_16sc_t)))
+        {
+            while (ifs.read(reinterpret_cast<char*>(&iSample), sizeof(lv_16sc_t)))
                 {
                     EXPECT_EQ(input_data_shorts.at(i), static_cast<short>(iSample.real()));
                     i++;
-                    EXPECT_EQ(input_data_shorts.at(i),  static_cast<short>(iSample.imag()));
+                    EXPECT_EQ(input_data_shorts.at(i), static_cast<short>(iSample.imag()));
                     i++;
                 }
-    }
-    catch(std::system_error& e)
-    {
+        }
+    catch (std::system_error& e)
+        {
             std::cerr << e.code().message() << std::endl;
-    }
+        }
     ifs.close();
     ASSERT_EQ(remove(file_name_input.c_str()), 0) << "Problem deleting temporary file";
     ASSERT_EQ(remove(file_name_output.c_str()), 0) << "Problem deleting temporary file";

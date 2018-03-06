@@ -39,9 +39,7 @@
 using google::LogMessage;
 
 NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                role_(role), in_streams_(in_streams),
-                out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     size_t item_size_;
     float pfa;
@@ -71,7 +69,6 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
             notch_filter_ = make_notch_filter(pfa, p_c_factor, length_, n_segments_est, n_segments_reset);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "input filter(" << notch_filter_->unique_id() << ")";
-
         }
     else
         {
@@ -88,7 +85,8 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
 
 
 NotchFilter::~NotchFilter()
-{}
+{
+}
 
 
 void NotchFilter::connect(gr::top_block_sptr top_block)
@@ -101,7 +99,7 @@ void NotchFilter::connect(gr::top_block_sptr top_block)
     else
         {
             DLOG(INFO) << "nothing to connect internally";
-        }   
+        }
 }
 
 
@@ -114,7 +112,7 @@ void NotchFilter::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr NotchFilter::get_left_block() 
+gr::basic_block_sptr NotchFilter::get_left_block()
 {
     return notch_filter_;
 }

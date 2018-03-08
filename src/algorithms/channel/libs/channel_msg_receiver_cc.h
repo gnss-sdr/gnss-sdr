@@ -31,8 +31,8 @@
 #ifndef GNSS_SDR_CHANNEL_MSG_RECEIVER_CC_H
 #define GNSS_SDR_CHANNEL_MSG_RECEIVER_CC_H
 
-#include <gnuradio/block.h>
 #include "channel_fsm.h"
+#include <gnuradio/block.h>
 
 class channel_msg_receiver_cc;
 
@@ -47,14 +47,13 @@ class channel_msg_receiver_cc : public gr::block
 {
 private:
     std::shared_ptr<ChannelFsm> d_channel_fsm;
-    bool d_repeat; // todo: change FSM to include repeat value
+    bool d_repeat;  // todo: change FSM to include repeat value
     friend channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
     void msg_handler_events(pmt::pmt_t msg);
     channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
 
 public:
-    ~channel_msg_receiver_cc (); //!< Default destructor
-
+    ~channel_msg_receiver_cc();  //!< Default destructor
 };
 
 #endif

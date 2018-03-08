@@ -33,17 +33,17 @@
  */
 
 #include "gnss_flowgraph.h"
-#include <algorithm>
-#include <exception>
-#include <iostream>
-#include <set>
-#include <boost/lexical_cast.hpp>
-#include <boost/tokenizer.hpp>
-#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "gnss_block_interface.h"
 #include "channel_interface.h"
 #include "gnss_block_factory.h"
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+#include <glog/logging.h>
+#include <algorithm>
+#include <exception>
+#include <iostream>
+#include <set>
 
 
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8
@@ -60,8 +60,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
 }
 
 
-GNSSFlowgraph::~GNSSFlowgraph()
-{}
+GNSSFlowgraph::~GNSSFlowgraph() {}
 
 
 void GNSSFlowgraph::start()
@@ -73,15 +72,15 @@ void GNSSFlowgraph::start()
         }
 
     try
-    {
+        {
             top_block_->start();
-    }
-    catch (const std::exception & e)
-    {
+        }
+    catch (const std::exception& e)
+        {
             LOG(WARNING) << "Unable to start flowgraph";
             LOG(ERROR) << e.what();
             return;
-    }
+        }
 
     running_ = true;
 }
@@ -110,73 +109,73 @@ void GNSSFlowgraph::connect()
     for (int i = 0; i < sources_count_; i++)
         {
             try
-            {
+                {
                     sig_source_.at(i)->connect(top_block_);
-            }
-            catch (const std::exception & e)
-            {
+                }
+            catch (const std::exception& e)
+                {
                     LOG(INFO) << "Can't connect signal source block " << i << " internally";
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
-            }
+                }
         }
 
     // Signal Source > Signal conditioner >
     for (unsigned int i = 0; i < sig_conditioner_.size(); i++)
         {
             try
-            {
+                {
                     sig_conditioner_.at(i)->connect(top_block_);
-            }
-            catch (const std::exception & e)
-            {
+                }
+            catch (const std::exception& e)
+                {
                     LOG(INFO) << "Can't connect signal conditioner block " << i << " internally";
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
-            }
+                }
         }
 
     for (unsigned int i = 0; i < channels_count_; i++)
         {
             try
-            {
+                {
                     channels_.at(i)->connect(top_block_);
-            }
-            catch (const std::exception & e)
-            {
+                }
+            catch (const std::exception& e)
+                {
                     LOG(WARNING) << "Can't connect channel " << i << " internally";
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
-            }
+                }
         }
 
     try
-    {
+        {
             observables_->connect(top_block_);
-    }
-    catch (const std::exception & e)
-    {
+        }
+    catch (const std::exception& e)
+        {
             LOG(WARNING) << "Can't connect observables block internally";
             LOG(ERROR) << e.what();
             top_block_->disconnect_all();
             return;
-    }
+        }
 
     // Signal Source > Signal conditioner >> Channels >> Observables > PVT
     try
-    {
+        {
             pvt_->connect(top_block_);
-    }
-    catch (const std::exception & e)
-    {
+        }
+    catch (const std::exception& e)
+        {
             LOG(WARNING) << "Can't connect PVT block internally";
             LOG(ERROR) << e.what();
             top_block_->disconnect_all();
             return;
-    }
+        }
 
     DLOG(INFO) << "blocks connected internally";
     // Signal Source (i) >  Signal conditioner (i) >
@@ -186,10 +185,10 @@ void GNSSFlowgraph::connect()
     for (int i = 0; i < sources_count_; i++)
         {
             try
-            {
+                {
                     //TODO: Remove this array implementation and create generic multistream connector
                     //(if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
-                    if(sig_source_.at(i)->implementation().compare("Raw_Array_Signal_Source") == 0)
+                    if (sig_source_.at(i)->implementation().compare("Raw_Array_Signal_Source") == 0)
                         {
                             //Multichannel Array
                             std::cout << "ARRAY MODE" << std::endl;
@@ -215,7 +214,6 @@ void GNSSFlowgraph::connect()
 
                                     if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
                                         {
-
                                             LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
                                             top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
                                         }
@@ -224,7 +222,7 @@ void GNSSFlowgraph::connect()
                                             if (j == 0)
                                                 {
                                                     // RF_channel 0 backward compatibility with single channel sources
-                                                    LOG(INFO)  <<  "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << j;
+                                                    LOG(INFO) << "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << j;
                                                     top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
                                                 }
                                             else
@@ -237,14 +235,14 @@ void GNSSFlowgraph::connect()
                                     signal_conditioner_ID++;
                                 }
                         }
-            }
-            catch (const std::exception & e)
-            {
-                    LOG(WARNING)  <<  "Can't connect signal source "  <<  i << " to signal conditioner " << i;
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Can't connect signal source " << i << " to signal conditioner " << i;
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
-            }
+                }
         }
     DLOG(INFO) << "Signal source connected to signal conditioner";
 
@@ -254,35 +252,35 @@ void GNSSFlowgraph::connect()
         {
             selected_signal_conditioner_ID = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".RF_channel_ID", 0);
             try
-            {
+                {
                     top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                            channels_.at(i)->get_left_block(), 0);
-            }
-            catch (const std::exception & e)
-            {
+                        channels_.at(i)->get_left_block(), 0);
+                }
+            catch (const std::exception& e)
+                {
                     LOG(WARNING) << "Can't connect signal conditioner " << selected_signal_conditioner_ID << " to channel " << i;
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
-            }
+                }
 
             DLOG(INFO) << "signal conditioner " << selected_signal_conditioner_ID << " connected to channel " << i;
 
             // Signal Source > Signal conditioner >> Channels >> Observables
             try
-            {
+                {
                     top_block_->connect(channels_.at(i)->get_right_block(), 0,
-                            observables_->get_left_block(), i);
-            }
-            catch (const std::exception & e)
-            {
+                        observables_->get_left_block(), i);
+                }
+            catch (const std::exception& e)
+                {
                     LOG(WARNING) << "Can't connect channel " << i << " to observables";
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
-            }
+                }
 
-            std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str(); // use channel's implicit signal!
+            std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();  // use channel's implicit signal!
             channels_.at(i)->set_signal(search_next_signal(gnss_signal, false));
 
             if (channels_state_[i] == 1)
@@ -301,7 +299,6 @@ void GNSSFlowgraph::connect()
                 {
                     ch_out_sample_counter = gnss_sdr_make_sample_counter();
                     top_block_->connect(channels_.at(i)->get_right_block(), 0, ch_out_sample_counter, 0);
-
                 }
         }
 
@@ -309,20 +306,20 @@ void GNSSFlowgraph::connect()
      * Connect the observables output of each channel to the PVT block
      */
     try
-    {
+        {
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
                     top_block_->connect(observables_->get_right_block(), i, pvt_->get_left_block(), i);
                     top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
                 }
-    }
-    catch (const std::exception & e)
-    {
+        }
+    catch (const std::exception& e)
+        {
             LOG(WARNING) << "Can't connect observables to PVT";
             LOG(ERROR) << e.what();
             top_block_->disconnect_all();
             return;
-    }
+        }
 
     connected_ = true;
     LOG(INFO) << "Flowgraph connected";
@@ -362,59 +359,58 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
     DLOG(INFO) << "Received " << what << " from " << who << ". Number of applied actions = " << applied_actions_;
     switch (what)
-    {
-    case 0:
-        DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
-        available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
-        channels_.at(who)->set_signal(search_next_signal(channels_.at(who)->get_signal().get_signal_str(), true));
-        DLOG(INFO) << "Channel "<< who << " Starting acquisition " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
-        channels_.at(who)->start_acquisition();
-        break;
+        {
+        case 0:
+            DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
+            available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
+            channels_.at(who)->set_signal(search_next_signal(channels_.at(who)->get_signal().get_signal_str(), true));
+            DLOG(INFO) << "Channel " << who << " Starting acquisition " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
+            channels_.at(who)->start_acquisition();
+            break;
 
-    case 1:
-        LOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_.at(who)->get_signal().get_satellite();
-        channels_state_[who] = 2;
-        acq_channels_count_--;
-        for (unsigned int i = 0; i < channels_count_; i++)
-            {
-                if(!available_GNSS_signals_.empty() && (acq_channels_count_ < max_acq_channels_) && (channels_state_[i] == 0))
-                    {
-                        channels_state_[i] = 1;
-                        channels_.at(i)->set_signal(search_next_signal(channels_.at(i)->get_signal().get_signal_str(), true));
-                        acq_channels_count_++;
-                        DLOG(INFO) << "Channel "<< i << " Starting acquisition " << channels_.at(i)->get_signal().get_satellite() << ", Signal " << channels_.at(i)->get_signal().get_signal_str();
-                        channels_.at(i)->start_acquisition();
-                    }
-                DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
-            }
-        break;
+        case 1:
+            LOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_.at(who)->get_signal().get_satellite();
+            channels_state_[who] = 2;
+            acq_channels_count_--;
+            for (unsigned int i = 0; i < channels_count_; i++)
+                {
+                    if (!available_GNSS_signals_.empty() && (acq_channels_count_ < max_acq_channels_) && (channels_state_[i] == 0))
+                        {
+                            channels_state_[i] = 1;
+                            channels_.at(i)->set_signal(search_next_signal(channels_.at(i)->get_signal().get_signal_str(), true));
+                            acq_channels_count_++;
+                            DLOG(INFO) << "Channel " << i << " Starting acquisition " << channels_.at(i)->get_signal().get_satellite() << ", Signal " << channels_.at(i)->get_signal().get_signal_str();
+                            channels_.at(i)->start_acquisition();
+                        }
+                    DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
+                }
+            break;
 
-    case 2:
-        LOG(INFO) << "Channel " << who << " TRK FAILED satellite " << channels_.at(who)->get_signal().get_satellite();
-        DLOG(INFO) << "Number of channels in acquisition = " << acq_channels_count_;
+        case 2:
+            LOG(INFO) << "Channel " << who << " TRK FAILED satellite " << channels_.at(who)->get_signal().get_satellite();
+            DLOG(INFO) << "Number of channels in acquisition = " << acq_channels_count_;
 
-        if (acq_channels_count_ < max_acq_channels_)
-            {
-                channels_state_[who] = 1;
-                acq_channels_count_++;
-                LOG(INFO) << "Channel "<< who << " Starting acquisition " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
-                channels_.at(who)->start_acquisition();
-            }
-        else
-            {
-                channels_state_[who] = 0;
-                LOG(INFO) << "Channel "<< who << " Idle state";
-                available_GNSS_signals_.push_back( channels_.at(who)->get_signal() );
-            }
-        break;
+            if (acq_channels_count_ < max_acq_channels_)
+                {
+                    channels_state_[who] = 1;
+                    acq_channels_count_++;
+                    LOG(INFO) << "Channel " << who << " Starting acquisition " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
+                    channels_.at(who)->start_acquisition();
+                }
+            else
+                {
+                    channels_state_[who] = 0;
+                    LOG(INFO) << "Channel " << who << " Idle state";
+                    available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
+                }
+            break;
 
-    default:
-        break;
-    }
+        default:
+            break;
+        }
     DLOG(INFO) << "Number of available signals: " << available_GNSS_signals_.size();
     applied_actions_++;
 }
-
 
 
 void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> configuration)
@@ -431,7 +427,6 @@ void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> co
         }
     configuration_ = configuration;
 }
-
 
 
 void GNSSFlowgraph::init()
@@ -493,7 +488,7 @@ void GNSSFlowgraph::init()
     std::string default_str("Default");
     std::string obs_implementation = configuration_->property("Observables.implementation", default_str);
     if ((obs_implementation.compare("GPS_L1_CA_Observables") == 0) || (obs_implementation.compare("GPS_L2C_Observables") == 0) ||
-            (obs_implementation.compare("Galileo_E1B_Observables") == 0) || (obs_implementation.compare("Galileo_E5A_Observables") == 0))
+        (obs_implementation.compare("Galileo_E1B_Observables") == 0) || (obs_implementation.compare("Galileo_E5A_Observables") == 0))
         {
             std::cout << "WARNING: Implementation '" << obs_implementation << "' of the Observables block has been replaced by 'Hybrid_Observables'." << std::endl;
             std::cout << "Please update your configuration file." << std::endl;
@@ -545,106 +540,107 @@ void GNSSFlowgraph::set_signals_list()
      */
 
     unsigned int total_channels = configuration_->property("Channels_1C.count", 0) +
-            configuration_->property("Channels_2S.count", 0) +
-            configuration_->property("Channels_1B.count", 0) +
-            configuration_->property("Channels_5X.count", 0) + 
-            configuration_->property("Channels_1G.count", 0) +
-            configuration_->property("Channels_5X.count", 0) +
-            configuration_->property("Channels_L5.count", 0);
+                                  configuration_->property("Channels_2S.count", 0) +
+                                  configuration_->property("Channels_1B.count", 0) +
+                                  configuration_->property("Channels_5X.count", 0) +
+                                  configuration_->property("Channels_1G.count", 0) +
+                                  configuration_->property("Channels_5X.count", 0) +
+                                  configuration_->property("Channels_L5.count", 0);
 
     /*
      * Loop to create the list of GNSS Signals
      * To add signals from other systems, add another loop 'for'
      */
 
-    std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-            29, 30, 31, 32 };
+    std::set<unsigned int> available_gps_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+        29, 30, 31, 32};
 
     std::set<unsigned int> available_sbas_prn = {120, 124, 126};
 
-    std::set<unsigned int> available_galileo_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-            29, 30, 31, 32, 33, 34, 35, 36};
+    std::set<unsigned int> available_galileo_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+        29, 30, 31, 32, 33, 34, 35, 36};
 
     // Removing satellites sharing same frequency number(1 and 5, 2 and 6, 3 and 7, 4 and 6, 11 and 15, 12 and 16, 14 and 18, 17 and 21
-    std::set<unsigned int> available_glonass_prn = { 1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21, 24 };
+    std::set<unsigned int> available_glonass_prn = {1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21, 24};
 
-    std::string sv_list = configuration_->property("Galileo.prns", std::string("") );
+    std::string sv_list = configuration_->property("Galileo.prns", std::string(""));
 
-    if( sv_list.length() > 0 )
+    if (sv_list.length() > 0)
         {
             // Reset the available prns:
-            std::set< unsigned int > tmp_set;
-            boost::tokenizer<> tok( sv_list );
-            std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
-                    boost::lexical_cast<unsigned int, std::string> );
+            std::set<unsigned int> tmp_set;
+            boost::tokenizer<> tok(sv_list);
+            std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
+                boost::lexical_cast<unsigned int, std::string>);
 
-            if( tmp_set.size() > 0 )
+            if (tmp_set.size() > 0)
                 {
                     available_galileo_prn = tmp_set;
                 }
         }
 
-    sv_list = configuration_->property("GPS.prns", std::string("") );
+    sv_list = configuration_->property("GPS.prns", std::string(""));
 
-    if( sv_list.length() > 0 )
+    if (sv_list.length() > 0)
         {
             // Reset the available prns:
-            std::set< unsigned int > tmp_set;
-            boost::tokenizer<> tok( sv_list );
-            std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
-                    boost::lexical_cast<unsigned int, std::string> );
+            std::set<unsigned int> tmp_set;
+            boost::tokenizer<> tok(sv_list);
+            std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
+                boost::lexical_cast<unsigned int, std::string>);
 
-            if( tmp_set.size() > 0 )
+            if (tmp_set.size() > 0)
                 {
                     available_gps_prn = tmp_set;
                 }
         }
 
-    sv_list = configuration_->property("SBAS.prns", std::string("") );
+    sv_list = configuration_->property("SBAS.prns", std::string(""));
 
-    if( sv_list.length() > 0 )
+    if (sv_list.length() > 0)
         {
             // Reset the available prns:
-            std::set< unsigned int > tmp_set;
-            boost::tokenizer<> tok( sv_list );
-            std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
-                    boost::lexical_cast<unsigned int, std::string> );
+            std::set<unsigned int> tmp_set;
+            boost::tokenizer<> tok(sv_list);
+            std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
+                boost::lexical_cast<unsigned int, std::string>);
 
-            if( tmp_set.size() > 0 )
+            if (tmp_set.size() > 0)
                 {
                     available_sbas_prn = tmp_set;
                 }
         }
 
-    sv_list = configuration_->property("Glonass.prns", std::string("") );
+    sv_list = configuration_->property("Glonass.prns", std::string(""));
 
-    if( sv_list.length() > 0 )
+    if (sv_list.length() > 0)
         {
             // Reset the available prns:
-            std::set< unsigned int > tmp_set;
-            boost::tokenizer<> tok( sv_list );
-            std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
-                    boost::lexical_cast<unsigned int, std::string> );
+            std::set<unsigned int> tmp_set;
+            boost::tokenizer<> tok(sv_list);
+            std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
+                boost::lexical_cast<unsigned int, std::string>);
 
-            if( tmp_set.size() > 0 )
+            if (tmp_set.size() > 0)
                 {
                     available_glonass_prn = tmp_set;
                 }
         }
 
-    if (configuration_->property("Channels_1C.count", 0) > 0 )
+    if (configuration_->property("Channels_1C.count", 0) > 0)
         {
             /*
              * Loop to create GPS L1 C/A signals
              */
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
-                    available_gnss_prn_iter != available_gps_prn.cend();
-                    available_gnss_prn_iter++)
+                 available_gnss_prn_iter != available_gps_prn.cend();
+                 available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
-                            *available_gnss_prn_iter), std::string("1C")));
+                    available_GNSS_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
+                        std::string("1C")));
                 }
         }
 
@@ -654,11 +650,12 @@ void GNSSFlowgraph::set_signals_list()
              * Loop to create GPS L2C M signals
              */
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
-                    available_gnss_prn_iter != available_gps_prn.cend();
-                    available_gnss_prn_iter++)
+                 available_gnss_prn_iter != available_gps_prn.cend();
+                 available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
-                            *available_gnss_prn_iter), std::string("2S")));
+                    available_GNSS_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
+                        std::string("2S")));
                 }
         }
 
@@ -668,11 +665,12 @@ void GNSSFlowgraph::set_signals_list()
              * Loop to create GPS L5 signals
              */
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
-                    available_gnss_prn_iter != available_gps_prn.cend();
-                    available_gnss_prn_iter++)
+                 available_gnss_prn_iter != available_gps_prn.cend();
+                 available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
-                            *available_gnss_prn_iter), std::string("L5")));
+                    available_GNSS_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
+                        std::string("L5")));
                 }
         }
     if (configuration_->property("Channels_SBAS.count", 0) > 0)
@@ -681,11 +679,12 @@ void GNSSFlowgraph::set_signals_list()
              * Loop to create SBAS L1 C/A signals
              */
             for (available_gnss_prn_iter = available_sbas_prn.cbegin();
-                    available_gnss_prn_iter != available_sbas_prn.cend();
-                    available_gnss_prn_iter++)
+                 available_gnss_prn_iter != available_sbas_prn.cend();
+                 available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("SBAS"),
-                            *available_gnss_prn_iter), std::string("1C")));
+                    available_GNSS_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("SBAS"), *available_gnss_prn_iter),
+                        std::string("1C")));
                 }
         }
 
@@ -696,41 +695,44 @@ void GNSSFlowgraph::set_signals_list()
              * Loop to create the list of Galileo E1B signals
              */
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
-                    available_gnss_prn_iter != available_galileo_prn.cend();
-                    available_gnss_prn_iter++)
+                 available_gnss_prn_iter != available_galileo_prn.cend();
+                 available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
-                            *available_gnss_prn_iter), std::string("1B")));
+                    available_GNSS_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
+                        std::string("1B")));
                 }
         }
 
-    if (configuration_->property("Channels_5X.count", 0) > 0 )
+    if (configuration_->property("Channels_5X.count", 0) > 0)
         {
             /*
              * Loop to create the list of Galileo E5a signals
              */
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
-                    available_gnss_prn_iter != available_galileo_prn.cend();
-                    available_gnss_prn_iter++)
+                 available_gnss_prn_iter != available_galileo_prn.cend();
+                 available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
-                            *available_gnss_prn_iter), std::string("5X")));
+                    available_GNSS_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
+                        std::string("5X")));
                 }
         }
 
-    if (configuration_->property("Channels_1G.count", 0) > 0 )
-    {
-        /*
+    if (configuration_->property("Channels_1G.count", 0) > 0)
+        {
+            /*
          * Loop to create the list of GLONASS L1 C/A signals
          */
-        for (available_gnss_prn_iter = available_glonass_prn.begin();
-                available_gnss_prn_iter != available_glonass_prn.end();
-                available_gnss_prn_iter++)
-            {
-                available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Glonass"),
-                        *available_gnss_prn_iter), std::string("1G")));
-            }
-    }
+            for (available_gnss_prn_iter = available_glonass_prn.begin();
+                 available_gnss_prn_iter != available_glonass_prn.end();
+                 available_gnss_prn_iter++)
+                {
+                    available_GNSS_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("Glonass"), *available_gnss_prn_iter),
+                        std::string("1G")));
+                }
+        }
     /*
      * Ordering the list of signals from configuration file
      */
@@ -742,12 +744,12 @@ void GNSSFlowgraph::set_signals_list()
         {
             std::string gnss_signal = (configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("1C")));
             std::string gnss_system;
-            if((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) or (gnss_signal.compare("L5") == 0)) gnss_system = "GPS";
-            if((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0) ) gnss_system = "Galileo";
-            if((gnss_signal.compare("1G") == 0)/*or (gnss_signal.compare("") == 0)*/) gnss_system = "Glonass";
+            if ((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) or (gnss_signal.compare("L5") == 0)) gnss_system = "GPS";
+            if ((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0)) gnss_system = "Galileo";
+            if ((gnss_signal.compare("1G") == 0) /*or (gnss_signal.compare("") == 0)*/) gnss_system = "Glonass";
             unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
-            LOG(INFO) << "Channel " << i <<  " system " << gnss_system << ", signal " << gnss_signal <<", sat "<<sat;
-            if (sat == 0) // 0 = not PRN in configuration file
+            LOG(INFO) << "Channel " << i << " system " << gnss_system << ", signal " << gnss_signal << ", sat " << sat;
+            if (sat == 0)  // 0 = not PRN in configuration file
                 {
                     gnss_it++;
                 }
@@ -772,22 +774,32 @@ void GNSSFlowgraph::set_channels_state()
     channels_state_.reserve(channels_count_);
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-            if (i < max_acq_channels_) {channels_state_.push_back(1);}
-            else {channels_state_.push_back(0);}
+            if (i < max_acq_channels_)
+                {
+                    channels_state_.push_back(1);
+                }
+            else
+                {
+                    channels_state_.push_back(0);
+                }
             DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
         }
     acq_channels_count_ = max_acq_channels_;
     DLOG(INFO) << acq_channels_count_ << " channels in acquisition state";
 }
 
+
 Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool pop)
 {
-    while(searched_signal.compare(available_GNSS_signals_.front().get_signal_str()) != 0)
+    while (searched_signal.compare(available_GNSS_signals_.front().get_signal_str()) != 0)
         {
             available_GNSS_signals_.push_back(available_GNSS_signals_.front());
             available_GNSS_signals_.pop_front();
         }
     Gnss_Signal result = available_GNSS_signals_.front();
-    if(pop){available_GNSS_signals_.pop_front();}
+    if (pop)
+        {
+            available_GNSS_signals_.pop_front();
+        }
     return result;
 }

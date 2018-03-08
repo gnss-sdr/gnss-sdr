@@ -32,23 +32,24 @@
 #ifndef GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H_
 #define GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H_
 
-#include <string>
+#include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/iio/pluto_source.h>
-#include "gnss_block_interface.h"
+#include <string>
+
 
 class ConfigurationInterface;
 
 /*!
  */
-class PlutosdrSignalSource: public GNSSBlockInterface
+class PlutosdrSignalSource : public GNSSBlockInterface
 {
 public:
     PlutosdrSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~PlutosdrSignalSource();
 
@@ -78,11 +79,11 @@ private:
     std::string role_;
 
     // Front-end settings
-    std::string uri_; // device direction
-    unsigned long freq_; // frequency of local oscilator
+    std::string uri_;     // device direction
+    unsigned long freq_;  // frequency of local oscilator
     unsigned long sample_rate_;
     unsigned long bandwidth_;
-    unsigned long buffer_size_; // reception buffer
+    unsigned long buffer_size_;  // reception buffer
     bool quadrature_;
     bool rf_dc_;
     bool bb_dc_;

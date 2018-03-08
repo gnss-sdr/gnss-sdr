@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_FrequencyInfo_H_
-#define	_FrequencyInfo_H_
+#ifndef _FrequencyInfo_H_
+#define _FrequencyInfo_H_
 
 
 #include <asn_application.h>
@@ -17,49 +17,54 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum fmodeSpecificInfo_PR {
-	fmodeSpecificInfo_PR_NOTHING,	/* No components present */
-	fmodeSpecificInfo_PR_fdd,
-	fmodeSpecificInfo_PR_tdd,
-	/* Extensions may appear below */
-	
-} fmodeSpecificInfo_PR;
+    /* Dependencies */
+    typedef enum fmodeSpecificInfo_PR
+    {
+        fmodeSpecificInfo_PR_NOTHING, /* No components present */
+        fmodeSpecificInfo_PR_fdd,
+        fmodeSpecificInfo_PR_tdd,
+        /* Extensions may appear below */
 
-/* FrequencyInfo */
-typedef struct FrequencyInfo {
-	struct fmodeSpecificInfo {
-		fmodeSpecificInfo_PR present;
-		union FrequencyInfo__fmodeSpecificInfo_u {
-			FrequencyInfoFDD_t	 fdd;
-			FrequencyInfoTDD_t	 tdd;
-			/*
+    } fmodeSpecificInfo_PR;
+
+    /* FrequencyInfo */
+    typedef struct FrequencyInfo
+    {
+        struct fmodeSpecificInfo
+        {
+            fmodeSpecificInfo_PR present;
+            union FrequencyInfo__fmodeSpecificInfo_u
+            {
+                FrequencyInfoFDD_t fdd;
+                FrequencyInfoTDD_t tdd;
+                /*
 			 * This type is extensible,
 			 * possible extensions are below.
 			 */
-		} choice;
-		
-		/* Context for parsing across buffer boundaries */
-		asn_struct_ctx_t _asn_ctx;
-	} fmodeSpecificInfo;
-	/*
+            } choice;
+
+            /* Context for parsing across buffer boundaries */
+            asn_struct_ctx_t _asn_ctx;
+        } fmodeSpecificInfo;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} FrequencyInfo_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_FrequencyInfo;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } FrequencyInfo_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_FrequencyInfo;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _FrequencyInfo_H_ */
+#endif /* _FrequencyInfo_H_ */
 #include <asn_internal.h>

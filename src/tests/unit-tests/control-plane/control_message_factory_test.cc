@@ -36,8 +36,6 @@
 #include "control_message_factory.h"
 
 
-
-
 TEST(ControlMessageFactoryTest, GetQueueMessage)
 {
     std::shared_ptr<ControlMessageFactory> factory = std::make_shared<ControlMessageFactory>();
@@ -49,8 +47,6 @@ TEST(ControlMessageFactoryTest, GetQueueMessage)
     EXPECT_EQ(expected2, control_messages->at(0)->what);
     EXPECT_EQ(sizeof(ControlMessage), queue_message->length());
 }
-
-
 
 
 TEST(ControlMessageFactoryTest, GetControlMessages)

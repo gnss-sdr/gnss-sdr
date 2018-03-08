@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSAlmanacModel_H_
-#define	_GANSSAlmanacModel_H_
+#ifndef _GANSSAlmanacModel_H_
+#define _GANSSAlmanacModel_H_
 
 
 #include <asn_application.h>
@@ -17,27 +17,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSAlmanacModel */
-typedef struct GANSSAlmanacModel {
-	long	 weekNumber;
-	SVIDMASK_t	 svIDMask;
-	long	*toa	/* OPTIONAL */;
-	long	*ioda	/* OPTIONAL */;
-	SeqOfGANSSAlmanacElement_t	 ganssAlmanacList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSAlmanacModel_t;
+    /* GANSSAlmanacModel */
+    typedef struct GANSSAlmanacModel
+    {
+        long weekNumber;
+        SVIDMASK_t svIDMask;
+        long *toa /* OPTIONAL */;
+        long *ioda /* OPTIONAL */;
+        SeqOfGANSSAlmanacElement_t ganssAlmanacList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSAlmanacModel;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSAlmanacModel_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSAlmanacModel;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSAlmanacModel_H_ */
+#endif /* _GANSSAlmanacModel_H_ */
 #include <asn_internal.h>

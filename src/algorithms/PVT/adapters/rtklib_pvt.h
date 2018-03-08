@@ -29,13 +29,12 @@
  */
 
 
-
 #ifndef GNSS_SDR_RTKLIB_PVT_H_
 #define GNSS_SDR_RTKLIB_PVT_H_
 
-#include <string>
 #include "pvt_interface.h"
 #include "rtklib_pvt_cc.h"
+#include <string>
 
 
 class ConfigurationInterface;
@@ -47,9 +46,9 @@ class RtklibPvt : public PvtInterface
 {
 public:
     RtklibPvt(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~RtklibPvt();
 

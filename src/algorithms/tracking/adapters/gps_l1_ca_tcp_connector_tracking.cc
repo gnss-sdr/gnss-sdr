@@ -44,9 +44,8 @@
 using google::LogMessage;
 
 GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -59,7 +58,7 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     std::string default_item_type = "gr_complex";
     float early_late_space_chips;
     size_t port_ch0;
-    item_type = configuration->property(role + ".item_type",default_item_type);
+    item_type = configuration->property(role + ".item_type", default_item_type);
     //vector_length = configuration->property(role + ".vector_length", 2048);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
@@ -68,7 +67,7 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     port_ch0 = configuration->property(role + ".port_ch0", 2060);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename); //unused!
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
@@ -76,13 +75,13 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l1_ca_tcp_connector_make_tracking_cc(
-                    f_if,
-                    fs_in,
-                    vector_length,
-                    dump,
-                    dump_filename,
-                    early_late_space_chips,
-                    port_ch0);
+                f_if,
+                fs_in,
+                vector_length,
+                dump,
+                dump_filename,
+                early_late_space_chips,
+                port_ch0);
         }
     else
         {
@@ -96,7 +95,8 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
 
 
 GpsL1CaTcpConnectorTracking::~GpsL1CaTcpConnectorTracking()
-{}
+{
+}
 
 
 void GpsL1CaTcpConnectorTracking::start_tracking()
@@ -121,13 +121,17 @@ void GpsL1CaTcpConnectorTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GpsL1CaTcpConnectorTracking::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 void GpsL1CaTcpConnectorTracking::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
@@ -140,4 +144,3 @@ gr::basic_block_sptr GpsL1CaTcpConnectorTracking::get_right_block()
 {
     return tracking_;
 }
-

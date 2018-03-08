@@ -29,18 +29,17 @@
  */
 
 #include "flexiband_signal_source.h"
+#include "configuration_interface.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
 #include <glog/logging.h>
 #include <teleorbit/frontend.h>
-#include "configuration_interface.h"
 
 
 using google::LogMessage;
 
 FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "byte";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
@@ -48,12 +47,12 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
     std::string default_firmware_file = "flexiband_I-1b.bit";
     firmware_filename_ = configuration->property(role + ".firmware_file", default_firmware_file);
 
-    gain1_ = configuration->property(role + ".gain1", 0); // check gain DAC values for Flexiband frontend!
-    gain2_ = configuration->property(role + ".gain2", 0); // check gain DAC values for Flexiband frontend!
-    gain3_ = configuration->property(role + ".gain3", 0); // check gain DAC values for Flexiband frontend!
+    gain1_ = configuration->property(role + ".gain1", 0);  // check gain DAC values for Flexiband frontend!
+    gain2_ = configuration->property(role + ".gain2", 0);  // check gain DAC values for Flexiband frontend!
+    gain3_ = configuration->property(role + ".gain3", 0);  // check gain DAC values for Flexiband frontend!
 
-    AGC_ = configuration->property(role + ".AGC", true); // enabled AGC by default
-    flag_read_file = configuration->property(role + ".flag_read_file", false); //disable read samples from file by default
+    AGC_ = configuration->property(role + ".AGC", true);                        // enabled AGC by default
+    flag_read_file = configuration->property(role + ".flag_read_file", false);  //disable read samples from file by default
     std::string default_signal_file = "flexiband_frame_samples.bin";
     signal_file = configuration->property(role + ".signal_file", default_signal_file);
 
@@ -89,10 +88,9 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
 }
 
 
-
 FlexibandSignalSource::~FlexibandSignalSource()
-{}
-
+{
+}
 
 
 void FlexibandSignalSource::connect(gr::top_block_sptr top_block)
@@ -109,7 +107,6 @@ void FlexibandSignalSource::connect(gr::top_block_sptr top_block)
             DLOG(INFO) << "connected char_to_float to float_to_complex_ CH" << n;
         }
 }
-
 
 
 void FlexibandSignalSource::disconnect(gr::top_block_sptr top_block)
@@ -144,4 +141,3 @@ gr::basic_block_sptr FlexibandSignalSource::get_right_block(int RF_channel)
 {
     return float_to_complex_.at(RF_channel);
 }
-

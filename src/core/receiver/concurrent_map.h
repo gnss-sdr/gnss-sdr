@@ -31,11 +31,12 @@
 #ifndef GNSS_SDR_CONCURRENT_MAP_H
 #define GNSS_SDR_CONCURRENT_MAP_H
 
+#include <boost/thread/mutex.hpp>
 #include <map>
 #include <utility>
-#include <boost/thread/mutex.hpp>
 
-template<typename Data>
+
+template <typename Data>
 
 
 /*!
@@ -44,10 +45,11 @@ template<typename Data>
  */
 class concurrent_map
 {
-    typedef typename std::map<int,Data>::iterator Data_iterator; // iterator is scope dependent
+    typedef typename std::map<int, Data>::iterator Data_iterator;  // iterator is scope dependent
 private:
-    std::map<int,Data> the_map;
+    std::map<int, Data> the_map;
     boost::mutex the_mutex;
+
 public:
     void write(int key, Data const& data)
     {
@@ -56,19 +58,19 @@ public:
         data_iter = the_map.find(key);
         if (data_iter != the_map.end())
             {
-                data_iter->second = data; // update
+                data_iter->second = data;  // update
             }
         else
             {
-                the_map.insert(std::pair<int, Data>(key, data)); // insert SILENTLY fails if the item already exists in the map!
+                the_map.insert(std::pair<int, Data>(key, data));  // insert SILENTLY fails if the item already exists in the map!
             }
         lock.unlock();
     }
 
-    std::map<int,Data> get_map_copy()
+    std::map<int, Data> get_map_copy()
     {
         boost::mutex::scoped_lock lock(the_mutex);
-        std::map<int,Data> map_aux = the_map;
+        std::map<int, Data> map_aux = the_map;
         lock.unlock();
         return map_aux;
     }

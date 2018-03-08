@@ -36,10 +36,9 @@
 #include <cmath>
 
 
-
 bool cpu_multicorrelator_16sc::init(
-        int max_signal_length_samples,
-        int n_correlators)
+    int max_signal_length_samples,
+    int n_correlators)
 {
     // ALLOCATE MEMORY FOR INTERNAL vectors
     size_t size = max_signal_length_samples * sizeof(lv_16sc_t);
@@ -55,11 +54,10 @@ bool cpu_multicorrelator_16sc::init(
 }
 
 
-
 bool cpu_multicorrelator_16sc::set_local_code_and_taps(
-        int code_length_chips,
-        const lv_16sc_t* local_code_in,
-        float *shifts_chips)
+    int code_length_chips,
+    const lv_16sc_t* local_code_in,
+    float* shifts_chips)
 {
     d_local_code_in = local_code_in;
     d_shifts_chips = shifts_chips;
@@ -80,22 +78,22 @@ bool cpu_multicorrelator_16sc::set_input_output_vectors(lv_16sc_t* corr_out, con
 void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
 {
     volk_gnsssdr_16ic_xn_resampler_16ic_xn(d_local_codes_resampled,
-            d_local_code_in,
-            rem_code_phase_chips,
-            code_phase_step_chips,
-            d_shifts_chips,
-            d_code_length_chips,
-            d_n_correlators,
-            correlator_length_samples);
+        d_local_code_in,
+        rem_code_phase_chips,
+        code_phase_step_chips,
+        d_shifts_chips,
+        d_code_length_chips,
+        d_n_correlators,
+        correlator_length_samples);
 }
 
 
 bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
-        float rem_carrier_phase_in_rad,
-        float phase_step_rad,
-        float rem_code_phase_chips,
-        float code_phase_step_chips,
-        int signal_length_samples)
+    float rem_carrier_phase_in_rad,
+    float phase_step_rad,
+    float rem_code_phase_chips,
+    float code_phase_step_chips,
+    int signal_length_samples)
 {
     update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
     // Regenerate phase at each call in order to avoid numerical issues
@@ -121,7 +119,7 @@ cpu_multicorrelator_16sc::cpu_multicorrelator_16sc()
 
 cpu_multicorrelator_16sc::~cpu_multicorrelator_16sc()
 {
-    if(d_local_codes_resampled != nullptr)
+    if (d_local_codes_resampled != nullptr)
         {
             cpu_multicorrelator_16sc::free();
         }
@@ -142,4 +140,3 @@ bool cpu_multicorrelator_16sc::free()
         }
     return true;
 }
-

@@ -29,18 +29,17 @@
  */
 
 #include "raw_array_signal_source.h"
+#include "configuration_interface.h"
+#include <dbfcttc/raw_array.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
 #include <glog/logging.h>
-#include <dbfcttc/raw_array.h>
-#include "configuration_interface.h"
 
 
 using google::LogMessage;
 
 RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/raw_array_source.dat";
@@ -70,10 +69,9 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            raw_array_source_ = gr::dbfcttc::raw_array::make(eth_device_.c_str(),channels_,snapshots_per_frame_,inter_frame_delay_,sampling_freq_);
+            raw_array_source_ = gr::dbfcttc::raw_array::make(eth_device_.c_str(), channels_, snapshots_per_frame_, inter_frame_delay_, sampling_freq_);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "raw_array_source(" << raw_array_source_->unique_id() << ")";
-
         }
     //    else if (item_type_.compare("short") == 0)
     //        {
@@ -99,10 +97,9 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
 }
 
 
-
 RawArraySignalSource::~RawArraySignalSource()
-{}
-
+{
+}
 
 
 void RawArraySignalSource::connect(gr::top_block_sptr top_block)
@@ -118,7 +115,6 @@ void RawArraySignalSource::connect(gr::top_block_sptr top_block)
             DLOG(INFO) << "nothing to connect internally";
         }
 }
-
 
 
 void RawArraySignalSource::disconnect(gr::top_block_sptr top_block)

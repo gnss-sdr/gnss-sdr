@@ -29,16 +29,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include <algorithm>
-#include <chrono>
-#include <cmath>
-#include <fstream>
-#include <numeric>
-#include <thread>
-#include <boost/filesystem.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gtest/gtest.h>
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"
@@ -48,6 +38,15 @@
 #include "gnuplot_i.h"
 #include "test_flags.h"
 #include "signal_generator_flags.h"
+#include <boost/filesystem.hpp>
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <fstream>
+#include <numeric>
+#include <thread>
 
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing the configuration parameters for the position test.");
@@ -57,7 +56,7 @@ DEFINE_bool(plot_position_test, false, "Plots results of FFTLengthTest with gnup
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-class StaticPositionSystemTest: public ::testing::Test
+class StaticPositionSystemTest : public ::testing::Test
 {
 public:
     int configure_generator();
@@ -79,18 +78,18 @@ private:
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
 
-    void print_results(const std::vector<double> & east,
-                       const std::vector<double> & north,
-                       const std::vector<double> & up);
+    void print_results(const std::vector<double>& east,
+        const std::vector<double>& north,
+        const std::vector<double>& up);
 
-    double compute_stdev_precision(const std::vector<double> & vec);
-    double compute_stdev_accuracy(const std::vector<double> & vec, double ref);
+    double compute_stdev_precision(const std::vector<double>& vec);
+    double compute_stdev_accuracy(const std::vector<double>& vec, double ref);
 
     void geodetic2Enu(const double latitude, const double longitude, const double altitude,
-                        double* east, double* north, double* up);
+        double* east, double* north, double* up);
 
     void geodetic2Ecef(const double latitude, const double longitude, const double altitude,
-                            double* x, double* y, double* z);
+        double* x, double* y, double* z);
 
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config_f;
@@ -98,12 +97,11 @@ private:
 };
 
 
-
 void StaticPositionSystemTest::geodetic2Ecef(const double latitude, const double longitude, const double altitude,
-        double* x, double* y, double* z)
+    double* x, double* y, double* z)
 {
-    const double a = 6378137.0; // WGS84
-    const double b = 6356752.314245; // WGS84
+    const double a = 6378137.0;       // WGS84
+    const double b = 6356752.314245;  // WGS84
 
     double aux_x, aux_y, aux_z;
 
@@ -125,7 +123,7 @@ void StaticPositionSystemTest::geodetic2Ecef(const double latitude, const double
 
 
 void StaticPositionSystemTest::geodetic2Enu(double latitude, double longitude, double altitude,
-        double* east, double* north, double* up)
+    double* east, double* north, double* up)
 {
     double x, y, z;
     const double d2r = PI / 180.0;
@@ -167,12 +165,12 @@ void StaticPositionSystemTest::geodetic2Enu(double latitude, double longitude, d
 }
 
 
-double StaticPositionSystemTest::compute_stdev_precision(const std::vector<double> & vec)
+double StaticPositionSystemTest::compute_stdev_precision(const std::vector<double>& vec)
 {
     double sum__ = std::accumulate(vec.begin(), vec.end(), 0.0);
     double mean__ = sum__ / vec.size();
     double accum__ = 0.0;
-    std::for_each (std::begin(vec), std::end(vec), [&](const double d) {
+    std::for_each(std::begin(vec), std::end(vec), [&](const double d) {
         accum__ += (d - mean__) * (d - mean__);
     });
     double stdev__ = std::sqrt(accum__ / (vec.size() - 1));
@@ -180,11 +178,11 @@ double StaticPositionSystemTest::compute_stdev_precision(const std::vector<doubl
 }
 
 
-double StaticPositionSystemTest::compute_stdev_accuracy(const std::vector<double> & vec, const double ref)
+double StaticPositionSystemTest::compute_stdev_accuracy(const std::vector<double>& vec, const double ref)
 {
     const double mean__ = ref;
     double accum__ = 0.0;
-    std::for_each (std::begin(vec), std::end(vec), [&](const double d) {
+    std::for_each(std::begin(vec), std::end(vec), [&](const double d) {
         accum__ += (d - mean__) * (d - mean__);
     });
     double stdev__ = std::sqrt(accum__ / (vec.size() - 1));
@@ -198,18 +196,18 @@ int StaticPositionSystemTest::configure_generator()
     generator_binary = FLAGS_generator_binary;
 
     p1 = std::string("-rinex_nav_file=") + FLAGS_rinex_nav_file;
-    if(FLAGS_dynamic_position.empty())
+    if (FLAGS_dynamic_position.empty())
         {
             p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(std::min(FLAGS_duration * 10, 3000));
-            if(FLAGS_duration > 300) std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
+            if (FLAGS_duration > 300) std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
         }
     else
         {
             p2 = std::string("-obs_pos_file=") + std::string(FLAGS_dynamic_position);
         }
-    p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs; // RINEX 2.10 observation file output
-    p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data; // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
-    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq); //Baseband sampling frequency [MSps]
+    p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  //Baseband sampling frequency [MSps]
     return 0;
 }
 
@@ -219,7 +217,7 @@ int StaticPositionSystemTest::generate_signal()
     pid_t wait_result;
     int child_status;
 
-    char *const parmList[] = { &generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL };
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL};
 
     int pid;
     if ((pid = fork()) == -1)
@@ -239,7 +237,7 @@ int StaticPositionSystemTest::generate_signal()
 
 int StaticPositionSystemTest::configure_receiver()
 {
-    if(FLAGS_config_file_ptest.empty())
+    if (FLAGS_config_file_ptest.empty())
         {
             config = std::make_shared<InMemoryConfiguration>();
             const int sampling_rate_internal = baseband_sampling_freq;
@@ -407,7 +405,7 @@ int StaticPositionSystemTest::configure_receiver()
 int StaticPositionSystemTest::run_receiver()
 {
     std::shared_ptr<ControlThread> control_thread;
-    if(FLAGS_config_file_ptest.empty())
+    if (FLAGS_config_file_ptest.empty())
         {
             control_thread = std::make_shared<ControlThread>(config);
         }
@@ -418,21 +416,21 @@ int StaticPositionSystemTest::run_receiver()
 
     // start receiver
     try
-    {
+        {
             control_thread->run();
-    }
-    catch(const boost::exception & e)
-    {
+        }
+    catch (const boost::exception& e)
+        {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
-    }
-    catch(const std::exception & ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
-    }
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "STD exception: " << ex.what();
+        }
 
     // Get the name of the KML file generated by the receiver
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-    FILE *fp;
+    FILE* fp;
     std::string argum2 = std::string("/bin/ls *kml | tail -1");
     char buffer[1035];
     fp = popen(&argum2[0], "r");
@@ -465,7 +463,7 @@ void StaticPositionSystemTest::check_results()
     // Skip header
     std::getline(myfile, line);
     bool is_header = true;
-    while(is_header)
+    while (is_header)
         {
             std::getline(myfile, line);
             std::size_t found = line.find("<coordinates>");
@@ -474,11 +472,12 @@ void StaticPositionSystemTest::check_results()
     bool is_data = true;
 
     //read data
-    while(is_data)
+    while (is_data)
         {
             std::getline(myfile, line);
             std::size_t found = line.find("</coordinates>");
-            if (found != std::string::npos) is_data = false;
+            if (found != std::string::npos)
+                is_data = false;
             else
                 {
                     std::string str2;
@@ -491,9 +490,9 @@ void StaticPositionSystemTest::check_results()
                         {
                             std::getline(iss, str2, ',');
                             value = std::stod(str2);
-                            if(i == 0) lat = value;
-                            if(i == 1) longitude = value;
-                            if(i == 2) h = value;
+                            if (i == 0) lat = value;
+                            if (i == 1) longitude = value;
+                            if (i == 2) h = value;
                         }
 
                     double north, east, up;
@@ -524,7 +523,7 @@ void StaticPositionSystemTest::check_results()
     std::stringstream stm;
     std::ofstream position_test_file;
 
-    if(FLAGS_config_file_ptest.empty())
+    if (FLAGS_config_file_ptest.empty())
         {
             stm << "---- ACCURACY ----" << std::endl;
             stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
@@ -549,31 +548,31 @@ void StaticPositionSystemTest::check_results()
     stm << "SEP = " << 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
 
     std::cout << stm.rdbuf();
-    std::string output_filename = "position_test_output_" + StaticPositionSystemTest::generated_kml_file.erase(StaticPositionSystemTest::generated_kml_file.length() - 3,3) + "txt";
+    std::string output_filename = "position_test_output_" + StaticPositionSystemTest::generated_kml_file.erase(StaticPositionSystemTest::generated_kml_file.length() - 3, 3) + "txt";
     position_test_file.open(output_filename.c_str());
-    if(position_test_file.is_open())
+    if (position_test_file.is_open())
         {
             position_test_file << stm.str();
             position_test_file.close();
         }
 
     // Sanity Check
-    double precision_SEP =  0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
+    double precision_SEP = 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
     ASSERT_LT(precision_SEP, 20.0);
 
-    if(FLAGS_plot_position_test == true)
+    if (FLAGS_plot_position_test == true)
         {
             print_results(pos_e, pos_n, pos_u);
         }
 }
 
 
-void StaticPositionSystemTest::print_results(const std::vector<double> & east,
-        const std::vector<double> & north,
-        const std::vector<double> & up)
+void StaticPositionSystemTest::print_results(const std::vector<double>& east,
+    const std::vector<double>& north,
+    const std::vector<double>& up)
 {
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
-    if(gnuplot_executable.empty())
+    if (gnuplot_executable.empty())
         {
             std::cout << "WARNING: Although the flag plot_position_test has been set to TRUE," << std::endl;
             std::cout << "gnuplot has not been found in your system." << std::endl;
@@ -605,7 +604,7 @@ void StaticPositionSystemTest::print_results(const std::vector<double> & east,
             double two_drms = 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision);
             double ninty_sas = 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
             try
-            {
+                {
                     boost::filesystem::path p(gnuplot_executable);
                     boost::filesystem::path dir = p.parent_path();
                     std::string gnuplot_path = dir.native();
@@ -628,7 +627,7 @@ void StaticPositionSystemTest::print_results(const std::vector<double> & east,
 
                     g1.savetops("Position_test_2D");
                     g1.savetopdf("Position_test_2D", 18);
-                    g1.showonscreen(); // window output
+                    g1.showonscreen();  // window output
 
                     Gnuplot g2("points");
                     g2.set_title("3D precision");
@@ -643,31 +642,30 @@ void StaticPositionSystemTest::print_results(const std::vector<double> & east,
                     g2.cmd("set ticslevel 0");
 
                     g2.cmd("set style fill transparent solid 0.30 border\n set parametric\n set urange [0:2.0*pi]\n set vrange [-pi/2:pi/2]\n r = " +
-                            std::to_string(ninty_sas) +
-                            "\n fx(v,u) = r*cos(v)*cos(u)\n fy(v,u) = r*cos(v)*sin(u)\n fz(v) = r*sin(v) \n splot fx(v,u),fy(v,u),fz(v) title \"90\%-SAS\" lt rgb \"gray\"\n");
+                           std::to_string(ninty_sas) +
+                           "\n fx(v,u) = r*cos(v)*cos(u)\n fy(v,u) = r*cos(v)*sin(u)\n fz(v) = r*sin(v) \n splot fx(v,u),fy(v,u),fz(v) title \"90\%-SAS\" lt rgb \"gray\"\n");
                     g2.plot_xyz(east, north, up, "3D Position Fixes");
 
                     g2.savetops("Position_test_3D");
                     g2.savetopdf("Position_test_3D");
-                    g2.showonscreen(); // window output
-            }
-            catch (const GnuplotException & ge)
-            {
+                    g2.showonscreen();  // window output
+                }
+            catch (const GnuplotException& ge)
+                {
                     std::cout << ge.what() << std::endl;
-            }
+                }
         }
-
 }
 
 TEST_F(StaticPositionSystemTest, Position_system_test)
 {
-    if(FLAGS_config_file_ptest.empty())
+    if (FLAGS_config_file_ptest.empty())
         {
             // Configure the signal generator
             configure_generator();
 
             // Generate signal raw signal samples and observations RINEX file
-            if(!FLAGS_disable_generator)
+            if (!FLAGS_disable_generator)
                 {
                     generate_signal();
                 }
@@ -677,35 +675,37 @@ TEST_F(StaticPositionSystemTest, Position_system_test)
     configure_receiver();
 
     // Run the receiver
-    EXPECT_EQ( run_receiver(), 0) << "Problem executing the software-defined signal generator";
+    EXPECT_EQ(run_receiver(), 0) << "Problem executing the software-defined signal generator";
 
     // Check results
     check_results();
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     std::cout << "Running Position precision test..." << std::endl;
     int res = 0;
     try
-    {
+        {
             testing::InitGoogleTest(&argc, argv);
-    }
-    catch(...) {} // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+        }
+    catch (...)
+        {
+        }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
 
     // Run the Tests
     try
-    {
+        {
             res = RUN_ALL_TESTS();
-    }
-    catch(...)
-    {
+        }
+    catch (...)
+        {
             LOG(WARNING) << "Unexpected catch";
-    }
+        }
     google::ShutDownCommandLineFlags();
     return res;
 }

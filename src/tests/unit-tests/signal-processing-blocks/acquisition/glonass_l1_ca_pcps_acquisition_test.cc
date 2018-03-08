@@ -32,7 +32,6 @@
 
 #include <chrono>
 #include <cstdlib>
-#include <iostream>
 #include <boost/chrono.hpp>
 #include <boost/make_shared.hpp>
 #include <gnuradio/top_block.h>
@@ -63,9 +62,10 @@ private:
     friend GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
     void msg_handler_events(pmt::pmt_t msg);
     GlonassL1CaPcpsAcquisitionTest_msg_rx();
+
 public:
     int rx_message;
-    ~GlonassL1CaPcpsAcquisitionTest_msg_rx(); //!< Default destructor
+    ~GlonassL1CaPcpsAcquisitionTest_msg_rx();  //!< Default destructor
 };
 
 
@@ -78,20 +78,19 @@ GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr GlonassL1CaPcpsAcquisitionTest_msg_rx
 void GlonassL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
-    {
+        {
             long int message = pmt::to_long(msg);
             rx_message = message;
-    }
-    catch(boost::bad_any_cast& e)
-    {
+        }
+    catch (boost::bad_any_cast& e)
+        {
             std::cout << "msg_handler_telemetry Bad any cast!" << std::endl;
             rx_message = 0;
-    }
+        }
 }
 
 
-GlonassL1CaPcpsAcquisitionTest_msg_rx::GlonassL1CaPcpsAcquisitionTest_msg_rx() :
-    gr::block("GlonassL1CaPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+GlonassL1CaPcpsAcquisitionTest_msg_rx::GlonassL1CaPcpsAcquisitionTest_msg_rx() : gr::block("GlonassL1CaPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GlonassL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
@@ -100,12 +99,13 @@ GlonassL1CaPcpsAcquisitionTest_msg_rx::GlonassL1CaPcpsAcquisitionTest_msg_rx() :
 
 
 GlonassL1CaPcpsAcquisitionTest_msg_rx::~GlonassL1CaPcpsAcquisitionTest_msg_rx()
-{}
+{
+}
 
 
 // ###########################################################
 
-class GlonassL1CaPcpsAcquisitionTest: public ::testing::Test
+class GlonassL1CaPcpsAcquisitionTest : public ::testing::Test
 {
 protected:
     GlonassL1CaPcpsAcquisitionTest()
@@ -117,7 +117,8 @@ protected:
     }
 
     ~GlonassL1CaPcpsAcquisitionTest()
-    {}
+    {
+    }
 
     void init();
 
@@ -141,7 +142,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition_1G.if", "9540000");
     config->set_property("Acquisition_1G.coherent_integration_time_ms", "1");
     config->set_property("Acquisition_1G.dump", "true");
-    config->set_property("Acquisition_1G.dump_filename", "./acquisition.dat");
+    config->set_property("Acquisition_1G.dump_filename", "./acquisition");
     config->set_property("Acquisition_1G.implementation", "Glonass_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition_1G.threshold", "0.001");
     config->set_property("Acquisition_1G.doppler_max", "5000");
@@ -171,7 +172,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
     boost::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 1);
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->connect(top_block);
         boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
@@ -180,14 +181,14 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test.";
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         begin = std::chrono::system_clock::now();
-        top_block->run(); // Start threads and wait
+        top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - begin;
     }) << "Failure running the top_block.";
 
-    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 
@@ -204,52 +205,52 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
 
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_channel(1);
     }) << "Failure setting channel.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_threshold(0.005);
     }) << "Failure setting threshold.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_doppler_max(10000);
     }) << "Failure setting doppler_max.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_doppler_step(500);
     }) << "Failure setting doppler_step.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
     acquisition->set_local_code();
-    acquisition->set_state(1); // Ensure that acquisition starts at the first sample
+    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
     acquisition->init();
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         std::string path = std::string(TEST_PATH);
         std::string file = path + "signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat";
-        const char * file_name = file.c_str();
+        const char* file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test.";
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         begin = std::chrono::system_clock::now();
-        top_block->run(); // Start threads and wait
+        top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - begin;
     }) << "Failure running the top_block.";
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout <<  "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 

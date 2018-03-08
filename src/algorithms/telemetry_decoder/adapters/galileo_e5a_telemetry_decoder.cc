@@ -35,43 +35,41 @@
  */
 
 #include "galileo_e5a_telemetry_decoder.h"
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
-#include "concurrent_queue.h"
+#include "configuration_interface.h"
 #include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include "configuration_interface.h"
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
 
 
 using google::LogMessage;
 
 GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* configuration,
-        std::string role,
-        unsigned int in_streams,
-        unsigned int out_streams) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams)
+    std::string role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     std::string default_dump_filename = "./navigation.dat";
     DLOG(INFO) << "role " << role;
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = galileo_e5a_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
+    telemetry_decoder_ = galileo_e5a_make_telemetry_decoder_cc(satellite_, dump_);  // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-    DLOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
 }
 
 
 GalileoE5aTelemetryDecoder::~GalileoE5aTelemetryDecoder()
-{}
+{
+}
 
 
-void GalileoE5aTelemetryDecoder::set_satellite(const Gnss_Satellite & satellite)
+void GalileoE5aTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     telemetry_decoder_->set_satellite(satellite_);
@@ -81,7 +79,9 @@ void GalileoE5aTelemetryDecoder::set_satellite(const Gnss_Satellite & satellite)
 
 void GalileoE5aTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
@@ -89,7 +89,9 @@ void GalileoE5aTelemetryDecoder::connect(gr::top_block_sptr top_block)
 
 void GalileoE5aTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     // Nothing to disconnect
 }
 

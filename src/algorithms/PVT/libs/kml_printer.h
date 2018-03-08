@@ -33,11 +33,11 @@
 #ifndef GNSS_SDR_KML_PRINTER_H_
 #define GNSS_SDR_KML_PRINTER_H_
 
-#include <iostream>
+#include "pvt_solution.h"
 #include <fstream>
 #include <memory>
 #include <string>
-#include "pvt_solution.h"
+
 
 /*!
  * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
@@ -50,6 +50,7 @@ private:
     std::ofstream kml_file;
     bool positions_printed;
     std::string kml_filename;
+
 public:
     Kml_Printer();
     ~Kml_Printer();

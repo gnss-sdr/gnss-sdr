@@ -34,7 +34,7 @@
 
 struct byte_2bit_struct
 {
-    signed two_bit_sample:2;  // <- 2 bits wide only
+    signed two_bit_sample : 2;  // <- 2 bits wide only
 };
 
 
@@ -45,39 +45,41 @@ unpack_byte_2bit_samples_sptr make_unpack_byte_2bit_samples()
 
 
 unpack_byte_2bit_samples::unpack_byte_2bit_samples() : sync_interpolator("unpack_byte_2bit_samples",
-        gr::io_signature::make(1, 1, sizeof(signed char)),
-        gr::io_signature::make(1, 1, sizeof(float)),
-        4)
-{}
+                                                           gr::io_signature::make(1, 1, sizeof(signed char)),
+                                                           gr::io_signature::make(1, 1, sizeof(float)),
+                                                           4)
+{
+}
 
 
 unpack_byte_2bit_samples::~unpack_byte_2bit_samples()
-{}
+{
+}
 
 
 int unpack_byte_2bit_samples::work(int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
 {
     const signed char *in = reinterpret_cast<const signed char *>(input_items[0]);
     float *out = reinterpret_cast<float *>(output_items[0]);
 
     byte_2bit_struct sample;
     int n = 0;
-    for(int i = 0; i < noutput_items/4; i++)
+    for (int i = 0; i < noutput_items / 4; i++)
         {
             // Read packed input sample (1 byte = 4 samples)
             signed char c = in[i];
             sample.two_bit_sample = c & 3;
             out[n++] = static_cast<float>(sample.two_bit_sample);
 
-            sample.two_bit_sample = (c>>2) & 3;
+            sample.two_bit_sample = (c >> 2) & 3;
             out[n++] = static_cast<float>(sample.two_bit_sample);
 
-            sample.two_bit_sample = (c>>4) & 3;
+            sample.two_bit_sample = (c >> 4) & 3;
             out[n++] = static_cast<float>(sample.two_bit_sample);
 
-            sample.two_bit_sample = (c>>6) & 3;
+            sample.two_bit_sample = (c >> 6) & 3;
             out[n++] = static_cast<float>(sample.two_bit_sample);
         }
     return noutput_items;

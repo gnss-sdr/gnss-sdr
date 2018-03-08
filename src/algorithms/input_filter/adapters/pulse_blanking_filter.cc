@@ -28,27 +28,25 @@
  * -------------------------------------------------------------------------
  */
 
+#include "pulse_blanking_filter.h"
+#include "configuration_interface.h"
 #include <boost/lexical_cast.hpp>
-#include <vector>
-#include <cmath>
 #include <glog/logging.h>
 #include <gnuradio/filter/firdes.h>
-#include "configuration_interface.h"
-#include "pulse_blanking_filter.h"
+#include <vector>
+#include <cmath>
 
 using google::LogMessage;
 
 PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                        config_(configuration), role_(role), in_streams_(in_streams),
-                        out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     size_t item_size;
     xlat_ = false;
     std::string default_input_item_type = "gr_complex";
     std::string default_output_item_type = "gr_complex";
     std::string default_dump_filename = "../data/input_filter.dat";
-    
+
     DLOG(INFO) << "role " << role_;
 
     input_item_type_ = config_->property(role_ + ".input_item_type", default_input_item_type);
@@ -65,15 +63,15 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
     int n_segments_reset = config_->property(role_ + ".segments_reset", default_n_segments_reset);
     if (input_item_type_.compare("gr_complex") == 0)
         {
-            item_size = sizeof(gr_complex); //output
-            input_size_ = sizeof(gr_complex); //input
+            item_size = sizeof(gr_complex);    //output
+            input_size_ = sizeof(gr_complex);  //input
             pulse_blanking_cc_ = make_pulse_blanking_cc(pfa, length_, n_segments_est, n_segments_reset);
         }
     else
         {
             LOG(ERROR) << " Unknown input filter input/output item type conversion";
-            item_size = sizeof(gr_complex); //avoids uninitialization
-            input_size_ = sizeof(gr_complex); //avoids uninitialization
+            item_size = sizeof(gr_complex);    //avoids uninitialization
+            input_size_ = sizeof(gr_complex);  //avoids uninitialization
         }
     double default_if = 0.0;
     double if_aux = config_->property(role_ + ".if", default_if);
@@ -87,7 +85,7 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
             double bw_ = config_->property(role_ + ".bw", default_bw);
             double default_tw = bw_ / 10.0;
             double tw_ = config_->property(role_ + ".tw", default_tw);
-            const std::vector<float> taps = gr::filter::firdes::low_pass(1.0, sampling_freq_, bw_ , tw_);
+            const std::vector<float> taps = gr::filter::firdes::low_pass(1.0, sampling_freq_, bw_, tw_);
             freq_xlating_ = gr::filter::freq_xlating_fir_filter_ccf::make(1, taps, if_, sampling_freq_);
         }
     if (dump_)
@@ -99,10 +97,9 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
 }
 
 
-
 PulseBlankingFilter::~PulseBlankingFilter()
-{}
-
+{
+}
 
 
 void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
@@ -124,7 +121,6 @@ void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
             LOG(ERROR) << " Unknown input filter input/output item type conversion";
         }
 }
-
 
 
 void PulseBlankingFilter::disconnect(gr::top_block_sptr top_block)

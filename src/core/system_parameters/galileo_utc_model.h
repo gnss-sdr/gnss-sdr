@@ -46,14 +46,14 @@ public:
     double A0_6;
     double A1_6;
     double Delta_tLS_6;
-    double t0t_6;       //!< UTC data reference Time of Week [s]
-    double WNot_6;      //!< UTC data reference Week number [week]
+    double t0t_6;   //!< UTC data reference Time of Week [s]
+    double WNot_6;  //!< UTC data reference Week number [week]
     double WN_LSF_6;
     double DN_6;
     double Delta_tLSF_6;
     bool flag_utc_model;
     //double TOW_6;
-    double GST_to_UTC_time(double t_e, int WN); //!< GST-UTC Conversion Algorithm and Parameters
+    double GST_to_UTC_time(double t_e, int WN);  //!< GST-UTC Conversion Algorithm and Parameters
     /*!
      * Default constructor
      */

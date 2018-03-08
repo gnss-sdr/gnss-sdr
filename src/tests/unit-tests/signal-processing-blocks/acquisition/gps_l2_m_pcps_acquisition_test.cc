@@ -31,9 +31,7 @@
  */
 
 
-
 #include <chrono>
-#include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 #include <gnuradio/top_block.h>
@@ -73,7 +71,7 @@ private:
 
 public:
     int rx_message;
-    ~GpsL2MPcpsAcquisitionTest_msg_rx(); //!< Default destructor
+    ~GpsL2MPcpsAcquisitionTest_msg_rx();  //!< Default destructor
 };
 
 GpsL2MPcpsAcquisitionTest_msg_rx_sptr GpsL2MPcpsAcquisitionTest_msg_rx_make()
@@ -84,19 +82,18 @@ GpsL2MPcpsAcquisitionTest_msg_rx_sptr GpsL2MPcpsAcquisitionTest_msg_rx_make()
 void GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
-    {
+        {
             long int message = pmt::to_long(msg);
             rx_message = message;
-    }
-    catch(boost::bad_any_cast& e)
-    {
+        }
+    catch (boost::bad_any_cast &e)
+        {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
-    }
+        }
 }
 
-GpsL2MPcpsAcquisitionTest_msg_rx::GpsL2MPcpsAcquisitionTest_msg_rx() :
-            gr::block("GpsL2MPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+GpsL2MPcpsAcquisitionTest_msg_rx::GpsL2MPcpsAcquisitionTest_msg_rx() : gr::block("GpsL2MPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
@@ -104,12 +101,13 @@ GpsL2MPcpsAcquisitionTest_msg_rx::GpsL2MPcpsAcquisitionTest_msg_rx() :
 }
 
 GpsL2MPcpsAcquisitionTest_msg_rx::~GpsL2MPcpsAcquisitionTest_msg_rx()
-{}
+{
+}
 
 
 // ###########################################################
 
-class GpsL2MPcpsAcquisitionTest: public ::testing::Test
+class GpsL2MPcpsAcquisitionTest : public ::testing::Test
 {
 protected:
     GpsL2MPcpsAcquisitionTest()
@@ -125,7 +123,8 @@ protected:
     }
 
     ~GpsL2MPcpsAcquisitionTest()
-    {}
+    {
+    }
 
     void init();
     void plot_grid();
@@ -148,15 +147,15 @@ void GpsL2MPcpsAcquisitionTest::init()
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'G';
     std::string signal = "2S";
-    std::memcpy(static_cast<void*>(gnss_synchro.Signal), signal.c_str(), 3); // copy string into synchro char array: 2 char + null
-    gnss_synchro.Signal[2] = 0; // make sure that string length is only two characters
+    std::memcpy(static_cast<void *>(gnss_synchro.Signal), signal.c_str(), 3);  // copy string into synchro char array: 2 char + null
+    gnss_synchro.Signal[2] = 0;                                                // make sure that string length is only two characters
     gnss_synchro.PRN = 7;
 
     nsamples = round(static_cast<double>(sampling_frequency_hz) * GPS_L2_M_PERIOD) * 2;
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_frequency_hz));
     config->set_property("Acquisition_2S.implementation", "GPS_L2_M_PCPS_Acquisition");
     config->set_property("Acquisition_2S.item_type", "gr_complex");
-    if(FLAGS_plot_acq_grid == true)
+    if (FLAGS_plot_acq_grid == true)
         {
             config->set_property("Acquisition_2S.dump", "true");
         }
@@ -164,7 +163,7 @@ void GpsL2MPcpsAcquisitionTest::init()
         {
             config->set_property("Acquisition_2S.dump", "false");
         }
-    config->set_property("Acquisition_2S.dump_filename", "./tmp-acq-gps2/acquisition.dat");
+    config->set_property("Acquisition_2S.dump_filename", "./tmp-acq-gps2/acquisition");
     config->set_property("Acquisition_2S.threshold", "0.001");
     config->set_property("Acquisition_2S.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_2S.doppler_step", std::to_string(doppler_step));
@@ -178,17 +177,16 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
     std::string basename = "./tmp-acq-gps2/acquisition_G_2S";
     unsigned int sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
-    unsigned int samples_per_code =  static_cast<unsigned int>(floor(sampling_frequency_hz / (GPS_L2_M_CODE_RATE_HZ / GPS_L2_M_CODE_LENGTH_CHIPS)) - 1000); // !!
+    unsigned int samples_per_code = static_cast<unsigned int>(floor(static_cast<double>(sampling_frequency_hz) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
     acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
-
-    if(!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
+    if (!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
 
     std::vector<int> *doppler = &acq_dump.doppler;
     std::vector<unsigned int> *samples = &acq_dump.samples;
     std::vector<std::vector<float> > *mag = &acq_dump.mag;
 
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
-    if(gnuplot_executable.empty())
+    if (gnuplot_executable.empty())
         {
             std::cout << "WARNING: Although the flag plot_acq_grid has been set to TRUE," << std::endl;
             std::cout << "gnuplot has not been found in your system." << std::endl;
@@ -198,13 +196,13 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
         {
             std::cout << "Plotting the acquisition grid. This can take a while..." << std::endl;
             try
-            {
+                {
                     boost::filesystem::path p(gnuplot_executable);
                     boost::filesystem::path dir = p.parent_path();
                     std::string gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
-                    Gnuplot g1("lines");
+                    Gnuplot g1("impulses");
                     g1.set_title("GPS L2CM signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
@@ -214,11 +212,11 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
                     g1.savetops("GPS_L2CM_acq_grid");
                     g1.savetopdf("GPS_L2CM_acq_grid");
                     g1.showonscreen();
-            }
-            catch (const GnuplotException & ge)
-            {
+                }
+            catch (const GnuplotException &ge)
+                {
                     std::cout << ge.what() << std::endl;
-            }
+                }
         }
     std::string data_str = "./tmp-acq-gps2";
     if (boost::filesystem::exists(data_str))
@@ -246,7 +244,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
     init();
     std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition_2S", 1, 1);
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->connect(top_block);
         boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(sampling_frequency_hz, gr::analog::GR_SIN_WAVE, 2000, 1, gr_complex(0));
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
@@ -255,14 +253,14 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
         boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
     }) << "Failure connecting the blocks of acquisition test.";
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
-        top_block->run(); // Start threads and wait
+        top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
-    std::cout <<  "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 
@@ -272,10 +270,10 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
-    double expected_delay_samples = 1;//2004;
-    double expected_doppler_hz = 1200;//3000;
+    double expected_delay_samples = 1;  //2004;
+    double expected_doppler_hz = 1200;  //3000;
 
-    if(FLAGS_plot_acq_grid == true)
+    if (FLAGS_plot_acq_grid == true)
         {
             std::string data_str = "./tmp-acq-gps2";
             if (boost::filesystem::exists(data_str))
@@ -289,64 +287,64 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition_2S", 1, 1);
     boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_channel(1);
     }) << "Failure setting channel.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_threshold(0.001);
     }) << "Failure setting threshold.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_doppler_max(doppler_max);
     }) << "Failure setting doppler_max.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_doppler_step(doppler_step);
     }) << "Failure setting doppler_step.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         std::string path = std::string(TEST_PATH);
         //std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         std::string file = path + "signal_samples/gps_l2c_m_prn7_5msps.dat";
         //std::string file = "/datalogger/signals/Fraunhofer/L125_III1b_210s_L2_resampled.bin";
-        const char * file_name = file.c_str();
+        const char *file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         //gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();
         //gr::blocks::char_to_short::sptr gr_char_to_short_ = gr::blocks::char_to_short::make();
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         //top_block->connect(file_source, 0, gr_char_to_short_, 0);
         //top_block->connect(gr_char_to_short_, 0, gr_interleaved_short_to_complex_ , 0);
-        top_block->connect(file_source, 0, valve , 0);
+        top_block->connect(file_source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_local_code();
-        acquisition->set_state(1); // Ensure that acquisition starts at the first sample
+        acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
         acquisition->init();
     }) << "Failure set_state and init acquisition test";
 
-    EXPECT_NO_THROW( {
+    EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
-        top_block->run(); // Start threads and wait
+        top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
-    std::cout <<  "Acquisition process runtime duration: " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Acquisition process runtime duration: " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
-    std::cout <<  "gnss_synchro.Acq_doppler_hz = " << gnss_synchro.Acq_doppler_hz << " Hz" << std::endl;
-    std::cout <<  "gnss_synchro.Acq_delay_samples = " << gnss_synchro.Acq_delay_samples << " Samples" << std::endl;
+    std::cout << "gnss_synchro.Acq_doppler_hz = " << gnss_synchro.Acq_doppler_hz << " Hz" << std::endl;
+    std::cout << "gnss_synchro.Acq_delay_samples = " << gnss_synchro.Acq_delay_samples << " Samples" << std::endl;
 
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
@@ -357,7 +355,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     EXPECT_LE(doppler_error_hz, 200) << "Doppler error exceeds the expected value: 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 
-    if(FLAGS_plot_acq_grid == true)
+    if (FLAGS_plot_acq_grid == true)
         {
             plot_grid();
         }

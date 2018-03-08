@@ -31,9 +31,9 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/core/libs/supl
     ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
 	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
     ${GLOG_INCLUDE_DIRS}
     ${GFlags_INCLUDE_DIRS}
     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -60,9 +60,9 @@ target_link_libraries(front_end_cal_lib ${MAC_LIBRARIES}
                                         ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                         ${GNSS_SDR_OPTIONAL_LIBS}
                                         rx_core_lib
+                                        gnss_sdr_flags
                                         gnss_rx
                                         channel_fsm
-                                        gnss_sp_libs
 )
     
 add_dependencies(front_end_cal_lib glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
@@ -90,7 +90,6 @@ target_link_libraries(front-end-cal    ${MAC_LIBRARIES}
                                        ${GNSS_SDR_OPTIONAL_LIBS}
                                        rx_core_lib
                                        gnss_rx
-                                       gnss_sp_libs
                                        front_end_cal_lib
 )
 

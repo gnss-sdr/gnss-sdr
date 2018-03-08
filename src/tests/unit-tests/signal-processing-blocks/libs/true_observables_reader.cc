@@ -29,12 +29,13 @@
  */
 
 #include "true_observables_reader.h"
+#include <iostream>
 
 bool true_observables_reader::read_binary_obs()
 {
     try
-    {
-            for(int i = 0; i < 12; i++)
+        {
+            for (int i = 0; i < 12; i++)
                 {
                     d_dump_file.read(reinterpret_cast<char *>(&gps_time_sec[i]), sizeof(double));
                     d_dump_file.read(reinterpret_cast<char *>(&doppler_l1_hz), sizeof(double));
@@ -44,11 +45,11 @@ bool true_observables_reader::read_binary_obs()
                     d_dump_file.read(reinterpret_cast<char *>(&carrier_phase_l1_cycles[i]), sizeof(double));
                     d_dump_file.read(reinterpret_cast<char *>(&prn[i]), sizeof(double));
                 }
-    }
+        }
     catch (const std::ifstream::failure &e)
-    {
+        {
             return false;
-    }
+        }
     return true;
 }
 
@@ -71,9 +72,9 @@ bool true_observables_reader::restart()
 long int true_observables_reader::num_epochs()
 {
     std::ifstream::pos_type size;
-    int number_of_vars_in_epoch = 6*12;
+    int number_of_vars_in_epoch = 6 * 12;
     int epoch_size_bytes = sizeof(double) * number_of_vars_in_epoch;
-    std::ifstream tmpfile( d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+    std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
         {
             size = tmpfile.tellg();
@@ -92,18 +93,18 @@ bool true_observables_reader::open_obs_file(std::string out_file)
     if (d_dump_file.is_open() == false)
         {
             try
-            {
+                {
                     d_dump_filename = out_file;
-                    d_dump_file.exceptions( std::ifstream::failbit | std::ifstream::badbit );
+                    d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
                     std::cout << "True observables Log file opened: " << d_dump_filename.c_str() << std::endl;
                     return true;
-            }
-            catch (const std::ifstream::failure & e)
-            {
+                }
+            catch (const std::ifstream::failure &e)
+                {
                     std::cout << "Problem opening True observables Log file: " << d_dump_filename.c_str() << std::endl;
                     return false;
-            }
+                }
         }
     else
         {

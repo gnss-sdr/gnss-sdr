@@ -31,10 +31,11 @@
 
 
 #include "geojson_printer.h"
-#include <iomanip>
-#include <sstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
+#include <iomanip>
+#include <sstream>
+
 
 GeoJSON_Printer::GeoJSON_Printer()
 {
@@ -42,7 +43,7 @@ GeoJSON_Printer::GeoJSON_Printer()
 }
 
 
-GeoJSON_Printer::~GeoJSON_Printer ()
+GeoJSON_Printer::~GeoJSON_Printer()
 {
     GeoJSON_Printer::close_file();
 }
@@ -59,37 +60,37 @@ bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
             const int year = timeinfo.tm_year - 100;
             strm0 << year;
             const int month = timeinfo.tm_mon + 1;
-            if(month < 10)
+            if (month < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << month;
             const int day = timeinfo.tm_mday;
-            if(day < 10)
+            if (day < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << day << "_";
             const int hour = timeinfo.tm_hour;
-            if(hour < 10)
+            if (hour < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << hour;
             const int min = timeinfo.tm_min;
-            if(min < 10)
+            if (min < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << min;
             const int sec = timeinfo.tm_sec;
-            if(sec < 10)
+            if (sec < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << sec;
 
-            filename_ = filename + "_" +  strm0.str() + ".geojson";
+            filename_ = filename + "_" + strm0.str() + ".geojson";
         }
     else
         {
@@ -183,7 +184,7 @@ bool GeoJSON_Printer::close_file()
             // if nothing is written, erase the file
             if (first_pos == true)
                 {
-                    if(remove(filename_.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+                    if (remove(filename_.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
                 }
 
             return true;
@@ -193,5 +194,3 @@ bool GeoJSON_Printer::close_file()
             return false;
         }
 }
-
-

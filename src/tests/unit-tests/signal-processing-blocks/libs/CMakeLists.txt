@@ -30,6 +30,7 @@ include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
+     ${MATIO_INCLUDE_DIRS}
 )
 
 
@@ -38,3 +39,6 @@ list(SORT SIGNAL_PROCESSING_TESTING_LIB_HEADERS)
 add_library(signal_processing_testing_lib ${SIGNAL_PROCESSING_TESTING_LIB_SOURCES} ${SIGNAL_PROCESSING_TESTING_LIB_HEADERS})
 source_group(Headers FILES ${SIGNAL_PROCESSING_TESTING_LIB_HEADERS})
 
+if(NOT MATIO_FOUND)
+   add_dependencies(signal_processing_testing_lib matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+endif(NOT MATIO_FOUND)

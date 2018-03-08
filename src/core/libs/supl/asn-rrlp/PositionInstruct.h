@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_PositionInstruct_H_
-#define	_PositionInstruct_H_
+#ifndef _PositionInstruct_H_
+#define _PositionInstruct_H_
 
 
 #include <asn_application.h>
@@ -19,27 +19,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* PositionInstruct */
-typedef struct PositionInstruct {
-	MethodType_t	 methodType;
-	PositionMethod_t	 positionMethod;
-	MeasureResponseTime_t	 measureResponseTime;
-	UseMultipleSets_t	 useMultipleSets;
-	EnvironmentCharacter_t	*environmentCharacter	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} PositionInstruct_t;
+    /* PositionInstruct */
+    typedef struct PositionInstruct
+    {
+        MethodType_t methodType;
+        PositionMethod_t positionMethod;
+        MeasureResponseTime_t measureResponseTime;
+        UseMultipleSets_t useMultipleSets;
+        EnvironmentCharacter_t *environmentCharacter /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PositionInstruct;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } PositionInstruct_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PositionInstruct;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _PositionInstruct_H_ */
+#endif /* _PositionInstruct_H_ */
 #include <asn_internal.h>

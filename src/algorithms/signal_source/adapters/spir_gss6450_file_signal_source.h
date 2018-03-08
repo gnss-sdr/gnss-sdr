@@ -32,20 +32,19 @@
 #ifndef GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_
 #define GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H_
 
-#include <string>
-#include <vector>
+#include "gnss_block_interface.h"
+#include "gnss_sdr_valve.h"
+#include "unpack_spir_gss6450_samples.h"
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/throttle.h>
-#include <gnuradio/blocks/packed_to_unpacked_ii.h>
 #include <gnuradio/blocks/deinterleave.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/endian_swap.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_block_interface.h"
-#include "gnss_sdr_valve.h"
-#include "unpack_spir_gss6450_samples.h"
+#include <string>
+#include <vector>
 
 
 class ConfigurationInterface;
@@ -54,11 +53,11 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class SpirGSS6450FileSignalSource: public GNSSBlockInterface
+class SpirGSS6450FileSignalSource : public GNSSBlockInterface
 {
 public:
     SpirGSS6450FileSignalSource(ConfigurationInterface* configuration, std::string role,
-            unsigned int in_streams, unsigned int out_streams, gr::msg_queue::sptr queue);
+        unsigned int in_streams, unsigned int out_streams, gr::msg_queue::sptr queue);
 
     virtual ~SpirGSS6450FileSignalSource();
     inline std::string role() override
@@ -111,7 +110,7 @@ private:
     double sampling_frequency_;
     std::string filename_;
     bool repeat_;
-    bool dump_; //Enables dumping the gr_complex sample output
+    bool dump_;  //Enables dumping the gr_complex sample output
     bool enable_throttle_control_;
     bool endian_swap_;
     std::string dump_filename_;
@@ -129,7 +128,7 @@ private:
     unpack_spir_gss6450_samples_sptr unpack_spir_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
-    gr::blocks::throttle::sptr  throttle_;
+    gr::blocks::throttle::sptr throttle_;
     gr::msg_queue::sptr queue_;
     size_t item_size_;
 };

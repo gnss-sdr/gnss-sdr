@@ -30,13 +30,13 @@
  */
 
 #include "kml_printer.h"
-#include <sstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
+#include <sstream>
 
 using google::LogMessage;
 
-bool Kml_Printer::set_headers(std::string filename,  bool time_tag_name)
+bool Kml_Printer::set_headers(std::string filename, bool time_tag_name)
 {
     boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     tm timeinfo = boost::posix_time::to_tm(pt);
@@ -47,37 +47,37 @@ bool Kml_Printer::set_headers(std::string filename,  bool time_tag_name)
             const int year = timeinfo.tm_year - 100;
             strm0 << year;
             const int month = timeinfo.tm_mon + 1;
-            if(month < 10)
+            if (month < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << month;
             const int day = timeinfo.tm_mday;
-            if(day < 10)
+            if (day < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << day << "_";
             const int hour = timeinfo.tm_hour;
-            if(hour < 10)
+            if (hour < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << hour;
             const int min = timeinfo.tm_min;
-            if(min < 10)
+            if (min < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << min;
             const int sec = timeinfo.tm_sec;
-            if(sec < 10)
+            if (sec < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << sec;
 
-            kml_filename = filename + "_" +  strm0.str() + ".kml";
+            kml_filename = filename + "_" + strm0.str() + ".kml";
         }
     else
         {
@@ -92,29 +92,29 @@ bool Kml_Printer::set_headers(std::string filename,  bool time_tag_name)
             kml_file.setf(kml_file.fixed, kml_file.floatfield);
             kml_file << std::setprecision(14);
             kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
-                    << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
-                    << "    <Document>" << std::endl
-                    << "    <name>GNSS Track</name>" << std::endl
-                    << "    <description>GNSS-SDR Receiver position log file created at " << pt
-                    << "    </description>" << std::endl
-                    << "<Style id=\"yellowLineGreenPoly\">" << std::endl
-                    << " <LineStyle>" << std::endl
-                    << "     <color>7f00ffff</color>" << std::endl
-                    << "        <width>1</width>" << std::endl
-                    << "    </LineStyle>" << std::endl
-                    << "<PolyStyle>" << std::endl
-                    << "    <color>7f00ff00</color>" << std::endl
-                    << "</PolyStyle>" << std::endl
-                    << "</Style>" << std::endl
-                    << "<Placemark>" << std::endl
-                    << "<name>GNSS-SDR PVT</name>" << std::endl
-                    << "<description>GNSS-SDR position log</description>" << std::endl
-                    << "<styleUrl>#yellowLineGreenPoly</styleUrl>" << std::endl
-                    << "<LineString>" << std::endl
-                    << "<extrude>0</extrude>" << std::endl
-                    << "<tessellate>1</tessellate>" << std::endl
-                    << "<altitudeMode>absolute</altitudeMode>" << std::endl
-                    << "<coordinates>" << std::endl;
+                     << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
+                     << "    <Document>" << std::endl
+                     << "    <name>GNSS Track</name>" << std::endl
+                     << "    <description>GNSS-SDR Receiver position log file created at " << pt
+                     << "    </description>" << std::endl
+                     << "<Style id=\"yellowLineGreenPoly\">" << std::endl
+                     << " <LineStyle>" << std::endl
+                     << "     <color>7f00ffff</color>" << std::endl
+                     << "        <width>1</width>" << std::endl
+                     << "    </LineStyle>" << std::endl
+                     << "<PolyStyle>" << std::endl
+                     << "    <color>7f00ff00</color>" << std::endl
+                     << "</PolyStyle>" << std::endl
+                     << "</Style>" << std::endl
+                     << "<Placemark>" << std::endl
+                     << "<name>GNSS-SDR PVT</name>" << std::endl
+                     << "<description>GNSS-SDR position log</description>" << std::endl
+                     << "<styleUrl>#yellowLineGreenPoly</styleUrl>" << std::endl
+                     << "<LineString>" << std::endl
+                     << "<extrude>0</extrude>" << std::endl
+                     << "<tessellate>1</tessellate>" << std::endl
+                     << "<altitudeMode>absolute</altitudeMode>" << std::endl
+                     << "<coordinates>" << std::endl;
             return true;
         }
     else
@@ -122,7 +122,6 @@ bool Kml_Printer::set_headers(std::string filename,  bool time_tag_name)
             return false;
         }
 }
-
 
 
 bool Kml_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values)
@@ -164,7 +163,6 @@ bool Kml_Printer::close_file()
 {
     if (kml_file.is_open())
         {
-
             kml_file << "</coordinates>" << std::endl
                      << "</LineString>" << std::endl
                      << "</Placemark>" << std::endl
@@ -180,20 +178,17 @@ bool Kml_Printer::close_file()
 }
 
 
-
-Kml_Printer::Kml_Printer ()
+Kml_Printer::Kml_Printer()
 {
     positions_printed = false;
 }
 
 
-
-Kml_Printer::~Kml_Printer ()
+Kml_Printer::~Kml_Printer()
 {
     close_file();
-    if(!positions_printed)
+    if (!positions_printed)
         {
-            if(remove(kml_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary KML file";
+            if (remove(kml_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary KML file";
         }
 }
-

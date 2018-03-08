@@ -31,6 +31,7 @@ set(ACQ_ADAPTER_SOURCES
     galileo_e1_pcps_tong_ambiguous_acquisition.cc
     galileo_e1_pcps_8ms_ambiguous_acquisition.cc
     galileo_e5a_noncoherent_iq_acquisition_caf.cc
+    galileo_e5a_pcps_acquisition.cc
     glonass_l1_ca_pcps_acquisition.cc
 )
 
@@ -53,6 +54,7 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
+     ${ARMADILLO_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${GNURADIO_BLOCKS_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
@@ -62,5 +64,5 @@ file(GLOB ACQ_ADAPTER_HEADERS "*.h")
 list(SORT ACQ_ADAPTER_HEADERS)
 add_library(acq_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
 source_group(Headers FILES ${ACQ_ADAPTER_HEADERS}) 
-target_link_libraries(acq_adapters gnss_sp_libs acq_gr_blocks ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+target_link_libraries(acq_adapters gnss_sp_libs gnss_sdr_flags acq_gr_blocks ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
 

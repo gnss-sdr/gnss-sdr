@@ -26,16 +26,17 @@ void volk_gnsssdr_get_config_path(char *path)
 {
     if (!path) return;
     const char *suffix = "/.volk_gnsssdr/volk_gnsssdr_config";
-    const char *suffix2 = "/volk_gnsssdr/volk_gnsssdr_config"; //non-hidden
+    const char *suffix2 = "/volk_gnsssdr/volk_gnsssdr_config";  // non-hidden
     char *home = NULL;
 
     //allows config redirection via env variable
     home = getenv("VOLK_CONFIGPATH");
-    if(home!=NULL){
-        strncpy(path,home,512);
-        strcat(path,suffix2);
-        return;
-    }
+    if (home != NULL)
+        {
+            strncpy(path, home, 512);
+            strcat(path, suffix2);
+            return;
+        }
 
     if (home == NULL) home = getenv("HOME");
     if (home == NULL) home = getenv("APPDATA");
@@ -57,16 +58,16 @@ size_t volk_gnsssdr_load_preferences(volk_gnsssdr_arch_pref_t **prefs_res)
 
     //get the config path
     volk_gnsssdr_get_config_path(path);
-    if (!path[0]) return n_arch_prefs; //no prefs found
+    if (!path[0]) return n_arch_prefs;  //no prefs found
     config_file = fopen(path, "r");
-    if(!config_file) return n_arch_prefs; //no prefs found
+    if (!config_file) return n_arch_prefs;  //no prefs found
 
     //reset the file pointer and write the prefs into volk_gnsssdr_arch_prefs
-    while(fgets(line, sizeof(line), config_file) != NULL)
+    while (fgets(line, sizeof(line), config_file) != NULL)
         {
-            prefs = (volk_gnsssdr_arch_pref_t *) realloc(prefs, (n_arch_prefs+1) * sizeof(*prefs));
+            prefs = (volk_gnsssdr_arch_pref_t *)realloc(prefs, (n_arch_prefs + 1) * sizeof(*prefs));
             volk_gnsssdr_arch_pref_t *p = prefs + n_arch_prefs;
-            if(sscanf(line, "%s %s %s", p->name, p->impl_a, p->impl_u) == 3 && !strncmp(p->name, "volk_gnsssdr_", 5))
+            if (sscanf(line, "%s %s %s", p->name, p->impl_a, p->impl_u) == 3 && !strncmp(p->name, "volk_gnsssdr_", 5))
                 {
                     n_arch_prefs++;
                 }

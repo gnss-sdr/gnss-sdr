@@ -33,21 +33,20 @@
 #ifndef GNSS_SDR_NOTCH_FILTER_LITE_H_
 #define GNSS_SDR_NOTCH_FILTER_LITE_H_
 
-#include <string>
-#include <vector>
-#include <gnuradio/blocks/file_sink.h>
 #include "gnss_block_interface.h"
 #include "notch_lite_cc.h"
-
+#include <gnuradio/blocks/file_sink.h>
+#include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
-class NotchFilterLite: public GNSSBlockInterface
+class NotchFilterLite : public GNSSBlockInterface
 {
 public:
     NotchFilterLite(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~NotchFilterLite();
     std::string role()
@@ -68,9 +67,8 @@ public:
     void disconnect(gr::top_block_sptr top_block);
     gr::basic_block_sptr get_left_block();
     gr::basic_block_sptr get_right_block();
-    
+
 private:
-    
     bool dump_;
     std::string dump_filename_;
     std::string role_;
@@ -81,4 +79,4 @@ private:
     notch_lite_sptr notch_filter_lite_;
 };
 
-#endif //GNSS_SDR_NOTCH_FILTER_LITE_H_
+#endif  //GNSS_SDR_NOTCH_FILTER_LITE_H_

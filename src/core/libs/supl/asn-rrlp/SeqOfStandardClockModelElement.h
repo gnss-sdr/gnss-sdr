@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfStandardClockModelElement_H_
-#define	_SeqOfStandardClockModelElement_H_
+#ifndef _SeqOfStandardClockModelElement_H_
+#define _SeqOfStandardClockModelElement_H_
 
 
 #include <asn_application.h>
@@ -15,22 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct StandardClockModelElement;
+    /* Forward declarations */
+    struct StandardClockModelElement;
 
-/* SeqOfStandardClockModelElement */
-typedef struct SeqOfStandardClockModelElement {
-	A_SEQUENCE_OF(struct StandardClockModelElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfStandardClockModelElement_t;
+    /* SeqOfStandardClockModelElement */
+    typedef struct SeqOfStandardClockModelElement
+    {
+        A_SEQUENCE_OF(struct StandardClockModelElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfStandardClockModelElement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfStandardClockModelElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfStandardClockModelElement;
 
 #ifdef __cplusplus
 }
@@ -39,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfStandardClockModelElement;
 /* Referred external types */
 #include "StandardClockModelElement.h"
 
-#endif	/* _SeqOfStandardClockModelElement_H_ */
+#endif /* _SeqOfStandardClockModelElement_H_ */
 #include <asn_internal.h>

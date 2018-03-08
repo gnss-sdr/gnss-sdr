@@ -31,27 +31,27 @@
 #ifndef GNSS_SDR_UHD_SIGNAL_SOURCE_H_
 #define GNSS_SDR_UHD_SIGNAL_SOURCE_H_
 
-#include <string>
-#include <vector>
+#include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/uhd/usrp_source.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_block_interface.h"
+#include <string>
+#include <vector>
+
 
 class ConfigurationInterface;
 
 /*!
  * \brief This class reads samples from a UHD device (see http://code.ettus.com/redmine/ettus/projects/uhd/wiki)
  */
-class UhdSignalSource: public GNSSBlockInterface
+class UhdSignalSource : public GNSSBlockInterface
 {
-
 public:
     UhdSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~UhdSignalSource();
 

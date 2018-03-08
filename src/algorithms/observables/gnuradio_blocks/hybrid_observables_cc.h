@@ -33,10 +33,10 @@
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 #define GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 
+#include "gnss_synchro.h"
+#include <gnuradio/block.h>
 #include <fstream>
 #include <string>
-#include <gnuradio/block.h>
-#include "gnss_synchro.h"
 
 
 class hybrid_observables_cc;
@@ -52,10 +52,11 @@ hybrid_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_
 class hybrid_observables_cc : public gr::block
 {
 public:
-    ~hybrid_observables_cc ();
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    ~hybrid_observables_cc();
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
 private:
     friend hybrid_observables_cc_sptr
     hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);

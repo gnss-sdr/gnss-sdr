@@ -53,9 +53,9 @@ class GalileoE1TcpConnectorTracking : public TrackingInterface
 {
 public:
     GalileoE1TcpConnectorTracking(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GalileoE1TcpConnectorTracking();
 
@@ -103,4 +103,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif // GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H_
+#endif  // GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H_

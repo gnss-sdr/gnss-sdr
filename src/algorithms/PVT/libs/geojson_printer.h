@@ -33,10 +33,10 @@
 #ifndef GNSS_SDR_GEOJSON_PRINTER_H_
 #define GNSS_SDR_GEOJSON_PRINTER_H_
 
+#include "pvt_solution.h"
 #include <fstream>
 #include <memory>
 #include <string>
-#include "pvt_solution.h"
 
 
 /*!
@@ -50,6 +50,7 @@ private:
     std::ofstream geojson_file;
     bool first_pos;
     std::string filename_;
+
 public:
     GeoJSON_Printer();
     ~GeoJSON_Printer();

@@ -37,39 +37,37 @@
 #ifndef GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_CC_H_
 #define GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_CC_H_
 
-#include <fstream>
-#include <map>
-#include <string>
-#include <gnuradio/block.h>
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include "cpu_multicorrelator.h"
+#include <gnuradio/block.h>
+#include <fstream>
+#include <map>
+#include <string>
 
 class Galileo_E5a_Dll_Pll_Tracking_cc;
 
 typedef boost::shared_ptr<Galileo_E5a_Dll_Pll_Tracking_cc>
-        galileo_e5a_dll_pll_tracking_cc_sptr;
+    galileo_e5a_dll_pll_tracking_cc_sptr;
 
 galileo_e5a_dll_pll_tracking_cc_sptr
 galileo_e5a_dll_pll_make_tracking_cc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float pll_bw_init_hz,
-                                   float dll_bw_init_hz,
-                                   int ti_ms,
-                                   float early_late_space_chips);
-
+    long fs_in, unsigned int vector_length,
+    bool dump,
+    std::string dump_filename,
+    float pll_bw_hz,
+    float dll_bw_hz,
+    float pll_bw_narrow_narrowhz,
+    float dll_bw_narrow_hz,
+    int ti_ms,
+    float early_late_space_chips);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class Galileo_E5a_Dll_Pll_Tracking_cc: public gr::block
+class Galileo_E5a_Dll_Pll_Tracking_cc : public gr::block
 {
 public:
     ~Galileo_E5a_Dll_Pll_Tracking_cc();
@@ -78,36 +76,34 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
 
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
     friend galileo_e5a_dll_pll_tracking_cc_sptr
     galileo_e5a_dll_pll_make_tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float pll_bw_init_hz,
-            float dll_bw_init_hz,
-            int ti_ms,
-            float early_late_space_chips);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
+        int ti_ms,
+        float early_late_space_chips);
 
     Galileo_E5a_Dll_Pll_Tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float pll_bw_init_hz,
-            float dll_bw_init_hz,
-            int ti_ms,
-            float early_late_space_chips);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
+        int ti_ms,
+        float early_late_space_chips);
     void acquire_secondary();
     // tracking configuration vars
     unsigned int d_vector_length;
@@ -124,8 +120,8 @@ private:
     double d_early_late_spc_chips;
     double d_dll_bw_hz;
     double d_pll_bw_hz;
-    double d_dll_bw_init_hz;
-    double d_pll_bw_init_hz;
+    double d_dll_bw_narrow_hz;
+    double d_pll_bw_narrow_hz;
 
     gr_complex* d_codeQ;
     gr_complex* d_codeI;

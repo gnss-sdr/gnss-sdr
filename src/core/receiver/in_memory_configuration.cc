@@ -31,9 +31,10 @@
 
 
 #include "in_memory_configuration.h"
+#include "string_converter.h"
 #include <memory>
 #include <utility>
-#include "string_converter.h"
+
 
 InMemoryConfiguration::InMemoryConfiguration()
 {
@@ -50,7 +51,7 @@ InMemoryConfiguration::~InMemoryConfiguration()
 std::string InMemoryConfiguration::property(std::string property_name, std::string default_value)
 {
     std::map<std::string, std::string>::iterator iter = properties_.find(property_name);
-    if(iter != properties_.end())
+    if (iter != properties_.end())
         {
             return iter->second;
         }

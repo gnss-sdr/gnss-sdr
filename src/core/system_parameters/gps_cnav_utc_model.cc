@@ -49,17 +49,12 @@ double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int i_GPS_week)
 {
     double t_utc;
     double t_utc_daytime;
-    double Delta_t_UTC =  d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>(i_GPS_week - i_WN_T));
+    double Delta_t_UTC = d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>(i_GPS_week - i_WN_T));
 
-    //std::cout<<"d_DeltaT_LS="<<d_DeltaT_LS
-    //        <<"d_A0="<<d_A0
-    //        <<"d_A1="<<d_A1
-    //        <<"d_t_OT="<<d_t_OT
-    //        <<"i_WN_T="<<i_WN_T<<std::endl;
     // Determine if the effectivity time of the leap second event is in the past
-    int  weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
+    int weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
 
-    if (weeksToLeapSecondEvent >= 0) // is not in the past
+    if (weeksToLeapSecondEvent >= 0)  // is not in the past
         {
             //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
             int secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
@@ -67,9 +62,9 @@ double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int i_GPS_week)
                 {
                     t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
                 }
-            else //we are in the same week than the leap second event
+            else  //we are in the same week than the leap second event
                 {
-                    if  (std::abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
+                    if (std::abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {
                             /* 20.3.3.5.2.4a
                              * Whenever the effectivity time indicated by the WN_LSF and the DN values
@@ -92,23 +87,23 @@ double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int i_GPS_week)
                             t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
                             //implement something to handle a leap second event!
                         }
-                    if ( (gpstime_corrected - secondOfLeapSecondEvent) > 21600)
+                    if ((gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {
                             Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>(i_GPS_week - i_WN_T));
                             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
                         }
                 }
         }
-    else // the effectivity time is in the past
+    else  // the effectivity time is in the past
         {
             /* 20.3.3.5.2.4c
              * Whenever the effectivity time of the leap second event, as indicated by the
              * WNLSF and DN values, is in the "past" (relative to the user's current time),
-             * and the user�s current time does not fall in the time span as given above
+             * and the user's current time does not fall in the time span as given above
              * in 20.3.3.5.2.4b,*/
-        /* FOR CNAV: Replace the 20.3.3.5.2.4c with 30.3.3.6.2 UTC and GPS Time as follows */
-            double tmp_d= (gpstime_corrected - d_t_OT + 604800 * static_cast<double>(i_GPS_week - i_WN_T));
-            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * tmp_d +  d_A2*tmp_d*tmp_d;
+            /* FOR CNAV: Replace the 20.3.3.5.2.4c with 30.3.3.6.2 UTC and GPS Time as follows */
+            double tmp_d = (gpstime_corrected - d_t_OT + 604800 * static_cast<double>(i_GPS_week - i_WN_T));
+            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * tmp_d + d_A2 * tmp_d * tmp_d;
             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
         }
 

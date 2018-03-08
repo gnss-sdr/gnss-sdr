@@ -31,13 +31,14 @@
 #ifndef GNSS_SDR_SIGNAL_GENERATOR_C_H
 #define GNSS_SDR_SIGNAL_GENERATOR_C_H
 
-#include <string>
-#include <vector>
-#include <random>
+#include "gnss_signal.h"
 #include <boost/scoped_array.hpp>
 #include <gnuradio/random.h>
 #include <gnuradio/block.h>
-#include "gnss_signal.h"
+#include <string>
+#include <vector>
+#include <random>
+
 
 class signal_generator_c;
 
@@ -61,10 +62,10 @@ typedef boost::shared_ptr<signal_generator_c> signal_generator_c_sptr;
 * interface for creating new instances.
 */
 signal_generator_c_sptr
-signal_make_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
-                    const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-                    const std::vector<unsigned int> &delay_chips,const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
-                    unsigned int fs_in, unsigned int vector_length, float BW_BB);
+signal_make_generator_c(std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
+    const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
+    const std::vector<unsigned int> &delay_chips, const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
+    unsigned int fs_in, unsigned int vector_length, float BW_BB);
 
 /*!
 * \brief This class generates synthesized GNSS signal.
@@ -80,15 +81,15 @@ private:
 
     /* Create the signal_generator_c object*/
     friend signal_generator_c_sptr
-    signal_make_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
-            const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-            const std::vector<unsigned int> &delay_chips,const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
-            unsigned int fs_in, unsigned int vector_length, float BW_BB);
+    signal_make_generator_c(std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
+        const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
+        const std::vector<unsigned int> &delay_chips, const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
+        unsigned int fs_in, unsigned int vector_length, float BW_BB);
 
-    signal_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
-            const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-            const std::vector<unsigned int> &delay_chips,const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
-            unsigned int fs_in, unsigned int vector_length, float BW_BB);
+    signal_generator_c(std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
+        const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
+        const std::vector<unsigned int> &delay_chips, const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
+        unsigned int fs_in, unsigned int vector_length, float BW_BB);
 
     void init();
     void generate_codes();
@@ -117,10 +118,10 @@ private:
     std::vector<signed int> data_modulation_;
     std::vector<signed int> pilot_modulation_;
 
-    boost::scoped_array<gr_complex*> sampled_code_data_;
-    boost::scoped_array<gr_complex*> sampled_code_pilot_;
-    gr::random* random_;
-    gr_complex* complex_phase_;
+    boost::scoped_array<gr_complex *> sampled_code_data_;
+    boost::scoped_array<gr_complex *> sampled_code_pilot_;
+    gr::random *random_;
+    gr_complex *complex_phase_;
 
     unsigned int work_counter_;
     std::random_device r;
@@ -128,14 +129,14 @@ private:
     std::uniform_int_distribution<int> uniform_dist;
 
 public:
-    ~signal_generator_c();    // public destructor
+    ~signal_generator_c();  // public destructor
 
     // Where all the action really happens
 
-    int general_work (int noutput_items,
-            gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+    int general_work(int noutput_items,
+        gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif /* GNSS_SDR_SIGNAL_GENERATOR_C_H */

@@ -32,16 +32,15 @@
 #ifndef GNSS_SDR_HYBRID_LS_PVT_H_
 #define GNSS_SDR_HYBRID_LS_PVT_H_
 
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <string>
 #include "ls_pvt.h"
 #include "galileo_navigation_message.h"
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "gnss_synchro.h"
 #include "rtklib_rtkcmn.h"
+#include <fstream>
+#include <map>
+#include <string>
 
 /*!
  * \brief This class implements a simple PVT Least Squares solution
@@ -53,18 +52,19 @@ private:
     bool d_flag_dump_enabled;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    int d_nchannels; // Number of available channels for positioning
+    int d_nchannels;  // Number of available channels for positioning
     double d_galileo_current_time;
+
 public:
-    hybrid_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file);
+    hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file);
     ~hybrid_ls_pvt();
 
-    bool get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, double Rx_time, bool flag_averaging);
+    bool get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, double Rx_time, bool flag_averaging);
 
-    std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
-    std::map<int,Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new GPS_Ephemeris
-    std::map<int,Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;
-    
+    std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;  //!< Map storing new Galileo_Ephemeris
+    std::map<int, Gps_Ephemeris> gps_ephemeris_map;          //!< Map storing new GPS_Ephemeris
+    std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;
+
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
     Galileo_Almanac galileo_almanac;

@@ -35,13 +35,14 @@
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+
 
 using google::LogMessage;
 
 GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -50,13 +51,14 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration_->property(role + ".item_type",
-            default_item_type);
+        default_item_type);
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
+    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     bit_transition_flag_ = configuration_->property("Acquisition.bit_transition_flag", false);
@@ -71,11 +73,10 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
         }
 
     dump_filename_ = configuration_->property(role + ".dump_filename",
-            default_dump_filename);
+        default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = round(fs_in_
-            / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -85,8 +86,8 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_opencl_acquisition_cc(sampled_ms_, max_dwells_,
-                    doppler_max_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, dump_, dump_filename_);
+                doppler_max_, if_, fs_in_, code_length_, code_length_,
+                bit_transition_flag_, dump_, dump_filename_);
 
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
 
@@ -126,11 +127,11 @@ void GpsL1CaPcpsOpenClAcquisition::set_threshold(float threshold)
 {
     float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-    if(pfa == 0.0)
+    if (pfa == 0.0)
         {
             pfa = configuration_->property(role_ + ".pfa", 0.0);
         }
-    if(pfa == 0.0)
+    if (pfa == 0.0)
         {
             threshold_ = threshold;
         }
@@ -165,7 +166,6 @@ void GpsL1CaPcpsOpenClAcquisition::set_doppler_step(unsigned int doppler_step)
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
-
 }
 
 
@@ -209,8 +209,8 @@ void GpsL1CaPcpsOpenClAcquisition::set_local_code()
 
             for (unsigned int i = 0; i < sampled_ms_; i++)
                 {
-                    memcpy(&(code_[i*code_length_]), code,
-                            sizeof(gr_complex)*code_length_);
+                    memcpy(&(code_[i * code_length_]), code,
+                        sizeof(gr_complex) * code_length_);
                 }
 
             acquisition_cc_->set_local_code(code_);
@@ -245,8 +245,8 @@ float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa)
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
-    boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = static_cast<float>(quantile(mydist,val));
+    boost::math::exponential_distribution<double> mydist(lambda);
+    float threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }
@@ -280,4 +280,3 @@ gr::basic_block_sptr GpsL1CaPcpsOpenClAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }
-

@@ -60,11 +60,11 @@
 
 
 #ifdef LV_HAVE_AVX2
-#include<immintrin.h>
+#include <immintrin.h>
 
 static inline void volk_gnsssdr_8i_index_max_16u_u_avx2(unsigned int* target, const char* src0, unsigned int num_points)
 {
-    if(num_points > 0)
+    if (num_points > 0)
         {
             const unsigned int avx2_iters = num_points / 32;
             unsigned int number;
@@ -74,14 +74,15 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx2(unsigned int* target, co
             char max = src0[0];
             unsigned int index = 0;
             unsigned int mask;
-            __VOLK_ATTR_ALIGNED(32) char currentValuesBuffer[32];
+            __VOLK_ATTR_ALIGNED(32)
+            char currentValuesBuffer[32];
             __m256i maxValues, compareResults, currentValues;
 
             maxValues = _mm256_set1_epi8(max);
 
-            for(number = 0; number < avx2_iters; number++)
+            for (number = 0; number < avx2_iters; number++)
                 {
-                    currentValues  = _mm256_loadu_si256((__m256i*)inputPtr);
+                    currentValues = _mm256_loadu_si256((__m256i*)inputPtr);
                     compareResults = _mm256_cmpgt_epi8(maxValues, currentValues);
                     mask = _mm256_movemask_epi8(compareResults);
 
@@ -94,7 +95,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx2(unsigned int* target, co
                                 {
                                     if ((mask & 1) == 1)
                                         {
-                                            if(currentValuesBuffer[i] > max)
+                                            if (currentValuesBuffer[i] > max)
                                                 {
                                                     index = inputPtr - basePtr + i;
                                                     max = currentValuesBuffer[i];
@@ -108,9 +109,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx2(unsigned int* target, co
                     inputPtr += 32;
                 }
 
-            for(i = 0; i<(num_points % 32); ++i)
+            for (i = 0; i < (num_points % 32); ++i)
                 {
-                    if(src0[i] > max)
+                    if (src0[i] > max)
                         {
                             index = i;
                             max = src0[i];
@@ -128,7 +129,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx2(unsigned int* target, co
 
 static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, const char* src0, unsigned int num_points)
 {
-    if(num_points > 0)
+    if (num_points > 0)
         {
             const unsigned int sse_iters = num_points / 32;
             unsigned int number;
@@ -137,33 +138,34 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
             char* inputPtr = (char*)src0;
             char max = src0[0];
             unsigned int index = 0;
-            __VOLK_ATTR_ALIGNED(32) char currentValuesBuffer[32];
+            __VOLK_ATTR_ALIGNED(32)
+            char currentValuesBuffer[32];
             __m256i ones, compareResults, currentValues;
             __m128i compareResultslo, compareResultshi, maxValues, lo, hi;
 
             ones = _mm256_set1_epi8(0xFF);
             maxValues = _mm_set1_epi8(max);
 
-            for(number = 0; number < sse_iters; number++)
+            for (number = 0; number < sse_iters; number++)
                 {
-                    currentValues  = _mm256_lddqu_si256((__m256i*)inputPtr);
+                    currentValues = _mm256_lddqu_si256((__m256i*)inputPtr);
 
                     lo = _mm256_castsi256_si128(currentValues);
-                    hi = _mm256_extractf128_si256(currentValues,1);
+                    hi = _mm256_extractf128_si256(currentValues, 1);
 
                     compareResultslo = _mm_cmpgt_epi8(maxValues, lo);
                     compareResultshi = _mm_cmpgt_epi8(maxValues, hi);
 
                     //compareResults = _mm256_set_m128i(compareResultshi , compareResultslo); //not defined in some versions of immintrin.h
-                    compareResults = _mm256_insertf128_si256(_mm256_castsi128_si256(compareResultslo),(compareResultshi),1);
+                    compareResults = _mm256_insertf128_si256(_mm256_castsi128_si256(compareResultslo), (compareResultshi), 1);
 
                     if (!_mm256_testc_si256(compareResults, ones))
                         {
                             _mm256_storeu_si256((__m256i*)&currentValuesBuffer, currentValues);
 
-                            for(i = 0; i < 32; i++)
+                            for (i = 0; i < 32; i++)
                                 {
-                                    if(currentValuesBuffer[i] > max)
+                                    if (currentValuesBuffer[i] > max)
                                         {
                                             index = inputPtr - basePtr + i;
                                             max = currentValuesBuffer[i];
@@ -175,9 +177,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
                     inputPtr += 32;
                 }
 
-            for(i = 0; i<(num_points % 32); ++i)
+            for (i = 0; i < (num_points % 32); ++i)
                 {
-                    if(src0[i] > max)
+                    if (src0[i] > max)
                         {
                             index = i;
                             max = src0[i];
@@ -195,7 +197,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
 
 static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, const char* src0, unsigned int num_points)
 {
-    if(num_points > 0)
+    if (num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
             unsigned int number;
@@ -204,14 +206,15 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
             char* inputPtr = (char*)src0;
             char max = src0[0];
             unsigned int index = 0;
-            __VOLK_ATTR_ALIGNED(16) char currentValuesBuffer[16];
+            __VOLK_ATTR_ALIGNED(16)
+            char currentValuesBuffer[16];
             __m128i maxValues, compareResults, currentValues;
 
             maxValues = _mm_set1_epi8(max);
 
-            for(number = 0; number < sse_iters; number++)
+            for (number = 0; number < sse_iters; number++)
                 {
-                    currentValues  = _mm_lddqu_si128((__m128i*)inputPtr);
+                    currentValues = _mm_lddqu_si128((__m128i*)inputPtr);
 
                     compareResults = _mm_cmpgt_epi8(maxValues, currentValues);
 
@@ -219,9 +222,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
                         {
                             _mm_storeu_si128((__m128i*)&currentValuesBuffer, currentValues);
 
-                            for(i = 0; i < 16; i++)
+                            for (i = 0; i < 16; i++)
                                 {
-                                    if(currentValuesBuffer[i] > max)
+                                    if (currentValuesBuffer[i] > max)
                                         {
                                             index = inputPtr - basePtr + i;
                                             max = currentValuesBuffer[i];
@@ -233,9 +236,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
                     inputPtr += 16;
                 }
 
-            for(i = 0; i<(num_points % 16); ++i)
+            for (i = 0; i < (num_points % 16); ++i)
                 {
-                    if(src0[i] > max)
+                    if (src0[i] > max)
                         {
                             index = i;
                             max = src0[i];
@@ -249,11 +252,11 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
 
 
 #ifdef LV_HAVE_SSE2
-#include<emmintrin.h>
+#include <emmintrin.h>
 
 static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, const char* src0, unsigned int num_points)
 {
-    if(num_points > 0)
+    if (num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
             unsigned int number;
@@ -263,14 +266,15 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
             char max = src0[0];
             unsigned int index = 0;
             unsigned short mask;
-            __VOLK_ATTR_ALIGNED(16) char currentValuesBuffer[16];
+            __VOLK_ATTR_ALIGNED(16)
+            char currentValuesBuffer[16];
             __m128i maxValues, compareResults, currentValues;
 
             maxValues = _mm_set1_epi8(max);
 
-            for(number = 0; number < sse_iters; number++)
+            for (number = 0; number < sse_iters; number++)
                 {
-                    currentValues  = _mm_loadu_si128((__m128i*)inputPtr);
+                    currentValues = _mm_loadu_si128((__m128i*)inputPtr);
                     compareResults = _mm_cmpgt_epi8(maxValues, currentValues);
                     mask = _mm_movemask_epi8(compareResults);
 
@@ -283,7 +287,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
                                 {
                                     if ((mask & 1) == 1)
                                         {
-                                            if(currentValuesBuffer[i] > max)
+                                            if (currentValuesBuffer[i] > max)
                                                 {
                                                     index = inputPtr - basePtr + i;
                                                     max = currentValuesBuffer[i];
@@ -297,9 +301,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
                     inputPtr += 16;
                 }
 
-            for(i = 0; i<(num_points % 16); ++i)
+            for (i = 0; i < (num_points % 16); ++i)
                 {
-                    if(src0[i] > max)
+                    if (src0[i] > max)
                         {
                             index = i;
                             max = src0[i];
@@ -316,14 +320,14 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
 
 static inline void volk_gnsssdr_8i_index_max_16u_generic(unsigned int* target, const char* src0, unsigned int num_points)
 {
-    if(num_points > 0)
+    if (num_points > 0)
         {
             char max = src0[0];
             unsigned int index = 0;
             unsigned int i;
-            for(i = 1; i < num_points; ++i)
+            for (i = 1; i < num_points; ++i)
                 {
-                    if(src0[i] > max)
+                    if (src0[i] > max)
                         {
                             index = i;
                             max = src0[i];
@@ -337,11 +341,11 @@ static inline void volk_gnsssdr_8i_index_max_16u_generic(unsigned int* target, c
 
 
 #ifdef LV_HAVE_AVX2
-#include<immintrin.h>
+#include <immintrin.h>
 
 static inline void volk_gnsssdr_8i_index_max_16u_a_avx2(unsigned int* target, const char* src0, unsigned int num_points)
 {
-    if(num_points > 0)
+    if (num_points > 0)
         {
             const unsigned int avx2_iters = num_points / 32;
             unsigned int number;
@@ -351,14 +355,15 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx2(unsigned int* target, co
             char max = src0[0];
             unsigned int index = 0;
             unsigned int mask;
-            __VOLK_ATTR_ALIGNED(32) char currentValuesBuffer[32];
+            __VOLK_ATTR_ALIGNED(32)
+            char currentValuesBuffer[32];
             __m256i maxValues, compareResults, currentValues;
 
             maxValues = _mm256_set1_epi8(max);
 
-            for(number = 0; number < avx2_iters; number++)
+            for (number = 0; number < avx2_iters; number++)
                 {
-                    currentValues  = _mm256_load_si256((__m256i*)inputPtr);
+                    currentValues = _mm256_load_si256((__m256i*)inputPtr);
                     compareResults = _mm256_cmpgt_epi8(maxValues, currentValues);
                     mask = _mm256_movemask_epi8(compareResults);
 
@@ -371,7 +376,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx2(unsigned int* target, co
                                 {
                                     if ((mask & 1) == 1)
                                         {
-                                            if(currentValuesBuffer[i] > max)
+                                            if (currentValuesBuffer[i] > max)
                                                 {
                                                     index = inputPtr - basePtr + i;
                                                     max = currentValuesBuffer[i];
@@ -385,9 +390,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx2(unsigned int* target, co
                     inputPtr += 32;
                 }
 
-            for(i = 0; i<(num_points % 32); ++i)
+            for (i = 0; i < (num_points % 32); ++i)
                 {
-                    if(src0[i] > max)
+                    if (src0[i] > max)
                         {
                             index = i;
                             max = src0[i];
@@ -405,7 +410,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx2(unsigned int* target, co
 
 static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, const char* src0, unsigned int num_points)
 {
-    if(num_points > 0)
+    if (num_points > 0)
         {
             const unsigned int sse_iters = num_points / 32;
             unsigned int number;
@@ -414,19 +419,20 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
             char* inputPtr = (char*)src0;
             char max = src0[0];
             unsigned int index = 0;
-            __VOLK_ATTR_ALIGNED(32) char currentValuesBuffer[32];
+            __VOLK_ATTR_ALIGNED(32)
+            char currentValuesBuffer[32];
             __m256i ones, compareResults, currentValues;
             __m128i compareResultslo, compareResultshi, maxValues, lo, hi;
 
             ones = _mm256_set1_epi8(0xFF);
             maxValues = _mm_set1_epi8(max);
 
-            for(number = 0; number < sse_iters; number++)
+            for (number = 0; number < sse_iters; number++)
                 {
-                    currentValues  = _mm256_load_si256((__m256i*)inputPtr);
+                    currentValues = _mm256_load_si256((__m256i*)inputPtr);
 
                     lo = _mm256_castsi256_si128(currentValues);
-                    hi = _mm256_extractf128_si256(currentValues,1);
+                    hi = _mm256_extractf128_si256(currentValues, 1);
 
                     compareResultslo = _mm_cmpgt_epi8(maxValues, lo);
                     compareResultshi = _mm_cmpgt_epi8(maxValues, hi);
@@ -438,9 +444,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
                         {
                             _mm256_store_si256((__m256i*)&currentValuesBuffer, currentValues);
 
-                            for(i = 0; i < 32; i++)
+                            for (i = 0; i < 32; i++)
                                 {
-                                    if(currentValuesBuffer[i] > max)
+                                    if (currentValuesBuffer[i] > max)
                                         {
                                             index = inputPtr - basePtr + i;
                                             max = currentValuesBuffer[i];
@@ -452,9 +458,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
                     inputPtr += 32;
                 }
 
-            for(i = 0; i<(num_points % 32); ++i)
+            for (i = 0; i < (num_points % 32); ++i)
                 {
-                    if(src0[i] > max)
+                    if (src0[i] > max)
                         {
                             index = i;
                             max = src0[i];
@@ -472,7 +478,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
 
 static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, const char* src0, unsigned int num_points)
 {
-    if(num_points > 0)
+    if (num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
             unsigned int number;
@@ -481,14 +487,15 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
             char* inputPtr = (char*)src0;
             char max = src0[0];
             unsigned int index = 0;
-            __VOLK_ATTR_ALIGNED(16) char currentValuesBuffer[16];
+            __VOLK_ATTR_ALIGNED(16)
+            char currentValuesBuffer[16];
             __m128i maxValues, compareResults, currentValues;
 
             maxValues = _mm_set1_epi8(max);
 
-            for(number = 0; number < sse_iters; number++)
+            for (number = 0; number < sse_iters; number++)
                 {
-                    currentValues  = _mm_load_si128((__m128i*)inputPtr);
+                    currentValues = _mm_load_si128((__m128i*)inputPtr);
 
                     compareResults = _mm_cmpgt_epi8(maxValues, currentValues);
 
@@ -496,9 +503,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
                         {
                             _mm_store_si128((__m128i*)&currentValuesBuffer, currentValues);
 
-                            for(i = 0; i < 16; i++)
+                            for (i = 0; i < 16; i++)
                                 {
-                                    if(currentValuesBuffer[i] > max)
+                                    if (currentValuesBuffer[i] > max)
                                         {
                                             index = inputPtr - basePtr + i;
                                             max = currentValuesBuffer[i];
@@ -510,9 +517,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
                     inputPtr += 16;
                 }
 
-            for(i = 0; i<(num_points % 16); ++i)
+            for (i = 0; i < (num_points % 16); ++i)
                 {
-                    if(src0[i] > max)
+                    if (src0[i] > max)
                         {
                             index = i;
                             max = src0[i];
@@ -530,7 +537,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
 
 static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, const char* src0, unsigned int num_points)
 {
-    if(num_points > 0)
+    if (num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
             unsigned int number;
@@ -540,14 +547,15 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, co
             char max = src0[0];
             unsigned int index = 0;
             unsigned short mask;
-            __VOLK_ATTR_ALIGNED(16) char currentValuesBuffer[16];
+            __VOLK_ATTR_ALIGNED(16)
+            char currentValuesBuffer[16];
             __m128i maxValues, compareResults, currentValues;
 
             maxValues = _mm_set1_epi8(max);
 
-            for(number = 0; number < sse_iters; number++)
+            for (number = 0; number < sse_iters; number++)
                 {
-                    currentValues  = _mm_load_si128((__m128i*)inputPtr);
+                    currentValues = _mm_load_si128((__m128i*)inputPtr);
                     compareResults = _mm_cmpgt_epi8(maxValues, currentValues);
                     mask = _mm_movemask_epi8(compareResults);
 
@@ -560,7 +568,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, co
                                 {
                                     if ((mask & 1) == 1)
                                         {
-                                            if(currentValuesBuffer[i] > max)
+                                            if (currentValuesBuffer[i] > max)
                                                 {
                                                     index = inputPtr - basePtr + i;
                                                     max = currentValuesBuffer[i];
@@ -574,9 +582,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, co
                     inputPtr += 16;
                 }
 
-            for(i = 0; i<(num_points % 16); ++i)
+            for (i = 0; i < (num_points % 16); ++i)
                 {
-                    if(src0[i] > max)
+                    if (src0[i] > max)
                         {
                             index = i;
                             max = src0[i];

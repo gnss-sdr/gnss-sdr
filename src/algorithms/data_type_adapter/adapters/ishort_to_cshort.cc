@@ -30,16 +30,14 @@
  */
 
 #include "ishort_to_cshort.h"
+#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <volk/volk.h>
-#include "configuration_interface.h"
 
 using google::LogMessage;
 
 IshortToCshort::IshortToCshort(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "short";
     std::string default_output_item_type = "cshort";
@@ -64,7 +62,7 @@ IshortToCshort::IshortToCshort(ConfigurationInterface* configuration, std::strin
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
-    if(inverted_spectrum)
+    if (inverted_spectrum)
         {
             conjugate_sc_ = make_conjugate_sc();
         }
@@ -72,14 +70,15 @@ IshortToCshort::IshortToCshort(ConfigurationInterface* configuration, std::strin
 
 
 IshortToCshort::~IshortToCshort()
-{}
+{
+}
 
 
 void IshortToCshort::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     top_block->connect(interleaved_short_to_complex_short_, 0, conjugate_sc_, 0);
                     top_block->connect(conjugate_sc_, 0, file_sink_, 0);
@@ -91,7 +90,7 @@ void IshortToCshort::connect(gr::top_block_sptr top_block)
         }
     else
         {
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     top_block->connect(interleaved_short_to_complex_short_, 0, conjugate_sc_, 0);
                 }
@@ -107,7 +106,7 @@ void IshortToCshort::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     top_block->disconnect(interleaved_short_to_complex_short_, 0, conjugate_sc_, 0);
                     top_block->disconnect(conjugate_sc_, 0, file_sink_, 0);
@@ -119,7 +118,7 @@ void IshortToCshort::disconnect(gr::top_block_sptr top_block)
         }
     else
         {
-            if(inverted_spectrum)
+            if (inverted_spectrum)
                 {
                     top_block->disconnect(interleaved_short_to_complex_short_, 0, conjugate_sc_, 0);
                 }
@@ -135,7 +134,7 @@ gr::basic_block_sptr IshortToCshort::get_left_block()
 
 gr::basic_block_sptr IshortToCshort::get_right_block()
 {
-    if(inverted_spectrum)
+    if (inverted_spectrum)
         {
             return conjugate_sc_;
         }

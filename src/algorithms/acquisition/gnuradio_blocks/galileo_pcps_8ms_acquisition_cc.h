@@ -45,31 +45,31 @@ typedef boost::shared_ptr<galileo_pcps_8ms_acquisition_cc> galileo_pcps_8ms_acqu
 
 galileo_pcps_8ms_acquisition_cc_sptr
 galileo_pcps_8ms_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-                             unsigned int doppler_max, long freq, long fs_in,
-                             int samples_per_ms, int samples_per_code,
-                             bool dump, std::string dump_filename);
+    unsigned int doppler_max, long freq, long fs_in,
+    int samples_per_ms, int samples_per_code,
+    bool dump, std::string dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition for
  * Galileo E1 signals with coherent integration time = 8 ms (two codes)
  */
-class galileo_pcps_8ms_acquisition_cc: public gr::block
+class galileo_pcps_8ms_acquisition_cc : public gr::block
 {
 private:
     friend galileo_pcps_8ms_acquisition_cc_sptr
     galileo_pcps_8ms_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-                                 unsigned int doppler_max, long freq, long fs_in,
-                                 int samples_per_ms, int samples_per_code,
-                                 bool dump, std::string dump_filename);
+        unsigned int doppler_max, long freq, long fs_in,
+        int samples_per_ms, int samples_per_code,
+        bool dump, std::string dump_filename);
 
 
     galileo_pcps_8ms_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-                            unsigned int doppler_max, long freq, long fs_in,
-                            int samples_per_ms, int samples_per_code,
-                            bool dump, std::string dump_filename);
+        unsigned int doppler_max, long freq, long fs_in,
+        int samples_per_ms, int samples_per_code,
+        bool dump, std::string dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-            int doppler_offset);
+        int doppler_offset);
 
     long d_fs_in;
     long d_freq;
@@ -91,7 +91,7 @@ private:
     gr_complex* d_fft_code_B;
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_ifft;
-    Gnss_Synchro *d_gnss_synchro;
+    Gnss_Synchro* d_gnss_synchro;
     unsigned int d_code_phase;
     float d_doppler_freq;
     float d_mag;
@@ -138,7 +138,7 @@ public:
      * \brief Sets local code for PCPS acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
-    void set_local_code(std::complex<float> * code);
+    void set_local_code(std::complex<float>* code);
 
     /*!
      * \brief Starts acquisition algorithm, turning from standby mode to
@@ -197,9 +197,9 @@ public:
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
-    int general_work(int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);
 };
 
 #endif /* GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H_*/

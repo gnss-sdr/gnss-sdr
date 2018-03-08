@@ -317,6 +317,7 @@ set(GNSSSDR_BOOST_MIN_VERSION "1.45")
 set(GNSSSDR_PYTHON_MIN_VERSION "2.7")
 set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_ARMADILLO_MIN_VERSION "4.200.0")
+set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 
 
 
@@ -448,10 +449,10 @@ if(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
         endif(LIBGTEST_DEV_DIR)
         find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h PATHS ${GTEST_DIR}/include)
     else(GTEST_DIR)
-        find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS /usr/src/gtest /opt/local/src/gtest-1.7.0)
+        find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS /usr/src/googletest/googletest /usr/src/gtest /opt/local/src/gtest-1.7.0 )
         find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h PATHS /usr/include /opt/local/src/gtest-1.7.0/include)
         if(LIBGTEST_DEV_DIR)
-            message (STATUS "Googletest (libgtest-dev package) has been found.")
+            message (STATUS "Googletest package has been found.")
         else(LIBGTEST_DEV_DIR)
             message (STATUS " Googletest has not been found.")
             message (STATUS " Googletest will be downloaded and built automatically ")
@@ -479,7 +480,7 @@ set(Boost_ADDITIONAL_VERSIONS
 )
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
-find_package(Boost COMPONENTS date_time system filesystem thread serialization chrono unit_test_framework program_options REQUIRED)
+find_package(Boost COMPONENTS date_time system filesystem thread serialization chrono REQUIRED)
 if(NOT Boost_FOUND)
      message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
 endif(NOT Boost_FOUND)
@@ -543,11 +544,11 @@ endif()
 
 
 ################################################################################
-# Lib4cpp - http://log4cpp.sourceforge.net/
+# Log4cpp - http://log4cpp.sourceforge.net/
 ################################################################################
 find_package(Log4cpp)
 if(NOT LOG4CPP_FOUND)
-    message(FATAL_ERROR "*** Lib4cpp is required to build gnss-sdr")
+    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
 endif()
 
 
@@ -599,10 +600,12 @@ if(NOT VOLK_GNSSSDR_FOUND)
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif(NOT SIX_FOUND)
 
+    set(READ_ENVIRO "")
     if(ENABLE_PACKAGING)
         if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
             set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON -DCMAKE_VERBOSE_MAKEFILE=ON")
         endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        set(READ_ENVIRO ${CMAKE_COMMAND} -E environment)
     endif(ENABLE_PACKAGING)
 
     set(VOLK_GNSSSDR_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}")
@@ -638,11 +641,11 @@ if(NOT VOLK_GNSSSDR_FOUND)
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-         CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+         CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
          DOWNLOAD_COMMAND ""
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
-         BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+         BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
          INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
          )
     else(CMAKE_VERSION VERSION_LESS 3.2)
@@ -650,11 +653,11 @@ if(NOT VOLK_GNSSSDR_FOUND)
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build
-         CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+         CMAKE_ARGS ${READ_ENVIRO} ${VOLK_GNSSSDR_CMAKE_ARGS}
          DOWNLOAD_COMMAND ""
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
-         BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+         BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                           ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
          INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
@@ -820,9 +823,9 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
      # Ensure that aclocal and libtool are present
      if(OS_IS_LINUX)
          if(EXISTS "/usr/bin/libtoolize")
-             if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                  # Everything ok, we can move on
-             else(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             else(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                  message(" aclocal has not been found.")
                  message(" You can try to install it by typing:")
                  if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -833,7 +836,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
                       message(" sudo apt-get install automake")
                  endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                  message(FATAL_ERROR "aclocal is required to build glog from source")
-             endif(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             endif(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
          else(EXISTS "/usr/bin/libtoolize")
              message(" libtool has not been found.")
              message(" You can try to install it by typing:")
@@ -957,7 +960,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
      message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'. ")
      set(armadillo_BRANCH ${GNSSSDR_ARMADILLO_LOCAL_VERSION})
      set(armadillo_RELEASE ${armadillo_BRANCH})
-     
+
      #############################################
      # Check if GFORTRAN is found in the system
      #############################################
@@ -1092,10 +1095,43 @@ endif(NOT GNUTLS_OPENSSL_LIBRARY)
 # Matio - https://github.com/tbeu/matio
 ########################################################################
 find_package(MATIO)
-if(NOT MATIO_FOUND)
+if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
+    if(MATIO_FOUND)
+         message(STATUS " Matio installed version (${MATIO_VERSION_STRING}) is too old (>= ${GNSSSDR_MATIO_MIN_VERSION} is required).")
+    endif(MATIO_FOUND)
+    message(STATUS " Matio will be downloaded and built automatically")
+    message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'. ")
     find_package(ZLIB)
     if(ZLIB_FOUND)
         get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
+        if(OS_IS_LINUX)
+            if(NOT EXISTS "/usr/bin/libtoolize")
+                message(" libtool has not been found.")
+                message(" You can try to install it by typing:")
+                if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                    message(" sudo yum groupinstall 'Development Tools'")
+                elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                    message(" sudo zypper install libtoool")
+                else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                    message(" sudo apt-get install libtool")
+                endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                message(FATAL_ERROR "libtool is required to build matio from source")
+            endif(NOT EXISTS "/usr/bin/libtoolize")
+            if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+                message(STATUS "Automake found.")
+            else(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+                message(" aclocal has not been found.")
+                message(" You can try to install it by typing:")
+                if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                    message(" sudo yum groupinstall 'Development Tools'")
+                elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                    message(" sudo zypper install automake")
+                else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                    message(" sudo apt-get install automake")
+                endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                message(FATAL_ERROR "aclocal is required to build matio from source")
+             endif(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+        endif(OS_IS_LINUX)      
         find_package(HDF5)
         if(HDF5_FOUND)
             list(GET HDF5_LIBRARIES 0 HDF5_FIRST_DIR)
@@ -1112,7 +1148,7 @@ if(NOT MATIO_FOUND)
             if(CMAKE_VERSION VERSION_LESS 3.2)
               ExternalProject_Add(
                  matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/mati
+                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
                  GIT_REPOSITORY https://github.com/tbeu/matio
                  GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
                  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
@@ -1152,7 +1188,7 @@ if(NOT MATIO_FOUND)
     else(ZLIB_FOUND)
         message(FATAL_ERROR "*** The zlib library is required to build gnss-sdr")
     endif(ZLIB_FOUND)
-endif(NOT MATIO_FOUND)
+endif(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
 
 
 
@@ -1225,9 +1261,9 @@ else(DOXYGEN_FOUND)
      message(STATUS " Get it from http://www.stack.nl/~dimitri/doxygen/index.html")
      if(OS_IS_LINUX)
          if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-             message(" or simply by doing 'sudo yum install doxygen-latex'.")
+             message(STATUS " or simply by doing 'sudo yum install doxygen-latex'.")
          else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-             message(" or simply by doing 'sudo apt-get install doxygen-latex'.")
+             message(STATUS " or simply by doing 'sudo apt-get install doxygen-latex'.")
          endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
      endif(OS_IS_LINUX)
      if(OS_IS_MACOSX)

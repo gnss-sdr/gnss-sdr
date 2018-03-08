@@ -31,13 +31,12 @@
 #ifndef GNSS_SDR_IBYTE_TO_COMPLEX_H_
 #define GNSS_SDR_IBYTE_TO_COMPLEX_H_
 
-#include <string>
-#include <gnuradio/blocks/interleaved_char_to_complex.h>
-#include <gnuradio/blocks/file_sink.h>
 #include "conjugate_cc.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
-
+#include <gnuradio/blocks/interleaved_char_to_complex.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -45,12 +44,12 @@ class ConfigurationInterface;
  * \brief Adapts an I/Q interleaved byte integer sample stream to a gr_complex (float) stream
  *
  */
-class IbyteToComplex: public GNSSBlockInterface
+class IbyteToComplex : public GNSSBlockInterface
 {
 public:
     IbyteToComplex(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~IbyteToComplex();
 

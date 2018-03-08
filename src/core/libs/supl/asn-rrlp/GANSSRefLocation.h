@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSRefLocation_H_
-#define	_GANSSRefLocation_H_
+#ifndef _GANSSRefLocation_H_
+#define _GANSSRefLocation_H_
 
 
 #include <asn_application.h>
@@ -15,23 +15,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSRefLocation */
-typedef struct GANSSRefLocation {
-	Ext_GeographicalInformation_t	 threeDLocation;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSRefLocation_t;
+    /* GANSSRefLocation */
+    typedef struct GANSSRefLocation
+    {
+        Ext_GeographicalInformation_t threeDLocation;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSRefLocation;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSRefLocation_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSRefLocation;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSRefLocation_H_ */
+#endif /* _GANSSRefLocation_H_ */
 #include <asn_internal.h>

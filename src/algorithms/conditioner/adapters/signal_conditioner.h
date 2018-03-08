@@ -32,9 +32,8 @@
 #ifndef GNSS_SDR_SIGNAL_CONDITIONER_H_
 #define GNSS_SDR_SIGNAL_CONDITIONER_H_
 
-#include <string>
 #include "gnss_block_interface.h"
-
+#include <string>
 
 class ConfigurationInterface;
 class AcquisitionInterface;
@@ -45,13 +44,13 @@ class TelemetryDecoderInterface;
  * \brief This class wraps blocks to change data_type_adapter, input_filter and resampler
  * to be applied to the input flow of sampled signal.
  */
-class SignalConditioner: public GNSSBlockInterface
+class SignalConditioner : public GNSSBlockInterface
 {
 public:
     //! Constructor
     SignalConditioner(ConfigurationInterface *configuration,
-            std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
-            std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation);
+        std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
+        std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation);
 
     //! Virtual destructor
     virtual ~SignalConditioner();
@@ -67,9 +66,9 @@ public:
 
     inline size_t item_size() override { return 0; }
 
-    inline std::shared_ptr<GNSSBlockInterface> data_type_adapter(){ return data_type_adapt_; }
-    inline std::shared_ptr<GNSSBlockInterface> input_filter(){ return in_filt_; }
-    inline std::shared_ptr<GNSSBlockInterface> resampler(){ return res_; }
+    inline std::shared_ptr<GNSSBlockInterface> data_type_adapter() { return data_type_adapt_; }
+    inline std::shared_ptr<GNSSBlockInterface> input_filter() { return in_filt_; }
+    inline std::shared_ptr<GNSSBlockInterface> resampler() { return res_; }
 
 private:
     std::shared_ptr<GNSSBlockInterface> data_type_adapt_;

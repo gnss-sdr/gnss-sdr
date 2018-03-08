@@ -32,19 +32,19 @@
 
 #include "hybrid_observables.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
-#include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
+#include "GPS_L1_CA.h"
+#include <glog/logging.h>
+
 
 using google::LogMessage;
 
 HybridObservables::HybridObservables(ConfigurationInterface* configuration,
-        std::string role,
-        unsigned int in_streams,
-        unsigned int out_streams) :
-                            role_(role),
-                            in_streams_(in_streams),
-                            out_streams_(out_streams)
+    std::string role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     std::string default_dump_filename = "./observables.dat";
     DLOG(INFO) << "role " << role;
@@ -65,38 +65,32 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
 }
 
 
-
-
-HybridObservables::~HybridObservables()
-{}
-
-
+HybridObservables::~HybridObservables() {}
 
 
 void HybridObservables::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
-
 void HybridObservables::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     // Nothing to disconnect
 }
-
-
 
 
 gr::basic_block_sptr HybridObservables::get_left_block()
 {
     return observables_;
 }
-
-
 
 
 gr::basic_block_sptr HybridObservables::get_right_block()

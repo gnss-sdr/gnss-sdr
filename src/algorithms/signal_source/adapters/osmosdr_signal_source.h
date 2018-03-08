@@ -33,13 +33,13 @@
 #ifndef GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_
 #define GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_
 
-#include <stdexcept>
-#include <string>
+#include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <osmosdr/source.h>
-#include "gnss_block_interface.h"
+#include <stdexcept>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -48,12 +48,12 @@ class ConfigurationInterface;
  * HackRF or Realtek's RTL2832U-based USB dongle DVB-T receivers
  * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr)
  */
-class OsmosdrSignalSource: public GNSSBlockInterface
+class OsmosdrSignalSource : public GNSSBlockInterface
 {
 public:
     OsmosdrSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~OsmosdrSignalSource();
 
@@ -104,6 +104,8 @@ private:
 
     osmosdr::source::sptr osmosdr_source_;
     std::string osmosdr_args_;
+
+    std::string antenna_;
 
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;

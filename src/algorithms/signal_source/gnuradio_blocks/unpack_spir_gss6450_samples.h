@@ -32,7 +32,7 @@
 #define GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
-#include <vector>
+#include <boost/dynamic_bitset.hpp>
 
 class unpack_spir_gss6450_samples;
 
@@ -41,24 +41,24 @@ typedef boost::shared_ptr<unpack_spir_gss6450_samples> unpack_spir_gss6450_sampl
 unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int adc_nbit);
 
 
-class unpack_spir_gss6450_samples: public gr::sync_interpolator
+class unpack_spir_gss6450_samples : public gr::sync_interpolator
 {
 public:
     int work(int noutput_items,
-             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
     friend unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples_sptr(unsigned int adc_nbit);
     unpack_spir_gss6450_samples(unsigned int adc_nbit);
     ~unpack_spir_gss6450_samples();
 
 private:
+    int compute_two_complement(unsigned long data);
+
     unsigned int adc_bits;
     unsigned int samples_per_int;
-    void process_sample(gr_complex& out);
-    void compute_two_complement(int& data);
-    int i_data;
-    int q_data;
-    int mask_data;
-    std::vector<int> map_;
+    int two_compl_thres;
+    int adc_bits_two_pow;
+    boost::dynamic_bitset<> i_data;
+    boost::dynamic_bitset<> q_data;
 };
 
 #endif

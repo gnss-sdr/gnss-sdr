@@ -32,15 +32,14 @@
 #ifndef GNSS_SDR_SPIR_FILE_SIGNAL_SOURCE_H_
 #define GNSS_SDR_SPIR_FILE_SIGNAL_SOURCE_H_
 
-#include <string>
+#include "gnss_block_interface.h"
+#include "unpack_intspir_1bit_samples.h"
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_block_interface.h"
-#include "unpack_intspir_1bit_samples.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -48,12 +47,12 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class SpirFileSignalSource: public GNSSBlockInterface
+class SpirFileSignalSource : public GNSSBlockInterface
 {
 public:
     SpirFileSignalSource(ConfigurationInterface* configuration, std::string role,
-            unsigned int in_streams, unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+        unsigned int in_streams, unsigned int out_streams,
+        boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~SpirFileSignalSource();
     inline std::string role() override
@@ -119,7 +118,7 @@ private:
     unpack_intspir_1bit_samples_sptr unpack_intspir_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
-    gr::blocks::throttle::sptr  throttle_;
+    gr::blocks::throttle::sptr throttle_;
     boost::shared_ptr<gr::msg_queue> queue_;
     size_t item_size_;
     // Throttle control

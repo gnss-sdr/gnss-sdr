@@ -32,15 +32,14 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
 
-#include <string>
+#include "acquisition_interface.h"
+#include "gnss_synchro.h"
+#include "pcps_acquisition.h"
+#include "complex_byte_to_float_x2.h"
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
-#include "gnss_synchro.h"
-#include "acquisition_interface.h"
-#include "pcps_acquisition_cc.h"
-#include "pcps_acquisition_sc.h"
-#include "complex_byte_to_float_x2.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <string>
 
 
 class ConfigurationInterface;
@@ -49,12 +48,12 @@ class ConfigurationInterface;
  * \brief This class adapts a PCPS acquisition block to an
  *  AcquisitionInterface for Galileo E1 Signals
  */
-class GalileoE1PcpsAmbiguousAcquisition: public AcquisitionInterface
+class GalileoE1PcpsAmbiguousAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE1PcpsAmbiguousAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GalileoE1PcpsAmbiguousAcquisition();
 
@@ -135,8 +134,7 @@ public:
 
 private:
     ConfigurationInterface* configuration_;
-    pcps_acquisition_cc_sptr acquisition_cc_;
-    pcps_acquisition_sc_sptr acquisition_sc_;
+    pcps_acquisition_sptr acquisition_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
@@ -158,8 +156,8 @@ private:
     bool dump_;
     bool blocking_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float>* code_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

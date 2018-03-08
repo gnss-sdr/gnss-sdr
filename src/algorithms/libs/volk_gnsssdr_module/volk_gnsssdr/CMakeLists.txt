@@ -88,6 +88,7 @@ if(UNIX)
     add_definitions( -D_LARGEFILE_SOURCE
                      -D_FILE_OFFSET_BITS=64
                      -D_LARGE_FILES
+                     -D_FORTIFY_SOURCE=2
                    )
 endif(UNIX)
 
@@ -306,7 +307,7 @@ message(STATUS "  Modify using: -DENABLE_TESTING=ON/OFF")
 OPTION(ENABLE_PROFILING "Launch system profiler after build" OFF)
 if(ENABLE_PROFILING)
   set(ENABLE_STATIC_LIBS ON)
-  if(DEFINED VOLK_CONFIGPATH)  
+  if(DEFINED VOLK_CONFIGPATH)
     get_filename_component(VOLK_CONFIGPATH ${VOLK_CONFIGPATH} ABSOLUTE)
     set(VOLK_CONFIGPATH "${VOLK_CONFIGPATH}/volk_gnsssdr")
     message(STATUS "System profiling is enabled, using path: ${VOLK_CONFIGPATH}")
@@ -326,7 +327,7 @@ else()
 endif()
 message(STATUS "  Modify using: -DENABLE_PROFILING=ON/OFF")
 ########################################################################
- 
+
 ########################################################################
 # Setup the library
 ########################################################################

@@ -33,9 +33,9 @@
 #ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_
 #define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_
 
-#include <string>
-#include <gnuradio/hier_block2.h>
 #include "gnss_block_interface.h"
+#include <gnuradio/hier_block2.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -43,12 +43,12 @@ class ConfigurationInterface;
  * \brief Interface of an adapter of a direct resampler conditioner block
  * to a SignalConditionerInterface
  */
-class DirectResamplerConditioner: public GNSSBlockInterface
+class DirectResamplerConditioner : public GNSSBlockInterface
 {
 public:
     DirectResamplerConditioner(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream);
 
     virtual ~DirectResamplerConditioner();
 

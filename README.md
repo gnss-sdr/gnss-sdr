@@ -31,8 +31,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux
 ----------
 
- * Tested distributions: Ubuntu 14.04 LTS and [above](http://packages.ubuntu.com/search?keywords=gnss-sdr), Debian 8.0 "jessie" and [above](https://packages.debian.org/search?searchon=names&keywords=gnss-sdr), Linaro 15.03
- * Known to work but not continually tested: Arch Linux, Fedora, and openSUSE
+ * Tested distributions: Ubuntu 14.04 LTS and above; Debian 8.0 "jessie" and above; Fedora 26 and above; CentOS 7; Arch Linux.
  * Supported microprocessor architectures:
    * i386: Intel x86 instruction set (32-bit microprocessors).
    * amd64: also known as x86-64, the 64-bit version of the x86 instruction set, originally created by AMD and implemented by AMD, Intel, VIA and others.
@@ -53,34 +52,71 @@ Before building GNSS-SDR, you need to install all the required dependencies. The
 
 ### Alternative 1: Install dependencies using software packages
 
-If you want to start building and running GNSS-SDR as quick and easy as possible, the best option is to install all the required dependencies as binary packages. If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
+If you want to start building and running GNSS-SDR as quick and easy as possible, the best option is to install all the required dependencies as binary packages. 
+
+#### Debian / Ubuntu
+
+If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
 
 ~~~~~~
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
-       libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
-       liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
-       libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev \
-       python-mako python-six libmatio-dev
+       libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
+       libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
+       libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
 ~~~~~~
 
-Alternatively, and starting from Ubuntu 16.04 LTS, you can install all the required dependencies by adding the line
+Please note that `googletest` was named `libgtest-dev` in distributions older than Debian 9 "stretch" and Ubuntu 17.04 "zesty".
+
+**Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev` and `gr-osmosdr` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04 came with 1.5.2 and the minimum required version is 1.5.3. Please do not install the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev` instead. A recent version of the library will be downloaded and built automatically if CMake does not find it installed.
+
+**Note for Debian 8 "jessie" users:** please see the note about `libmatio-dev` above. Install `libtool`, `automake` and `libhdf5-dev` instead.
+
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+
+#### Fedora
+
+If you are using Fedora 26 or above, the required software dependencies can be installed by doing:
 
 ~~~~~~
-deb-src http://us.archive.ubuntu.com/ubuntu/ xenial universe
+$ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel \
+       boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
+       boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
+       blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
+       glog-devel openssl-devel python-mako python-six 
 ~~~~~~
 
-to your ```/etc/apt/sources.list``` file and doing:
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+#### CentOS
+
+If you are using CentOS 7, you can install the dependencies via Extra Packages for Enterprise Linux ([EPEL](https://fedoraproject.org/wiki/EPEL)):
 
 ~~~~~~
-$ sudo apt-get update
-$ sudo apt-get build-dep gnss-sdr
+$ sudo yum install wget
+$ wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+$ sudo rpm -Uvh epel-release-latest-7.noarch.rpm
+$ sudo yum install make automake gcc gcc-c++ kernel-devel libtool \
+       hdf5-devel cmake git boost-devel boost-date-time boost-system \
+       boost-filesystem boost-thread boost-chrono boost-serialization \
+       log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel \
+       armadillo-devel openssl-devel python-mako python-six
 ~~~~~~
 
-Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux).
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 
-Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT ```libuhd-dev```, ```gnuradio-dev``` and ```gr-osmosdr``` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS.
+#### Arch Linux
 
+If you are using Arch Linux (with base-devel group installed):
+
+~~~~~~
+$ pacman -S cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr \
+       blas lapack gflags google-glog gnutls openssl python2-mako python2-six \
+       libmatio gtest
+~~~~~~
+
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 
 ### Alternative 2: Install dependencies using PyBOMBS
 
@@ -208,11 +244,11 @@ changing `/home/username/googletest-release-1.8.0/googletest` by the actual dire
 
 
 
-#### Install the [GnuTLS library](http://www.gnutls.org/ "GnuTLS's Homepage"):
+#### Install the [GnuTLS](http://www.gnutls.org/ "GnuTLS's Homepage") or [OpenSSL](https://www.openssl.org/ "OpenSSL's Homepage") libraries:
 
 ~~~~~~
 $ sudo apt-get install libgnutls-openssl-dev    # For Debian/Ubuntu/LinuxMint
-$ sudo yum install libgnutls-openssl-devel      # For Fedora/CentOS/RHEL
+$ sudo yum install openssl-devel                # For Fedora/CentOS/RHEL
 ~~~~~~
 
 In case the GnuTLS library with openssl extensions package is not available in your GNU/Linux distribution, GNSS-SDR can also work well with OpenSSL.
@@ -877,7 +913,7 @@ SignalSource.dump1=false
 
 ***Example: OsmoSDR-compatible Signal Source***
 
-[OsmoSDR](http://sdr.osmocom.org/trac) is a small form-factor, inexpensive software defined radio project. It provides a driver for several front-ends, such as [RTL-based dongles](http://sdr.osmocom.org/trac/wiki/rtl-sdr), HackRF, bladeRF, etc. Note that not all the OsmoSDR-compatible devices can work as radio frequency front-ends for proper GNSS signal reception, please check the specifications. For suitable RF front-ends, you can use:
+[OsmoSDR](http://sdr.osmocom.org/trac) is a small form-factor, inexpensive software defined radio project. It provides a driver for several front-ends, such as [RTL-based dongles](https://www.rtl-sdr.com/tag/v3/), [HackRF](https://greatscottgadgets.com/hackrf/), [bladeRF](https://www.nuand.com/), [LimeSDR](https://myriadrf.org/projects/limesdr/), [etc](https://github.com/osmocom/gr-osmosdr/blob/master/README). Note that not all the OsmoSDR-compatible devices can work as radio frequency front-ends for proper GNSS signal reception, please check the specifications. For suitable RF front-ends, you can use:
 
 ~~~~~~
 ;######### SIGNAL_SOURCE CONFIG ############
@@ -890,6 +926,20 @@ SignalSource.if_gain=30
 SignalSource.enable_throttle_control=false
 SignalSource.osmosdr_args=hackrf,bias=1
 ~~~~~~
+
+For [RTL-SDR Blog V3](https://www.rtl-sdr.com/tag/v3/) dongles, the arguments are:
+
+~~~~~~
+SignalSource.osmosdr_args=rtl,bias=1
+~~~~~~
+
+
+and for [LimeSDR](https://myriadrf.org/projects/limesdr/):
+
+~~~~~~
+SignalSource.osmosdr_args=driver=lime,soapy=0
+~~~~~~
+
 
 In case of using a Zarlink's RTL2832 based DVB-T receiver, you can even use the ```rtl_tcp``` I/Q server in order to use the USB dongle remotely. In a terminal, type:
 
@@ -1350,7 +1400,7 @@ Ok, now what?
 
 In order to start using GNSS-SDR, you may want to populate ```gnss-sdr/data``` folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output of a Radio Frequency front-end's Analog-to-Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intemediate frequency (on the order of MHz). Prepare your configuration file, and then you are ready for running ```gnss-sdr --config_file=your_configuration.conf```, and seeing how the file is processed.
 
-Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware such as the [USRP family](http://www.ettus.com/product), for OsmoSDR and other front-ends (HackRF, bladeRF), for the GN3S v2 USB dongle and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
+Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware such as the [USRP family](http://www.ettus.com/product), for OsmoSDR and other front-ends (HackRF, bladeRF, LimeSDR), for the GN3S v2 USB dongle and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
 
 You can find more information at the [GNSS-SDR Documentation page](http://gnss-sdr.org/docs/) or directly asking to the [GNSS-SDR Developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers).
 

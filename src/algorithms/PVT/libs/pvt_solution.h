@@ -33,9 +33,9 @@
 #define GNSS_SDR_PVT_SOLUTION_H_
 
 
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <deque>
 #include <armadillo>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 const unsigned int PVT_MAX_CHANNELS = 90;
 const unsigned int PVT_MAX_PRN = 127;  // 126 is SBAS
@@ -47,15 +47,15 @@ const unsigned int PVT_MAX_PRN = 127;  // 126 is SBAS
 class Pvt_Solution
 {
 private:
-    double d_rx_dt_s;         // RX time offset [s]
+    double d_rx_dt_s;  // RX time offset [s]
 
-    double d_latitude_d;      // RX position Latitude WGS84 [deg]
-    double d_longitude_d;     // RX position Longitude WGS84 [deg]
-    double d_height_m;        // RX position height WGS84 [m]
+    double d_latitude_d;   // RX position Latitude WGS84 [deg]
+    double d_longitude_d;  // RX position Longitude WGS84 [deg]
+    double d_height_m;     // RX position height WGS84 [m]
 
-    double d_avg_latitude_d;  // Averaged latitude in degrees
-    double d_avg_longitude_d; // Averaged longitude in degrees
-    double d_avg_height_m;    // Averaged height [m]
+    double d_avg_latitude_d;   // Averaged latitude in degrees
+    double d_avg_longitude_d;  // Averaged longitude in degrees
+    double d_avg_height_m;     // Averaged height [m]
 
     bool b_valid_position;
 
@@ -64,7 +64,7 @@ private:
     std::deque<double> d_hist_height_m;
 
     bool d_flag_averaging;
-    int d_averaging_depth;    // Length of averaging window
+    int d_averaging_depth;  // Length of averaging window
 
     arma::vec d_rx_pos;
     boost::posix_time::ptime d_position_UTC_time;
@@ -77,11 +77,11 @@ private:
     double d_VDOP;
     double d_TDOP;
 
-    int d_visible_satellites_IDs[PVT_MAX_CHANNELS] = {};         // Array with the IDs of the valid satellites
-    double d_visible_satellites_El[PVT_MAX_CHANNELS] = {};       // Array with the LOS Elevation of the valid satellites
-    double d_visible_satellites_Az[PVT_MAX_CHANNELS] = {};       // Array with the LOS Azimuth of the valid satellites
-    double d_visible_satellites_Distance[PVT_MAX_CHANNELS] = {}; // Array with the LOS Distance of the valid satellites
-    double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS] = {};   // Array with the IDs of the valid satellites
+    int d_visible_satellites_IDs[PVT_MAX_CHANNELS] = {};          // Array with the IDs of the valid satellites
+    double d_visible_satellites_El[PVT_MAX_CHANNELS] = {};        // Array with the LOS Elevation of the valid satellites
+    double d_visible_satellites_Az[PVT_MAX_CHANNELS] = {};        // Array with the LOS Azimuth of the valid satellites
+    double d_visible_satellites_Distance[PVT_MAX_CHANNELS] = {};  // Array with the LOS Distance of the valid satellites
+    double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS] = {};    // Array with the IDs of the valid satellites
 
 public:
     Pvt_Solution();
@@ -89,22 +89,22 @@ public:
     double get_time_offset_s() const;       //!< Get RX time offset [s]
     void set_time_offset_s(double offset);  //!< Set RX time offset [s]
 
-    double get_latitude() const;            //!< Get RX position Latitude WGS84 [deg]
-    double get_longitude() const;           //!< Get RX position Longitude WGS84 [deg]
-    double get_height() const;              //!< Get RX position height WGS84 [m]
+    double get_latitude() const;   //!< Get RX position Latitude WGS84 [deg]
+    double get_longitude() const;  //!< Get RX position Longitude WGS84 [deg]
+    double get_height() const;     //!< Get RX position height WGS84 [m]
 
-    double get_avg_latitude() const;        //!< Get RX position averaged Latitude WGS84 [deg]
-    double get_avg_longitude() const;       //!< Get RX position averaged Longitude WGS84 [deg]
-    double get_avg_height() const;          //!< Get RX position averaged height WGS84 [m]
+    double get_avg_latitude() const;   //!< Get RX position averaged Latitude WGS84 [deg]
+    double get_avg_longitude() const;  //!< Get RX position averaged Longitude WGS84 [deg]
+    double get_avg_height() const;     //!< Get RX position averaged height WGS84 [m]
 
-    void set_rx_pos(const arma::vec & pos); //!< Set position: Latitude [deg], longitude [deg], height [m]
+    void set_rx_pos(const arma::vec &pos);  //!< Set position: Latitude [deg], longitude [deg], height [m]
     arma::vec get_rx_pos() const;
 
     bool is_valid_position() const;
     void set_valid_position(bool is_valid);
 
     boost::posix_time::ptime get_position_UTC_time() const;
-    void set_position_UTC_time(const boost::posix_time::ptime & pt);
+    void set_position_UTC_time(const boost::posix_time::ptime &pt);
 
     int get_num_valid_observations() const;    //!< Get the number of valid pseudorange observations (valid satellites)
     void set_num_valid_observations(int num);  //!< Set the number of valid pseudorange observations (valid satellites)
@@ -112,27 +112,27 @@ public:
     bool set_visible_satellites_ID(size_t index, unsigned int prn);  //!< Set the ID of the visible satellite index channel
     unsigned int get_visible_satellites_ID(size_t index) const;      //!< Get the ID of the visible satellite index channel
 
-    bool set_visible_satellites_El(size_t index, double el);         //!< Set the LOS Elevation, in degrees, of the visible satellite index channel
-    double get_visible_satellites_El(size_t index) const;            //!< Get the LOS Elevation, in degrees, of the visible satellite index channel
+    bool set_visible_satellites_El(size_t index, double el);  //!< Set the LOS Elevation, in degrees, of the visible satellite index channel
+    double get_visible_satellites_El(size_t index) const;     //!< Get the LOS Elevation, in degrees, of the visible satellite index channel
 
-    bool set_visible_satellites_Az(size_t index, double az);         //!< Set the LOS Azimuth, in degrees, of the visible satellite index channel
-    double get_visible_satellites_Az(size_t index) const;            //!< Get the LOS Azimuth, in degrees, of the visible satellite index channel
+    bool set_visible_satellites_Az(size_t index, double az);  //!< Set the LOS Azimuth, in degrees, of the visible satellite index channel
+    double get_visible_satellites_Az(size_t index) const;     //!< Get the LOS Azimuth, in degrees, of the visible satellite index channel
 
-    bool set_visible_satellites_Distance(size_t index, double dist); //!< Set the LOS Distance of the visible satellite index channel
-    double get_visible_satellites_Distance(size_t index) const;      //!< Get the LOS Distance of the visible satellite index channel
+    bool set_visible_satellites_Distance(size_t index, double dist);  //!< Set the LOS Distance of the visible satellite index channel
+    double get_visible_satellites_Distance(size_t index) const;       //!< Get the LOS Distance of the visible satellite index channel
 
-    bool set_visible_satellites_CN0_dB(size_t index, double cn0);    //!< Set the CN0 in dB of the visible satellite index channel
-    double get_visible_satellites_CN0_dB(size_t index) const;        //!< Get the CN0 in dB of the visible satellite index channel
+    bool set_visible_satellites_CN0_dB(size_t index, double cn0);  //!< Set the CN0 in dB of the visible satellite index channel
+    double get_visible_satellites_CN0_dB(size_t index) const;      //!< Get the CN0 in dB of the visible satellite index channel
 
     //averaging
     void perform_pos_averaging();
-    void set_averaging_depth(int depth); //!< Set length of averaging window
+    void set_averaging_depth(int depth);  //!< Set length of averaging window
     bool is_averaging() const;
     void set_averaging_flag(bool flag);
 
     // DOP estimations
-    void set_Q(const arma::mat & Q);
-    int compute_DOP(); //!< Compute Dilution Of Precision parameters
+    void set_Q(const arma::mat &Q);
+    int compute_DOP();  //!< Compute Dilution Of Precision parameters
 
     double get_GDOP() const;
     double get_PDOP() const;
@@ -140,7 +140,7 @@ public:
     double get_VDOP() const;
     double get_TDOP() const;
 
-    arma::vec rotateSatellite(double traveltime, const arma::vec & X_sat);
+    arma::vec rotateSatellite(double traveltime, const arma::vec &X_sat);
 
     /*!
       * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical
@@ -157,9 +157,9 @@ public:
       * 4 - World Geodetic System 1984.
       *
       */
-     int cart2geo(double X, double Y, double Z, int elipsoid_selection);
+    int cart2geo(double X, double Y, double Z, int elipsoid_selection);
 
-     /*!
+    /*!
       * \brief Transformation of vector dx into topocentric coordinate system with origin at x
       *
       * \param[in] x    Vector origin coordinates (in ECEF system [X; Y; Z;])
@@ -171,9 +171,9 @@ public:
       *
       * Based on a Matlab function by Kai Borre
       */
-     int topocent(double *Az, double *El, double *D, const arma::vec & x, const arma::vec & dx);
+    int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::vec &dx);
 
-     /*!
+    /*!
       * \brief Subroutine to calculate geodetic coordinates latitude, longitude,
       * height given Cartesian coordinates X,Y,Z, and reference ellipsoid
       * values semi-major axis (a) and the inverse of flattening (finv).
@@ -192,9 +192,9 @@ public:
       *
       * Based in a Matlab function by Kai Borre
       */
-     int togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
+    int togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
 
-     /*!
+    /*!
       * \brief Tropospheric correction
       *
       *  \param[in] sinel     - sin of elevation angle of satellite
@@ -217,7 +217,7 @@ public:
       *
       * Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
       */
-     int tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
+    int tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
 };
 
 #endif

@@ -37,17 +37,17 @@
  */
 
 #include "glonass_l1_ca_dll_pll_tracking.h"
-#include <glog/logging.h>
-#include "GLONASS_L1_CA.h"
 #include "configuration_interface.h"
+#include "GLONASS_L1_CA.h"
+#include "gnss_sdr_flags.h"
+#include <glog/logging.h>
 
 
 using google::LogMessage;
 
 GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -67,10 +67,12 @@ GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
+    if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename); //unused!
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
     vector_length = std::round(fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
@@ -78,14 +80,14 @@ GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = glonass_l1_ca_dll_pll_make_tracking_cc(
-                    f_if,
-                    fs_in,
-                    vector_length,
-                    dump,
-                    dump_filename,
-                    pll_bw_hz,
-                    dll_bw_hz,
-                    early_late_space_chips);
+                f_if,
+                fs_in,
+                vector_length,
+                dump,
+                dump_filename,
+                pll_bw_hz,
+                dll_bw_hz,
+                early_late_space_chips);
         }
     else
         {
@@ -98,7 +100,8 @@ GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
 
 
 GlonassL1CaDllPllTracking::~GlonassL1CaDllPllTracking()
-{}
+{
+}
 
 
 void GlonassL1CaDllPllTracking::start_tracking()
@@ -125,14 +128,18 @@ void GlonassL1CaDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GlonassL1CaDllPllTracking::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
 void GlonassL1CaDllPllTracking::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 

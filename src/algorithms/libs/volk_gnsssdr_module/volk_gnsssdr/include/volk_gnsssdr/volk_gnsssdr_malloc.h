@@ -38,7 +38,7 @@ __VOLK_DECL_BEGIN
  * memory that are guaranteed to be on an alignment, VOLK handles this
  * itself. The volk_gnsssdr_malloc function behaves like malloc in that it
  * returns a pointer to the allocated memory. However, it also takes
- * in an alignment specfication, which is usually something like 16 or
+ * in an alignment specification, which is usually something like 16 or
  * 32 to ensure that the aligned memory is located on a particular
  * byte boundary for use with SIMD.
  *

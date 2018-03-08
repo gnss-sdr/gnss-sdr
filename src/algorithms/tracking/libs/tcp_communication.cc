@@ -35,19 +35,20 @@
 #include <string>
 
 
-
 tcp_communication::tcp_communication() : tcp_socket_(io_service_)
-{}
+{
+}
 
 
 tcp_communication::~tcp_communication()
-{}
+{
+}
 
 
 int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
 {
     try
-    {
+        {
             // Specify IP type and port
             boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), d_port_);
             boost::asio::ip::tcp::acceptor acceptor(io_service_, endpoint);
@@ -65,25 +66,25 @@ int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
             acceptor.accept(tcp_socket_);
 
             std::cout << "Socket accepted on port " << d_port_ << std::endl;
-    }
+        }
 
-    catch(const std::exception& e)
-    {
+    catch (const std::exception& e)
+        {
             std::cerr << "Exception: " << e.what() << std::endl;
-    }
+        }
 
     return false;
 }
 
 
-void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> buf, tcp_packet_data *tcp_data_)
+void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> buf, tcp_packet_data* tcp_data_)
 {
     int controlc = 0;
     boost::array<float, NUM_RX_VARIABLES> readbuf;
     float d_control_id_ = buf.data()[0];
 
     try
-    {
+        {
             // Send a TCP packet
             tcp_socket_.write_some(boost::asio::buffer(buf));
 
@@ -100,25 +101,25 @@ void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, N
             tcp_data_->proc_pack_code_error = readbuf.data()[1];
             tcp_data_->proc_pack_carr_error = readbuf.data()[2];
             tcp_data_->proc_pack_carrier_doppler_hz = readbuf.data()[3];
-    }
+        }
 
-    catch(const std::exception& e)
-    {
+    catch (const std::exception& e)
+        {
             std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
             std::cin >> controlc;
-    }
+        }
     return;
 }
 
 
-void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> buf, tcp_packet_data *tcp_data_)
+void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> buf, tcp_packet_data* tcp_data_)
 {
     int controlc = 0;
     boost::array<float, NUM_RX_VARIABLES> readbuf;
     float d_control_id_ = buf.data()[0];
 
     try
-    {
+        {
             // Send a TCP packet
             tcp_socket_.write_some(boost::asio::buffer(buf));
 
@@ -135,13 +136,13 @@ void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
             tcp_data_->proc_pack_code_error = readbuf.data()[1];
             tcp_data_->proc_pack_carr_error = readbuf.data()[2];
             tcp_data_->proc_pack_carrier_doppler_hz = readbuf.data()[3];
-    }
+        }
 
-    catch(const std::exception& e)
-    {
+    catch (const std::exception& e)
+        {
             std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
             std::cin >> controlc;
-    }
+        }
     return;
 }
 

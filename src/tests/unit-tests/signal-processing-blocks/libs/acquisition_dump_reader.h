@@ -1,11 +1,12 @@
 /*!
  * \file acquisition_dump_reader.h
  * \brief Helper file for unit testing
- * \author Carles Fernandez-Prades, 2017. cfernandez(at)cttc.es
+ * \authors Carles Fernandez-Prades, 2017. cfernandez(at)cttc.es
+ *                    Antonio Ramos, 2018. antonio.ramos(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,15 +32,13 @@
 #ifndef GNSS_SDR_ACQUISITION_DUMP_READER_H
 #define GNSS_SDR_ACQUISITION_DUMP_READER_H
 
-#include <iostream>
-#include <fstream>
 #include <string>
 #include <vector>
 
 class acquisition_dump_reader
 {
 public:
-    acquisition_dump_reader(const std::string & basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code);
+    acquisition_dump_reader(const std::string& basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code);
     ~acquisition_dump_reader();
     bool read_binary_acq();
 
@@ -54,8 +53,7 @@ private:
     unsigned int d_doppler_step;
     unsigned int d_samples_per_code;
     unsigned int d_num_doppler_bins;
-    std::vector<std::string> d_dump_filenames;
-    std::vector<std::ifstream> d_dump_files;
+    std::string d_dump_filename;
 };
 
-#endif // GNSS_SDR_ACQUISITION_DUMP_READER_H
+#endif  // GNSS_SDR_ACQUISITION_DUMP_READER_H

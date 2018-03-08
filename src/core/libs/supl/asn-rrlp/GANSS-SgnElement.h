@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSS_SgnElement_H_
-#define	_GANSS_SgnElement_H_
+#ifndef _GANSS_SgnElement_H_
+#define _GANSS_SgnElement_H_
 
 
 #include <asn_application.h>
@@ -17,31 +17,33 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSS-SgnElement */
-typedef struct GANSS_SgnElement {
-	SVID_t	 svID;
-	long	 cNo;
-	MpathIndic_t	 mpathDet;
-	long	*carrierQualityInd	/* OPTIONAL */;
-	long	 codePhase;
-	long	*integerCodePhase	/* OPTIONAL */;
-	long	 codePhaseRMSError;
-	long	*doppler	/* OPTIONAL */;
-	long	*adr	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSS_SgnElement_t;
+    /* GANSS-SgnElement */
+    typedef struct GANSS_SgnElement
+    {
+        SVID_t svID;
+        long cNo;
+        MpathIndic_t mpathDet;
+        long *carrierQualityInd /* OPTIONAL */;
+        long codePhase;
+        long *integerCodePhase /* OPTIONAL */;
+        long codePhaseRMSError;
+        long *doppler /* OPTIONAL */;
+        long *adr /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSS_SgnElement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSS_SgnElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSS_SgnElement;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSS_SgnElement_H_ */
+#endif /* _GANSS_SgnElement_H_ */
 #include <asn_internal.h>

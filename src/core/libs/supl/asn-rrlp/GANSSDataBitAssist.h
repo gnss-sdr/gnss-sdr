@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSDataBitAssist_H_
-#define	_GANSSDataBitAssist_H_
+#ifndef _GANSSDataBitAssist_H_
+#define _GANSSDataBitAssist_H_
 
 
 #include <asn_application.h>
@@ -17,26 +17,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSDataBitAssist */
-typedef struct GANSSDataBitAssist {
-	long	 ganssTOD;
-	SVID_t	 svID;
-	long	 ganssDataTypeID;
-	SeqOf_GANSSDataBits_t	 ganssDataBits;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSDataBitAssist_t;
+    /* GANSSDataBitAssist */
+    typedef struct GANSSDataBitAssist
+    {
+        long ganssTOD;
+        SVID_t svID;
+        long ganssDataTypeID;
+        SeqOf_GANSSDataBits_t ganssDataBits;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSDataBitAssist;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSDataBitAssist_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSDataBitAssist;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSDataBitAssist_H_ */
+#endif /* _GANSSDataBitAssist_H_ */
 #include <asn_internal.h>

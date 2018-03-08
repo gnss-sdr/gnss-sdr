@@ -31,12 +31,11 @@
 #ifndef GNSS_SDR_IBYTE_TO_CSHORT_H_
 #define GNSS_SDR_IBYTE_TO_CSHORT_H_
 
-#include <string>
-#include <gnuradio/blocks/file_sink.h>
-#include "gnss_block_interface.h"
 #include "conjugate_sc.h"
 #include "interleaved_byte_to_complex_short.h"
-
+#include "gnss_block_interface.h"
+#include <gnuradio/blocks/file_sink.h>
+#include <string>
 
 
 class ConfigurationInterface;
@@ -45,12 +44,12 @@ class ConfigurationInterface;
  * \brief Adapts a short integer (16 bits) interleaved sample stream into a std::complex<short> stream
  *
  */
-class IbyteToCshort: public GNSSBlockInterface
+class IbyteToCshort : public GNSSBlockInterface
 {
 public:
     IbyteToCshort(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~IbyteToCshort();
 

@@ -29,12 +29,13 @@
  */
 
 #include "observables_dump_reader.h"
+#include <iostream>
 
 bool observables_dump_reader::read_binary_obs()
 {
     try
-    {
-            for(int i = 0; i < n_channels; i++)
+        {
+            for (int i = 0; i < n_channels; i++)
                 {
                     d_dump_file.read(reinterpret_cast<char *>(&RX_time[i]), sizeof(double));
                     d_dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_s[i]), sizeof(double));
@@ -44,11 +45,11 @@ bool observables_dump_reader::read_binary_obs()
                     d_dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(double));
                     d_dump_file.read(reinterpret_cast<char *>(&valid[i]), sizeof(double));
                 }
-    }
+        }
     catch (const std::ifstream::failure &e)
-    {
+        {
             return false;
-    }
+        }
     return true;
 }
 
@@ -73,7 +74,7 @@ long int observables_dump_reader::num_epochs()
     std::ifstream::pos_type size;
     int number_of_vars_in_epoch = n_channels * 7;
     int epoch_size_bytes = sizeof(double) * number_of_vars_in_epoch;
-    std::ifstream tmpfile( d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+    std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
         {
             size = tmpfile.tellg();
@@ -92,18 +93,18 @@ bool observables_dump_reader::open_obs_file(std::string out_file)
     if (d_dump_file.is_open() == false)
         {
             try
-            {
+                {
                     d_dump_filename = out_file;
-                    d_dump_file.exceptions( std::ifstream::failbit | std::ifstream::badbit );
+                    d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
                     std::cout << "Observables sum file opened, Log file: " << d_dump_filename.c_str() << std::endl;
                     return true;
-            }
-            catch (const std::ifstream::failure & e)
-            {
+                }
+            catch (const std::ifstream::failure &e)
+                {
                     std::cout << "Problem opening TLM dump Log file: " << d_dump_filename.c_str() << std::endl;
                     return false;
-            }
+                }
         }
     else
         {

@@ -48,12 +48,13 @@ class interleaved_byte_to_complex_short : public gr::sync_decimator
 {
 private:
     friend interleaved_byte_to_complex_short_sptr make_interleaved_byte_to_complex_short();
+
 public:
     interleaved_byte_to_complex_short();
 
     int work(int noutput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif

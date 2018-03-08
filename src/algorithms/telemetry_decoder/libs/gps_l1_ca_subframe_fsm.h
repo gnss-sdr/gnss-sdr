@@ -32,14 +32,13 @@
 #ifndef GNSS_SDR_GPS_L1_CA_SUBFRAME_FSM_H_
 #define GNSS_SDR_GPS_L1_CA_SUBFRAME_FSM_H_
 
-#include <boost/statechart/state_machine.hpp>
-#include "concurrent_queue.h"
 #include "GPS_L1_CA.h"
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_almanac.h"
 #include "gps_utc_model.h"
+#include <boost/statechart/state_machine.hpp>
 
 namespace sc = boost::statechart;
 namespace mpl = boost::mpl;
@@ -62,16 +61,16 @@ struct gps_subframe_fsm_S11;
  * \brief This class implements a Finite State Machine that handles the decoding
  *  of the GPS L1 C/A NAV message
  */
-class GpsL1CaSubframeFsm : public sc::state_machine< GpsL1CaSubframeFsm, gps_subframe_fsm_S0 >
+class GpsL1CaSubframeFsm : public sc::state_machine<GpsL1CaSubframeFsm, gps_subframe_fsm_S0>
 {
 public:
-    GpsL1CaSubframeFsm(); //!< The constructor starts the Finite State Machine
+    GpsL1CaSubframeFsm();  //!< The constructor starts the Finite State Machine
     void clear_flag_new_subframe();
     // channel and satellite info
     int i_channel_ID;              //!< Channel id
     unsigned int i_satellite_PRN;  //!< Satellite PRN number
 
-    Gps_Navigation_Message d_nav; //!< GPS L1 C/A navigation message object
+    Gps_Navigation_Message d_nav;  //!< GPS L1 C/A navigation message object
 
     // GPS SV and System parameters
     Gps_Ephemeris ephemeris;  //!< Object that handles GPS ephemeris parameters
@@ -85,7 +84,7 @@ public:
     char d_GPS_frame_4bytes[GPS_WORD_LENGTH];
     //double d_preamble_time_ms;
 
-    void gps_word_to_subframe(int position); //!< inserts the word in the correct position of the subframe
+    void gps_word_to_subframe(int position);  //!< inserts the word in the correct position of the subframe
 
     /*!
      * \brief This function decodes a NAv message subframe and pushes the information to the right queues
@@ -93,9 +92,9 @@ public:
     void gps_subframe_to_nav_msg();
 
     //FSM EVENTS
-    void Event_gps_word_valid();    //!< FSM event: the received word is valid
-    void Event_gps_word_invalid();  //!< FSM event: the received word is not valid
-    void Event_gps_word_preamble(); //!< FSM event: word preamble detected
+    void Event_gps_word_valid();     //!< FSM event: the received word is valid
+    void Event_gps_word_invalid();   //!< FSM event: the received word is not valid
+    void Event_gps_word_preamble();  //!< FSM event: word preamble detected
 };
 
 #endif

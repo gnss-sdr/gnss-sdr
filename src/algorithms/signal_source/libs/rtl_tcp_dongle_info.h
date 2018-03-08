@@ -80,4 +80,4 @@ public:
 };
 
 
-#endif // GNSS_SDR_RTL_TCP_DONGLE_INFO_H
+#endif  // GNSS_SDR_RTL_TCP_DONGLE_INFO_H

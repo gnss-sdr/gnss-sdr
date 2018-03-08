@@ -78,23 +78,23 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_sse3(char* magnitudeV
     maska = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 14, 12, 10, 8, 6, 4, 2, 0);
     maskb = _mm_set_epi8(14, 12, 10, 8, 6, 4, 2, 0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             avector = _mm_lddqu_si128((__m128i*)complexVectorPtr);
-            avectorlo = _mm_unpacklo_epi8 (avector, zero);
-            avectorhi = _mm_unpackhi_epi8 (avector, zero);
-            avectorlomult = _mm_mullo_epi16 (avectorlo, avectorlo);
-            avectorhimult = _mm_mullo_epi16 (avectorhi, avectorhi);
-            aadded = _mm_hadd_epi16 (avectorlomult, avectorhimult);
+            avectorlo = _mm_unpacklo_epi8(avector, zero);
+            avectorhi = _mm_unpackhi_epi8(avector, zero);
+            avectorlomult = _mm_mullo_epi16(avectorlo, avectorlo);
+            avectorhimult = _mm_mullo_epi16(avectorhi, avectorhi);
+            aadded = _mm_hadd_epi16(avectorlomult, avectorhimult);
 
             complexVectorPtr += 16;
 
             bvector = _mm_lddqu_si128((__m128i*)complexVectorPtr);
-            bvectorlo = _mm_unpacklo_epi8 (bvector, zero);
-            bvectorhi = _mm_unpackhi_epi8 (bvector, zero);
-            bvectorlomult = _mm_mullo_epi16 (bvectorlo, bvectorlo);
-            bvectorhimult = _mm_mullo_epi16 (bvectorhi, bvectorhi);
-            badded = _mm_hadd_epi16 (bvectorlomult, bvectorhimult);
+            bvectorlo = _mm_unpacklo_epi8(bvector, zero);
+            bvectorhi = _mm_unpackhi_epi8(bvector, zero);
+            bvectorlomult = _mm_mullo_epi16(bvectorlo, bvectorlo);
+            bvectorhimult = _mm_mullo_epi16(bvectorhi, bvectorhi);
+            badded = _mm_hadd_epi16(bvectorlomult, bvectorhimult);
 
             complexVectorPtr += 16;
 
@@ -162,11 +162,11 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_generic(char* magnitude
     const char* complexVectorPtr = (char*)complexVector;
     char* magnitudeVectorPtr = magnitudeVector;
     unsigned int number;
-    for(number = 0; number < num_points; number++)
+    for (number = 0; number < num_points; number++)
         {
             const char real = *complexVectorPtr++;
             const char imag = *complexVectorPtr++;
-            *magnitudeVectorPtr++ = (real*real) + (imag*imag);
+            *magnitudeVectorPtr++ = (real * real) + (imag * imag);
         }
 }
 #endif /* LV_HAVE_GENERIC */
@@ -192,23 +192,23 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeV
     maska = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 14, 12, 10, 8, 6, 4, 2, 0);
     maskb = _mm_set_epi8(14, 12, 10, 8, 6, 4, 2, 0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             avector = _mm_load_si128((__m128i*)complexVectorPtr);
-            avectorlo = _mm_unpacklo_epi8 (avector, zero);
-            avectorhi = _mm_unpackhi_epi8 (avector, zero);
-            avectorlomult = _mm_mullo_epi16 (avectorlo, avectorlo);
-            avectorhimult = _mm_mullo_epi16 (avectorhi, avectorhi);
-            aadded = _mm_hadd_epi16 (avectorlomult, avectorhimult);
+            avectorlo = _mm_unpacklo_epi8(avector, zero);
+            avectorhi = _mm_unpackhi_epi8(avector, zero);
+            avectorlomult = _mm_mullo_epi16(avectorlo, avectorlo);
+            avectorhimult = _mm_mullo_epi16(avectorhi, avectorhi);
+            aadded = _mm_hadd_epi16(avectorlomult, avectorhimult);
 
             complexVectorPtr += 16;
 
             bvector = _mm_load_si128((__m128i*)complexVectorPtr);
-            bvectorlo = _mm_unpacklo_epi8 (bvector, zero);
-            bvectorhi = _mm_unpackhi_epi8 (bvector, zero);
-            bvectorlomult = _mm_mullo_epi16 (bvectorlo, bvectorlo);
-            bvectorhimult = _mm_mullo_epi16 (bvectorhi, bvectorhi);
-            badded = _mm_hadd_epi16 (bvectorlomult, bvectorhimult);
+            bvectorlo = _mm_unpacklo_epi8(bvector, zero);
+            bvectorhi = _mm_unpackhi_epi8(bvector, zero);
+            bvectorlomult = _mm_mullo_epi16(bvectorlo, bvectorlo);
+            bvectorhimult = _mm_mullo_epi16(bvectorhi, bvectorhi);
+            badded = _mm_hadd_epi16(bvectorlomult, bvectorhimult);
 
             complexVectorPtr += 16;
 

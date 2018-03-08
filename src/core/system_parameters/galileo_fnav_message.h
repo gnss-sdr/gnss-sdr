@@ -38,16 +38,16 @@
 #define GNSS_SDR_GALILEO_FNAV_MESSAGE_H_
 
 
-#include <bitset>
-#include <string>
-#include <vector>
-#include <utility>
-#include <boost/cstdint.hpp>  // for boost::uint16_t
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_almanac.h"
 #include "galileo_utc_model.h"
 #include "Galileo_E5a.h"
+#include <boost/cstdint.hpp>  // for boost::uint16_t
+#include <bitset>
+#include <string>
+#include <vector>
+#include <utility>
 
 /*!
  * \brief This class handles the Galileo F/NAV Data message, as described in the
@@ -57,16 +57,16 @@
 class Galileo_Fnav_Message
 {
 public:
-//    void Galileo_Fnav_Message::split_page(std::string page_string);
-//    void Galileo_Fnav_Message::reset();
-//    bool Galileo_Fnav_Message::have_new_ephemeris();
-//    bool Galileo_Fnav_Message::have_new_iono_and_GST();
-//    bool Galileo_Fnav_Message::have_new_utc_model();
-//    bool Galileo_Fnav_Message::have_new_almanac();
-//    Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris();
-//    Galileo_Iono Galileo_Fnav_Message::get_iono();
-//    Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model();
-//    Galileo_Almanac Galileo_Fnav_Message::get_almanac();
+    //    void Galileo_Fnav_Message::split_page(std::string page_string);
+    //    void Galileo_Fnav_Message::reset();
+    //    bool Galileo_Fnav_Message::have_new_ephemeris();
+    //    bool Galileo_Fnav_Message::have_new_iono_and_GST();
+    //    bool Galileo_Fnav_Message::have_new_utc_model();
+    //    bool Galileo_Fnav_Message::have_new_almanac();
+    //    Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris();
+    //    Galileo_Iono Galileo_Fnav_Message::get_iono();
+    //    Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model();
+    //    Galileo_Almanac Galileo_Fnav_Message::get_almanac();
     //
     void split_page(std::string page_string);
     void reset();
@@ -87,17 +87,17 @@ public:
     bool flag_ephemeris_2;    //!< Flag indicating that ephemeris 2/3 (word 3) have been received
     bool flag_ephemeris_3;    //!< Flag indicating that ephemeris 3/3 (word 4) have been received
 
-    bool flag_iono_and_GST;   //!< Flag indicating that ionospheric and GST parameters (word 1) have been received
+    bool flag_iono_and_GST;  //!< Flag indicating that ionospheric and GST parameters (word 1) have been received
     bool flag_TOW_1;
     bool flag_TOW_2;
     bool flag_TOW_3;
     bool flag_TOW_4;
-    bool flag_TOW_set;           //!< it is true when page 1,2,3 or 4 arrives
-    bool flag_utc_model;      //!< Flag indicating that utc model parameters (word 4) have been received
+    bool flag_TOW_set;    //!< it is true when page 1,2,3 or 4 arrives
+    bool flag_utc_model;  //!< Flag indicating that utc model parameters (word 4) have been received
 
-    bool flag_all_almanac;    //!< Flag indicating that all almanac have been received
-    bool flag_almanac_1;      //!< Flag indicating that almanac 1/2 (word 5) have been received
-    bool flag_almanac_2;      //!< Flag indicating that almanac 2/2 (word 6) have been received
+    bool flag_all_almanac;  //!< Flag indicating that all almanac have been received
+    bool flag_almanac_1;    //!< Flag indicating that almanac 1/2 (word 5) have been received
+    bool flag_almanac_2;    //!< Flag indicating that almanac 2/2 (word 6) have been received
 
     int IOD_ephemeris;
 
@@ -210,12 +210,11 @@ public:
     double FNAV_E5ahs_3_6;
 
 
-
 private:
-    bool _CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits,boost::uint32_t checksum);
+    bool _CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, boost::uint32_t checksum);
     void decode_page(std::string data);
-    unsigned long int read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    unsigned long int read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    signed long int read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
 
     std::string omega0_1;
     //std::string omega0_2;

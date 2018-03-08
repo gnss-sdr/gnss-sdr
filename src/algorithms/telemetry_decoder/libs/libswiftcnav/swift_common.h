@@ -42,7 +42,7 @@
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define CLAMP_DIFF(a,b) (MAX((a),(b)) - (b))
+#define CLAMP_DIFF(a, b) (MAX((a), (b)) - (b))
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -82,4 +82,3 @@ typedef uint64_t u64;
 /** \} */
 
 #endif /* LIBSWIFTNAV_COMMON_H */
-

@@ -30,8 +30,8 @@
  */
 
 #include "channel_fsm.h"
-#include <glog/logging.h>
 #include "control_message_factory.h"
+#include <glog/logging.h>
 
 
 ChannelFsm::ChannelFsm()
@@ -43,9 +43,7 @@ ChannelFsm::ChannelFsm()
 }
 
 
-
-ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) :
-            acq_(acquisition)
+ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) : acq_(acquisition)
 {
     trk_ = nullptr;
     channel_ = 0;
@@ -56,7 +54,7 @@ ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) :
 bool ChannelFsm::Event_start_acquisition()
 {
     std::lock_guard<std::mutex> lk(mx);
-    if((d_state == 1) || (d_state == 2))
+    if ((d_state == 1) || (d_state == 2))
         {
             return false;
         }
@@ -73,7 +71,7 @@ bool ChannelFsm::Event_start_acquisition()
 bool ChannelFsm::Event_valid_acquisition()
 {
     std::lock_guard<std::mutex> lk(mx);
-    if(d_state != 1)
+    if (d_state != 1)
         {
             return false;
         }
@@ -90,7 +88,7 @@ bool ChannelFsm::Event_valid_acquisition()
 bool ChannelFsm::Event_failed_acquisition_repeat()
 {
     std::lock_guard<std::mutex> lk(mx);
-    if(d_state != 1)
+    if (d_state != 1)
         {
             return false;
         }
@@ -107,7 +105,7 @@ bool ChannelFsm::Event_failed_acquisition_repeat()
 bool ChannelFsm::Event_failed_acquisition_no_repeat()
 {
     std::lock_guard<std::mutex> lk(mx);
-    if(d_state != 1)
+    if (d_state != 1)
         {
             return false;
         }
@@ -124,7 +122,7 @@ bool ChannelFsm::Event_failed_acquisition_no_repeat()
 bool ChannelFsm::Event_failed_tracking_standby()
 {
     std::lock_guard<std::mutex> lk(mx);
-    if(d_state != 2)
+    if (d_state != 2)
         {
             return false;
         }

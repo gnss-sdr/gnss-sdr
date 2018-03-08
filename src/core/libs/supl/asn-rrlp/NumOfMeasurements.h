@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_NumOfMeasurements_H_
-#define	_NumOfMeasurements_H_
+#ifndef _NumOfMeasurements_H_
+#define _NumOfMeasurements_H_
 
 
 #include <asn_application.h>
@@ -14,27 +14,28 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* NumOfMeasurements */
-typedef long	 NumOfMeasurements_t;
+    /* NumOfMeasurements */
+    typedef long NumOfMeasurements_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_NumOfMeasurements;
-asn_struct_free_f NumOfMeasurements_free;
-asn_struct_print_f NumOfMeasurements_print;
-asn_constr_check_f NumOfMeasurements_constraint;
-ber_type_decoder_f NumOfMeasurements_decode_ber;
-der_type_encoder_f NumOfMeasurements_encode_der;
-xer_type_decoder_f NumOfMeasurements_decode_xer;
-xer_type_encoder_f NumOfMeasurements_encode_xer;
-per_type_decoder_f NumOfMeasurements_decode_uper;
-per_type_encoder_f NumOfMeasurements_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_NumOfMeasurements;
+    asn_struct_free_f NumOfMeasurements_free;
+    asn_struct_print_f NumOfMeasurements_print;
+    asn_constr_check_f NumOfMeasurements_constraint;
+    ber_type_decoder_f NumOfMeasurements_decode_ber;
+    der_type_encoder_f NumOfMeasurements_encode_der;
+    xer_type_decoder_f NumOfMeasurements_decode_xer;
+    xer_type_encoder_f NumOfMeasurements_encode_xer;
+    per_type_decoder_f NumOfMeasurements_decode_uper;
+    per_type_encoder_f NumOfMeasurements_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _NumOfMeasurements_H_ */
+#endif /* _NumOfMeasurements_H_ */
 #include <asn_internal.h>

@@ -53,8 +53,8 @@ class GpsL1CaPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAcquisitionFpga(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsAcquisitionFpga();
 
@@ -144,7 +144,7 @@ private:
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int max_dwells_;
-    Gnss_Synchro * gnss_synchro_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

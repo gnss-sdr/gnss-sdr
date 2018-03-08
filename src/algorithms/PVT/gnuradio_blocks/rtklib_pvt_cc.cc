@@ -385,7 +385,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     msgctl(sysv_msqid, IPC_RMID, NULL);
 
     //save GPS L2CM ephemeris to XML file
-    std::string file_name = "eph_GPS_L2CM_L5.xml";
+    std::string file_name = "eph_GPS_CNAV.xml";
 
     if (d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
         {

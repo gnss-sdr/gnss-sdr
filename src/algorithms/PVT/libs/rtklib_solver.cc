@@ -127,7 +127,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
     int glo_valid_obs = 0;  //GLONASS L1/L2 valid observations counter
 
     obsd_t obs_data[MAXOBS];
-    eph_t eph_data[MAXOBS];
+    eph_t  eph_data[MAXOBS];
     geph_t geph_data[MAXOBS];
 
     for(gnss_observables_iter = gnss_observables_map.cbegin();
@@ -404,7 +404,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
     // **********************************************************************
 
     this->set_valid_position(false);
-    if (valid_obs > 0 || glo_valid_obs > 0)
+    if ((valid_obs + glo_valid_obs) > 3)
         {
             int result = 0;
             nav_t nav_data;
@@ -495,5 +495,5 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                         }
                 }
         }
-    return this->is_valid_position();
+    return is_valid_position();
 }

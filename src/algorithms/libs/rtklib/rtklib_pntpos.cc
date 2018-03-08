@@ -205,15 +205,9 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     d_file.write(reinterpret_cast<char*>(&P1_P2), sizeof(double));
     d_file.write(reinterpret_cast<char*>(&P1_C1), sizeof(double));
     d_file.write(reinterpret_cast<char*>(&P2_C2), sizeof(double));
+
     /* if no P1-P2 DCB, use TGD instead */
-    if(P1_P2 == 0.0 and sys == SYS_GPS)
-    {
-        P1_P2 = gettgd(obs->sat, nav);
-    }
-    else if(P1_P2 == 0.0 and sys == SYS_GAL)
-    {
-        //TODO
-    }
+    if(P1_P2 == 0.0) { P1_P2 = gettgd(obs->sat, nav); }
 
     if(sys == SYS_GPS)
     {
@@ -276,7 +270,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
         else if(sys == SYS_GAL) /* E1 + E5a */
         {
-
+            //TODO
         }
     }
     d_file.write(reinterpret_cast<char*>(&PC), sizeof(double));

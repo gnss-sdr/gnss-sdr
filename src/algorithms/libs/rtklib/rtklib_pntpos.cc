@@ -125,15 +125,15 @@ double getiscl5q(int sat, const nav_t *nav)
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     int iter, const prcopt_t *opt, double *var)
 {
-    const double* lam = nav->lam[obs->sat - 1];
+    const double *lam = nav->lam[obs->sat - 1];
     double PC = 0.0;
     double P1 = 0.0;
     double P2 = 0.0;
     double P1_P2 = 0.0;
     double P1_C1 = 0.0;
     double P2_C2 = 0.0;
-    double ISCl1  = 0.0;
-    double ISCl2  = 0.0;
+    double ISCl1 = 0.0;
+    double ISCl2 = 0.0;
     double ISCl5i = 0.0;
     double ISCl5q = 0.0;
     double gamma_ = 0.0;
@@ -142,52 +142,61 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     int sys = satsys(obs->sat, NULL);
     *var = 0.0;
 
-    if(sys == SYS_NONE)
-    {
-        trace(4, "prange: satsys NULL\n");
-        return 0.0;
-    }
+    if (sys == SYS_NONE)
+        {
+            trace(4, "prange: satsys NULL\n");
+            return 0.0;
+        }
 
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
-    if(sys == SYS_GAL or sys == SYS_SBS) {j = 2;}
-
-    if(sys == SYS_GPS)
-    {
-        if(obs->code[1] != CODE_NONE) {j = 1;}
-        else if(obs->code[2] != CODE_NONE) {j = 2;}
-    }
-
-    if(lam[i] == 0.0 or lam[j] == 0.0)
-    {
-        trace(4, "prange: NFREQ<2||lam[i]==0.0||lam[j]==0.0\n");
-        printf("i: %d j:%d, lam[i]: %f lam[j] %f\n", i, j, lam[i], lam[j]);
-        return 0.0;
-    }
-
-    /* test snr mask */
-    if(iter > 0)
-    {
-        if (testsnr(0, i, azel[1], obs->SNR[i] * 0.25, &opt->snrmask))
+    if (sys == SYS_GAL or sys == SYS_SBS)
         {
-            trace(4, "snr mask: %s sat=%2d el=%.1f snr=%.1f\n",
-                    time_str(obs->time, 0), obs->sat, azel[1] * R2D, obs->SNR[i] * 0.25);
+            j = 2;
+        }
+
+    if (sys == SYS_GPS)
+        {
+            if (obs->code[1] != CODE_NONE)
+                {
+                    j = 1;
+                }
+            else if (obs->code[2] != CODE_NONE)
+                {
+                    j = 2;
+                }
+        }
+
+    if (lam[i] == 0.0 or lam[j] == 0.0)
+        {
+            trace(4, "prange: NFREQ<2||lam[i]==0.0||lam[j]==0.0\n");
+            printf("i: %d j:%d, lam[i]: %f lam[j] %f\n", i, j, lam[i], lam[j]);
             return 0.0;
         }
-        if (opt->ionoopt == IONOOPT_IFLC)
+
+    /* test snr mask */
+    if (iter > 0)
         {
-            if (testsnr(0, j, azel[1], obs->SNR[j] * 0.25, &opt->snrmask))
-            {
-                trace(4, "prange: testsnr error\n");
-                return 0.0;
-            }
+            if (testsnr(0, i, azel[1], obs->SNR[i] * 0.25, &opt->snrmask))
+                {
+                    trace(4, "snr mask: %s sat=%2d el=%.1f snr=%.1f\n",
+                        time_str(obs->time, 0), obs->sat, azel[1] * R2D, obs->SNR[i] * 0.25);
+                    return 0.0;
+                }
+            if (opt->ionoopt == IONOOPT_IFLC)
+                {
+                    if (testsnr(0, j, azel[1], obs->SNR[j] * 0.25, &opt->snrmask))
+                        {
+                            trace(4, "prange: testsnr error\n");
+                            return 0.0;
+                        }
+                }
         }
-    }
     /* fL1^2 / fL2(orL5)^2 . See IS-GPS-200, p. 103 and Galileo ICD p. 48 */
-    if(sys == SYS_GPS or sys == SYS_GAL)
-    {
-        gamma_ = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0);
-    }
+    if (sys == SYS_GPS or sys == SYS_GAL)
+        {
+            gamma_ = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0);
+        }
     P1 = obs->P[i];
     P2 = obs->P[j];
     P1_P2 = nav->cbias[obs->sat - 1][0];
@@ -196,86 +205,103 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 
     std::string d_dump_filename = "/home/aramos/dump_prange.dat";
     std::ofstream d_file;
-    d_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
+    d_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     d_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary | std::ios::app);
     double tmp_double = static_cast<double>(obs->sat);
-    d_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-    d_file.write(reinterpret_cast<char*>(&P1), sizeof(double));
-    d_file.write(reinterpret_cast<char*>(&P2), sizeof(double));
-    d_file.write(reinterpret_cast<char*>(&P1_P2), sizeof(double));
-    d_file.write(reinterpret_cast<char*>(&P1_C1), sizeof(double));
-    d_file.write(reinterpret_cast<char*>(&P2_C2), sizeof(double));
+    d_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+    d_file.write(reinterpret_cast<char *>(&P1), sizeof(double));
+    d_file.write(reinterpret_cast<char *>(&P2), sizeof(double));
+    d_file.write(reinterpret_cast<char *>(&P1_P2), sizeof(double));
+    d_file.write(reinterpret_cast<char *>(&P1_C1), sizeof(double));
+    d_file.write(reinterpret_cast<char *>(&P2_C2), sizeof(double));
 
     /* if no P1-P2 DCB, use TGD instead */
-    if(P1_P2 == 0.0) { P1_P2 = gettgd(obs->sat, nav); }
+    if (P1_P2 == 0.0)
+        {
+            P1_P2 = gettgd(obs->sat, nav);
+        }
 
-    if(sys == SYS_GPS)
-    {
-        ISCl1  = getiscl1(obs->sat, nav);
-        ISCl2  = getiscl2(obs->sat, nav);
-        ISCl5i = getiscl5i(obs->sat, nav);
-        ISCl5q = getiscl5q(obs->sat, nav);
-        d_file.write(reinterpret_cast<char*>(&ISCl1), sizeof(double));
-        d_file.write(reinterpret_cast<char*>(&ISCl2), sizeof(double));
-        d_file.write(reinterpret_cast<char*>(&ISCl5i), sizeof(double));
-        d_file.write(reinterpret_cast<char*>(&ISCl5q), sizeof(double));
-    }
-    d_file.write(reinterpret_cast<char*>(&P1_P2), sizeof(double));
+    if (sys == SYS_GPS)
+        {
+            ISCl1 = getiscl1(obs->sat, nav);
+            ISCl2 = getiscl2(obs->sat, nav);
+            ISCl5i = getiscl5i(obs->sat, nav);
+            ISCl5q = getiscl5q(obs->sat, nav);
+            d_file.write(reinterpret_cast<char *>(&ISCl1), sizeof(double));
+            d_file.write(reinterpret_cast<char *>(&ISCl2), sizeof(double));
+            d_file.write(reinterpret_cast<char *>(&ISCl5i), sizeof(double));
+            d_file.write(reinterpret_cast<char *>(&ISCl5q), sizeof(double));
+        }
+    d_file.write(reinterpret_cast<char *>(&P1_P2), sizeof(double));
 
     //CHECK IF IT IS STILL NEEDED
-    if(opt->ionoopt == IONOOPT_IFLC)
-    { /* dual-frequency */
+    if (opt->ionoopt == IONOOPT_IFLC)
+        { /* dual-frequency */
 
-        if (P1 == 0.0 || P2 == 0.0) { return 0.0; }
-        if (obs->code[i] == CODE_L1C) { P1 += P1_C1; } /* C1->P1 */
-        if (obs->code[j] == CODE_L2C) { P2 += P2_C2; } /* C2->P2 */
+            if (P1 == 0.0 || P2 == 0.0)
+                {
+                    return 0.0;
+                }
+            if (obs->code[i] == CODE_L1C)
+                {
+                    P1 += P1_C1;
+                } /* C1->P1 */
+            if (obs->code[j] == CODE_L2C)
+                {
+                    P2 += P2_C2;
+                } /* C2->P2 */
 
-        /* iono-free combination */
-        PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
-    }
+            /* iono-free combination */
+            PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
+        }
     ////////////////////////////////////////////
     else
-    { /* single-frequency */
-        if(obs->code[i] == CODE_NONE and obs->code[j] == CODE_NONE) { return 0.0; }
+        { /* single-frequency */
+            if (obs->code[i] == CODE_NONE and obs->code[j] == CODE_NONE)
+                {
+                    return 0.0;
+                }
 
-        else if(obs->code[i] != CODE_NONE and obs->code[j] == CODE_NONE)
-        {//CHECK!!
-            P1 += P1_C1; /* C1->P1 */
-            PC = P1 + P1_P2;
+            else if (obs->code[i] != CODE_NONE and obs->code[j] == CODE_NONE)
+                {                //CHECK!!
+                    P1 += P1_C1; /* C1->P1 */
+                    PC = P1 + P1_P2;
+                }
+            else if (obs->code[i] == CODE_NONE and obs->code[j] != CODE_NONE)
+                {
+                    if (sys == SYS_GPS)
+                        {                //CHECK!!
+                            P2 += P2_C2; /* C2->P2 */
+                            //PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                            PC = P2 + P1_P2 - ISCl2;
+                        }
+                    else if (sys == SYS_GAL)
+                        {
+                            //TODO
+                        }
+                }
+            /* dual-frequency */
+            else if (sys == SYS_GPS)
+                {
+                    if (obs->code[j] == CODE_L2S) /* L1 + L2 */
+                        {
+                            PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
+                        }
+                    if (obs->code[j] == CODE_L5X) /* L1 + L5 */
+                        {
+                        }
+                }
+            else if (sys == SYS_GAL) /* E1 + E5a */
+                {
+                    //TODO
+                }
         }
-        else if(obs->code[i] == CODE_NONE and obs->code[j] != CODE_NONE)
-        {
-            if(sys == SYS_GPS)
-            {//CHECK!!
-                P2 += P2_C2; /* C2->P2 */
-                //PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
-                PC = P2 + P1_P2 - ISCl2;
-            }
-            else if(sys == SYS_GAL)
-            {
-                //TODO
-            }
-        }
-        /* dual-frequency */
-        else if(sys == SYS_GPS)
-        {
-            if(obs->code[j] == CODE_L2S) /* L1 + L2 */
-            {
-                PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
-            }
-            if(obs->code[j] == CODE_L5X) /* L1 + L5 */
-            {
-
-            }
-        }
-        else if(sys == SYS_GAL) /* E1 + E5a */
-        {
-            //TODO
-        }
-    }
-    d_file.write(reinterpret_cast<char*>(&PC), sizeof(double));
+    d_file.write(reinterpret_cast<char *>(&PC), sizeof(double));
     d_file.close();
-    if(opt->sateph == EPHOPT_SBAS) { PC -= P1_C1; } /* sbas clock based C1 */
+    if (opt->sateph == EPHOPT_SBAS)
+        {
+            PC -= P1_C1;
+        } /* sbas clock based C1 */
     *var = std::pow(ERR_CBIAS, 2.0);
     return PC;
 }

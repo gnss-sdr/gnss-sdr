@@ -127,12 +127,12 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
     int glo_valid_obs = 0;  //GLONASS L1/L2 valid observations counter
 
     obsd_t obs_data[MAXOBS];
-    eph_t  eph_data[MAXOBS];
+    eph_t eph_data[MAXOBS];
     geph_t geph_data[MAXOBS];
 
-    for(gnss_observables_iter = gnss_observables_map.cbegin();
-            gnss_observables_iter != gnss_observables_map.cend();
-            gnss_observables_iter++) //CHECK INCONSISTENCY when combining GLONASS + other system
+    for (gnss_observables_iter = gnss_observables_map.cbegin();
+         gnss_observables_iter != gnss_observables_map.cend();
+         gnss_observables_iter++)  //CHECK INCONSISTENCY when combining GLONASS + other system
         {
             switch (gnss_observables_iter->second.System)
                 {
@@ -247,17 +247,19 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                                     {
                                                         if (eph_data[i].sat == static_cast<int>(gnss_observables_iter->second.PRN))
                                                             {
-                                                                eph_data[i] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
+                                                                eph_t eph_aux = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
+                                                                eph_data[i].tgd = eph_aux.tgd;
+                                                                eph_data[i].isc = eph_aux.isc;
                                                                 obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
                                                                     gnss_observables_iter->second,
-                                                                    gps_cnav_ephemeris_iter->second.i_GPS_week,
+                                                                    eph_data[i].week,
                                                                     1);  //Band 2 (L2)
                                                                 break;
                                                             }
                                                     }
                                             }
                                         else
-                                            {
+                                            { /*
                                                 // 3. If not found, insert the GPS L2 ephemeris and the observation
                                                 //convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
@@ -271,6 +273,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                                     gps_cnav_ephemeris_iter->second.i_GPS_week,
                                                     1);  //Band 2 (L2)
                                                 valid_obs++;
+                                            */
                                             }
                                     }
                                 else  // the ephemeris are not available for this SV

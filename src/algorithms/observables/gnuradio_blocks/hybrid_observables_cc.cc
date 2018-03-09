@@ -410,7 +410,7 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
     double TOW_ref = std::numeric_limits<double>::lowest();
     for (it = data.begin(); it != data.end(); it++)
         {
-            if (it->TOW_at_current_symbol_s > TOW_ref and it->Signal[0] != '2')
+            if (it->TOW_at_current_symbol_s > TOW_ref)
                 {
                     TOW_ref = it->TOW_at_current_symbol_s;
                 }

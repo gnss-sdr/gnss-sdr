@@ -221,7 +221,7 @@ opensuse42.3:
   image: opensuse:42.3
   stage: build
   before_script:
-    - source ~/.bash_profile
+    - pwd
   script:
     - zypper -n up
     - zypper -n install cmake git gcc-c++ boost-devel log4cpp-devel gnuradio-devel armadillo-devel libtool automake hdf5-devel openssl-devel python-Mako python-six
@@ -238,7 +238,7 @@ opensuse-tumbleweed:
   image: opensuse:tumbleweed
   stage: build
   before_script:
-    - source ~/.bash_profile
+    - pwd
   script:
     - zypper -n up
     - zypper -n install cmake git gcc-c++ boost-devel libboost_system-devel libboost_filesystem-devel libboost_date_time-devel libboost_thread-devel libboost_chrono-devel libboost_serialization-devel log4cpp-devel gtest gnuradio-devel armadillo-devel libtool automake hdf5-devel openssl-devel python-Mako python-six

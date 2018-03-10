@@ -186,7 +186,7 @@ plot(0,0,'k*');
 
 
 [x,y,z] = cylinder([TWO_DRMS TWO_DRMS],200);
-plot(x(1,:),y(1,:),[0 0.6 0],'Color',[0 0.6 0]);
+plot(x(1,:),y(1,:),'Color',[0 0.6 0]);
 str = strcat('2DRMS=',num2str(TWO_DRMS), ' m');
 text(cosd(65)*TWO_DRMS,sind(65)*TWO_DRMS,str,'Color',[0 0.6 0]);
 

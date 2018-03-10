@@ -47,6 +47,8 @@
 
 using google::LogMessage;
 
+DEFINE_string(RINEX_version, "3.02", "Specifies the RINEX version (2.11 or 3.02)");
+
 
 Rinex_Printer::Rinex_Printer(int conf_version)
 {
@@ -3958,32 +3960,31 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     out << line << std::endl;
 
     // -------- Line MARKER NAME
-    if (version == 2)
-        {
-            line.clear();
-            line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20);  // put a flag or a property
-            line += std::string(40, ' ');
-            line += Rinex_Printer::leftJustify("MARKER NUMBER", 20);
-            Rinex_Printer::lengthCheck(line);
-            out << line << std::endl;
-        }
-    if (version == 3)
-        {
-            line.clear();
-            line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20);  // put a flag or a property
-            line += std::string(40, ' ');
-            line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
-            Rinex_Printer::lengthCheck(line);
-            out << line << std::endl;
-        }
+	line.clear();
+	line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
+	line += Rinex_Printer::leftJustify("MARKER NAME", 20);
+	Rinex_Printer::lengthCheck(line);
+	out << line << std::endl;
 
-    // -------- Line MARKER TYPE
-    line.clear();
-    line += Rinex_Printer::leftJustify("NON_GEODETIC", 20);  // put a flag or a property
-    line += std::string(40, ' ');
-    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
+    // -------- Line MARKER NUMBER / TYPE
+    if (version == 2)
+		{
+			line.clear();
+			line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+			line += std::string(40, ' ');
+			line += Rinex_Printer::leftJustify("MARKER NUMBER", 20);
+			Rinex_Printer::lengthCheck(line);
+			out << line << std::endl;
+		}
+	if (version == 3)
+		{
+			line.clear();
+			line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+			line += std::string(40, ' ');
+			line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+			Rinex_Printer::lengthCheck(line);
+			out << line << std::endl;
+		}
 
     // -------- Line OBSERVER / AGENCY
     line.clear();
@@ -4278,8 +4279,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 
     // -------- Line MARKER NAME
     line.clear();
-    line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60);  // put a flag or a property,
-    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+    line += Rinex_Printer::leftJustify("DEFAULT MARKER NAME", 60); // put a flag or a property,
+    line += Rinex_Printer::leftJustify("MARKER NAME", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
@@ -5998,6 +5999,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
 {
     // RINEX observations timestamps are GPS timestamps.
     std::string line;
+    double int_sec = 0;
 
     // Avoid compiler warning
     if (glonass_band.size())
@@ -6008,21 +6010,21 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
     std::string timestring = boost::posix_time::to_iso_string(p_glonass_time);
     //double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
     //double gps_t = eph.sv_clock_correction(obs_time);
-    double glonass_t = obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    std::string month (timestring, 4, 2);
+    std::string day (timestring, 6, 2);
+    std::string hour (timestring, 9, 2);
+    std::string minutes (timestring, 11, 2);
+    double utc_sec = modf (obs_time , &int_sec) + p_glonass_time.time_of_day().seconds() ;
 
     if (version == 2)
         {
             line.clear();
-            std::string year(timestring, 2, 2);
+            std::string year (timestring, 2, 2);
             line += std::string(1, ' ');
             line += year;
             line += std::string(1, ' ');
-            if (month.compare(0, 1, "0") == 0)
+            if (month.compare(0, 1 , "0") == 0)
                 {
                     line += std::string(1, ' ');
                     line += month.substr(1, 1);
@@ -6032,7 +6034,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
                     line += month;
                 }
             line += std::string(1, ' ');
-            if (day.compare(0, 1, "0") == 0)
+            if (day.compare(0, 1 , "0") == 0)
                 {
                     line += std::string(1, ' ');
                     line += day.substr(1, 1);
@@ -6046,12 +6048,11 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
             line += std::string(1, ' ');
             line += minutes;
             line += std::string(1, ' ');
-            double second_ = fmod(glonass_t, 60);
-            if (second_ < 10)
+            if (utc_sec < 10)
                 {
                     line += std::string(1, ' ');
                 }
-            line += Rinex_Printer::asString(second_, 7);
+            line += Rinex_Printer::asString(utc_sec, 7);
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
             line += std::string(1, '0');
@@ -6149,13 +6150,12 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
             line += minutes;
 
             line += std::string(1, ' ');
-            double seconds = fmod(glonass_t, 60);
             // Add extra 0 if seconds are < 10
-            if (seconds < 10)
-                {
-                    line += std::string(1, '0');
-                }
-            line += Rinex_Printer::asString(seconds, 7);
+            if (utc_sec < 10)
+            {
+                line += std::string(1, '0');
+            }
+            line += Rinex_Printer::asString(utc_sec, 7);
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
             line += std::string(1, '0');
@@ -8121,10 +8121,10 @@ void Rinex_Printer::to_date_time(int gps_week, int gps_tow, int& year, int& mont
         }
 
     // find month
-    for (int m = 1; true; m++)
+    for (int m = 1; true ; m++)
         {
-            int secs_in_month_m = days_per_month[m - 1] * secs_per_day;
-            if (is_leap_year && m == 2)  // consider February of leap year
+            int secs_in_month_m = days_per_month[m-1]*secs_per_day;
+            if (is_leap_year && m == 2 ) // consider February of leap year
                 {
                     secs_in_month_m += secs_per_day;
                 }
@@ -8142,14 +8142,14 @@ void Rinex_Printer::to_date_time(int gps_week, int gps_tow, int& year, int& mont
             //std::cout << "month: m=" << m << " secs_in_month_m="<< secs_in_month_m << " remaining_secs="<< remaining_secs << std::endl;
         }
 
-    day = remaining_secs / secs_per_day + 1;
-    remaining_secs = remaining_secs % secs_per_day;
+    day = remaining_secs/secs_per_day+1;
+    remaining_secs = remaining_secs%secs_per_day;
 
-    hour = remaining_secs / (60 * 60);
-    remaining_secs = remaining_secs % (60 * 60);
+    hour = remaining_secs/(60*60);
+    remaining_secs = remaining_secs%(60*60);
 
-    minute = remaining_secs / 60;
-    second = remaining_secs % 60;
+    minute = remaining_secs/60;
+    second = remaining_secs%60;
 }
 
 
@@ -8296,83 +8296,82 @@ boost::posix_time::ptime Rinex_Printer::compute_Galileo_time(const Galileo_Ephem
 boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Glonass_Gnav_Ephemeris& eph, const double obs_time)
 {
     double tod = 0.0;
-    double glot2utc = 3 * 3600;
-    double obs_time_glot = 0.0;
-    int i = 0;
+	double glot2utc = 3*3600;
+	double obs_time_utc = 0.0, obs_time_glot = 0.0;
+	int i = 0;
 
-    // Get observation time in nearly GLONASS time. Correction for leap seconds done at the end
-    obs_time_glot = obs_time + glot2utc;
+	// Get observation time in nearly GLONASS time. Correction for leap seconds done at the end
+	obs_time_glot = obs_time + glot2utc;
 
-    // Get seconds of day in glonass time
-    tod = fmod(obs_time_glot, 86400);
+	// Get seconds of day in glonass time
+	tod = fmod (obs_time_glot, 86400);
 
-    // Form date and time duration types
-    boost::posix_time::time_duration t1(0, 0, tod);
-    boost::gregorian::date d1(eph.d_yr, 1, 1);
-    boost::gregorian::days d2(eph.d_N_T - 1);
-    boost::posix_time::ptime glo_time(d1 + d2, t1);
+	// Form date and time duration types
+	boost::posix_time::time_duration t1(0, 0, tod);
+	boost::gregorian::date d1(eph.d_yr, 1, 1);
+	boost::gregorian::days d2(eph.d_N_T-1);
+	boost::posix_time::ptime glo_time(d1 + d2, t1);
 
-    // Convert to utc
-    boost::posix_time::time_duration t2(0, 0, glot2utc);
-    boost::posix_time::ptime utc_time = glo_time - t2;
+	// Convert to utc
+	boost::posix_time::time_duration t2(0, 0, glot2utc);
+	boost::posix_time::ptime utc_time = glo_time - t2;
 
-    // Adjust for leap second correction
-    for (i = 0; GLONASS_LEAP_SECONDS[i][0] > 0; i++)
-        {
-            boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
-            boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
-            boost::posix_time::ptime ls_time(d3, t3);
-            if (utc_time >= ls_time)
-                {
-                    // We subtract the leap second when going from gpst to utc
-                    utc_time = utc_time - boost::posix_time::time_duration(0, 0, fabs(GLONASS_LEAP_SECONDS[i][6]));
-                    break;
-                }
-        }
+	// Adjust for leap second correction
+	for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
+		{
+			boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
+			boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
+			boost::posix_time::ptime ls_time(d3, t3);
+			if (utc_time >= ls_time)
+			{
+				// We subtract the leap second when going from gpst to utc, values store as negatives
+				utc_time = utc_time + boost::posix_time::time_duration(0,0,GLONASS_LEAP_SECONDS[i][6]);
+				break;
+			}
+		}
 
-    return utc_time;
+	return utc_time;
 }
-
 
 double Rinex_Printer::get_leap_second(const Glonass_Gnav_Ephemeris& eph, const double gps_obs_time)
 {
     double tod = 0.0;
-    double glot2utc = 3 * 3600;
-    double obs_time_glot = 0.0;
-    int i = 0;
-    double leap_second = 0;
+	double glot2utc = 3*3600;
+	double obs_time_glot = 0.0;
+	int i = 0;
+	double leap_second = 0;
 
-    // Get observation time in nearly GLONASS time. Correction for leap seconds done at the end
-    obs_time_glot = gps_obs_time + glot2utc;
+	// Get observation time in nearly GLONASS time. Correction for leap seconds done at the end
+	obs_time_glot = gps_obs_time + glot2utc;
 
-    // Get seconds of day in glonass time
-    tod = fmod(obs_time_glot, 86400);
+	// Get seconds of day in glonass time
+	tod = fmod (obs_time_glot, 86400);
 
-    // Form date and time duration types
-    boost::posix_time::time_duration t1(0, 0, tod);
-    boost::gregorian::date d1(eph.d_yr, 1, 1);
-    boost::gregorian::days d2(eph.d_N_T - 1);
-    boost::posix_time::ptime glo_time(d1 + d2, t1);
+	// Form date and time duration types
+	boost::posix_time::time_duration t1(0, 0, tod);
+	boost::gregorian::date d1(eph.d_yr, 1, 1);
+	boost::gregorian::days d2(eph.d_N_T-1);
+	boost::posix_time::ptime glo_time(d1 + d2, t1);
 
-    // Convert to utc
-    boost::posix_time::time_duration t2(0, 0, glot2utc);
-    boost::posix_time::ptime utc_time = glo_time - t2;
+	// Convert to utc
+	boost::posix_time::time_duration t2(0, 0, glot2utc);
+	boost::posix_time::ptime utc_time = glo_time - t2;
 
-    // Adjust for leap second correction
-    for (i = 0; GLONASS_LEAP_SECONDS[i][0] > 0; i++)
-        {
-            boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
-            boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
-            boost::posix_time::ptime ls_time(d3, t3);
-            if (utc_time >= ls_time)
-                {
-                    // We subtract the leap second when going from gpst to utc
-                    leap_second = fabs(GLONASS_LEAP_SECONDS[i][6]);
-                    break;
-                }
-        }
+	// Adjust for leap second correction
+	for (i = 0; GLONASS_LEAP_SECONDS[i][0]>0; i++)
+		{
+			boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
+			boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
+			boost::posix_time::ptime ls_time(d3, t3);
+			if (utc_time >= ls_time)
+			{
+				// We subtract the leap second when going from gpst to utc
+				leap_second = fabs(GLONASS_LEAP_SECONDS[i][6]);
+				break;
+			}
+		}
 
-    return leap_second;
+	return leap_second;
 }
 
 

@@ -260,8 +260,7 @@ ubuntu14.04:
     - apt-file update
     - apt-get install -y software-properties-common
     - add-apt-repository -y ppa:myriadrf/gnuradio
-    - add-apt-repository -y ppa:myriadrf/uhd
-    - add-apt-repository -y ppa:ettusresearch/drivers
+    - add-apt-repository -y ppa:myriadrf/drivers
     - apt-get update
     - apt-get install -y --no-install-recommends build-essential libtool automake libhdf5-dev cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
     - cd build

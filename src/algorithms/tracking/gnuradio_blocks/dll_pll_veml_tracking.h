@@ -39,7 +39,6 @@
 
 #include <fstream>
 #include <string>
-#include <map>
 #include <gnuradio/block.h>
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
@@ -51,26 +50,26 @@ class dll_pll_veml_tracking;
 typedef boost::shared_ptr<dll_pll_veml_tracking> dll_pll_veml_tracking_sptr;
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(double fs_in, unsigned int vector_length,
-                                   bool dump, std::string dump_filename,
-                                   float pll_bw_hz, float dll_bw_hz,
-                                   float pll_bw_narrow_hz, float dll_bw_narrow_hz,
-                                   float early_late_space_chips, float very_early_late_space_chips,
-                                   float early_late_space_narrow_chips,
-                                   float very_early_late_space_narrow_chips,
-                                   int extend_correlation_symbols, bool track_pilot,
-                                   char system, char signal[3], bool veml);
+    bool dump, std::string dump_filename,
+    float pll_bw_hz, float dll_bw_hz,
+    float pll_bw_narrow_hz, float dll_bw_narrow_hz,
+    float early_late_space_chips, float very_early_late_space_chips,
+    float early_late_space_narrow_chips,
+    float very_early_late_space_narrow_chips,
+    int extend_correlation_symbols, bool track_pilot,
+    char system, char signal[3], bool veml);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL VEML (Very Early
  *  Minus Late) tracking block for Galileo E1 signals
  */
-class dll_pll_veml_tracking: public gr::block
+class dll_pll_veml_tracking : public gr::block
 {
 public:
     ~dll_pll_veml_tracking();
 
     void set_channel(unsigned int channel);
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
 
     /*!
@@ -79,38 +78,38 @@ public:
      * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
      * Birkhauser, 2007
      */
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
 private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(double fs_in, unsigned int vector_length,
-                                        bool dump, std::string dump_filename,
-                                        float pll_bw_hz, float dll_bw_hz, float pll_bw_narrow_hz,
-                                        float dll_bw_narrow_hz, float early_late_space_chips,
-                                        float very_early_late_space_chips, float early_late_space_narrow_chips,
-                                        float very_early_late_space_narrow_chips,
-                                        int extend_correlation_symbols, bool track_pilot,
-                                        char system, char signal[3], bool veml);
+        bool dump, std::string dump_filename,
+        float pll_bw_hz, float dll_bw_hz, float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz, float early_late_space_chips,
+        float very_early_late_space_chips, float early_late_space_narrow_chips,
+        float very_early_late_space_narrow_chips,
+        int extend_correlation_symbols, bool track_pilot,
+        char system, char signal[3], bool veml);
 
-    dll_pll_veml_tracking(double fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float pll_bw_narrow_hz,
-            float dll_bw_narrow_hz,
-            float early_late_space_chips,
-            float very_early_late_space_chips,
-            float early_late_space_narrow_chips,
-            float very_early_late_space_narrow_chips,
-            int extend_correlation_symbols,
-            bool track_pilot,
-            char system, char signal[3], bool veml);
+    dll_pll_veml_tracking(double fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
+        float early_late_space_chips,
+        float very_early_late_space_chips,
+        float early_late_space_narrow_chips,
+        float very_early_late_space_narrow_chips,
+        int extend_correlation_symbols,
+        bool track_pilot,
+        char system, char signal[3], bool veml);
 
     bool cn0_and_tracking_lock_status();
-    void do_correlation_step(const gr_complex* input_samples);
+    void do_correlation_step(const gr_complex *input_samples);
     void run_dll_pll(bool disable_costas_loop);
     void update_local_code();
     void update_local_carrier();
@@ -121,10 +120,13 @@ private:
     void log_data();
 
     // tracking configuration vars
-    unsigned int d_vector_length;
     bool d_dump;
     bool d_veml;
-    Gnss_Synchro* d_acquisition_gnss_synchro;
+    bool d_secondary;
+    unsigned int d_secondary_code_length;
+    std::string *d_secondary_code_string;
+    Gnss_Synchro *d_acquisition_gnss_synchro;
+    unsigned int d_vector_length;
     unsigned int d_channel;
     // long d_fs_in;
     double d_fs_in;
@@ -141,24 +143,24 @@ private:
 
     //Integration period in samples
     int d_correlation_length_samples;
+    int d_correlation_length_ms;
     int d_n_correlator_taps;
     double d_early_late_spc_chips;
     double d_very_early_late_spc_chips;
-
     double d_early_late_spc_narrow_chips;
     double d_very_early_late_spc_narrow_chips;
 
-    float* d_tracking_code;
-    float* d_data_code;
-    float* d_local_code_shift_chips;
-    gr_complex* d_correlator_outs;
+    float *d_tracking_code;
+    float *d_data_code;
+    float *d_local_code_shift_chips;
+    float *d_null_shift;
+    gr_complex *d_correlator_outs;
     cpu_multicorrelator_real_codes multicorrelator_cpu;
-    //todo: currently the multicorrelator does not support adding extra correlator
+    //TODO: currently the multicorrelator does not support adding extra correlator
     //with different local code, thus we need extra multicorrelator instance.
     //Implement this functionality inside multicorrelator class
     //as an enhancement to increase the performance
-    float* d_local_code_data_shift_chips;
-    cpu_multicorrelator_real_codes correlator_data_cpu; //for data channel
+    cpu_multicorrelator_real_codes correlator_data_cpu;  //for data channel
 
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
@@ -166,9 +168,9 @@ private:
     gr_complex *d_Late;
     gr_complex *d_Very_Late;
 
+    bool d_enable_extended_integration;
     int d_extend_correlation_symbols;
     int d_extend_correlation_symbols_count;
-    bool d_enable_extended_integration;
     int d_current_symbol;
 
     gr_complex d_VE_accu;
@@ -223,7 +225,7 @@ private:
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
     std::deque<gr_complex> d_Prompt_buffer_deque;
-    gr_complex* d_Prompt_buffer;
+    gr_complex *d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
@@ -233,10 +235,10 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    std::map<std::string, std::string> systemName;
-    std::string sys;
+    std::string systemName;
+    std::string signal_type;
 
     int save_matfile();
 };
 
-#endif //GNSS_SDR_DLL_PLL_VEML_TRACKING_H
+#endif  //GNSS_SDR_DLL_PLL_VEML_TRACKING_H

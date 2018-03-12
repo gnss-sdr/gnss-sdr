@@ -362,12 +362,12 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
     else
         {
             d_TOW_at_current_symbol += GPS_L1_CA_CODE_PERIOD;
-            d_TOW_at_current_symbol_ms++;
+            d_TOW_at_current_symbol_ms += GPS_L1_CA_CODE_PERIOD_MS;
         }
 
-     current_symbol.TOW_at_current_symbol_s = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
-     //current_symbol.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
-     current_symbol.Flag_valid_word = flag_TOW_set;
+    current_symbol.TOW_at_current_symbol_s = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
+    //current_symbol.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
+    current_symbol.Flag_valid_word = flag_TOW_set;
 
     if (flag_PLL_180_deg_phase_locked == true)
         {

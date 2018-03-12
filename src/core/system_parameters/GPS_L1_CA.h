@@ -53,6 +53,7 @@ const double GPS_L1_FREQ_HZ = FREQ1;                //!< L1 [Hz]
 const double GPS_L1_CA_CODE_RATE_HZ = 1.023e6;      //!< GPS L1 C/A code rate [chips/s]
 const double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;  //!< GPS L1 C/A code length [chips]
 const double GPS_L1_CA_CODE_PERIOD = 0.001;         //!< GPS L1 C/A code period [seconds]
+const unsigned int GPS_L1_CA_CODE_PERIOD_MS = 1;    //!< GPS L1 C/A code period [ms]
 const double GPS_L1_CA_CHIP_PERIOD = 9.7752e-07;    //!< GPS L1 C/A chip period [seconds]
 
 /*!

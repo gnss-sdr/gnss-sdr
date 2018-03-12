@@ -54,8 +54,6 @@
 #include "rtklib_ephemeris.h"
 #include "rtklib_ionex.h"
 #include "rtklib_sbas.h"
-#include <fstream>
-#include <string>
 
 /* pseudorange measurement error variance ------------------------------------*/
 double varerr(const prcopt_t *opt, double el, int sys)
@@ -132,6 +130,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     double P1_P2 = 0.0;
     double P1_C1 = 0.0;
     double P2_C2 = 0.0;
+    //Intersignal corrections (m). See GPS IS-200 CNAV message
     double ISCl1 = 0.0;
     double ISCl2 = 0.0;
     double ISCl5i = 0.0;
@@ -154,8 +153,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         {
             j = 2;
         }
-
-    if (sys == SYS_GPS)
+    else if (sys == SYS_GPS or sys == SYS_GLO)
         {
             if (obs->code[1] != CODE_NONE)
                 {
@@ -203,18 +201,6 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     P1_C1 = nav->cbias[obs->sat - 1][1];
     P2_C2 = nav->cbias[obs->sat - 1][2];
 
-    std::string d_dump_filename = "/home/aramos/dump_prange.dat";
-    std::ofstream d_file;
-    d_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    d_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary | std::ios::app);
-    double tmp_double = static_cast<double>(obs->sat);
-    d_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-    d_file.write(reinterpret_cast<char *>(&P1), sizeof(double));
-    d_file.write(reinterpret_cast<char *>(&P2), sizeof(double));
-    d_file.write(reinterpret_cast<char *>(&P1_P2), sizeof(double));
-    d_file.write(reinterpret_cast<char *>(&P1_C1), sizeof(double));
-    d_file.write(reinterpret_cast<char *>(&P2_C2), sizeof(double));
-
     /* if no P1-P2 DCB, use TGD instead */
     if (P1_P2 == 0.0)
         {
@@ -227,12 +213,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             ISCl2 = getiscl2(obs->sat, nav);
             ISCl5i = getiscl5i(obs->sat, nav);
             ISCl5q = getiscl5q(obs->sat, nav);
-            d_file.write(reinterpret_cast<char *>(&ISCl1), sizeof(double));
-            d_file.write(reinterpret_cast<char *>(&ISCl2), sizeof(double));
-            d_file.write(reinterpret_cast<char *>(&ISCl5i), sizeof(double));
-            d_file.write(reinterpret_cast<char *>(&ISCl5q), sizeof(double));
         }
-    d_file.write(reinterpret_cast<char *>(&P1_P2), sizeof(double));
 
     //CHECK IF IT IS STILL NEEDED
     if (opt->ionoopt == IONOOPT_IFLC)
@@ -263,19 +244,26 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 }
 
             else if (obs->code[i] != CODE_NONE and obs->code[j] == CODE_NONE)
-                {                //CHECK!!
+                {
                     P1 += P1_C1; /* C1->P1 */
                     PC = P1 + P1_P2;
                 }
             else if (obs->code[i] == CODE_NONE and obs->code[j] != CODE_NONE)
                 {
                     if (sys == SYS_GPS)
-                        {                //CHECK!!
+                        {
                             P2 += P2_C2; /* C2->P2 */
                             //PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
-                            PC = P2 + P1_P2 - ISCl2;
+                            if (obs->code[j] == CODE_L2S)  //L2 single freq.
+                                {
+                                    PC = P2 + P1_P2 - ISCl2;
+                                }
+                            else if (obs->code[j] == CODE_L5X)  //L5 single freq.
+                                {
+                                    PC = P2 + P1_P2 - ISCl5i;
+                                }
                         }
-                    else if (sys == SYS_GAL)
+                    else if (sys == SYS_GAL)  // Gal. E5a single freq.
                         {
                             //TODO
                         }
@@ -285,9 +273,12 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 {
                     if (obs->code[j] == CODE_L2S) /* L1 + L2 */
                         {
-                            PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
+                            //By the moment, GPS L2 pseudoranges are not used
+                            //PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
+                            P1 += P1_C1; /* C1->P1 */
+                            PC = P1 + P1_P2;
                         }
-                    if (obs->code[j] == CODE_L5X) /* L1 + L5 */
+                    else if (obs->code[j] == CODE_L5X) /* L1 + L5 */
                         {
                         }
                 }
@@ -296,8 +287,6 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                     //TODO
                 }
         }
-    d_file.write(reinterpret_cast<char *>(&PC), sizeof(double));
-    d_file.close();
     if (opt->sateph == EPHOPT_SBAS)
         {
             PC -= P1_C1;

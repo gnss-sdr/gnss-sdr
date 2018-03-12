@@ -10,23 +10,24 @@
  * will do).
  * This type may be used when integer range is limited by subtype constraints.
  */
-#ifndef	_NativeEnumerated_H_
-#define	_NativeEnumerated_H_
+#ifndef _NativeEnumerated_H_
+#define _NativeEnumerated_H_
 
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-extern asn_TYPE_descriptor_t asn_DEF_NativeEnumerated;
+    extern asn_TYPE_descriptor_t asn_DEF_NativeEnumerated;
 
-xer_type_encoder_f NativeEnumerated_encode_xer;
-per_type_decoder_f NativeEnumerated_decode_uper;
-per_type_encoder_f NativeEnumerated_encode_uper;
+    xer_type_encoder_f NativeEnumerated_encode_xer;
+    per_type_decoder_f NativeEnumerated_decode_uper;
+    per_type_encoder_f NativeEnumerated_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _NativeEnumerated_H_ */
+#endif /* _NativeEnumerated_H_ */

@@ -79,7 +79,7 @@ Nmea_Printer::~Nmea_Printer()
 }
 
 
-int Nmea_Printer::init_serial (std::string serial_device)
+int Nmea_Printer::init_serial(std::string serial_device)
 {
     /*!
      * Opens the serial device and sets the default baud rate for a NMEA transmission (9600,8,N,1)
@@ -93,12 +93,12 @@ int Nmea_Printer::init_serial (std::string serial_device)
     long PARITY;
 
     fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-    if (fd == -1) return fd; //failed to open TTY port
+    if (fd == -1) return fd;  //failed to open TTY port
 
-    if(fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";   // clear all flags on descriptor, enable direct I/O
-    tcgetattr(fd, &options);   // read serial port options
+    if (fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";  // clear all flags on descriptor, enable direct I/O
+    tcgetattr(fd, &options);                                                    // read serial port options
 
-    BAUD  = B9600;
+    BAUD = B9600;
     //BAUD  =  B38400;
     DATABITS = CS8;
     STOPBITS = 0;
@@ -116,7 +116,7 @@ int Nmea_Printer::init_serial (std::string serial_device)
 }
 
 
-void Nmea_Printer::close_serial ()
+void Nmea_Printer::close_serial()
 {
     if (nmea_dev_descriptor != -1)
         {
@@ -149,7 +149,7 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data
 
     // write to log file
     try
-    {
+        {
             //GPRMC
             nmea_file_descriptor << GPRMC;
             //GPGGA (Global Positioning System Fixed Data)
@@ -158,31 +158,32 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data
             nmea_file_descriptor << GPGSA;
             //GPGSV
             nmea_file_descriptor << GPGSV;
-    }
-    catch(const std::exception & ex)
-    {
-            DLOG(INFO) << "NMEA printer can not write on output file" << nmea_filename.c_str();;
-    }
+        }
+    catch (const std::exception& ex)
+        {
+            DLOG(INFO) << "NMEA printer can not write on output file" << nmea_filename.c_str();
+            ;
+        }
 
     //write to serial device
-    if (nmea_dev_descriptor!=-1)
+    if (nmea_dev_descriptor != -1)
         {
-            if(write(nmea_dev_descriptor, GPRMC.c_str(), GPRMC.length()) == -1)
+            if (write(nmea_dev_descriptor, GPRMC.c_str(), GPRMC.length()) == -1)
                 {
                     DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
                     return false;
                 }
-            if(write(nmea_dev_descriptor, GPGGA.c_str(), GPGGA.length()) == -1)
+            if (write(nmea_dev_descriptor, GPGGA.c_str(), GPGGA.length()) == -1)
                 {
                     DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
                     return false;
                 }
-            if(write(nmea_dev_descriptor, GPGSA.c_str(), GPGSA.length()) == -1)
+            if (write(nmea_dev_descriptor, GPGSA.c_str(), GPGSA.length()) == -1)
                 {
                     DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
                     return false;
                 }
-            if(write(nmea_dev_descriptor, GPGSV.c_str(), GPGSV.length()) == -1)
+            if (write(nmea_dev_descriptor, GPGSV.c_str(), GPGSV.length()) == -1)
                 {
                     DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
                     return false;
@@ -211,7 +212,7 @@ std::string Nmea_Printer::latitude_to_hm(double lat)
     if (lat < 0.0)
         {
             north = false;
-            lat = -lat ;
+            lat = -lat;
         }
     else
         {
@@ -220,7 +221,7 @@ std::string Nmea_Printer::latitude_to_hm(double lat)
 
     int deg = static_cast<int>(lat);
     double mins = lat - static_cast<double>(deg);
-    mins *= 60.0 ;
+    mins *= 60.0;
     std::ostringstream out_string;
     out_string.setf(std::ios::fixed, std::ios::floatfield);
     out_string.fill('0');
@@ -249,7 +250,7 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
     if (longitude < 0.0)
         {
             east = false;
-            longitude = -longitude ;
+            longitude = -longitude;
         }
     else
         {
@@ -257,7 +258,7 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
         }
     int deg = static_cast<int>(longitude);
     double mins = longitude - static_cast<double>(deg);
-    mins *= 60.0 ;
+    mins *= 60.0;
     std::ostringstream out_string;
     out_string.setf(std::ios::fixed, std::ios::floatfield);
     out_string.width(3);
@@ -294,30 +295,30 @@ std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_
     utc_hours = td.hours();
     utc_mins = td.minutes();
     utc_seconds = td.seconds();
-    utc_milliseconds = td.total_milliseconds() - td.total_seconds()*1000;
+    utc_milliseconds = td.total_milliseconds() - td.total_seconds() * 1000;
 
-    if (utc_hours < 10) sentence_str << "0"; //  two digits for hours
+    if (utc_hours < 10) sentence_str << "0";  //  two digits for hours
     sentence_str << utc_hours;
 
-    if (utc_mins < 10) sentence_str << "0"; //  two digits for minutes
+    if (utc_mins < 10) sentence_str << "0";  //  two digits for minutes
     sentence_str << utc_mins;
 
-    if (utc_seconds < 10) sentence_str << "0"; //  two digits for seconds
+    if (utc_seconds < 10) sentence_str << "0";  //  two digits for seconds
     sentence_str << utc_seconds;
 
     if (utc_milliseconds < 10)
         {
-            sentence_str << ".00"; //  three digits for ms
+            sentence_str << ".00";  //  three digits for ms
             sentence_str << utc_milliseconds;
         }
     else if (utc_milliseconds < 100)
         {
-            sentence_str << ".0"; //   three digits for ms
+            sentence_str << ".0";  //   three digits for ms
             sentence_str << utc_milliseconds;
         }
     else
         {
-            sentence_str << "."; //   three digits for ms
+            sentence_str << ".";  //   three digits for ms
             sentence_str << utc_milliseconds;
         }
     return sentence_str.str();
@@ -450,7 +451,7 @@ std::string Nmea_Printer::get_GPGSA()
     // 1 fix not available
     // 2 fix 2D
     // 3 fix 3D
-    if (valid_fix==true)
+    if (valid_fix == true)
         {
             sentence_str << ",3";
         }
@@ -460,7 +461,7 @@ std::string Nmea_Printer::get_GPGSA()
         };
 
     // Used satellites
-    for (int i=0; i<12; i++)
+    for (int i = 0; i < 12; i++)
         {
             sentence_str << ",";
             if (i < n_sats_used)
@@ -479,7 +480,7 @@ std::string Nmea_Printer::get_GPGSA()
     sentence_str.fill('0');
     sentence_str << pdop;
     //HDOP
-    sentence_str<<",";
+    sentence_str << ",";
     sentence_str.setf(std::ios::fixed, std::ios::floatfield);
     sentence_str.width(2);
     sentence_str.precision(1);
@@ -528,7 +529,7 @@ std::string Nmea_Printer::get_GPGSV()
 
     // generate the frames
     int current_satellite = 0;
-    for (int i=1; i<(n_frames+1); i++)
+    for (int i = 1; i < (n_frames + 1); i++)
         {
             frame_str.str("");
             frame_str << sentence_header;
@@ -547,7 +548,7 @@ std::string Nmea_Printer::get_GPGSV()
             frame_str << std::dec << n_sats_used;
 
             //satellites info
-            for (int j=0; j<4; j++)
+            for (int j = 0; j < 4; j++)
                 {
                     // write satellite info
                     frame_str << ",";
@@ -601,7 +602,7 @@ std::string Nmea_Printer::get_GPGGA()
 {
     //boost::posix_time::ptime d_position_UTC_time=boost::posix_time::microsec_clock::universal_time();
     bool valid_fix = d_PVT_data->is_valid_position();
-    int n_channels = d_PVT_data->get_num_valid_observations();//d_nchannels
+    int n_channels = d_PVT_data->get_num_valid_observations();  //d_nchannels
     double hdop = d_PVT_data->get_HDOP();
     double MSL_altitude;
 
@@ -708,4 +709,3 @@ std::string Nmea_Printer::get_GPGGA()
     return sentence_str.str();
     //$GPGGA,104427.591,5920.7009,N,01803.2938,E,1,05,3.3,78.2,M,23.2,M,0.0,0000*4A
 }
-

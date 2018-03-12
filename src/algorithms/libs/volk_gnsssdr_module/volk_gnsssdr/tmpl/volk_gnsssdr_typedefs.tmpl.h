@@ -22,8 +22,10 @@
 #include <inttypes.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
+// clang-format off
 %for kern in kernels:
 typedef void (*${kern.pname})(${kern.arglist_types});
 %endfor
+// clang-format on
 
 #endif /*INCLUDED_VOLK_GNSSSDR_TYPEDEFS*/

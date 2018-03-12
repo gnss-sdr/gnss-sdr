@@ -39,9 +39,9 @@
 void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest, /*signed int _prn,*/ unsigned int _chip_shift);
 
 //! Generates N complex GLONASS L1 C/A codes for the desired SV ID and code shift
-void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest,/* unsigned int _prn,*/ signed int _fs, unsigned int _chip_shift, unsigned int _ncodes);
+void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, /* unsigned int _prn,*/ signed int _fs, unsigned int _chip_shift, unsigned int _ncodes);
 
 //! Generates complex GLONASS L1 C/A code for the desired SV ID and code shift
-void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest,/* unsigned int _prn,*/ signed int _fs, unsigned int _chip_shift);
+void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, /* unsigned int _prn,*/ signed int _fs, unsigned int _chip_shift);
 
 #endif /* GNSS_SDR_GLONASS_SDR_SIGNAL_PROCESSING_H_ */

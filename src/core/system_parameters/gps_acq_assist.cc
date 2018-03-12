@@ -46,4 +46,3 @@ Gps_Acq_Assist::Gps_Acq_Assist()
     Azimuth = 0.0;
     Elevation = 0.0;
 }
-

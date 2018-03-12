@@ -38,7 +38,7 @@
 class acquisition_dump_reader
 {
 public:
-    acquisition_dump_reader(const std::string & basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code);
+    acquisition_dump_reader(const std::string& basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code);
     ~acquisition_dump_reader();
     bool read_binary_acq();
 
@@ -56,4 +56,4 @@ private:
     std::string d_dump_filename;
 };
 
-#endif // GNSS_SDR_ACQUISITION_DUMP_READER_H
+#endif  // GNSS_SDR_ACQUISITION_DUMP_READER_H

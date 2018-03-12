@@ -49,7 +49,7 @@ static inline void volk_gnsssdr_s32f_sincospuppet_32fc_generic(lv_32fc_t* out, c
     volk_gnsssdr_s32f_sincos_32fc_generic(out, phase_inc, phase, num_points);
 }
 
-#endif   /* LV_HAVE_GENERIC  */
+#endif /* LV_HAVE_GENERIC  */
 
 
 #ifdef LV_HAVE_GENERIC
@@ -60,7 +60,7 @@ static inline void volk_gnsssdr_s32f_sincospuppet_32fc_generic_fxpt(lv_32fc_t* o
     volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(out, phase_inc, phase, num_points);
 }
 
-#endif   /* LV_HAVE_GENERIC  */
+#endif /* LV_HAVE_GENERIC  */
 
 
 #ifdef LV_HAVE_SSE2
@@ -70,7 +70,7 @@ static inline void volk_gnsssdr_s32f_sincospuppet_32fc_a_sse2(lv_32fc_t* out, co
     phase[0] = 3;
     volk_gnsssdr_s32f_sincos_32fc_a_sse2(out, phase_inc, phase, num_points);
 }
-#endif  /* LV_HAVE_SSE2  */
+#endif /* LV_HAVE_SSE2  */
 
 
 #ifdef LV_HAVE_SSE2
@@ -80,7 +80,7 @@ static inline void volk_gnsssdr_s32f_sincospuppet_32fc_u_sse2(lv_32fc_t* out, co
     phase[0] = 3;
     volk_gnsssdr_s32f_sincos_32fc_u_sse2(out, phase_inc, phase, num_points);
 }
-#endif  /* LV_HAVE_SSE2  */
+#endif /* LV_HAVE_SSE2  */
 
 
 #ifdef LV_HAVE_AVX2
@@ -90,7 +90,7 @@ static inline void volk_gnsssdr_s32f_sincospuppet_32fc_a_avx2(lv_32fc_t* out, co
     phase[0] = 3;
     volk_gnsssdr_s32f_sincos_32fc_a_avx2(out, phase_inc, phase, num_points);
 }
-#endif  /* LV_HAVE_AVX2  */
+#endif /* LV_HAVE_AVX2  */
 
 
 #ifdef LV_HAVE_AVX2
@@ -100,7 +100,7 @@ static inline void volk_gnsssdr_s32f_sincospuppet_32fc_u_avx2(lv_32fc_t* out, co
     phase[0] = 3;
     volk_gnsssdr_s32f_sincos_32fc_u_avx2(out, phase_inc, phase, num_points);
 }
-#endif  /* LV_HAVE_AVX2  */
+#endif /* LV_HAVE_AVX2  */
 
 
 #ifdef LV_HAVE_NEON
@@ -110,6 +110,6 @@ static inline void volk_gnsssdr_s32f_sincospuppet_32fc_neon(lv_32fc_t* out, cons
     phase[0] = 3;
     volk_gnsssdr_s32f_sincos_32fc_neon(out, phase_inc, phase, num_points);
 }
-#endif  /* LV_HAVE_NEON  */
+#endif /* LV_HAVE_NEON  */
 
-#endif  /* INCLUDED_volk_gnsssdr_s32f_sincospuppet_32fc_H */
+#endif /* INCLUDED_volk_gnsssdr_s32f_sincospuppet_32fc_H */

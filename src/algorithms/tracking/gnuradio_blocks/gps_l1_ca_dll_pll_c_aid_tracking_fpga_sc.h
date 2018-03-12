@@ -56,11 +56,10 @@ class gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc;
 typedef boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc> gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr;
 
 gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr
-gps_l1_ca_dll_pll_c_aid_make_tracking_fpga_sc(long if_freq, long fs_in, unsigned
-int vector_length, bool dump, std::string dump_filename, float pll_bw_hz,
-        float dll_bw_hz, float pll_bw_narrow_hz, float dll_bw_narrow_hz,
-        int extend_correlation_ms, float early_late_space_chips,
-        std::string device_name, unsigned int device_base);
+gps_l1_ca_dll_pll_c_aid_make_tracking_fpga_sc(long if_freq, long fs_in, unsigned int vector_length, bool dump, std::string dump_filename, float pll_bw_hz,
+    float dll_bw_hz, float pll_bw_narrow_hz, float dll_bw_narrow_hz,
+    int extend_correlation_ms, float early_late_space_chips,
+    std::string device_name, unsigned int device_base);
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
@@ -74,30 +73,29 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
 
-    int general_work(int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);
 
     void reset(void);
 
 private:
     friend gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr
     gps_l1_ca_dll_pll_c_aid_make_tracking_fpga_sc(long if_freq, long fs_in,
-            unsigned
-            int vector_length, bool dump, std::string dump_filename,
-            float pll_bw_hz, float dll_bw_hz, float pll_bw_narrow_hz,
-            float dll_bw_narrow_hz, int extend_correlation_ms,
-            float early_late_space_chips, std::string device_name,
-            unsigned int device_base);
+        unsigned int vector_length, bool dump, std::string dump_filename,
+        float pll_bw_hz, float dll_bw_hz, float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz, int extend_correlation_ms,
+        float early_late_space_chips, std::string device_name,
+        unsigned int device_base);
 
-    gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc(long if_freq, long fs_in, unsigned
-    int vector_length, bool dump, std::string dump_filename, float pll_bw_hz,
-            float dll_bw_hz, float pll_bw_narrow_hz, float dll_bw_narrow_hz,
-            int extend_correlation_ms, float early_late_space_chips,
-            std::string device_name, unsigned int device_base);
+    gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc(long if_freq, long fs_in, unsigned int vector_length, bool dump, std::string dump_filename, float pll_bw_hz,
+        float dll_bw_hz, float pll_bw_narrow_hz, float dll_bw_narrow_hz,
+        int extend_correlation_ms, float early_late_space_chips,
+        std::string device_name, unsigned int device_base);
 
     // tracking configuration vars
-    unsigned int d_vector_length;bool d_dump;
+    unsigned int d_vector_length;
+    bool d_dump;
 
     Gnss_Synchro* d_acquisition_gnss_synchro;
     unsigned int d_channel;
@@ -144,7 +142,9 @@ private:
     double d_carr_phase_error_secs_Ti;
     double d_code_error_chips_Ti;
     double d_preamble_timestamp_s;
-    int d_extend_correlation_ms;bool d_enable_extended_integration;bool d_preamble_synchronized;
+    int d_extend_correlation_ms;
+    bool d_enable_extended_integration;
+    bool d_preamble_synchronized;
     double d_code_error_filt_chips_s;
     double d_code_error_filt_chips_Ti;
     void msg_handler_preamble_index(pmt::pmt_t msg);
@@ -170,7 +170,8 @@ private:
     int d_carrier_lock_fail_counter;
 
     // control vars
-    bool d_enable_tracking;bool d_pull_in;
+    bool d_enable_tracking;
+    bool d_pull_in;
 
     // file dump
     std::string d_dump_filename;
@@ -182,4 +183,4 @@ private:
     int save_matfile();
 };
 
-#endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_FPGA_SC_H
+#endif  //GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_FPGA_SC_H

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_CellIDAndLAC_H_
-#define	_CellIDAndLAC_H_
+#ifndef _CellIDAndLAC_H_
+#define _CellIDAndLAC_H_
 
 
 #include <asn_application.h>
@@ -16,24 +16,26 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* CellIDAndLAC */
-typedef struct CellIDAndLAC {
-	LAC_t	 referenceLAC;
-	CellID_t	 referenceCI;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} CellIDAndLAC_t;
+    /* CellIDAndLAC */
+    typedef struct CellIDAndLAC
+    {
+        LAC_t referenceLAC;
+        CellID_t referenceCI;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_CellIDAndLAC;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } CellIDAndLAC_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_CellIDAndLAC;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _CellIDAndLAC_H_ */
+#endif /* _CellIDAndLAC_H_ */
 #include <asn_internal.h>

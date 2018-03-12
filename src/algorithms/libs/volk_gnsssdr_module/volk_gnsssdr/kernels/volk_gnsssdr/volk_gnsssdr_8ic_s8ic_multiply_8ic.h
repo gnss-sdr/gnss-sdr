@@ -80,7 +80,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, 
     imagy = _mm_and_si128(imagy, mult1);
     realy = _mm_and_si128(y, mult1);
 
-    for(; number < sse_iters; number++)
+    for (; number < sse_iters; number++)
         {
             x = _mm_lddqu_si128((__m128i*)a);
 
@@ -111,7 +111,6 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, 
         {
             *c++ = (*a++) * scalar;
         }
-
 }
 #endif /* LV_HAVE_SSE3 */
 
@@ -173,7 +172,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, 
     imagy = _mm_and_si128(imagy, mult1);
     realy = _mm_and_si128(y, mult1);
 
-    for(; number < sse_iters; number++)
+    for (; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
 
@@ -204,7 +203,6 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, 
         {
             *c++ = (*a++) * scalar;
         }
-
 }
 #endif /* LV_HAVE_SSE3 */
 

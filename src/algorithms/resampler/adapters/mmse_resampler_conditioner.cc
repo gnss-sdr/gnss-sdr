@@ -39,9 +39,8 @@
 using google::LogMessage;
 
 MmseResamplerConditioner::MmseResamplerConditioner(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_stream, unsigned int out_stream) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_stream, unsigned int out_stream) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_conditioner.dat";
@@ -50,10 +49,9 @@ MmseResamplerConditioner::MmseResamplerConditioner(
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     sample_freq_in_ = configuration->property(role_ + ".sample_freq_in", 4000000.0);
     sample_freq_out_ = configuration->property(role_ + ".sample_freq_out", fs_in);
-    if(std::fabs(fs_in - sample_freq_out_) > std::numeric_limits<double>::epsilon())
+    if (std::fabs(fs_in - sample_freq_out_) > std::numeric_limits<double>::epsilon())
         {
-            std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_sps and "
-                    + role_ + ".sample_freq_out are not set to the same value!" ;
+            std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_sps and " + role_ + ".sample_freq_out are not set to the same value!";
             LOG(WARNING) << aux_warn;
             std::cout << aux_warn << std::endl;
         }
@@ -65,11 +63,11 @@ MmseResamplerConditioner::MmseResamplerConditioner(
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            #ifdef GR_GREATER_38
+#ifdef GR_GREATER_38
             resampler_ = gr::filter::mmse_resampler_cc::make(0.0, sample_freq_in_ / sample_freq_out_);
-            #else
+#else
             resampler_ = gr::filter::fractional_resampler_cc::make(0.0, sample_freq_in_ / sample_freq_out_);
-            #endif
+#endif
             DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
             DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
             DLOG(INFO) << "Item size " << item_size_;
@@ -90,7 +88,6 @@ MmseResamplerConditioner::MmseResamplerConditioner(
 
 
 MmseResamplerConditioner::~MmseResamplerConditioner() {}
-
 
 
 void MmseResamplerConditioner::connect(gr::top_block_sptr top_block)

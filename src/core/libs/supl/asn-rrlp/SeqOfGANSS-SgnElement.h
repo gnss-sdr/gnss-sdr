@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfGANSS_SgnElement_H_
-#define	_SeqOfGANSS_SgnElement_H_
+#ifndef _SeqOfGANSS_SgnElement_H_
+#define _SeqOfGANSS_SgnElement_H_
 
 
 #include <asn_application.h>
@@ -15,22 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSS_SgnElement;
+    /* Forward declarations */
+    struct GANSS_SgnElement;
 
-/* SeqOfGANSS-SgnElement */
-typedef struct SeqOfGANSS_SgnElement {
-	A_SEQUENCE_OF(struct GANSS_SgnElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfGANSS_SgnElement_t;
+    /* SeqOfGANSS-SgnElement */
+    typedef struct SeqOfGANSS_SgnElement
+    {
+        A_SEQUENCE_OF(struct GANSS_SgnElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSS_SgnElement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfGANSS_SgnElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSS_SgnElement;
 
 #ifdef __cplusplus
 }
@@ -39,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSS_SgnElement;
 /* Referred external types */
 #include "GANSS-SgnElement.h"
 
-#endif	/* _SeqOfGANSS_SgnElement_H_ */
+#endif /* _SeqOfGANSS_SgnElement_H_ */
 #include <asn_internal.h>

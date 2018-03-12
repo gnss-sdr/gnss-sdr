@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_Almanac_H_
-#define	_Almanac_H_
+#ifndef _Almanac_H_
+#define _Almanac_H_
 
 
 #include <asn_application.h>
@@ -16,24 +16,26 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Almanac */
-typedef struct Almanac {
-	long	 alamanacWNa;
-	SeqOfAlmanacElement_t	 almanacList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Almanac_t;
+    /* Almanac */
+    typedef struct Almanac
+    {
+        long alamanacWNa;
+        SeqOfAlmanacElement_t almanacList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Almanac;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Almanac_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Almanac;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _Almanac_H_ */
+#endif /* _Almanac_H_ */
 #include <asn_internal.h>

@@ -45,12 +45,12 @@
 
 class ConfigurationInterface;
 
-class GalileoE5aNoncoherentIQAcquisitionCaf: public AcquisitionInterface
+class GalileoE5aNoncoherentIQAcquisitionCaf : public AcquisitionInterface
 {
 public:
     GalileoE5aNoncoherentIQAcquisitionCaf(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
 
@@ -151,10 +151,10 @@ private:
     std::string dump_filename_;
     int Zero_padding;
     int CAF_window_hz_;
-    std::complex<float> * codeI_;
-    std::complex<float> * codeQ_;
+    std::complex<float>* codeI_;
+    std::complex<float>* codeQ_;
     bool both_signal_components;
-    Gnss_Synchro * gnss_synchro_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

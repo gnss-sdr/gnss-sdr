@@ -53,11 +53,9 @@ extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 extern concurrent_map<Gps_Almanac> global_gps_almanac_map;
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-FrontEndCal::FrontEndCal()
-{}
+FrontEndCal::FrontEndCal() {}
 
-FrontEndCal::~FrontEndCal()
-{}
+FrontEndCal::~FrontEndCal() {}
 
 bool FrontEndCal::read_assistance_from_XML()
 {
@@ -67,10 +65,10 @@ bool FrontEndCal::read_assistance_from_XML()
     LOG(INFO) << "SUPL: Trying to read GPS ephemeris from XML file " << eph_xml_filename;
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
         {
-            std::map<int,Gps_Ephemeris>::iterator gps_eph_iter;
-            for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
-                    gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
-                    gps_eph_iter++)
+            std::map<int, Gps_Ephemeris>::iterator gps_eph_iter;
+            for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
+                 gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
+                 gps_eph_iter++)
                 {
                     std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
                     LOG(INFO) << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first;
@@ -87,15 +85,16 @@ bool FrontEndCal::read_assistance_from_XML()
         }
 }
 
+
 int FrontEndCal::Get_SUPL_Assist()
 {
     //######### GNSS Assistance #################################
     gnss_sdr_supl_client supl_client_acquisition_;
     gnss_sdr_supl_client supl_client_ephemeris_;
-    int supl_mcc; // Current network MCC (Mobile country code), 3 digits.
-    int supl_mns; //Current network MNC (Mobile Network code), 2 or 3 digits.
-    int supl_lac; // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
-    int supl_ci;  // Cell Identity (16 bits, 0-65535 are valid values).
+    int supl_mcc;  // Current network MCC (Mobile country code), 3 digits.
+    int supl_mns;  //Current network MNC (Mobile Network code), 2 or 3 digits.
+    int supl_lac;  // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
+    int supl_ci;   // Cell Identity (16 bits, 0-65535 are valid values).
 
     // GNSS Assistance configuration
     int error = 0;
@@ -116,21 +115,21 @@ int FrontEndCal::Get_SUPL_Assist()
             std::string default_lac = "0x59e2";
             std::string default_ci = "0x31b0";
             try
-            {
+                {
                     supl_lac = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_LAC", default_lac));
-            }
-            catch(boost::bad_lexical_cast &)
-            {
+                }
+            catch (boost::bad_lexical_cast &)
+                {
                     supl_lac = 0x59e2;
-            }
+                }
             try
-            {
+                {
                     supl_ci = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_CI", default_ci));
-            }
-            catch(boost::bad_lexical_cast &)
-            {
+                }
+            catch (boost::bad_lexical_cast &)
+                {
                     supl_ci = 0x31b0;
-            }
+                }
 
             bool SUPL_read_gps_assistance_xml = configuration_->property("GNSS-SDR.SUPL_read_gps_assistance_xml", false);
             if (SUPL_read_gps_assistance_xml == true)
@@ -147,21 +146,21 @@ int FrontEndCal::Get_SUPL_Assist()
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
-                            std::map<int,Gps_Ephemeris>::iterator gps_eph_iter;
-                            for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
-                                    gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
-                                    gps_eph_iter++)
+                            std::map<int, Gps_Ephemeris>::iterator gps_eph_iter;
+                            for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
+                                 gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
+                                 gps_eph_iter++)
                                 {
-                                    LOG(INFO)  << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first;
+                                    LOG(INFO) << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first;
                                     std::cout << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
-                                    LOG(INFO)  << "New Ephemeris record inserted with Toe=" << gps_eph_iter->second.d_Toe << " and GPS Week=" << gps_eph_iter->second.i_GPS_week;
+                                    LOG(INFO) << "New Ephemeris record inserted with Toe=" << gps_eph_iter->second.d_Toe << " and GPS Week=" << gps_eph_iter->second.i_GPS_week;
                                     global_gps_ephemeris_map.write(gps_eph_iter->second.i_satellite_PRN, gps_eph_iter->second);
                                 }
                             //Save ephemeris to XML file
                             std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
                             if (supl_client_ephemeris_.save_ephemeris_map_xml(eph_xml_filename, supl_client_ephemeris_.gps_ephemeris_map) == true)
                                 {
-                                    LOG(INFO)  << "SUPL: XML Ephemeris file created.";
+                                    LOG(INFO) << "SUPL: XML Ephemeris file created.";
                                 }
                         }
                     else
@@ -176,10 +175,10 @@ int FrontEndCal::Get_SUPL_Assist()
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
-                            std::map<int,Gps_Almanac>::iterator gps_alm_iter;
-                            for(gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.begin();
-                                    gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.end();
-                                    gps_alm_iter++)
+                            std::map<int, Gps_Almanac>::iterator gps_alm_iter;
+                            for (gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.begin();
+                                 gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.end();
+                                 gps_alm_iter++)
                                 {
                                     LOG(INFO) << "SUPL: Received Almanac for GPS SV " << gps_alm_iter->first;
                                     std::cout << "SUPL: Received Almanac for GPS SV " << gps_alm_iter->first << std::endl;
@@ -189,11 +188,11 @@ int FrontEndCal::Get_SUPL_Assist()
                                 {
                                     LOG(INFO) << "SUPL: Received GPS Iono";
                                     std::cout << "SUPL: Received GPS Iono" << std::endl;
-                                    global_gps_iono_map.write(0,supl_client_ephemeris_.gps_iono);
+                                    global_gps_iono_map.write(0, supl_client_ephemeris_.gps_iono);
                                 }
                             if (supl_client_ephemeris_.gps_utc.valid == true)
                                 {
-                                    LOG(INFO)  << "SUPL: Received GPS UTC Model";
+                                    LOG(INFO) << "SUPL: Received GPS UTC Model";
                                     std::cout << "SUPL: Received GPS UTC Model" << std::endl;
                                     global_gps_utc_model_map.write(0, supl_client_ephemeris_.gps_utc);
                                 }
@@ -212,10 +211,10 @@ int FrontEndCal::Get_SUPL_Assist()
                     error = supl_client_acquisition_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
-                            std::map<int,Gps_Acq_Assist>::iterator gps_acq_iter;
-                            for(gps_acq_iter = supl_client_acquisition_.gps_acq_map.begin();
-                                    gps_acq_iter != supl_client_acquisition_.gps_acq_map.end();
-                                    gps_acq_iter++)
+                            std::map<int, Gps_Acq_Assist>::iterator gps_acq_iter;
+                            for (gps_acq_iter = supl_client_acquisition_.gps_acq_map.begin();
+                                 gps_acq_iter != supl_client_acquisition_.gps_acq_map.end();
+                                 gps_acq_iter++)
                                 {
                                     LOG(INFO) << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first;
                                     std::cout << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first << std::endl;
@@ -246,7 +245,7 @@ bool FrontEndCal::get_ephemeris()
 
     if (read_ephemeris_from_xml == true)
         {
-            std::cout <<  "Trying to read ephemeris from XML file..." << std::endl;
+            std::cout << "Trying to read ephemeris from XML file..." << std::endl;
             LOG(INFO) << "Trying to read ephemeris from XML file...";
             if (read_assistance_from_XML() == false)
                 {
@@ -282,7 +281,7 @@ bool FrontEndCal::get_ephemeris()
 }
 
 
-arma::vec FrontEndCal::lla2ecef(const arma::vec & lla)
+arma::vec FrontEndCal::lla2ecef(const arma::vec &lla)
 {
     // WGS84 flattening
     double f = 1.0 / 298.257223563;
@@ -295,7 +294,7 @@ arma::vec FrontEndCal::lla2ecef(const arma::vec & lla)
     double lambda = (lla(1) / 360.0) * GPS_TWO_PI;
 
     ellipsoid(0) = R;
-    ellipsoid(1) = sqrt(1.0 - (1.0 - f)*(1.0 - f));
+    ellipsoid(1) = sqrt(1.0 - (1.0 - f) * (1.0 - f));
 
     arma::vec ecef = "0.0 0.0 0.0 0.0";
     ecef = geodetic2ecef(phi, lambda, lla(3), ellipsoid);
@@ -304,18 +303,18 @@ arma::vec FrontEndCal::lla2ecef(const arma::vec & lla)
 }
 
 
-arma::vec FrontEndCal::geodetic2ecef(double phi, double lambda, double h, const arma::vec & ellipsoid)
+arma::vec FrontEndCal::geodetic2ecef(double phi, double lambda, double h, const arma::vec &ellipsoid)
 {
     double a = ellipsoid(0);
-    double e2 = ellipsoid(1)*ellipsoid(1);
+    double e2 = ellipsoid(1) * ellipsoid(1);
     double sinphi = sin(phi);
     double cosphi = cos(phi);
-    double N = a / sqrt(1.0 - e2 * sinphi*sinphi);
+    double N = a / sqrt(1.0 - e2 * sinphi * sinphi);
     arma::vec ecef = "0.0 0.0 0.0 0.0";
 
     ecef(0) = (N + h) * cosphi * cos(lambda);
     ecef(1) = (N + h) * cosphi * sin(lambda);
-    ecef(2) = (N*(1.0 - e2) + h) * sinphi;
+    ecef(2) = (N * (1.0 - e2) + h) * sinphi;
 
     return ecef;
 }
@@ -335,22 +334,22 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
     obs_ecef = lla2ecef(lla);
 
     // Satellite positions ECEF
-    std::map<int,Gps_Ephemeris> eph_map;
+    std::map<int, Gps_Ephemeris> eph_map;
     eph_map = global_gps_ephemeris_map.get_map_copy();
 
-    std::map<int,Gps_Ephemeris>::iterator eph_it;
+    std::map<int, Gps_Ephemeris>::iterator eph_it;
     eph_it = eph_map.find(PRN);
 
-    if (eph_it!=eph_map.end())
+    if (eph_it != eph_map.end())
         {
             arma::vec SV_pos_ecef = "0.0 0.0 0.0 0.0";
             double obs_time_start, obs_time_stop;
-            obs_time_start = TOW - num_secs/2;
-            obs_time_stop = TOW + num_secs/2;
-            int n_points = round((obs_time_stop - obs_time_start)/step_secs);
+            obs_time_start = TOW - num_secs / 2;
+            obs_time_stop = TOW + num_secs / 2;
+            int n_points = round((obs_time_stop - obs_time_start) / step_secs);
             arma::vec ranges = arma::zeros(n_points, 1);
             double obs_time = obs_time_start;
-            for (int i=0; i<n_points; i++)
+            for (int i = 0; i < n_points; i++)
                 {
                     eph_it->second.satellitePosition(obs_time);
                     SV_pos_ecef(0) = eph_it->second.d_satpos_X;
@@ -364,7 +363,7 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
             // Numeric derivative: Positive slope means that the distance from obs to
             // satellite is increasing
             arma::vec obs_to_sat_velocity;
-            obs_to_sat_velocity = (ranges.subvec(1, (n_points - 1)) - ranges.subvec(0, (n_points - 2)))/step_secs;
+            obs_to_sat_velocity = (ranges.subvec(1, (n_points - 1)) - ranges.subvec(0, (n_points - 2))) / step_secs;
             // Doppler equations are formulated accounting for positive velocities if the
             // tx and rx are approaching to each other. So, the satellite velocity must
             // be redefined as:
@@ -372,7 +371,7 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
 
             //Doppler estimation
             arma::vec Doppler_Hz;
-            Doppler_Hz = (obs_to_sat_velocity/GPS_C_m_s)*GPS_L1_FREQ_HZ;
+            Doppler_Hz = (obs_to_sat_velocity / GPS_C_m_s) * GPS_L1_FREQ_HZ;
             double mean_Doppler_Hz;
             mean_Doppler_Hz = arma::mean(Doppler_Hz);
             return mean_Doppler_Hz;
@@ -394,22 +393,20 @@ void FrontEndCal::GPS_L1_front_end_model_E4000(double f_bb_true_Hz, double f_bb_
     const double R = 2.0;
 
     // Obtained RF center frequency
-    double f_rf_pll = (f_osc_n * (N + X / Y)) /R;
+    double f_rf_pll = (f_osc_n * (N + X / Y)) / R;
 
     // RF frequency error caused by fractional PLL roundings
     double f_bb_err_pll = GPS_L1_FREQ_HZ - f_rf_pll;
 
     // Measured F_rf error
     double f_rf_err = (f_bb_meas_Hz - f_bb_true_Hz) - f_bb_err_pll;
-    double f_osc_err_hz = (f_rf_err*R)/(N+X/Y);
+    double f_osc_err_hz = (f_rf_err * R) / (N + X / Y);
 
     // OJO,segun los datos gnss, la IF positiva hace disminuir la fs!!
     f_osc_err_hz = -f_osc_err_hz;
-    *f_osc_err_ppm = f_osc_err_hz/(f_osc_n/1e6);
+    *f_osc_err_ppm = f_osc_err_hz / (f_osc_n / 1e6);
 
-    double frac = fs_nominal_hz/f_osc_n;
-    *estimated_fs_Hz = frac*(f_osc_n + f_osc_err_hz);
+    double frac = fs_nominal_hz / f_osc_n;
+    *estimated_fs_Hz = frac * (f_osc_n + f_osc_err_hz);
     *estimated_f_if_Hz = f_rf_err;
 }
-
-

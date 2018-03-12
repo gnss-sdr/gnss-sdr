@@ -39,8 +39,7 @@
 using google::LogMessage;
 
 Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "short";
     std::string default_dump_file = "./data/gn3s_source.dat";
@@ -54,7 +53,6 @@ Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
             gn3s_source_ = gn3s_make_source_cc();
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "gn3s_source(" << gn3s_source_->unique_id() << ")";
-
         }
     //    else if (item_type_.compare("short") == 0)
     //        {
@@ -65,7 +63,7 @@ Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_
-                    << " unrecognized item type for resampler";
+                         << " unrecognized item type for resampler";
             item_size_ = sizeof(short);
         }
     if (dump_)
@@ -80,10 +78,9 @@ Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
 }
 
 
-
 Gn3sSignalSource::~Gn3sSignalSource()
-{}
-
+{
+}
 
 
 void Gn3sSignalSource::connect(gr::top_block_sptr top_block)
@@ -98,7 +95,6 @@ void Gn3sSignalSource::connect(gr::top_block_sptr top_block)
             DLOG(INFO) << "nothing to connect internally";
         }
 }
-
 
 
 void Gn3sSignalSource::disconnect(gr::top_block_sptr top_block)

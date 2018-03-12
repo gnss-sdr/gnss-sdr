@@ -40,7 +40,7 @@ s32 getbits(const u8 *buff, u32 pos, u8 len);
 void setbitu(u8 *buff, u32 pos, u32 len, u32 data);
 void setbits(u8 *buff, u32 pos, u32 len, s32 data);
 void bitcopy(void *dst, u32 dst_index,
-             const void *src, u32 src_index, u32 count);
+    const void *src, u32 src_index, u32 count);
 void bitshl(void *buf, u32 size, u32 shift);
 u8 count_bits_u64(u64 v, u8 bv);
 u8 count_bits_u32(u32 v, u8 bv);

@@ -47,8 +47,8 @@
 
 #include "INIReader.h"
 #include "ini.h"
-#include <cctype> // for tolower
-#include <cstdlib> // for strol
+#include <cctype>   // for tolower
+#include <cstdlib>  // for stro
 
 
 INIReader::INIReader(std::string filename)
@@ -92,7 +92,7 @@ std::string INIReader::MakeKey(std::string section, std::string name)
 
 
 int INIReader::ValueHandler(void* user, const char* section, const char* name,
-                            const char* value)
+    const char* value)
 {
     INIReader* reader = static_cast<INIReader*>(user);
     reader->_values[MakeKey(section, name)] = value;

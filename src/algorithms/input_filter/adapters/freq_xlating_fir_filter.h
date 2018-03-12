@@ -60,12 +60,12 @@ class ConfigurationInterface;
  * given a set of band edges, the desired response on those bands, and the weight given
  * to the error in those bands.
  */
-class FreqXlatingFirFilter: public GNSSBlockInterface
+class FreqXlatingFirFilter : public GNSSBlockInterface
 {
 public:
     FreqXlatingFirFilter(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~FreqXlatingFirFilter();
 
@@ -101,7 +101,7 @@ private:
     size_t input_size_;
     std::string output_item_type_;
     std::string taps_item_type_;
-    std::vector <float> taps_;
+    std::vector<float> taps_;
     double intermediate_freq_;
     double sampling_freq_;
     std::string role_;
@@ -117,4 +117,4 @@ private:
     void init();
 };
 
-#endif // GNSS_SDR_FREQ_XLATING_FIR_FILTER_H_
+#endif  // GNSS_SDR_FREQ_XLATING_FIR_FILTER_H_

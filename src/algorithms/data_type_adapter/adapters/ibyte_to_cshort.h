@@ -44,12 +44,12 @@ class ConfigurationInterface;
  * \brief Adapts a short integer (16 bits) interleaved sample stream into a std::complex<short> stream
  *
  */
-class IbyteToCshort: public GNSSBlockInterface
+class IbyteToCshort : public GNSSBlockInterface
 {
 public:
     IbyteToCshort(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~IbyteToCshort();
 

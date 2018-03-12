@@ -62,7 +62,6 @@ public:
     bool Event_failed_tracking_standby();
 
 private:
-
     void start_acquisition();
     void start_tracking();
     void request_satellite();

@@ -41,9 +41,9 @@ set(GNSS_SPLIBS_SOURCES
 
 if(OPENCL_FOUND)
     set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
-         fft_execute.cc # Needs OpenCL
-         fft_setup.cc # Needs OpenCL
-         fft_kernelstring.cc # Needs OpenCL
+         opencl/fft_execute.cc # Needs OpenCL
+         opencl/fft_setup.cc # Needs OpenCL
+         opencl/fft_kernelstring.cc # Needs OpenCL
     )
 endif(OPENCL_FOUND)
 

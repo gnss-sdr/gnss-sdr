@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSReferenceTime_H_
-#define	_GANSSReferenceTime_H_
+#ifndef _GANSSReferenceTime_H_
+#define _GANSSReferenceTime_H_
 
 
 #include <asn_application.h>
@@ -15,23 +15,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSSTOD_GSMTimeAssociation;
+    /* Forward declarations */
+    struct GANSSTOD_GSMTimeAssociation;
 
-/* GANSSReferenceTime */
-typedef struct GANSSReferenceTime {
-	GANSSRefTimeInfo_t	 ganssRefTimeInfo;
-	struct GANSSTOD_GSMTimeAssociation	*ganssTOD_GSMTimeAssociation	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSReferenceTime_t;
+    /* GANSSReferenceTime */
+    typedef struct GANSSReferenceTime
+    {
+        GANSSRefTimeInfo_t ganssRefTimeInfo;
+        struct GANSSTOD_GSMTimeAssociation *ganssTOD_GSMTimeAssociation /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSReferenceTime;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSReferenceTime_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSReferenceTime;
 
 #ifdef __cplusplus
 }
@@ -40,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_GANSSReferenceTime;
 /* Referred external types */
 #include "GANSSTOD-GSMTimeAssociation.h"
 
-#endif	/* _GANSSReferenceTime_H_ */
+#endif /* _GANSSReferenceTime_H_ */
 #include <asn_internal.h>

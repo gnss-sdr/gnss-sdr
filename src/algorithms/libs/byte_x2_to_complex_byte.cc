@@ -40,10 +40,9 @@ byte_x2_to_complex_byte_sptr make_byte_x2_to_complex_byte()
 }
 
 
-
 byte_x2_to_complex_byte::byte_x2_to_complex_byte() : sync_block("byte_x2_to_complex_byte",
-                        gr::io_signature::make (2, 2, sizeof(int8_t)),   // int8_t, defined in stdint.h and included in volk.h (signed char)
-                        gr::io_signature::make (1, 1, sizeof(lv_8sc_t))) // lv_8sc_t is a Volk's typedef for std::complex<signed char>
+                                                         gr::io_signature::make(2, 2, sizeof(int8_t)),    // int8_t, defined in stdint.h and included in volk.h (signed char)
+                                                         gr::io_signature::make(1, 1, sizeof(lv_8sc_t)))  // lv_8sc_t is a Volk's typedef for std::complex<signed char>
 {
     const int alignment_multiple = volk_get_alignment() / sizeof(lv_8sc_t);
     set_alignment(std::max(1, alignment_multiple));
@@ -51,8 +50,8 @@ byte_x2_to_complex_byte::byte_x2_to_complex_byte() : sync_block("byte_x2_to_comp
 
 
 int byte_x2_to_complex_byte::work(int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
 {
     const int8_t *in0 = reinterpret_cast<const int8_t *>(input_items[0]);
     const int8_t *in1 = reinterpret_cast<const int8_t *>(input_items[1]);
@@ -60,7 +59,7 @@ int byte_x2_to_complex_byte::work(int noutput_items,
     // This could be put into a volk kernel
     int8_t real_part;
     int8_t imag_part;
-    for(int number = 0; number < noutput_items; number++)
+    for (int number = 0; number < noutput_items; number++)
         {
             // lv_cmake(r, i) defined at volk/volk_complex.h
             real_part = *in0++;

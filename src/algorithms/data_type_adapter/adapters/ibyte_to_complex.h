@@ -44,12 +44,12 @@ class ConfigurationInterface;
  * \brief Adapts an I/Q interleaved byte integer sample stream to a gr_complex (float) stream
  *
  */
-class IbyteToComplex: public GNSSBlockInterface
+class IbyteToComplex : public GNSSBlockInterface
 {
 public:
     IbyteToComplex(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~IbyteToComplex();
 

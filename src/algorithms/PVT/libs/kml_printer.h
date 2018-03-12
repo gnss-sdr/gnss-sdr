@@ -50,6 +50,7 @@ private:
     std::ofstream kml_file;
     bool positions_printed;
     std::string kml_filename;
+
 public:
     Kml_Printer();
     ~Kml_Printer();

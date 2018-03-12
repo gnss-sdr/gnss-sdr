@@ -24,11 +24,12 @@ The steps to reproduce the experiment in your own machine (with [Docker](https:/
 
 ```
 $ docker pull carlesfernandez/docker-gnsssdr:access18
+$ docker run -it -v $PWD/access18:/home/access18 carlesfernandez/docker-gnsssdr:access18
 $ git clone https://github.com/gnss-sdr/gnss-sdr
 $ cd gnss-sdr
 $ git checkout next
 $ mkdir -p exp-access18/data
-$ cd ex-access18/data
+$ cd exp-access18/data
 $ curl https://zenodo.org/record/1184601/files/L2_signal_samples.tar.xz --output L2_signal_samples.tar.xz
 $ tar xvfJ L2_signal_samples.tar.xz
 $ echo "3a04c1eeb970776bb77f5e3b7eaff2df  L2_signal_samples.tar.xz" > data.md5
@@ -37,6 +38,11 @@ $ cd ..
 $ cp ../src/utils/reproducibility/ieee-access18/L2-access18.conf .
 $ cp ../src/utils/reproducibility/ieee-access18/plot_dump.m .
 $ cp -r ../src/utils/matlab/libs/geoFunctions .
+$ gnss-sdr --c=L2-access18.conf
 $ octave --no-gui plot_dump.m
 $ epspdf Figure2.eps Figure2.pdf
+$ cp Figure2.pdf /home/access18/
+$ exit
 ```
+
+You will find the file `Figure2.pdf` in a newly created folder called `access18`.

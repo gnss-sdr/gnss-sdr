@@ -40,12 +40,12 @@
 
 class ConfigurationInterface;
 
-class PulseBlankingFilter: public GNSSBlockInterface
+class PulseBlankingFilter : public GNSSBlockInterface
 {
 public:
     PulseBlankingFilter(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~PulseBlankingFilter();
 
@@ -86,4 +86,4 @@ private:
     gr::filter::freq_xlating_fir_filter_ccf::sptr freq_xlating_;
 };
 
-#endif // GNSS_SDR_PULSE_BLANKING_FILTER_H_
+#endif  // GNSS_SDR_PULSE_BLANKING_FILTER_H_

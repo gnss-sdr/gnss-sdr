@@ -278,4 +278,3 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid)
     flowgraph->stop();
     EXPECT_FALSE(flowgraph->running());
 }
-

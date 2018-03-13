@@ -637,14 +637,7 @@ void dll_pll_veml_tracking::run_dll_pll(bool disable_costas_loop)
 
 void dll_pll_veml_tracking::clear_tracking_vars()
 {
-    if (d_veml)
-        {
-            *d_Very_Early = gr_complex(0.0, 0.0);
-            *d_Very_Late = gr_complex(0.0, 0.0);
-        }
-    *d_Early = gr_complex(0.0, 0.0);
-    *d_Prompt = gr_complex(0.0, 0.0);
-    *d_Late = gr_complex(0.0, 0.0);
+    std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
     d_carr_error_hz = 0.0;
     d_carr_error_filt_hz = 0.0;
     d_code_error_chips = 0.0;
@@ -1069,10 +1062,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             *out[0] = current_synchro_data;
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 

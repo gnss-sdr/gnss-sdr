@@ -39,6 +39,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      glonass_l1_ca_dll_pll_tracking_cc.cc
      glonass_l1_ca_dll_pll_c_aid_tracking_cc.cc
      glonass_l1_ca_dll_pll_c_aid_tracking_sc.cc
+     gps_l1_ca_kf_tracking_cc.cc
      ${OPT_TRACKING_BLOCKS}   
 )
 

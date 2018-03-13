@@ -36,6 +36,7 @@ set(TRACKING_ADAPTER_SOURCES
      glonass_l1_ca_dll_pll_tracking.cc
      glonass_l1_ca_dll_pll_c_aid_tracking.cc
      gps_l5i_dll_pll_tracking.cc
+     gps_l1_ca_kf_tracking.cc
      ${OPT_TRACKING_ADAPTERS}
 )
  

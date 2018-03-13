@@ -38,7 +38,7 @@
 
 //!Generates complex GPS L2C M code for the desired SV ID
 void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, unsigned int _prn);
-
+void gps_l2c_m_code_gen_float(float* _dest, unsigned int _prn);
 
 //! Generates complex GPS L2C M code for the desired SV ID, and sampled to specific sampling frequency
 void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs);

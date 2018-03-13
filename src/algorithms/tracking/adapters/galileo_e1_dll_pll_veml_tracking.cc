@@ -51,7 +51,6 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
     int vector_length;
-    int f_if;
     bool dump;
     std::string dump_filename;
     std::string item_type;
@@ -64,11 +63,10 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     float very_early_late_space_chips;
     float early_late_space_narrow_chips;
     float very_early_late_space_narrow_chips;
-
+    unified_ = configuration->property(role + ".unified", true);
     item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
@@ -93,23 +91,45 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
-            item_size_ = sizeof(gr_complex);
-            tracking_ = galileo_e1_dll_pll_veml_make_tracking_cc(
-                f_if,
-                fs_in,
-                vector_length,
-                dump,
-                dump_filename,
-                pll_bw_hz,
-                dll_bw_hz,
-                pll_bw_narrow_hz,
-                dll_bw_narrow_hz,
-                early_late_space_chips,
-                very_early_late_space_chips,
-                early_late_space_narrow_chips,
-                very_early_late_space_narrow_chips,
-                extend_correlation_symbols,
-                track_pilot);
+            if (unified_)
+                {
+                    char sig_[3] = "1B";
+                    item_size_ = sizeof(gr_complex);
+                    tracking_unified_ = dll_pll_veml_make_tracking(
+                        fs_in,
+                        vector_length,
+                        dump,
+                        dump_filename,
+                        pll_bw_hz,
+                        dll_bw_hz,
+                        pll_bw_narrow_hz,
+                        dll_bw_narrow_hz,
+                        early_late_space_chips,
+                        very_early_late_space_chips,
+                        early_late_space_narrow_chips,
+                        very_early_late_space_narrow_chips,
+                        extend_correlation_symbols,
+                        track_pilot, 'E', sig_);
+                }
+            else
+                {
+                    tracking_ = galileo_e1_dll_pll_veml_make_tracking_cc(
+                        0,
+                        fs_in,
+                        vector_length,
+                        dump,
+                        dump_filename,
+                        pll_bw_hz,
+                        dll_bw_hz,
+                        pll_bw_narrow_hz,
+                        dll_bw_narrow_hz,
+                        early_late_space_chips,
+                        very_early_late_space_chips,
+                        early_late_space_narrow_chips,
+                        very_early_late_space_narrow_chips,
+                        extend_correlation_symbols,
+                        track_pilot);
+                }
         }
     else
         {
@@ -130,7 +150,10 @@ GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking()
 
 void GalileoE1DllPllVemlTracking::start_tracking()
 {
-    tracking_->start_tracking();
+    if (unified_)
+        tracking_unified_->start_tracking();
+    else
+        tracking_->start_tracking();
 }
 
 
@@ -140,13 +163,19 @@ void GalileoE1DllPllVemlTracking::start_tracking()
 void GalileoE1DllPllVemlTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    tracking_->set_channel(channel);
+    if (unified_)
+        tracking_unified_->set_channel(channel);
+    else
+        tracking_->set_channel(channel);
 }
 
 
 void GalileoE1DllPllVemlTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    tracking_->set_gnss_synchro(p_gnss_synchro);
+    if (unified_)
+        tracking_unified_->set_gnss_synchro(p_gnss_synchro);
+    else
+        tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
 
@@ -170,11 +199,17 @@ void GalileoE1DllPllVemlTracking::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_left_block()
 {
-    return tracking_;
+    if (unified_)
+        return tracking_unified_;
+    else
+        return tracking_;
 }
 
 
 gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_right_block()
 {
-    return tracking_;
+    if (unified_)
+        return tracking_unified_;
+    else
+        return tracking_;
 }

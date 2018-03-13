@@ -37,13 +37,14 @@
 #define DLL_PLL_MAXIMUM_LOCK_FAIL_COUNTER 50
 #define DLL_PLL_CARRIER_LOCK_THRESHOLD 0.85
 
-#include <fstream>
-#include <string>
-#include <gnuradio/block.h>
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include "cpu_multicorrelator_real_codes.h"
+#include <fstream>
+#include <string>
+#include <gnuradio/block.h>
+
 
 class dll_pll_veml_tracking;
 
@@ -57,7 +58,7 @@ dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(double fs_in, unsigned int
     float early_late_space_narrow_chips,
     float very_early_late_space_narrow_chips,
     int extend_correlation_symbols, bool track_pilot,
-    char system, char signal[3], bool veml);
+    char system, char signal[3]);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL VEML (Very Early
@@ -91,7 +92,7 @@ private:
         float very_early_late_space_chips, float early_late_space_narrow_chips,
         float very_early_late_space_narrow_chips,
         int extend_correlation_symbols, bool track_pilot,
-        char system, char signal[3], bool veml);
+        char system, char signal[3]);
 
     dll_pll_veml_tracking(double fs_in, unsigned int vector_length,
         bool dump,
@@ -106,62 +107,63 @@ private:
         float very_early_late_space_narrow_chips,
         int extend_correlation_symbols,
         bool track_pilot,
-        char system, char signal[3], bool veml);
+        char system, char signal[3]);
 
     bool cn0_and_tracking_lock_status();
+    bool acquire_secondary();
     void do_correlation_step(const gr_complex *input_samples);
     void run_dll_pll(bool disable_costas_loop);
-    void update_local_code();
-    void update_local_carrier();
-    bool acquire_secondary();
-
+    void update_tracking_vars();
     void clear_tracking_vars();
-
+    void save_correlation_results();
     void log_data();
+    int save_matfile();
 
     // tracking configuration vars
     bool d_dump;
     bool d_veml;
-    bool d_secondary;
-    unsigned int d_secondary_code_length;
-    std::string *d_secondary_code_string;
-    Gnss_Synchro *d_acquisition_gnss_synchro;
     unsigned int d_vector_length;
     unsigned int d_channel;
-    // long d_fs_in;
     double d_fs_in;
-
+    Gnss_Synchro *d_acquisition_gnss_synchro;
 
     //Signal parameters
+    bool d_secondary;
+    bool interchange_iq;
     double d_signal_carrier_freq;
     double d_code_period;
     double d_code_chip_rate;
+    unsigned int d_secondary_code_length;
     unsigned int d_code_length_chips;
+    unsigned int d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
+    int d_symbols_per_bit;
+    std::string systemName;
+    std::string signal_type;
+    std::string *d_secondary_code_string;
 
     //tracking state machine
     int d_state;
 
     //Integration period in samples
-    int d_correlation_length_samples;
     int d_correlation_length_ms;
     int d_n_correlator_taps;
-    double d_early_late_spc_chips;
-    double d_very_early_late_spc_chips;
-    double d_early_late_spc_narrow_chips;
-    double d_very_early_late_spc_narrow_chips;
+    float d_early_late_spc_chips;
+    float d_very_early_late_spc_chips;
+    float d_early_late_spc_narrow_chips;
+    float d_very_early_late_spc_narrow_chips;
 
     float *d_tracking_code;
     float *d_data_code;
     float *d_local_code_shift_chips;
-    float *d_null_shift;
-    gr_complex *d_correlator_outs;
+    float *d_prompt_data_shift;
     cpu_multicorrelator_real_codes multicorrelator_cpu;
-    //TODO: currently the multicorrelator does not support adding extra correlator
-    //with different local code, thus we need extra multicorrelator instance.
-    //Implement this functionality inside multicorrelator class
-    //as an enhancement to increase the performance
     cpu_multicorrelator_real_codes correlator_data_cpu;  //for data channel
-
+    /*  TODO: currently the multicorrelator does not support adding extra correlator
+        with different local code, thus we need extra multicorrelator instance.
+        Implement this functionality inside multicorrelator class
+        as an enhancement to increase the performance
+     */
+    gr_complex *d_correlator_outs;
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
     gr_complex *d_Prompt;
@@ -178,6 +180,7 @@ private:
     gr_complex d_P_accu;
     gr_complex d_L_accu;
     gr_complex d_VL_accu;
+    gr_complex d_last_prompt;
 
     bool d_track_pilot;
     gr_complex *d_Prompt_Data;
@@ -206,39 +209,34 @@ private:
     double d_carr_error_filt_hz;
     double d_code_error_chips;
     double d_code_error_filt_chips;
-
     double d_K_blk_samples;
-
     double d_code_freq_chips;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;
     double d_rem_code_phase_chips;
     double d_code_phase_samples;
-
+    double T_chip_seconds;
+    double T_prn_seconds;
+    double T_prn_samples;
+    double K_blk_samples;
     //PRN period in samples
     int d_current_prn_length_samples;
-
     //processing samples counters
     unsigned long int d_sample_counter;
     unsigned long int d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
-    std::deque<gr_complex> d_Prompt_buffer_deque;
-    gr_complex *d_Prompt_buffer;
+    int d_carrier_lock_fail_counter;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
-    int d_carrier_lock_fail_counter;
+    std::deque<gr_complex> d_Prompt_buffer_deque;
+    gr_complex *d_Prompt_buffer;
 
     // file dump
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-
-    std::string systemName;
-    std::string signal_type;
-
-    int save_matfile();
 };
 
 #endif  //GNSS_SDR_DLL_PLL_VEML_TRACKING_H

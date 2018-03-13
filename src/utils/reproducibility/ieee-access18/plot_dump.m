@@ -186,7 +186,7 @@ plot(0,0,'k*');
 
 
 [x,y,z] = cylinder([TWO_DRMS TWO_DRMS],200);
-plot(x(1,:),y(1,:),[0 0.6 0],'Color',[0 0.6 0]);
+plot(x(1,:),y(1,:),'Color',[0 0.6 0]);
 str = strcat('2DRMS=',num2str(TWO_DRMS), ' m');
 text(cosd(65)*TWO_DRMS,sind(65)*TWO_DRMS,str,'Color',[0 0.6 0]);
 
@@ -227,11 +227,13 @@ hSurface=surf(MRSE*x,MRSE*y,MRSE*z);  % sphere centered at origin
 set(hSurface,'facecolor','none','edgecolor',[0 0.6 0],'edgealpha',1,'facealpha',1);
 
 %axis equal;
-xlabel('North [m]','fontname','Times','fontsize', fontsize)
-ylabel('East [m]','fontname','Times','fontsize', fontsize)
-zlabel('Up [m]','fontname','Times','fontsize', fontsize)
-str = strcat('MRSE=',num2str(MRSE), ' m');
+xlabel('North [m]','fontname','Times','fontsize', fontsize-2)
+ylabel('East [m]','fontname','Times','fontsize', fontsize-2)
+zlabel('Up [m]','fontname','Times','fontsize', fontsize-2)
+str = strcat('MRSE=',num2str(MRSE), ' m')
 text(cosd(45)*MRSE,sind(45)*MRSE,20,str,'Color',[0 0.6 0]);
+a=gca;
+set(a,'fontsize',fontsize-6)
 
 hh=findall(hf,'-property','FontName');
 set(hh,'FontName','Times');

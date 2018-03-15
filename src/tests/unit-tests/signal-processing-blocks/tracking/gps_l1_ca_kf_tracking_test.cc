@@ -1,8 +1,8 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking_test.cc
- * \brief  This class implements a tracking test for Galileo_E5a_DLL_PLL_Tracking
+ * \file gps_l1_ca_kf_tracking_test.cc
+ * \brief  This class implements a tracking test for GPS_L1_CA_KF_Tracking
  *  implementation based on some input parameters.
- * \author Javier Arribas, 2017. jarribas(at)cttc.es
+ * \author Carles Fernandez, 2018
  *
  *
  * -------------------------------------------------------------------------
@@ -51,39 +51,39 @@
 #include "tracking_dump_reader.h"
 #include "signal_generator_flags.h"
 #include "gnuplot_i.h"
-#include "gnss_sdr_flags.h"
 #include "test_flags.h"
+#include "gnss_sdr_flags.h"
 
-DEFINE_bool(plot_gps_l1_tracking_test, false, "Plots results of GpsL1CADllPllTrackingTest with gnuplot");
+DEFINE_bool(plot_gps_l1_kf_tracking_test, false, "Plots results of GpsL1CAKfTrackingTest with gnuplot");
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
-class GpsL1CADllPllTrackingTest_msg_rx;
+class GpsL1CAKfTrackingTest_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx> GpsL1CADllPllTrackingTest_msg_rx_sptr;
+typedef boost::shared_ptr<GpsL1CAKfTrackingTest_msg_rx> GpsL1CAKfTrackingTest_msg_rx_sptr;
 
-GpsL1CADllPllTrackingTest_msg_rx_sptr GpsL1CADllPllTrackingTest_msg_rx_make();
+GpsL1CAKfTrackingTest_msg_rx_sptr GpsL1CAKfTrackingTest_msg_rx_make();
 
-class GpsL1CADllPllTrackingTest_msg_rx : public gr::block
+class GpsL1CAKfTrackingTest_msg_rx : public gr::block
 {
 private:
-    friend GpsL1CADllPllTrackingTest_msg_rx_sptr GpsL1CADllPllTrackingTest_msg_rx_make();
+    friend GpsL1CAKfTrackingTest_msg_rx_sptr GpsL1CAKfTrackingTest_msg_rx_make();
     void msg_handler_events(pmt::pmt_t msg);
-    GpsL1CADllPllTrackingTest_msg_rx();
+    GpsL1CAKfTrackingTest_msg_rx();
 
 public:
     int rx_message;
-    ~GpsL1CADllPllTrackingTest_msg_rx();  //!< Default destructor
+    ~GpsL1CAKfTrackingTest_msg_rx();  //!< Default destructor
 };
 
 
-GpsL1CADllPllTrackingTest_msg_rx_sptr GpsL1CADllPllTrackingTest_msg_rx_make()
+GpsL1CAKfTrackingTest_msg_rx_sptr GpsL1CAKfTrackingTest_msg_rx_make()
 {
-    return GpsL1CADllPllTrackingTest_msg_rx_sptr(new GpsL1CADllPllTrackingTest_msg_rx());
+    return GpsL1CAKfTrackingTest_msg_rx_sptr(new GpsL1CAKfTrackingTest_msg_rx());
 }
 
 
-void GpsL1CADllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
+void GpsL1CAKfTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
@@ -98,22 +98,22 @@ void GpsL1CADllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 }
 
 
-GpsL1CADllPllTrackingTest_msg_rx::GpsL1CADllPllTrackingTest_msg_rx() : gr::block("GpsL1CADllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+GpsL1CAKfTrackingTest_msg_rx::GpsL1CAKfTrackingTest_msg_rx() : gr::block("GpsL1CAKfTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CADllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CAKfTrackingTest_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
 
 
-GpsL1CADllPllTrackingTest_msg_rx::~GpsL1CADllPllTrackingTest_msg_rx()
+GpsL1CAKfTrackingTest_msg_rx::~GpsL1CAKfTrackingTest_msg_rx()
 {
 }
 
 
 // ###########################################################
 
-class GpsL1CADllPllTrackingTest : public ::testing::Test
+class GpsL1CAKfTrackingTest : public ::testing::Test
 {
 public:
     std::string generator_binary;
@@ -123,7 +123,7 @@ public:
     std::string p4;
     std::string p5;
 
-    std::string implementation = "GPS_L1_CA_DLL_PLL_Tracking";  //"GPS_L1_CA_DLL_PLL_C_Aid_Tracking";
+    std::string implementation = "GPS_L1_CA_KF_Tracking";  // "GPS_L1_CA_KF_Tracking";
 
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
 
@@ -145,7 +145,7 @@ public:
         arma::vec& meas_time_s,
         arma::vec& meas_value);
 
-    GpsL1CADllPllTrackingTest()
+    GpsL1CAKfTrackingTest()
     {
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
@@ -153,7 +153,7 @@ public:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CADllPllTrackingTest()
+    ~GpsL1CAKfTrackingTest()
     {
     }
 
@@ -167,7 +167,7 @@ public:
 };
 
 
-int GpsL1CADllPllTrackingTest::configure_generator()
+int GpsL1CAKfTrackingTest::configure_generator()
 {
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
@@ -183,12 +183,12 @@ int GpsL1CADllPllTrackingTest::configure_generator()
         }
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
-    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  //Baseband sampling frequency [MSps]
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  // Baseband sampling frequency [MSps]
     return 0;
 }
 
 
-int GpsL1CADllPllTrackingTest::generate_signal()
+int GpsL1CAKfTrackingTest::generate_signal()
 {
     int child_status;
 
@@ -211,7 +211,7 @@ int GpsL1CADllPllTrackingTest::generate_signal()
 }
 
 
-void GpsL1CADllPllTrackingTest::configure_receiver()
+void GpsL1CAKfTrackingTest::configure_receiver()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'G';
@@ -223,14 +223,6 @@ void GpsL1CADllPllTrackingTest::configure_receiver()
     // Set Tracking
     config->set_property("Tracking_1C.implementation", implementation);
     config->set_property("Tracking_1C.item_type", "gr_complex");
-    if (FLAGS_pll_bw_hz != 0.0)
-        {
-            config->set_property("Tracking_1C.pll_bw_hz", std::to_string(FLAGS_pll_bw_hz));
-        }
-    else
-        {
-            config->set_property("Tracking_1C.pll_bw_hz", "20.0");
-        }
     if (FLAGS_dll_bw_hz != 0.0)
         {
             config->set_property("Tracking_1C.dll_bw_hz", std::to_string(FLAGS_dll_bw_hz));
@@ -246,7 +238,7 @@ void GpsL1CADllPllTrackingTest::configure_receiver()
 }
 
 
-void GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& true_time_s,
+void GpsL1CAKfTrackingTest::check_results_doppler(arma::vec& true_time_s,
     arma::vec& true_value,
     arma::vec& meas_time_s,
     arma::vec& meas_value)
@@ -286,7 +278,7 @@ void GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& true_time_s,
 }
 
 
-void GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(arma::vec& true_time_s,
+void GpsL1CAKfTrackingTest::check_results_acc_carrier_phase(arma::vec& true_time_s,
     arma::vec& true_value,
     arma::vec& meas_time_s,
     arma::vec& meas_value)
@@ -325,7 +317,7 @@ void GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(arma::vec& true_
 }
 
 
-void GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec& true_time_s,
+void GpsL1CAKfTrackingTest::check_results_codephase(arma::vec& true_time_s,
     arma::vec& true_value,
     arma::vec& meas_time_s,
     arma::vec& meas_value)
@@ -365,7 +357,7 @@ void GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec& true_time_s,
 }
 
 
-TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
+TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
 {
     // Configure the signal generator
     configure_generator();
@@ -394,7 +386,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_1C", implementation, 1, 1);
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);  //std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
-    boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx> msg_rx = GpsL1CADllPllTrackingTest_msg_rx_make();
+    boost::shared_ptr<GpsL1CAKfTrackingTest_msg_rx> msg_rx = GpsL1CAKfTrackingTest_msg_rx_make();
 
     // load acquisition data based on the first epoch of the true observations
     ASSERT_EQ(true_obs_data.read_binary_obs(), true)
@@ -518,7 +510,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Signal tracking completed in " << elapsed_seconds.count() << " seconds." << std::endl;
 
-    if (FLAGS_plot_gps_l1_tracking_test == true)
+    if (FLAGS_plot_gps_l1_kf_tracking_test == true)
         {
             const std::string gnuplot_executable(FLAGS_gnuplot_executable);
             if (gnuplot_executable.empty())

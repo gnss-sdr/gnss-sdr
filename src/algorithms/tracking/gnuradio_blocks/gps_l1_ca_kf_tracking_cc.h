@@ -51,24 +51,21 @@
 class Gps_L1_Ca_Kf_Tracking_cc;
 
 typedef boost::shared_ptr<Gps_L1_Ca_Kf_Tracking_cc>
-        gps_l1_ca_kf_tracking_cc_sptr;
+    gps_l1_ca_kf_tracking_cc_sptr;
 
 gps_l1_ca_kf_tracking_cc_sptr
 gps_l1_ca_kf_make_tracking_cc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float early_late_space_chips);
-
+    long fs_in, unsigned int vector_length,
+    bool dump,
+    std::string dump_filename,
+    float pll_bw_hz,
+    float early_late_space_chips);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class Gps_L1_Ca_Kf_Tracking_cc: public gr::block
+class Gps_L1_Ca_Kf_Tracking_cc : public gr::block
 {
 public:
     ~Gps_L1_Ca_Kf_Tracking_cc();
@@ -77,30 +74,26 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
 
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
     friend gps_l1_ca_kf_tracking_cc_sptr
     gps_l1_ca_kf_make_tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float dll_bw_hz,
+        float early_late_space_chips);
 
     Gps_L1_Ca_Kf_Tracking_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float dll_bw_hz,
+        float early_late_space_chips);
 
     // tracking configuration vars
     unsigned int d_vector_length;
@@ -120,24 +113,24 @@ private:
     double d_rem_carr_phase_rad;
 
     // Kalman filter variables
-    arma::mat kf_P_x_ini; //initial state error covariance matrix
-    arma::mat kf_P_x; //state error covariance matrix
-    arma::mat kf_P_x_pre; //Predicted state error covariance matrix
-    arma::mat kf_P_y; //innovation covariance matrix
-    arma::mat kf_F; //state transition matrix
-    arma::mat kf_H; //system matrix
-    arma::mat kf_R; //measurement error covariance matrix
-    arma::mat kf_Q; //system error covariance matrix
-    arma::colvec kf_x; //state vector
-    arma::colvec kf_x_pre; //predicted state vector
-    arma::colvec kf_y; //measurement vector
-    arma::colvec kf_y_pre; //measurement vector
-    arma::mat kf_K; //Kalman gain matrix
+    arma::mat kf_P_x_ini;   //initial state error covariance matrix
+    arma::mat kf_P_x;       //state error covariance matrix
+    arma::mat kf_P_x_pre;   //Predicted state error covariance matrix
+    arma::mat kf_P_y;       //innovation covariance matrix
+    arma::mat kf_F;         //state transition matrix
+    arma::mat kf_H;         //system matrix
+    arma::mat kf_R;         //measurement error covariance matrix
+    arma::mat kf_Q;         //system error covariance matrix
+    arma::colvec kf_x;      //state vector
+    arma::colvec kf_x_pre;  //predicted state vector
+    arma::colvec kf_y;      //measurement vector
+    arma::colvec kf_y_pre;  //measurement vector
+    arma::mat kf_K;         //Kalman gain matrix
 
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter;
+    //Tracking_2nd_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     double d_acq_code_phase_samples;
@@ -182,6 +175,8 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
+
+    int save_matfile();
 };
 
-#endif //GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
+#endif  //GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H

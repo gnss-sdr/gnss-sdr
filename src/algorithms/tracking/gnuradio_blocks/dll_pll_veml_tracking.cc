@@ -126,6 +126,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
     // initialize internal vars
     d_dump = dump;
     d_veml = false;
+    d_synchonizing = false;
     d_track_pilot = track_pilot;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
@@ -533,6 +534,7 @@ void dll_pll_veml_tracking::start_tracking()
 
     // enable tracking pull-in
     d_state = 1;
+    d_synchonizing = false;
     d_Prompt_buffer_deque.clear();
     d_last_prompt = gr_complex(0.0, 0.0);
     LOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
@@ -1008,22 +1010,34 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                             }
                         else  //Signal does not have secondary code. Search a bit transition by sign change
                             {
-                                if (d_current_symbol == (d_symbols_per_bit - 1))
+                                if (d_synchonizing)
                                     {
-                                        next_state = true;
-                                    }
-                                else if (d_current_symbol > 0)
-                                    {
-                                        d_current_symbol++;
+                                        if (d_Prompt->real() * d_last_prompt.real() > 0.0)
+                                            {
+                                                d_current_symbol++;
+                                            }
+                                        else if (d_current_symbol > d_symbols_per_bit)
+                                            {
+                                                d_synchonizing = false;
+                                                d_current_symbol = 1;
+                                            }
+                                        else
+                                            {
+                                                d_current_symbol = 1;
+                                                d_last_prompt = *d_Prompt;
+                                            }
                                     }
                                 else if (d_last_prompt.real() != 0.0)
                                     {
-                                        if (d_Prompt->real() * d_last_prompt.real() < 0.0)
-                                            {
-                                                d_current_symbol = 1;
-                                            }
+                                        d_current_symbol++;
+                                        if (d_current_symbol == d_symbols_per_bit) next_state = true;
                                     }
-                                d_last_prompt = *d_Prompt;
+                                else
+                                    {
+                                        d_last_prompt = *d_Prompt;
+                                        d_synchonizing = true;
+                                        d_current_symbol = 1;
+                                    }
                             }
                         if (next_state)
                             {  // reset extended correlator
@@ -1035,24 +1049,21 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 d_last_prompt = gr_complex(0.0, 0.0);
                                 d_Prompt_buffer_deque.clear();
                                 d_current_symbol = 0;
-
+                                d_synchonizing = false;
                                 // Set narrow taps delay values [chips]
-                                if (d_secondary)
+                                d_code_loop_filter.set_DLL_BW(d_dll_bw_narrow_hz);
+                                d_carrier_loop_filter.set_PLL_BW(d_pll_bw_narrow_hz);
+                                if (d_veml)
                                     {
-                                        d_code_loop_filter.set_DLL_BW(d_dll_bw_narrow_hz);
-                                        d_carrier_loop_filter.set_PLL_BW(d_pll_bw_narrow_hz);
-                                        if (d_veml)
-                                            {
-                                                d_local_code_shift_chips[0] = -d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                                d_local_code_shift_chips[1] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                                d_local_code_shift_chips[3] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                                d_local_code_shift_chips[4] = d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                            }
-                                        else
-                                            {
-                                                d_local_code_shift_chips[0] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                                d_local_code_shift_chips[2] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                            }
+                                        d_local_code_shift_chips[0] = -d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                        d_local_code_shift_chips[1] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                        d_local_code_shift_chips[3] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                        d_local_code_shift_chips[4] = d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                    }
+                                else
+                                    {
+                                        d_local_code_shift_chips[0] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                        d_local_code_shift_chips[2] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
                                     }
 
                                 // UPDATE INTEGRATION TIME

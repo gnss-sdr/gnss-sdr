@@ -143,7 +143,7 @@ private:
 
     //tracking state machine
     int d_state;
-
+    bool d_synchonizing;
     //Integration period in samples
     int d_correlation_length_ms;
     int d_n_correlator_taps;

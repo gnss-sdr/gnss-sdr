@@ -63,7 +63,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     float very_early_late_space_chips;
     float early_late_space_narrow_chips;
     float very_early_late_space_narrow_chips;
-    unified_ = configuration->property(role + ".unified", true);
+    unified_ = configuration->property(role + ".unified", false);
     item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);

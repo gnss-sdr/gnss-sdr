@@ -208,9 +208,16 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
                     d_correlation_length_ms = 4;
                     d_code_samples_per_chip = 2;  // CBOC disabled: 2 samples per chip. CBOC enabled: 12 samples per chip
                     d_veml = true;
-                    d_secondary = true;
-                    d_secondary_code_length = static_cast<unsigned int>(Galileo_E1_C_SECONDARY_CODE_LENGTH);
-                    d_secondary_code_string = const_cast<std::string *>(&Galileo_E1_C_SECONDARY_CODE);
+                    if (d_track_pilot)
+                        {
+                            d_secondary = true;
+                            d_secondary_code_length = static_cast<unsigned int>(Galileo_E1_C_SECONDARY_CODE_LENGTH);
+                            d_secondary_code_string = const_cast<std::string *>(&Galileo_E1_C_SECONDARY_CODE);
+                        }
+                    else
+                        {
+                            d_secondary = false;
+                        }
                     interchange_iq = false;  // Note that E1-B and E1-C are in anti-phase, NOT IN QUADRATURE. See Galileo ICD.
                 }
             else if (signal_type.compare("5X") == 0)
@@ -273,7 +280,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
     d_tracking_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
-    std::fill_n(d_tracking_code, 2 * d_code_length_chips, 0.0);
     // correlator outputs (scalar)
     if (d_veml)
         {
@@ -339,7 +345,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
             d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             d_Prompt_Data[0] = gr_complex(0.0, 0.0);
             d_data_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
-            std::fill_n(d_data_code, 2 * d_code_length_chips, 0.0);
         }
 
     //--- Initializations ---//
@@ -457,29 +462,14 @@ void dll_pll_veml_tracking::start_tracking()
             if (d_track_pilot)
                 {
                     char pilot_signal[3] = "1C";
-                    galileo_e1_code_gen_float_sampled(d_tracking_code,
-                        pilot_signal,
-                        false,  //CBOC disabled
-                        d_acquisition_gnss_synchro->PRN,
-                        Galileo_E1_CODE_CHIP_RATE_HZ,
-                        0);
-                    galileo_e1_code_gen_float_sampled(d_data_code,
-                        d_acquisition_gnss_synchro->Signal,
-                        false,  //CBOC disabled
-                        d_acquisition_gnss_synchro->PRN,
-                        Galileo_E1_CODE_CHIP_RATE_HZ,
-                        0);
+                    galileo_e1_code_gen_sinboc11_float(d_tracking_code, pilot_signal, d_acquisition_gnss_synchro->PRN);
+                    galileo_e1_code_gen_sinboc11_float(d_data_code, d_acquisition_gnss_synchro->Signal, d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
                     correlator_data_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_data_code, d_prompt_data_shift);
                 }
             else
                 {
-                    galileo_e1_code_gen_float_sampled(d_tracking_code,
-                        d_acquisition_gnss_synchro->Signal,
-                        false,  //CBOC disabled
-                        d_acquisition_gnss_synchro->PRN,
-                        Galileo_E1_CODE_CHIP_RATE_HZ,
-                        0);
+                    galileo_e1_code_gen_sinboc11_float(d_tracking_code, d_acquisition_gnss_synchro->Signal, d_acquisition_gnss_synchro->PRN);
                 }
         }
     else if (systemName.compare("Galileo") == 0 and signal_type.compare("5X") == 0)
@@ -693,8 +683,8 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
     multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
         d_rem_carr_phase_rad,
         d_carrier_phase_step_rad,
-        d_rem_code_phase_chips * static_cast<double>(d_code_samples_per_chip),
-        d_code_phase_step_chips * static_cast<double>(d_code_samples_per_chip),
+        static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
+        static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
         d_vector_length);
 
     // DATA CORRELATOR (if tracking tracks the pilot signal)
@@ -704,8 +694,8 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
             correlator_data_cpu.Carrier_wipeoff_multicorrelator_resampler(
                 d_rem_carr_phase_rad,
                 d_carrier_phase_step_rad,
-                d_rem_code_phase_chips * static_cast<double>(d_code_samples_per_chip),
-                d_code_phase_step_chips * static_cast<double>(d_code_samples_per_chip),
+                static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
+                static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
                 d_vector_length);
         }
 }
@@ -847,13 +837,29 @@ void dll_pll_veml_tracking::log_data()
             double tmp_double;
             if (d_track_pilot)
                 {
-                    prompt_I = d_Prompt_Data->real();
-                    prompt_Q = d_Prompt_Data->imag();
+                    if (interchange_iq)
+                        {
+                            prompt_I = d_Prompt_Data->imag();
+                            prompt_Q = d_Prompt_Data->real();
+                        }
+                    else
+                        {
+                            prompt_I = d_Prompt_Data->real();
+                            prompt_Q = d_Prompt_Data->imag();
+                        }
                 }
             else
                 {
-                    prompt_I = d_Prompt->real();
-                    prompt_Q = d_Prompt->imag();
+                    if (interchange_iq)
+                        {
+                            prompt_I = d_Prompt->imag();
+                            prompt_Q = d_Prompt->real();
+                        }
+                    else
+                        {
+                            prompt_I = d_Prompt->real();
+                            prompt_Q = d_Prompt->imag();
+                        }
                 }
             if (d_veml)
                 {
@@ -991,6 +997,12 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 if (d_Prompt_buffer_deque.size() == d_secondary_code_length)
                                     {
                                         next_state = acquire_secondary();
+                                        if (next_state)
+                                            {
+                                                std::cout << "Secondary code locked for CH " << d_channel
+                                                          << " : Satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+                                            }
+
                                         d_Prompt_buffer_deque.pop_front();
                                     }
                             }
@@ -1023,21 +1035,24 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 d_last_prompt = gr_complex(0.0, 0.0);
                                 d_Prompt_buffer_deque.clear();
                                 d_current_symbol = 0;
-                                d_code_loop_filter.set_DLL_BW(d_dll_bw_narrow_hz);
-                                d_carrier_loop_filter.set_PLL_BW(d_pll_bw_narrow_hz);
 
                                 // Set narrow taps delay values [chips]
-                                if (d_veml)
+                                if (d_secondary)
                                     {
-                                        d_local_code_shift_chips[0] = -d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                        d_local_code_shift_chips[1] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                        d_local_code_shift_chips[3] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                        d_local_code_shift_chips[4] = d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                    }
-                                else
-                                    {
-                                        d_local_code_shift_chips[0] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                        d_local_code_shift_chips[2] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                        d_code_loop_filter.set_DLL_BW(d_dll_bw_narrow_hz);
+                                        d_carrier_loop_filter.set_PLL_BW(d_pll_bw_narrow_hz);
+                                        if (d_veml)
+                                            {
+                                                d_local_code_shift_chips[0] = -d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[1] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[3] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[4] = d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                            }
+                                        else
+                                            {
+                                                d_local_code_shift_chips[0] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[2] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                            }
                                     }
 
                                 // UPDATE INTEGRATION TIME
@@ -1075,14 +1090,31 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 // ########### Output the tracking results to Telemetry block ##########
                 if (interchange_iq)
                     {
-                        //Note that data and pilot components are in quadrature. I and Q are interchanged
-                        current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt_Data).imag());
-                        current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt_Data).real());
+                        if (d_track_pilot)
+                            {
+                                //Note that data and pilot components are in quadrature. I and Q are interchanged
+                                current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt_Data).imag());
+                                current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt_Data).real());
+                            }
+                        else
+                            {
+                                current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).imag());
+                                current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).real());
+                            }
                     }
                 else
                     {
-                        current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
-                        current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
+                        if (d_track_pilot)
+                            {
+                                //Note that data and pilot components are in quadrature. I and Q are interchanged
+                                current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt_Data).real());
+                                current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt_Data).imag());
+                            }
+                        else
+                            {
+                                current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
+                                current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
+                            }
                     }
                 current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                 current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
@@ -1131,14 +1163,31 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         // ########### Output the tracking results to Telemetry block ##########
                         if (interchange_iq)
                             {
-                                //Note that data and pilot components are in quadrature. I and Q are interchanged
-                                current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt_Data).imag());
-                                current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt_Data).real());
+                                if (d_track_pilot)
+                                    {
+                                        //Note that data and pilot components are in quadrature. I and Q are interchanged
+                                        current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt_Data).imag());
+                                        current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt_Data).real());
+                                    }
+                                else
+                                    {
+                                        current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).imag());
+                                        current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).real());
+                                    }
                             }
                         else
                             {
-                                current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
-                                current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
+                                if (d_track_pilot)
+                                    {
+                                        //Note that data and pilot components are in quadrature. I and Q are interchanged
+                                        current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt_Data).real());
+                                        current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt_Data).imag());
+                                    }
+                                else
+                                    {
+                                        current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
+                                        current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
+                                    }
                             }
                         current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                         current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;

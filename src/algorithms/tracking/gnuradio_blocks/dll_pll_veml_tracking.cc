@@ -887,6 +887,7 @@ void dll_pll_veml_tracking::log_data(bool integrating)
             tmp_L = std::abs<float>(d_L_accu);
             if (integrating)
                 {
+                    //TODO: Improve this solution!
                     // It compensates the amplitude difference while integrating
                     float scale_factor = static_cast<float>(d_extend_correlation_symbols) / static_cast<float>(d_extend_correlation_symbols_count);
                     tmp_VE *= scale_factor;
@@ -1027,7 +1028,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_Prompt_buffer_deque.pop_front();
                                     }
                             }
-                        else  //Signal does not have secondary code. Search a bit transition by sign change
+                        else if (d_symbols_per_bit > 1)  //Signal does not have secondary code. Search a bit transition by sign change
                             {
                                 if (d_synchonizing)
                                     {
@@ -1057,6 +1058,10 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_synchonizing = true;
                                         d_current_symbol = 1;
                                     }
+                            }
+                        else
+                            {
+                                next_state = true;
                             }
                         if (next_state)
                             {  // reset extended correlator
@@ -1089,9 +1094,9 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 if (d_enable_extended_integration)
                                     {
                                         d_extend_correlation_symbols_count = 0;
-                                        float new_correlation_time_s = static_cast<float>(d_extend_correlation_symbols) * static_cast<float>(d_code_period);
-                                        d_carrier_loop_filter.set_pdi(new_correlation_time_s);
-                                        d_code_loop_filter.set_pdi(new_correlation_time_s);
+                                        float new_correlation_time = static_cast<float>(d_extend_correlation_symbols) * static_cast<float>(d_code_period);
+                                        d_carrier_loop_filter.set_pdi(new_correlation_time);
+                                        d_code_loop_filter.set_pdi(new_correlation_time);
                                         d_state = 3;  // next state is the extended correlator integrator
                                         LOG(INFO) << "Enabled " << d_extend_correlation_symbols << " [symbols] extended correlator for CH "
                                                   << d_channel

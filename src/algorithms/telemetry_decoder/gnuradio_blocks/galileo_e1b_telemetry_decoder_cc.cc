@@ -399,32 +399,32 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
             if (d_nav.flag_TOW_5 == true)  //page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
                     //TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_5 + GALILEO_INAV_PAGE_PART_SECONDS + (static_cast<double>(required_symbols)) * GALILEO_E1_CODE_PERIOD;  //-GALILEO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
+                    d_TOW_at_current_symbol = d_nav.TOW_5 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols - 1) * GALILEO_E1_CODE_PERIOD;  //-GALILEO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
                     d_nav.flag_TOW_5 = false;
                 }
 
             else if (d_nav.flag_TOW_6 == true)  //page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
                     //TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_6 + GALILEO_INAV_PAGE_PART_SECONDS + (static_cast<double>(required_symbols)) * GALILEO_E1_CODE_PERIOD;  //-GALILEO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
+                    d_TOW_at_current_symbol = d_nav.TOW_6 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols - 1) * GALILEO_E1_CODE_PERIOD;  //-GALILEO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
                     d_nav.flag_TOW_6 = false;
                 }
             else
                 {
                     //this page has no timing information
-                    d_TOW_at_current_symbol = d_TOW_at_current_symbol + GALILEO_E1_CODE_PERIOD;  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
+                    d_TOW_at_current_symbol += GALILEO_E1_CODE_PERIOD;  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
                 }
         }
     else  //if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GALILEO_E1_CODE_PERIOD;
+            d_TOW_at_current_symbol += GALILEO_E1_CODE_PERIOD;
         }
 
     //if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
 
     if (d_nav.flag_GGTO_1 == true and d_nav.flag_GGTO_2 == true and d_nav.flag_GGTO_3 == true and d_nav.flag_GGTO_4 == true)  //all GGTO parameters arrived
         {
-            delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64)));
+            delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64.0)));
         }
 
     if (d_flag_frame_sync == true and d_nav.flag_TOW_set == true)

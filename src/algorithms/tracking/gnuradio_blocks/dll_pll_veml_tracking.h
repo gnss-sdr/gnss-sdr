@@ -112,16 +112,17 @@ private:
     bool cn0_and_tracking_lock_status();
     bool acquire_secondary();
     void do_correlation_step(const gr_complex *input_samples);
-    void run_dll_pll(bool disable_costas_loop);
+    void run_dll_pll();
     void update_tracking_vars();
     void clear_tracking_vars();
     void save_correlation_results();
-    void log_data();
+    void log_data(bool integrating);
     int save_matfile();
 
     // tracking configuration vars
     bool d_dump;
     bool d_veml;
+    bool d_cloop;
     unsigned int d_vector_length;
     unsigned int d_channel;
     double d_fs_in;

@@ -126,6 +126,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
     // initialize internal vars
     d_dump = dump;
     d_veml = false;
+    d_cloop = true;
     d_synchonizing = false;
     d_track_pilot = track_pilot;
     d_fs_in = fs_in;
@@ -535,6 +536,7 @@ void dll_pll_veml_tracking::start_tracking()
     // enable tracking pull-in
     d_state = 1;
     d_synchonizing = false;
+    d_cloop = true;
     d_Prompt_buffer_deque.clear();
     d_last_prompt = gr_complex(0.0, 0.0);
     LOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
@@ -703,11 +705,11 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
 }
 
 
-void dll_pll_veml_tracking::run_dll_pll(bool enable_costas_loop)
+void dll_pll_veml_tracking::run_dll_pll()
 {
     // ################## PLL ##########################################################
     // PLL discriminator
-    if (enable_costas_loop)
+    if (d_cloop)
         {
             // Costas loop discriminator, insensitive to 180 deg phase transitions
             d_carr_error_hz = pll_cloop_two_quadrant_atan(d_P_accu) / PI_2;
@@ -823,11 +825,18 @@ void dll_pll_veml_tracking::save_correlation_results()
             d_E_accu += *d_Early;
             d_P_accu += *d_Prompt;
             d_L_accu += *d_Late;
+            d_current_symbol++;
+            d_current_symbol %= d_symbols_per_bit;
         }
+    // If tracking pilot, disable Costas loop
+    if (d_track_pilot)
+        d_cloop = false;
+    else
+        d_cloop = true;
 }
 
 
-void dll_pll_veml_tracking::log_data()
+void dll_pll_veml_tracking::log_data(bool integrating)
 {
     if (d_dump)
         {
@@ -876,6 +885,16 @@ void dll_pll_veml_tracking::log_data()
             tmp_E = std::abs<float>(d_E_accu);
             tmp_P = std::abs<float>(d_P_accu);
             tmp_L = std::abs<float>(d_L_accu);
+            if (integrating)
+                {
+                    // It compensates the amplitude difference while integrating
+                    float scale_factor = static_cast<float>(d_extend_correlation_symbols) / static_cast<float>(d_extend_correlation_symbols_count);
+                    tmp_VE *= scale_factor;
+                    tmp_E *= scale_factor;
+                    tmp_P *= scale_factor;
+                    tmp_L *= scale_factor;
+                    tmp_VL *= scale_factor;
+                }
 
             try
                 {
@@ -987,11 +1006,11 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     {
                         bool next_state = false;
                         // Perform DLL/PLL tracking loop computations. Costas Loop enabled
-                        run_dll_pll(true);
+                        run_dll_pll();
                         update_tracking_vars();
 
                         // enable write dump file this cycle (valid DLL/PLL cycle)
-                        log_data();
+                        log_data(false);
                         if (d_secondary)
                             {
                                 // ####### SECONDARY CODE LOCK #####
@@ -1139,6 +1158,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         d_extend_correlation_symbols_count = 0;
                         d_state = 4;
                     }
+                log_data(true);
                 break;
             }
         case 4:  // narrow tracking
@@ -1158,17 +1178,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     }
                 else
                     {
-                        run_dll_pll(!d_secondary);
-                        //EQUIVALENT TO THE LINE ABOVE if (d_secondary)
-                        //{
-                        //    //If secondary code is locked, disable Costas Loop
-                        //    run_dll_pll(false);
-                        //}
-                        //else
-                        //{
-                        //    //The signal does not have secondary code, enable Costas Loop
-                        //    run_dll_pll(true);
-                        //}
+                        run_dll_pll();
                         update_tracking_vars();
 
                         // ########### Output the tracking results to Telemetry block ##########
@@ -1207,7 +1217,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         current_synchro_data.Flag_valid_symbol_output = true;
                         current_synchro_data.correlation_length_ms = d_correlation_length_ms;
                         // enable write dump file this cycle (valid DLL/PLL cycle)
-                        log_data();
+                        log_data(false);
                         // reset extended correlator
                         d_VE_accu = gr_complex(0.0, 0.0);
                         d_E_accu = gr_complex(0.0, 0.0);

@@ -49,13 +49,13 @@ class Tracking_2nd_DLL_filter
 {
 private:
     // PLL filter parameters
-    float d_tau1_code = 0;
-    float d_tau2_code = 0;
-    float d_pdi_code = 0;
-    float d_dllnoisebandwidth = 0;
-    float d_dlldampingratio = 0;
-    float d_old_code_error = 0;
-    float d_old_code_nco = 0;
+    float d_tau1_code = 0.0;
+    float d_tau2_code = 0.0;
+    float d_pdi_code = 0.0;
+    float d_dllnoisebandwidth = 0.0;
+    float d_dlldampingratio = 0.0;
+    float d_old_code_error = 0.0;
+    float d_old_code_nco = 0.0;
     void calculate_lopp_coef(float* tau1, float* tau2, float lbw, float zeta, float k);
 
 public:

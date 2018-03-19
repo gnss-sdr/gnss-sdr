@@ -36,6 +36,7 @@
 #include "GPS_CNAV.h"
 #include "MATH_CONSTANTS.h"
 #include <cstdint>
+#include <string>
 
 
 // Physical constants
@@ -181,7 +182,11 @@ const int GPS_L5_SYMBOLS_PER_BIT = 2;
 const int GPS_L5_SAMPLES_PER_SYMBOL = 10;
 const int GPS_L5_CNAV_DATA_PAGE_SYMBOLS = 600;
 const int GPS_L5_CNAV_DATA_PAGE_DURATION_S = 6;
-const int GPS_L5_NH_CODE_LENGTH = 10;
-const int GPS_L5_NH_CODE[10] = {0, 0, 0, 0, 1, 1, 0, 1, 0, 1};
+const int GPS_L5i_NH_CODE_LENGTH = 10;
+const int GPS_L5i_NH_CODE[10] = {0, 0, 0, 0, 1, 1, 0, 1, 0, 1};
+const std::string GPS_L5i_NH_CODE_STR = "0000110101";
+const int GPS_L5q_NH_CODE_LENGTH = 20;
+const int GPS_L5q_NH_CODE[20] = {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0};
+const std::string GPS_L5q_NH_CODE_STR = "00000100110101001110";
 
 #endif /* GNSS_SDR_GPS_L5_H_ */

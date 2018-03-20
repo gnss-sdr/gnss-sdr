@@ -86,6 +86,8 @@ public:
 
     void wait();
 
+    void start_acquisition_helper();
+
     /*!
      * \brief Applies an action to the flowgraph
      *

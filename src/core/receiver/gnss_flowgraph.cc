@@ -107,6 +107,8 @@ void GNSSFlowgraph::connect()
         }
 
     for (int i = 0; i < sources_count_; i++)
+    {
+        if (configuration_->property(sig_source_.at(i)->role() + ".enable_FPGA", false)==false)
         {
             try
                 {
@@ -120,9 +122,12 @@ void GNSSFlowgraph::connect()
                     return;
                 }
         }
+    }
 
     // Signal Source > Signal conditioner >
     for (unsigned int i = 0; i < sig_conditioner_.size(); i++)
+    {
+        if (configuration_->property(sig_conditioner_.at(i)->role() + ".enable_FPGA", false)==false)
         {
             try
                 {
@@ -136,6 +141,7 @@ void GNSSFlowgraph::connect()
                     return;
                 }
         }
+    }
 
     for (unsigned int i = 0; i < channels_count_; i++)
         {
@@ -184,6 +190,10 @@ void GNSSFlowgraph::connect()
 
     for (int i = 0; i < sources_count_; i++)
         {
+        //FPGA Accelerators do not need signal sources or conditioners
+        //as the samples are feed directly to the FPGA fabric, so, if enabled, do not connect any source
+        if (configuration_->property(sig_source_.at(i)->role() + ".enable_FPGA", false)==false)
+	{
             try
                 {
                     //TODO: Remove this array implementation and create generic multistream connector
@@ -244,12 +254,17 @@ void GNSSFlowgraph::connect()
                     return;
                 }
         }
+    }
     DLOG(INFO) << "Signal source connected to signal conditioner";
 
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
     int selected_signal_conditioner_ID;
     for (unsigned int i = 0; i < channels_count_; i++)
         {
+
+    		bool FPGA_enabled = configuration_->property(sig_conditioner_.at(selected_signal_conditioner_ID)->role() + ".enable_FPGA", false);
+	if (FPGA_enabled == false)
+	{
             selected_signal_conditioner_ID = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".RF_channel_ID", 0);
             try
                 {
@@ -265,7 +280,7 @@ void GNSSFlowgraph::connect()
                 }
 
             DLOG(INFO) << "signal conditioner " << selected_signal_conditioner_ID << " connected to channel " << i;
-
+	}
             // Signal Source > Signal conditioner >> Channels >> Observables
             try
                 {
@@ -285,7 +300,10 @@ void GNSSFlowgraph::connect()
 
             if (channels_state_[i] == 1)
                 {
+		if (FPGA_enabled == false)
+		{
                     channels_.at(i)->start_acquisition();
+		}
                     available_GNSS_signals_.pop_front();
                     LOG(INFO) << "Channel " << i << " assigned to " << channels_.at(i)->get_signal();
                     LOG(INFO) << "Channel " << i << " connected to observables and ready for acquisition";
@@ -295,11 +313,14 @@ void GNSSFlowgraph::connect()
                     LOG(INFO) << "Channel " << i << " connected to observables in standby mode";
                 }
             //connect the sample counter to the channel 0
+	if (FPGA_enabled == false)
+	{	
             if (i == 0)
                 {
                     ch_out_sample_counter = gnss_sdr_make_sample_counter();
                     top_block_->connect(channels_.at(i)->get_right_block(), 0, ch_out_sample_counter, 0);
                 }
+	}
         }
 
     /*
@@ -326,6 +347,16 @@ void GNSSFlowgraph::connect()
     top_block_->dump();
 }
 
+void GNSSFlowgraph::start_acquisition_helper()
+{
+    for (unsigned int i = 0; i < channels_count_; i++)
+    {
+        if (channels_state_[i] == 1)
+            {
+                channels_.at(i)->start_acquisition();
+            }
+    }
+}
 
 void GNSSFlowgraph::wait()
 {

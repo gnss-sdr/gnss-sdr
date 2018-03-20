@@ -40,6 +40,7 @@
 #include "configuration_interface.h"
 #include "GPS_L1_CA.h"
 #include "gnss_sdr_flags.h"
+#include "display.h"
 #include <glog/logging.h>
 
 using google::LogMessage;
@@ -50,16 +51,11 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
-    int fs_in;
-    int vector_length;
-    bool dump;
-    std::string dump_filename;
-    std::string item_type;
     std::string default_item_type = "gr_complex";
-    item_type = configuration->property(role + ".item_type", default_item_type);
+    std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    dump = configuration->property(role + ".dump", false);
+    int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    bool dump = configuration->property(role + ".dump", false);
     unified_ = configuration->property(role + ".unified", false);
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
@@ -70,10 +66,14 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
-    vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    int vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
-    if (symbols_extended_correlator < 1) symbols_extended_correlator = 1;
+    if (symbols_extended_correlator < 1 or symbols_extended_correlator > 20)
+        {
+            symbols_extended_correlator = 1;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be between 1 and 20. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
+        }
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
@@ -82,14 +82,9 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
                     char sig_[3] = "1C";
                     item_size_ = sizeof(gr_complex);
                     tracking_unified_ = dll_pll_veml_make_tracking(
-                        fs_in,
-                        vector_length,
-                        dump,
-                        dump_filename,
-                        pll_bw_hz,
-                        dll_bw_hz,
-                        pll_bw_narrow_hz,
-                        dll_bw_narrow_hz,
+                        fs_in, vector_length, dump,
+                        dump_filename, pll_bw_hz, dll_bw_hz,
+                        pll_bw_narrow_hz, dll_bw_narrow_hz,
                         early_late_space_chips,
                         early_late_space_chips,
                         early_late_space_narrow_chips,
@@ -101,13 +96,8 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
             else
                 {
                     tracking_ = gps_l1_ca_dll_pll_make_tracking_cc(
-                        0,
-                        fs_in,
-                        vector_length,
-                        dump,
-                        dump_filename,
-                        pll_bw_hz,
-                        dll_bw_hz,
+                        0, fs_in, vector_length, dump,
+                        dump_filename, pll_bw_hz, dll_bw_hz,
                         early_late_space_chips);
                 }
         }

@@ -39,6 +39,7 @@
 #include "lock_detectors.h"
 #include "control_message_factory.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_sdr_flags.h"
 
 #include "Galileo_E1.h"
 #include "galileo_e1_signal_processing.h"
@@ -365,11 +366,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[DLL_PLL_CN0_ESTIMATION_SAMPLES];
+    d_Prompt_buffer = new gr_complex[FLAGS_cn0_samples];
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = DLL_PLL_CARRIER_LOCK_THRESHOLD;
+    d_carrier_lock_threshold = FLAGS_carrier_lock_th;
 
     clear_tracking_vars();
 
@@ -635,7 +636,7 @@ bool dll_pll_veml_tracking::acquire_secondary()
 bool dll_pll_veml_tracking::cn0_and_tracking_lock_status()
 {
     // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-    if (d_cn0_estimation_counter < DLL_PLL_CN0_ESTIMATION_SAMPLES)
+    if (d_cn0_estimation_counter < FLAGS_cn0_samples)
         {
             // fill buffer with prompt correlator output values
             d_Prompt_buffer[d_cn0_estimation_counter] = d_P_accu;
@@ -646,11 +647,11 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status()
         {
             d_cn0_estimation_counter = 0;
             // Code lock indicator
-            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, DLL_PLL_CN0_ESTIMATION_SAMPLES, static_cast<long>(d_fs_in), static_cast<double>(d_code_length_chips));
+            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, static_cast<long>(d_fs_in), static_cast<double>(d_code_length_chips));
             // Carrier lock indicator
-            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, DLL_PLL_CN0_ESTIMATION_SAMPLES);
+            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
             // Loss of lock detection
-            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < DLL_PLL_MINIMUM_VALID_CN0)
+            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                 {
                     d_carrier_lock_fail_counter++;
                 }
@@ -658,7 +659,7 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status()
                 {
                     if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
                 }
-            if (d_carrier_lock_fail_counter > DLL_PLL_MAXIMUM_LOCK_FAIL_COUNTER)
+            if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                 {
                     std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                     LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
@@ -1074,25 +1075,10 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 d_Prompt_buffer_deque.clear();
                                 d_current_symbol = 0;
                                 d_synchonizing = false;
-                                // Set narrow taps delay values [chips]
-                                d_code_loop_filter.set_DLL_BW(d_dll_bw_narrow_hz);
-                                d_carrier_loop_filter.set_PLL_BW(d_pll_bw_narrow_hz);
-                                if (d_veml)
-                                    {
-                                        d_local_code_shift_chips[0] = -d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                        d_local_code_shift_chips[1] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                        d_local_code_shift_chips[3] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                        d_local_code_shift_chips[4] = d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                    }
-                                else
-                                    {
-                                        d_local_code_shift_chips[0] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                        d_local_code_shift_chips[2] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                    }
 
-                                // UPDATE INTEGRATION TIME
                                 if (d_enable_extended_integration)
                                     {
+                                        // UPDATE INTEGRATION TIME
                                         d_extend_correlation_symbols_count = 0;
                                         float new_correlation_time = static_cast<float>(d_extend_correlation_symbols) * static_cast<float>(d_code_period);
                                         d_carrier_loop_filter.set_pdi(new_correlation_time);
@@ -1104,6 +1090,21 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         std::cout << "Enabled " << d_extend_correlation_symbols << " [symbols] extended correlator for CH "
                                                   << d_channel
                                                   << " : Satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+                                        // Set narrow taps delay values [chips]
+                                        d_code_loop_filter.set_DLL_BW(d_dll_bw_narrow_hz);
+                                        d_carrier_loop_filter.set_PLL_BW(d_pll_bw_narrow_hz);
+                                        if (d_veml)
+                                            {
+                                                d_local_code_shift_chips[0] = -d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[1] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[3] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[4] = d_very_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                            }
+                                        else
+                                            {
+                                                d_local_code_shift_chips[0] = -d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[2] = d_early_late_spc_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                            }
                                     }
                                 else
                                     {

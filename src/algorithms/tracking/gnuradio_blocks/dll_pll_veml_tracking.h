@@ -32,11 +32,6 @@
 #ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 
-#define DLL_PLL_CN0_ESTIMATION_SAMPLES 20
-#define DLL_PLL_MINIMUM_VALID_CN0 25
-#define DLL_PLL_MAXIMUM_LOCK_FAIL_COUNTER 50
-#define DLL_PLL_CARRIER_LOCK_THRESHOLD 0.85
-
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"

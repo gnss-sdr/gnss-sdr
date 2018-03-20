@@ -641,7 +641,6 @@ private:
     {
     public:
         Rtcm_Session(boost::asio::ip::tcp::socket socket, Rtcm_Listener_Room& room) : socket_(std::move(socket)), room_(room) {}
-
         inline void start()
         {
             room_.join(shared_from_this());
@@ -665,12 +664,13 @@ private:
             boost::asio::async_read(socket_,
                 boost::asio::buffer(read_msg_.data(), Rtcm_Message::header_length),
                 [this, self](boost::system::error_code ec, std::size_t /*length*/) {
-                    if (!ec && read_msg_.decode_header())
+                    if (!ec and read_msg_.decode_header())
                         {
                             do_read_message_body();
                         }
-                    else if (!ec && !read_msg_.decode_header())
+                    else if (!ec and !read_msg_.decode_header())
                         {
+                            /*  TODO: The commented code throws an exception. Solve it!
                             client_says += read_msg_.data();
                             bool first = true;
                             while (client_says.length() >= 80)
@@ -683,6 +683,7 @@ private:
                                     std::cout << client_says.substr(0, 80) << std::endl;
                                     client_says = client_says.substr(80, client_says.length() - 80);
                                 }
+                            */
                             do_read_message_header();
                         }
                     else
@@ -719,8 +720,7 @@ private:
         {
             auto self(shared_from_this());
             boost::asio::async_write(socket_,
-                boost::asio::buffer(write_msgs_.front().body(),
-                    write_msgs_.front().body_length()),
+                boost::asio::buffer(write_msgs_.front().body(), write_msgs_.front().body_length()),
                 [this, self](boost::system::error_code ec, std::size_t /*length*/) {
                     if (!ec)
                         {

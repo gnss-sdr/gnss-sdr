@@ -78,7 +78,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
             extend_correlation_symbols = 1;
             std::cout << TEXT_RED << "WARNING: Galileo E1. Extended coherent integration is not allowed when tracking the data component. Coherent integration has been set to 4 ms (1 symbol)" << TEXT_RESET << std::endl;
         }
-    if (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz)
+    if ((extend_correlation_symbols > 1) and (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz))
         {
             std::cout << TEXT_RED << "WARNING: Galileo E1. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
         }

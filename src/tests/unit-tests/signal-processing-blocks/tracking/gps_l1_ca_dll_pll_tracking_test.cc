@@ -225,11 +225,7 @@ void GpsL1CADllPllTrackingTest::configure_receiver()
     config->set_property("Tracking_1C.pll_bw_hz", "20.0");
     config->set_property("Tracking_1C.dll_bw_hz", "2.0");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
-    config->set_property("Tracking_1C.pll_bw_narrow_hz", "20.0");
-    config->set_property("Tracking_1C.dll_bw_narrow_hz", "2.0");
-    config->set_property("Tracking_1C.early_late_space_narrow_chips", "0.5");
     config->set_property("Tracking_1C.unified", "true");
-    config->set_property("Tracking_1C.extend_correlation_ms", "1");
     config->set_property("Tracking_1C.dump", "true");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
 }
@@ -395,7 +391,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     true_obs_data.restart();
 
     std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << std::endl;
-    gnss_synchro.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD;
+    gnss_synchro.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD;
     gnss_synchro.Acq_doppler_hz = true_obs_data.doppler_l1_hz;
     gnss_synchro.Acq_samplestamp_samples = 0;
 

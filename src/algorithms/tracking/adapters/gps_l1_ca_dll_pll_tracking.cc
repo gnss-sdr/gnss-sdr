@@ -84,7 +84,7 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
         {
             std::cout << TEXT_RED << "WARNING: GPS L1 C/A does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << std::endl;
         }
-    if (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz)
+    if ((symbols_extended_correlator > 1) and (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz))
         {
             std::cout << TEXT_RED << "WARNING: GPS L1 C/A. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
         }

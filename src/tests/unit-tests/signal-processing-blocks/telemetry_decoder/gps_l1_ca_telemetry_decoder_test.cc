@@ -265,13 +265,12 @@ void GpsL1CATelemetryDecoderTest::configure_receiver()
 
     // Set Tracking
     config->set_property("Tracking_1C.item_type", "gr_complex");
-    config->set_property("Tracking_1C.if", "0");
     config->set_property("Tracking_1C.dump", "true");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
     config->set_property("Tracking_1C.pll_bw_hz", "20.0");
     config->set_property("Tracking_1C.dll_bw_hz", "1.5");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
-
+    config->set_property("Tracking_1C.unified", "true");
     config->set_property("TelemetryDecoder_1C.dump", "true");
 }
 

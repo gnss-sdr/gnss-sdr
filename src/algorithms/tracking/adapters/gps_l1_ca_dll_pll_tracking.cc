@@ -69,10 +69,24 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
     int vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
-    if (symbols_extended_correlator < 1 or symbols_extended_correlator > 20)
+    if (symbols_extended_correlator < 1)
         {
             symbols_extended_correlator = 1;
-            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be between 1 and 20. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be bigger than 1. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
+        }
+    else if (symbols_extended_correlator > 20)
+        {
+            symbols_extended_correlator = 20;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be lower than 21. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << std::endl;
+        }
+    bool track_pilot = configuration->property(role + ".track_pilot", false);
+    if (track_pilot)
+        {
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << std::endl;
+        }
+    if (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz)
+        {
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
         }
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)

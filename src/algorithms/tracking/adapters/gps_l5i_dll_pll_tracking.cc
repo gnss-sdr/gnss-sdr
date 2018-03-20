@@ -80,6 +80,10 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
             extend_correlation_symbols = GPS_L5i_NH_CODE_LENGTH;
             std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be lower than 11 when tracking the data component. Coherent integration has been set to 10 symbols (10 ms)" << TEXT_RESET << std::endl;
         }
+    if (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz)
+        {
+            std::cout << TEXT_RED << "WARNING: GPS L5. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
+        }
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {

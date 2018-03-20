@@ -76,7 +76,11 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     else if (!track_pilot and extend_correlation_symbols > 1)
         {
             extend_correlation_symbols = 1;
-            std::cout << TEXT_RED << "WARNING: Extended coherent integration is not allowed in Galileo E1 when tracking the data component. Coherent integration has been set to 4 ms (1 symbol)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: Galileo E1. Extended coherent integration is not allowed when tracking the data component. Coherent integration has been set to 4 ms (1 symbol)" << TEXT_RESET << std::endl;
+        }
+    if (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz)
+        {
+            std::cout << TEXT_RED << "WARNING: Galileo E1. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
         }
     std::string default_dump_filename = "./track_ch";
     std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!

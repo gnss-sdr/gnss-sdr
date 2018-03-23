@@ -292,9 +292,9 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec& true_time_s,
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     //2. RMSE
-    arma::vec err;
+    //arma::vec err = meas_value - true_value_interp + 0.001;
+    arma::vec err = meas_value - true_value_interp - 0.001;
 
-    err = meas_value - true_value_interp + 0.001;
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
@@ -316,10 +316,10 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec& true_time_s,
               << " [Seconds]" << std::endl;
     std::cout.precision(ss);
 
-    ASSERT_LT(rmse, 0.2E-6);
-    ASSERT_LT(error_mean, 0.2E-6);
-    ASSERT_GT(error_mean, -0.2E-6);
-    ASSERT_LT(error_var, 0.2E-6);
+    ASSERT_LT(rmse, 0.3E-6);
+    ASSERT_LT(error_mean, 0.3E-6);
+    ASSERT_GT(error_mean, -0.3E-6);
+    ASSERT_LT(error_var, 0.3E-6);
     ASSERT_LT(max_error, 0.5E-6);
     ASSERT_GT(min_error, -0.5E-6);
 }

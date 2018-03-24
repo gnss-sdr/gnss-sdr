@@ -35,11 +35,11 @@
 #define GNSS_SDR_GLONASS_GNAV_NAVIGATION_MESSAGE_H_
 
 
-#include "GLONASS_L1_CA.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_utc_model.h"
 #include <bitset>
+#include "GLONASS_L1_L2_CA.h"
 
 
 /*!
@@ -65,7 +65,7 @@ public:
 
     Glonass_Gnav_Ephemeris gnav_ephemeris;                      //!< Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model;                      //!< UTC model information
-    Glonass_Gnav_Almanac gnav_almanac[GLONASS_L1_CA_NBR_SATS];  //!< Almanac information for all 24 satellites
+    Glonass_Gnav_Almanac gnav_almanac[GLONASS_CA_NBR_SATS];  //!< Almanac information for all 24 satellites
 
     // Ephemeris Flags and control variables
     bool flag_all_ephemeris;    //!< Flag indicating that all strings containing ephemeris have been received
@@ -101,7 +101,7 @@ public:
     double d_satClkDrift;  //!<  Satellite clock drift
 
     double d_previous_tb;                          //!< Previous iode for the Glonass_Gnav_Ephemeris object. Used to determine when new data arrives
-    double d_previous_Na[GLONASS_L1_CA_NBR_SATS];  //!< Previous time for almanac of the Glonass_Gnav_Almanac object
+    double d_previous_Na[GLONASS_CA_NBR_SATS];  //!< Previous time for almanac of the Glonass_Gnav_Almanac object
 
     /*!
      * \brief Compute CRC for GLONASS GNAV strings

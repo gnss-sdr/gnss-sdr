@@ -544,6 +544,7 @@ void GNSSFlowgraph::set_signals_list()
                                   configuration_->property("Channels_1B.count", 0) +
                                   configuration_->property("Channels_5X.count", 0) +
                                   configuration_->property("Channels_1G.count", 0) +
+								  configuration_->property("Channels_2G.count", 0) +
                                   configuration_->property("Channels_5X.count", 0) +
                                   configuration_->property("Channels_L5.count", 0);
 
@@ -733,6 +734,21 @@ void GNSSFlowgraph::set_signals_list()
                         std::string("1G")));
                 }
         }
+
+    if (configuration_->property("Channels_2G.count", 0) > 0)
+        {
+            /*
+         * Loop to create the list of GLONASS L2 C/A signals
+         */
+            for (available_gnss_prn_iter = available_glonass_prn.begin();
+                 available_gnss_prn_iter != available_glonass_prn.end();
+                 available_gnss_prn_iter++)
+                {
+                    available_GNSS_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("Glonass"), *available_gnss_prn_iter),
+                        std::string("2G")));
+                }
+        }
     /*
      * Ordering the list of signals from configuration file
      */
@@ -746,7 +762,7 @@ void GNSSFlowgraph::set_signals_list()
             std::string gnss_system;
             if ((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) or (gnss_signal.compare("L5") == 0)) gnss_system = "GPS";
             if ((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0)) gnss_system = "Galileo";
-            if ((gnss_signal.compare("1G") == 0) /*or (gnss_signal.compare("") == 0)*/) gnss_system = "Glonass";
+            if ((gnss_signal.compare("1G") == 0) or (gnss_signal.compare("2G") == 0)) gnss_system = "Glonass";
             unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
             LOG(INFO) << "Channel " << i << " system " << gnss_system << ", signal " << gnss_signal << ", sat " << sat;
             if (sat == 0)  // 0 = not PRN in configuration file

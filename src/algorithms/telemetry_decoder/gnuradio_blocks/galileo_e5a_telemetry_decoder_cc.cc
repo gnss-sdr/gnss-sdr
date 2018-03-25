@@ -338,7 +338,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work(int noutput_items __attribute
                     d_stat = 1;  // enter into frame pre-detection status
                 }
         }
-    else if ((d_stat == 1) && new_symbol)  // posible preamble lock
+    else if ((d_stat == 1) && new_symbol)  // possible preamble lock
         {
             if (abs(corr_value) >= GALILEO_FNAV_PREAMBLE_LENGTH_BITS)
                 {

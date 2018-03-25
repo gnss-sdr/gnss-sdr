@@ -5265,7 +5265,7 @@ int Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
 
     phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * lambda - rough_range_m;
 
-    /* Substract phase - pseudorange integer cycle offset */
+    /* Subtract phase - pseudorange integer cycle offset */
     /* TODO: check LLI! */
     double cp = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI;  // ?
     if (std::fabs(phrng_m - cp) > 1171.0)
@@ -5460,7 +5460,7 @@ int Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
         }
     phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * lambda - rough_range_m;
 
-    /* Substract phase - pseudorange integer cycle offset */
+    /* Subtract phase - pseudorange integer cycle offset */
     /* TODO: check LLI! */
     double cp = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI;  // ?
     if (std::fabs(phrng_m - cp) > 1171.0)

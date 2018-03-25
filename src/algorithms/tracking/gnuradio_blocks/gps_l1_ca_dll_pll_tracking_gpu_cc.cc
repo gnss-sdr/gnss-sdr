@@ -368,7 +368,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             // TODO: PLL carrier aid to DLL is disabled. Re-enable it and measure performance
             dll_code_error_secs_Ti = -code_error_filt_secs_Ti + d_pll_to_dll_assist_secs_Ti;
 
-            // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+            // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
             // keep alignment parameters for the next input buffer
             double T_chip_seconds;
             double T_prn_seconds;

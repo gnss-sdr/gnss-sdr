@@ -54,7 +54,7 @@ public:
     double M0_1;         //!< Mean anomaly at reference time [semi-circles]
     double delta_n_3;    //!< Mean motion difference from computed value [semi-circles/sec]
     double e_1;          //!< Eccentricity
-    double A_1;          //!< Square root of the semi-major axis [metres^1/2]
+    double A_1;          //!< Square root of the semi-major axis [meters^1/2]
     double OMEGA_0_2;    //!< Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
     double i_0_2;        //!< Inclination angle at reference time  [semi-circles]
     double omega_2;      //!< Argument of perigee [semi-circles]

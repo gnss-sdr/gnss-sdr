@@ -604,7 +604,7 @@ Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris()
     ephemeris.M0_1 = FNAV_M0_2;               // Mean anomaly at reference time [semi-circles]
     ephemeris.delta_n_3 = FNAV_deltan_3;      // Mean motion difference from computed value  [semi-circles/sec]
     ephemeris.e_1 = FNAV_e_2;                 // Eccentricity
-    ephemeris.A_1 = FNAV_a12_2;               // Square root of the semi-major axis [metres^1/2]
+    ephemeris.A_1 = FNAV_a12_2;               // Square root of the semi-major axis [meters^1/2]
     ephemeris.OMEGA_0_2 = FNAV_omega0_2;      // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
     ephemeris.i_0_2 = FNAV_i0_3;              // Inclination angle at reference time  [semi-circles]
     ephemeris.omega_2 = FNAV_w_3;             // Argument of perigee [semi-circles]

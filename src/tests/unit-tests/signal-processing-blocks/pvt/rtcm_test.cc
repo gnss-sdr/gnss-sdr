@@ -292,7 +292,7 @@ TEST(RtcmTest, MT1020)
     gnav_ephemeris.d_t_k = 7560;
     // Glonass signed values
     gnav_ephemeris.d_VXn = -0.490900039672852;
-    // Bit distribution per fields dependant on other factors
+    // Bit distribution per fields dependent on other factors
     gnav_ephemeris.d_t_b = 8100;
     // Binary flag representation
     gnav_ephemeris.d_P_3 = 1;

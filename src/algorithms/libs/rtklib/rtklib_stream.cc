@@ -1916,7 +1916,7 @@ void strunlock(stream_t *stream) { rtk_unlock(&stream->lock); }
 /* read stream -----------------------------------------------------------------
  * read data from stream (unblocked)
  * args   : stream_t *stream I  stream
- *          unsinged char *buff O data buffer
+ *          unsigned char *buff O data buffer
  *          int    n         I  maximum data length
  * return : read data length
  * notes  : if no data, return immediately with no data
@@ -1978,7 +1978,7 @@ int strread(stream_t *stream, unsigned char *buff, int n)
 /* write stream ----------------------------------------------------------------
  * write data to stream (unblocked)
  * args   : stream_t *stream I   stream
- *          unsinged char *buff I data buffer
+ *          unsigned char *buff I data buffer
  *          int    n         I   data length
  * return : status (0:error, 1:ok)
  * notes  : write data to buffer and return immediately

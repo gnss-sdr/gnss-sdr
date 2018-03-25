@@ -121,7 +121,7 @@ unpack_2bit_samples::unpack_2bit_samples(bool big_endian_bytes,
     bool big_endian_system = systemIsBigEndian();
 
     // Only swap the item bytes if the item size > 1 byte and the system
-    // endianess is not the same as the item endianness:
+    // endianness is not the same as the item endianness:
     swap_endian_items_ = (item_size_ > 1) &&
                          (big_endian_system != big_endian_items);
 

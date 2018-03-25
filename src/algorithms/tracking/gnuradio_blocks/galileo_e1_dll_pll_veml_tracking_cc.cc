@@ -715,7 +715,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work(int noutput_items __attrib
                         double code_error_filt_secs;
                         code_error_filt_secs = (Galileo_E1_CODE_PERIOD * d_code_error_filt_chips) / Galileo_E1_CODE_CHIP_RATE_HZ;  // [seconds]
 
-                        // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+                        // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
                         // keep alignment parameters for the next input buffer
                         // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
                         double T_chip_seconds = 1.0 / d_code_freq_chips;
@@ -841,7 +841,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work(int noutput_items __attrib
                 d_rem_carr_phase_rad = d_rem_carr_phase_rad + GALILEO_TWO_PI * d_carrier_doppler_hz * static_cast<double>(d_current_prn_length_samples) / static_cast<double>(d_fs_in);
                 d_rem_carr_phase_rad = std::fmod(d_rem_carr_phase_rad, GALILEO_TWO_PI);
 
-                // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+                // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
                 // keep alignment parameters for the next input buffer
                 // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
                 double T_chip_seconds = 1.0 / d_code_freq_chips;
@@ -921,7 +921,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work(int noutput_items __attrib
                         double code_error_filt_secs;
                         code_error_filt_secs = (Galileo_E1_CODE_PERIOD * d_code_error_filt_chips) / Galileo_E1_CODE_CHIP_RATE_HZ;  //[seconds]
 
-                        // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+                        // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
                         // keep alignment parameters for the next input buffer
                         // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
                         double T_chip_seconds = 1.0 / d_code_freq_chips;

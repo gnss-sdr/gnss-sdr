@@ -316,7 +316,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 gr_complex* corr_output = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
                 /*Stores a copy of the folded version of the signal.This is used for
-            the FFT operations in future steps of excecution*/
+            the FFT operations in future steps of execution*/
                 // gr_complex in_folded[d_fft_size];
                 float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
@@ -468,7 +468,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         if (d_dump)
                             {
                                 /*Since QuickSYnc performs a folded correlation in frequency by means
-                            of the FFT, it is esential to also keep the values obtained from the
+                            of the FFT, it is essential to also keep the values obtained from the
                             possible delay to show how it is maximize*/
                                 std::stringstream filename;
                                 std::streamsize n = sizeof(float) * (d_fft_size);  // complex file write

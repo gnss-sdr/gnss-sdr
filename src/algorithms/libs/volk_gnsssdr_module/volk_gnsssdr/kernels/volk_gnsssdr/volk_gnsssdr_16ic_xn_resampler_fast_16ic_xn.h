@@ -6,7 +6,7 @@
  *          </ul>
  *
  * VOLK_GNSSSDR kernel that esamples N 16 bits integer short complex vectors using zero hold resample algorithm.
- * It is optimized to resample a sigle GNSS local code signal replica into N vectors fractional-resampled and fractional-delayed
+ * It is optimized to resample a single GNSS local code signal replica into N vectors fractional-resampled and fractional-delayed
  * (i.e. it creates the Early, Prompt, and Late code replicas)
  *
  * -------------------------------------------------------------------------
@@ -145,7 +145,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_a_sse2(lv_16sc_t*
             //common to all outputs
             _code_phase_out = _mm_mul_ps(_code_phase_step_chips, _4output_index);  //compute the code phase point with the phase step
 
-            //output vector dependant (different code phase offset)
+            //output vector dependent (different code phase offset)
             for (current_vector = 0; current_vector < num_out_vectors; current_vector++)
                 {
                     tmp_rem_code_phase_chips = rem_code_phase_chips[current_vector] - 0.5f;  // adjust offset to perform correct rounding (chip transition at 0)
@@ -241,7 +241,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_u_sse2(lv_16sc_t*
             //common to all outputs
             _code_phase_out = _mm_mul_ps(_code_phase_step_chips, _4output_index);  //compute the code phase point with the phase step
 
-            //output vector dependant (different code phase offset)
+            //output vector dependent (different code phase offset)
             for (current_vector = 0; current_vector < num_out_vectors; current_vector++)
                 {
                     tmp_rem_code_phase_chips = rem_code_phase_chips[current_vector] - 0.5f;  // adjust offset to perform correct rounding (chip transition at 0)
@@ -339,7 +339,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_neon(lv_16sc_t** 
             //common to all outputs
             _code_phase_out = vmulq_f32(_code_phase_step_chips, _4output_index);  //compute the code phase point with the phase step
 
-            //output vector dependant (different code phase offset)
+            //output vector dependent (different code phase offset)
             for (current_vector = 0; current_vector < num_out_vectors; current_vector++)
                 {
                     tmp_rem_code_phase_chips = rem_code_phase_chips[current_vector] - 0.5f;  // adjust offset to perform correct rounding (chip transition at 0)

@@ -584,7 +584,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
             double code_error_filt_secs = (T_prn_seconds * code_error_filt_chips * T_chip_seconds);  //[seconds]
             //double code_error_filt_secs = (GPS_L1_CA_CODE_PERIOD * code_error_filt_chips) / GLONASS_L1_CA_CODE_RATE_HZ; // [seconds]
 
-            // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+            // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
             // keep alignment parameters for the next input buffer
             // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
             //double T_chip_seconds =  1.0 / static_cast<double>(d_code_freq_chips);

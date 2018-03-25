@@ -67,8 +67,8 @@ public:
     double d_TOW;
     bool b_flag_ephemeris_1;
     bool b_flag_ephemeris_2;
-    bool b_flag_iono_valid;  //!< If set, it indicates that the ionospheric parameters are filled and are not yet readed by the get_iono
-    bool b_flag_utc_valid;   //!< If set, it indicates that the utc parameters are filled and are not yet readed by the get_utc_model
+    bool b_flag_iono_valid;  //!< If set, it indicates that the ionospheric parameters are filled and are not yet read by the get_iono
+    bool b_flag_utc_valid;   //!< If set, it indicates that the utc parameters are filled and are not yet read by the get_utc_model
 
     std::map<int, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 

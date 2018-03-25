@@ -1819,7 +1819,7 @@ unsigned int tickget(void)
 
 /* sleep ms --------------------------------------------------------------------
  * sleep ms
- * args   : int   ms         I   miliseconds to sleep (<0:no sleep)
+ * args   : int   ms         I   milliseconds to sleep (<0:no sleep)
  * return : none
  *-----------------------------------------------------------------------------*/
 void sleepms(int ms)
@@ -1884,7 +1884,7 @@ double dms2deg(const double *dms)
 }
 
 
-/* transform ecef to geodetic postion ------------------------------------------
+/* transform ecef to geodetic position ------------------------------------------
  * transform ecef position to geodetic position
  * args   : double *r        I   ecef position {x,y,z} (m)
  *          double *pos      O   geodetic position {lat,lon,h} (rad,m)
@@ -1926,8 +1926,8 @@ void pos2ecef(const double *pos, double *r)
 }
 
 
-/* ecef to local coordinate transfromation matrix ------------------------------
- * compute ecef to local coordinate transfromation matrix
+/* ecef to local coordinate transformation matrix ------------------------------
+ * compute ecef to local coordinate transformation matrix
  * args   : double *pos      I   geodetic position {lat,lon} (rad)
  *          double *E        O   ecef to local coord transformation matrix (3x3)
  * return : none
@@ -2223,7 +2223,7 @@ void eci2ecef(gtime_t tutc, const double *erpv, double *U, double *gmst)
     matmul("NN", 3, 3, 3, 1.0, R1, R2, 0.0, R);
     matmul("NN", 3, 3, 3, 1.0, R, R3, 0.0, N); /* N=Rx(-eps)*Rz(-dspi)*Rx(eps) */
 
-    /* greenwich aparent sidereal time (rad) */
+    /* greenwich apparent sidereal time (rad) */
     gmst_ = utc2gmst(tutc_, erpv[2]);
     gast = gmst_ + dpsi * cos(eps);
     gast += (0.00264 * sin(f[4]) + 0.000063 * sin(2.0 * f[4])) * AS2R;

@@ -425,7 +425,7 @@ int fix_amb_ROUND(rtk_t *rtk, int *sat1, int *sat2, const int *NW, int n)
             sat2[m] = sat2[i];
             NC[m++] = BC;
         }
-    /* select fixed ambiguities by dependancy check */
+    /* select fixed ambiguities by dependency check */
     m = sel_amb(sat1, sat2, NC, var, m);
 
     /* fixed solution */

@@ -187,7 +187,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
             for (number = 0; number < sse_iters; number++)
                 {
                     //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
-                    //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
+                    //imaginary part -> reinterpret_cast<cv T*>(a)[2*i + 1]
                     // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     a = _mm_loadu_si128((__m128i*)_in_a);  //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __VOLK_GNSSSDR_PREFETCH(_in_a + 8);

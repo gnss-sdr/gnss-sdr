@@ -345,7 +345,7 @@ macro(gen_template tmpl output)
     )
 endmacro(gen_template)
 
-make_directory(${PROJECT_BINARY_DIR}/include/volk_gnsssdr)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/include/volk_gnsssdr)
 
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr.tmpl.h              ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr.h)
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr.tmpl.c              ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr.c)
@@ -604,18 +604,24 @@ if(ENABLE_TESTING)
 
     #include Boost headers
     include_directories(${Boost_INCLUDE_DIRS})
-    link_directories(${Boost_LIBRARY_DIRS})
-    make_directory(${CMAKE_CURRENT_BINARY_DIR}/.unittest)
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/.unittest)
     set_source_files_properties(
         ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc PROPERTIES
         COMPILE_DEFINITIONS "BOOST_TEST_DYN_LINK;BOOST_TEST_MAIN"
     )
 
     include(VolkAddTest)
-    VOLK_ADD_TEST(test_all
+    VOLK_GEN_TEST("volk_gnsssdr_test_all"
         SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc
-                       ${CMAKE_CURRENT_SOURCE_DIR}/qa_utils.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/qa_utils.cc
         TARGET_DEPS volk_gnsssdr
-    )
+      )
+    foreach(kernel ${h_files})
+      get_filename_component(kernel ${kernel} NAME)
+      string(REPLACE ".h" "" kernel ${kernel})
+      if(NOT ${kernel} MATCHES puppet*)
+         VOLK_ADD_TEST(${kernel} "volk_gnsssdr_test_all")
+      endif(NOT ${kernel} MATCHES puppet*)
+    endforeach()
 
 endif(ENABLE_TESTING)

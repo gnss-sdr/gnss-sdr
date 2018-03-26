@@ -579,7 +579,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work(int noutput_items __attribute__((
             double code_error_filt_secs = (T_prn_seconds * code_error_filt_chips * T_chip_seconds);  //[seconds]
             //double code_error_filt_secs = (GPS_L2_M_PERIOD * code_error_filt_chips) / GPS_L2_M_CODE_RATE_HZ; //[seconds]
 
-            // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+            // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
             // keep alignment parameters for the next input buffer
             // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
             double T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);

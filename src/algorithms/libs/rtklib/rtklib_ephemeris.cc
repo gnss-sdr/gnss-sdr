@@ -663,7 +663,7 @@ int satpos_sbas(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
             *svh = -1;
             return 0;
         }
-    /* satellite postion and clock by broadcast ephemeris */
+    /* satellite position and clock by broadcast ephemeris */
     if (!ephpos(time, teph, sat, nav, sbs->lcorr.iode, rs, dts, var, svh)) return 0;
 
     /* sbas satellite correction (long term and fast) */
@@ -734,7 +734,7 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
             *svh = -1;
             return 0;
         }
-    /* satellite postion and clock by broadcast ephemeris */
+    /* satellite position and clock by broadcast ephemeris */
     if (!ephpos(time, teph, sat, nav, ssr->iode, rs, dts, var, svh)) return 0;
 
     /* satellite clock for gps, galileo and qzss */

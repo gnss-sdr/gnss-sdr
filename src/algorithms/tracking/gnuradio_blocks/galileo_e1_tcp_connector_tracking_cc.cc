@@ -355,13 +355,13 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
             code_error_filt_secs = (Galileo_E1_CODE_PERIOD * code_error_filt_chips) / Galileo_E1_CODE_CHIP_RATE_HZ;  //[seconds]
             d_acc_code_phase_secs = d_acc_code_phase_secs + code_error_filt_secs;
 
-            // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+            // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
             // keep alignment parameters for the next input buffer
             double T_chip_seconds;
             double T_prn_seconds;
             double T_prn_samples;
             double K_blk_samples;
-            // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
+            // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
             T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips);
             T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);

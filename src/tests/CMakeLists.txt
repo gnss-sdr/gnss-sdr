@@ -209,6 +209,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    ################################################################################
    find_package(GPSTK)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
+      message(STATUS "GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
       if(NOT ENABLE_FPGA)
           if(CMAKE_VERSION VERSION_LESS 3.2)
            ExternalProject_Add(
@@ -270,9 +271,16 @@ if(ENABLE_UNIT_TESTING_EXTRA)
            SHOW_PROGRESS
            EXPECTED_HASH MD5=ffb72fc63c116be58d5e5ccb1daaed3a )
    endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat)
+   # if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/NT1065_GLONASS_L2_20160831_fs6625e6_if0e3_4ms.bin)
+   #   message(STATUS "Downloading some data files for testing...")
+   #   file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/NT1065_GLONASS_L2_20160831_fs6625e6_if0e3_4ms.bin ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/NT1065_GLONASS_L2_20160831_fs6625e6_if0e3_4ms.bin
+   #        SHOW_PROGRESS
+   #        EXPECTED_HASH MD5=d7055fc1dc931872b547a148af50a09b )
+   # endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/NT1065_GLONASS_L2_20160831_fs6625e6_if0e3_4ms.bin)
    if(ENABLE_INSTALL_TESTS)
       install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
       install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
+      # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/NT1065_GLONASS_L2_20160831_fs6625e6_if0e3_4ms.bin DESTINATION share/gnss-sdr/signal_samples)
    endif(ENABLE_INSTALL_TESTS)
 endif(ENABLE_UNIT_TESTING_EXTRA)
 

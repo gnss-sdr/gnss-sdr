@@ -92,7 +92,7 @@ private:
     int d_fd;                       // driver descriptor
     volatile unsigned *d_map_base;  // driver memory map
     lv_16sc_t *d_all_fft_codes;     // memory that contains all the code ffts
-    unsigned int d_vector_length;   // number of samples incluing padding and number of ms
+    unsigned int d_vector_length;   // number of samples including padding and number of ms
     unsigned int d_nsamples;        // number of samples not including padding
     unsigned int d_select_queue;    // queue selection
     std::string d_device_name;      // HW device name

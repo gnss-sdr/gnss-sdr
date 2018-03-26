@@ -79,7 +79,7 @@
 
 const double MIN_ARC_GAP = 300.0;          /* min arc gap (s) */
 const double CONST_AMB = 0.001;            /* constraint to fixed ambiguity */
-const double THRES_RES = 0.3;              /* threashold of residuals test (m) */
+const double THRES_RES = 0.3;              /* threshold of residuals test (m) */
 const double LOG_PI = 1.14472988584940017; /* log(pi) */
 const double SQRT2 = 1.41421356237309510;  /* sqrt(2) */
 

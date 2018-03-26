@@ -154,7 +154,7 @@ void wait_message()
         {
             int message;
             channel_internal_queue.wait_and_pop(message);
-            //std::cout<<"Acq mesage rx="<<message<<std::endl;
+            //std::cout<<"Acq message rx="<<message<<std::endl;
             switch (message)
                 {
                 case 1:  // Positive acq

@@ -204,6 +204,8 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
         {
             // Disable extended integration if data component tracking is selected
             d_enable_extended_integration = false;
+            d_local_code_data_shift_chips = nullptr;
+            d_data_code = nullptr;
         }
 
     //--- Initializations ------------------------------

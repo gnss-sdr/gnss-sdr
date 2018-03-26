@@ -206,6 +206,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
             d_enable_extended_integration = false;
             d_local_code_data_shift_chips = nullptr;
             d_data_code = nullptr;
+            d_Prompt_Data = nullptr;
         }
 
     //--- Initializations ------------------------------

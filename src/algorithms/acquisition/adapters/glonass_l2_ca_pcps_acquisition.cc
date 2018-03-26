@@ -1,9 +1,8 @@
 /*!
- * \file glonass_l1_ca_pcps_acquisition.cc
+ * \file glonass_l2_ca_pcps_acquisition.cc
  * \brief  Adapts a PCPS acquisition block to an AcquisitionInterface for
- * Glonass L1 C/A signals
- * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
- * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
+ * Glonass L2 C/A signals
+ * \author Damian Miralles, 2018, dmiralles2009@gmail.com
  *
  *
  * -------------------------------------------------------------------------
@@ -31,18 +30,18 @@
  * -------------------------------------------------------------------------
  */
 
-#include "glonass_l1_ca_pcps_acquisition.h"
+#include "glonass_l2_ca_pcps_acquisition.h"
 #include "configuration_interface.h"
-#include "glonass_l1_signal_processing.h"
-#include "gnss_sdr_flags.h"
+#include "glonass_l2_signal_processing.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
 
 using google::LogMessage;
 
-GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
+GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
@@ -71,7 +70,7 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = round(fs_in_ / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+    code_length_ = round(fs_in_ / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -111,20 +110,20 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
 }
 
 
-GlonassL1CaPcpsAcquisition::~GlonassL1CaPcpsAcquisition()
+GlonassL2CaPcpsAcquisition::~GlonassL2CaPcpsAcquisition()
 {
     delete[] code_;
 }
 
 
-void GlonassL1CaPcpsAcquisition::set_channel(unsigned int channel)
+void GlonassL2CaPcpsAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
     acquisition_->set_channel(channel_);
 }
 
 
-void GlonassL1CaPcpsAcquisition::set_threshold(float threshold)
+void GlonassL2CaPcpsAcquisition::set_threshold(float threshold)
 {
     float pfa = configuration_->property(role_ + ".pfa", 0.0);
 
@@ -143,7 +142,7 @@ void GlonassL1CaPcpsAcquisition::set_threshold(float threshold)
 }
 
 
-void GlonassL1CaPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
+void GlonassL2CaPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
 
@@ -151,7 +150,7 @@ void GlonassL1CaPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 }
 
 
-void GlonassL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
+void GlonassL2CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
 
@@ -159,7 +158,7 @@ void GlonassL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 }
 
 
-void GlonassL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
+void GlonassL2CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
 
@@ -167,13 +166,13 @@ void GlonassL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 }
 
 
-signed int GlonassL1CaPcpsAcquisition::mag()
+signed int GlonassL2CaPcpsAcquisition::mag()
 {
     return acquisition_->mag();
 }
 
 
-void GlonassL1CaPcpsAcquisition::init()
+void GlonassL2CaPcpsAcquisition::init()
 {
     acquisition_->init();
 
@@ -181,11 +180,11 @@ void GlonassL1CaPcpsAcquisition::init()
 }
 
 
-void GlonassL1CaPcpsAcquisition::set_local_code()
+void GlonassL2CaPcpsAcquisition::set_local_code()
 {
     std::complex<float>* code = new std::complex<float>[code_length_];
 
-    glonass_l1_ca_code_gen_complex_sampled(code, /* gnss_synchro_->PRN,*/ fs_in_, 0);
+    glonass_l2_ca_code_gen_complex_sampled(code, /* gnss_synchro_->PRN,*/ fs_in_, 0);
 
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
@@ -198,19 +197,19 @@ void GlonassL1CaPcpsAcquisition::set_local_code()
 }
 
 
-void GlonassL1CaPcpsAcquisition::reset()
+void GlonassL2CaPcpsAcquisition::reset()
 {
     acquisition_->set_active(true);
 }
 
 
-void GlonassL1CaPcpsAcquisition::set_state(int state)
+void GlonassL2CaPcpsAcquisition::set_state(int state)
 {
     acquisition_->set_state(state);
 }
 
 
-float GlonassL1CaPcpsAcquisition::calculate_threshold(float pfa)
+float GlonassL2CaPcpsAcquisition::calculate_threshold(float pfa)
 {
     //Calculate the threshold
     unsigned int frequency_bins = 0;
@@ -235,7 +234,7 @@ float GlonassL1CaPcpsAcquisition::calculate_threshold(float pfa)
 }
 
 
-void GlonassL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
+void GlonassL2CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -259,7 +258,7 @@ void GlonassL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 }
 
 
-void GlonassL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
+void GlonassL2CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -285,7 +284,7 @@ void GlonassL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr GlonassL1CaPcpsAcquisition::get_left_block()
+gr::basic_block_sptr GlonassL2CaPcpsAcquisition::get_left_block()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -307,7 +306,7 @@ gr::basic_block_sptr GlonassL1CaPcpsAcquisition::get_left_block()
 }
 
 
-gr::basic_block_sptr GlonassL1CaPcpsAcquisition::get_right_block()
+gr::basic_block_sptr GlonassL2CaPcpsAcquisition::get_right_block()
 {
     return acquisition_;
 }

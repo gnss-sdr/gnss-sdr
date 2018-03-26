@@ -34,8 +34,8 @@
  */
 
 #include "pcps_acquisition.h"
-#include "GPS_L1_CA.h"      // for GPS_TWO_PI
-#include "GLONASS_L1_CA.h"  // for GLONASS_TWO_PI
+#include "GPS_L1_CA.h"         // for GPS_TWO_PI
+#include "GLONASS_L1_L2_CA.h"  // for GLONASS_TWO_PI"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
@@ -207,6 +207,12 @@ bool pcps_acquisition::is_fdma()
     if (strcmp(d_gnss_synchro->Signal, "1G") == 0)
         {
             d_freq += DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
+            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
+            return true;
+        }
+    else if (strcmp(d_gnss_synchro->Signal, "2G") == 0)
+        {
+            d_freq += DFRQ2_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
             LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
             return true;
         }

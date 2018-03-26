@@ -41,9 +41,10 @@ endif(NOT CMAKE_PREFIX_PATH)
 
 ########################################################################
 # Determine optional blocks/libraries to be built (default: not built)
-# Enable them here or at the command line by doing 'cmake -DENABLE_XXX=ON ../'
+# Enable them at the command line by doing 'cmake -DENABLE_XXX=ON ../'
 ########################################################################
 # Support of optional RF front-ends
+option(ENABLE_UHD "Enable the use of UHD (driver for all USRP devices)" ON)
 option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based dongles, HackRF, bladeRF, etc.) as signal source (experimental)" OFF)
 option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNURadio driver" OFF)
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
@@ -1195,18 +1196,18 @@ endif(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_V
 ################################################################################
 # USRP Hardware Driver (UHD) - OPTIONAL
 ################################################################################
-find_package(UHD)
-if(NOT UHD_FOUND)
-    set(ENABLE_UHD OFF)
-    message(STATUS " The USRP Hardware Driver (UHD) signal source will not be built,")
-    message(STATUS " so all USRP-based front-ends will not be usable.")
-    message(STATUS " Please check http://files.ettus.com/manual/")
-else(NOT UHD_FOUND)
-    set(GR_REQUIRED_COMPONENTS UHD)
-    find_package(Gnuradio)
-    set(ENABLE_UHD ON)
-endif(NOT UHD_FOUND)
-
+if(ENABLE_UHD)
+    find_package(UHD)
+    if(NOT UHD_FOUND)
+        set(ENABLE_UHD OFF)
+        message(STATUS " The USRP Hardware Driver (UHD) signal source will not be built,")
+        message(STATUS " so all USRP-based front-ends will not be usable.")
+        message(STATUS " Please check http://files.ettus.com/manual/")
+    else(NOT UHD_FOUND)
+        set(GR_REQUIRED_COMPONENTS UHD)
+        find_package(Gnuradio)
+    endif(NOT UHD_FOUND)
+endif(ENABLE_UHD)
 
 
 ################################################################################

@@ -31,9 +31,10 @@
  */
 
 #include "glonass_gnav_ephemeris.h"
-#include "GLONASS_L1_CA.h"
 #include "gnss_satellite.h"
+#include "GLONASS_L1_L2_CA.h"
 #include <cmath>
+
 
 Glonass_Gnav_Ephemeris::Glonass_Gnav_Ephemeris()
 {

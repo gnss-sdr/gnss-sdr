@@ -604,7 +604,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                 d_code_phase_step_chips,
                 d_correlation_length_samples);
 
-            // ####### coherent intergration extension
+            // ####### coherent integration extension
             // keep the last symbols
             d_E_history.push_back(d_correlator_outs[0]);  // save early output
             d_P_history.push_back(d_correlator_outs[1]);  // save prompt output

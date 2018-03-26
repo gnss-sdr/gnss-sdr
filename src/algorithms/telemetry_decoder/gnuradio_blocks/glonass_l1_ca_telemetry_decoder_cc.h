@@ -40,10 +40,10 @@
 #include "glonass_gnav_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
+#include "GLONASS_L1_L2_CA.h"
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
-#include "../../../core/system_parameters/GLONASS_L1_L2_CA.h"
 
 
 class glonass_l1_ca_telemetry_decoder_cc;

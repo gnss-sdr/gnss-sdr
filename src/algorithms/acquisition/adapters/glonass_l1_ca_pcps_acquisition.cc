@@ -35,9 +35,9 @@
 #include "configuration_interface.h"
 #include "glonass_l1_signal_processing.h"
 #include "gnss_sdr_flags.h"
+#include "GLONASS_L1_L2_CA.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include "../../../core/system_parameters/GLONASS_L1_L2_CA.h"
 
 
 using google::LogMessage;

@@ -39,6 +39,7 @@
 #include "glonass_l1_ca_dll_pll_c_aid_tracking_sc.h"
 #include "gnss_synchro.h"
 #include "glonass_l1_signal_processing.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
 #include "gnss_sdr_flags.h"
@@ -54,7 +55,6 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
-#include "../../../core/system_parameters/GLONASS_L1_L2_CA.h"
 
 
 #define CN0_ESTIMATION_SAMPLES 10

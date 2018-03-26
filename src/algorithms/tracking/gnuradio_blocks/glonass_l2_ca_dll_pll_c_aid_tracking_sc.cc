@@ -598,7 +598,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                 d_code_phase_step_chips,
                 d_correlation_length_samples);
 
-            // ####### coherent intergration extension
+            // ####### coherent integration extension
             // keep the last symbols
             d_E_history.push_back(d_correlator_outs_16sc[0]);  // save early output
             d_P_history.push_back(d_correlator_outs_16sc[1]);  // save prompt output
@@ -711,7 +711,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                     d_code_error_filt_chips_Ti = d_code_error_filt_chips_s * CURRENT_INTEGRATION_TIME_S;
                     code_error_filt_secs_Ti = d_code_error_filt_chips_Ti / d_code_freq_chips;  // [s/Ti]
 
-                    // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+                    // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
                     // keep alignment parameters for the next input buffer
                     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
                     double T_chip_seconds = 1.0 / d_code_freq_chips;
@@ -741,7 +741,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                     d_rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / static_cast<double>(d_fs_in));
 
                     // ####### CN0 ESTIMATION AND LOCK DETECTORS #######################################
-                    if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES )
+                    if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
                         {
                             // fill buffer with prompt correlator output values
                             d_Prompt_buffer[d_cn0_estimation_counter] = lv_cmake(static_cast<float>(d_correlator_outs_16sc[1].real()), static_cast<float>(d_correlator_outs_16sc[1].imag()));  // prompt

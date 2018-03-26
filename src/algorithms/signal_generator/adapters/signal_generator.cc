@@ -37,7 +37,6 @@
 #include "Galileo_E5a.h"
 #include "GLONASS_L1_L2_CA.h"
 #include <glog/logging.h>
-#include "../../../core/system_parameters/GLONASS_L1_L2_CA.h"
 
 
 using google::LogMessage;
@@ -101,14 +100,14 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         }
     else if (std::find(system.begin(), system.end(), "R") != system.end())
         {
-    		if (signal1[0].at(0) == '1')
-    			{
-    				vector_length = round((float)fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
-    			}
-    		else
-    			{
-    				vector_length = round((float)fs_in / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
-    			}
+            if (signal1[0].at(0) == '1')
+                {
+                    vector_length = round((float)fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+                }
+            else
+                {
+                    vector_length = round((float)fs_in / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
+                }
         }
 
     if (item_type_.compare("gr_complex") == 0)

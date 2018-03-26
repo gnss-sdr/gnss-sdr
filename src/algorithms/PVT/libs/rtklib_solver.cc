@@ -55,8 +55,8 @@
 #include "rtklib_conversions.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
+#include "GLONASS_L1_L2_CA.h"
 #include <glog/logging.h>
-#include "../../../core/system_parameters/GLONASS_L1_L2_CA.h"
 
 
 using google::LogMessage;

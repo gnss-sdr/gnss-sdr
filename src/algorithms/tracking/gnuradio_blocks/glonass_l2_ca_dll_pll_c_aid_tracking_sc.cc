@@ -1,9 +1,7 @@
 /*!
- * \file glonass_l1_ca_dll_pll_c_aid_tracking_sc.cc
+ * \file glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc
  * \brief  Implementation of a code DLL + carrier PLL tracking block
- * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
- * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
- * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
+ * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
  *
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -36,12 +34,12 @@
  * -------------------------------------------------------------------------
  */
 
-#include "glonass_l1_ca_dll_pll_c_aid_tracking_sc.h"
+#include "glonass_l2_ca_dll_pll_c_aid_tracking_sc.h"
 #include "gnss_synchro.h"
-#include "glonass_l1_signal_processing.h"
-#include "GLONASS_L1_L2_CA.h"
+#include "glonass_l2_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "gnss_sdr_flags.h"
 #include "control_message_factory.h"
 #include <boost/bind.hpp>
@@ -56,12 +54,12 @@
 #include <memory>
 #include <sstream>
 
-
 #define CN0_ESTIMATION_SAMPLES 10
+
 using google::LogMessage;
 
-glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr
-glonass_l1_ca_dll_pll_c_aid_make_tracking_sc(
+glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr
+glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
     long if_freq,
     long fs_in,
     unsigned int vector_length,
@@ -74,12 +72,12 @@ glonass_l1_ca_dll_pll_c_aid_make_tracking_sc(
     int extend_correlation_ms,
     float early_late_space_chips)
 {
-    return glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr(new glonass_l1_ca_dll_pll_c_aid_tracking_sc(if_freq,
+    return glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr(new glonass_l2_ca_dll_pll_c_aid_tracking_sc(if_freq,
         fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz, extend_correlation_ms, early_late_space_chips));
 }
 
 
-void glonass_l1_ca_dll_pll_c_aid_tracking_sc::forecast(int noutput_items,
+void glonass_l2_ca_dll_pll_c_aid_tracking_sc::forecast(int noutput_items,
     gr_vector_int &ninput_items_required)
 {
     if (noutput_items != 0)
@@ -89,7 +87,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::forecast(int noutput_items,
 }
 
 
-void glonass_l1_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index(pmt::pmt_t msg)
+void glonass_l2_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index(pmt::pmt_t msg)
 {
     //pmt::print(msg);
     DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel << ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN);
@@ -101,7 +99,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index(pmt::pm
         }
 }
 
-glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc(
+glonass_l2_ca_dll_pll_c_aid_tracking_sc::glonass_l2_ca_dll_pll_c_aid_tracking_sc(
     long if_freq,
     long fs_in,
     unsigned int vector_length,
@@ -118,7 +116,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->set_msg_handler(pmt::mp("preamble_timestamp_s"),
-        boost::bind(&glonass_l1_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index, this, _1));
+        boost::bind(&glonass_l2_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index, this, _1));
     this->message_port_register_out(pmt::mp("events"));
     // initialize internal vars
     d_dump = dump;
@@ -142,8 +140,8 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(static_cast<int>(GLONASS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_ca_code_16sc = static_cast<lv_16sc_t *>(volk_gnsssdr_malloc(static_cast<int>(GLONASS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    d_ca_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(static_cast<int>(GLONASS_L2_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_ca_code_16sc = static_cast<lv_16sc_t *>(volk_gnsssdr_malloc(static_cast<int>(GLONASS_L2_CA_CODE_LENGTH_CHIPS) * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
@@ -164,7 +162,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
-    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_chips = GLONASS_L2_CA_CODE_RATE_HZ;
     // define residual code phase (in chips)
     d_rem_code_phase_samples = 0.0;
     // define residual carrier phase
@@ -216,7 +214,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
 }
 
 
-void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
+void glonass_l2_ca_dll_pll_c_aid_tracking_sc::start_tracking()
 {
     /*
      *  correct the code phase according to the delay between acq and trk
@@ -232,21 +230,21 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / static_cast<double>(d_fs_in);
     // Doppler effect
     // Fd=(C/(C+Vr))*F
-    d_glonass_freq_ch = GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    d_glonass_freq_ch = GLONASS_L2_CA_FREQ_HZ + (GLONASS_L2_CA_FREQ_HZ * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
     double radial_velocity = (d_glonass_freq_ch + d_acq_carrier_doppler_hz) / d_glonass_freq_ch;
     // new chip and prn sequence periods based on acq Doppler
     double T_chip_mod_seconds;
     double T_prn_mod_seconds;
     double T_prn_mod_samples;
-    d_code_freq_chips = radial_velocity * GLONASS_L1_CA_CODE_RATE_HZ;
+    d_code_freq_chips = radial_velocity * GLONASS_L2_CA_CODE_RATE_HZ;
     d_code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
     T_chip_mod_seconds = 1.0 / d_code_freq_chips;
-    T_prn_mod_seconds = T_chip_mod_seconds * GLONASS_L1_CA_CODE_LENGTH_CHIPS;
+    T_prn_mod_seconds = T_chip_mod_seconds * GLONASS_L2_CA_CODE_LENGTH_CHIPS;
     T_prn_mod_samples = T_prn_mod_seconds * static_cast<double>(d_fs_in);
 
     d_correlation_length_samples = round(T_prn_mod_samples);
 
-    double T_prn_true_seconds = GLONASS_L1_CA_CODE_LENGTH_CHIPS / GLONASS_L1_CA_CODE_RATE_HZ;
+    double T_prn_true_seconds = GLONASS_L2_CA_CODE_LENGTH_CHIPS / GLONASS_L2_CA_CODE_RATE_HZ;
     double T_prn_true_samples = T_prn_true_seconds * static_cast<double>(d_fs_in);
     double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
     double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
@@ -260,7 +258,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
 
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
-    d_carrier_frequency_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO * static_cast<double>(GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN)));
+    d_carrier_frequency_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ2_GLO * static_cast<double>(GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN)));
     ;
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
 
@@ -271,10 +269,10 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     d_code_loop_filter.initialize();                           // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    glonass_l1_ca_code_gen_complex(d_ca_code, 0);
-    volk_gnsssdr_32fc_convert_16ic(d_ca_code_16sc, d_ca_code, static_cast<int>(GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+    glonass_l2_ca_code_gen_complex(d_ca_code, 0);
+    volk_gnsssdr_32fc_convert_16ic(d_ca_code_16sc, d_ca_code, static_cast<int>(GLONASS_L2_CA_CODE_LENGTH_CHIPS));
 
-    multicorrelator_cpu_16sc.set_local_code_and_taps(static_cast<int>(GLONASS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code_16sc, d_local_code_shift_chips);
+    multicorrelator_cpu_16sc.set_local_code_and_taps(static_cast<int>(GLONASS_L2_CA_CODE_LENGTH_CHIPS), d_ca_code_16sc, d_local_code_shift_chips);
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs_16sc[n] = lv_16sc_t(0, 0);
@@ -307,7 +305,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
 }
 
 
-int glonass_l1_ca_dll_pll_c_aid_tracking_sc::save_matfile()
+int glonass_l2_ca_dll_pll_c_aid_tracking_sc::save_matfile()
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
@@ -514,7 +512,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::save_matfile()
 }
 
 
-glonass_l1_ca_dll_pll_c_aid_tracking_sc::~glonass_l1_ca_dll_pll_c_aid_tracking_sc()
+glonass_l2_ca_dll_pll_c_aid_tracking_sc::~glonass_l2_ca_dll_pll_c_aid_tracking_sc()
 {
     if (d_dump_file.is_open())
         {
@@ -534,7 +532,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::~glonass_l1_ca_dll_pll_c_aid_tracking_s
                 {
                     std::cout << "Writing .mat files ...";
                 }
-            glonass_l1_ca_dll_pll_c_aid_tracking_sc::save_matfile();
+            glonass_l2_ca_dll_pll_c_aid_tracking_sc::save_matfile();
             if (d_channel == 0)
                 {
                     std::cout << " done." << std::endl;
@@ -551,7 +549,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::~glonass_l1_ca_dll_pll_c_aid_tracking_s
 }
 
 
-int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int glonass_l2_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // Block input data and block output stream pointers
@@ -642,7 +640,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                                               << " dll_bw = " << d_dll_bw_hz << " [Hz], dll_narrow_bw = " << d_dll_bw_narrow_hz << " [Hz]" << std::endl;
                                 }
                             // UPDATE INTEGRATION TIME
-                            CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_extend_correlation_ms) * GLONASS_L1_CA_CODE_PERIOD;
+                            CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_extend_correlation_ms) * GLONASS_L2_CA_CODE_PERIOD;
                             enable_dll_pll = true;
                         }
                     else
@@ -652,7 +650,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                                     // continue extended coherent correlation
                                     // Compute the next buffer length based on the period of the PRN sequence and the code phase error estimation
                                     double T_chip_seconds = 1.0 / d_code_freq_chips;
-                                    double T_prn_seconds = T_chip_seconds * GLONASS_L1_CA_CODE_LENGTH_CHIPS;
+                                    double T_prn_seconds = T_chip_seconds * GLONASS_L2_CA_CODE_LENGTH_CHIPS;
                                     double T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
                                     int K_prn_samples = round(T_prn_samples);
                                     double K_T_prn_error_samples = K_prn_samples - T_prn_samples;
@@ -703,7 +701,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                     // PLL to DLL assistance [Secs/Ti]
                     d_pll_to_dll_assist_secs_Ti = (d_carrier_doppler_hz * CURRENT_INTEGRATION_TIME_S) / d_glonass_freq_ch;
                     // code Doppler frequency update
-                    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_HZ + (((d_carrier_doppler_hz - d_carrier_doppler_old_hz) * GLONASS_L1_CA_CODE_RATE_HZ) / d_glonass_freq_ch);
+                    d_code_freq_chips = GLONASS_L2_CA_CODE_RATE_HZ + (((d_carrier_doppler_hz - d_carrier_doppler_old_hz) * GLONASS_L2_CA_CODE_RATE_HZ) / d_glonass_freq_ch);
 
                     // ################## DLL ##########################################################
                     // DLL discriminator
@@ -717,7 +715,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                     // keep alignment parameters for the next input buffer
                     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
                     double T_chip_seconds = 1.0 / d_code_freq_chips;
-                    double T_prn_seconds = T_chip_seconds * GLONASS_L1_CA_CODE_LENGTH_CHIPS;
+                    double T_prn_seconds = T_chip_seconds * GLONASS_L2_CA_CODE_LENGTH_CHIPS;
                     double T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
                     double K_prn_samples = round(T_prn_samples);
                     double K_T_prn_error_samples = K_prn_samples - T_prn_samples;
@@ -753,7 +751,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                         {
                             d_cn0_estimation_counter = 0;
                             // Code lock indicator
-                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GLONASS_L1_CA_CODE_LENGTH_CHIPS);
+                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GLONASS_L2_CA_CODE_LENGTH_CHIPS);
                             // Carrier lock indicator
                             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
                             // Loss of lock detection
@@ -882,7 +880,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
 }
 
 
-void glonass_l1_ca_dll_pll_c_aid_tracking_sc::set_channel(unsigned int channel)
+void glonass_l2_ca_dll_pll_c_aid_tracking_sc::set_channel(unsigned int channel)
 {
     d_channel = channel;
     LOG(INFO) << "Tracking Channel set to " << d_channel;
@@ -908,7 +906,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::set_channel(unsigned int channel)
 }
 
 
-void glonass_l1_ca_dll_pll_c_aid_tracking_sc::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
+void glonass_l2_ca_dll_pll_c_aid_tracking_sc::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }

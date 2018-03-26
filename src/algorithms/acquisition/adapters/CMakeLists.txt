@@ -33,6 +33,7 @@ set(ACQ_ADAPTER_SOURCES
     galileo_e5a_noncoherent_iq_acquisition_caf.cc
     galileo_e5a_pcps_acquisition.cc
     glonass_l1_ca_pcps_acquisition.cc
+    glonass_l2_ca_pcps_acquisition.cc
 )
 
 if(ENABLE_FPGA)

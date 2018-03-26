@@ -1,10 +1,8 @@
 /*!
- * \file glonass_l1_ca_dll_pll_tracking.cc
+ * \file glonass_l2_ca_dll_pll_tracking.cc
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for Glonass L1 C/A to a TrackingInterface
- * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
- * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com
- *
+ * for Glonass L2 C/A to a TrackingInterface
+ * \author Damian Miralles, 2018, dmiralles2009(at)gmail.com *
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -36,16 +34,16 @@
  * -------------------------------------------------------------------------
  */
 
-#include "glonass_l1_ca_dll_pll_tracking.h"
+#include "glonass_l2_ca_dll_pll_tracking.h"
 #include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
 
 using google::LogMessage;
 
-GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
+GlonassL2CaDllPllTracking::GlonassL2CaDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
@@ -73,13 +71,13 @@ GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
-    vector_length = std::round(fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+    vector_length = std::round(fs_in / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = glonass_l1_ca_dll_pll_make_tracking_cc(
+            tracking_ = glonass_l2_ca_dll_pll_make_tracking_cc(
                 f_if,
                 fs_in,
                 vector_length,
@@ -99,12 +97,12 @@ GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
 }
 
 
-GlonassL1CaDllPllTracking::~GlonassL1CaDllPllTracking()
+GlonassL2CaDllPllTracking::~GlonassL2CaDllPllTracking()
 {
 }
 
 
-void GlonassL1CaDllPllTracking::start_tracking()
+void GlonassL2CaDllPllTracking::start_tracking()
 {
     tracking_->start_tracking();
 }
@@ -113,20 +111,20 @@ void GlonassL1CaDllPllTracking::start_tracking()
 /*
  * Set tracking channel unique ID
  */
-void GlonassL1CaDllPllTracking::set_channel(unsigned int channel)
+void GlonassL2CaDllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
     tracking_->set_channel(channel);
 }
 
 
-void GlonassL1CaDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void GlonassL2CaDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
 
-void GlonassL1CaDllPllTracking::connect(gr::top_block_sptr top_block)
+void GlonassL2CaDllPllTracking::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -135,7 +133,7 @@ void GlonassL1CaDllPllTracking::connect(gr::top_block_sptr top_block)
 }
 
 
-void GlonassL1CaDllPllTracking::disconnect(gr::top_block_sptr top_block)
+void GlonassL2CaDllPllTracking::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -144,13 +142,13 @@ void GlonassL1CaDllPllTracking::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr GlonassL1CaDllPllTracking::get_left_block()
+gr::basic_block_sptr GlonassL2CaDllPllTracking::get_left_block()
 {
     return tracking_;
 }
 
 
-gr::basic_block_sptr GlonassL1CaDllPllTracking::get_right_block()
+gr::basic_block_sptr GlonassL2CaDllPllTracking::get_right_block()
 {
     return tracking_;
 }

@@ -13,6 +13,7 @@ In the L1 band (centered at 1575.42 MHz):
 
 In the L2 band (centered at 1227.60 MHz):
  - &#128752; GPS L2C :white_check_mark:
+ - &#128752; GLONASS L2 C/A :white_check_mark:
 
 In the L5 band (centered at 1176.45 MHz):
  - &#128752; GPS L5 :white_check_mark:
@@ -52,7 +53,7 @@ Before building GNSS-SDR, you need to install all the required dependencies. The
 
 ### Alternative 1: Install dependencies using software packages
 
-If you want to start building and running GNSS-SDR as quick and easy as possible, the best option is to install all the required dependencies as binary packages. 
+If you want to start building and running GNSS-SDR as quick and easy as possible, the best option is to install all the required dependencies as binary packages.
 
 #### Debian / Ubuntu
 
@@ -84,7 +85,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
        boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
        boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
        blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel openssl-devel python-mako python-six 
+       glog-devel openssl-devel python-mako python-six
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -1113,6 +1114,7 @@ Each channel must be assigned to a GNSS signal, according to the following ident
 | Galileo E1b/c     |      1B         |
 | Glonass L1 C/A    |      1G         |
 | GPS L2 L2C(M)     |      2S         |
+| Glonass L2 C/A    |      2G         |
 | GPS L5            |      L5         |
 | Galileo E5a       |      5X         |
 

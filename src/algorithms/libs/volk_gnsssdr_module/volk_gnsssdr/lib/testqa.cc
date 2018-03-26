@@ -48,6 +48,12 @@ int main(int argc, char* argv[])
     std::vector<volk_gnsssdr_test_results_t> results;
     if (argc > 1)
         {
+            const size_t len = std::char_traits<char>::length(argv[1]);
+            if (len == 0 || len > 2046)
+                {
+                    std::cerr << "Test name is too long." << std::endl;
+                    return 0;
+                }
             for (unsigned int ii = 0; ii < test_cases.size(); ++ii)
                 {
                     if (std::string(argv[1]) == test_cases[ii].name())

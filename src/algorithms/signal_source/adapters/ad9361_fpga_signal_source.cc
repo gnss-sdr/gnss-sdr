@@ -33,6 +33,7 @@
 #include "ad9361_fpga_signal_source.h"
 #include "configuration_interface.h"
 #include "GPS_L1_CA.h"
+#include "GPS_L2C.h"
 #include <signal.h>
 #include <stdio.h>
 #include <glog/logging.h>
@@ -191,6 +192,13 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
+    enable_dds_lo_=configuration->property(role + ".enable_dds_lo", false);
+    freq_rf_tx_hz_=configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ-GPS_L2_FREQ_HZ-1000);
+    freq_dds_tx_hz_=configuration->property(role + ".freq_dds_tx_hz", 1000);
+    scale_dds_dbfs_=configuration->property(role + ".scale_dds_dbfs", -3.0);
+    phase_dds_deg_=configuration->property(role + ".phase_dds_deg", 0.0);
+    tx_attenuation_db_=configuration->property(role + ".tx_attenuation_db", 0.0);
+
     item_size_ = sizeof(gr_complex);
 
     std::cout << "device address: " << uri_ << std::endl;
@@ -199,6 +207,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
 
 
     // AD9361 Frontend IC device operation
+    int ret;
+
 
     // Streaming devices
     struct iio_device *rx;
@@ -258,6 +268,151 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
     iio_channel_enable(rx0_i);
     iio_channel_enable(rx0_q);
 
+
+
+    struct iio_device *ad9361_phy;
+    ad9361_phy= iio_context_find_device(ctx, "ad9361-phy");
+    ret=iio_device_attr_write(ad9361_phy,"trx_rate_governor","nominal");
+    if (ret < 0) {
+        std::cout<<"Failed to set trx_rate_governor: "<<ret<<std::endl;
+    }
+    ret=iio_device_attr_write(ad9361_phy,"ensm_mode","fdd");
+    if (ret < 0) {
+            std::cout<<"Failed to set ensm_mode: "<<ret<<std::endl;
+        }
+    ret=iio_device_attr_write(ad9361_phy,"calib_mode","auto");
+    if (ret < 0) {
+            std::cout<<"Failed to set calib_mode: "<<ret<<std::endl;
+        }
+    ret=iio_device_attr_write(ad9361_phy,"in_voltage0_gain_control_mode",gain_mode_rx1_.c_str());
+    if (ret < 0) {
+            std::cout<<"Failed to set in_voltage0_gain_control_mode: "<<ret<<std::endl;
+        }
+    ret=iio_device_attr_write(ad9361_phy,"in_voltage1_gain_control_mode",gain_mode_rx2_.c_str());
+    if (ret < 0) {
+            std::cout<<"Failed to set in_voltage1_gain_control_mode: "<<ret<<std::endl;
+        }
+    ret=iio_device_attr_write_double(ad9361_phy,"in_voltage0_hardwaregain",rf_gain_rx1_);
+    if (ret < 0) {
+            std::cout<<"Failed to set in_voltage0_hardwaregain: "<<ret<<std::endl;
+        }
+    ret=iio_device_attr_write_double(ad9361_phy,"in_voltage1_hardwaregain",rf_gain_rx2_);
+    if (ret < 0) {
+            std::cout<<"Failed to set in_voltage1_hardwaregain: "<<ret<<std::endl;
+        }
+
+
+    std::cout<<"End of AD9361 RX configuration.\n";
+
+    //LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
+    if (enable_dds_lo_==true)
+    {
+        // TX stream config
+        std::cout<<"Start of AD9361 TX Local Oscillator DDS configuration\n";
+        struct stream_cfg txcfg;
+        txcfg.bw_hz = bandwidth_;
+        txcfg.fs_hz = sample_rate_;
+        txcfg.lo_hz = freq_rf_tx_hz_;
+        txcfg.rfport = "A";
+
+        //find tx device
+        struct iio_device *tx;
+
+        std::cout<<"* Acquiring AD9361 TX streaming devices\n";
+
+        if(!get_ad9361_stream_dev(ctx, TX, &tx))
+            {
+                std::cout<<"No tx dev found\n";
+                throw std::runtime_error("AD9361 IIO No tx dev found");
+            };
+
+        std::cout<<"* Configuring AD9361 for streaming TX\n";
+        if (!cfg_ad9361_streaming_ch(ctx, &txcfg, TX, 0))
+            {
+                std::cout<<"TX port 0 not found\n";
+                throw std::runtime_error("AD9361 IIO TX port 0 not found");
+            }
+
+        //ENABLE DDS on TX1
+
+        //set output amplifier attenuation
+        ret = iio_device_attr_write_double(ad9361_phy, "out_voltage0_hardwaregain", -tx_attenuation_db_);
+        if (ret < 0) {
+            std::cout<<"Failed to set out_voltage0_hardwaregain value "<<-tx_attenuation_db_<<" error "<<ret<<std::endl;
+        }
+
+        struct iio_device *dds;
+        dds= iio_context_find_device(ctx, "cf-ad9361-dds-core-lpc");
+        struct iio_channel *dds_channel0_I;
+        dds_channel0_I = iio_device_find_channel(dds, "TX1_I_F1", true);
+
+        struct iio_channel *dds_channel0_Q;
+        dds_channel0_Q = iio_device_find_channel(dds, "TX1_Q_F1", true);
+
+        ret = iio_channel_attr_write_bool(dds_channel0_I, "raw", true);
+        if (ret < 0) {
+            std::cout<<"Failed to toggle DDS: "<<ret<<std::endl;
+        }
+
+        //set frequency, scale and phase
+
+        ret=iio_channel_attr_write_longlong(dds_channel0_I, "frequency",(long long) freq_dds_tx_hz_);
+        if (ret < 0) {
+            std::cout<<"Failed to set TX DDS frequency I: "<<ret<<std::endl;
+        }
+
+        ret=iio_channel_attr_write_longlong(dds_channel0_Q, "frequency",(long long) freq_dds_tx_hz_);
+        if (ret < 0) {
+            std::cout<<"Failed to set TX DDS frequency Q: "<<ret<<std::endl;
+        }
+
+
+        ret=iio_channel_attr_write_double(dds_channel0_I, "phase",0.0);
+        if (ret < 0) {
+            std::cout<<"Failed to set TX DDS phase I: "<<ret<<std::endl;
+        }
+
+        ret=iio_channel_attr_write_double(dds_channel0_Q, "phase",270000.0);
+        if (ret < 0) {
+            std::cout<<"Failed to set TX DDS phase Q: "<<ret<<std::endl;
+        }
+
+        ret=iio_channel_attr_write_double(dds_channel0_I, "scale",pow(10, scale_dds_dbfs_ / 20.0));
+        if (ret < 0) {
+            std::cout<<"Failed to set TX DDS scale I: "<<ret<<std::endl;
+        }
+
+        ret=iio_channel_attr_write_double(dds_channel0_Q, "scale",pow(10, scale_dds_dbfs_ / 20.0));
+        if (ret < 0) {
+            std::cout<<"Failed to set TX DDS scale Q: "<<ret<<std::endl;
+        }
+
+        //disable TX2
+
+
+        ret = iio_device_attr_write_double(ad9361_phy, "out_voltage1_hardwaregain", -89.0);
+        if (ret < 0) {
+            std::cout<<"Failed to set out_voltage1_hardwaregain value "<<-89.0<<" error "<<ret<<std::endl;
+        }
+
+        struct iio_channel *dds_channel1_I;
+        dds_channel1_I = iio_device_find_channel(dds, "TX2_I_F1", true);
+
+        struct iio_channel *dds_channel1_Q;
+        dds_channel1_Q = iio_device_find_channel(dds, "TX2_Q_F1", true);
+
+
+        ret=iio_channel_attr_write_double(dds_channel1_I, "scale",0);
+        if (ret < 0) {
+            std::cout<<"Failed to set TX2 DDS scale I: "<<ret<<std::endl;
+        }
+
+        ret=iio_channel_attr_write_double(dds_channel1_Q, "scale",0);
+        if (ret < 0) {
+            std::cout<<"Failed to set TX2 DDS scale Q: "<<ret<<std::endl;
+        }
+    }
+
 }
 
 
@@ -270,6 +425,33 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 
     std::cout<<"* AD9361 Destroying context\n";
     if (ctx) { iio_context_destroy(ctx); }
+
+    if (enable_dds_lo_)
+    {
+        struct iio_device *dds;
+        dds= iio_context_find_device(ctx, "cf-ad9361-dds-core-lpc");
+        struct iio_channel *dds_channel0_I;
+        dds_channel0_I = iio_device_find_channel(dds, "TX1_I_F1", true);
+
+        struct iio_channel *dds_channel0_Q;
+        dds_channel0_Q = iio_device_find_channel(dds, "TX1_Q_F1", true);
+        int ret;
+        ret = iio_channel_attr_write_bool(dds_channel0_I, "raw", false);
+        if (ret < 0) {
+            std::cout<<"Failed to toggle DDS: "<<ret<<std::endl;
+        }
+
+        ret=iio_channel_attr_write_double(dds_channel0_I, "scale",0.0);
+        if (ret < 0) {
+            std::cout<<"Failed to set TX DDS scale I: "<<ret<<std::endl;
+        }
+
+        ret=iio_channel_attr_write_double(dds_channel0_Q, "scale",0.0);
+        if (ret < 0) {
+            std::cout<<"Failed to set TX DDS scale Q: "<<ret<<std::endl;
+        }
+
+    }
 }
 
 

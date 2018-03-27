@@ -94,6 +94,14 @@ private:
     std::string filter_file_;
     bool filter_auto_;
 
+    //DDS configuration for LO generation for external mixer
+    bool enable_dds_lo_;
+    unsigned long freq_rf_tx_hz_;
+    unsigned long freq_dds_tx_hz_;
+    double scale_dds_dbfs_;
+    double phase_dds_deg_;
+    double tx_attenuation_db_;
+
     unsigned int in_stream_;
     unsigned int out_stream_;
 

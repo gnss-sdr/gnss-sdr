@@ -262,7 +262,8 @@ void GNSSFlowgraph::connect()
     for (unsigned int i = 0; i < channels_count_; i++)
         {
 
-    		bool FPGA_enabled = configuration_->property(sig_conditioner_.at(selected_signal_conditioner_ID)->role() + ".enable_FPGA", false);
+    		bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
+
 	if (FPGA_enabled == false)
 	{
             selected_signal_conditioner_ID = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".RF_channel_ID", 0);

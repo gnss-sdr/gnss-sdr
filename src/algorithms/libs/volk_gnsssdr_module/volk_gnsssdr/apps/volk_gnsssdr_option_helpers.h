@@ -16,8 +16,8 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VOLK_VOLK_OPTION_HELPERS_H
-#define VOLK_VOLK_OPTION_HELPERS_H
+#ifndef VOLK_GNSSSDR_OPTION_HELPERS_H
+#define VOLK_GNSSSDR_OPTION_HELPERS_H
 
 #include <climits>
 #include <cstring>
@@ -71,4 +71,4 @@ private:
 };
 
 
-#endif  //VOLK_VOLK_OPTION_HELPERS_H
+#endif  //VOLK_GNSSSDR_OPTION_HELPERS_H

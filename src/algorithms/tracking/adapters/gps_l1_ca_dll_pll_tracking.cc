@@ -77,10 +77,10 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
+            item_size_ = sizeof(gr_complex);
             if (unified_)
                 {
                     char sig_[3] = "1C";
-                    item_size_ = sizeof(gr_complex);
                     tracking_unified_ = dll_pll_veml_make_tracking(
                         fs_in,
                         vector_length,

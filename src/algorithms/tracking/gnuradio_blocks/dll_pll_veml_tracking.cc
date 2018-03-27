@@ -254,6 +254,14 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
         {
             LOG(WARNING) << "Invalid System argument when instantiating tracking blocks";
             std::cout << "Invalid System argument when instantiating tracking blocks" << std::endl;
+            d_correlation_length_ms = 1;
+            d_secondary = false;
+            interchange_iq = false;
+            d_signal_carrier_freq = 0.0;
+            d_code_period = 0.0;
+            d_code_length_chips = 0;
+            d_code_samples_per_chip = 0;
+            d_symbols_per_bit = 0;
         }
     T_chip_seconds = 0.0;
     T_prn_seconds = 0.0;
@@ -347,6 +355,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
             d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             d_Prompt_Data[0] = gr_complex(0.0, 0.0);
             d_data_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
+        }
+    else
+        {
+            d_Prompt_Data = nullptr;
+            d_data_code = nullptr;
         }
 
     //--- Initializations ---//
@@ -476,7 +489,7 @@ void dll_pll_veml_tracking::start_tracking()
         }
     else if (systemName.compare("Galileo") == 0 and signal_type.compare("5X") == 0)
         {
-            gr_complex aux_code[d_code_length_chips];
+            gr_complex *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * d_code_length_chips, volk_gnsssdr_get_alignment()));
             galileo_e5_a_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, const_cast<char *>(signal_type.c_str()));
             if (d_track_pilot)
                 {
@@ -496,6 +509,7 @@ void dll_pll_veml_tracking::start_tracking()
                             d_tracking_code[i] = aux_code[i].real();
                         }
                 }
+            volk_gnsssdr_free(aux_code);
         }
 
     multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code, d_local_code_shift_chips);
@@ -761,7 +775,7 @@ void dll_pll_veml_tracking::update_tracking_vars()
     T_prn_seconds = T_chip_seconds * static_cast<double>(d_code_length_chips);
     double code_error_filt_secs = T_prn_seconds * d_code_error_filt_chips * T_chip_seconds;  //[seconds]
 
-    // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+    // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
     // keep alignment parameters for the next input buffer
     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
     T_prn_samples = T_prn_seconds * d_fs_in;

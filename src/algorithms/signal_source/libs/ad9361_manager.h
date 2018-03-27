@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef __AD9361_MANAGER__
-#define __AD9361_MANAGER__
+#ifndef GNSS_SDR_AD9361_MANAGER_H
+#define GNSS_SDR_AD9361_MANAGER_H
 
 #include <string>
 
@@ -42,31 +42,36 @@
 #endif
 
 /* RX is input, TX is output */
-enum iodev { RX, TX };
+enum iodev
+{
+    RX,
+    TX
+};
 
 /* common RX and TX streaming params */
-struct stream_cfg {
-    long long bw_hz; // Analog banwidth in Hz
-    long long fs_hz; // Baseband sample rate in Hz
-    long long lo_hz; // Local oscillator frequency in Hz
-    const char* rfport; // Port name
+struct stream_cfg
+{
+    long long bw_hz;     // Analog banwidth in Hz
+    long long fs_hz;     // Baseband sample rate in Hz
+    long long lo_hz;     // Local oscillator frequency in Hz
+    const char *rfport;  // Port name
 };
 
 
 /* check return value of attr_write function */
-void errchk(int v, const char* what);
+void errchk(int v, const char *what);
 
 /* write attribute: long long int */
-void wr_ch_lli(struct iio_channel *chn, const char* what, long long val);
+void wr_ch_lli(struct iio_channel *chn, const char *what, long long val);
 
 /* write attribute: string */
-void wr_ch_str(struct iio_channel *chn, const char* what, const char* str);
+void wr_ch_str(struct iio_channel *chn, const char *what, const char *str);
 
 /* helper function generating channel names */
-char* get_ch_name(const char* type, int id, char* tmpstr);
+char *get_ch_name(const char *type, int id, char *tmpstr);
 
 /* returns ad9361 phy device */
-struct iio_device* get_ad9361_phy(struct iio_context *ctx);
+struct iio_device *get_ad9361_phy(struct iio_context *ctx);
 
 /* finds AD9361 streaming IIO devices */
 bool get_ad9361_stream_dev(struct iio_context *ctx, enum iodev d, struct iio_device **dev);
@@ -83,45 +88,43 @@ bool get_lo_chan(struct iio_context *ctx, enum iodev d, struct iio_channel **chn
 /* applies streaming configuration through IIO */
 bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, enum iodev type, int chid);
 
-
 bool config_ad9361_rx_local(unsigned long bandwidth_,
-                            unsigned long sample_rate_,
-                            unsigned long freq_,
-                            std::string rf_port_select_,
-                            std::string gain_mode_rx1_,
-                            std::string gain_mode_rx2_,
-                            double rf_gain_rx1_,
-                            double rf_gain_rx2_);
+    unsigned long sample_rate_,
+    unsigned long freq_,
+    std::string rf_port_select_,
+    std::string gain_mode_rx1_,
+    std::string gain_mode_rx2_,
+    double rf_gain_rx1_,
+    double rf_gain_rx2_);
 
 bool config_ad9361_rx_remote(std::string remote_host,
-        unsigned long bandwidth_,
-        unsigned long sample_rate_,
-        unsigned long freq_,
-        std::string rf_port_select_,
-        std::string gain_mode_rx1_,
-        std::string gain_mode_rx2_,
-        double rf_gain_rx1_,
-        double rf_gain_rx2_);
+    unsigned long bandwidth_,
+    unsigned long sample_rate_,
+    unsigned long freq_,
+    std::string rf_port_select_,
+    std::string gain_mode_rx1_,
+    std::string gain_mode_rx2_,
+    double rf_gain_rx1_,
+    double rf_gain_rx2_);
 
 bool config_ad9361_lo_local(unsigned long bandwidth_,
-                            unsigned long sample_rate_,
-                            unsigned long freq_rf_tx_hz_,
-                            double tx_attenuation_db_,
-                            long long freq_dds_tx_hz_,
-                            double scale_dds_dbfs_);
+    unsigned long sample_rate_,
+    unsigned long freq_rf_tx_hz_,
+    double tx_attenuation_db_,
+    long long freq_dds_tx_hz_,
+    double scale_dds_dbfs_);
 
 bool config_ad9361_lo_remote(std::string remote_host,
-                             unsigned long bandwidth_,
-                             unsigned long sample_rate_,
-                             unsigned long freq_rf_tx_hz_,
-                             double tx_attenuation_db_,
-                             long long freq_dds_tx_hz_,
-                             double scale_dds_dbfs_);
+    unsigned long bandwidth_,
+    unsigned long sample_rate_,
+    unsigned long freq_rf_tx_hz_,
+    double tx_attenuation_db_,
+    long long freq_dds_tx_hz_,
+    double scale_dds_dbfs_);
 
 
 bool ad9361_disable_lo_remote(std::string remote_host);
 
 bool ad9361_disable_lo_local();
-
 
 #endif

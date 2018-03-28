@@ -428,13 +428,13 @@ void dll_pll_veml_tracking::start_tracking()
     double T_prn_mod_seconds = T_chip_mod_seconds * static_cast<double>(d_code_length_chips);
     double T_prn_mod_samples = T_prn_mod_seconds * d_fs_in;
 
-    d_current_prn_length_samples = round(T_prn_mod_samples);
+    d_current_prn_length_samples = std::round(T_prn_mod_samples);
 
     double T_prn_true_seconds = static_cast<double>(d_code_length_chips) / d_code_chip_rate;
     double T_prn_true_samples = T_prn_true_seconds * d_fs_in;
     double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
     double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
-    double corrected_acq_phase_samples = fmod(d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * d_fs_in, T_prn_true_samples);
+    double corrected_acq_phase_samples = std::fmod(d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * d_fs_in, T_prn_true_samples);
     if (corrected_acq_phase_samples < 0.0)
         {
             corrected_acq_phase_samples += T_prn_mod_samples;
@@ -984,14 +984,14 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             {
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
                 // Fill the acquisition data
-                int acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
+                unsigned long int acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                 double acq_trk_shif_correction_samples = static_cast<double>(d_current_prn_length_samples) - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
-                int samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
+                int samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                 if (samples_offset < 0)
                     {
                         samples_offset = 0;
                     }
-                d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
+                d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * d_acq_code_phase_samples;
                 d_state = 2;
                 d_sample_counter += samples_offset;  // count for the processed samples
                 consume_each(samples_offset);        // shift input to perform alignment with local replica

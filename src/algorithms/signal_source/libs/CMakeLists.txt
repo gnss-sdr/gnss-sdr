@@ -60,14 +60,16 @@ set (SIGNAL_SOURCE_LIB_SOURCES
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${Boost_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
      ${OPT_DRIVER_INCLUDE_DIRS}
 )
 
 
 file(GLOB SIGNAL_SOURCE_LIB_HEADERS "*.h")
 list(SORT SIGNAL_SOURCE_LIB_HEADERS)
+list(SORT SIGNAL_SOURCE_LIB_SOURCES)
 add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})
-
+add_dependencies(signal_source_lib glog-${glog_RELEASE})
 target_link_libraries(signal_source_lib ${OPT_LIBRARIES})
 

@@ -31,7 +31,7 @@
  */
 #include "ad9361_manager.h"
 #include <glog/logging.h>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 
@@ -309,7 +309,6 @@ bool config_ad9361_rx_remote(std::string remote_host,
     rxcfg.lo_hz = freq_;                     // 2.5 GHz rf frequency
     rxcfg.rfport = rf_port_select_.c_str();  // port A (select for rf freq.)
 
-
     std::cout << "AD9361 Acquiring IIO REMOTE context in host " << remote_host << std::endl;
     struct iio_context *ctx;
     // Streaming devices
@@ -489,7 +488,6 @@ bool config_ad9361_lo_local(unsigned long bandwidth_,
             std::cout << "Failed to set TX DDS frequency Q: " << ret << std::endl;
         }
 
-
     ret = iio_channel_attr_write_double(dds_channel0_I, "phase", 0.0);
     if (ret < 0)
         {
@@ -516,7 +514,6 @@ bool config_ad9361_lo_local(unsigned long bandwidth_,
 
     //disable TX2
 
-
     ret = iio_device_attr_write_double(ad9361_phy, "out_voltage1_hardwaregain", -89.0);
     if (ret < 0)
         {
@@ -528,7 +525,6 @@ bool config_ad9361_lo_local(unsigned long bandwidth_,
 
     struct iio_channel *dds_channel1_Q;
     dds_channel1_Q = iio_device_find_channel(dds, "TX2_Q_F1", true);
-
 
     ret = iio_channel_attr_write_double(dds_channel1_I, "scale", 0);
     if (ret < 0)

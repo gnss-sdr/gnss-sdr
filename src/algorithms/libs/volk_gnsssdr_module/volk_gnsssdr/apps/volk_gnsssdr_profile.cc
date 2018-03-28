@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
                         }
                     catch (std::string &error)
                         {
-                            std::cerr << "Caught Exception in 'run_volk_gnssdr_tests': " << error << std::endl;
+                            std::cerr << "Caught Exception in 'run_volk_gnsssdr_tests': " << error << std::endl;
                         }
                 }
         }

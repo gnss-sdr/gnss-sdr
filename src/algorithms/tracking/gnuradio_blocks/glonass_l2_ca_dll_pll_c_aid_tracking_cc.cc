@@ -719,7 +719,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     d_code_error_filt_chips_Ti = d_code_error_filt_chips_s * CURRENT_INTEGRATION_TIME_S;
                     code_error_filt_secs_Ti = d_code_error_filt_chips_Ti / d_code_freq_chips;  // [s/Ti]
 
-                    // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+                    // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
                     // keep alignment parameters for the next input buffer
                     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
                     double T_chip_seconds = 1.0 / d_code_freq_chips;

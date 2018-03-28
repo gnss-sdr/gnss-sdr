@@ -1,8 +1,7 @@
 /*!
  * \file dll_pll_veml_tracking.h
- * \brief Implementation of a code DLL + carrier PLL VEML (Very Early
- *  Minus Late) tracking block for Galileo E1 signals
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * \brief Implementation of a code DLL + carrier PLL tracking block.
+ * \author Antonio Ramos, 2018 antonioramosdet(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -32,18 +31,13 @@
 #ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 
-#define DLL_PLL_CN0_ESTIMATION_SAMPLES 20
-#define DLL_PLL_MINIMUM_VALID_CN0 25
-#define DLL_PLL_MAXIMUM_LOCK_FAIL_COUNTER 50
-#define DLL_PLL_CARRIER_LOCK_THRESHOLD 0.85
-
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include "cpu_multicorrelator_real_codes.h"
+#include <gnuradio/block.h>
 #include <fstream>
 #include <string>
-#include <gnuradio/block.h>
 
 
 class dll_pll_veml_tracking;

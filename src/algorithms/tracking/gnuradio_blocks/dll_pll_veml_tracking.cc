@@ -1,8 +1,7 @@
 /*!
  * \file dll_pll_veml_tracking.cc
- * \brief Implementation of a code DLL + carrier PLL VEML (Very Early
- *  Minus Late) tracking block for Galileo E1 signals
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * \brief Implementation of a code DLL + carrier PLL tracking block.
+ * \author Antonio Ramos, 2018 antonioramosdet(at)gmail.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -11,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,7 +38,6 @@
 #include "lock_detectors.h"
 #include "control_message_factory.h"
 #include "MATH_CONSTANTS.h"
-
 #include "Galileo_E1.h"
 #include "galileo_e1_signal_processing.h"
 #include "Galileo_E5a.h"
@@ -50,17 +48,16 @@
 #include "gps_l2c_signal.h"
 #include "GPS_L5.h"
 #include "gps_l5_signal.h"
-
+#include "gnss_sdr_flags.h"
+#include <boost/lexical_cast.hpp>
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <matio.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <sstream>
-#include <algorithm>
-#include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
-#include <matio.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-
 
 using google::LogMessage;
 
@@ -378,11 +375,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[DLL_PLL_CN0_ESTIMATION_SAMPLES];
+    d_Prompt_buffer = new gr_complex[FLAGS_cn0_samples];
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = DLL_PLL_CARRIER_LOCK_THRESHOLD;
+    d_carrier_lock_threshold = FLAGS_carrier_lock_th;
 
     clear_tracking_vars();
 
@@ -649,7 +646,7 @@ bool dll_pll_veml_tracking::acquire_secondary()
 bool dll_pll_veml_tracking::cn0_and_tracking_lock_status()
 {
     // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-    if (d_cn0_estimation_counter < DLL_PLL_CN0_ESTIMATION_SAMPLES)
+    if (d_cn0_estimation_counter < FLAGS_cn0_samples)
         {
             // fill buffer with prompt correlator output values
             d_Prompt_buffer[d_cn0_estimation_counter] = d_P_accu;
@@ -660,11 +657,11 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status()
         {
             d_cn0_estimation_counter = 0;
             // Code lock indicator
-            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, DLL_PLL_CN0_ESTIMATION_SAMPLES, static_cast<long>(d_fs_in), static_cast<double>(d_code_length_chips));
+            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, static_cast<long>(d_fs_in), static_cast<double>(d_code_length_chips));
             // Carrier lock indicator
-            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, DLL_PLL_CN0_ESTIMATION_SAMPLES);
+            d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
             // Loss of lock detection
-            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < DLL_PLL_MINIMUM_VALID_CN0)
+            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                 {
                     d_carrier_lock_fail_counter++;
                 }
@@ -672,7 +669,7 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status()
                 {
                     if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
                 }
-            if (d_carrier_lock_fail_counter > DLL_PLL_MAXIMUM_LOCK_FAIL_COUNTER)
+            if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                 {
                     std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                     LOG(INFO) << "Loss of lock in channel " << d_channel << "!";

@@ -35,34 +35,32 @@
 
 #include "gps_fpga_acquisition_8sc.h"
 #include "gps_sdr_signal_processing.h"
+#include "GPS_L1_CA.h"
 #include <cmath>
+#include <volk/volk.h>
 
 // allocate memory dynamically
 #include <new>
 
 // libraries used by DMA test code and GIPO test code
-#include <stdio.h>
+#include <cstdio>
 #include <fcntl.h>
 #include <unistd.h>
-#include <errno.h>
+#include <cerrno>
 
 // libraries used by DMA test code
 #include <sys/stat.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 // libraries used by GPIO test code
-#include <stdlib.h>
-#include <signal.h>
+#include <cstdlib>
+#include <csignal>
 #include <sys/mman.h>
 
 // logging
 #include <glog/logging.h>
 
-#include <volk/volk.h>
-
-#include "GPS_L1_CA.h"
 
 #define PAGE_SIZE 0x10000
 #define MAX_PHASE_STEP_RAD 0.999999999534339  // 1 - pow(2,-31);

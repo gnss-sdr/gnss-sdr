@@ -917,12 +917,15 @@ void dll_pll_veml_tracking::log_data(bool integrating)
             if (integrating)
                 {
                     // It compensates the amplitude difference while integrating
-                    float scale_factor = static_cast<float>(d_extend_correlation_symbols) / static_cast<float>(d_extend_correlation_symbols_count);
-                    tmp_VE *= scale_factor;
-                    tmp_E *= scale_factor;
-                    tmp_P *= scale_factor;
-                    tmp_L *= scale_factor;
-                    tmp_VL *= scale_factor;
+                    if (d_extend_correlation_symbols_count > 0)
+                        {
+                            float scale_factor = static_cast<float>(d_extend_correlation_symbols) / static_cast<float>(d_extend_correlation_symbols_count);
+                            tmp_VE *= scale_factor;
+                            tmp_E *= scale_factor;
+                            tmp_P *= scale_factor;
+                            tmp_L *= scale_factor;
+                            tmp_VL *= scale_factor;
+                        }
                 }
 
             try

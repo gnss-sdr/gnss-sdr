@@ -100,7 +100,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    bool unified_;
 };
 
 #endif  // GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_

@@ -34,6 +34,11 @@
 
 #include <complex>
 
+/*!
+ * \brief This function generates Galileo E1 code (can select E1B or E1C sinboc).
+ *
+ */
+void galileo_e1_code_gen_sinboc11_float(float* _dest, char _Signal[3], unsigned int _prn);
 
 /*!
  * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc

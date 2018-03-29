@@ -37,9 +37,6 @@
 #include <glog/logging.h>
 
 
-#define MAX_LOOP_ORDER 3
-#define MAX_HISTORY_LENGTH 4
-
 Tracking_loop_filter::Tracking_loop_filter(float update_interval,
     float noise_bandwidth,
     int loop_order,
@@ -50,8 +47,8 @@ Tracking_loop_filter::Tracking_loop_filter(float update_interval,
       d_noise_bandwidth(noise_bandwidth),
       d_update_interval(update_interval)
 {
-    d_inputs.resize(MAX_HISTORY_LENGTH, 0.0);
-    d_outputs.resize(MAX_HISTORY_LENGTH, 0.0);
+    d_inputs.resize(MAX_LOOP_HISTORY_LENGTH, 0.0);
+    d_outputs.resize(MAX_LOOP_HISTORY_LENGTH, 0.0);
     update_coefficients();
 }
 
@@ -62,8 +59,8 @@ Tracking_loop_filter::Tracking_loop_filter()
       d_noise_bandwidth(15.0),
       d_update_interval(0.001)
 {
-    d_inputs.resize(MAX_HISTORY_LENGTH, 0.0);
-    d_outputs.resize(MAX_HISTORY_LENGTH, 0.0);
+    d_inputs.resize(MAX_LOOP_HISTORY_LENGTH, 0.0);
+    d_outputs.resize(MAX_LOOP_HISTORY_LENGTH, 0.0);
     update_coefficients();
 }
 
@@ -75,12 +72,12 @@ Tracking_loop_filter::~Tracking_loop_filter()
 float Tracking_loop_filter::apply(float current_input)
 {
     // Now apply the filter coefficients:
-    float result = 0;
+    float result = 0.0;
 
     // Hanlde the old outputs first:
     for (unsigned int ii = 0; ii < d_output_coefficients.size(); ++ii)
         {
-            result += d_output_coefficients[ii] * d_outputs[(d_current_index + ii) % MAX_HISTORY_LENGTH];
+            result += d_output_coefficients[ii] * d_outputs[(d_current_index + ii) % MAX_LOOP_HISTORY_LENGTH];
         }
 
     // Now update the index to handle the inputs.
@@ -93,7 +90,7 @@ float Tracking_loop_filter::apply(float current_input)
     d_current_index--;
     if (d_current_index < 0)
         {
-            d_current_index += MAX_HISTORY_LENGTH;
+            d_current_index += MAX_LOOP_HISTORY_LENGTH;
         }
 
     d_inputs[d_current_index] = current_input;
@@ -101,7 +98,7 @@ float Tracking_loop_filter::apply(float current_input)
 
     for (unsigned int ii = 0; ii < d_input_coefficients.size(); ++ii)
         {
-            result += d_input_coefficients[ii] * d_inputs[(d_current_index + ii) % MAX_HISTORY_LENGTH];
+            result += d_input_coefficients[ii] * d_inputs[(d_current_index + ii) % MAX_LOOP_HISTORY_LENGTH];
         }
 
 
@@ -122,7 +119,7 @@ void Tracking_loop_filter::update_coefficients(void)
     float wn;
     float T = d_update_interval;
 
-    float zeta = 1 / std::sqrt(2);
+    float zeta = 1.0 / std::sqrt(2.0);
 
     // The following is based on the bilinear transform approximation of
     // the analog integrator. The loop format is from Kaplan & Hegarty
@@ -146,7 +143,7 @@ void Tracking_loop_filter::update_coefficients(void)
                     d_input_coefficients[1] = g1 * T / 2.0;
 
                     d_output_coefficients.resize(1);
-                    d_output_coefficients[0] = 1;
+                    d_output_coefficients[0] = 1.0;
                 }
             else
                 {
@@ -157,28 +154,28 @@ void Tracking_loop_filter::update_coefficients(void)
                 }
             break;
         case 2:
-            wn = d_noise_bandwidth * (8 * zeta) / (4 * zeta * zeta + 1);
+            wn = d_noise_bandwidth * (8.0 * zeta) / (4.0 * zeta * zeta + 1.0);
             g1 = wn * wn;
-            g2 = wn * 2 * zeta;
+            g2 = wn * 2.0 * zeta;
             if (d_include_last_integrator)
                 {
                     d_input_coefficients.resize(3);
-                    d_input_coefficients[0] = T / 2 * (g1 * T / 2 + g2);
-                    d_input_coefficients[1] = T * T / 2 * g1;
-                    d_input_coefficients[2] = T / 2 * (g1 * T / 2 - g2);
+                    d_input_coefficients[0] = T / 2.0 * (g1 * T / 2.0 + g2);
+                    d_input_coefficients[1] = T * T / 2.0 * g1;
+                    d_input_coefficients[2] = T / 2.0 * (g1 * T / 2.0 - g2);
 
                     d_output_coefficients.resize(2);
-                    d_output_coefficients[0] = 2;
-                    d_output_coefficients[1] = -1;
+                    d_output_coefficients[0] = 2.0;
+                    d_output_coefficients[1] = -1.0;
                 }
             else
                 {
                     d_input_coefficients.resize(2);
                     d_input_coefficients[0] = (g1 * T / 2.0 + g2);
-                    d_input_coefficients[1] = g1 * T / 2 - g2;
+                    d_input_coefficients[1] = g1 * T / 2.0 - g2;
 
                     d_output_coefficients.resize(1);
-                    d_output_coefficients[0] = 1;
+                    d_output_coefficients[0] = 1.0;
                 }
             break;
 
@@ -193,27 +190,27 @@ void Tracking_loop_filter::update_coefficients(void)
             if (d_include_last_integrator)
                 {
                     d_input_coefficients.resize(4);
-                    d_input_coefficients[0] = T / 2 * (g3 + T / 2 * (g2 + T / 2 * g1));
-                    d_input_coefficients[1] = T / 2 * (-g3 + T / 2 * (g2 + 3 * T / 2 * g1));
-                    d_input_coefficients[2] = T / 2 * (-g3 - T / 2 * (g2 - 3 * T / 2 * g1));
-                    d_input_coefficients[3] = T / 2 * (g3 - T / 2 * (g2 - T / 2 * g1));
+                    d_input_coefficients[0] = T / 2.0 * (g3 + T / 2.0 * (g2 + T / 2.0 * g1));
+                    d_input_coefficients[1] = T / 2.0 * (-g3 + T / 2.0 * (g2 + 3.0 * T / 2.0 * g1));
+                    d_input_coefficients[2] = T / 2.0 * (-g3 - T / 2.0 * (g2 - 3.0 * T / 2.0 * g1));
+                    d_input_coefficients[3] = T / 2.0 * (g3 - T / 2.0 * (g2 - T / 2.0 * g1));
 
                     d_output_coefficients.resize(3);
-                    d_output_coefficients[0] = 3;
-                    d_output_coefficients[1] = -3;
-                    d_output_coefficients[2] = 1;
+                    d_output_coefficients[0] = 3.0;
+                    d_output_coefficients[1] = -3.0;
+                    d_output_coefficients[2] = 1.0;
                 }
             else
                 {
                     d_input_coefficients.resize(3);
-                    d_input_coefficients[0] = g3 + T / 2 * (g2 + T / 2 * g1);
-                    d_input_coefficients[1] = g1 * T * T / 2 - 2 * g3;
-                    d_input_coefficients[2] = g3 + T / 2 * (-g2 + T / 2 * g1);
+                    d_input_coefficients[0] = g3 + T / 2.0 * (g2 + T / 2.0 * g1);
+                    d_input_coefficients[1] = g1 * T * T / 2.0 - 2.0 * g3;
+                    d_input_coefficients[2] = g3 + T / 2.0 * (-g2 + T / 2.0 * g1);
 
 
                     d_output_coefficients.resize(2);
-                    d_output_coefficients[0] = 2;
-                    d_output_coefficients[1] = -1;
+                    d_output_coefficients[0] = 2.0;
+                    d_output_coefficients[1] = -1.0;
                 }
             break;
         };
@@ -254,7 +251,7 @@ bool Tracking_loop_filter::get_include_last_integrator(void) const
 
 void Tracking_loop_filter::set_order(int loop_order)
 {
-    if (loop_order < 1 || loop_order > MAX_LOOP_ORDER)
+    if (loop_order < 1 or loop_order > MAX_LOOP_ORDER)
         {
             LOG(ERROR) << "Ignoring attempt to set loop order to " << loop_order
                        << ". Maximum allowed order is: " << MAX_LOOP_ORDER
@@ -274,7 +271,7 @@ int Tracking_loop_filter::get_order(void) const
 
 void Tracking_loop_filter::initialize(float initial_output)
 {
-    d_inputs.assign(MAX_HISTORY_LENGTH, 0.0);
-    d_outputs.assign(MAX_HISTORY_LENGTH, initial_output);
-    d_current_index = MAX_HISTORY_LENGTH - 1;
+    d_inputs.assign(MAX_LOOP_HISTORY_LENGTH, 0.0);
+    d_outputs.assign(MAX_LOOP_HISTORY_LENGTH, initial_output);
+    d_current_index = MAX_LOOP_HISTORY_LENGTH - 1;
 }

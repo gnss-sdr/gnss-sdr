@@ -83,7 +83,7 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
         }
     else
         {
-            return 0;
+            return 0.0;
         }
 }
 
@@ -107,7 +107,7 @@ double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
         }
     else
         {
-            return 0.5 * (P_early - P_late) / ((P_early + P_late));
+            return 0.5 * (P_early - P_late) / (P_early + P_late);
         }
 }
 
@@ -131,6 +131,6 @@ double dll_nc_vemlp_normalized(gr_complex very_early_s1, gr_complex early_s1, gr
         }
     else
         {
-            return (P_early - P_late) / ((P_early + P_late));
+            return (P_early - P_late) / (P_early + P_late);
         }
 }

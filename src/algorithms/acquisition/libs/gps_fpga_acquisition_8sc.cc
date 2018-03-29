@@ -35,34 +35,32 @@
 
 #include "gps_fpga_acquisition_8sc.h"
 #include "gps_sdr_signal_processing.h"
+#include "GPS_L1_CA.h"
 #include <cmath>
+#include <volk/volk.h>
 
 // allocate memory dynamically
 #include <new>
 
 // libraries used by DMA test code and GIPO test code
-#include <stdio.h>
+#include <cstdio>
 #include <fcntl.h>
 #include <unistd.h>
-#include <errno.h>
+#include <cerrno>
 
 // libraries used by DMA test code
 #include <sys/stat.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 // libraries used by GPIO test code
-#include <stdlib.h>
-#include <signal.h>
+#include <cstdlib>
+#include <csignal>
 #include <sys/mman.h>
 
 // logging
 #include <glog/logging.h>
 
-#include <volk/volk.h>
-
-#include "GPS_L1_CA.h"
 
 #define PAGE_SIZE 0x10000
 #define MAX_PHASE_STEP_RAD 0.999999999534339  // 1 - pow(2,-31);
@@ -110,7 +108,7 @@ gps_fpga_acquisition_8sc::gps_fpga_acquisition_8sc(std::string device_name,
     // allocate memory to compute all the PRNs
     // and compute all the possible codes
     std::complex<float>* code = new std::complex<float>[nsamples_total];  // buffer for the local code
-    std::complex<float>* code_total = new gr_complex[vector_length];      // buffer for the local code repeate every number of ms
+    std::complex<float>* code_total = new gr_complex[vector_length];      // buffer for the local code repeat every number of ms
 
     gr_complex* d_fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
@@ -252,8 +250,8 @@ void gps_fpga_acquisition_8sc::set_phase_step(unsigned int doppler_index)
         {
             phase_step_rad_real = MAX_PHASE_STEP_RAD;
         }
-    phase_step_rad_int_temp = phase_step_rad_real * 4;                      // * 2^2
-    phase_step_rad_int = (int32_t)(phase_step_rad_int_temp * (536870912));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
+    phase_step_rad_int_temp = phase_step_rad_real * 4;                                 // * 2^2
+    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (536870912));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
 
     d_map_base[3] = phase_step_rad_int;
 }

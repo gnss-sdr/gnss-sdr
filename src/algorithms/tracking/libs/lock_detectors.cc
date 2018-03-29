@@ -67,20 +67,20 @@
  */
 float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, double code_length)
 {
-    double SNR = 0;
-    double SNR_dB_Hz = 0;
-    double Psig = 0;
-    double Ptot = 0;
+    double SNR = 0.0;
+    double SNR_dB_Hz = 0.0;
+    double Psig = 0.0;
+    double Ptot = 0.0;
     for (int i = 0; i < length; i++)
         {
             Psig += std::abs(static_cast<double>(Prompt_buffer[i].real()));
             Ptot += static_cast<double>(Prompt_buffer[i].imag()) * static_cast<double>(Prompt_buffer[i].imag()) + static_cast<double>(Prompt_buffer[i].real()) * static_cast<double>(Prompt_buffer[i].real());
         }
-    Psig = Psig / static_cast<double>(length);
+    Psig /= static_cast<double>(length);
     Psig = Psig * Psig;
-    Ptot = Ptot / static_cast<double>(length);
+    Ptot /= static_cast<double>(length);
     SNR = Psig / (Ptot - Psig);
-    SNR_dB_Hz = 10 * log10(SNR) + 10 * log10(static_cast<double>(fs_in) / 2) - 10 * log10(code_length);
+    SNR_dB_Hz = 10.0 * log10(SNR) + 10.0 * log10(static_cast<double>(fs_in) / 2.0) - 10.0 * log10(code_length);
     return static_cast<float>(SNR_dB_Hz);
 }
 
@@ -96,10 +96,10 @@ float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, doubl
  */
 float carrier_lock_detector(gr_complex* Prompt_buffer, int length)
 {
-    float tmp_sum_I = 0;
-    float tmp_sum_Q = 0;
-    float NBD = 0;
-    float NBP = 0;
+    float tmp_sum_I = 0.0;
+    float tmp_sum_Q = 0.0;
+    float NBD = 0.0;
+    float NBP = 0.0;
     for (int i = 0; i < length; i++)
         {
             tmp_sum_I += Prompt_buffer[i].real();

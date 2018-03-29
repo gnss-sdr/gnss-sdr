@@ -1,7 +1,7 @@
 /*!
  * \file dll_pll_veml_tracking.h
  * \brief Implementation of a code DLL + carrier PLL tracking block.
- * \author Antonio Ramos, 2018 antonioramosdet(at)gmail.com
+ * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -55,8 +55,7 @@ dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(double fs_in, unsigned int
     char system, char signal[3]);
 
 /*!
- * \brief This class implements a code DLL + carrier PLL VEML (Very Early
- *  Minus Late) tracking block for Galileo E1 signals
+ * \brief This class implements a code DLL + carrier PLL tracking block.
  */
 class dll_pll_veml_tracking : public gr::block
 {
@@ -67,12 +66,6 @@ public:
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
 
-    /*!
-     * \brief Code DLL + carrier PLL according to the algorithms described in:
-     * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
-     * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
-     * Birkhauser, 2007
-     */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
@@ -214,9 +207,9 @@ private:
     double T_prn_seconds;
     double T_prn_samples;
     double K_blk_samples;
-    //PRN period in samples
+    // PRN period in samples
     int d_current_prn_length_samples;
-    //processing samples counters
+    // processing samples counters
     unsigned long int d_sample_counter;
     unsigned long int d_acq_sample_stamp;
 
@@ -234,4 +227,4 @@ private:
     std::ofstream d_dump_file;
 };
 
-#endif  //GNSS_SDR_DLL_PLL_VEML_TRACKING_H
+#endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_H

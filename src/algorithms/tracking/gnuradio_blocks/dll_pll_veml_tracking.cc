@@ -193,6 +193,14 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
                 {
                     LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
                     std::cerr << "Invalid Signal argument when instantiating tracking blocks" << std::endl;
+                    d_correlation_length_ms = 1;
+                    d_secondary = false;
+                    interchange_iq = false;
+                    d_signal_carrier_freq = 0.0;
+                    d_code_period = 0.0;
+                    d_code_length_chips = 0;
+                    d_code_samples_per_chip = 0;
+                    d_symbols_per_bit = 0;
                 }
         }
     else if (system == 'E')
@@ -246,6 +254,14 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(
                 {
                     LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
                     std::cout << "Invalid Signal argument when instantiating tracking blocks" << std::endl;
+                    d_correlation_length_ms = 1;
+                    d_secondary = false;
+                    interchange_iq = false;
+                    d_signal_carrier_freq = 0.0;
+                    d_code_period = 0.0;
+                    d_code_length_chips = 0;
+                    d_code_samples_per_chip = 0;
+                    d_symbols_per_bit = 0;
                 }
         }
     else

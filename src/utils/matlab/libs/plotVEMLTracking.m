@@ -69,8 +69,8 @@ for channelNr = channelList
         timeAxisInSeconds = (1:4:settings.msToProcess)/1000;
 
         %----- Discrete-Time Scatter Plot ---------------------------------
-        plot(handles(1, 1), trackResults(channelNr).I_P,...
-                            trackResults(channelNr).Q_P, ...
+        plot(handles(1, 1), trackResults(channelNr).data_I,...
+                            trackResults(channelNr).data_Q, ...
                             '.');
 
         grid  (handles(1, 1));
@@ -80,8 +80,9 @@ for channelNr = channelList
         ylabel(handles(1, 1), 'Q prompt');
 
         %----- Nav bits ---------------------------------------------------
-        plot  (handles(1, 2), timeAxisInSeconds, ...
-                              trackResults(channelNr).I_P);
+        t = (1:length(trackResults(channelNr).data_I));
+        plot  (handles(1, 2), t, ...
+                              trackResults(channelNr).data_I);
 
         grid  (handles(1, 2));
         title (handles(1, 2), 'Bits of the navigation message');
@@ -89,7 +90,8 @@ for channelNr = channelList
         axis  (handles(1, 2), 'tight');
 
         %----- PLL discriminator unfiltered--------------------------------
-        plot  (handles(2, 1), timeAxisInSeconds, ...
+        t = (1:length(trackResults(channelNr).pllDiscr));
+        plot  (handles(2, 1), t, ...
                               trackResults(channelNr).pllDiscr, 'r');      
 
         grid  (handles(2, 1));
@@ -99,7 +101,8 @@ for channelNr = channelList
         title (handles(2, 1), 'Raw PLL discriminator');
 
         %----- Correlation ------------------------------------------------
-        plot(handles(2, 2), timeAxisInSeconds, ...
+        t = (1:length(trackResults(channelNr).I_VE));
+        plot(handles(2, 2), t, ...
                             [sqrt(trackResults(channelNr).I_VE.^2 + ...
                                   trackResults(channelNr).Q_VE.^2)', ...
                              sqrt(trackResults(channelNr).I_E.^2 + ...
@@ -127,7 +130,8 @@ for channelNr = channelList
         set(hLegend, 'Interpreter', 'Latex');
 
         %----- PLL discriminator filtered----------------------------------
-        plot  (handles(3, 1), timeAxisInSeconds, ...
+        t = (1:length(trackResults(channelNr).pllDiscrFilt));
+        plot  (handles(3, 1), t, ...
                               trackResults(channelNr).pllDiscrFilt, 'b');      
 
         grid  (handles(3, 1));
@@ -137,7 +141,8 @@ for channelNr = channelList
         title (handles(3, 1), 'Filtered PLL discriminator');
 
         %----- DLL discriminator unfiltered--------------------------------
-        plot  (handles(3, 2), timeAxisInSeconds, ...
+        t = (1:length(trackResults(channelNr).dllDiscr));
+        plot  (handles(3, 2), t, ...
                               trackResults(channelNr).dllDiscr, 'r');      
 
         grid  (handles(3, 2));
@@ -147,7 +152,8 @@ for channelNr = channelList
         title (handles(3, 2), 'Raw DLL discriminator');
 
         %----- DLL discriminator filtered----------------------------------
-        plot  (handles(3, 3), timeAxisInSeconds, ...
+        t = (1:length(trackResults(channelNr).dllDiscrFilt));
+        plot  (handles(3, 3), t, ...
                               trackResults(channelNr).dllDiscrFilt, 'b');      
 
         grid  (handles(3, 3));

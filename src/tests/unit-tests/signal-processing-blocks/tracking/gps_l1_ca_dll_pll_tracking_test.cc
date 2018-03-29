@@ -225,6 +225,10 @@ void GpsL1CADllPllTrackingTest::configure_receiver()
     config->set_property("Tracking_1C.pll_bw_hz", "20.0");
     config->set_property("Tracking_1C.dll_bw_hz", "2.0");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
+    config->set_property("Tracking_1C.pll_bw_narrow_hz", "20.0");
+    config->set_property("Tracking_1C.dll_bw_narrow_hz", "2.0");
+    config->set_property("Tracking_1C.early_late_space_narrow_chips", "0.5");
+    config->set_property("Tracking_1C.unified", "true");
     config->set_property("Tracking_1C.extend_correlation_ms", "1");
     config->set_property("Tracking_1C.dump", "true");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");

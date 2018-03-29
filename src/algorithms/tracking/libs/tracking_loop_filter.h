@@ -33,6 +33,8 @@
 
 #ifndef GNSS_SDR_TRACKING_LOOP_FILTER_H_
 #define GNSS_SDR_TRACKING_LOOP_FILTER_H_
+#define MAX_LOOP_ORDER 3
+#define MAX_LOOP_HISTORY_LENGTH 4
 
 #include <vector>
 

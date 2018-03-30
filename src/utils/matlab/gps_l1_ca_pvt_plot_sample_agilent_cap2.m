@@ -1,32 +1,30 @@
-% /*!
-%  * \file gps_l1_ca_pvt_plot_sample.m
-%  * \brief Read GNSS-SDR PVT dump binary file using the provided
-%  function and plot some internal variables
-%  * \author Javier Arribas, 2011. jarribas(at)cttc.es
-%  * -------------------------------------------------------------------------
-%  *
-%  * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
-%  *
-%  * GNSS-SDR is a software defined Global Navigation
-%  *          Satellite Systems receiver
-%  *
-%  * This file is part of GNSS-SDR.
-%  *
-%  * GNSS-SDR is free software: you can redistribute it and/or modify
-%  * it under the terms of the GNU General Public License as published by
-%  * the Free Software Foundation, either version 3 of the License, or
-%  * at your option) any later version.
-%  *
-%  * GNSS-SDR is distributed in the hope that it will be useful,
-%  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-%  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%  * GNU General Public License for more details.
-%  *
-%  * You should have received a copy of the GNU General Public License
-%  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-%  *
-%  * -------------------------------------------------------------------------
-%  */ 
+% Readx GNSS-SDR PVT dump binary file using the provided
+%  function and plotx some internal variables
+% Javier Arribas, 2011. jarribas(at)cttc.es
+% -------------------------------------------------------------------------
+%
+% Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+%
+% GNSS-SDR is a software defined Global Navigation
+%           Satellite Systems receiver
+%
+% This file is part of GNSS-SDR.
+% 
+% GNSS-SDR is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% at your option) any later version.
+% 
+% GNSS-SDR is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+%
+% -------------------------------------------------------------------------
+%
 
 close all;
 clear all;
@@ -63,17 +61,17 @@ h=35;
 [X, Y, Z]=geo2cart(lat, long, h, 5); % geographical to cartesian conversion
 
 %=== Convert to UTM coordinate system =============================
-utmZone = findUtmZone(lat_deg, long_deg); 
+utmZone = findUtmZone(lat_deg, long_deg);
 
- [settings.truePosition.E, ...
-  settings.truePosition.N, ...
-  settings.truePosition.U] = cart2utm(X, Y, Z, utmZone);
+[settings.truePosition.E, ...
+    settings.truePosition.N, ...
+    settings.truePosition.U] = cart2utm(X, Y, Z, utmZone);
 
 
 for k=1:1:length(navSolutions.X)
     [navSolutions.E(k), ...
-     navSolutions.N(k), ...
-     navSolutions.U(k)]=cart2utm(navSolutions.X(k), navSolutions.Y(k), navSolutions.Z(k), utmZone);
+        navSolutions.N(k), ...
+        navSolutions.U(k)]=cart2utm(navSolutions.X(k), navSolutions.Y(k), navSolutions.Z(k), utmZone);
 end
 
 plot_skyplot=0;

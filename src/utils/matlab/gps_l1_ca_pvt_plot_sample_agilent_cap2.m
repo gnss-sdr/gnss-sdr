@@ -1,5 +1,5 @@
-% Readx GNSS-SDR PVT dump binary file using the provided
-%  function and plotx some internal variables
+% Reads GNSS-SDR PVT dump binary file using the provided
+%  function and plots some internal variables
 % Javier Arribas, 2011. jarribas(at)cttc.es
 % -------------------------------------------------------------------------
 %

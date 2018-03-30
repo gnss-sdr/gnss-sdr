@@ -42,8 +42,8 @@ first_channel = 0;  % Number of the first channel
 path = '/dump_dir/';  %% CHANGE THIS PATH
 
 for N=1:1:channels
-    tracking_log_path = [path 'track_ch_' num2str(N+first_channel-1) '.dat']; %% CHANGE track_ch BY YOUR dump_filename
-    GNSS_tracking(N)= dll_pll_veml_read_tracking_dump(tracking_log_path);
+    tracking_log_path = [path 'track_ch_' num2str(N+first_channel-1) '.dat']; %% CHANGE track_ch_ BY YOUR dump_filename
+    GNSS_tracking(N) = dll_pll_veml_read_tracking_dump(tracking_log_path);
 end
 
 % GNSS-SDR format conversion to MATLAB GPS receiver

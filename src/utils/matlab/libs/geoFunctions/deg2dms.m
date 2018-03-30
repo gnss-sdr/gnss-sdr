@@ -1,6 +1,6 @@
 function dmsOutput = deg2dms(deg)
-%DEG2DMS  Conversion of degrees to degrees, minutes, and seconds.
-%The output format (dms format) is: (degrees*100 + minutes + seconds/100)
+% DEG2DMS  Conversion of degrees to degrees, minutes, and seconds.
+% The output format (dms format) is: (degrees*100 + minutes + seconds/100)
 
 % Written by Kai Borre
 % February 7, 2001
@@ -11,7 +11,7 @@ neg_arg = false;
 if deg < 0
     % Only positive numbers should be used while spliting into deg/min/sec
     deg     = -deg;
-    neg_arg = true;    
+    neg_arg = true;
 end
 
 %%% Split degrees minutes and seconds

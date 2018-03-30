@@ -101,4 +101,3 @@ elseif nargout == 3
 else
     error('Invalid number of output arguments')
 end
-

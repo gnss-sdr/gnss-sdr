@@ -544,7 +544,7 @@ void GNSSFlowgraph::set_signals_list()
                                   configuration_->property("Channels_1B.count", 0) +
                                   configuration_->property("Channels_5X.count", 0) +
                                   configuration_->property("Channels_1G.count", 0) +
-								  configuration_->property("Channels_2G.count", 0) +
+                                  configuration_->property("Channels_2G.count", 0) +
                                   configuration_->property("Channels_5X.count", 0) +
                                   configuration_->property("Channels_L5.count", 0);
 
@@ -723,8 +723,8 @@ void GNSSFlowgraph::set_signals_list()
     if (configuration_->property("Channels_1G.count", 0) > 0)
         {
             /*
-         * Loop to create the list of GLONASS L1 C/A signals
-         */
+             * Loop to create the list of GLONASS L1 C/A signals
+             */
             for (available_gnss_prn_iter = available_glonass_prn.begin();
                  available_gnss_prn_iter != available_glonass_prn.end();
                  available_gnss_prn_iter++)
@@ -738,8 +738,8 @@ void GNSSFlowgraph::set_signals_list()
     if (configuration_->property("Channels_2G.count", 0) > 0)
         {
             /*
-         * Loop to create the list of GLONASS L2 C/A signals
-         */
+             * Loop to create the list of GLONASS L2 C/A signals
+             */
             for (available_gnss_prn_iter = available_glonass_prn.begin();
                  available_gnss_prn_iter != available_glonass_prn.end();
                  available_gnss_prn_iter++)

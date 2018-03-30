@@ -42,8 +42,7 @@
 #include <utility>
 #include <vector>
 
-extern "C"
-{
+extern "C" {
 #include "cnav_msg.h"
 #include "edc.h"
 #include "bits.h"
@@ -91,7 +90,7 @@ private:
     bool d_flag_valid_word;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
-    double bits_NH[GPS_L5_NH_CODE_LENGTH];
+    double bits_NH[GPS_L5i_NH_CODE_LENGTH];
     std::deque<double> sym_hist;
     bool sync_NH;
     bool new_sym;

@@ -38,7 +38,7 @@
 #define GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
 
 #include "tracking_interface.h"
-#include "galileo_e1_dll_pll_veml_tracking_cc.h"
+#include "dll_pll_veml_tracking.h"
 #include <string>
 
 
@@ -94,7 +94,7 @@ public:
     void start_tracking() override;
 
 private:
-    galileo_e1_dll_pll_veml_tracking_cc_sptr tracking_;
+    dll_pll_veml_tracking_sptr tracking_;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;

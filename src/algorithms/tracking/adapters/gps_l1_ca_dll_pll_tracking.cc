@@ -52,41 +52,48 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
     int vector_length;
-    int f_if;
     bool dump;
     std::string dump_filename;
     std::string item_type;
     std::string default_item_type = "gr_complex";
-    float pll_bw_hz;
-    float dll_bw_hz;
-    float early_late_space_chips;
     item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
-    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
+    float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 20.0);
+    float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
+    float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
-    early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
+    float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
+    float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-
+    int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
+    if (symbols_extended_correlator < 1) symbols_extended_correlator = 1;
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = gps_l1_ca_dll_pll_make_tracking_cc(
-                f_if,
+            char sig_[3] = "1C";
+            tracking_ = dll_pll_veml_make_tracking(
                 fs_in,
                 vector_length,
                 dump,
                 dump_filename,
                 pll_bw_hz,
                 dll_bw_hz,
-                early_late_space_chips);
+                pll_bw_narrow_hz,
+                dll_bw_narrow_hz,
+                early_late_space_chips,
+                early_late_space_chips,
+                early_late_space_narrow_chips,
+                early_late_space_narrow_chips,
+                symbols_extended_correlator,
+                false,
+                'G', sig_);
         }
     else
         {

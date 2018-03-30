@@ -1,37 +1,35 @@
-% /*!
-%  * \file plot_acq_grid_gsoc.m
-%  * \brief Read GNSS-SDR Acquisition dump binary file using the provided
-%  function and plot acquisition grid of acquisition statistic of PRN sat
+% Reads GNSS-SDR Acquisition dump binary file using the provided
+%  function and plots acquisition grid of acquisition statistic of PRN sat
 %
-%  This function analyzes a experiment performed by Luis Esteve in the framework 
+%  This function analyzes a experiment performed by Luis Esteve in the framework
 %  of the Google Summer of Code (GSoC) 2012, with the collaboration of Javier Arribas
-%  and Carles Fernández, related to the extension of GNSS-SDR to Galileo.
+%  and Carles Fern??ndez, related to the extension of GNSS-SDR to Galileo.
 %
-%  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
-%  * -------------------------------------------------------------------------
-%  *
-%  * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
-%  *
-%  * GNSS-SDR is a software defined Global Navigation
-%  *          Satellite Systems receiver
-%  *
-%  * This file is part of GNSS-SDR.
-%  *
-%  * GNSS-SDR is free software: you can redistribute it and/or modify
-%  * it under the terms of the GNU General Public License as published by
-%  * the Free Software Foundation, either version 3 of the License, or
-%  * at your option) any later version.
-%  *
-%  * GNSS-SDR is distributed in the hope that it will be useful,
-%  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-%  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%  * GNU General Public License for more details.
-%  *
-%  * You should have received a copy of the GNU General Public License
-%  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-%  *
-%  * -------------------------------------------------------------------------
-%  */ 
+% Luis Esteve, 2012. luis(at)epsilon-formacion.com
+% -------------------------------------------------------------------------
+%
+% Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+%
+% GNSS-SDR is a software defined Global Navigation
+%           Satellite Systems receiver
+%
+% This file is part of GNSS-SDR.
+% 
+% GNSS-SDR is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% at your option) any later version.
+% 
+% GNSS-SDR is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+%
+% -------------------------------------------------------------------------
+%
 
 function plot_acq_grid_gsoc(sat)
 
@@ -61,7 +59,7 @@ for k=Doppler_min_Hz:Doppler_step_Hz:Doppler_max_Hz
     index=index+1;
     filename=['test_statistics_E_1C_sat_' num2str(sat) '_doppler_' num2str(k) '.dat'];
     acq_grid(index,:)=abs(read_complex_binary (filename));
- end
+end
 
 maximum_correlation_peak = max(max(acq_grid))
 

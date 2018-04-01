@@ -7,7 +7,7 @@ and contact information about the original VOLK library.
 
 The boilerplate of this code was initially generated with
 ```volk_modtool```, an application provided by VOLK that creates the
-skeleton than can then be filled with custom kernels. Some modifications
+skeleton that can then be filled with custom kernels. Some modifications
 were added to accommodate the specificities of Global Navigation
 Satellite Systems (GNSS) signal processing. Those changes are clearly
 indicated in the source code, and do not break compatibility.
@@ -39,7 +39,7 @@ This library is automatically built and installed along with GNSS-SDR if
 it is not found by CMake on your system at configure time.
 
 However, you can install and use VOLK_GNSSSDR kernels as you use VOLK's,
-independently from GNSS-SDR.
+independently of GNSS-SDR.
 
 First, make sure that the required dependencies are installed in your
 machine:

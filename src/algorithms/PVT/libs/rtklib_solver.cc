@@ -132,7 +132,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
          gnss_observables_iter != gnss_observables_map.cend();
-         gnss_observables_iter++)
+         gnss_observables_iter++)  //CHECK INCONSISTENCY when combining GLONASS + other system
         {
             switch (gnss_observables_iter->second.System)
                 {
@@ -241,6 +241,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                         gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                         if (gps_ephemeris_iter != gps_ephemeris_map.cend())
                                             {
+                                                /* By the moment, GPS L2 observables are not used in pseudorange computations if GPS L1 is available
                                                 // 2. If found, replace the existing GPS L1 ephemeris with the GPS L2 ephemeris
                                                 // (more precise!), and attach the L2 observation to the L1 observation in RTKLIB structure
                                                 for (int i = 0; i < valid_obs; i++)
@@ -250,11 +251,12 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                                                 eph_data[i] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                                 obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
                                                                     gnss_observables_iter->second,
-                                                                    gps_cnav_ephemeris_iter->second.i_GPS_week,
+                                                                    eph_data[i].week,
                                                                     1);  //Band 2 (L2)
                                                                 break;
                                                             }
                                                     }
+                                                */
                                             }
                                         else
                                             {
@@ -404,7 +406,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
     // **********************************************************************
 
     this->set_valid_position(false);
-    if (valid_obs > 0 || glo_valid_obs > 0)
+    if ((valid_obs + glo_valid_obs) > 3)
         {
             int result = 0;
             nav_t nav_data;
@@ -495,5 +497,5 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                         }
                 }
         }
-    return this->is_valid_position();
+    return is_valid_position();
 }

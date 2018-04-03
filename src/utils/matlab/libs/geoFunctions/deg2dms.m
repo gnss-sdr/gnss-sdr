@@ -9,7 +9,7 @@ function dmsOutput = deg2dms(deg)
 %%% Save the sign for later processing
 neg_arg = false;
 if deg < 0
-    % Only positive numbers should be used while spliting into deg/min/sec
+    % Only positive numbers should be used while splitting into deg/min/sec
     deg     = -deg;
     neg_arg = true;
 end

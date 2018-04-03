@@ -297,10 +297,9 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
-    float carr_error;
-    float carr_nco;
-    float code_error;
-    float code_nco;
+    float carr_error = 0.0;
+    float code_error = 0.0;
+    float code_nco = 0.0;
 
     tcp_packet_data tcp_data;
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder

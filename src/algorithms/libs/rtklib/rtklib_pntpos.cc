@@ -78,18 +78,70 @@ double gettgd(int sat, const nav_t *nav)
     return 0.0;
 }
 
+/* get isc parameter (m) -----------------------------------------------------*/
+double getiscl1(int sat, const nav_t *nav)
+{
+    for (int i = 0; i < nav->n; i++)
+        {
+            if (nav->eph[i].sat != sat) continue;
+            return SPEED_OF_LIGHT * nav->eph[i].isc[0];
+        }
+    return 0.0;
+}
+
+double getiscl2(int sat, const nav_t *nav)
+{
+    for (int i = 0; i < nav->n; i++)
+        {
+            if (nav->eph[i].sat != sat) continue;
+            return SPEED_OF_LIGHT * nav->eph[i].isc[1];
+        }
+    return 0.0;
+}
+
+double getiscl5i(int sat, const nav_t *nav)
+{
+    for (int i = 0; i < nav->n; i++)
+        {
+            if (nav->eph[i].sat != sat) continue;
+            return SPEED_OF_LIGHT * nav->eph[i].isc[2];
+        }
+    return 0.0;
+}
+
+double getiscl5q(int sat, const nav_t *nav)
+{
+    for (int i = 0; i < nav->n; i++)
+        {
+            if (nav->eph[i].sat != sat) continue;
+            return SPEED_OF_LIGHT * nav->eph[i].isc[3];
+        }
+    return 0.0;
+}
 
 /* psendorange with code bias correction -------------------------------------*/
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     int iter, const prcopt_t *opt, double *var)
 {
     const double *lam = nav->lam[obs->sat - 1];
-    double PC, P1, P2, P1_P2, P1_C1, P2_C2, gamma_;
-    int i = 0, j = 1, sys;
-
+    double PC = 0.0;
+    double P1 = 0.0;
+    double P2 = 0.0;
+    double P1_P2 = 0.0;
+    double P1_C1 = 0.0;
+    double P2_C2 = 0.0;
+    //Intersignal corrections (m). See GPS IS-200 CNAV message
+    double ISCl1 = 0.0;
+    double ISCl2 = 0.0;
+    double ISCl5i = 0.0;
+    double ISCl5q = 0.0;
+    double gamma_ = 0.0;
+    int i = 0;
+    int j = 1;
+    int sys = satsys(obs->sat, NULL);
     *var = 0.0;
 
-    if (!(sys = satsys(obs->sat, NULL)))
+    if (sys == SYS_NONE)
         {
             trace(4, "prange: satsys NULL\n");
             return 0.0;
@@ -97,12 +149,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
-    if (sys & (SYS_GAL | SYS_SBS))
+    if (sys == SYS_GAL or sys == SYS_SBS)
         {
             j = 2;
         }
-
-    if (sys == SYS_GPS)
+    else if (sys == SYS_GPS or sys == SYS_GLO)
         {
             if (obs->code[1] != CODE_NONE)
                 {
@@ -114,7 +165,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 }
         }
 
-    if (NFREQ < 2 || lam[i] == 0.0 || lam[j] == 0.0)
+    if (lam[i] == 0.0 or lam[j] == 0.0)
         {
             trace(4, "prange: NFREQ<2||lam[i]==0.0||lam[j]==0.0\n");
             printf("i: %d j:%d, lam[i]: %f lam[j] %f\n", i, j, lam[i], lam[j]);
@@ -139,7 +190,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                         }
                 }
         }
-    gamma_ = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0); /* f1^2/f2^2 */
+    /* fL1^2 / fL2(orL5)^2 . See IS-GPS-200, p. 103 and Galileo ICD p. 48 */
+    if (sys == SYS_GPS or sys == SYS_GAL or sys == SYS_GLO)
+        {
+            gamma_ = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0);
+        }
     P1 = obs->P[i];
     P2 = obs->P[j];
     P1_P2 = nav->cbias[obs->sat - 1][0];
@@ -147,10 +202,20 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     P2_C2 = nav->cbias[obs->sat - 1][2];
 
     /* if no P1-P2 DCB, use TGD instead */
-    if (P1_P2 == 0.0 && (sys & (SYS_GPS | SYS_GAL | SYS_QZS)))  //CHECK!
+    if (P1_P2 == 0.0)
         {
-            P1_P2 = (1.0 - gamma_) * gettgd(obs->sat, nav);
+            P1_P2 = gettgd(obs->sat, nav);
         }
+
+    if (sys == SYS_GPS)
+        {
+            ISCl1 = getiscl1(obs->sat, nav);
+            ISCl2 = getiscl2(obs->sat, nav);
+            ISCl5i = getiscl5i(obs->sat, nav);
+            ISCl5q = getiscl5q(obs->sat, nav);
+        }
+
+    //CHECK IF IT IS STILL NEEDED
     if (opt->ionoopt == IONOOPT_IFLC)
         { /* dual-frequency */
 
@@ -170,25 +235,59 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             /* iono-free combination */
             PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
         }
+    ////////////////////////////////////////////
     else
         { /* single-frequency */
-            if ((obs->code[i] == CODE_NONE) && (obs->code[j] == CODE_NONE))
+            if (obs->code[i] == CODE_NONE and obs->code[j] == CODE_NONE)
                 {
                     return 0.0;
                 }
 
-            else if ((obs->code[i] != CODE_NONE) && (obs->code[j] == CODE_NONE))
+            else if (obs->code[i] != CODE_NONE and obs->code[j] == CODE_NONE)
                 {
                     P1 += P1_C1; /* C1->P1 */
-                    PC = P1 - P1_P2 / (1.0 - gamma_);
+                    PC = P1 + P1_P2;
                 }
-            else if ((obs->code[i] == CODE_NONE) && (obs->code[j] != CODE_NONE))
+            else if (obs->code[i] == CODE_NONE and obs->code[j] != CODE_NONE)
                 {
-                    P2 += P2_C2; /* C2->P2 */
-                    PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                    if (sys == SYS_GPS)
+                        {
+                            P2 += P2_C2; /* C2->P2 */
+                            //PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                            if (obs->code[j] == CODE_L2S)  //L2 single freq.
+                                {
+                                    PC = P2 + P1_P2 - ISCl2;
+                                }
+                            else if (obs->code[j] == CODE_L5X)  //L5 single freq.
+                                {
+                                    PC = P2 + P1_P2 - ISCl5i;
+                                }
+                        }
+                    else if (sys == SYS_GAL or sys == SYS_GLO)  // Gal. E5a single freq.
+                        {
+                            P2 += P2_C2; /* C2->P2 */
+                            PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                        }
                 }
             /* dual-frequency */
-            else
+            else if (sys == SYS_GPS)
+                {
+                    if (obs->code[j] == CODE_L2S) /* L1 + L2 */
+                        {
+                            //By the moment, GPS L2 pseudoranges are not used
+                            //PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
+                            P1 += P1_C1; /* C1->P1 */
+                            PC = P1 + P1_P2;
+                        }
+                    else if (obs->code[j] == CODE_L5X) /* L1 + L5 */
+                        {
+                            //By the moment, GPS L5 pseudoranges are not used
+                            //PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl5i)) / (1.0 - gamma_) - P1_P2;
+                            P1 += P1_C1; /* C1->P1 */
+                            PC = P1 + P1_P2;
+                        }
+                }
+            else if (sys == SYS_GAL or sys == SYS_GLO) /* E1 + E5a */
                 {
                     P1 += P1_C1;
                     P2 += P2_C2;
@@ -199,9 +298,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         {
             PC -= P1_C1;
         } /* sbas clock based C1 */
-
     *var = std::pow(ERR_CBIAS, 2.0);
-
     return PC;
 }
 

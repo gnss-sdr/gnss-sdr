@@ -116,7 +116,7 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glona
 eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0 };
     //Galileo is the third satellite system for RTKLIB, so, add the required offset to discriminate Galileo ephemeris
     rtklib_sat.sat = gal_eph.i_satellite_PRN + NSATGPS + NSATGLO;
     rtklib_sat.A = gal_eph.A_1 * gal_eph.A_1;
@@ -174,7 +174,7 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph)
 eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0 };
     rtklib_sat.sat = gps_eph.i_satellite_PRN;
     rtklib_sat.A = gps_eph.d_sqrt_A * gps_eph.d_sqrt_A;
     rtklib_sat.M0 = gps_eph.d_M_0;
@@ -199,9 +199,9 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph)
     rtklib_sat.f1 = gps_eph.d_A_f1;
     rtklib_sat.f2 = gps_eph.d_A_f2;
     rtklib_sat.tgd[0] = gps_eph.d_TGD;
-    rtklib_sat.tgd[1] = 0;
-    rtklib_sat.tgd[2] = 0;
-    rtklib_sat.tgd[3] = 0;
+    rtklib_sat.tgd[1] = 0.0;
+    rtklib_sat.tgd[2] = 0.0;
+    rtklib_sat.tgd[3] = 0.0;
     rtklib_sat.toes = gps_eph.d_Toe;
     rtklib_sat.toc = gpst2time(rtklib_sat.week, gps_eph.d_Toc);
     rtklib_sat.ttr = gpst2time(rtklib_sat.week, gps_eph.d_TOW);
@@ -231,7 +231,7 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph)
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0 };
     rtklib_sat.sat = gps_cnav_eph.i_satellite_PRN;
     const double A_REF = 26559710.0;  // See IS-GPS-200H,  pp. 170
     rtklib_sat.A = A_REF + gps_cnav_eph.d_DELTA_A;
@@ -260,9 +260,13 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
     rtklib_sat.f1 = gps_cnav_eph.d_A_f1;
     rtklib_sat.f2 = gps_cnav_eph.d_A_f2;
     rtklib_sat.tgd[0] = gps_cnav_eph.d_TGD;
-    rtklib_sat.tgd[1] = 0;
-    rtklib_sat.tgd[2] = 0;
-    rtklib_sat.tgd[3] = 0;
+    rtklib_sat.tgd[1] = 0.0;
+    rtklib_sat.tgd[2] = 0.0;
+    rtklib_sat.tgd[3] = 0.0;
+    rtklib_sat.isc[0] = gps_cnav_eph.d_ISCL1;
+    rtklib_sat.isc[1] = gps_cnav_eph.d_ISCL2;
+    rtklib_sat.isc[2] = gps_cnav_eph.d_ISCL5I;
+    rtklib_sat.isc[3] = gps_cnav_eph.d_ISCL5Q;
     rtklib_sat.toes = gps_cnav_eph.d_Toe1;
     rtklib_sat.toc = gpst2time(rtklib_sat.week, gps_cnav_eph.d_Toc);
     rtklib_sat.ttr = gpst2time(rtklib_sat.week, gps_cnav_eph.d_TOW);

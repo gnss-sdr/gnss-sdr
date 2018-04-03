@@ -1,9 +1,9 @@
 function [dphi, dlambda, h] = togeod(a, finv, X, Y, Z)
-%TOGEOD   Subroutine to calculate geodetic coordinates latitude, longitude,
+% TOGEOD   Subroutine to calculate geodetic coordinates latitude, longitude,
 %         height given Cartesian coordinates X,Y,Z, and reference ellipsoid
 %         values semi-major axis (a) and the inverse of flattening (finv).
 %
-%[dphi, dlambda, h] = togeod(a, finv, X, Y, Z);
+% [dphi, dlambda, h] = togeod(a, finv, X, Y, Z);
 %
 %  The units of linear parameters X,Y,Z,a must all agree (m,km,mi,ft,..etc)
 %  The output units of angular quantities will be in decimal degrees
@@ -24,9 +24,6 @@ function [dphi, dlambda, h] = togeod(a, finv, X, Y, Z)
 %  Reprinted with permission of author, 1996
 %  Fortran code translated into MATLAB
 %  Kai Borre 03-30-96
-%
-% CVS record:
-% $Id: togeod.m,v 1.1.1.1.2.4 2006/08/22 13:45:59 dpl Exp $
 %==========================================================================
 
 h       = 0;
@@ -100,7 +97,7 @@ for i = 1:maxit
     if (dP*dP + dZ*dZ < tolsq)
         break;
     end
-
+    
     % Not Converged--Warn user
     if i == maxit
         fprintf([' Problem in TOGEOD, did not converge in %2.0f',...

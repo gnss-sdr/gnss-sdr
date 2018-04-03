@@ -1,12 +1,13 @@
 /*!
  * \file hybrid_observables_cc.h
- * \brief Interface of the observables computation block for Galileo E1
+ * \brief Interface of the observables computation block
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * \author Javier Arribas 2013. jarribas(at)cttc.es
+ * \author Antonio Ramos 2018. antonio.ramos(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -37,6 +38,9 @@
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
+#include <vector>  //std::vector
+#include <deque>
+#include <boost/dynamic_bitset.hpp>
 
 
 class hybrid_observables_cc;
@@ -44,10 +48,10 @@ class hybrid_observables_cc;
 typedef boost::shared_ptr<hybrid_observables_cc> hybrid_observables_cc_sptr;
 
 hybrid_observables_cc_sptr
-hybrid_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename, unsigned int deep_history);
+hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
 
 /*!
- * \brief This class implements a block that computes Galileo observables
+ * \brief This class implements a block that computes observables
  */
 class hybrid_observables_cc : public gr::block
 {
@@ -59,21 +63,26 @@ public:
 
 private:
     friend hybrid_observables_cc_sptr
-    hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
-    hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, unsigned int deep_history);
+    hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
+    hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
+    void clean_history(std::deque<Gnss_Synchro>& data);
+    double compute_T_rx_s(const Gnss_Synchro& a);
+    bool interpolate_data(Gnss_Synchro& out, std::deque<Gnss_Synchro>& data, const double& ti);
+    void correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data);
+    int save_matfile();
 
     //Tracking observable history
-    std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history_queue;
-
+    std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history;
+    boost::dynamic_bitset<> valid_channels;
     double T_rx_s;
     double T_rx_step_s;
+    double max_delta;
     bool d_dump;
     unsigned int d_nchannels;
-    unsigned int history_deep;
+    unsigned int d_num_valid_channels;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    int save_matfile();
 };
 
 #endif

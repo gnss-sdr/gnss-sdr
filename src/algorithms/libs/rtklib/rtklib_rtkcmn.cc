@@ -253,12 +253,11 @@ const unsigned int tbl_CRC24Q[] = {
     0x42FA2F, 0xC4B6D4, 0xC82F22, 0x4E63D9, 0xD11CCE, 0x575035, 0x5BC9C3, 0xDD8538};
 
 
-extern "C"
-{
-    void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
-    extern void dgetrf_(int *, int *, double *, int *, int *, int *);
-    extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
-    extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
+extern "C" {
+void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+extern void dgetrf_(int *, int *, double *, int *, int *, int *);
+extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
+extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
 }
 
 
@@ -1388,10 +1387,10 @@ double time2gpst(gtime_t t, int *week)
 {
     gtime_t t0 = epoch2time(gpst0);
     time_t sec = t.time - t0.time;
-    int w = (int)(sec / (86400 * 7));
+    int w = static_cast<int>(sec / 604800);
 
     if (week) *week = w;
-    return (double)(sec - (double)w * 86400 * 7) + t.sec;
+    return (static_cast<double>(sec - static_cast<time_t>(w * 604800)) + t.sec);
 }
 
 
@@ -2993,7 +2992,7 @@ int readnav(const char *file, nav_t *nav)
 {
     FILE *fp;
     eph_t eph0 = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0};
     geph_t geph0 = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {}, {}, {}, 0.0, 0.0, 0.0};
     char buff[4096], *p;
     long toe_time, tof_time, toc_time, ttr_time;

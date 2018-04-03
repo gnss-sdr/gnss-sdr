@@ -1,9 +1,9 @@
 function ddr = tropo(sinel, hsta, p, tkel, hum, hp, htkel, hhum)
-%TROPO  Calculation of tropospheric correction.
+% TROPO  Calculation of tropospheric correction.
 %       The range correction ddr in m is to be subtracted from
 %       pseudo-ranges and carrier phases
 %
-%ddr = tropo(sinel, hsta, p, tkel, hum, hp, htkel, hhum);
+% ddr = tropo(sinel, hsta, p, tkel, hum, hp, htkel, hhum);
 %
 %   Inputs:
 %       sinel   - sin of elevation angle of satellite
@@ -26,9 +26,6 @@ function ddr = tropo(sinel, hsta, p, tkel, hum, hp, htkel, hhum)
 
 % A Matlab reimplementation of a C code from driver.
 % Kai Borre 06-28-95
-%
-% CVS record:
-% $Id: tropo.m,v 1.1.1.1.2.4 2006/08/22 13:46:00 dpl Exp $
 %==========================================================================
 
 a_e    = 6378.137;     % semi-major axis of earth ellipsoid
@@ -60,14 +57,14 @@ while 1
     
     % check to see if geometry is crazy
     if rtop < 0
-        rtop = 0; 
-    end 
+        rtop = 0;
+    end
     
     rtop = sqrt(rtop) - (a_e+hsta)*sinel;
     a    = -sinel/(htop-hsta);
     b    = -b0*(1-sinel^2) / (htop-hsta);
     rn   = zeros(8,1);
-
+    
     for i = 1:8
         rn(i) = rtop^(i+1);
     end
@@ -77,17 +74,17 @@ while 1
         b^2*(6*a^2+4*b)*1.428571e-1, 0, 0];
     
     if b^2 > 1.0e-35
-        alpha(7) = a*b^3/2; 
-        alpha(8) = b^4/9; 
+        alpha(7) = a*b^3/2;
+        alpha(8) = b^4/9;
     end
-
+    
     dr = rtop;
     dr = dr + alpha*rn;
     tropo = tropo + dr*ref*1000;
     
     if done == 'TRUE '
-        ddr = tropo; 
-        break; 
+        ddr = tropo;
+        break;
     end
     
     done    = 'TRUE ';

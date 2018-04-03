@@ -1,12 +1,12 @@
 /*!
  * \file gnss_sdr_sample_counter.cc
  * \brief Simple block to report the current receiver time based on the output of the tracking or telemetry blocks
- * \author Javier Arribas 2017. jarribas(at)cttc.es
+ * \author Javier Arribas 2018. jarribas(at)cttc.es
  *
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

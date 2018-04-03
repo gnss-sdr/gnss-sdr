@@ -191,7 +191,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 }
         }
     /* fL1^2 / fL2(orL5)^2 . See IS-GPS-200, p. 103 and Galileo ICD p. 48 */
-    if (sys == SYS_GPS or sys == SYS_GAL)
+    if (sys == SYS_GPS or sys == SYS_GAL or sys == SYS_GLO)
         {
             gamma_ = std::pow(lam[j], 2.0) / std::pow(lam[i], 2.0);
         }
@@ -263,9 +263,10 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                                     PC = P2 + P1_P2 - ISCl5i;
                                 }
                         }
-                    else if (sys == SYS_GAL)  // Gal. E5a single freq.
+                    else if (sys == SYS_GAL or sys == SYS_GLO)  // Gal. E5a single freq.
                         {
-                            //TODO
+                            P2 += P2_C2; /* C2->P2 */
+                            PC = P2 - gamma_ * P1_P2 / (1.0 - gamma_);
                         }
                 }
             /* dual-frequency */
@@ -280,12 +281,17 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                         }
                     else if (obs->code[j] == CODE_L5X) /* L1 + L5 */
                         {
-                            //TODO
+                            //By the moment, GPS L5 pseudoranges are not used
+                            //PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl5i)) / (1.0 - gamma_) - P1_P2;
+                            P1 += P1_C1; /* C1->P1 */
+                            PC = P1 + P1_P2;
                         }
                 }
-            else if (sys == SYS_GAL) /* E1 + E5a */
+            else if (sys == SYS_GAL or sys == SYS_GLO) /* E1 + E5a */
                 {
-                    //TODO
+                    P1 += P1_C1;
+                    P2 += P2_C2;
+                    PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
                 }
         }
     if (opt->sateph == EPHOPT_SBAS)

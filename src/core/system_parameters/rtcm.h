@@ -671,7 +671,6 @@ private:
                         }
                     else if (!ec and !read_msg_.decode_header())
                         {
-                            /*  TODO: The commented code throws an exception. Solve it!
                             client_says += read_msg_.data();
                             bool first = true;
                             while (client_says.length() >= 80)
@@ -684,7 +683,6 @@ private:
                                     std::cout << client_says.substr(0, 80) << std::endl;
                                     client_says = client_says.substr(80, client_says.length() - 80);
                                 }
-                            */
                             do_read_message_header();
                         }
                     else

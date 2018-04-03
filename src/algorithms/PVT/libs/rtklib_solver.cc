@@ -241,6 +241,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                         gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                         if (gps_ephemeris_iter != gps_ephemeris_map.cend())
                                             {
+                                                /* By the moment, GPS L2 observables are not used in pseudorange computations if GPS L1 is available
                                                 // 2. If found, replace the existing GPS L1 ephemeris with the GPS L2 ephemeris
                                                 // (more precise!), and attach the L2 observation to the L1 observation in RTKLIB structure
                                                 for (int i = 0; i < valid_obs; i++)
@@ -248,18 +249,17 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                                         if (eph_data[i].sat == static_cast<int>(gnss_observables_iter->second.PRN))
                                                             {
                                                                 eph_data[i] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
-                                                                /*  By the moment, GPS L2 observables are not used in pseudorange computations
                                                                 obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
                                                                     gnss_observables_iter->second,
                                                                     eph_data[i].week,
-                                                                    1);  //Band 2 (L2) */
+                                                                    1);  //Band 2 (L2)
                                                                 break;
                                                             }
                                                     }
+                                                */
                                             }
                                         else
                                             {
-                                                /*  By the moment, GPS L2 observables are not used in pseudorange computations
                                                 // 3. If not found, insert the GPS L2 ephemeris and the observation
                                                 //convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
@@ -273,7 +273,6 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                                     gps_cnav_ephemeris_iter->second.i_GPS_week,
                                                     1);  //Band 2 (L2)
                                                 valid_obs++;
-                                                */
                                             }
                                     }
                                 else  // the ephemeris are not available for this SV

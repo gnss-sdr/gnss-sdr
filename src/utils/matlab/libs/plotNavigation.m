@@ -47,7 +47,7 @@ function plotNavigation(navSolutions, settings,plot_skyplot)
 if (~isempty(navSolutions))
     
     %% If reference position is not provided, then set reference position
-    %% to the average postion
+    %% to the average position
     if isnan(settings.truePosition.E) || isnan(settings.truePosition.N) ...
             || isnan(settings.truePosition.U)
         

@@ -84,7 +84,7 @@ msign = signvec .* (d==0 & m~=0);
 ssign = signvec .* (d==0 & m==0 & s~=0);
 
 %  In the application of signs below, the comparison with 0 is used so that
-%  the sign vector contains only +1 and -1.  Any zero occurances causes
+%  the sign vector contains only +1 and -1.  Any zero occurrences causes
 %  data to be lost when the sign has been applied to a higher component
 %  of d:m:s.  Use fix function to eliminate potential round-off errors.
 

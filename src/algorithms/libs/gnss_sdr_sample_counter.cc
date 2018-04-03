@@ -32,11 +32,14 @@
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_synchro.h"
 #include <gnuradio/io_signature.h>
+#include <cmath>
+#include <iostream>
+#include <string>
 
 gnss_sdr_sample_counter::gnss_sdr_sample_counter(double _fs) : gr::sync_decimator("sample_counter",
                                                                    gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                                                    gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                                                   static_cast<unsigned int>(floor(_fs * 0.001)))
+                                                                   static_cast<unsigned int>(std::floor(_fs * 0.001)))
 {
     message_port_register_out(pmt::mp("sample_counter"));
     set_max_noutput_items(1);
@@ -45,8 +48,8 @@ gnss_sdr_sample_counter::gnss_sdr_sample_counter(double _fs) : gr::sync_decimato
     current_m = 0;
     current_h = 0;
     current_days = 0;
-    report_interval_ms = 1000;     //default reporting 1 second
-    flag_enable_send_msg = false;  //enable it for reporting time with asynchronous message
+    report_interval_ms = 1000;     // default reporting 1 second
+    flag_enable_send_msg = false;  // enable it for reporting time with asynchronous message
     flag_m = false;
     flag_h = false;
     flag_days = false;
@@ -90,21 +93,35 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
 
             if (flag_days)
                 {
-                    std::cout << "Current receiver time: " << current_days << " [days] " << current_h << " [h] " << current_m << " [min] " << current_s << " [s]" << std::endl;
-                }
-            else if (flag_h)
-                {
-                    std::cout << "Current receiver time: " << current_h << " [h] " << current_m << " [min] " << current_s << " [s]" << std::endl;
-                }
-            else if (flag_m)
-                {
-                    std::cout << "Current receiver time: " << current_m << " [min] " << current_s << " [s]" << std::endl;
+                    std::string day;
+                    if (current_days == 1)
+                        {
+                            day = " day ";
+                        }
+                    else
+                        {
+                            day = " days ";
+                        }
+                    std::cout << "Current receiver time: " << current_days << day << current_h << " h " << current_m << " min " << current_s << " s" << std::endl;
                 }
             else
                 {
-                    std::cout << "Current receiver time: " << current_s << " [s]" << std::endl;
+                    if (flag_h)
+                        {
+                            std::cout << "Current receiver time: " << current_h << " h " << current_m << " min " << current_s << " s" << std::endl;
+                        }
+                    else
+                        {
+                            if (flag_m)
+                                {
+                                    std::cout << "Current receiver time: " << current_m << " min " << current_s << " s" << std::endl;
+                                }
+                            else
+                                {
+                                    std::cout << "Current receiver time: " << current_s << " s" << std::endl;
+                                }
+                        }
                 }
-
             if (flag_enable_send_msg)
                 {
                     message_port_pub(pmt::mp("receiver_time"), pmt::from_double(static_cast<double>(current_T_rx_ms) / 1000.0));

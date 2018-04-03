@@ -1,6 +1,6 @@
 /*!
  * \file hybrid_observables_cc.cc
- * \brief Implementation of the pseudorange computation block
+ * \brief Implementation of the observables computation block
  * \author Javier Arribas 2017. jarribas(at)cttc.es
  * \author Antonio Ramos  2018. antonio.ramos(at)cttc.es
  *
@@ -30,6 +30,7 @@
  */
 
 #include "hybrid_observables_cc.h"
+#include "display.h"
 #include "GPS_L1_CA.h"
 #include <armadillo>
 #include <glog/logging.h>
@@ -39,7 +40,6 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
-#include "display.h"
 
 
 using google::LogMessage;
@@ -51,9 +51,12 @@ hybrid_observables_cc_sptr hybrid_make_observables_cc(unsigned int nchannels_in,
 }
 
 
-hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename) : gr::block("hybrid_observables_cc",
-                                                                                                                                                gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
-                                                                                                                                                gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
+hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in,
+    unsigned int nchannels_out,
+    bool dump,
+    std::string dump_filename) : gr::block("hybrid_observables_cc",
+                                     gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
+                                     gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
 {
     d_dump = dump;
     d_nchannels = nchannels_out;
@@ -298,6 +301,7 @@ int hybrid_observables_cc::save_matfile()
     return 0;
 }
 
+
 bool hybrid_observables_cc::interpolate_data(Gnss_Synchro &out, std::deque<Gnss_Synchro> &data, const double &ti)
 {
     if ((ti < data.front().RX_time) or (ti > data.back().RX_time))
@@ -334,6 +338,7 @@ bool hybrid_observables_cc::interpolate_data(Gnss_Synchro &out, std::deque<Gnss_
     return result.is_finite();
 }
 
+
 double hybrid_observables_cc::compute_T_rx_s(const Gnss_Synchro &a)
 {
     if (a.Flag_valid_word)
@@ -357,6 +362,7 @@ void hybrid_observables_cc::forecast(int noutput_items __attribute__((unused)),
     ninput_items_required[d_nchannels] = 1;
 }
 
+
 void hybrid_observables_cc::clean_history(std::deque<Gnss_Synchro> &data)
 {
     while (data.size() > 0)
@@ -371,6 +377,7 @@ void hybrid_observables_cc::clean_history(std::deque<Gnss_Synchro> &data)
                 }
         }
 }
+
 
 void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Synchro> &data)
 {

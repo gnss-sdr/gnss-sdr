@@ -118,7 +118,7 @@ debian8.10:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential libtool automake libhdf5-dev cmake git ca-certificates libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
+    - apt-get install -y --no-install-recommends build-essential libtool automake libhdf5-dev cmake git ca-certificates libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev libgfortran-4.9-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
     - cd build
     - cmake -DENABLE_OSMOSDR=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)

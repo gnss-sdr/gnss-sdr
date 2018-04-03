@@ -16,39 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-#if(ENABLE_CUDA)
-#    # Append current NVCC flags by something, eg comput capability
-#    # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --gpu-architecture sm_30)
-#    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30; -std=c++11;-O3; -use_fast_math -default-stream per-thread")
-#    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-#    CUDA_INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR})
-#    set(LIB_TYPE STATIC) #set the lib type
-#    CUDA_ADD_LIBRARY(CUDA_CORRELATOR_LIB ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
-#    set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} CUDA_CORRELATOR_LIB)
-#    set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS} )
-#endif(ENABLE_CUDA)
-
-
-
-#set(TRACKING_LIB_SOURCES   
+  
 set(ACQUISITION_LIB_SOURCES   
 	gps_fpga_acquisition_8sc.cc
-#     cpu_multicorrelator.cc
-#     cpu_multicorrelator_16sc.cc     
-#     lock_detectors.cc
-#     tcp_communication.cc
-#     tcp_packet_data.cc
-#     tracking_2nd_DLL_filter.cc
-#     tracking_2nd_PLL_filter.cc
-#     tracking_discriminators.cc
-#     tracking_FLL_PLL_filter.cc
-#     tracking_loop_filter.cc
 )
-
-#if(ENABLE_FPGA)
-#    SET(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} fpga_acquisition_8sc.cc)
-#endif(ENABLE_FPGA)
 
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
@@ -59,34 +30,17 @@ include_directories(
      ${VOLK_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
-     ${OPT_TRACKING_INCLUDES}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
-if(ENABLE_GENERIC_ARCH)
-    add_definitions( -DGENERIC_ARCH=1 )
-endif(ENABLE_GENERIC_ARCH)
-
-if (SSE3_AVAILABLE)
-    add_definitions( -DHAVE_SSE3=1 )
-endif(SSE3_AVAILABLE)
-
-
-#file(GLOB TRACKING_LIB_HEADERS "*.h")
 file(GLOB ACQUISITION_LIB_HEADERS "*.h")
-#list(SORT TRACKING_LIB_HEADERS)
 list(SORT ACQUISITION_LIB_HEADERS)
-#add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
 add_library(acquisition_lib ${ACQUISITION_LIB_SOURCES} ${ACQUISITION_LIB_HEADERS})
-#source_group(Headers FILES ${TRACKING_LIB_HEADERS})
 source_group(Headers FILES ${ACQUISITION_LIB_HEADERS})
-#target_link_libraries(tracking_lib ${OPT_TRACKING_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
-target_link_libraries(acquisition_lib ${OPT_ACQUISITION_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
+target_link_libraries(acquisition_lib ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
 if(VOLK_GNSSSDR_FOUND)
-#    add_dependencies(tracking_lib glog-${glog_RELEASE})
     add_dependencies(acquisition_lib glog-${glog_RELEASE})
 else(VOLK_GNSSSDR_FOUND)
-#    add_dependencies(tracking_lib glog-${glog_RELEASE} volk_gnsssdr_module)
     add_dependencies(acquisition_lib glog-${glog_RELEASE} volk_gnsssdr_module)
 endif()
 

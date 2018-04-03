@@ -599,7 +599,7 @@ void udpos(rtk_t *rtk, double tt)
             for (i = 0; i < 3; i++) initx_rtk(rtk, rtk->sol.rr[i], VAR_POS, i);
             return;
         }
-    /* check variance of estimated postion */
+    /* check variance of estimated position */
     for (i = 0; i < 3; i++)
         {
             var += rtk->P[i + i * rtk->nx];
@@ -2223,7 +2223,7 @@ void rtkfree(rtk_t *rtk)
  *                .vs   [r]  O   data valid single     (r=0:rover,1:base)
  *                .resp [f]  O   freq(f+1) pseudorange residual (m)
  *                .resc [f]  O   freq(f+1) carrier-phase residual (m)
- *                .vsat [f]  O   freq(f+1) data vaild (0:invalid,1:valid)
+ *                .vsat [f]  O   freq(f+1) data valid (0:invalid,1:valid)
  *                .fix  [f]  O   freq(f+1) ambiguity flag
  *                               (0:nodata,1:float,2:fix,3:hold)
  *                .slip [f]  O   freq(f+1) slip flag
@@ -2262,7 +2262,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     traceobs(4, obs, n);
     /*trace(5,"nav=\n"); tracenav(5,nav);*/
 
-    /* set base staion position */
+    /* set base station position */
     if (opt->refpos <= POSOPT_RINEX && opt->mode != PMODE_SINGLE &&
         opt->mode != PMODE_MOVEB)
         {

@@ -271,7 +271,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                     d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter;  // record the preamble sample stamp
                 }
         }
-    else if (d_stat == 1)  // posible preamble lock
+    else if (d_stat == 1)  // possible preamble lock
         {
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {

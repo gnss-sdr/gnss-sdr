@@ -4014,7 +4014,7 @@ int Rtcm::set_DF047(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss
 //TODO Need to consider frequency channel in this fields
 int Rtcm::set_DF048(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
 {
-    const double lambda2 = GLONASS_C_m_s / GLONASS_L2_FREQ_HZ;
+    const double lambda2 = GLONASS_C_m_s / GLONASS_L2_CA_FREQ_HZ;
     int l2_phaserange_minus_l1_pseudorange = 0xFFF80000;
     double ambiguity = std::floor(gnss_synchroL1.Pseudorange_m / 599584.92);
     double glonass_L1_pseudorange = std::round((gnss_synchroL1.Pseudorange_m - ambiguity * 599584.92) / 0.02);
@@ -5260,12 +5260,12 @@ int Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
     if ((sig.compare("2C") == 0) && (sys.compare("R") == 0))
         {
             // TODO Need to add slot number and freq number to gnss_syncro
-            lambda = GLONASS_C_m_s / (GLONASS_L2_FREQ_HZ);
+            lambda = GLONASS_C_m_s / (GLONASS_L2_CA_FREQ_HZ);
         }
 
     phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * lambda - rough_range_m;
 
-    /* Substract phase - pseudorange integer cycle offset */
+    /* Subtract phase - pseudorange integer cycle offset */
     /* TODO: check LLI! */
     double cp = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI;  // ?
     if (std::fabs(phrng_m - cp) > 1171.0)
@@ -5369,7 +5369,7 @@ int Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
     if ((sig_.compare("2C") == 0) && (sys_.compare("R") == 0))
         {
             //TODO Need to add slot number and freq number to gnss syncro
-            lambda = GLONASS_C_m_s / (GLONASS_L2_FREQ_HZ);
+            lambda = GLONASS_C_m_s / (GLONASS_L2_CA_FREQ_HZ);
         }
     double rough_phase_range_rate = std::round(-gnss_synchro.Carrier_Doppler_hz * lambda);
     double phrr = (-gnss_synchro.Carrier_Doppler_hz * lambda - rough_phase_range_rate);
@@ -5456,11 +5456,11 @@ int Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
     if ((sig_.compare("2C") == 0) && (sys_.compare("R") == 0))
         {
             //TODO Need to add slot number and freq number to gnss syncro
-            lambda = GLONASS_C_m_s / (GLONASS_L2_FREQ_HZ);
+            lambda = GLONASS_C_m_s / (GLONASS_L2_CA_FREQ_HZ);
         }
     phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * lambda - rough_range_m;
 
-    /* Substract phase - pseudorange integer cycle offset */
+    /* Subtract phase - pseudorange integer cycle offset */
     /* TODO: check LLI! */
     double cp = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI;  // ?
     if (std::fabs(phrng_m - cp) > 1171.0)

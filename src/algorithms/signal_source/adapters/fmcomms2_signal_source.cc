@@ -32,7 +32,9 @@
 #include "fmcomms2_signal_source.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
+#include "ad9361_manager.h"
 #include "GPS_L1_CA.h"
+#include "GPS_L2C.h"
 #include <glog/logging.h>
 #include <iostream>
 
@@ -55,6 +57,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);
     bb_dc_ = configuration->property(role + ".bb_dc", true);
+    RF_channels_ = configuration->property(role + ".RF_channels", 1);
     gain_mode_rx1_ = configuration->property(role + ".gain_mode_rx1", std::string("manual"));
     gain_mode_rx2_ = configuration->property(role + ".gain_mode_rx2", std::string("manual"));
     rf_gain_rx1_ = configuration->property(role + ".gain_rx1", 64.0);
@@ -67,6 +70,14 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
+    //AD9361 Local Oscillator generation for dual band operation
+    enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
+    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - 1000);
+    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 1000);
+    scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", 0.0);
+    phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
+    tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", 0.0);
+
     item_size_ = sizeof(gr_complex);
 
     std::cout << "device address: " << uri_ << std::endl;
@@ -75,15 +86,73 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
 
     if (item_type_.compare("gr_complex") == 0)
         {
-            fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
-                uri_.c_str(), freq_, sample_rate_,
-                bandwidth_,
-                rx1_en_, rx2_en_,
-                buffer_size_, quadrature_, rf_dc_,
-                bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
-                gain_mode_rx2_.c_str(), rf_gain_rx2_,
-                rf_port_select_.c_str(), filter_file_.c_str(),
-                filter_auto_);
+            if (RF_channels_ == 1)
+                {
+                    if (rx1_en_ and rx2_en_)
+                        {
+                            LOG(FATAL) << "Configuration error: both rx1 and rx2 are enabled but RF_channels=1 !";
+                        }
+                    else
+                        {
+                            fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
+                                uri_.c_str(), freq_, sample_rate_,
+                                bandwidth_,
+                                rx1_en_, rx2_en_,
+                                buffer_size_, quadrature_, rf_dc_,
+                                bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
+                                gain_mode_rx2_.c_str(), rf_gain_rx2_,
+                                rf_port_select_.c_str(), filter_file_.c_str(),
+                                filter_auto_);
+
+                            //configure LO
+                            if (enable_dds_lo_ == true)
+                                {
+                                    std::cout << "Enabling Local Oscillator generator in FMCOMMS2\n";
+                                    config_ad9361_lo_remote(uri_,
+                                        bandwidth_,
+                                        sample_rate_,
+                                        freq_rf_tx_hz_,
+                                        tx_attenuation_db_,
+                                        freq_dds_tx_hz_,
+                                        scale_dds_dbfs_);
+                                }
+                        }
+                }
+            else if (RF_channels_ == 2)
+                {
+                    if (!(rx1_en_ and rx2_en_))
+                        {
+                            LOG(FATAL) << "Configuration error: RF_channels=2 but are not enabled both receivers in FMCOMMS2 !";
+                        }
+                    else
+                        {
+                            fmcomms2_source_f32c_ = gr::iio::fmcomms2_source_f32c::make(
+                                uri_.c_str(), freq_, sample_rate_,
+                                bandwidth_,
+                                rx1_en_, rx2_en_,
+                                buffer_size_, quadrature_, rf_dc_,
+                                bb_dc_, gain_mode_rx1_.c_str(), rf_gain_rx1_,
+                                gain_mode_rx2_.c_str(), rf_gain_rx2_,
+                                rf_port_select_.c_str(), filter_file_.c_str(),
+                                filter_auto_);
+                            //configure LO
+                            if (enable_dds_lo_ == true)
+                                {
+                                    std::cout << "Enabling Local Oscillator generator in FMCOMMS2\n";
+                                    config_ad9361_lo_remote(uri_,
+                                        bandwidth_,
+                                        sample_rate_,
+                                        freq_rf_tx_hz_,
+                                        tx_attenuation_db_,
+                                        freq_dds_tx_hz_,
+                                        scale_dds_dbfs_);
+                                }
+                        }
+                }
+            else
+                {
+                    LOG(FATAL) << "Configuration error: Unsupported number of RF_channels !";
+                }
         }
     else
         {
@@ -108,6 +177,10 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
 
 Fmcomms2SignalSource::~Fmcomms2SignalSource()
 {
+    if (enable_dds_lo_ == true)
+        {
+            ad9361_disable_lo_remote(uri_);
+        }
 }
 
 

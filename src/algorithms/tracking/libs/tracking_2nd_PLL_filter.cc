@@ -40,11 +40,10 @@
 void Tracking_2nd_PLL_filter::calculate_lopp_coef(float* tau1, float* tau2, float lbw, float zeta, float k)
 {
     // Solve natural frequency
-    float Wn;
-    Wn = lbw * 8 * zeta / (4 * zeta * zeta + 1);
+    float Wn = lbw * 8.0 * zeta / (4.0 * zeta * zeta + 1.0);
     // solve for t1 & t2
     *tau1 = k / (Wn * Wn);
-    *tau2 = (2.0 * zeta) / Wn;
+    *tau2 = 2.0 * zeta / Wn;
 }
 
 
@@ -71,8 +70,7 @@ void Tracking_2nd_PLL_filter::initialize()
  */
 float Tracking_2nd_PLL_filter::get_carrier_nco(float PLL_discriminator)
 {
-    float carr_nco;
-    carr_nco = d_old_carr_nco + (d_tau2_carr / d_tau1_carr) * (PLL_discriminator - d_old_carr_error) + (PLL_discriminator + d_old_carr_error) * (d_pdi_carr / (2 * d_tau1_carr));
+    float carr_nco = d_old_carr_nco + (d_tau2_carr / d_tau1_carr) * (PLL_discriminator - d_old_carr_error) + (PLL_discriminator + d_old_carr_error) * (d_pdi_carr / (2.0 * d_tau1_carr));
     //carr_nco = d_old_carr_nco + (d_tau2_carr/d_tau1_carr)*(PLL_discriminator - d_old_carr_error) + PLL_discriminator * (d_pdi_carr/d_tau1_carr);
     d_old_carr_nco = carr_nco;
     d_old_carr_error = PLL_discriminator;

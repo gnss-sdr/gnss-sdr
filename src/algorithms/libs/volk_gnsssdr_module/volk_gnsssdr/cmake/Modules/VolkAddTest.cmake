@@ -23,23 +23,39 @@ endif()
 set(__INCLUDED_VOLK_ADD_TEST TRUE)
 
 ########################################################################
+# Generate a test executable which can be used in ADD_TEST to call
+# various subtests.
+#
+# SOURCES        - sources for the test
+# TARGET_DEPS    - build target dependencies (e.g., libraries)
+########################################################################
+
+function(VOLK_GEN_TEST executable_name)
+    include(CMakeParseArgumentsCopy)
+    CMAKE_PARSE_ARGUMENTS(VOLK_TEST "" "" "SOURCES;TARGET_DEPS;EXTRA_LIB_DIRS;ENVIRONS;ARGS" ${ARGN})
+    add_executable(${executable_name} ${VOLK_TEST_SOURCES})
+    target_link_libraries(${executable_name} ${VOLK_TEST_TARGET_DEPS})
+endfunction()
+
+########################################################################
 # Add a unit test and setup the environment for it.
 # Encloses ADD_TEST, with additional functionality to create a shell
 # script that sets the environment to gain access to in-build binaries
 # properly. The following variables are used to pass in settings:
+# A test executable has to be generated with VOLK_GEN_TEST beforehand.
+# The executable name has to be passed as argument.
 #
 # NAME           - the test name
-# SOURCES        - sources for the test
 # TARGET_DEPS    - build target dependencies (e.g., libraries)
 # EXTRA_LIB_DIRS - other directories for the library path
 # ENVIRONS       - other environment key/value pairs
 # ARGS           - arguments for the test
 ########################################################################
-function(VOLK_ADD_TEST test_name)
+function(VOLK_ADD_TEST test_name executable_name)
 
   #parse the arguments for component names
   include(CMakeParseArgumentsCopy)
-  CMAKE_PARSE_ARGUMENTS(VOLK_TEST "" "" "SOURCES;TARGET_DEPS;EXTRA_LIB_DIRS;ENVIRONS;ARGS" ${ARGN})
+  CMAKE_PARSE_ARGUMENTS(VOLK_TEST "" "" "TARGET_DEPS;EXTRA_LIB_DIRS;ENVIRONS;ARGS" ${ARGN})
 
   #set the initial environs to use
   set(environs ${VOLK_TEST_ENVIRONS})
@@ -65,7 +81,7 @@ function(VOLK_ADD_TEST test_name)
     #"add_test" command, via the $<FOO:BAR> operator; make sure the
     #test's directory is first, since it ($1) is prepended to PATH.
     unset(TARGET_DIR_LIST)
-    foreach(target ${test_name} ${VOLK_TEST_TARGET_DEPS})
+    foreach(target ${executable_name} ${VOLK_TEST_TARGET_DEPS})
       list(APPEND TARGET_DIR_LIST "\$<TARGET_FILE_DIR:${target}>")
     endforeach()
 
@@ -134,17 +150,16 @@ function(VOLK_ADD_TEST test_name)
       file(APPEND ${sh_file} "export ${environ}\n")
     endforeach(environ)
 
+    set(VOLK_TEST_ARGS "${test_name}")
+
     #redo the test args to have a space between each
     string(REPLACE ";" " " VOLK_TEST_ARGS "${VOLK_TEST_ARGS}")
 
     #finally: append the test name to execute
-    file(APPEND ${sh_file} ${test_name} " " ${VOLK_TEST_ARGS} "\n")
+    file(APPEND ${sh_file} "${CMAKE_CROSSCOMPILING_EMULATOR} ${executable_name} ${VOLK_TEST_ARGS}\n")
 
     #make the shell file executable
     execute_process(COMMAND chmod +x ${sh_file})
-
-    add_executable(${test_name} ${VOLK_TEST_SOURCES})
-    target_link_libraries(${test_name} ${VOLK_TEST_TARGET_DEPS})
 
     #add the shell file as the test to execute;
     #use the form that allows for $<FOO:BAR> substitutions,
@@ -196,10 +211,8 @@ function(VOLK_ADD_TEST test_name)
     file(APPEND ${bat_file} ${test_name} " " ${VOLK_TEST_ARGS} "\n")
     file(APPEND ${bat_file} "\n")
 
-    add_executable(${test_name} ${VOLK_TEST_SOURCES})
-    target_link_libraries(${test_name} ${VOLK_TEST_TARGET_DEPS})
-
     add_test(${test_name} ${bat_file})
   endif(WIN32)
 
 endfunction(VOLK_ADD_TEST)
+

@@ -51,7 +51,6 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
     int vector_length;
-    int f_if;
     bool dump;
     std::string dump_filename;
     std::string item_type;
@@ -64,11 +63,9 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     float very_early_late_space_chips;
     float early_late_space_narrow_chips;
     float very_early_late_space_narrow_chips;
-
     item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
@@ -94,8 +91,9 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = galileo_e1_dll_pll_veml_make_tracking_cc(
-                f_if,
+
+            char sig_[3] = "1B";
+            tracking_ = dll_pll_veml_make_tracking(
                 fs_in,
                 vector_length,
                 dump,
@@ -109,7 +107,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
                 early_late_space_narrow_chips,
                 very_early_late_space_narrow_chips,
                 extend_correlation_symbols,
-                track_pilot);
+                track_pilot, 'E', sig_);
         }
     else
         {

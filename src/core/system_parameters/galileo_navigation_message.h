@@ -97,7 +97,7 @@ public:
     double t0e_1;   //!< Ephemeris reference time [s]
     double M0_1;    //!< Mean anomaly at reference time [semi-circles]
     double e_1;     //!< Eccentricity
-    double A_1;     //!< Square root of the semi-major axis [metres^1/2]
+    double A_1;     //!< Square root of the semi-major axis [meters^1/2]
 
     /*Word type 2: Ephemeris (2/4)*/
     int IOD_nav_2;     //!< IOD_nav page 2

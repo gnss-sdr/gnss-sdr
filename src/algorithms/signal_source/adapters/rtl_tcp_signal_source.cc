@@ -55,7 +55,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     dump_filename_ = configuration->property(role + ".dump_filename",
         default_dump_file);
 
-    // rtl_tcp PARAMTERS
+    // rtl_tcp PARAMETERS
     std::string default_address = "127.0.0.1";
     short default_port = 1234;
     AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);

@@ -53,7 +53,7 @@ void galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn)
             for (size_t i = 0; i < Galileo_E1_B_PRIMARY_CODE[prn].length(); i++)
                 {
                     hex_to_binary_converter(&_dest[index], Galileo_E1_B_PRIMARY_CODE[prn].at(i));
-                    index = index + 4;
+                    index += 4;
                 }
         }
     else if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2)
@@ -61,12 +61,8 @@ void galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn)
             for (size_t i = 0; i < Galileo_E1_C_PRIMARY_CODE[prn].length(); i++)
                 {
                     hex_to_binary_converter(&_dest[index], Galileo_E1_C_PRIMARY_CODE[prn].at(i));
-                    index = index + 4;
+                    index += 4;
                 }
-        }
-    else
-        {
-            return;
         }
 }
 
@@ -107,6 +103,18 @@ void galileo_e1_sinboc_61_gen_int(int* _dest, int* _prn, unsigned int _length_ou
         }
 }
 
+void galileo_e1_code_gen_sinboc11_float(float* _dest, char _Signal[3], unsigned int _prn)
+{
+    std::string _galileo_signal = _Signal;
+    unsigned int _codeLength = static_cast<unsigned int>(Galileo_E1_B_CODE_LENGTH_CHIPS);
+    int primary_code_E1_chips[4092];                                // _codeLength not accepted by Clang
+    galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn);  //generate Galileo E1 code, 1 sample per chip
+    for (unsigned int i = 0; i < _codeLength; i++)
+        {
+            _dest[2 * i] = static_cast<float>(primary_code_E1_chips[i]);
+            _dest[2 * i + 1] = -_dest[2 * i];
+        }
+}
 
 void galileo_e1_gen_float(float* _dest, int* _prn, char _Signal[3])
 {
@@ -137,8 +145,6 @@ void galileo_e1_gen_float(float* _dest, int* _prn, char _Signal[3])
                                beta * static_cast<float>(sinboc_61[i]);
                 }
         }
-    else
-        return;
 }
 
 

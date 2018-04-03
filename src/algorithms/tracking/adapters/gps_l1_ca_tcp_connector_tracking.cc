@@ -67,7 +67,7 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     port_ch0 = configuration->property(role + ".port_ch0", 2060);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################

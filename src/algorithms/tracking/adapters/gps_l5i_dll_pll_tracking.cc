@@ -65,7 +65,7 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
     float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 0.25);
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5i_CODE_RATE_HZ) / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS)));
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);

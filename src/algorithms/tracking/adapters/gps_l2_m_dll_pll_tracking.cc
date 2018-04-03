@@ -63,7 +63,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     unified_ = configuration->property(role + ".unified", false);
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_HZ) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
     if (symbols_extended_correlator != 1)

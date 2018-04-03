@@ -66,7 +66,7 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     int ti_ms = configuration->property(role + ".ti_ms", 3);
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     int vector_length = std::round(fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);

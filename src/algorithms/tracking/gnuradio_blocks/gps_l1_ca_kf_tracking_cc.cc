@@ -164,6 +164,8 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     d_rem_code_phase_chips = 0.0;
     d_code_phase_step_chips = 0.0;
     d_carrier_phase_step_rad = 0.0;
+    code_error_chips = 0.0;
+    code_error_filt_chips = 0.0;
 
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 
@@ -177,7 +179,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     //covariances (static)
     double sigma2_carrier_phase = GPS_TWO_PI / 4;
-    double sigma2_doppler = 250;
+    double sigma2_doppler = 250;  ///  !!
 
     kf_P_x_ini = arma::zeros(2, 2);
     kf_P_x_ini(0, 0) = sigma2_carrier_phase;
@@ -439,7 +441,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             // carrier phase step (NCO phase increment per sample) [rads/sample]
             d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
             // carrier phase accumulator
-            d_acc_carrier_phase_rad = -kf_x(0);
+            d_acc_carrier_phase_rad -= kf_x(0);
 
             //################### DLL COMMANDS #################################################
             // code phase step (Code resampler phase increment per sample) [chips/sample]
@@ -513,6 +515,9 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             float prompt_I;
             float prompt_Q;
             float tmp_E, tmp_P, tmp_L;
+            float tmp_VE = 0.0;
+            float tmp_VL = 0.0;
+            double tmp_float;
             double tmp_double;
             unsigned long int tmp_long;
             prompt_I = d_correlator_outs[1].real();
@@ -523,40 +528,44 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             try
                 {
                     // EPR
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_VE), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_E), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_P), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_L), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_VL), sizeof(float));
                     // PROMPT I and Q (to analyze navigation symbols)
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    tmp_long = d_sample_counter + d_current_prn_length_samples;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_long), sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(unsigned long int));
                     // accumulated carrier phase
-                    d_dump_file.write(reinterpret_cast<char *>(&d_acc_carrier_phase_rad), sizeof(double));
-
+                    tmp_float = d_acc_carrier_phase_rad;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // carrier and code frequency
-                    d_dump_file.write(reinterpret_cast<char *>(&d_carrier_doppler_hz), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char *>(&d_code_freq_chips), sizeof(double));
-
+                    tmp_float = d_carrier_doppler_hz;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = d_code_freq_chips;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
-                    d_dump_file.write(reinterpret_cast<char *>(&carr_phase_error_rad), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char *>(&carr_phase_error_filt_rad), sizeof(double));
-
+                    tmp_float = 0.0;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = 0.0;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // DLL commands
-                    d_dump_file.write(reinterpret_cast<char *>(&code_error_chips), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char *>(&code_error_filt_chips), sizeof(double));
-
+                    tmp_float = code_error_chips;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = code_error_filt_chips;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // CN0 and carrier lock test
-                    d_dump_file.write(reinterpret_cast<char *>(&d_CN0_SNV_dB_Hz), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char *>(&d_carrier_lock_test), sizeof(double));
-
+                    tmp_float = d_CN0_SNV_dB_Hz;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = d_carrier_lock_test;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // AUX vars (for debug purposes)
-                    tmp_double = d_rem_code_phase_samples;
+                    tmp_float = d_rem_code_phase_samples;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_double = static_cast<double>(d_sample_counter);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-
                     // PRN
                     unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(unsigned int));
@@ -577,8 +586,8 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    int number_of_double_vars = 11;
-    int number_of_float_vars = 5;
+    int number_of_double_vars = 1;
+    int number_of_float_vars = 17;
     int epoch_size_bytes = sizeof(unsigned long int) + sizeof(double) * number_of_double_vars +
                            sizeof(float) * number_of_float_vars + sizeof(unsigned int);
     std::ifstream dump_file;
@@ -604,22 +613,24 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
         {
             return 1;
         }
+    float *abs_VE = new float[num_epoch];
     float *abs_E = new float[num_epoch];
     float *abs_P = new float[num_epoch];
     float *abs_L = new float[num_epoch];
+    float *abs_VL = new float[num_epoch];
     float *Prompt_I = new float[num_epoch];
     float *Prompt_Q = new float[num_epoch];
     unsigned long int *PRN_start_sample_count = new unsigned long int[num_epoch];
-    double *acc_carrier_phase_rad = new double[num_epoch];
-    double *carrier_doppler_hz = new double[num_epoch];
-    double *code_freq_chips = new double[num_epoch];
-    double *carr_error_hz = new double[num_epoch];
-    double *carr_error_filt_hz = new double[num_epoch];
-    double *code_error_chips = new double[num_epoch];
-    double *code_error_filt_chips = new double[num_epoch];
-    double *CN0_SNV_dB_Hz = new double[num_epoch];
-    double *carrier_lock_test = new double[num_epoch];
-    double *aux1 = new double[num_epoch];
+    float *acc_carrier_phase_rad = new float[num_epoch];
+    float *carrier_doppler_hz = new float[num_epoch];
+    float *code_freq_chips = new float[num_epoch];
+    float *carr_error_hz = new float[num_epoch];
+    float *carr_error_filt_hz = new float[num_epoch];
+    float *code_error_chips = new float[num_epoch];
+    float *code_error_filt_chips = new float[num_epoch];
+    float *CN0_SNV_dB_Hz = new float[num_epoch];
+    float *carrier_lock_test = new float[num_epoch];
+    float *aux1 = new float[num_epoch];
     double *aux2 = new double[num_epoch];
     unsigned int *PRN = new unsigned int[num_epoch];
 
@@ -629,22 +640,24 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
                 {
                     for (long int i = 0; i < num_epoch; i++)
                         {
+                            dump_file.read(reinterpret_cast<char *>(&abs_VE[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_E[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_P[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_L[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&abs_VL[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_I[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_Q[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(unsigned long int));
-                            dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&carr_error_hz[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&carr_error_filt_hz[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&code_error_chips[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&code_error_filt_chips[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&CN0_SNV_dB_Hz[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&carrier_lock_test[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&aux1[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carr_error_hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carr_error_filt_hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&code_error_chips[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&code_error_filt_chips[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&CN0_SNV_dB_Hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carrier_lock_test[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&aux1[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&aux2[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(unsigned int));
                         }
@@ -654,9 +667,11 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     catch (const std::ifstream::failure &e)
         {
             std::cerr << "Problem reading dump file:" << e.what() << std::endl;
+            delete[] abs_VE;
             delete[] abs_E;
             delete[] abs_P;
             delete[] abs_L;
+            delete[] abs_VL;
             delete[] Prompt_I;
             delete[] Prompt_Q;
             delete[] PRN_start_sample_count;
@@ -685,6 +700,10 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     if (reinterpret_cast<long *>(matfp) != NULL)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_E, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
             matvar = Mat_VarCreate("abs_E", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_E, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
@@ -694,6 +713,10 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
             Mat_VarFree(matvar);
 
             matvar = Mat_VarCreate("abs_L", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_L, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("abs_VL", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_E, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -709,43 +732,43 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("acc_carrier_phase_rad", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, acc_carrier_phase_rad, 0);
+            matvar = Mat_VarCreate("acc_carrier_phase_rad", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, acc_carrier_phase_rad, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("carrier_doppler_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, carrier_doppler_hz, 0);
+            matvar = Mat_VarCreate("carrier_doppler_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_doppler_hz, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("code_freq_chips", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, code_freq_chips, 0);
+            matvar = Mat_VarCreate("code_freq_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_freq_chips, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("carr_error_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, carr_error_hz, 0);
+            matvar = Mat_VarCreate("carr_error_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carr_error_hz, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("carr_error_filt_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, carr_error_filt_hz, 0);
+            matvar = Mat_VarCreate("carr_error_filt_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carr_error_filt_hz, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("code_error_chips", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, code_error_chips, 0);
+            matvar = Mat_VarCreate("code_error_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_error_chips, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("code_error_filt_chips", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, code_error_filt_chips, 0);
+            matvar = Mat_VarCreate("code_error_filt_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_error_filt_chips, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("CN0_SNV_dB_Hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, CN0_SNV_dB_Hz, 0);
+            matvar = Mat_VarCreate("CN0_SNV_dB_Hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, CN0_SNV_dB_Hz, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("carrier_lock_test", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, carrier_lock_test, 0);
+            matvar = Mat_VarCreate("carrier_lock_test", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_lock_test, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("aux1", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, aux1, 0);
+            matvar = Mat_VarCreate("aux1", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, aux1, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -758,9 +781,11 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
             Mat_VarFree(matvar);
         }
     Mat_Close(matfp);
+    delete[] abs_VE;
     delete[] abs_E;
     delete[] abs_P;
     delete[] abs_L;
+    delete[] abs_VL;
     delete[] Prompt_I;
     delete[] Prompt_Q;
     delete[] PRN_start_sample_count;

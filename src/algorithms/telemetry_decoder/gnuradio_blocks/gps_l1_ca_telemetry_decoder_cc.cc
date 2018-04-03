@@ -93,8 +93,8 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_GPS_frame_4bytes = 0;
     d_prev_GPS_frame_4bytes = 0;
     d_flag_parity = false;
-    d_TOW_at_Preamble = 0;
-    d_TOW_at_current_symbol = 0;
+    d_TOW_at_Preamble = 0.0;
+    d_TOW_at_current_symbol = 0.0;
     flag_TOW_set = false;
     d_average_count = 0;
     d_flag_preamble = false;
@@ -104,6 +104,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_channel = 0;
     flag_PLL_180_deg_phase_locked = false;
     d_preamble_time_samples = 0;
+    d_TOW_at_current_symbol_ms = 0;
 }
 
 
@@ -350,18 +351,22 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
             //double decoder_latency_ms=(double)(current_symbol.Tracking_sample_counter-d_symbol_history.at(0).Tracking_sample_counter)
             //        /(double)current_symbol.fs;
             // update TOW at the preamble instant (account with decoder latency)
-            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 2 * GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
 
-            d_TOW_at_current_symbol = floor(d_TOW_at_Preamble * 1000.0) / 1000.0;
+            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 2.0 * GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
+            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_GPS_FSM.d_nav.d_TOW) * 1000 + 161;
+            //d_TOW_at_current_symbol = floor(d_TOW_at_Preamble * 1000.0) / 1000.0;
+            d_TOW_at_current_symbol = d_TOW_at_Preamble;
             flag_TOW_set = true;
             d_flag_new_tow_available = false;
         }
     else
         {
-            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GPS_L1_CA_CODE_PERIOD;
+            d_TOW_at_current_symbol += GPS_L1_CA_CODE_PERIOD;
+            d_TOW_at_current_symbol_ms += GPS_L1_CA_CODE_PERIOD_MS;
         }
 
-    current_symbol.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
+    current_symbol.TOW_at_current_symbol_s = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
+    //current_symbol.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
     current_symbol.Flag_valid_word = flag_TOW_set;
 
     if (flag_PLL_180_deg_phase_locked == true)

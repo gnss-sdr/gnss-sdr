@@ -36,11 +36,8 @@
 #include <armadillo>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/analog/sig_source_c.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/skiphead.h>
 #include <gtest/gtest.h>
 #include "GPS_L1_CA.h"
 #include "gnss_satellite.h"
@@ -57,9 +54,10 @@
 #include "observables_dump_reader.h"
 #include "tlm_dump_reader.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
-#include "gps_l1_ca_dll_pll_c_aid_tracking.h"
 #include "hybrid_observables.h"
 #include "signal_generator_flags.h"
+#include "gnss_sdr_sample_counter.h"
+#include <matio.h>
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
@@ -186,18 +184,17 @@ public:
     int configure_generator();
     int generate_signal();
     void check_results_carrier_phase(
-        arma::vec& true_ch0_phase_cycles,
-        arma::vec& true_ch1_phase_cycles,
-        arma::vec& true_ch0_tow_s,
-        arma::vec& measuded_ch0_phase_cycles,
-        arma::vec& measuded_ch1_phase_cycles,
-        arma::vec& measuded_ch0_RX_time_s);
+        arma::mat& true_ch0,
+        arma::mat& true_ch1,
+        arma::vec& true_tow_s,
+        arma::mat& measured_ch0,
+        arma::mat& measured_ch1);
     void check_results_code_psudorange(
-        arma::vec& true_ch0_dist_m, arma::vec& true_ch1_dist_m,
-        arma::vec& true_ch0_tow_s,
-        arma::vec& measuded_ch0_Pseudorange_m,
-        arma::vec& measuded_ch1_Pseudorange_m,
-        arma::vec& measuded_ch0_RX_time_s);
+        arma::mat& true_ch0,
+        arma::mat& true_ch1,
+        arma::vec& true_tow_s,
+        arma::mat& measured_ch0,
+        arma::mat& measured_ch1);
 
     HybridObservablesTest()
     {
@@ -284,39 +281,49 @@ void HybridObservablesTest::configure_receiver()
 
     // Set Tracking
     config->set_property("Tracking_1C.item_type", "gr_complex");
-    config->set_property("Tracking_1C.if", "0");
     config->set_property("Tracking_1C.dump", "true");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
-    config->set_property("Tracking_1C.pll_bw_hz", "15.0");
+    config->set_property("Tracking_1C.pll_bw_hz", "35.0");
     config->set_property("Tracking_1C.dll_bw_hz", "0.5");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
+    config->set_property("Tracking_1C.unified", "true");
 
     config->set_property("TelemetryDecoder_1C.dump", "true");
     config->set_property("Observables.dump", "true");
 }
 
 void HybridObservablesTest::check_results_carrier_phase(
-    arma::vec& true_ch0_phase_cycles,
-    arma::vec& true_ch1_phase_cycles,
-    arma::vec& true_ch0_tow_s,
-    arma::vec& measuded_ch0_phase_cycles,
-    arma::vec& measuded_ch1_phase_cycles,
-    arma::vec& measuded_ch0_RX_time_s)
+    arma::mat& true_ch0,
+    arma::mat& true_ch1,
+    arma::vec& true_tow_s,
+    arma::mat& measured_ch0,
+    arma::mat& measured_ch1)
 {
     //1. True value interpolation to match the measurement times
 
+    double t0 = std::max(measured_ch0(0, 0), measured_ch1(0, 0));
+    int size1 = measured_ch0.col(0).n_rows;
+    int size2 = measured_ch1.col(0).n_rows;
+    double t1 = std::min(measured_ch0(size1 - 1, 0), measured_ch1(size2 - 1, 0));
+    arma::vec t = arma::linspace<arma::vec>(t0, t1, floor((t1 - t0) * 1e3));
+
     arma::vec true_ch0_phase_interp;
     arma::vec true_ch1_phase_interp;
-    arma::interp1(true_ch0_tow_s, true_ch0_phase_cycles, measuded_ch0_RX_time_s, true_ch0_phase_interp);
-    arma::interp1(true_ch0_tow_s, true_ch1_phase_cycles, measuded_ch0_RX_time_s, true_ch1_phase_interp);
+    arma::interp1(true_tow_s, true_ch0.col(3), t, true_ch0_phase_interp);
+    arma::interp1(true_tow_s, true_ch1.col(3), t, true_ch1_phase_interp);
+
+    arma::vec meas_ch0_phase_interp;
+    arma::vec meas_ch1_phase_interp;
+    arma::interp1(measured_ch0.col(0), measured_ch0.col(3), t, meas_ch0_phase_interp);
+    arma::interp1(measured_ch1.col(0), measured_ch1.col(3), t, meas_ch1_phase_interp);
 
     //2. RMSE
     arma::vec err_ch0_cycles;
     arma::vec err_ch1_cycles;
 
     //compute error without the accumulated carrier phase offsets (which depends on the receiver starting time)
-    err_ch0_cycles = measuded_ch0_phase_cycles - true_ch0_phase_interp - measuded_ch0_phase_cycles(0) + true_ch0_phase_interp(0);
-    err_ch1_cycles = measuded_ch1_phase_cycles - true_ch1_phase_interp - measuded_ch1_phase_cycles(0) + true_ch1_phase_interp(0);
+    err_ch0_cycles = meas_ch0_phase_interp - true_ch0_phase_interp - meas_ch0_phase_interp(0) + true_ch0_phase_interp(0);
+    err_ch1_cycles = meas_ch1_phase_interp - true_ch1_phase_interp - meas_ch1_phase_interp(0) + true_ch1_phase_interp(0);
 
     arma::vec err2_ch0 = arma::square(err_ch0_cycles);
     double rmse_ch0 = sqrt(arma::mean(err2_ch0));
@@ -343,58 +350,68 @@ void HybridObservablesTest::check_results_carrier_phase(
 
     //5. report
     std::streamsize ss = std::cout.precision();
-    std::cout << std::setprecision(10) << "Channel 0 Carrier phase RMSE="
-              << rmse_ch0 << ", mean=" << error_mean_ch0
-              << ", stdev=" << sqrt(error_var_ch0)
-              << " (max,min)=" << max_error_ch0
+    std::cout << std::setprecision(10) << "Channel 0 Carrier phase RMSE = "
+              << rmse_ch0 << ", mean = " << error_mean_ch0
+              << ", stdev = " << sqrt(error_var_ch0)
+              << " (max,min) = " << max_error_ch0
               << "," << min_error_ch0
               << " [cycles]" << std::endl;
     std::cout.precision(ss);
 
-    ASSERT_LT(rmse_ch0, 1e-2);
-    ASSERT_LT(error_mean_ch0, 1e-2);
-    ASSERT_GT(error_mean_ch0, -1e-2);
-    ASSERT_LT(error_var_ch0, 1e-2);
+    ASSERT_LT(rmse_ch0, 5e-2);
+    ASSERT_LT(error_mean_ch0, 5e-2);
+    ASSERT_GT(error_mean_ch0, -5e-2);
+    ASSERT_LT(error_var_ch0, 5e-2);
     ASSERT_LT(max_error_ch0, 5e-2);
     ASSERT_GT(min_error_ch0, -5e-2);
 
     //5. report
     ss = std::cout.precision();
-    std::cout << std::setprecision(10) << "Channel 1 Carrier phase RMSE="
-              << rmse_ch1 << ", mean=" << error_mean_ch1
-              << ", stdev=" << sqrt(error_var_ch1)
-              << " (max,min)=" << max_error_ch1
+    std::cout << std::setprecision(10) << "Channel 1 Carrier phase RMSE = "
+              << rmse_ch1 << ", mean = " << error_mean_ch1
+              << ", stdev = " << sqrt(error_var_ch1)
+              << " (max,min) = " << max_error_ch1
               << "," << min_error_ch1
               << " [cycles]" << std::endl;
     std::cout.precision(ss);
 
-    ASSERT_LT(rmse_ch1, 1e-2);
-    ASSERT_LT(error_mean_ch1, 1e-2);
-    ASSERT_GT(error_mean_ch1, -1e-2);
-    ASSERT_LT(error_var_ch1, 1e-2);
+    ASSERT_LT(rmse_ch1, 5e-2);
+    ASSERT_LT(error_mean_ch1, 5e-2);
+    ASSERT_GT(error_mean_ch1, -5e-2);
+    ASSERT_LT(error_var_ch1, 5e-2);
     ASSERT_LT(max_error_ch1, 5e-2);
     ASSERT_GT(min_error_ch1, -5e-2);
 }
 
 
 void HybridObservablesTest::check_results_code_psudorange(
-    arma::vec& true_ch0_dist_m,
-    arma::vec& true_ch1_dist_m,
-    arma::vec& true_ch0_tow_s,
-    arma::vec& measuded_ch0_Pseudorange_m,
-    arma::vec& measuded_ch1_Pseudorange_m,
-    arma::vec& measuded_ch0_RX_time_s)
+    arma::mat& true_ch0,
+    arma::mat& true_ch1,
+    arma::vec& true_tow_s,
+    arma::mat& measured_ch0,
+    arma::mat& measured_ch1)
 {
     //1. True value interpolation to match the measurement times
 
+    double t0 = std::max(measured_ch0(0, 0), measured_ch1(0, 0));
+    int size1 = measured_ch0.col(0).n_rows;
+    int size2 = measured_ch1.col(0).n_rows;
+    double t1 = std::min(measured_ch0(size1 - 1, 0), measured_ch1(size2 - 1, 0));
+    arma::vec t = arma::linspace<arma::vec>(t0, t1, floor((t1 - t0) * 1e3));
+
     arma::vec true_ch0_dist_interp;
     arma::vec true_ch1_dist_interp;
-    arma::interp1(true_ch0_tow_s, true_ch0_dist_m, measuded_ch0_RX_time_s, true_ch0_dist_interp);
-    arma::interp1(true_ch0_tow_s, true_ch1_dist_m, measuded_ch0_RX_time_s, true_ch1_dist_interp);
+    arma::interp1(true_tow_s, true_ch0.col(1), t, true_ch0_dist_interp);
+    arma::interp1(true_tow_s, true_ch1.col(1), t, true_ch1_dist_interp);
+
+    arma::vec meas_ch0_dist_interp;
+    arma::vec meas_ch1_dist_interp;
+    arma::interp1(measured_ch0.col(0), measured_ch0.col(4), t, meas_ch0_dist_interp);
+    arma::interp1(measured_ch1.col(0), measured_ch1.col(4), t, meas_ch1_dist_interp);
 
     // generate delta pseudoranges
     arma::vec delta_true_dist_m = true_ch0_dist_interp - true_ch1_dist_interp;
-    arma::vec delta_measured_dist_m = measuded_ch0_Pseudorange_m - measuded_ch1_Pseudorange_m;
+    arma::vec delta_measured_dist_m = meas_ch0_dist_interp - meas_ch1_dist_interp;
 
     //2. RMSE
     arma::vec err;
@@ -413,10 +430,10 @@ void HybridObservablesTest::check_results_code_psudorange(
 
     //5. report
     std::streamsize ss = std::cout.precision();
-    std::cout << std::setprecision(10) << "Delta Observables RMSE="
-              << rmse << ", mean=" << error_mean
-              << ", stdev=" << sqrt(error_var)
-              << " (max,min)=" << max_error
+    std::cout << std::setprecision(10) << "Delta Observables RMSE = "
+              << rmse << ", mean = " << error_mean
+              << ", stdev = " << sqrt(error_var)
+              << " (max,min) = " << max_error
               << "," << min_error
               << " [meters]" << std::endl;
     std::cout.precision(ss);
@@ -425,8 +442,8 @@ void HybridObservablesTest::check_results_code_psudorange(
     ASSERT_LT(error_mean, 0.5);
     ASSERT_GT(error_mean, -0.5);
     ASSERT_LT(error_var, 0.5);
-    ASSERT_LT(max_error, 2);
-    ASSERT_GT(min_error, -2);
+    ASSERT_LT(max_error, 2.0);
+    ASSERT_GT(min_error, -2.0);
 }
 
 
@@ -474,9 +491,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
     top_block = gr::make_top_block("Telemetry_Decoder test");
     std::shared_ptr<TrackingInterface> tracking_ch0 = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
-    //std::shared_ptr<TrackingInterface> tracking_ch1 = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
     std::shared_ptr<TrackingInterface> tracking_ch1 = std::make_shared<GpsL1CaDllPllTracking>(config.get(), "Tracking_1C", 1, 1);
-    //std::shared_ptr<TrackingInterface> tracking_ch1 = std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
 
     boost::shared_ptr<HybridObservablesTest_msg_rx> msg_rx_ch0 = HybridObservablesTest_msg_rx_make();
     boost::shared_ptr<HybridObservablesTest_msg_rx> msg_rx_ch1 = HybridObservablesTest_msg_rx_make();
@@ -528,7 +543,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     boost::shared_ptr<HybridObservablesTest_tlm_msg_rx> tlm_msg_rx_ch2 = HybridObservablesTest_tlm_msg_rx_make();
 
     //Observables
-    std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables", 2, 2));
+    std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables", 3, 2));
 
     ASSERT_NO_THROW({
         tracking_ch0->set_channel(gnss_synchro_ch0.Channel_ID);
@@ -552,7 +567,10 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
         gr::blocks::null_sink::sptr sink_ch0 = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
         gr::blocks::null_sink::sptr sink_ch1 = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+        gnss_sdr_sample_counter_sptr samp_counter = gnss_sdr_make_sample_counter(static_cast<double>(baseband_sampling_freq));
         top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
+        top_block->connect(gr_interleaved_char_to_complex, 0, samp_counter, 0);
+
         //ch0
         top_block->connect(gr_interleaved_char_to_complex, 0, tracking_ch0->get_left_block(), 0);
         top_block->connect(tracking_ch0->get_right_block(), 0, tlm_ch0->get_left_block(), 0);
@@ -566,6 +584,8 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
         top_block->connect(observables->get_right_block(), 0, sink_ch0, 0);
         top_block->connect(observables->get_right_block(), 1, sink_ch1, 0);
+        top_block->connect(samp_counter, 0, observables->get_left_block(), 2);
+
     }) << "Failure connecting the blocks.";
 
     tracking_ch0->start_tracking();
@@ -587,20 +607,15 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         if (true_observables.open_obs_file(std::string("./obs_out.bin")) == false)
             {
                 throw std::exception();
-            };
+            }
     }) << "Failure opening true observables file";
 
-    long int nepoch = true_observables.num_epochs();
+    unsigned int nepoch = static_cast<unsigned int>(true_observables.num_epochs());
 
-    std::cout << "True observation epochs=" << nepoch << std::endl;
-    arma::vec true_ch0_dist_m = arma::zeros(nepoch, 1);
-    arma::vec true_ch0_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
-    arma::vec true_ch0_Doppler_Hz = arma::zeros(nepoch, 1);
-    arma::vec true_ch0_tow_s = arma::zeros(nepoch, 1);
-    arma::vec true_ch1_dist_m = arma::zeros(nepoch, 1);
-    arma::vec true_ch1_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
-    arma::vec true_ch1_Doppler_Hz = arma::zeros(nepoch, 1);
-    arma::vec true_ch1_tow_s = arma::zeros(nepoch, 1);
+    std::cout << "True observation epochs = " << nepoch << std::endl;
+    // Matrices for storing columnwise true GPS time, Range, Doppler and Carrier phase
+    arma::mat true_ch0 = arma::zeros<arma::mat>(nepoch, 4);
+    arma::mat true_ch1 = arma::zeros<arma::mat>(nepoch, 4);
 
     true_observables.restart();
     long int epoch_counter = 0;
@@ -609,23 +624,23 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             {
                 if (round(true_observables.prn[0]) != gnss_synchro_ch0.PRN)
                     {
-                        std::cout << "True observables SV PRN do not match" << round(true_observables.prn[1]) << std::endl;
+                        std::cout << "True observables SV PRN does not match " << round(true_observables.prn[1]) << std::endl;
                         throw std::exception();
                     }
                 if (round(true_observables.prn[1]) != gnss_synchro_ch1.PRN)
                     {
-                        std::cout << "True observables SV PRN do not match " << round(true_observables.prn[1]) << std::endl;
+                        std::cout << "True observables SV PRN does not match " << round(true_observables.prn[1]) << std::endl;
                         throw std::exception();
                     }
-                true_ch0_tow_s(epoch_counter) = true_observables.gps_time_sec[0];
-                true_ch0_dist_m(epoch_counter) = true_observables.dist_m[0];
-                true_ch0_Doppler_Hz(epoch_counter) = true_observables.doppler_l1_hz[0];
-                true_ch0_acc_carrier_phase_cycles(epoch_counter) = true_observables.acc_carrier_phase_l1_cycles[0];
+                true_ch0(epoch_counter, 0) = true_observables.gps_time_sec[0];
+                true_ch0(epoch_counter, 1) = true_observables.dist_m[0];
+                true_ch0(epoch_counter, 2) = true_observables.doppler_l1_hz[0];
+                true_ch0(epoch_counter, 3) = true_observables.acc_carrier_phase_l1_cycles[0];
 
-                true_ch1_tow_s(epoch_counter) = true_observables.gps_time_sec[1];
-                true_ch1_dist_m(epoch_counter) = true_observables.dist_m[1];
-                true_ch1_Doppler_Hz(epoch_counter) = true_observables.doppler_l1_hz[1];
-                true_ch1_acc_carrier_phase_cycles(epoch_counter) = true_observables.acc_carrier_phase_l1_cycles[1];
+                true_ch1(epoch_counter, 0) = true_observables.gps_time_sec[1];
+                true_ch1(epoch_counter, 1) = true_observables.dist_m[1];
+                true_ch1(epoch_counter, 2) = true_observables.doppler_l1_hz[1];
+                true_ch1(epoch_counter, 3) = true_observables.acc_carrier_phase_l1_cycles[1];
 
                 epoch_counter++;
             }
@@ -637,83 +652,85 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         if (estimated_observables.open_obs_file(std::string("./observables.dat")) == false)
             {
                 throw std::exception();
-            };
+            }
     }) << "Failure opening dump observables file";
 
-    nepoch = estimated_observables.num_epochs();
-    std::cout << "Measured observation epochs=" << nepoch << std::endl;
+    nepoch = static_cast<unsigned int>(estimated_observables.num_epochs());
+    std::cout << "Measured observation epochs = " << nepoch << std::endl;
 
-    arma::vec measuded_ch0_RX_time_s = arma::zeros(nepoch, 1);
-    arma::vec measuded_ch0_TOW_at_current_symbol_s = arma::zeros(nepoch, 1);
-    arma::vec measuded_ch0_Carrier_Doppler_hz = arma::zeros(nepoch, 1);
-    arma::vec measuded_ch0_Acc_carrier_phase_hz = arma::zeros(nepoch, 1);
-    arma::vec measuded_ch0_Pseudorange_m = arma::zeros(nepoch, 1);
-
-    arma::vec measuded_ch1_RX_time_s = arma::zeros(nepoch, 1);
-    arma::vec measuded_ch1_TOW_at_current_symbol_s = arma::zeros(nepoch, 1);
-    arma::vec measuded_ch1_Carrier_Doppler_hz = arma::zeros(nepoch, 1);
-    arma::vec measuded_ch1_Acc_carrier_phase_hz = arma::zeros(nepoch, 1);
-    arma::vec measuded_ch1_Pseudorange_m = arma::zeros(nepoch, 1);
+    // Matrices for storing columnwise measured RX_time, TOW, Doppler, Carrier phase and Pseudorange
+    arma::mat measured_ch0 = arma::zeros<arma::mat>(nepoch, 5);
+    arma::mat measured_ch1 = arma::zeros<arma::mat>(nepoch, 5);
 
     estimated_observables.restart();
-
     epoch_counter = 0;
+    long int epoch_counter2 = 0;
     while (estimated_observables.read_binary_obs())
         {
-            measuded_ch0_RX_time_s(epoch_counter) = estimated_observables.RX_time[0];
-            measuded_ch0_TOW_at_current_symbol_s(epoch_counter) = estimated_observables.TOW_at_current_symbol_s[0];
-            measuded_ch0_Carrier_Doppler_hz(epoch_counter) = estimated_observables.Carrier_Doppler_hz[0];
-            measuded_ch0_Acc_carrier_phase_hz(epoch_counter) = estimated_observables.Acc_carrier_phase_hz[0];
-            measuded_ch0_Pseudorange_m(epoch_counter) = estimated_observables.Pseudorange_m[0];
+            if (static_cast<bool>(estimated_observables.valid[0]))
+                {
+                    measured_ch0(epoch_counter, 0) = estimated_observables.RX_time[0];
+                    measured_ch0(epoch_counter, 1) = estimated_observables.TOW_at_current_symbol_s[0];
+                    measured_ch0(epoch_counter, 2) = estimated_observables.Carrier_Doppler_hz[0];
+                    measured_ch0(epoch_counter, 3) = estimated_observables.Acc_carrier_phase_hz[0];
+                    measured_ch0(epoch_counter, 4) = estimated_observables.Pseudorange_m[0];
+                    epoch_counter++;
+                }
+            if (static_cast<bool>(estimated_observables.valid[1]))
+                {
+                    measured_ch1(epoch_counter2, 0) = estimated_observables.RX_time[1];
+                    measured_ch1(epoch_counter2, 1) = estimated_observables.TOW_at_current_symbol_s[1];
+                    measured_ch1(epoch_counter2, 2) = estimated_observables.Carrier_Doppler_hz[1];
+                    measured_ch1(epoch_counter2, 3) = estimated_observables.Acc_carrier_phase_hz[1];
+                    measured_ch1(epoch_counter2, 4) = estimated_observables.Pseudorange_m[1];
+                    epoch_counter2++;
+                }
+        }
 
-            measuded_ch1_RX_time_s(epoch_counter) = estimated_observables.RX_time[1];
-            measuded_ch1_TOW_at_current_symbol_s(epoch_counter) = estimated_observables.TOW_at_current_symbol_s[1];
-            measuded_ch1_Carrier_Doppler_hz(epoch_counter) = estimated_observables.Carrier_Doppler_hz[1];
-            measuded_ch1_Acc_carrier_phase_hz(epoch_counter) = estimated_observables.Acc_carrier_phase_hz[1];
-            measuded_ch1_Pseudorange_m(epoch_counter) = estimated_observables.Pseudorange_m[1];
-
-            epoch_counter++;
+    //Cut measurement tail zeros
+    arma::uvec index = arma::find(measured_ch0.col(0) > 0.0, 1, "last");
+    if ((index.size() > 0) and index(0) < (nepoch - 1))
+        {
+            measured_ch0.shed_rows(index(0) + 1, nepoch - 1);
+        }
+    index = arma::find(measured_ch1.col(0) > 0.0, 1, "last");
+    if ((index.size() > 0) and index(0) < (nepoch - 1))
+        {
+            measured_ch1.shed_rows(index(0) + 1, nepoch - 1);
         }
 
     //Cut measurement initial transitory of the measurements
-    arma::uvec initial_meas_point = arma::find(measuded_ch0_RX_time_s >= true_ch0_tow_s(0), 1, "first");
+    index = arma::find(measured_ch0.col(0) >= true_ch0(0, 0), 1, "first");
+    if ((index.size() > 0) and (index(0) > 0))
+        {
+            measured_ch0.shed_rows(0, index(0));
+        }
+    index = arma::find(measured_ch1.col(0) >= true_ch1(0, 0), 1, "first");
+    if ((index.size() > 0) and (index(0) > 0))
+        {
+            measured_ch1.shed_rows(0, index(0));
+        }
 
-    measuded_ch0_RX_time_s = measuded_ch0_RX_time_s.subvec(initial_meas_point(0), measuded_ch0_RX_time_s.size() - 1);
-    measuded_ch0_Pseudorange_m = measuded_ch0_Pseudorange_m.subvec(initial_meas_point(0), measuded_ch0_Pseudorange_m.size() - 1);
-    measuded_ch0_Acc_carrier_phase_hz = measuded_ch0_Acc_carrier_phase_hz.subvec(initial_meas_point(0), measuded_ch0_Acc_carrier_phase_hz.size() - 1);
-
-    measuded_ch1_RX_time_s = measuded_ch1_RX_time_s.subvec(initial_meas_point(0), measuded_ch1_RX_time_s.size() - 1);
-    measuded_ch1_Pseudorange_m = measuded_ch1_Pseudorange_m.subvec(initial_meas_point(0), measuded_ch1_Pseudorange_m.size() - 1);
-    measuded_ch1_Acc_carrier_phase_hz = measuded_ch1_Acc_carrier_phase_hz.subvec(initial_meas_point(0), measuded_ch1_Acc_carrier_phase_hz.size() - 1);
-
-    //correct the clock error using true values (it is not possible for a receiver to correct
+    //Correct the clock error using true values (it is not possible for a receiver to correct
     //the receiver clock offset error at the observables level because it is required the
     //decoding of the ephemeris data and solve the PVT equations)
 
-    //find the reference satellite and compute the receiver time offset at obsevable level
+    //Find the reference satellite (the nearest) and compute the receiver time offset at observable level
     arma::vec receiver_time_offset_s;
-    if (measuded_ch0_Pseudorange_m(0) < measuded_ch1_Pseudorange_m(0))
+    if (measured_ch0(0, 4) < measured_ch1(0, 4))
         {
-            receiver_time_offset_s = true_ch0_dist_m / GPS_C_m_s - GPS_STARTOFFSET_ms / 1000.0;
+            receiver_time_offset_s = true_ch0.col(1) / GPS_C_m_s - GPS_STARTOFFSET_ms / 1000.0;
         }
     else
         {
-            receiver_time_offset_s = true_ch1_dist_m / GPS_C_m_s - GPS_STARTOFFSET_ms / 1000.0;
+            receiver_time_offset_s = true_ch1.col(1) / GPS_C_m_s - GPS_STARTOFFSET_ms / 1000.0;
         }
-    arma::vec corrected_reference_TOW_s = true_ch0_tow_s - receiver_time_offset_s;
+    arma::vec corrected_reference_TOW_s = true_ch0.col(0) - receiver_time_offset_s;
+    std::cout << "Receiver time offset: " << receiver_time_offset_s(0) * 1e3 << " [ms]" << std::endl;
 
-    std::cout << " receiver_time_offset_s [0]: " << receiver_time_offset_s(0) << std::endl;
+    //Compare measured observables
+    check_results_code_psudorange(true_ch0, true_ch1, corrected_reference_TOW_s, measured_ch0, measured_ch1);
+    check_results_carrier_phase(true_ch0, true_ch1, corrected_reference_TOW_s, measured_ch0, measured_ch1);
 
-    //compare measured observables
-    check_results_code_psudorange(true_ch0_dist_m, true_ch1_dist_m, corrected_reference_TOW_s,
-        measuded_ch0_Pseudorange_m, measuded_ch1_Pseudorange_m, measuded_ch0_RX_time_s);
-
-    check_results_carrier_phase(true_ch0_acc_carrier_phase_cycles,
-        true_ch1_acc_carrier_phase_cycles,
-        corrected_reference_TOW_s,
-        measuded_ch0_Acc_carrier_phase_hz,
-        measuded_ch1_Acc_carrier_phase_hz,
-        measuded_ch0_RX_time_s);
-
-    std::cout << "Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+    std::cout << "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;
 }

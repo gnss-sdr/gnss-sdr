@@ -40,6 +40,7 @@
 #include "configuration_interface.h"
 #include "Galileo_E5a.h"
 #include "gnss_sdr_flags.h"
+#include "display.h"
 #include <glog/logging.h>
 
 using google::LogMessage;
@@ -50,55 +51,67 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
-    int fs_in;
-    int vector_length;
-    int f_if;
-    bool dump;
-    std::string dump_filename;
-    std::string item_type;
     std::string default_item_type = "gr_complex";
-    float pll_bw_hz;
-    float dll_bw_hz;
-    float pll_bw_narrow_hz;
-    float dll_bw_narrow_hz;
-    int ti_ms;
-    float early_late_space_chips;
-    item_type = configuration->property(role + ".item_type", default_item_type);
-    //vector_length = configuration->property(role + ".vector_length", 2048);
+    std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 12000000);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
-    dump = configuration->property(role + ".dump", false);
-    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 20.0);
+    int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    bool dump = configuration->property(role + ".dump", false);
+    unified_ = configuration->property(role + ".unified", false);
+    float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 20.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 20.0);
+    float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 20.0);
     if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
-    pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 5.0);
-    dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
-    ti_ms = configuration->property(role + ".ti_ms", 3);
-
-    early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
+    float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 5.0);
+    float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
+    int ti_ms = configuration->property(role + ".ti_ms", 3);
+    float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename",
-        default_dump_filename);  //unused!
-    vector_length = std::round(fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
-
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    int vector_length = std::round(fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
+    int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
+    float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);
+    bool track_pilot = configuration->property(role + ".track_pilot", false);
+    if (extend_correlation_symbols < 1)
+        {
+            extend_correlation_symbols = 1;
+            std::cout << TEXT_RED << "WARNING: Galileo E5a. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
+        }
+    else if (!track_pilot and extend_correlation_symbols > Galileo_E5a_I_SECONDARY_CODE_LENGTH)
+        {
+            extend_correlation_symbols = Galileo_E5a_I_SECONDARY_CODE_LENGTH;
+            std::cout << TEXT_RED << "WARNING: Galileo E5a. extend_correlation_symbols must be lower than 21 when tracking the data component. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << std::endl;
+        }
+    if ((extend_correlation_symbols > 1) and (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz))
+        {
+            std::cout << TEXT_RED << "WARNING: Galileo E5a. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
+        }
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = galileo_e5a_dll_pll_make_tracking_cc(
-                f_if,
-                fs_in,
-                vector_length,
-                dump,
-                dump_filename,
-                pll_bw_hz,
-                dll_bw_hz,
-                pll_bw_narrow_hz,
-                dll_bw_narrow_hz,
-                ti_ms,
-                early_late_space_chips);
+            if (unified_)
+                {
+                    char sig_[3] = "5X";
+                    item_size_ = sizeof(gr_complex);
+                    tracking_unified_ = dll_pll_veml_make_tracking(
+                        fs_in, vector_length, dump, dump_filename,
+                        pll_bw_hz, dll_bw_hz,
+                        pll_bw_narrow_hz, dll_bw_narrow_hz,
+                        early_late_space_chips,
+                        early_late_space_chips,
+                        early_late_space_narrow_chips,
+                        early_late_space_narrow_chips,
+                        extend_correlation_symbols,
+                        track_pilot, 'E', sig_);
+                }
+            else
+                {
+                    tracking_ = galileo_e5a_dll_pll_make_tracking_cc(
+                        0, fs_in, vector_length, dump, dump_filename,
+                        pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz,
+                        dll_bw_narrow_hz, ti_ms,
+                        early_late_space_chips);
+                }
         }
     else
         {
@@ -117,7 +130,10 @@ GalileoE5aDllPllTracking::~GalileoE5aDllPllTracking()
 
 void GalileoE5aDllPllTracking::start_tracking()
 {
-    tracking_->start_tracking();
+    if (unified_)
+        tracking_unified_->start_tracking();
+    else
+        tracking_->start_tracking();
 }
 
 /*
@@ -126,13 +142,19 @@ void GalileoE5aDllPllTracking::start_tracking()
 void GalileoE5aDllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    tracking_->set_channel(channel);
+    if (unified_)
+        tracking_unified_->set_channel(channel);
+    else
+        tracking_->set_channel(channel);
 }
 
 
 void GalileoE5aDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    tracking_->set_gnss_synchro(p_gnss_synchro);
+    if (unified_)
+        tracking_unified_->set_gnss_synchro(p_gnss_synchro);
+    else
+        tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
 void GalileoE5aDllPllTracking::connect(gr::top_block_sptr top_block)
@@ -153,10 +175,16 @@ void GalileoE5aDllPllTracking::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GalileoE5aDllPllTracking::get_left_block()
 {
-    return tracking_;
+    if (unified_)
+        return tracking_unified_;
+    else
+        return tracking_;
 }
 
 gr::basic_block_sptr GalileoE5aDllPllTracking::get_right_block()
 {
-    return tracking_;
+    if (unified_)
+        return tracking_unified_;
+    else
+        return tracking_;
 }

@@ -39,6 +39,7 @@
 #include "configuration_interface.h"
 #include "GPS_L5.h"
 #include "gnss_sdr_flags.h"
+#include "display.h"
 #include <glog/logging.h>
 
 
@@ -50,44 +51,65 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
-    int fs_in;
-    int vector_length;
-    int f_if;
-    bool dump;
-    std::string dump_filename;
-    std::string item_type;
     std::string default_item_type = "gr_complex";
-    float pll_bw_hz;
-    float dll_bw_hz;
-    float early_late_space_chips;
-    item_type = configuration->property(role + ".item_type", default_item_type);
+    std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
-    dump = configuration->property(role + ".dump", false);
-    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
+    int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    bool dump = configuration->property(role + ".dump", false);
+    unified_ = configuration->property(role + ".unified", false);
+    float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
-    early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
+    float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 2.0);
+    float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 0.25);
+    float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename",
-        default_dump_filename);  //unused!
-    vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5i_CODE_RATE_HZ) / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS)));
-
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5i_CODE_RATE_HZ) / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS)));
+    int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
+    float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);
+    bool track_pilot = configuration->property(role + ".track_pilot", false);
+    if (extend_correlation_symbols < 1)
+        {
+            extend_correlation_symbols = 1;
+            std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
+        }
+    else if (!track_pilot and extend_correlation_symbols > GPS_L5i_NH_CODE_LENGTH)
+        {
+            extend_correlation_symbols = GPS_L5i_NH_CODE_LENGTH;
+            std::cout << TEXT_RED << "WARNING: GPS L5. extend_correlation_symbols must be lower than 11 when tracking the data component. Coherent integration has been set to 10 symbols (10 ms)" << TEXT_RESET << std::endl;
+        }
+    if ((extend_correlation_symbols > 1) and (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz))
+        {
+            std::cout << TEXT_RED << "WARNING: GPS L5. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
+        }
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = gps_l5i_dll_pll_make_tracking_cc(
-                f_if,
-                fs_in,
-                vector_length,
-                dump,
-                dump_filename,
-                pll_bw_hz,
-                dll_bw_hz,
-                early_late_space_chips);
+            if (unified_)
+                {
+                    char sig_[3] = "L5";
+                    item_size_ = sizeof(gr_complex);
+                    tracking_unified_ = dll_pll_veml_make_tracking(
+                        fs_in, vector_length, dump, dump_filename,
+                        pll_bw_hz, dll_bw_hz,
+                        pll_bw_narrow_hz, dll_bw_narrow_hz,
+                        early_late_space_chips,
+                        early_late_space_chips,
+                        early_late_space_narrow_chips,
+                        early_late_space_narrow_chips,
+                        extend_correlation_symbols,
+                        track_pilot, 'G', sig_);
+                }
+            else
+                {
+                    tracking_ = gps_l5i_dll_pll_make_tracking_cc(
+                        0, fs_in, vector_length, dump,
+                        dump_filename, pll_bw_hz, dll_bw_hz,
+                        early_late_space_chips);
+                }
         }
     else
         {
@@ -106,7 +128,10 @@ GpsL5iDllPllTracking::~GpsL5iDllPllTracking()
 
 void GpsL5iDllPllTracking::start_tracking()
 {
-    tracking_->start_tracking();
+    if (unified_)
+        tracking_unified_->start_tracking();
+    else
+        tracking_->start_tracking();
 }
 
 /*
@@ -115,13 +140,19 @@ void GpsL5iDllPllTracking::start_tracking()
 void GpsL5iDllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    tracking_->set_channel(channel);
+    if (unified_)
+        tracking_unified_->set_channel(channel);
+    else
+        tracking_->set_channel(channel);
 }
 
 
 void GpsL5iDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    tracking_->set_gnss_synchro(p_gnss_synchro);
+    if (unified_)
+        tracking_unified_->set_gnss_synchro(p_gnss_synchro);
+    else
+        tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
 void GpsL5iDllPllTracking::connect(gr::top_block_sptr top_block)
@@ -142,10 +173,16 @@ void GpsL5iDllPllTracking::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL5iDllPllTracking::get_left_block()
 {
-    return tracking_;
+    if (unified_)
+        return tracking_unified_;
+    else
+        return tracking_;
 }
 
 gr::basic_block_sptr GpsL5iDllPllTracking::get_right_block()
 {
-    return tracking_;
+    if (unified_)
+        return tracking_unified_;
+    else
+        return tracking_;
 }

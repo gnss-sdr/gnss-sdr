@@ -168,6 +168,7 @@ debian10:
     - make -j$(($NPROC+1))
     - make check
     - make install
+  allow_failure: true
 
 
 fedora26:

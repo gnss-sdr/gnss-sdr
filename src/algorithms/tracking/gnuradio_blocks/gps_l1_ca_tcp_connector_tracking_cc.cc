@@ -298,7 +298,6 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
 {
     // process vars
     float carr_error = 0.0;
-    float carr_nco = 0.0;
     float code_error = 0.0;
     float code_nco = 0.0;
 

@@ -34,15 +34,22 @@
 #include <gnuradio/io_signature.h>
 
 gnss_sdr_sample_counter::gnss_sdr_sample_counter(double _fs) : gr::sync_decimator("sample_counter",
-                gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                static_cast<unsigned int>(floor(_fs * 0.001)))
+                                                                   gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                                                                   gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                                                                   static_cast<unsigned int>(floor(_fs * 0.001)))
 {
     message_port_register_out(pmt::mp("sample_counter"));
     set_max_noutput_items(1);
     current_T_rx_ms = 0;
-    report_interval_ms = 1000;//default reporting 1 second
-    flag_enable_send_msg = false; //enable it for reporting time with asynchronous message
+    current_s = 0;
+    current_m = 0;
+    current_h = 0;
+    current_days = 0;
+    report_interval_ms = 1000;     //default reporting 1 second
+    flag_enable_send_msg = false;  //enable it for reporting time with asynchronous message
+    flag_m = false;
+    flag_h = false;
+    flag_days = false;
 }
 
 
@@ -54,19 +61,55 @@ gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs)
 
 
 int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
-                            gr_vector_const_void_star &input_items __attribute__((unused)),
-                            gr_vector_void_star &output_items)
+    gr_vector_const_void_star &input_items __attribute__((unused)),
+    gr_vector_void_star &output_items)
 {
-    Gnss_Synchro* out = reinterpret_cast<Gnss_Synchro*>(output_items[0]);
+    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);
     out[0] = Gnss_Synchro();
     if ((current_T_rx_ms % report_interval_ms) == 0)
-    {
-        std::cout << "Current receiver time: " << static_cast<double>(current_T_rx_ms) / 1000.0 << " [s]" << std::endl;
-        if(flag_enable_send_msg)
         {
-            message_port_pub(pmt::mp("receiver_time"), pmt::from_double(static_cast<double>(current_T_rx_ms) / 1000.0));
+            current_s++;
+            if ((current_s % 60) == 0)
+                {
+                    current_s = 0;
+                    current_m++;
+                    flag_m = true;
+                    if ((current_m % 60) == 0)
+                        {
+                            current_m = 0;
+                            current_h++;
+                            flag_h = true;
+                            if ((current_h % 24) == 0)
+                                {
+                                    current_h = 0;
+                                    current_days++;
+                                    flag_days = true;
+                                }
+                        }
+                }
+
+            if (flag_days)
+                {
+                    std::cout << "Current receiver time: " << current_days << " [days] " << current_h << " [h] " << current_m << " [min] " << current_s << " [s]" << std::endl;
+                }
+            else if (flag_h)
+                {
+                    std::cout << "Current receiver time: " << current_h << " [h] " << current_m << " [min] " << current_s << " [s]" << std::endl;
+                }
+            else if (flag_m)
+                {
+                    std::cout << "Current receiver time: " << current_m << " [min] " << current_s << " [s]" << std::endl;
+                }
+            else
+                {
+                    std::cout << "Current receiver time: " << current_s << " [s]" << std::endl;
+                }
+
+            if (flag_enable_send_msg)
+                {
+                    message_port_pub(pmt::mp("receiver_time"), pmt::from_double(static_cast<double>(current_T_rx_ms) / 1000.0));
+                }
         }
-    }
     current_T_rx_ms++;
     return 1;
 }

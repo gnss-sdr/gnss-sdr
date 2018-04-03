@@ -90,29 +90,19 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
-            if (unified_)
-                {
-                    char sig_[3] = "1C";
-                    item_size_ = sizeof(gr_complex);
-                    tracking_unified_ = dll_pll_veml_make_tracking(
-                        fs_in, vector_length, dump,
-                        dump_filename, pll_bw_hz, dll_bw_hz,
-                        pll_bw_narrow_hz, dll_bw_narrow_hz,
-                        early_late_space_chips,
-                        early_late_space_chips,
-                        early_late_space_narrow_chips,
-                        early_late_space_narrow_chips,
-                        symbols_extended_correlator,
-                        false,
-                        'G', sig_);
-                }
-            else
-                {
-                    tracking_ = gps_l1_ca_dll_pll_make_tracking_cc(
-                        0, fs_in, vector_length, dump,
-                        dump_filename, pll_bw_hz, dll_bw_hz,
-                        early_late_space_chips);
-                }
+            char sig_[3] = "1C";
+            item_size_ = sizeof(gr_complex);
+            tracking_ = dll_pll_veml_make_tracking(
+                fs_in, vector_length, dump,
+                dump_filename, pll_bw_hz, dll_bw_hz,
+                pll_bw_narrow_hz, dll_bw_narrow_hz,
+                early_late_space_chips,
+                early_late_space_chips,
+                early_late_space_narrow_chips,
+                early_late_space_narrow_chips,
+                symbols_extended_correlator,
+                false,
+                'G', sig_);
         }
     else
         {

@@ -210,7 +210,7 @@ void updatesvr(rtksvr_t *svr, int ret, obs_t *obs, nav_t *nav, int sat,
             svr->nmsg[index][2]++;
         }
     else if (ret == 5)
-        { /* antenna postion parameters */
+        { /* antenna position parameters */
             if (svr->rtk.opt.refpos == 4 && index == 1)
                 {
                     for (i = 0; i < 3; i++)

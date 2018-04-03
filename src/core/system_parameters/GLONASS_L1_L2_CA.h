@@ -1,6 +1,7 @@
 /*!
- * \file GLONASS_L1_CA.h
+ * \file GLONASS_L1_L2_CA.h
  * \brief  Defines system parameters for GLONASS L1 C/A signal and NAV data
+ * \note File renamed from GLONASS_L1_CA.h to GLONASS_L1_L2_CA.h to accommodate GLO L2 addition
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
  *
  * -------------------------------------------------------------------------
@@ -29,8 +30,8 @@
  */
 
 
-#ifndef GNSS_SDR_GLONASS_L1_CA_H_
-#define GNSS_SDR_GLONASS_L1_CA_H_
+#ifndef GNSS_SDR_GLONASS_L1_L2_CA_H_
+#define GNSS_SDR_GLONASS_L1_L2_CA_H_
 
 #include "gnss_frequencies.h"
 #include "MATH_CONSTANTS.h"
@@ -79,8 +80,13 @@ const double GLONASS_SUN_GM = 0.1325263e12;            //!< Solar gravitational 
 const double GLONASS_SUN_SEMI_MAJOR_AXIS = 1.49598e8;  //!< Semi-major axis of solar orbit [km];
 const double GLONASS_SUN_ECCENTRICITY = 0.016719;      //!< Eccentricity of solar orbit
 
-// carrier and code frequencies
-const double GLONASS_L2_FREQ_HZ = FREQ2_GLO;  //!< L1 [Hz]
+const double GLONASS_L2_CA_FREQ_HZ = FREQ2_GLO;        //!< L2 [Hz]
+const double GLONASS_L2_CA_DFREQ_HZ = DFRQ2_GLO;       //!< Freq Bias for GLONASS L1 [Hz]
+const double GLONASS_L2_CA_CODE_RATE_HZ = 0.511e6;     //!< GLONASS L1 C/A code rate [chips/s]
+const double GLONASS_L2_CA_CODE_LENGTH_CHIPS = 511.0;  //!< GLONASS L1 C/A code length [chips]
+const double GLONASS_L2_CA_CODE_PERIOD = 0.001;        //!< GLONASS L1 C/A code period [seconds]
+const double GLONASS_L2_CA_CHIP_PERIOD = 1.9569e-06;   //!< GLONASS L1 C/A chip period [seconds]
+const double GLONASS_L2_CA_SYMBOL_RATE_BPS = 1000;
 
 const double GLONASS_L1_CA_FREQ_HZ = FREQ1_GLO;        //!< L1 [Hz]
 const double GLONASS_L1_CA_DFREQ_HZ = DFRQ1_GLO;       //!< Freq Bias for GLONASS L1 [Hz]
@@ -89,7 +95,8 @@ const double GLONASS_L1_CA_CODE_LENGTH_CHIPS = 511.0;  //!< GLONASS L1 C/A code 
 const double GLONASS_L1_CA_CODE_PERIOD = 0.001;        //!< GLONASS L1 C/A code period [seconds]
 const double GLONASS_L1_CA_CHIP_PERIOD = 1.9569e-06;   //!< GLONASS L1 C/A chip period [seconds]
 const double GLONASS_L1_CA_SYMBOL_RATE_BPS = 1000;
-const int GLONASS_L1_CA_NBR_SATS = 24;  // STRING DATA WITHOUT PREAMBLE
+
+const int GLONASS_CA_NBR_SATS = 24;  // STRING DATA WITHOUT PREAMBLE
 
 /*!
  * \brief Record of leap seconds definition for GLOT to GPST conversion and vice versa
@@ -320,4 +327,4 @@ const std::vector<std::pair<int, int>> B1({{6, 11}});
 const std::vector<std::pair<int, int>> B2({{17, 10}});
 
 
-#endif /* GNSS_SDR_GLONASS_L1_CA_H_ */
+#endif /* GNSS_SDR_GLONASS_L1_L2_CA_H_ */

@@ -320,7 +320,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                     d_stat = 1;  // enter into frame pre-detection status
                 }
         }
-    else if (d_stat == 1)  // posible preamble lock
+    else if (d_stat == 1)  // possible preamble lock
         {
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {

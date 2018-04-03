@@ -859,7 +859,7 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
             opt_.ionoopt = IONOOPT_BRDC;
             opt_.tropopt = TROPOPT_SAAS;
         }
-    /* satellite positons, velocities and clocks */
+    /* satellite positions, velocities and clocks */
     satposs(sol->time, obs, n, nav, opt_.sateph, rs, dts, var, svh);
 
     /* estimate receiver position with pseudorange */

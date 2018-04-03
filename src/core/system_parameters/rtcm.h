@@ -50,6 +50,7 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <glog/logging.h>
 
 
 /*!
@@ -688,7 +689,7 @@ private:
                         }
                     else
                         {
-                            std::cout << "Closing connection with client from " << socket_.remote_endpoint().address() << std::endl;
+                            std::cout << "Closing connection with RTCM client" << std::endl;
                             room_.leave(shared_from_this());
                         }
                 });
@@ -710,7 +711,7 @@ private:
                         }
                     else
                         {
-                            std::cout << "Closing connection with client from " << socket_.remote_endpoint().address() << std::endl;
+                            std::cout << "Closing connection with RTCM client" << std::endl;
                             room_.leave(shared_from_this());
                         }
                 });
@@ -732,7 +733,7 @@ private:
                         }
                     else
                         {
-                            std::cout << "Closing connection with client from " << socket_.remote_endpoint().address() << std::endl;
+                            std::cout << "Closing connection with RTCM client" << std::endl;
                             room_.leave(shared_from_this());
                         }
                 });
@@ -903,6 +904,7 @@ private:
                             {
                                 std::cout << "Starting RTCM TCP server session..." << std::endl;
                                 std::cout << "Serving client from " << socket_.remote_endpoint().address() << std::endl;
+                                LOG(INFO) << "Serving client from " << socket_.remote_endpoint().address();
                             }
                         std::make_shared<Rtcm_Session>(std::move(socket_), room_)->start();
                     }

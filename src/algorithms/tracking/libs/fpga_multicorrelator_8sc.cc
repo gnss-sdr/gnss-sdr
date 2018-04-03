@@ -136,7 +136,7 @@ bool fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
     nb = read(d_device_descriptor, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
-            printf("Tracking_module Read failed to retrive 4 bytes!\n");
+            printf("Tracking_module Read failed to retrieve 4 bytes!\n");
             printf("Tracking_module Interrupt number %d\n", irq_count);
         }
 

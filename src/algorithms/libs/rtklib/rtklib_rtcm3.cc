@@ -1056,7 +1056,7 @@ int decode_type1021(rtcm_t *rtcm __attribute__((unused)))
 }
 
 
-/* decode type 1022: moledenski-badekas transfromation -----------------------*/
+/* decode type 1022: moledenski-badekas transformation -----------------------*/
 int decode_type1022(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1022: not supported message\n");
@@ -2699,7 +2699,7 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
             /* signal to rinex obs type */
             code[i] = obs2code(sig[i], freq + i);
 
-            /* freqency index for beidou */
+            /* frequency index for beidou */
             if (sys == SYS_BDS)
                 {
                     if (freq[i] == 5)

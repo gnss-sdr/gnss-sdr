@@ -1,6 +1,6 @@
 /*!
  * \file notch_filter_lite.h
- * \brief Adapts a ligth version of a multistate notch filter
+ * \brief Adapts a light version of a multistate notch filter
  * \author Antonio Ramos, 2017. antonio.ramosdet(at)gmail.com
  *
  * Detailed description of the file here if needed.

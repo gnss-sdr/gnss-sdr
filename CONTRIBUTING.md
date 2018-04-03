@@ -67,7 +67,7 @@ GitHub](https://github.com/join).
 GitHub](https://github.com/gnss-sdr/gnss-sdr/fork). This will copy the
 whole gnss-sdr repository to your personal account.
 
-   3. Then, go to your favourite working folder in your computer and
+   3. Then, go to your favorite working folder in your computer and
 clone your forked repository by typing (replacing ```YOUR_USERNAME``` by
 the actual username of your GitHub account):
 
@@ -128,7 +128,7 @@ $ git pull --rebase upstream next
 
 ### How to submit a pull request
 
-Before submitting you code, please be sure to [apply clang-format](http://gnss-sdr.org/coding-style/#use-tools-for-automated-code-formatting).
+Before submitting your code, please be sure to [apply clang-format](http://gnss-sdr.org/coding-style/#use-tools-for-automated-code-formatting).
 
 When the contribution is ready, you can [submit a pull
 request](https://github.com/gnss-sdr/gnss-sdr/compare/). Head to your

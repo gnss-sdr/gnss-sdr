@@ -56,7 +56,6 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     bool dump = configuration->property(role + ".dump", false);
-    unified_ = configuration->property(role + ".unified", false);
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 20.0);
@@ -132,10 +131,7 @@ GpsL1CaDllPllTracking::~GpsL1CaDllPllTracking()
 
 void GpsL1CaDllPllTracking::start_tracking()
 {
-    if (unified_)
-        tracking_unified_->start_tracking();
-    else
-        tracking_->start_tracking();
+    tracking_->start_tracking();
 }
 
 
@@ -145,19 +141,13 @@ void GpsL1CaDllPllTracking::start_tracking()
 void GpsL1CaDllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    if (unified_)
-        tracking_unified_->set_channel(channel);
-    else
-        tracking_->set_channel(channel);
+    tracking_->set_channel(channel);
 }
 
 
 void GpsL1CaDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    if (unified_)
-        tracking_unified_->set_gnss_synchro(p_gnss_synchro);
-    else
-        tracking_->set_gnss_synchro(p_gnss_synchro);
+    tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
 
@@ -181,17 +171,11 @@ void GpsL1CaDllPllTracking::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL1CaDllPllTracking::get_left_block()
 {
-    if (unified_)
-        return tracking_unified_;
-    else
-        return tracking_;
+    return tracking_;
 }
 
 
 gr::basic_block_sptr GpsL1CaDllPllTracking::get_right_block()
 {
-    if (unified_)
-        return tracking_unified_;
-    else
-        return tracking_;
+    return tracking_;
 }

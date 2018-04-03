@@ -34,13 +34,13 @@
 #define GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_CC_H
 
 
-#include "GLONASS_L1_CA.h"
 #include "glonass_gnav_navigation_message.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
+#include "GLONASS_L1_L2_CA.h"
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>

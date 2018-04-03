@@ -109,7 +109,7 @@ public:
         return running_;
     }
     /*!
-     * \brief Sends a GNURadio asyncronous message from telemetry to PVT
+     * \brief Sends a GNURadio asynchronous message from telemetry to PVT
      *
      * It is used to assist the receiver with external ephemeris data
      */

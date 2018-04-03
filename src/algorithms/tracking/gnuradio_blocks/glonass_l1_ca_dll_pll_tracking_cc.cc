@@ -38,9 +38,9 @@
 
 #include "glonass_l1_ca_dll_pll_tracking_cc.h"
 #include "glonass_l1_signal_processing.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
-#include "GLONASS_L1_CA.h"
 #include "gnss_sdr_flags.h"
 #include "control_message_factory.h"
 #include <boost/lexical_cast.hpp>
@@ -54,6 +54,7 @@
 #include <sstream>
 
 
+#define CN0_ESTIMATION_SAMPLES 10
 using google::LogMessage;
 
 glonass_l1_ca_dll_pll_tracking_cc_sptr
@@ -584,7 +585,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
             double code_error_filt_secs = (T_prn_seconds * code_error_filt_chips * T_chip_seconds);  //[seconds]
             //double code_error_filt_secs = (GPS_L1_CA_CODE_PERIOD * code_error_filt_chips) / GLONASS_L1_CA_CODE_RATE_HZ; // [seconds]
 
-            // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+            // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
             // keep alignment parameters for the next input buffer
             // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
             //double T_chip_seconds =  1.0 / static_cast<double>(d_code_freq_chips);
@@ -611,7 +612,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
             d_rem_code_phase_chips = d_code_freq_chips * (d_rem_code_phase_samples / static_cast<double>(d_fs_in));
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < FLAGS_cn0_samples)
+            if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = d_correlator_outs[1];  //prompt
@@ -621,9 +622,9 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                 {
                     d_cn0_estimation_counter = 0;
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, d_fs_in, GLONASS_L1_CA_CODE_LENGTH_CHIPS);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GLONASS_L1_CA_CODE_LENGTH_CHIPS);
                     // Carrier lock indicator
-                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
                     // Loss of lock detection
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                         {
@@ -674,8 +675,9 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
             float prompt_I;
             float prompt_Q;
             float tmp_E, tmp_P, tmp_L;
-            double tmp_double;
-            unsigned long int tmp_long;
+            float tmp_float;
+            float tmp_VE = 0.0;
+            float tmp_VL = 0.0;
             prompt_I = d_correlator_outs[1].real();
             prompt_Q = d_correlator_outs[1].imag();
             tmp_E = std::abs<float>(d_correlator_outs[0]);
@@ -683,41 +685,45 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
             tmp_L = std::abs<float>(d_correlator_outs[2]);
             try
                 {
-                    // EPR
+                    // Dump correlators output
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_VE), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_E), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_P), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_L), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_VL), sizeof(float));
                     // PROMPT I and Q (to analyze navigation symbols)
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    tmp_long = d_sample_counter + d_current_prn_length_samples;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_long), sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(unsigned long int));
                     // accumulated carrier phase
-                    d_dump_file.write(reinterpret_cast<char *>(&d_acc_carrier_phase_rad), sizeof(double));
-
+                    tmp_float = d_acc_carrier_phase_rad;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // carrier and code frequency
-                    d_dump_file.write(reinterpret_cast<char *>(&d_carrier_frequency_hz), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char *>(&d_code_freq_chips), sizeof(double));
-
+                    tmp_float = d_carrier_doppler_hz;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = d_code_freq_chips;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
-                    d_dump_file.write(reinterpret_cast<char *>(&carr_error_hz), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char *>(&carr_error_filt_hz), sizeof(double));
-
+                    tmp_float = carr_error_hz;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = carr_error_filt_hz;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // DLL commands
-                    d_dump_file.write(reinterpret_cast<char *>(&code_error_chips), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char *>(&code_error_filt_chips), sizeof(double));
-
+                    tmp_float = code_error_chips;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = code_error_filt_chips;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // CN0 and carrier lock test
-                    d_dump_file.write(reinterpret_cast<char *>(&d_CN0_SNV_dB_Hz), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char *>(&d_carrier_lock_test), sizeof(double));
-
+                    tmp_float = d_CN0_SNV_dB_Hz;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = d_carrier_lock_test;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // AUX vars (for debug purposes)
-                    tmp_double = d_rem_code_phase_samples;
+                    tmp_float = d_rem_code_phase_samples;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    double tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_double = static_cast<double>(d_sample_counter);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-
                     // PRN
                     unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(unsigned int));

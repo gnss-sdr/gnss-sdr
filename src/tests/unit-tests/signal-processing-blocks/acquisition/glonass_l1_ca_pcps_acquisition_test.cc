@@ -199,7 +199,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
 
     double expected_delay_samples = 31874;
-    double expected_doppler_hz = -8000;
+    double expected_doppler_hz = -9500;
     init();
     std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 1);
 

@@ -32,7 +32,7 @@
 #include <string>    // for string
 #include <vector>    // for vector
 
-class volk_test_results_t;
+class volk_gnsssdr_test_results_t;
 
 
 void read_results(std::vector<volk_gnsssdr_test_results_t> *results);

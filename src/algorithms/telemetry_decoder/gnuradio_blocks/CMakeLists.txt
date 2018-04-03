@@ -24,6 +24,7 @@ set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
      sbas_l1_telemetry_decoder_cc.cc
      galileo_e5a_telemetry_decoder_cc.cc
      glonass_l1_ca_telemetry_decoder_cc.cc
+     glonass_l2_ca_telemetry_decoder_cc.cc
 )
 
 include_directories(

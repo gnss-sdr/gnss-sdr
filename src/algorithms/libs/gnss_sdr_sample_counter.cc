@@ -36,10 +36,10 @@
 #include <iostream>
 #include <string>
 
-gnss_sdr_sample_counter::gnss_sdr_sample_counter(double _fs) : gr::sync_decimator("sample_counter",
-                                                                   gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                                                   gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                                                   static_cast<unsigned int>(std::floor(_fs * 0.001)))
+gnss_sdr_sample_counter::gnss_sdr_sample_counter(double _fs, size_t _size) : gr::sync_decimator("sample_counter",
+                                                                                 gr::io_signature::make(1, 1, _size),
+                                                                                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                                                                                 static_cast<unsigned int>(std::floor(_fs * 0.001)))
 {
     message_port_register_out(pmt::mp("sample_counter"));
     set_max_noutput_items(1);
@@ -56,9 +56,9 @@ gnss_sdr_sample_counter::gnss_sdr_sample_counter(double _fs) : gr::sync_decimato
 }
 
 
-gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs)
+gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, size_t _size)
 {
-    gnss_sdr_sample_counter_sptr sample_counter_(new gnss_sdr_sample_counter(_fs));
+    gnss_sdr_sample_counter_sptr sample_counter_(new gnss_sdr_sample_counter(_fs, _size));
     return sample_counter_;
 }
 

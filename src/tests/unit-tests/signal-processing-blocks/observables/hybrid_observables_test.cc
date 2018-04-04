@@ -567,7 +567,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
         gr::blocks::null_sink::sptr sink_ch0 = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
         gr::blocks::null_sink::sptr sink_ch1 = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
-        gnss_sdr_sample_counter_sptr samp_counter = gnss_sdr_make_sample_counter(static_cast<double>(baseband_sampling_freq));
+        gnss_sdr_sample_counter_sptr samp_counter = gnss_sdr_make_sample_counter(static_cast<double>(baseband_sampling_freq), sizeof(gr_complex));
         top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
         top_block->connect(gr_interleaved_char_to_complex, 0, samp_counter, 0);
 

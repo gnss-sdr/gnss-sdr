@@ -88,11 +88,13 @@ pcps_acquisition::pcps_acquisition(
     d_mag = 0;
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
+    d_num_doppler_bins_step_two = 4;
     d_bit_transition_flag = bit_transition_flag;
     d_use_CFAR_algorithm_flag = use_CFAR_algorithm_flag;
     d_threshold = 0.0;
     d_doppler_step = 0;
-    d_code_phase = 0;
+    d_doppler_step_two = 0.0;
+    d_doppler_center_step_two = 0.0;
     d_test_statistics = 0.0;
     d_channel = 0;
     if (it_size == sizeof(gr_complex))
@@ -133,7 +135,8 @@ pcps_acquisition::pcps_acquisition(
     d_dump = dump;
     d_dump_filename = dump_filename;
     d_gnss_synchro = 0;
-    d_grid_doppler_wipeoffs = 0;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_grid_doppler_wipeoffs_step_two = nullptr;
     d_blocking = blocking;
     d_worker_active = false;
     d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
@@ -146,6 +149,7 @@ pcps_acquisition::pcps_acquisition(
             d_data_buffer_sc = nullptr;
         }
     grid_ = arma::fmat();
+    d_step_two = false;
 }
 
 
@@ -158,6 +162,14 @@ pcps_acquisition::~pcps_acquisition()
                     volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
+        }
+    if (d_num_doppler_bins_step_two > 0)
+        {
+            for (unsigned int i = 0; i < d_num_doppler_bins_step_two; i++)
+                {
+                    volk_gnsssdr_free(d_grid_doppler_wipeoffs_step_two[i]);
+                }
+            delete[] d_grid_doppler_wipeoffs_step_two;
         }
     volk_gnsssdr_free(d_fft_codes);
     volk_gnsssdr_free(d_magnitude);
@@ -249,13 +261,18 @@ void pcps_acquisition::init()
 
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
-
+    d_grid_doppler_wipeoffs_step_two = new gr_complex*[d_num_doppler_bins_step_two];
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_freq + doppler);
         }
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins_step_two; doppler_index++)
+        {
+            d_grid_doppler_wipeoffs_step_two[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+        }
+
     d_worker_active = false;
 
     if (d_dump)
@@ -270,12 +287,21 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
 {
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+            //CHECK IF CALLING MALLOC IS NEEDED!!!
+            //d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_freq + doppler);
         }
 }
 
+void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
+{
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins_step_two; doppler_index++)
+        {
+            float doppler = (static_cast<float>(doppler_index) - static_cast<float>(d_num_doppler_bins_step_two) / 2.0) * d_doppler_step_two;
+            update_local_carrier(d_grid_doppler_wipeoffs_step_two[doppler_index], d_fft_size, d_doppler_center_step_two + doppler);
+        }
+}
 
 void pcps_acquisition::set_state(int state)
 {
@@ -354,10 +380,17 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
      */
 
     gr::thread::scoped_lock lk(d_setlock);
-    if (!d_active || d_worker_active)
+    if (!d_active or d_worker_active)
         {
             d_sample_counter += d_fft_size * ninput_items[0];
             consume_each(ninput_items[0]);
+            if (d_step_two)
+                {
+                    d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+                    update_grid_doppler_wipeoffs_step2();
+                    d_state = 0;
+                    d_active = true;
+                }
             return 0;
         }
 
@@ -414,7 +447,6 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
     gr::thread::scoped_lock lk(d_setlock);
 
     // initialize acquisition algorithm
-    int doppler;
     uint32_t indext = 0;
     float magt = 0.0;
     const gr_complex* in = d_data_buffer;  //Get the input samples pointer
@@ -445,105 +477,172 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
             d_input_power /= static_cast<float>(d_fft_size);
         }
     // 2- Doppler frequency search loop
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    if (!d_step_two)
         {
-            // doppler search steps
-            doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-
-            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
-
-            // 3- Perform the FFT-based convolution  (parallel time search)
-            // Compute the FFT of the carrier wiped--off incoming signal
-            d_fft_if->execute();
-
-            // Multiply carrier wiped--off, Fourier transformed incoming signal
-            // with the local FFT'd code reference using SIMD operations with VOLK library
-            volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
-
-            // compute the inverse FFT
-            d_ifft->execute();
-
-            // Search maximum
-            size_t offset = (d_bit_transition_flag ? effective_fft_size : 0);
-            volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
-            volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude, effective_fft_size);
-            magt = d_magnitude[indext];
-
-            if (d_use_CFAR_algorithm_flag)
+            for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {
-                    // Normalize the maximum value to correct the scale factor introduced by FFTW
-                    magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
-                }
-            // 4- record the maximum peak and the associated synchronization parameters
-            if (d_mag < magt)
-                {
-                    d_mag = magt;
+                    // doppler search steps
+                    int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
-                    if (!d_use_CFAR_algorithm_flag)
+                    volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
+
+                    // 3- Perform the FFT-based convolution  (parallel time search)
+                    // Compute the FFT of the carrier wiped--off incoming signal
+                    d_fft_if->execute();
+
+                    // Multiply carrier wiped--off, Fourier transformed incoming signal
+                    // with the local FFT'd code reference using SIMD operations with VOLK library
+                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
+
+                    // compute the inverse FFT
+                    d_ifft->execute();
+
+                    // Search maximum
+                    size_t offset = (d_bit_transition_flag ? effective_fft_size : 0);
+                    volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
+                    volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude, effective_fft_size);
+                    magt = d_magnitude[indext];
+
+                    if (d_use_CFAR_algorithm_flag)
                         {
-                            // Search grid noise floor approximation for this doppler line
-                            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, effective_fft_size);
-                            d_input_power = (d_input_power - d_mag) / (effective_fft_size - 1);
+                            // Normalize the maximum value to correct the scale factor introduced by FFTW
+                            magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
                         }
-
-                    // In case that d_bit_transition_flag = true, we compare the potentially
-                    // new maximum test statistics (d_mag/d_input_power) with the value in
-                    // d_test_statistics. When the second dwell is being processed, the value
-                    // of d_mag/d_input_power could be lower than d_test_statistics (i.e,
-                    // the maximum test statistics in the previous dwell is greater than
-                    // current d_mag/d_input_power). Note that d_test_statistics is not
-                    // restarted between consecutive dwells in multidwell operation.
-
-                    if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
+                    // 4- record the maximum peak and the associated synchronization parameters
+                    if (d_mag < magt)
                         {
-                            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
-                            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-                            d_gnss_synchro->Acq_samplestamp_samples = samp_count;
+                            d_mag = magt;
 
-                            // 5- Compute the test statistics and compare to the threshold
-                            //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
-                            d_test_statistics = d_mag / d_input_power;
-                        }
-                }
-            // Record results to file if required
-            if (d_dump)
-                {
-                    memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
-                    if (doppler_index == (d_num_doppler_bins - 1))
-                        {
-                            std::string filename = d_dump_filename;
-                            filename.append("_");
-                            filename.append(1, d_gnss_synchro->System);
-                            filename.append("_");
-                            filename.append(1, d_gnss_synchro->Signal[0]);
-                            filename.append(1, d_gnss_synchro->Signal[1]);
-                            filename.append("_sat_");
-                            filename.append(std::to_string(d_gnss_synchro->PRN));
-                            filename.append(".mat");
-                            mat_t* matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-                            if (matfp == NULL)
+                            if (!d_use_CFAR_algorithm_flag)
                                 {
-                                    std::cout << "Unable to create or open Acquisition dump file" << std::endl;
-                                    d_dump = false;
+                                    // Search grid noise floor approximation for this doppler line
+                                    volk_32f_accumulator_s32f(&d_input_power, d_magnitude, effective_fft_size);
+                                    d_input_power = (d_input_power - d_mag) / (effective_fft_size - 1);
                                 }
-                            else
+
+                            // In case that d_bit_transition_flag = true, we compare the potentially
+                            // new maximum test statistics (d_mag/d_input_power) with the value in
+                            // d_test_statistics. When the second dwell is being processed, the value
+                            // of d_mag/d_input_power could be lower than d_test_statistics (i.e,
+                            // the maximum test statistics in the previous dwell is greater than
+                            // current d_mag/d_input_power). Note that d_test_statistics is not
+                            // restarted between consecutive dwells in multidwell operation.
+
+                            if (d_test_statistics < (d_mag / d_input_power) or !d_bit_transition_flag)
                                 {
-                                    size_t dims[2] = {static_cast<size_t>(effective_fft_size), static_cast<size_t>(d_num_doppler_bins)};
-                                    matvar_t* matvar = Mat_VarCreate("grid", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, grid_.memptr(), 0);
-                                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                                    Mat_VarFree(matvar);
+                                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                                    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
+                                    d_gnss_synchro->Acq_samplestamp_samples = samp_count;
 
-                                    dims[0] = static_cast<size_t>(1);
-                                    dims[1] = static_cast<size_t>(1);
-                                    matvar = Mat_VarCreate("doppler_max", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_max, 0);
-                                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                                    Mat_VarFree(matvar);
+                                    // 5- Compute the test statistics and compare to the threshold
+                                    //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+                                    d_test_statistics = d_mag / d_input_power;
+                                }
+                        }
+                    // Record results to file if required
+                    if (d_dump)
+                        {
+                            memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
+                            if (doppler_index == (d_num_doppler_bins - 1))
+                                {
+                                    std::string filename = d_dump_filename;
+                                    filename.append("_");
+                                    filename.append(1, d_gnss_synchro->System);
+                                    filename.append("_");
+                                    filename.append(1, d_gnss_synchro->Signal[0]);
+                                    filename.append(1, d_gnss_synchro->Signal[1]);
+                                    filename.append("_sat_");
+                                    filename.append(std::to_string(d_gnss_synchro->PRN));
+                                    filename.append(".mat");
+                                    mat_t* matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
+                                    if (matfp == NULL)
+                                        {
+                                            std::cout << "Unable to create or open Acquisition dump file" << std::endl;
+                                            d_dump = false;
+                                        }
+                                    else
+                                        {
+                                            size_t dims[2] = {static_cast<size_t>(effective_fft_size), static_cast<size_t>(d_num_doppler_bins)};
+                                            matvar_t* matvar = Mat_VarCreate("grid", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, grid_.memptr(), 0);
+                                            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                                            Mat_VarFree(matvar);
 
-                                    matvar = Mat_VarCreate("doppler_step", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
-                                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                                    Mat_VarFree(matvar);
+                                            dims[0] = static_cast<size_t>(1);
+                                            dims[1] = static_cast<size_t>(1);
+                                            matvar = Mat_VarCreate("doppler_max", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_max, 0);
+                                            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                                            Mat_VarFree(matvar);
 
-                                    Mat_Close(matfp);
+                                            matvar = Mat_VarCreate("doppler_step", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
+                                            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                                            Mat_VarFree(matvar);
+
+                                            Mat_Close(matfp);
+                                        }
+                                }
+                        }
+                }
+        }
+    else
+        {
+            for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins_step_two; doppler_index++)
+                {
+                    // doppler search steps
+                    float doppler = d_doppler_center_step_two + (static_cast<float>(doppler_index) - static_cast<float>(d_num_doppler_bins_step_two) / 2.0) * d_doppler_step_two;
+
+                    volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs_step_two[doppler_index], d_fft_size);
+
+                    // 3- Perform the FFT-based convolution  (parallel time search)
+                    // Compute the FFT of the carrier wiped--off incoming signal
+                    d_fft_if->execute();
+
+                    // Multiply carrier wiped--off, Fourier transformed incoming signal
+                    // with the local FFT'd code reference using SIMD operations with VOLK library
+                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
+
+                    // compute the inverse FFT
+                    d_ifft->execute();
+
+                    // Search maximum
+                    size_t offset = (d_bit_transition_flag ? effective_fft_size : 0);
+                    volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
+                    volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude, effective_fft_size);
+                    magt = d_magnitude[indext];
+
+                    if (d_use_CFAR_algorithm_flag)
+                        {
+                            // Normalize the maximum value to correct the scale factor introduced by FFTW
+                            magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
+                        }
+                    // 4- record the maximum peak and the associated synchronization parameters
+                    if (d_mag < magt)
+                        {
+                            d_mag = magt;
+
+                            if (!d_use_CFAR_algorithm_flag)
+                                {
+                                    // Search grid noise floor approximation for this doppler line
+                                    volk_32f_accumulator_s32f(&d_input_power, d_magnitude, effective_fft_size);
+                                    d_input_power = (d_input_power - d_mag) / (effective_fft_size - 1);
+                                }
+
+                            // In case that d_bit_transition_flag = true, we compare the potentially
+                            // new maximum test statistics (d_mag/d_input_power) with the value in
+                            // d_test_statistics. When the second dwell is being processed, the value
+                            // of d_mag/d_input_power could be lower than d_test_statistics (i.e,
+                            // the maximum test statistics in the previous dwell is greater than
+                            // current d_mag/d_input_power). Note that d_test_statistics is not
+                            // restarted between consecutive dwells in multidwell operation.
+
+                            if (d_test_statistics < (d_mag / d_input_power) or !d_bit_transition_flag)
+                                {
+                                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                                    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
+                                    d_gnss_synchro->Acq_samplestamp_samples = samp_count;
+
+                                    // 5- Compute the test statistics and compare to the threshold
+                                    //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+                                    d_test_statistics = d_mag / d_input_power;
                                 }
                         }
                 }
@@ -553,14 +652,24 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
         {
             if (d_test_statistics > d_threshold)
                 {
-                    d_state = 0;  // Positive acquisition
                     d_active = false;
-                    send_positive_acquisition();
+                    if (d_step_two)
+                        {
+                            send_positive_acquisition();
+                            d_step_two = false;
+                            d_state = 0;  // Positive acquisition
+                        }
+                    else
+                        {
+                            d_step_two = true;  // Clear input buffer and make small grid acquisition
+                            d_state = 0;
+                        }
                 }
             else if (d_well_count == d_max_dwells)
                 {
                     d_state = 0;
                     d_active = false;
+                    d_step_two = false;
                     send_negative_acquisition();
                 }
         }
@@ -568,16 +677,25 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
         {
             if (d_well_count == d_max_dwells)  // d_max_dwells = 2
                 {
+                    d_active = false;
                     if (d_test_statistics > d_threshold)
                         {
-                            d_state = 0;  // Positive acquisition
-                            d_active = false;
-                            send_positive_acquisition();
+                            if (d_step_two)
+                                {
+                                    send_positive_acquisition();
+                                    d_step_two = false;
+                                    d_state = 0;  // Positive acquisition
+                                }
+                            else
+                                {
+                                    d_step_two = true;  // Clear input buffer and make small grid acquisition
+                                    d_state = 0;
+                                }
                         }
                     else
                         {
                             d_state = 0;  // Negative acquisition
-                            d_active = false;
+                            d_step_two = false;
                             send_negative_acquisition();
                         }
                 }

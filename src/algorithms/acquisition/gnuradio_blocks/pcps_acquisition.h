@@ -98,6 +98,7 @@ private:
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
     void update_grid_doppler_wipeoffs();
+    void update_grid_doppler_wipeoffs_step2();
     bool is_fdma();
 
     void acquisition_core(unsigned long int samp_count);
@@ -113,6 +114,7 @@ private:
     bool d_worker_active;
     bool d_blocking;
     bool d_cshort;
+    bool d_step_two;
     float d_threshold;
     float d_mag;
     float d_input_power;
@@ -127,14 +129,17 @@ private:
     unsigned int d_channel;
     unsigned int d_doppler_max;
     unsigned int d_doppler_step;
+    float d_doppler_step_two;
+    float d_doppler_center_step_two;
     unsigned int d_sampled_ms;
     unsigned int d_max_dwells;
     unsigned int d_well_count;
     unsigned int d_fft_size;
     unsigned int d_num_doppler_bins;
-    unsigned int d_code_phase;
+    unsigned int d_num_doppler_bins_step_two;
     unsigned long int d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
+    gr_complex** d_grid_doppler_wipeoffs_step_two;
     gr_complex* d_fft_codes;
     gr_complex* d_data_buffer;
     lv_16sc_t* d_data_buffer_sc;
@@ -234,6 +239,7 @@ public:
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_doppler_step = doppler_step;
+        d_doppler_step_two = static_cast<float>(d_doppler_step) / 2.0;
     }
 
     /*!

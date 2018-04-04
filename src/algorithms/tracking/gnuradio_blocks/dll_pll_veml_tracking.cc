@@ -430,6 +430,7 @@ void dll_pll_veml_tracking::start_tracking()
 
     long int acq_trk_diff_samples = static_cast<long int>(d_sample_counter) - static_cast<long int>(d_acq_sample_stamp);
     double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / d_fs_in;
+    std::cout << "ACQ to TRK diff seconds = " << acq_trk_diff_seconds << std::endl;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples;
     DLOG(INFO) << "Number of seconds between Acquisition and Tracking = " << acq_trk_diff_seconds;
     // Doppler effect Fd = (C / (C + Vr)) * F

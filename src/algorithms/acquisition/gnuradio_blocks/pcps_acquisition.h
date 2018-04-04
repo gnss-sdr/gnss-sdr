@@ -59,18 +59,33 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string>
 
+typedef struct
+{
+    /* pcps acquisition configuration */
+    unsigned int sampled_ms;
+    unsigned int max_dwells;
+    unsigned int doppler_max;
+    unsigned int num_doppler_bins_step2;
+    float doppler_step2;
+    long freq;
+    long fs_in;
+    int samples_per_ms;
+    int samples_per_code;
+    bool bit_transition_flag;
+    bool use_CFAR_algorithm_flag;
+    bool dump;
+    bool blocking;
+    bool make_2_steps;
+    std::string dump_filename;
+    size_t it_size;
+} pcpsconf_t;
 
 class pcps_acquisition;
 
 typedef boost::shared_ptr<pcps_acquisition> pcps_acquisition_sptr;
 
 pcps_acquisition_sptr
-pcps_make_acquisition(unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
-    int samples_per_ms, int samples_per_code,
-    bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-    bool dump, bool blocking,
-    std::string dump_filename, size_t it_size);
+pcps_make_acquisition(pcpsconf_t conf_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -82,19 +97,9 @@ class pcps_acquisition : public gr::block
 {
 private:
     friend pcps_acquisition_sptr
-    pcps_make_acquisition(unsigned int sampled_ms, unsigned int max_dwells,
-        unsigned int doppler_max, long freq, long fs_in,
-        int samples_per_ms, int samples_per_code,
-        bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-        bool dump, bool blocking,
-        std::string dump_filename, size_t it_size);
+    pcps_make_acquisition(pcpsconf_t conf_);
 
-    pcps_acquisition(unsigned int sampled_ms, unsigned int max_dwells,
-        unsigned int doppler_max, long freq, long fs_in,
-        int samples_per_ms, int samples_per_code,
-        bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-        bool dump, bool blocking,
-        std::string dump_filename, size_t it_size);
+    pcps_acquisition(pcpsconf_t conf_);
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
     void update_grid_doppler_wipeoffs();
@@ -107,12 +112,9 @@ private:
 
     void send_positive_acquisition();
 
-    bool d_bit_transition_flag;
-    bool d_use_CFAR_algorithm_flag;
+    pcpsconf_t acq_parameters;
     bool d_active;
-    bool d_dump;
     bool d_worker_active;
-    bool d_blocking;
     bool d_cshort;
     bool d_step_two;
     float d_threshold;
@@ -120,23 +122,14 @@ private:
     float d_input_power;
     float d_test_statistics;
     float* d_magnitude;
-    long d_fs_in;
-    long d_freq;
     long d_old_freq;
-    int d_samples_per_ms;
-    int d_samples_per_code;
     int d_state;
     unsigned int d_channel;
-    unsigned int d_doppler_max;
     unsigned int d_doppler_step;
-    float d_doppler_step_two;
     float d_doppler_center_step_two;
-    unsigned int d_sampled_ms;
-    unsigned int d_max_dwells;
     unsigned int d_well_count;
     unsigned int d_fft_size;
     unsigned int d_num_doppler_bins;
-    unsigned int d_num_doppler_bins_step_two;
     unsigned long int d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
     gr_complex** d_grid_doppler_wipeoffs_step_two;
@@ -146,7 +139,6 @@ private:
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_ifft;
     Gnss_Synchro* d_gnss_synchro;
-    std::string d_dump_filename;
     arma::fmat grid_;
 
 public:
@@ -228,7 +220,7 @@ public:
     inline void set_doppler_max(unsigned int doppler_max)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-        d_doppler_max = doppler_max;
+        acq_parameters.doppler_max = doppler_max;
     }
 
     /*!
@@ -239,7 +231,6 @@ public:
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_doppler_step = doppler_step;
-        d_doppler_step_two = static_cast<float>(d_doppler_step) / 2.0;
     }
 
     /*!

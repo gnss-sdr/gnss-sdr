@@ -168,6 +168,7 @@ void GpsL2MPcpsAcquisitionTest::init()
     config->set_property("Acquisition_2S.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_2S.doppler_step", std::to_string(doppler_step));
     config->set_property("Acquisition_2S.repeat_satellite", "false");
+    config->set_property("Acquisition_2S.make_two_steps", "false");
 }
 
 

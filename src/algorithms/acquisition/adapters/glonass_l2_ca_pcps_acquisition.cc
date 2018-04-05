@@ -72,6 +72,7 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
     acq_parameters.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
+    acq_parameters.max_dwells = max_dwells_;
 
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;

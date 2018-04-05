@@ -33,6 +33,7 @@
 #define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_
 
 #include "gnss_block_interface.h"
+#include "fpga_switch.h"
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
@@ -112,6 +113,8 @@ private:
     std::string dump_filename_;
 
     boost::shared_ptr<gr::msg_queue> queue_;
+
+    std::shared_ptr<fpga_switch> switch_fpga;
 };
 
 #endif /*GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_*/

@@ -181,7 +181,6 @@ private:
     
     double d_K_blk_samples_previous;
     int d_offset_sample_previous;
-    int d_first_time;
     
     int d_kk = 0;
     int d_numsamples_debug = 990;
@@ -194,7 +193,6 @@ private:
     int d_counter_corr_0_in = 0;
     int d_counter_corr_0_out = 0;
     int d_sample_counter_inc = 0;
-    int d_debug_loss_of_track = 0;
 };
 
 #endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_SC_H

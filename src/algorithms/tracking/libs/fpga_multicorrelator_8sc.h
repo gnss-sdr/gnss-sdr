@@ -51,15 +51,19 @@ public:
     fpga_multicorrelator_8sc(int n_correlators, std::string device_name,
             unsigned int device_base);
     ~fpga_multicorrelator_8sc();
-	bool set_output_vectors(gr_complex* corr_out);
+	//bool set_output_vectors(gr_complex* corr_out);
+	void set_output_vectors(gr_complex* corr_out);
 //    bool set_local_code_and_taps(
 //            int code_length_chips, const int* local_code_in,
 //            float *shifts_chips, int PRN);
-    bool set_local_code_and_taps(
+    //bool set_local_code_and_taps(
+    void set_local_code_and_taps(
             int code_length_chips, 
             float *shifts_chips, int PRN);            
-    bool set_output_vectors(lv_16sc_t* corr_out);
-    void update_local_code(float rem_code_phase_chips);bool Carrier_wipeoff_multicorrelator_resampler(
+    //bool set_output_vectors(lv_16sc_t* corr_out);
+    void update_local_code(float rem_code_phase_chips);
+    //bool Carrier_wipeoff_multicorrelator_resampler(
+    void Carrier_wipeoff_multicorrelator_resampler(
             float rem_carrier_phase_in_rad, float phase_step_rad,
             float rem_code_phase_chips, float code_phase_step_chips,
             int signal_length_samples);bool free();

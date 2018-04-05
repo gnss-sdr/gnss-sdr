@@ -173,11 +173,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc(
     d_carrier_phase_step_rad = 0.0;
 
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
-    
-    d_first_time = 1;
-    
-    
-    
 }
 
 void Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::start_tracking()
@@ -246,16 +241,14 @@ void Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::start_tracking()
     d_code_phase_samples = d_acq_code_phase_samples;
     std::string sys_ = &d_acquisition_gnss_synchro->System;
     sys = sys_.substr(0,1);
-    //std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
     // enable tracking
     d_pull_in = true;
-    multicorrelator_fpga_8sc->lock_channel();
     d_enable_tracking = true; //do it in the end to avoid starting running tracking before finishing this function
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
             << " Code Phase correction [samples]=" << delay_correction_samples
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
-    d_first_time = 1;
 }
 
 Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::~Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc()
@@ -275,10 +268,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::~Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc()
     {
             volk_gnsssdr_free(d_local_code_shift_chips);
             volk_gnsssdr_free(d_correlator_outs);
-            //volk_gnsssdr_free(d_ca_code);
             delete[] d_Prompt_buffer;
-            //multicorrelator_cpu.free();
-            //volk_gnsssdr_free(d_ca_code_16sc);
             multicorrelator_fpga_8sc->free();
     }
     catch(const std::exception & ex)
@@ -297,8 +287,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attrib
 	int counter_corr_0_out;
 	int sample_counter;
 	
-    // samples offset
-//    int samples_offset;
     unsigned absolute_samples_offset;
 //    int kk2;	
     // process vars
@@ -308,7 +296,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attrib
     double code_error_filt_chips = 0.0;
 
 	int next_prn_length_samples = d_current_prn_length_samples;
-//	int offset_prn_samples = 0;
 
     // Block input data and block output stream pointers
     Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
@@ -324,6 +311,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attrib
             if (d_pull_in == true)
                 {
                     d_pull_in = false;
+                    multicorrelator_fpga_8sc->lock_channel();
 					unsigned counter_value = multicorrelator_fpga_8sc->read_sample_counter();
 					unsigned num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples - current_synchro_data.Acq_delay_samples)/d_correlation_length_samples);
 					absolute_samples_offset = current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples + num_frames*d_correlation_length_samples;
@@ -382,7 +370,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attrib
             double T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
             double K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
 			next_prn_length_samples = round(K_blk_samples);
-//			offset_prn_samples = next_prn_length_samples - d_current_prn_length_samples;
 
             //################### PLL COMMANDS #################################################
             // carrier phase step (NCO phase increment per sample) [rads/sample]
@@ -426,15 +413,12 @@ int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attrib
                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
-                            d_debug_loss_of_track = 1;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
                             this->message_port_pub(pmt::mp("events"), pmt::from_long(3)); // 3 -> loss of lock  
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                             multicorrelator_fpga_8sc->unlock_channel();  
-                             
-
-                        } 
+                        }
                 } 
 
             // ########### Output the tracking data to navigation and PVT ##########
@@ -535,14 +519,13 @@ int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attrib
     
     if (d_enable_tracking == true)
         {
-            return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
-            //return 0; // debug 
+            return 1; 
         }
     else
         {
             return 0;
         }
-            
+
 }
 
 

@@ -95,23 +95,18 @@ void fpga_multicorrelator_8sc::set_initial_sample(int samples_offset)
     d_map_base[13] = d_initial_sample_counter;
 }
        
-//bool fpga_multicorrelator_8sc::set_local_code_and_taps(int code_length_chips,
-//        const int* local_code_in, float *shifts_chips, int PRN)     
-bool fpga_multicorrelator_8sc::set_local_code_and_taps(int code_length_chips,
+void fpga_multicorrelator_8sc::set_local_code_and_taps(int code_length_chips,
         float *shifts_chips, int PRN)             
 {
-    //d_local_code_in = local_code_in;
+
     d_shifts_chips = shifts_chips;
     d_code_length_chips = code_length_chips;
     fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(PRN);
-    return true;
 }
 
-bool fpga_multicorrelator_8sc::set_output_vectors(gr_complex* corr_out)
+void fpga_multicorrelator_8sc::set_output_vectors(gr_complex* corr_out)
 {
-    // Save CPU pointers
     d_corr_out = corr_out;
-    return true;
 }
 
 void fpga_multicorrelator_8sc::update_local_code(float rem_code_phase_chips)
@@ -122,24 +117,20 @@ void fpga_multicorrelator_8sc::update_local_code(float rem_code_phase_chips)
 }
 
 
-bool fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
+void fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
         float rem_carrier_phase_in_rad, float phase_step_rad,
         float rem_code_phase_chips, float code_phase_step_chips,
         int signal_length_samples)
 {
+
+
     update_local_code(rem_code_phase_chips);
     d_rem_carrier_phase_in_rad = rem_carrier_phase_in_rad;
     d_code_phase_step_chips = code_phase_step_chips;
     d_phase_step_rad = phase_step_rad;
     d_correlator_length_samples = signal_length_samples;
-    
-//    if (first_time == 1)
-//    {
-		fpga_multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga();
-		fpga_multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga();
-//		first_time = 0;
-//    }
-    
+	fpga_multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga();
+	fpga_multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga();
     fpga_multicorrelator_8sc::fpga_launch_multicorrelator_fpga();
     int irq_count;
     ssize_t nb;
@@ -150,7 +141,6 @@ bool fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
             printf("Tracking_module Interrupt number %d\n", irq_count);
         }
     fpga_multicorrelator_8sc::read_tracking_gps_results();
-    return true;
 }
 
 fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
@@ -186,7 +176,6 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
     d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS*NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
     {
-		//gps_l1_ca_code_gen_int(&d_ca_codes[GPS_L1_CA_CODE_LENGTH_CHIPS*(PRN -1)], PRN, 0);
 		gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
     }
     DLOG(INFO) << "TRACKING FPGA CLASS CREATED";

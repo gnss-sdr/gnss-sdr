@@ -58,6 +58,10 @@ set (SIGNAL_SOURCE_LIB_SOURCES
   rtl_tcp_dongle_info.cc
   ${OPT_SIGNAL_SOURCE_LIB_SOURCES})
 
+if(ENABLE_FPGA)
+    SET(SIGNAL_SOURCE_LIB_SOURCES ${SIGNAL_SOURCE_LIB_SOURCES} fpga_switch.cc)
+endif(ENABLE_FPGA)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${Boost_INCLUDE_DIRS}

@@ -56,7 +56,6 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     bool dump = configuration->property(role + ".dump", false);
-    unified_ = configuration->property(role + ".unified", false);
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
@@ -88,28 +87,18 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            if (unified_)
-                {
-                    char sig_[3] = "L5";
-                    item_size_ = sizeof(gr_complex);
-                    tracking_unified_ = dll_pll_veml_make_tracking(
-                        fs_in, vector_length, dump, dump_filename,
-                        pll_bw_hz, dll_bw_hz,
-                        pll_bw_narrow_hz, dll_bw_narrow_hz,
-                        early_late_space_chips,
-                        early_late_space_chips,
-                        early_late_space_narrow_chips,
-                        early_late_space_narrow_chips,
-                        extend_correlation_symbols,
-                        track_pilot, 'G', sig_);
-                }
-            else
-                {
-                    tracking_ = gps_l5i_dll_pll_make_tracking_cc(
-                        0, fs_in, vector_length, dump,
-                        dump_filename, pll_bw_hz, dll_bw_hz,
-                        early_late_space_chips);
-                }
+            char sig_[3] = "L5";
+            item_size_ = sizeof(gr_complex);
+            tracking_ = dll_pll_veml_make_tracking(
+                fs_in, vector_length, dump, dump_filename,
+                pll_bw_hz, dll_bw_hz,
+                pll_bw_narrow_hz, dll_bw_narrow_hz,
+                early_late_space_chips,
+                early_late_space_chips,
+                early_late_space_narrow_chips,
+                early_late_space_narrow_chips,
+                extend_correlation_symbols,
+                track_pilot, 'G', sig_);
         }
     else
         {
@@ -128,11 +117,9 @@ GpsL5iDllPllTracking::~GpsL5iDllPllTracking()
 
 void GpsL5iDllPllTracking::start_tracking()
 {
-    if (unified_)
-        tracking_unified_->start_tracking();
-    else
-        tracking_->start_tracking();
+    tracking_->start_tracking();
 }
+
 
 /*
  * Set tracking channel unique ID
@@ -140,20 +127,15 @@ void GpsL5iDllPllTracking::start_tracking()
 void GpsL5iDllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    if (unified_)
-        tracking_unified_->set_channel(channel);
-    else
-        tracking_->set_channel(channel);
+    tracking_->set_channel(channel);
 }
 
 
 void GpsL5iDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    if (unified_)
-        tracking_unified_->set_gnss_synchro(p_gnss_synchro);
-    else
-        tracking_->set_gnss_synchro(p_gnss_synchro);
+    tracking_->set_gnss_synchro(p_gnss_synchro);
 }
+
 
 void GpsL5iDllPllTracking::connect(gr::top_block_sptr top_block)
 {
@@ -163,6 +145,7 @@ void GpsL5iDllPllTracking::connect(gr::top_block_sptr top_block)
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
+
 void GpsL5iDllPllTracking::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
@@ -171,18 +154,14 @@ void GpsL5iDllPllTracking::disconnect(gr::top_block_sptr top_block)
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
+
 gr::basic_block_sptr GpsL5iDllPllTracking::get_left_block()
 {
-    if (unified_)
-        return tracking_unified_;
-    else
-        return tracking_;
+    return tracking_;
 }
+
 
 gr::basic_block_sptr GpsL5iDllPllTracking::get_right_block()
 {
-    if (unified_)
-        return tracking_unified_;
-    else
-        return tracking_;
+    return tracking_;
 }

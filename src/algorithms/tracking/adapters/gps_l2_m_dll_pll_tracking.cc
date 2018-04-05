@@ -60,7 +60,6 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 0.75);
     if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
-    unified_ = configuration->property(role + ".unified", false);
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
     std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
@@ -79,26 +78,17 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            if (unified_)
-                {
-                    char sig_[3] = "2S";
-                    item_size_ = sizeof(gr_complex);
-                    tracking_unified_ = dll_pll_veml_make_tracking(
-                        fs_in, vector_length, dump, dump_filename,
-                        pll_bw_hz, dll_bw_hz, pll_bw_hz, dll_bw_hz,
-                        early_late_space_chips,
-                        early_late_space_chips,
-                        early_late_space_chips,
-                        early_late_space_chips,
-                        1, false, 'G', sig_);
-                }
-            else
-                {
-                    tracking_ = gps_l2_m_dll_pll_make_tracking_cc(
-                        0, fs_in, vector_length, dump,
-                        dump_filename, pll_bw_hz, dll_bw_hz,
-                        early_late_space_chips);
-                }
+
+            char sig_[3] = "2S";
+            item_size_ = sizeof(gr_complex);
+            tracking_ = dll_pll_veml_make_tracking(
+                fs_in, vector_length, dump, dump_filename,
+                pll_bw_hz, dll_bw_hz, pll_bw_hz, dll_bw_hz,
+                early_late_space_chips,
+                early_late_space_chips,
+                early_late_space_chips,
+                early_late_space_chips,
+                1, false, 'G', sig_);
         }
     else
         {
@@ -117,11 +107,9 @@ GpsL2MDllPllTracking::~GpsL2MDllPllTracking()
 
 void GpsL2MDllPllTracking::start_tracking()
 {
-    if (unified_)
-        tracking_unified_->start_tracking();
-    else
-        tracking_->start_tracking();
+    tracking_->start_tracking();
 }
+
 
 /*
  * Set tracking channel unique ID
@@ -129,20 +117,15 @@ void GpsL2MDllPllTracking::start_tracking()
 void GpsL2MDllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    if (unified_)
-        tracking_unified_->set_channel(channel);
-    else
-        tracking_->set_channel(channel);
+    tracking_->set_channel(channel);
 }
 
 
 void GpsL2MDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    if (unified_)
-        tracking_unified_->set_gnss_synchro(p_gnss_synchro);
-    else
-        tracking_->set_gnss_synchro(p_gnss_synchro);
+    tracking_->set_gnss_synchro(p_gnss_synchro);
 }
+
 
 void GpsL2MDllPllTracking::connect(gr::top_block_sptr top_block)
 {
@@ -152,6 +135,7 @@ void GpsL2MDllPllTracking::connect(gr::top_block_sptr top_block)
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
+
 void GpsL2MDllPllTracking::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
@@ -160,18 +144,14 @@ void GpsL2MDllPllTracking::disconnect(gr::top_block_sptr top_block)
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
+
 gr::basic_block_sptr GpsL2MDllPllTracking::get_left_block()
 {
-    if (unified_)
-        return tracking_unified_;
-    else
-        return tracking_;
+    return tracking_;
 }
+
 
 gr::basic_block_sptr GpsL2MDllPllTracking::get_right_block()
 {
-    if (unified_)
-        return tracking_unified_;
-    else
-        return tracking_;
+    return tracking_;
 }

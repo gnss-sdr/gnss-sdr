@@ -39,6 +39,7 @@
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
+#include <gtest/gtest.h>
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"

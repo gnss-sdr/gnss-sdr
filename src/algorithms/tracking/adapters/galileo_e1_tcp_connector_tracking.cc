@@ -75,7 +75,7 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", 0.6);
     port_ch0 = configuration->property(role + ".port_ch0", 2060);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################

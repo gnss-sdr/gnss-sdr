@@ -267,8 +267,8 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
-    float carr_error_filt_hz;
-    float code_error_filt_chips;
+    float carr_error_filt_hz = 0.0;
+    float code_error_filt_chips = 0.0;
 
     tcp_packet_data tcp_data;
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder

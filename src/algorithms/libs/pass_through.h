@@ -88,7 +88,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    //gr_kludge_copy_sptr kludge_copy_;
     gr::blocks::copy::sptr kludge_copy_;
     size_t item_size_;
     conjugate_cc_sptr conjugate_cc_;

@@ -32,6 +32,7 @@
 
 #include "gps_l2c_telemetry_decoder_cc.h"
 #include "gnss_synchro.h"
+#include "display.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -132,32 +133,31 @@ int gps_l2c_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                 {
                     // get ephemeris object for this SV
                     std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                    std::cout << "New GPS CNAV message received: ephemeris from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received: ephemeris from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
             if (d_CNAV_Message.have_new_iono() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                    std::cout << "New GPS CNAV message received: iono model parameters from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received: iono model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
             if (d_CNAV_Message.have_new_utc_model() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                    std::cout << "New GPS CNAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received: UTC model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
             //update TOW at the preamble instant
-            d_TOW_at_Preamble = static_cast<int>(msg.tow);
-            //std::cout<<"["<<(int)msg.prn<<"] deco delay: "<<delay<<"[symbols]"<<std::endl;
+            d_TOW_at_Preamble = static_cast<double>(msg.tow);
             //* The time of the last input symbol can be computed from the message ToW and
             //* delay by the formulae:
             //* \code
             //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20 + (12 * 20); 12 symbols of the encoder's transitory
             d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD + 12 * GPS_L2_M_PERIOD;
-            d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
+            //d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
             d_flag_valid_word = true;
         }
     else

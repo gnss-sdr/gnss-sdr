@@ -61,8 +61,6 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
 
 
 GNSSFlowgraph::~GNSSFlowgraph() {}
-
-
 void GNSSFlowgraph::start()
 {
     if (running_)
@@ -246,6 +244,30 @@ void GNSSFlowgraph::connect()
         }
     DLOG(INFO) << "Signal source connected to signal conditioner";
 
+    //connect the signal source to sample counter
+    //connect the sample counter to Observables
+    try
+        {
+            double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
+            if (fs == 0.0)
+                {
+                    LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
+                    std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
+                    throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
+                }
+            ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
+            top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
+            top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
+        }
+    catch (const std::exception& e)
+        {
+            LOG(WARNING) << "Can't connect sample counter";
+            LOG(ERROR) << e.what();
+            top_block_->disconnect_all();
+            return;
+        }
+
+
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
     int selected_signal_conditioner_ID;
     for (unsigned int i = 0; i < channels_count_; i++)
@@ -293,12 +315,6 @@ void GNSSFlowgraph::connect()
             else
                 {
                     LOG(INFO) << "Channel " << i << " connected to observables in standby mode";
-                }
-            //connect the sample counter to the channel 0
-            if (i == 0)
-                {
-                    ch_out_sample_counter = gnss_sdr_make_sample_counter();
-                    top_block_->connect(channels_.at(i)->get_right_block(), 0, ch_out_sample_counter, 0);
                 }
         }
 

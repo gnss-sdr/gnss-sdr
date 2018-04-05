@@ -452,27 +452,27 @@ typedef struct
 } alm_t;
 
 
-typedef struct
-{                          /* GPS/QZS/GAL broadcast ephemeris type */
-    int sat;               /* satellite number */
-    int iode, iodc;        /* IODE,IODC */
-    int sva;               /* SV accuracy (URA index) */
-    int svh;               /* SV health (0:ok) */
-    int week;              /* GPS/QZS: gps week, GAL: galileo week */
-    int code;              /* GPS/QZS: code on L2, GAL/BDS: data sources */
-    int flag;              /* GPS/QZS: L2 P data flag, BDS: nav type */
-    gtime_t toe, toc, ttr; /* Toe,Toc,T_trans */
-                           /* SV orbit parameters */
-    double A, e, i0, OMG0, omg, M0, deln, OMGd, idot;
-    double crc, crs, cuc, cus, cic, cis;
-    double toes;       /* Toe (s) in week */
-    double fit;        /* fit interval (h) */
-    double f0, f1, f2; /* SV clock parameters (af0,af1,af2) */
-    double tgd[4];     /* group delay parameters */
-                       /* GPS/QZS:tgd[0]=TGD */
-                       /* GAL    :tgd[0]=BGD E5a/E1,tgd[1]=BGD E5b/E1 */
-                       /* BDS    :tgd[0]=BGD1,tgd[1]=BGD2 */
-    double Adot, ndot; /* Adot,ndot for CNAV */
+typedef struct {        /* GPS/QZS/GAL broadcast ephemeris type */
+    int sat;            /* satellite number */
+    int iode,iodc;      /* IODE,IODC */
+    int sva;            /* SV accuracy (URA index) */
+    int svh;            /* SV health (0:ok) */
+    int week;           /* GPS/QZS: gps week, GAL: galileo week */
+    int code;           /* GPS/QZS: code on L2, GAL/BDS: data sources */
+    int flag;           /* GPS/QZS: L2 P data flag, BDS: nav type */
+    gtime_t toe,toc,ttr; /* Toe,Toc,T_trans */
+                        /* SV orbit parameters */
+    double A,e,i0,OMG0,omg,M0,deln,OMGd,idot;
+    double crc,crs,cuc,cus,cic,cis;
+    double toes;        /* Toe (s) in week */
+    double fit;         /* fit interval (h) */
+    double f0,f1,f2;    /* SV clock parameters (af0,af1,af2) */
+    double tgd[4];      /* group delay parameters */
+                        /* GPS/QZS:tgd[0]=TGD */
+                        /* GAL    :tgd[0]=BGD E5a/E1,tgd[1]=BGD E5b/E1 */
+                        /* BDS    :tgd[0]=BGD1,tgd[1]=BGD2 */
+    double isc[4];      /* GPS    :isc[0]=ISCL1, isc[1]=ISCL2, isc[2]=ISCL5I, isc[3]=ISCL5Q */
+    double Adot,ndot;   /* Adot,ndot for CNAV */
 } eph_t;
 
 

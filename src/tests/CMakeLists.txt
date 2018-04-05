@@ -351,9 +351,6 @@ include_directories(
 # Unit testing
 ################################################################################
 if(ENABLE_UNIT_TESTING)
-    if( ${ARMADILLO_VERSION_STRING} STRGREATER "5.300")  # make sure interp1 is present
-        add_definitions(-DMODERN_ARMADILLO)
-    endif( ${ARMADILLO_VERSION_STRING} STRGREATER "5.300")
     add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 
     target_link_libraries(run_tests ${CLANG_FLAGS}

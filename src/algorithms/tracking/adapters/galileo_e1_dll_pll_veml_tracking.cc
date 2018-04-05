@@ -82,7 +82,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
             std::cout << TEXT_RED << "WARNING: Galileo E1. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
         }
     std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     int vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################

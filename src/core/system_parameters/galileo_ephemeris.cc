@@ -42,7 +42,7 @@ Galileo_Ephemeris::Galileo_Ephemeris()
     M0_1 = 0;         // Mean anomaly at reference time [semi-circles]
     delta_n_3 = 0;    // Mean motion difference from computed value  [semi-circles/sec]
     e_1 = 0;          // Eccentricity
-    A_1 = 0;          // Square root of the semi-major axis [metres^1/2]
+    A_1 = 0;          // Square root of the semi-major axis [meters^1/2]
     OMEGA_0_2 = 0;    // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
     i_0_2 = 0;        // Inclination angle at reference time  [semi-circles]
     omega_2 = 0;      // Argument of perigee [semi-circles]

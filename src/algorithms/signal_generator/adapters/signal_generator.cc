@@ -35,7 +35,7 @@
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E5a.h"
-#include "GLONASS_L1_CA.h"
+#include "GLONASS_L1_L2_CA.h"
 #include <glog/logging.h>
 
 
@@ -100,7 +100,14 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         }
     else if (std::find(system.begin(), system.end(), "R") != system.end())
         {
-            vector_length = round((float)fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+            if (signal1[0].at(0) == '1')
+                {
+                    vector_length = round((float)fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+                }
+            else
+                {
+                    vector_length = round((float)fs_in / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
+                }
         }
 
     if (item_type_.compare("gr_complex") == 0)

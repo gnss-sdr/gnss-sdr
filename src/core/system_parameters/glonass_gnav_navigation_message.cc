@@ -83,7 +83,7 @@ void Glonass_Gnav_Navigation_Message::reset()
 
     // Data update information
     d_previous_tb = 0.0;
-    for (unsigned int i = 0; i < GLONASS_L1_CA_NBR_SATS; i++)
+    for (unsigned int i = 0; i < GLONASS_CA_NBR_SATS; i++)
         d_previous_Na[i] = 0.0;
 
     std::map<int, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus

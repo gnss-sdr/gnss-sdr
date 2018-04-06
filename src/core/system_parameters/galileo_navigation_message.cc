@@ -530,7 +530,7 @@ Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
     ephemeris.M0_1 = M0_1;                // Mean anomaly at reference time [semi-circles]
     ephemeris.delta_n_3 = delta_n_3;      // Mean motion difference from computed value  [semi-circles/sec]
     ephemeris.e_1 = e_1;                  // Eccentricity
-    ephemeris.A_1 = A_1;                  // Square root of the semi-major axis [metres^1/2]
+    ephemeris.A_1 = A_1;                  // Square root of the semi-major axis [meters^1/2]
     ephemeris.OMEGA_0_2 = OMEGA_0_2;      // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
     ephemeris.i_0_2 = i_0_2;              // Inclination angle at reference time  [semi-circles]
     ephemeris.omega_2 = omega_2;          // Argument of perigee [semi-circles]

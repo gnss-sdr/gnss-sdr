@@ -38,9 +38,11 @@
 
 //!Generates complex GPS L5i M code for the desired SV ID
 void gps_l5i_code_gen_complex(std::complex<float>* _dest, unsigned int _prn);
+void gps_l5i_code_gen_float(float* _dest, unsigned int _prn);
 
 //!Generates complex GPS L5q M code for the desired SV ID
 void gps_l5q_code_gen_complex(std::complex<float>* _dest, unsigned int _prn);
+void gps_l5q_code_gen_float(float* _dest, unsigned int _prn);
 
 //! Generates complex GPS L5i M code for the desired SV ID, and sampled to specific sampling frequency
 void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs);

@@ -253,12 +253,11 @@ const unsigned int tbl_CRC24Q[] = {
     0x42FA2F, 0xC4B6D4, 0xC82F22, 0x4E63D9, 0xD11CCE, 0x575035, 0x5BC9C3, 0xDD8538};
 
 
-extern "C"
-{
-    void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
-    extern void dgetrf_(int *, int *, double *, int *, int *, int *);
-    extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
-    extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
+extern "C" {
+void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+extern void dgetrf_(int *, int *, double *, int *, int *, int *);
+extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
+extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
 }
 
 
@@ -1388,10 +1387,10 @@ double time2gpst(gtime_t t, int *week)
 {
     gtime_t t0 = epoch2time(gpst0);
     time_t sec = t.time - t0.time;
-    int w = (int)(sec / (86400 * 7));
+    int w = static_cast<int>(sec / 604800);
 
     if (week) *week = w;
-    return (double)(sec - (double)w * 86400 * 7) + t.sec;
+    return (static_cast<double>(sec - static_cast<time_t>(w * 604800)) + t.sec);
 }
 
 
@@ -1819,7 +1818,7 @@ unsigned int tickget(void)
 
 /* sleep ms --------------------------------------------------------------------
  * sleep ms
- * args   : int   ms         I   miliseconds to sleep (<0:no sleep)
+ * args   : int   ms         I   milliseconds to sleep (<0:no sleep)
  * return : none
  *-----------------------------------------------------------------------------*/
 void sleepms(int ms)
@@ -1884,7 +1883,7 @@ double dms2deg(const double *dms)
 }
 
 
-/* transform ecef to geodetic postion ------------------------------------------
+/* transform ecef to geodetic position ------------------------------------------
  * transform ecef position to geodetic position
  * args   : double *r        I   ecef position {x,y,z} (m)
  *          double *pos      O   geodetic position {lat,lon,h} (rad,m)
@@ -1926,8 +1925,8 @@ void pos2ecef(const double *pos, double *r)
 }
 
 
-/* ecef to local coordinate transfromation matrix ------------------------------
- * compute ecef to local coordinate transfromation matrix
+/* ecef to local coordinate transformation matrix ------------------------------
+ * compute ecef to local coordinate transformation matrix
  * args   : double *pos      I   geodetic position {lat,lon} (rad)
  *          double *E        O   ecef to local coord transformation matrix (3x3)
  * return : none
@@ -2223,7 +2222,7 @@ void eci2ecef(gtime_t tutc, const double *erpv, double *U, double *gmst)
     matmul("NN", 3, 3, 3, 1.0, R1, R2, 0.0, R);
     matmul("NN", 3, 3, 3, 1.0, R, R3, 0.0, N); /* N=Rx(-eps)*Rz(-dspi)*Rx(eps) */
 
-    /* greenwich aparent sidereal time (rad) */
+    /* greenwich apparent sidereal time (rad) */
     gmst_ = utc2gmst(tutc_, erpv[2]);
     gast = gmst_ + dpsi * cos(eps);
     gast += (0.00264 * sin(f[4]) + 0.000063 * sin(2.0 * f[4])) * AS2R;
@@ -2993,7 +2992,7 @@ int readnav(const char *file, nav_t *nav)
 {
     FILE *fp;
     eph_t eph0 = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0};
     geph_t geph0 = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {}, {}, {}, 0.0, 0.0, 0.0};
     char buff[4096], *p;
     long toe_time, tof_time, toc_time, ttr_time;
@@ -4166,7 +4165,7 @@ void sunmoonpos(gtime_t tutc, const double *erpv, double *rsun,
     /* eci to ecef transformation matrix */
     eci2ecef(tutc, erpv, U, &gmst_);
 
-    /* sun and moon postion in ecef */
+    /* sun and moon position in ecef */
     if (rsun) matmul("NN", 3, 1, 3, 1.0, U, rs, 0.0, rsun);
     if (rmoon) matmul("NN", 3, 1, 3, 1.0, U, rm, 0.0, rmoon);
     if (gmst) *gmst = gmst_;

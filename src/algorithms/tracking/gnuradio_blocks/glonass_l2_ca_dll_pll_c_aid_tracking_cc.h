@@ -1,17 +1,17 @@
 /*!
- * \file galileo_e5a_dll_pll_tracking_cc.h
- * \brief Implementation of a code DLL + carrier PLL
- *  tracking block for Galileo E5a signals
- * \author Marc Sales, 2014. marcsales92(at)gmail.com
- * \based on work from:
- *          <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          </ul>
+ * \file glonass_l2_ca_dll_pll_c_aid_tracking_cc.h
+ * \brief  Implementation of a code DLL + carrier PLL tracking block
+ * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
+ *
+ *
+ * Code DLL + carrier PLL according to the algorithms described in:
+ * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
+ * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
+ * Approach, Birkha user, 2007
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,43 +34,46 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_CC_H_
-#define GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_CC_H_
+#ifndef GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_CC_H
+#define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_CC_H
 
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
-#include "tracking_2nd_PLL_filter.h"
+#include "tracking_FLL_PLL_filter.h"
+//#include "tracking_loop_filter.h"
 #include "cpu_multicorrelator.h"
 #include <gnuradio/block.h>
+#include <pmt/pmt.h>
 #include <fstream>
 #include <map>
+#include <deque>
 #include <string>
 
-class Galileo_E5a_Dll_Pll_Tracking_cc;
+class glonass_l2_ca_dll_pll_c_aid_tracking_cc;
 
-typedef boost::shared_ptr<Galileo_E5a_Dll_Pll_Tracking_cc>
-    galileo_e5a_dll_pll_tracking_cc_sptr;
+typedef boost::shared_ptr<glonass_l2_ca_dll_pll_c_aid_tracking_cc>
+    glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr;
 
-galileo_e5a_dll_pll_tracking_cc_sptr
-galileo_e5a_dll_pll_make_tracking_cc(long if_freq,
+glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr
+glonass_l2_ca_dll_pll_c_aid_make_tracking_cc(long if_freq,
     long fs_in, unsigned int vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
-    float pll_bw_narrow_narrowhz,
+    float pll_bw_narrow_hz,
     float dll_bw_narrow_hz,
-    int ti_ms,
+    int extend_correlation_ms,
     float early_late_space_chips);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class Galileo_E5a_Dll_Pll_Tracking_cc : public gr::block
+class glonass_l2_ca_dll_pll_c_aid_tracking_cc : public gr::block
 {
 public:
-    ~Galileo_E5a_Dll_Pll_Tracking_cc();
+    ~glonass_l2_ca_dll_pll_c_aid_tracking_cc();
 
     void set_channel(unsigned int channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
@@ -82,8 +85,8 @@ public:
     void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
-    friend galileo_e5a_dll_pll_tracking_cc_sptr
-    galileo_e5a_dll_pll_make_tracking_cc(long if_freq,
+    friend glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr
+    glonass_l2_ca_dll_pll_c_aid_make_tracking_cc(long if_freq,
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
@@ -91,10 +94,10 @@ private:
         float dll_bw_hz,
         float pll_bw_narrow_hz,
         float dll_bw_narrow_hz,
-        int ti_ms,
+        int extend_correlation_ms,
         float early_late_space_chips);
 
-    Galileo_E5a_Dll_Pll_Tracking_cc(long if_freq,
+    glonass_l2_ca_dll_pll_c_aid_tracking_cc(long if_freq,
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
@@ -102,76 +105,74 @@ private:
         float dll_bw_hz,
         float pll_bw_narrow_hz,
         float dll_bw_narrow_hz,
-        int ti_ms,
+        int extend_correlation_ms,
         float early_late_space_chips);
-    void acquire_secondary();
+
     // tracking configuration vars
     unsigned int d_vector_length;
-    int d_current_ti_ms;
-    int d_ti_ms;
     bool d_dump;
-
 
     Gnss_Synchro* d_acquisition_gnss_synchro;
     unsigned int d_channel;
+
     long d_if_freq;
     long d_fs_in;
+    double d_glonass_freq_ch;
 
     double d_early_late_spc_chips;
-    double d_dll_bw_hz;
-    double d_pll_bw_hz;
-    double d_dll_bw_narrow_hz;
-    double d_pll_bw_narrow_hz;
+    int d_n_correlator_taps;
 
-    gr_complex* d_codeQ;
-    gr_complex* d_codeI;
+    gr_complex* d_ca_code;
+    float* d_local_code_shift_chips;
+    gr_complex* d_correlator_outs;
+    cpu_multicorrelator multicorrelator_cpu;
 
-    gr_complex d_Early;
-    gr_complex d_Prompt;
-    gr_complex d_Late;
-    gr_complex d_Prompt_data;
-
-    gr_complex* d_Single_Early;
-    gr_complex* d_Single_Prompt;
-    gr_complex* d_Single_Late;
-    gr_complex* d_Single_Prompt_data;
-
-
-    float tmp_E;
-    float tmp_P;
-    float tmp_L;
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     double d_rem_code_phase_chips;
-    double d_rem_carr_phase_rad;
+    double d_rem_carrier_phase_rad;
+    int d_rem_code_phase_integer_samples;
 
     // PLL and DLL filter library
+    //Tracking_2nd_DLL_filter d_code_loop_filter;
     Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter;
+    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
-    // correlator
-    int d_n_correlator_taps;
-    float* d_local_code_shift_chips;
-    gr_complex* d_correlator_outs;
-    cpu_multicorrelator multicorrelator_cpu_I;
-    cpu_multicorrelator multicorrelator_cpu_Q;
 
     // tracking vars
+    float d_dll_bw_hz;
+    float d_pll_bw_hz;
+    float d_dll_bw_narrow_hz;
+    float d_pll_bw_narrow_hz;
     double d_code_freq_chips;
-    double d_carrier_doppler_hz;
-    double d_acc_carrier_phase_rad;
-    double d_code_phase_samples;
-    double d_acc_code_phase_secs;
-    double d_code_error_filt_secs;
     double d_code_phase_step_chips;
+    double d_carrier_doppler_hz;
+    double d_carrier_frequency_hz;
+    double d_carrier_doppler_old_hz;
     double d_carrier_phase_step_rad;
+    double d_acc_carrier_phase_cycles;
+    double d_code_phase_samples;
+    double d_pll_to_dll_assist_secs_Ti;
+    double d_code_error_chips_Ti;
+    double d_code_error_filt_chips_s;
+    double d_code_error_filt_chips_Ti;
+    double d_carr_phase_error_secs_Ti;
 
+    // symbol history to detect bit transition
+    std::deque<gr_complex> d_E_history;
+    std::deque<gr_complex> d_P_history;
+    std::deque<gr_complex> d_L_history;
+    double d_preamble_timestamp_s;
+    int d_extend_correlation_ms;
+    bool d_enable_extended_integration;
+    bool d_preamble_synchronized;
+    void msg_handler_preamble_index(pmt::pmt_t msg);
 
-    //PRN period in samples
-    int d_current_prn_length_samples;
+    //Integration period in samples
+    int d_correlation_length_samples;
 
     //processing samples counters
     unsigned long int d_sample_counter;
@@ -186,13 +187,8 @@ private:
     int d_carrier_lock_fail_counter;
 
     // control vars
-    int d_state;
-    bool d_first_transition;
-
-    // Secondary code acquisition
-    bool d_secondary_lock;
-    int d_secondary_delay;
-    int d_integration_counter;
+    bool d_enable_tracking;
+    bool d_pull_in;
 
     // file dump
     std::string d_dump_filename;
@@ -204,4 +200,4 @@ private:
     int save_matfile();
 };
 
-#endif /* GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_CC_H_ */
+#endif  //GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H

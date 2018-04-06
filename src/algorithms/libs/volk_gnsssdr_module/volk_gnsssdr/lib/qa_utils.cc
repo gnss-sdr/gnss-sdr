@@ -16,14 +16,10 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "volk_gnsssdr/volk_gnsssdr.h"  // for volk_gnsssdr_func_desc_t
 #include "qa_utils.h"
-#include "volk_gnsssdr/volk_gnsssdr.h"         // for volk_gnsssdr_func_desc_t
-#include "volk_gnsssdr/volk_gnsssdr_malloc.h"  // for volk_gnsssdr_free, volk_gnsssdr_malloc
-#include <boost/foreach.hpp>                   // for auto_any_base
-#include <boost/lexical_cast.hpp>              // for lexical_cast
-#include <boost/token_functions.hpp>           // for char_separator
-#include <boost/token_iterator.hpp>            // for token_iterator
-#include <boost/tokenizer.hpp>                 // for tokenizer
+
+#include <volk_gnsssdr/volk_gnsssdr_malloc.h>  // for volk_gnsssdr_free, volk_gnsssdr_malloc
 #include <cassert>                             // for assert
 #include <chrono>                              // for system_clock, duration,...
 #include <cmath>                               // for sqrt, fabs, abs
@@ -122,6 +118,24 @@ static std::vector<std::string> get_arch_list(volk_gnsssdr_func_desc_t desc)
     return archlist;
 }
 
+template <typename T>
+T volk_lexical_cast(const std::string &str)
+{
+    for (unsigned int c_index = 0; c_index < str.size(); ++c_index)
+        {
+            if (str.at(c_index) < '0' || str.at(c_index) > '9')
+                {
+                    throw "not all numbers!";
+                }
+        }
+    T var;
+    std::istringstream iss;
+    iss.str(str);
+    iss >> var;
+    // deal with any error bits that may have been set on the stream
+    return var;
+}
+
 volk_gnsssdr_type_t volk_gnsssdr_type_from_string(std::string name)
 {
     volk_gnsssdr_type_t type;
@@ -151,7 +165,7 @@ volk_gnsssdr_type_t volk_gnsssdr_type_from_string(std::string name)
             throw std::string("no size spec in type ").append(name);
         }
     //will throw if malformed
-    int size = boost::lexical_cast<int>(name.substr(0, last_size_pos + 1));
+    int size = volk_lexical_cast<int>(name.substr(0, last_size_pos + 1));
 
     assert(((size % 8) == 0) && (size <= 64) && (size != 0));
     type.size = size / 8;  //in bytes
@@ -180,21 +194,42 @@ volk_gnsssdr_type_t volk_gnsssdr_type_from_string(std::string name)
     return type;
 }
 
+std::vector<std::string> split_signature(const std::string &protokernel_signature)
+{
+    std::vector<std::string> signature_tokens;
+    std::string token;
+    for (unsigned int loc = 0; loc < protokernel_signature.size(); ++loc)
+        {
+            if (protokernel_signature.at(loc) == '_')
+                {
+                    if (protokernel_signature.substr(loc + 1, 7).compare("gnsssdr") == 0)  // jump the "gnsssdr" part of "volk_gnsssdr"
+                        {
+                            loc += 7;
+                        }
+                    else
+                        {
+                            // this is a break
+                            signature_tokens.push_back(token);
+                            token = "";
+                        }
+                }
+            else
+                {
+                    token.push_back(protokernel_signature.at(loc));
+                }
+        }
+    // Get the last one to the end of the string
+    signature_tokens.push_back(token);
+    return signature_tokens;
+}
+
 static void get_signatures_from_name(std::vector<volk_gnsssdr_type_t> &inputsig,
     std::vector<volk_gnsssdr_type_t> &outputsig,
     std::string name)
 {
-    boost::char_separator<char> sep("_");
-    boost::tokenizer<boost::char_separator<char> > tok(name, sep);
-    std::vector<std::string> toked;
-    tok.assign(name);
-    toked.assign(tok.begin(), tok.end());
+    std::vector<std::string> toked = split_signature(name);
     assert(toked[0] == "volk");
     toked.erase(toked.begin());
-    toked.erase(toked.begin());
-
-    //ok. we're assuming a string in the form
-    //(sig)_(multiplier-opt)_..._(name)_(sig)_(multiplier-opt)_..._(alignment)
 
     enum
     {
@@ -204,8 +239,9 @@ static void get_signatures_from_name(std::vector<volk_gnsssdr_type_t> &inputsig,
     } side = SIDE_INPUT;
     std::string fn_name;
     volk_gnsssdr_type_t type;
-    BOOST_FOREACH (std::string token, toked)
+    for (unsigned int token_index = 0; token_index < toked.size(); ++token_index)
         {
+            std::string token = toked[token_index];
             try
                 {
                     type = volk_gnsssdr_type_from_string(token);
@@ -224,7 +260,7 @@ static void get_signatures_from_name(std::vector<volk_gnsssdr_type_t> &inputsig,
                                 assert(inputsig.size() > 0);
                             else
                                 assert(outputsig.size() > 0);
-                            int multiplier = boost::lexical_cast<int>(token.substr(1, token.size() - 1));  //will throw if invalid ///////////
+                            int multiplier = volk_lexical_cast<int>(token.substr(1, token.size() - 1));  // will throw if invalid
                             for (int i = 1; i < multiplier; i++)
                                 {
                                     if (side == SIDE_INPUT)
@@ -523,7 +559,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
         {
             get_signatures_from_name(inputsig, outputsig, name);
         }
-    catch (boost::bad_lexical_cast &error)
+    catch (std::exception &error)
         {
             std::cerr << "Error: unable to get function signature from kernel name" << std::endl;
             std::cerr << "  - " << name << std::endl;
@@ -542,8 +578,9 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                 }
         }
     std::vector<void *> inbuffs;
-    BOOST_FOREACH (volk_gnsssdr_type_t sig, inputsig)
+    for (unsigned int inputsig_index = 0; inputsig_index < inputsig.size(); ++inputsig_index)
         {
+            volk_gnsssdr_type_t sig = inputsig[inputsig_index];
             if (!sig.is_scalar)  //we don't make buffers for scalars
                 inbuffs.push_back(mem_pool.get_new(vlen * sig.size * (sig.is_complex ? 2 : 1)));
         }
@@ -702,6 +739,9 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                     //ADDED BY GNSS-SDR. END
                     else
                         throw "unsupported 3 arg function >1 scalars";
+                    break;
+                case 4:
+                    run_cast_test4((volk_gnsssdr_fn_4arg)(manual_func), test_data[i], vlen, iter, arch_list[i]);
                     break;
                 default:
                     throw "no function handler for this signature";

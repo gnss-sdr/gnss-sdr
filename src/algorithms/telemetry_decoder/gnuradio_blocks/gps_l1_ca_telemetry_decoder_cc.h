@@ -107,8 +107,9 @@ private:
 
     unsigned long int d_preamble_time_samples;
 
-    long double d_TOW_at_Preamble;
-    long double d_TOW_at_current_symbol;
+    double d_TOW_at_Preamble;
+    double d_TOW_at_current_symbol;
+    unsigned int d_TOW_at_current_symbol_ms;
 
     bool flag_TOW_set;
     bool flag_PLL_180_deg_phase_locked;

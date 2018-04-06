@@ -41,6 +41,8 @@
 #include "gnss_sdr_sample_counter.h"
 #include <gnuradio/top_block.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/blocks/null_source.h>
+#include <gnuradio/blocks/throttle.h>
 #include <list>
 #include <memory>
 #include <queue>
@@ -111,7 +113,7 @@ public:
         return running_;
     }
     /*!
-     * \brief Sends a GNURadio asyncronous message from telemetry to PVT
+     * \brief Sends a GNURadio asynchronous message from telemetry to PVT
      *
      * It is used to assist the receiver with external ephemeris data
      */
@@ -142,6 +144,8 @@ private:
 
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gnss_sdr_sample_counter_sptr ch_out_sample_counter;
+    gr::blocks::null_source::sptr null_source_;
+    gr::blocks::throttle::sptr throttle_;
     gr::top_block_sptr top_block_;
     gr::msg_queue::sptr queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;

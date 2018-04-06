@@ -40,6 +40,7 @@
 #include "configuration_interface.h"
 #include "GPS_L1_CA.h"
 #include "gnss_sdr_flags.h"
+#include "display.h"
 #include <glog/logging.h>
 
 using google::LogMessage;
@@ -48,45 +49,67 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
+    dllpllconf_t trk_param;
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
-    int fs_in;
-    int vector_length;
-    int f_if;
-    bool dump;
-    std::string dump_filename;
-    std::string item_type;
     std::string default_item_type = "gr_complex";
-    float pll_bw_hz;
-    float dll_bw_hz;
-    float early_late_space_chips;
-    item_type = configuration->property(role + ".item_type", default_item_type);
+    std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
-    dump = configuration->property(role + ".dump", false);
-    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
+    int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    trk_param.fs_in = fs_in;
+    bool dump = configuration->property(role + ".dump", false);
+    trk_param.dump = dump;
+    float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    trk_param.pll_bw_hz = pll_bw_hz;
+    float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 20.0);
+    trk_param.pll_bw_narrow_hz = pll_bw_narrow_hz;
+    float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
+    trk_param.dll_bw_narrow_hz = dll_bw_narrow_hz;
+    float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
-    early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
+    trk_param.dll_bw_hz = dll_bw_hz;
+    float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
+    trk_param.early_late_space_chips = early_late_space_chips;
+    float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);
+    trk_param.early_late_space_narrow_chips = early_late_space_narrow_chips;
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
-    vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param.dump_filename = dump_filename;
+    int vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    trk_param.vector_length = vector_length;
+    int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
+    if (symbols_extended_correlator < 1)
+        {
+            symbols_extended_correlator = 1;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be bigger than 1. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
+        }
+    else if (symbols_extended_correlator > 20)
+        {
+            symbols_extended_correlator = 20;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be lower than 21. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << std::endl;
+        }
+    trk_param.extend_correlation_symbols = symbols_extended_correlator;
+    bool track_pilot = configuration->property(role + ".track_pilot", false);
+    if (track_pilot)
+        {
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << std::endl;
+        }
+    if ((symbols_extended_correlator > 1) and (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz))
+        {
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
+        }
+    trk_param.very_early_late_space_chips = 0.0;
+    trk_param.very_early_late_space_narrow_chips = 0.0;
+    trk_param.track_pilot = false;
+    trk_param.system = 'G';
+    char sig_[3] = "1C";
+    std::memcpy(trk_param.signal, sig_, 3);
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = gps_l1_ca_dll_pll_make_tracking_cc(
-                f_if,
-                fs_in,
-                vector_length,
-                dump,
-                dump_filename,
-                pll_bw_hz,
-                dll_bw_hz,
-                early_late_space_chips);
+            tracking_ = dll_pll_veml_make_tracking(trk_param);
         }
     else
         {

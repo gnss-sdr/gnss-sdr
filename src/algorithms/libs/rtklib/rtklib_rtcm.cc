@@ -69,7 +69,7 @@ int init_rtcm(rtcm_t *rtcm)
     obsd_t data0 = {{0, 0.0}, 0, 0, {0}, {0}, {0}, {0.0}, {0.0}, {0.0}};
     eph_t eph0 = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
     geph_t geph0 = {0, -1, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0.0}, {0.0}, {0.0},
         0.0, 0.0, 0.0};
     ssr_t ssr0 = {{{0, 0.0}}, {0.0}, {0}, 0, 0, 0, 0, {0.0}, {0.0}, {0.0}, 0.0, {0.0}, {0.0}, {0.0}, 0.0, 0.0, '0'};
@@ -315,7 +315,7 @@ int input_rtcm3(rtcm_t *rtcm, unsigned char data)
 
 
 /* input rtcm 2 message from file ----------------------------------------------
- * fetch next rtcm 2 message and input a messsage from file
+ * fetch next rtcm 2 message and input a message from file
  * args   : rtcm_t *rtcm IO   rtcm control struct
  *          FILE  *fp    I    file pointer
  * return : status (-2: end of file, -1...10: same as above)
@@ -337,7 +337,7 @@ int input_rtcm2f(rtcm_t *rtcm, FILE *fp)
 
 
 /* input rtcm 3 message from file ----------------------------------------------
- * fetch next rtcm 3 message and input a messsage from file
+ * fetch next rtcm 3 message and input a message from file
  * args   : rtcm_t *rtcm IO   rtcm control struct
  *          FILE  *fp    I    file pointer
  * return : status (-2: end of file, -1...10: same as above)

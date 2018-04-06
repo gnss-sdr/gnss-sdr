@@ -1,6 +1,6 @@
 /*!
  * \file notch_lite_cc.h
- * \brief Implements a notch filter ligth algorithm
+ * \brief Implements a notch filter light algorithm
  * \author Antonio Ramos (antonio.ramosdet(at)gmail.com)
  *
  * -------------------------------------------------------------------------
@@ -43,7 +43,7 @@ typedef boost::shared_ptr<NotchLite> notch_lite_sptr;
 notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int length_, int n_segments_est, int n_segments_reset, int n_segments_coeff);
 
 /*!
- * \brief This class implements a real-time software-defined multi state notch filter ligth version
+ * \brief This class implements a real-time software-defined multi state notch filter light version
  */
 
 class NotchLite : public gr::block

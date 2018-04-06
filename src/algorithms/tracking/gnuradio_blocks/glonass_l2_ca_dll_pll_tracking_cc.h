@@ -1,18 +1,17 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking_cc.h
- * \brief Interface of a code DLL + carrier PLL tracking block
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
- *         Cillian O'Driscoll, 2017. cillian.odriscoll(at)gmail.com
+ * \file glonass_l2_ca_dll_pll_tracking_cc.h
+ * \brief  Implementation of a code DLL + carrier PLL tracking block
+ * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
+ *
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
- * Birkhauser, 2007
+ * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
+ * Approach, Birkha user, 2007
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,25 +34,25 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_CC_H
-#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_CC_H
+#ifndef GNSS_SDR_GLONASS_L2_CA_DLL_PLL_TRACKING_CC_H
+#define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_TRACKING_CC_H
 
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include "cpu_multicorrelator_real_codes.h"
+#include "cpu_multicorrelator.h"
 #include <gnuradio/block.h>
 #include <fstream>
 #include <map>
 #include <string>
 
-class Gps_L1_Ca_Dll_Pll_Tracking_cc;
+class Glonass_L2_Ca_Dll_Pll_Tracking_cc;
 
-typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_cc>
-    gps_l1_ca_dll_pll_tracking_cc_sptr;
+typedef boost::shared_ptr<Glonass_L2_Ca_Dll_Pll_Tracking_cc>
+    glonass_l2_ca_dll_pll_tracking_cc_sptr;
 
-gps_l1_ca_dll_pll_tracking_cc_sptr
-gps_l1_ca_dll_pll_make_tracking_cc(long if_freq,
+glonass_l2_ca_dll_pll_tracking_cc_sptr
+glonass_l2_ca_dll_pll_make_tracking_cc(long if_freq,
     long fs_in, unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -65,10 +64,10 @@ gps_l1_ca_dll_pll_make_tracking_cc(long if_freq,
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class Gps_L1_Ca_Dll_Pll_Tracking_cc : public gr::block
+class Glonass_L2_Ca_Dll_Pll_Tracking_cc : public gr::block
 {
 public:
-    ~Gps_L1_Ca_Dll_Pll_Tracking_cc();
+    ~Glonass_L2_Ca_Dll_Pll_Tracking_cc();
 
     void set_channel(unsigned int channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
@@ -80,8 +79,8 @@ public:
     void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
-    friend gps_l1_ca_dll_pll_tracking_cc_sptr
-    gps_l1_ca_dll_pll_make_tracking_cc(long if_freq,
+    friend glonass_l2_ca_dll_pll_tracking_cc_sptr
+    glonass_l2_ca_dll_pll_make_tracking_cc(long if_freq,
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
@@ -89,7 +88,7 @@ private:
         float dll_bw_hz,
         float early_late_space_chips);
 
-    Gps_L1_Ca_Dll_Pll_Tracking_cc(long if_freq,
+    Glonass_L2_Ca_Dll_Pll_Tracking_cc(long if_freq,
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
@@ -97,7 +96,6 @@ private:
         float dll_bw_hz,
         float early_late_space_chips);
 
-    int save_matfile();
     // tracking configuration vars
     unsigned int d_vector_length;
     bool d_dump;
@@ -107,6 +105,7 @@ private:
 
     long d_if_freq;
     long d_fs_in;
+    long d_glonass_freq_ch;
 
     double d_early_late_spc_chips;
 
@@ -124,15 +123,18 @@ private:
     double d_acq_carrier_doppler_hz;
     // correlator
     int d_n_correlator_taps;
-    float* d_ca_code;
+    gr_complex* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
-    cpu_multicorrelator_real_codes multicorrelator_cpu;
+    cpu_multicorrelator multicorrelator_cpu;
+
 
     // tracking vars
     double d_code_freq_chips;
     double d_code_phase_step_chips;
     double d_carrier_doppler_hz;
+    double d_carrier_doppler_phase_step_rad;
+    double d_carrier_frequency_hz;
     double d_carrier_phase_step_rad;
     double d_acc_carrier_phase_rad;
     double d_code_phase_samples;
@@ -162,6 +164,8 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
+
+    int save_matfile();
 };
 
-#endif  //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_CC_H
+#endif  //GNSS_SDR_GLONASS_L2_CA_DLL_PLL_TRACKING_CC_H

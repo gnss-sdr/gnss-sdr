@@ -57,7 +57,7 @@
 #include "glonass_gnav_navigation_message.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
-#include "GLONASS_L1_CA.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "gnss_synchro.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <string>

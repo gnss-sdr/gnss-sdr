@@ -38,8 +38,8 @@
 
 #include "glonass_l1_ca_dll_pll_tracking.h"
 #include "configuration_interface.h"
-#include "GLONASS_L1_CA.h"
 #include "gnss_sdr_flags.h"
+#include "GLONASS_L1_L2_CA.h"
 #include <glog/logging.h>
 
 
@@ -72,7 +72,7 @@ GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
     if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     vector_length = std::round(fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################

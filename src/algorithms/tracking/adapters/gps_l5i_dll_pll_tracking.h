@@ -34,11 +34,11 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_gps_l5i_dll_pll_tracking_H_
-#define GNSS_SDR_gps_l5i_dll_pll_tracking_H_
+#ifndef GNSS_SDR_GPS_L5i_DLL_PLL_TRACKING_H_
+#define GNSS_SDR_GPS_L5i_DLL_PLL_TRACKING_H_
 
 #include "tracking_interface.h"
-#include "gps_l5i_dll_pll_tracking_cc.h"
+#include "dll_pll_veml_tracking.h"
 #include <string>
 
 class ConfigurationInterface;
@@ -91,7 +91,7 @@ public:
     void start_tracking() override;
 
 private:
-    gps_l5i_dll_pll_tracking_cc_sptr tracking_;
+    dll_pll_veml_tracking_sptr tracking_;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
@@ -99,4 +99,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_gps_l5i_dll_pll_tracking_H_
+#endif  // GNSS_SDR_GPS_L5i_DLL_PLL_TRACKING_H_

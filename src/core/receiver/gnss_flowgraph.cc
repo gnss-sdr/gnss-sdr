@@ -33,6 +33,7 @@
  */
 
 #include "gnss_flowgraph.h"
+#include "gnss_synchro.h"
 #include "configuration_interface.h"
 #include "gnss_block_interface.h"
 #include "channel_interface.h"
@@ -257,12 +258,58 @@ void GNSSFlowgraph::connect()
     }
     DLOG(INFO) << "Signal source connected to signal conditioner";
 
+    bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
+
+    if (FPGA_enabled==false)
+    {
+        //connect the signal source to sample counter
+        //connect the sample counter to Observables
+        try
+            {
+                double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
+                if (fs == 0.0)
+                    {
+                        LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
+                        std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
+                        throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
+                    }
+                ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
+                top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
+                top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
+            }
+        catch (const std::exception& e)
+            {
+                LOG(WARNING) << "Can't connect sample counter";
+                LOG(ERROR) << e.what();
+                top_block_->disconnect_all();
+                return;
+            }
+    }else{
+        //create a software-defined 1kHz gnss_synchro pulse for the observables block
+        try
+            {
+            //null source
+            null_source_= gr::blocks::null_source::make(sizeof(Gnss_Synchro));
+            //throttle 1kHz
+            throttle_ = gr::blocks::throttle::make(sizeof(Gnss_Synchro),1000);// 1000 samples per second (1kHz)
+            top_block_->connect(null_source_, 0, throttle_, 0);
+            top_block_->connect(throttle_, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
+
+            }
+        catch (const std::exception& e)
+            {
+                LOG(WARNING) << "Can't connect sample counter";
+                LOG(ERROR) << e.what();
+                top_block_->disconnect_all();
+                return;
+            }
+    }
+
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
     int selected_signal_conditioner_ID;
     for (unsigned int i = 0; i < channels_count_; i++)
         {
 
-    		bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
 
 	if (FPGA_enabled == false)
 	{
@@ -313,15 +360,6 @@ void GNSSFlowgraph::connect()
                 {
                     LOG(INFO) << "Channel " << i << " connected to observables in standby mode";
                 }
-            //connect the sample counter to the channel 0
-	if (FPGA_enabled == false)
-	{	
-            if (i == 0)
-                {
-                    ch_out_sample_counter = gnss_sdr_make_sample_counter();
-                    top_block_->connect(channels_.at(i)->get_right_block(), 0, ch_out_sample_counter, 0);
-                }
-	}
         }
 
     /*
@@ -346,17 +384,6 @@ void GNSSFlowgraph::connect()
     connected_ = true;
     LOG(INFO) << "Flowgraph connected";
     top_block_->dump();
-}
-
-void GNSSFlowgraph::start_acquisition_helper()
-{
-    for (unsigned int i = 0; i < channels_count_; i++)
-    {
-        if (channels_state_[i] == 1)
-            {
-                channels_.at(i)->start_acquisition();
-            }
-    }
 }
 
 void GNSSFlowgraph::wait()
@@ -460,6 +487,17 @@ void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> co
     configuration_ = configuration;
 }
 
+
+void GNSSFlowgraph::start_acquisition_helper()
+{
+    for (unsigned int i = 0; i < channels_count_; i++)
+    {
+        if (channels_state_[i] == 1)
+            {
+                channels_.at(i)->start_acquisition();
+            }
+    }
+}
 
 void GNSSFlowgraph::init()
 {
@@ -576,6 +614,7 @@ void GNSSFlowgraph::set_signals_list()
                                   configuration_->property("Channels_1B.count", 0) +
                                   configuration_->property("Channels_5X.count", 0) +
                                   configuration_->property("Channels_1G.count", 0) +
+                                  configuration_->property("Channels_2G.count", 0) +
                                   configuration_->property("Channels_5X.count", 0) +
                                   configuration_->property("Channels_L5.count", 0);
 
@@ -754,8 +793,8 @@ void GNSSFlowgraph::set_signals_list()
     if (configuration_->property("Channels_1G.count", 0) > 0)
         {
             /*
-         * Loop to create the list of GLONASS L1 C/A signals
-         */
+             * Loop to create the list of GLONASS L1 C/A signals
+             */
             for (available_gnss_prn_iter = available_glonass_prn.begin();
                  available_gnss_prn_iter != available_glonass_prn.end();
                  available_gnss_prn_iter++)
@@ -763,6 +802,21 @@ void GNSSFlowgraph::set_signals_list()
                     available_GNSS_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("Glonass"), *available_gnss_prn_iter),
                         std::string("1G")));
+                }
+        }
+
+    if (configuration_->property("Channels_2G.count", 0) > 0)
+        {
+            /*
+             * Loop to create the list of GLONASS L2 C/A signals
+             */
+            for (available_gnss_prn_iter = available_glonass_prn.begin();
+                 available_gnss_prn_iter != available_glonass_prn.end();
+                 available_gnss_prn_iter++)
+                {
+                    available_GNSS_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("Glonass"), *available_gnss_prn_iter),
+                        std::string("2G")));
                 }
         }
     /*
@@ -778,7 +832,7 @@ void GNSSFlowgraph::set_signals_list()
             std::string gnss_system;
             if ((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) or (gnss_signal.compare("L5") == 0)) gnss_system = "GPS";
             if ((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0)) gnss_system = "Galileo";
-            if ((gnss_signal.compare("1G") == 0) /*or (gnss_signal.compare("") == 0)*/) gnss_system = "Glonass";
+            if ((gnss_signal.compare("1G") == 0) or (gnss_signal.compare("2G") == 0)) gnss_system = "Glonass";
             unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
             LOG(INFO) << "Channel " << i << " system " << gnss_system << ", signal " << gnss_signal << ", sat " << sat;
             if (sat == 0)  // 0 = not PRN in configuration file

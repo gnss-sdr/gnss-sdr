@@ -297,10 +297,9 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
-    float carr_error;
-    float carr_nco;
-    float code_error;
-    float code_nco;
+    float carr_error = 0.0;
+    float code_error = 0.0;
+    float code_nco = 0.0;
 
     tcp_packet_data tcp_data;
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
@@ -333,7 +332,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                     d_sample_counter_seconds = d_sample_counter_seconds + (static_cast<double>(samples_offset) / static_cast<double>(d_fs_in));
                     d_sample_counter = d_sample_counter + samples_offset;  //count for the processed samples
                     d_pull_in = false;
-                    consume_each(samples_offset);  //shift input to perform alignement with local replica
+                    consume_each(samples_offset);  //shift input to perform alignment with local replica
                     return 1;
                 }
 
@@ -482,48 +481,55 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             float prompt_I;
             float prompt_Q;
             float tmp_E, tmp_P, tmp_L;
+            float tmp_VE = 0.0;
+            float tmp_VL = 0.0;
             float tmp_float;
-            prompt_I = (*d_Prompt).real();
-            prompt_Q = (*d_Prompt).imag();
-            tmp_E = std::abs<float>(*d_Early);
-            tmp_P = std::abs<float>(*d_Prompt);
-            tmp_L = std::abs<float>(*d_Late);
+            prompt_I = d_correlator_outs[1].real();
+            prompt_Q = d_correlator_outs[1].imag();
+            tmp_E = std::abs<float>(d_correlator_outs[0]);
+            tmp_P = std::abs<float>(d_correlator_outs[1]);
+            tmp_L = std::abs<float>(d_correlator_outs[2]);
             try
                 {
-                    // EPR
+                    // Dump correlators output
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_VE), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_E), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_P), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_L), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_VL), sizeof(float));
                     // PROMPT I and Q (to analyze navigation symbols)
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    //tmp_float=(float)d_sample_counter;
                     d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(unsigned long int));
                     // accumulated carrier phase
-                    d_dump_file.write(reinterpret_cast<char *>(&d_acc_carrier_phase_rad), sizeof(float));
-
-                    // carrier and code frequency
-                    d_dump_file.write(reinterpret_cast<char *>(&d_carrier_doppler_hz), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char *>(&d_code_freq_hz), sizeof(float));
-
-                    //PLL commands
-                    d_dump_file.write(reinterpret_cast<char *>(&carr_error), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char *>(&carr_nco), sizeof(float));
-
-                    //DLL commands
-                    d_dump_file.write(reinterpret_cast<char *>(&code_error), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char *>(&code_nco), sizeof(float));
-
-                    // CN0 and carrier lock test
-                    d_dump_file.write(reinterpret_cast<char *>(&d_CN0_SNV_dB_Hz), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char *>(&d_carrier_lock_test), sizeof(float));
-
-                    // AUX vars (for debug purposes)
-                    tmp_float = 0;
+                    tmp_float = d_acc_carrier_phase_rad;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter_seconds), sizeof(double));
-
+                    // carrier and code frequency
+                    tmp_float = d_carrier_doppler_hz;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = d_code_freq_hz;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // PLL commands
+                    tmp_float = 0.0;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = carr_error;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // DLL commands
+                    tmp_float = 0.0;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = code_error;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // CN0 and carrier lock test
+                    tmp_float = d_CN0_SNV_dB_Hz;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = d_carrier_lock_test;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // AUX vars (for debug purposes)
+                    tmp_float = 0.0;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    double tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
                     unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(unsigned int));

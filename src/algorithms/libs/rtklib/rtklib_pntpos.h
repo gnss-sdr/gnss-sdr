@@ -69,6 +69,12 @@ double varerr(const prcopt_t *opt, double el, int sys);
 /* get tgd parameter (m) -----------------------------------------------------*/
 double gettgd(int sat, const nav_t *nav);
 
+/* get isc parameter (m) -----------------------------------------------------*/
+double getiscl1(int sat, const nav_t *nav);
+double getiscl2(int sat, const nav_t *nav);
+double getiscl5i(int sat, const nav_t *nav);
+double getiscl5q(int sat, const nav_t *nav);
+
 /* psendorange with code bias correction -------------------------------------*/
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     int iter, const prcopt_t *opt, double *var);

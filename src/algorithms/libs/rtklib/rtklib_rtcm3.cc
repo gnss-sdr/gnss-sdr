@@ -846,7 +846,7 @@ int decode_type1019(rtcm_t *rtcm)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     char *msg;
     int i = 24 + 12, prn, sat, week, sys = SYS_GPS;
@@ -1056,7 +1056,7 @@ int decode_type1021(rtcm_t *rtcm __attribute__((unused)))
 }
 
 
-/* decode type 1022: moledenski-badekas transfromation -----------------------*/
+/* decode type 1022: moledenski-badekas transformation -----------------------*/
 int decode_type1022(rtcm_t *rtcm __attribute__((unused)))
 {
     trace(2, "rtcm3 1022: not supported message\n");
@@ -1293,7 +1293,7 @@ int decode_type1044(rtcm_t *rtcm)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     char *msg;
     int i = 24 + 12, prn, sat, week, sys = SYS_QZS;
@@ -1398,7 +1398,7 @@ int decode_type1045(rtcm_t *rtcm)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     char *msg;
     int i = 24 + 12, prn, sat, week, e5a_hs, e5a_dvs, sys = SYS_GAL;
@@ -1502,7 +1502,7 @@ int decode_type1046(rtcm_t *rtcm)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     char *msg;
     int i = 24 + 12, prn, sat, week, e5a_hs, e5a_dvs, sys = SYS_GAL;
@@ -1606,7 +1606,7 @@ int decode_type1047(rtcm_t *rtcm)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
     ;
     double toc, sqrtA;
     char *msg;
@@ -1716,7 +1716,7 @@ int decode_type63(rtcm_t *rtcm)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
     double toc, sqrtA;
     char *msg;
     int i = 24 + 12, prn, sat, week, sys = SYS_BDS;
@@ -2699,7 +2699,7 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
             /* signal to rinex obs type */
             code[i] = obs2code(sig[i], freq + i);
 
-            /* freqency index for beidou */
+            /* frequency index for beidou */
             if (sys == SYS_BDS)
                 {
                     if (freq[i] == 5)

@@ -80,13 +80,13 @@ void dll_pll_veml_tracking::forecast(int noutput_items,
 dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                                                        gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    trk_parameters = conf_;
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->message_port_register_out(pmt::mp("events"));
     this->set_relative_rate(1.0 / static_cast<double>(trk_parameters.vector_length));
 
     // initialize internal vars
-    trk_parameters = conf_;
     d_veml = false;
     d_cloop = true;
     d_synchonizing = false;

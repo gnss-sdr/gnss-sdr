@@ -40,7 +40,6 @@
 #define GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_
 
 #include "tracking_interface.h"
-#include "galileo_e5a_dll_pll_tracking_cc.h"
 #include "dll_pll_veml_tracking.h"
 #include <string>
 
@@ -94,14 +93,12 @@ public:
     void start_tracking() override;
 
 private:
-    galileo_e5a_dll_pll_tracking_cc_sptr tracking_;
-    dll_pll_veml_tracking_sptr tracking_unified_;
+    dll_pll_veml_tracking_sptr tracking_;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    bool unified_;
 };
 
 #endif /* GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_ */

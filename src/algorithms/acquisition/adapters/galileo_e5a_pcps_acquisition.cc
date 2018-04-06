@@ -44,6 +44,7 @@ using google::LogMessage;
 GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
     std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
+    pcpsconf_t acq_parameters;
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "../data/acquisition.dat";
@@ -54,6 +55,8 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    acq_parameters.fs_in = fs_in_;
+    acq_parameters.freq = 0;
     acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
     acq_iq_ = configuration_->property(role + ".acquire_iq", false);
     if (acq_iq_)
@@ -61,17 +64,23 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
             acq_pilot_ = false;
         }
     dump_ = configuration_->property(role + ".dump", false);
+    acq_parameters.dump = dump_;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
+    acq_parameters.doppler_max = doppler_max_;
+    sampled_ms_ = 1;
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
+    acq_parameters.max_dwells = max_dwells_;
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
+    acq_parameters.dump_filename = dump_filename_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
+    acq_parameters.bit_transition_flag = bit_transition_flag_;
     use_CFAR_ = configuration_->property(role + ".use_CFAR_algorithm", false);
+    acq_parameters.use_CFAR_algorithm_flag = use_CFAR_;
     blocking_ = configuration_->property(role + ".blocking", true);
-
+    acq_parameters.blocking = blocking_;
     //--- Find number of samples per spreading code (1ms)-------------------------
-    code_length_ = round(static_cast<double>(fs_in_) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS));
+    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
     vector_length_ = code_length_ * sampled_ms_;
 
     code_ = new gr_complex[vector_length_];
@@ -89,10 +98,14 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
             item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
-
-    acquisition_ = pcps_make_acquisition(sampled_ms_, max_dwells_, doppler_max_, 0, fs_in_,
-        code_length_, code_length_, bit_transition_flag_, use_CFAR_, dump_, blocking_,
-        dump_filename_, item_size_);
+    acq_parameters.it_size = item_size_;
+    acq_parameters.samples_per_code = code_length_;
+    acq_parameters.samples_per_ms = code_length_;
+    acq_parameters.sampled_ms = sampled_ms_;
+    acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
+    acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
+    acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
+    acquisition_ = pcps_make_acquisition(acq_parameters);
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
     channel_ = 0;

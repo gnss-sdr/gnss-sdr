@@ -39,20 +39,32 @@
 #include <fstream>
 #include <string>
 
+typedef struct
+{
+    /* DLL/PLL tracking configuration */
+    double fs_in;
+    unsigned int vector_length;
+    bool dump;
+    std::string dump_filename;
+    float pll_bw_hz;
+    float dll_bw_hz;
+    float pll_bw_narrow_hz;
+    float dll_bw_narrow_hz;
+    float early_late_space_chips;
+    float very_early_late_space_chips;
+    float early_late_space_narrow_chips;
+    float very_early_late_space_narrow_chips;
+    int extend_correlation_symbols;
+    bool track_pilot;
+    char system;
+    char signal[3];
+} dllpllconf_t;
 
 class dll_pll_veml_tracking;
 
 typedef boost::shared_ptr<dll_pll_veml_tracking> dll_pll_veml_tracking_sptr;
 
-dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(double fs_in, unsigned int vector_length,
-    bool dump, std::string dump_filename,
-    float pll_bw_hz, float dll_bw_hz,
-    float pll_bw_narrow_hz, float dll_bw_narrow_hz,
-    float early_late_space_chips, float very_early_late_space_chips,
-    float early_late_space_narrow_chips,
-    float very_early_late_space_narrow_chips,
-    int extend_correlation_symbols, bool track_pilot,
-    char system, char signal[3]);
+dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(dllpllconf_t conf_);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking block.
@@ -72,29 +84,9 @@ public:
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
-    friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(double fs_in, unsigned int vector_length,
-        bool dump, std::string dump_filename,
-        float pll_bw_hz, float dll_bw_hz, float pll_bw_narrow_hz,
-        float dll_bw_narrow_hz, float early_late_space_chips,
-        float very_early_late_space_chips, float early_late_space_narrow_chips,
-        float very_early_late_space_narrow_chips,
-        int extend_correlation_symbols, bool track_pilot,
-        char system, char signal[3]);
+    friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(dllpllconf_t conf_);
 
-    dll_pll_veml_tracking(double fs_in, unsigned int vector_length,
-        bool dump,
-        std::string dump_filename,
-        float pll_bw_hz,
-        float dll_bw_hz,
-        float pll_bw_narrow_hz,
-        float dll_bw_narrow_hz,
-        float early_late_space_chips,
-        float very_early_late_space_chips,
-        float early_late_space_narrow_chips,
-        float very_early_late_space_narrow_chips,
-        int extend_correlation_symbols,
-        bool track_pilot,
-        char system, char signal[3]);
+    dll_pll_veml_tracking(dllpllconf_t conf_);
 
     bool cn0_and_tracking_lock_status();
     bool acquire_secondary();
@@ -107,12 +99,10 @@ private:
     int save_matfile();
 
     // tracking configuration vars
-    bool d_dump;
+    dllpllconf_t trk_parameters;
     bool d_veml;
     bool d_cloop;
-    unsigned int d_vector_length;
     unsigned int d_channel;
-    double d_fs_in;
     Gnss_Synchro *d_acquisition_gnss_synchro;
 
     //Signal parameters
@@ -135,10 +125,6 @@ private:
     //Integration period in samples
     int d_correlation_length_ms;
     int d_n_correlator_taps;
-    float d_early_late_spc_chips;
-    float d_very_early_late_spc_chips;
-    float d_early_late_spc_narrow_chips;
-    float d_very_early_late_spc_narrow_chips;
 
     float *d_tracking_code;
     float *d_data_code;
@@ -159,7 +145,6 @@ private:
     gr_complex *d_Very_Late;
 
     bool d_enable_extended_integration;
-    int d_extend_correlation_symbols;
     int d_extend_correlation_symbols_count;
     int d_current_symbol;
 
@@ -170,7 +155,6 @@ private:
     gr_complex d_VL_accu;
     gr_complex d_last_prompt;
 
-    bool d_track_pilot;
     gr_complex *d_Prompt_Data;
 
     double d_code_phase_step_chips;
@@ -187,11 +171,6 @@ private:
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
 
-    // tracking parameters
-    float d_dll_bw_hz;
-    float d_pll_bw_hz;
-    float d_dll_bw_narrow_hz;
-    float d_pll_bw_narrow_hz;
     // tracking vars
     double d_carr_error_hz;
     double d_carr_error_filt_hz;
@@ -223,7 +202,6 @@ private:
     gr_complex *d_Prompt_buffer;
 
     // file dump
-    std::string d_dump_filename;
     std::ofstream d_dump_file;
 };
 

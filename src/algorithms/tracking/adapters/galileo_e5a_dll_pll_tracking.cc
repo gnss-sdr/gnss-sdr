@@ -62,7 +62,6 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 5.0);
     float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
-    int ti_ms = configuration->property(role + ".ti_ms", 3);
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
     std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);

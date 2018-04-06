@@ -105,16 +105,7 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = dll_pll_veml_make_tracking(
-                fs_in, vector_length, dump, dump_filename,
-                pll_bw_hz, dll_bw_hz,
-                pll_bw_narrow_hz, dll_bw_narrow_hz,
-                early_late_space_chips,
-                early_late_space_chips,
-                early_late_space_narrow_chips,
-                early_late_space_narrow_chips,
-                extend_correlation_symbols,
-                track_pilot, 'G', sig_);
+            tracking_ = dll_pll_veml_make_tracking(trk_param);
         }
     else
         {

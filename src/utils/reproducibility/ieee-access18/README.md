@@ -4,11 +4,11 @@ Continuous Reproducibility in GNSS Signal Processing
 
 This folder contains files required for the reproduction of the experiment proposed in:
 
-C. Fern&aacute;ndez-Prades, J. Vil&agrave;-Valls, J. Arribas and A. Ramos, *Continuous Reproducibility in GNSS Signal Processing*, submitted to IEEE Access, Feb. 2018.
+C. Fern&aacute;ndez-Prades, J. Vil&agrave;-Valls, J. Arribas and A. Ramos, [*Continuous Reproducibility in GNSS Signal Processing*](http://ieeexplore.ieee.org/document/8331069/), IEEE Access, accepted for publication, April 2018. DOI: 10.1109/ACCESS.2018.2822835
 
-The dataset used in this paper is available at
+The data set used in this paper is available at https://zenodo.org/record/1184601
 
-The sample format is `ibyte`: Interleaved (I&Q) stream of samples of type signed integer, 8-bit two’s complement number ranging from -128 to 127. 
+The sample format is `ibyte`: Interleaved (I&Q) stream of samples of type signed integer, 8-bit two’s complement number ranging from -128 to 127. The sampling rate is 3 MSps.
 
 The figure appearing in that paper can be automatically generated with the pipeline available at https://gitlab.com/gnss-sdr/gnss-sdr/pipelines
 

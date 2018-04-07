@@ -133,8 +133,8 @@ void signal_generator_c::init()
                         }
                 }
         }
-    random_ = new gr::random();
     std::default_random_engine e1(r());
+    std::default_random_engine e2(r());
     std::uniform_int_distribution<int> uniform_dist(0, RAND_MAX);
 }
 
@@ -271,7 +271,6 @@ signal_generator_c::~signal_generator_c()
                 }
         } */
     volk_gnsssdr_free(complex_phase_);
-    delete random_;
 }
 
 
@@ -433,7 +432,7 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
         {
             for (out_idx = 0; out_idx < vector_length_; out_idx++)
                 {
-                    out[out_idx] += gr_complex(random_->gasdev(), random_->gasdev());
+                    out[out_idx] += gr_complex(normal_dist(e1), normal_dist(e2));
                 }
         }
 

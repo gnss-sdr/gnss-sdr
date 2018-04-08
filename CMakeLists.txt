@@ -1458,24 +1458,24 @@ endif(ENABLE_GPROF)
 ########################################################################
 # Set compiler flags
 ########################################################################
-# Enable C++17 support in GCC >= 8.0.0
-# Enable C++14 support in 8.0.0 > GCC >= 6.1.1
+# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
+# Enable C++14 support in GCC >= 6.1.1
 # Fallback to C++11 when using GCC < 6.1.1
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
     else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+        # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+        # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
+        # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
     endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 
-# Enable C++17 support in Clang >= 6.0.0 or AppleClang >= 900
-# Enable C++14 support in 6.0.0 > Clang >= 3.5.0 or 900 > AppleClang >= 600
+# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
+# Enable C++14 support in Clang >= 3.5.0 or AppleClang >= 600
 # Fallback to C++11 if older version
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(OS_IS_MACOSX)
@@ -1483,21 +1483,21 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         if(CLANG_VERSION VERSION_LESS "600")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
         else(CLANG_VERSION VERSION_LESS "600")
-            if(CLANG_VERSION VERSION_LESS "900")
+            # if(CLANG_VERSION VERSION_LESS "900")
                 set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-            else(CLANG_VERSION VERSION_LESS "900")
-                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-            endif(CLANG_VERSION VERSION_LESS "900")
+            # else(CLANG_VERSION VERSION_LESS "900")
+                # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
+            # endif(CLANG_VERSION VERSION_LESS "900")
         endif(CLANG_VERSION VERSION_LESS "600")
     else(OS_IS_MACOSX)
         if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
         else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-            if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+            # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
                 set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-            else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-            endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+            # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+                # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
+            # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
         endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
     endif(OS_IS_MACOSX)
 

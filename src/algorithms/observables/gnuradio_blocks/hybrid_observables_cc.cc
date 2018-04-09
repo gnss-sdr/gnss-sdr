@@ -86,7 +86,6 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in,
                         }
                 }
         }
-    std::cout << "SALIDA CONST HO. ()" << std::endl;
 }
 
 

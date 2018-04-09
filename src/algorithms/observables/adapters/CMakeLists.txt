@@ -26,7 +26,6 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}

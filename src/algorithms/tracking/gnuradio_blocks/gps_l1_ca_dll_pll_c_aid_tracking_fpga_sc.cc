@@ -558,7 +558,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc::general_work(
                         {
                             d_cn0_estimation_counter = 0;
                             // Code lock indicator
-                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
+                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
                             // Carrier lock indicator
                             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
                             // Loss of lock detection

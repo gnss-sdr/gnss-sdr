@@ -606,7 +606,7 @@ bool dll_pll_veml_tracking::acquire_secondary()
 }
 
 
-bool dll_pll_veml_tracking::cn0_and_tracking_lock_status()
+bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
 {
     // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
     if (d_cn0_estimation_counter < FLAGS_cn0_samples)
@@ -620,7 +620,7 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status()
         {
             d_cn0_estimation_counter = 0;
             // Code lock indicator
-            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, static_cast<long>(trk_parameters.fs_in), static_cast<double>(d_code_length_chips));
+            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, coh_integration_time_s);
             // Carrier lock indicator
             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
             // Loss of lock detection
@@ -1233,7 +1233,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 d_L_accu = *d_Late;
 
                 // Check lock status
-                if (!cn0_and_tracking_lock_status())
+                if (!cn0_and_tracking_lock_status(static_cast<double>(d_correlation_length_ms) * 1000.0))
                     {
                         clear_tracking_vars();
                         d_state = 0;  // loss-of-lock detected
@@ -1411,7 +1411,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 save_correlation_results();
 
                 // check lock status
-                if (!cn0_and_tracking_lock_status())
+                if (!cn0_and_tracking_lock_status(static_cast<double>(d_correlation_length_ms) * 1000.0 * static_cast<double>(trk_parameters.extend_correlation_symbols)))
                     {
                         clear_tracking_vars();
                         d_state = 0;  // loss-of-lock detected

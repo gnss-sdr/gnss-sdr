@@ -741,7 +741,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __attrib
                         {
                             d_cn0_estimation_counter = 0;
                             // Code lock indicator
-                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
+                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
                             // Carrier lock indicator
                             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
                             // Loss of lock detection
@@ -842,7 +842,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __attrib
                     // PLL commands
                     tmp_float = 1.0 / (d_carr_phase_error_secs_Ti * CURRENT_INTEGRATION_TIME_S);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_float = 1.0 / (d_code_error_filt_chips_Ti  * CURRENT_INTEGRATION_TIME_S);;
+                    tmp_float = 1.0 / (d_code_error_filt_chips_Ti * CURRENT_INTEGRATION_TIME_S);
+                    ;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // DLL commands
                     tmp_float = d_code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;

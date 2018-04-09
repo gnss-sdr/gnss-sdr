@@ -88,7 +88,7 @@ private:
 
     dll_pll_veml_tracking(dllpllconf_t conf_);
 
-    bool cn0_and_tracking_lock_status();
+    bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
     void do_correlation_step(const gr_complex *input_samples);
     void run_dll_pll();

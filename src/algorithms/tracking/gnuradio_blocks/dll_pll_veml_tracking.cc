@@ -1233,7 +1233,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 d_L_accu = *d_Late;
 
                 // Check lock status
-                if (!cn0_and_tracking_lock_status(static_cast<double>(d_correlation_length_ms) * 1000.0))
+                if (!cn0_and_tracking_lock_status(static_cast<double>(d_correlation_length_ms) / 1000.0))
                     {
                         clear_tracking_vars();
                         d_state = 0;  // loss-of-lock detected
@@ -1411,7 +1411,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 save_correlation_results();
 
                 // check lock status
-                if (!cn0_and_tracking_lock_status(static_cast<double>(d_correlation_length_ms) * 1000.0 * static_cast<double>(trk_parameters.extend_correlation_symbols)))
+                if (!cn0_and_tracking_lock_status((static_cast<double>(d_correlation_length_ms) / 1000.0) * static_cast<double>(trk_parameters.extend_correlation_symbols)))
                     {
                         clear_tracking_vars();
                         d_state = 0;  // loss-of-lock detected

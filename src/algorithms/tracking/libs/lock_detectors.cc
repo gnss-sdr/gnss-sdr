@@ -80,7 +80,7 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, double coh_
     Psig = Psig * Psig;
     Ptot /= static_cast<double>(length);
     SNR = Psig / (Ptot - Psig);
-    SNR_dB_Hz = 10.0 * log10(SNR) - 10.0 * log10(2.0 * coh_integration_time_s);
+    SNR_dB_Hz = 10.0 * log10(SNR) - 10.0 * log10(coh_integration_time_s);
     return static_cast<float>(SNR_dB_Hz);
 }
 

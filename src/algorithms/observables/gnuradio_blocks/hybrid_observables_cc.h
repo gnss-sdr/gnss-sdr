@@ -65,7 +65,7 @@ private:
     friend hybrid_observables_cc_sptr
     hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
     hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
-    void clean_history(Gnss_circular_deque<Gnss_Synchro>& data, unsigned int pos);
+    void clean_history(unsigned int pos);
     double compute_T_rx_s(const Gnss_Synchro& a);
     bool interpolate_data(Gnss_Synchro& out, const unsigned int& ch, const double& ti);
     std::pair<unsigned int, unsigned int> find_interp_elements(const unsigned int& ch, const double& ti);
@@ -73,7 +73,7 @@ private:
     int save_matfile();
 
     //Tracking observable history
-    Gnss_circular_deque<Gnss_Synchro> d_gnss_synchro_history;
+    Gnss_circular_deque<Gnss_Synchro>* d_gnss_synchro_history;
     boost::dynamic_bitset<> valid_channels;
     double T_rx_s;
     double T_rx_step_s;

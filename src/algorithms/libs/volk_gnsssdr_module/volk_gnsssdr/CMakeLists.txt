@@ -27,9 +27,91 @@ enable_language(CXX)
 enable_language(C)
 enable_testing()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
+# Set compiler flags
+set(GNSSSDR_CLANG_MIN_VERSION "3.4.0")
+set(GNSSSDR_APPLECLANG_MIN_VERSION "500")
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    execute_process(COMMAND
+        ${CMAKE_CXX_COMPILER} -v
+        RESULT_VARIABLE _res ERROR_VARIABLE _err
+        ERROR_STRIP_TRAILING_WHITESPACE)
+    if(${_res} STREQUAL "0")
+        # output is in error stream
+        string(REGEX MATCH "^Apple.*" IS_APPLE ${_err})
+        if("${IS_APPLE}" STREQUAL "")
+            set(MIN_VERSION ${GNSSSDR_CLANG_MIN_VERSION})
+            set(APPLE_STR "")
+            # retrieve the compiler's version from it
+            string(REGEX MATCH "clang version [0-9.]+" CLANG_OTHER_VERSION ${_err})
+            string(REGEX MATCH "[0-9.]+" CLANG_VERSION ${CLANG_OTHER_VERSION})
+        else("${IS_APPLE}" STREQUAL "")
+            set(MIN_VERSION ${GNSSSDR_APPLECLANG_MIN_VERSION})
+            set(APPLE_STR "Apple ")
+            # retrieve the compiler's version from it
+            string(REGEX MATCH "(clang-[0-9.]+)" CLANG_APPLE_VERSION ${_err})
+            string(REGEX MATCH "[0-9.]+" CLANG_VERSION ${CLANG_APPLE_VERSION})
+        endif("${IS_APPLE}" STREQUAL "")
+        if(${CLANG_VERSION} VERSION_LESS "${MIN_VERSION}")
+            message(WARNING "\nThe compiler selected to build VOLK-GNSSSDR (${APPLE_STR}Clang version ${CLANG_VERSION} : ${CMAKE_CXX_COMPILER}) is older than that officially supported (${MIN_VERSION} minimum). This build may or not work. We highly recommend using Apple Clang version ${APPLECLANG_MIN_VERSION} or more recent, or Clang version ${CLANG_MIN_VERSION} or more recent.")
+        endif(${CLANG_VERSION} VERSION_LESS "${MIN_VERSION}")
+    else(${_res} STREQUAL "0")
+        message(WARNING "\nCannot determine the version of the compiler selected to build VOLK-GNSSSDR (${APPLE_STR}Clang : ${CMAKE_CXX_COMPILER}). This build may or not work. We highly recommend using Apple Clang version ${APPLECLANG_MIN_VERSION} or more recent, or Clang version ${CLANG_MIN_VERSION} or more recent.")
+    endif(${_res} STREQUAL "0")
+endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+# Enable C++17 support in GCC >= 8.0.0
+# Enable C++14 support in 8.0.0 > GCC >= 6.1.1
+# Fallback to C++11 when using GCC < 6.1.1
+if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+    else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
+        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+    endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+
+# Enable C++17 support in Clang >= 6.0.0 or AppleClang >= 900
+# Enable C++14 support in 6.0.0 > Clang >= 3.5.0 or 900 > AppleClang >= 600
+# Fallback to C++11 if older version
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+        # See https://trac.macports.org/wiki/XcodeVersionInfo for Apple Clang version equivalences
+        if(CLANG_VERSION VERSION_LESS "600")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+        else(CLANG_VERSION VERSION_LESS "600")
+            if(CLANG_VERSION VERSION_LESS "900")
+                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+            else(CLANG_VERSION VERSION_LESS "900")
+                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
+            endif(CLANG_VERSION VERSION_LESS "900")
+        endif(CLANG_VERSION VERSION_LESS "600")
+    else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+            else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
+            endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+    endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+if(NOT (CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32) AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+    if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
+        set(CMAKE_C_STANDARD 11)
+        set(CMAKE_CXX_STANDARD 11)
+    endif(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
+endif(NOT (CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32) AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS} -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
 if(CMAKE_VERSION VERSION_GREATER "3.0")
     cmake_policy(SET CMP0042 NEW)

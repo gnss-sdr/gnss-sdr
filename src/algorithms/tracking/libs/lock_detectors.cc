@@ -60,7 +60,7 @@
  *
  * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
  * \f{equation}
- *     CN0_{dB}=10*log(\hat{\rho})-10*log(2 * T_{int}),
+ *     CN0_{dB}=10*log(\hat{\rho})-10*log(T_{int}),
  * \f}
  * where \f$T_{int}\f$ is the coherent integration time, in seconds.
  *

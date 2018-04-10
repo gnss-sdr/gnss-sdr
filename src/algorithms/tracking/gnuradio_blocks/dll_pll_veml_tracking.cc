@@ -1318,12 +1318,12 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_carrier_loop_filter.set_pdi(new_correlation_time);
                                         d_code_loop_filter.set_pdi(new_correlation_time);
                                         d_state = 3;  // next state is the extended correlator integrator
-                                        LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols << " [symbols] extended correlator for CH "
+                                        LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
-                                                  << " : Satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
-                                        std::cout << "Enabled " << trk_parameters.extend_correlation_symbols << " [symbols] extended correlator for CH "
+                                                  << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
+                                        std::cout << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
-                                                  << " : Satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+                                                  << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                         // Set narrow taps delay values [chips]
                                         d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_narrow_hz);
                                         d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_narrow_hz);

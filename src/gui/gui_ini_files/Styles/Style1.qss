@@ -1,0 +1,191 @@
+QWidget {
+	background-color: rgb( 0, 128, 128);		
+}
+
+QLabel {
+	background: transparent;
+	background-color: rgb( 95, 158, 160);
+	color: darkblue
+}
+
+QGroupBox { 
+	background-color: 	rgb( 95, 158, 160);
+	border: 2px solid gray;
+    border-radius: 5px;
+    margin-top: 2ex;
+	padding: 3ex;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left; /* position at the top center */
+    padding: 2ex 2px;
+
+}
+
+QPushButton { 
+	background-color: 	rgb(40, 71, 145); 
+	color: white;
+}
+
+QPushButton:pressed {
+    background-color: rgb(96, 130, 210);
+    border-style: inset;
+}
+
+QLineEdit {
+	background-color:   rgb( 0, 206, 209);
+	
+}
+
+QComboBox {
+	background-color:   rgb( 0, 206, 209);
+	border: 2px solid gray;
+    border-radius: 3px;
+    padding: 1px 18px 1px 3px;
+    min-width: 6em;
+}
+
+QComboBox QAbstractItemView {
+	background-color: rgb( 95, 158, 160);
+    border: 2px solid darkgray;
+    selection-background-color: rgb(40, 71, 145);
+}
+
+QTabBar::tab {
+    background-color: rgb( 171, 183, 224);
+    border: 2px solid #9B9B9B;
+    border-bottom-color: #C2C7CB; /* same as the pane color */
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    min-width: 8ex;
+    padding: 2px;
+	
+}
+
+QTabBar::tab:selected, QTabBar::tab:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #fafafa, stop: 0.4 #f4f4f4,
+                                stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
+}
+
+QTabBar::tab:selected {
+	background-color: rgb(40, 71, 145);
+	color: white;
+    border-color: #9B9B9B;
+    border-bottom-color: #C2C7CB; /* same as pane color */
+}
+
+QTabBar::tab:!selected {
+    margin-top: 2px; /* make non-selected tabs look smaller */
+}
+
+QMenuBar {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                      stop:0 lightgray, stop:1 darkgray);
+}
+
+QMenuBar::item {
+    spacing: 3px; /* spacing between menu bar items */
+    padding: 5px 4px;
+    background: transparent;
+    border-radius: 4px;
+}
+
+QMenuBar::item:selected { /* when selected using mouse or keyboard */
+    background: #a8a8a8;
+}
+
+QMenuBar::item:pressed {
+    background: #888888;
+}
+
+QMenu {
+    background-color: #ABABAB; /* sets background of the menu */
+    border: 1px solid black;
+}
+
+QMenu::item {
+    /* sets background of menu item. set this to something non-transparent
+        if you want menu color and menu item color to be different */
+    background-color: transparent;
+}
+
+QMenu::item:selected { /* when user selects item using mouse or keyboard */
+    background-color: rgb(40, 71, 145);
+}
+
+QScrollBar:horizontal {
+    border: 2px solid grey;
+    background: rgb( 0, 128, 128);
+    height: 15px;
+    margin: 0px 20px 0 20px;
+}
+QScrollBar::handle:horizontal {
+    background: white;
+    min-width: 20px;
+}
+QScrollBar::add-line:horizontal {
+    border: 2px solid grey;
+    background: rgb(40, 71, 145);
+    width: 20px;
+    subcontrol-position: right;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:horizontal {
+    border: 2px solid grey;
+    background: rgb(40, 71, 145);
+    width: 20px;
+    subcontrol-position: left;
+    subcontrol-origin: margin;
+}
+QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+    border: 2px solid grey;
+    width: 3px;
+    height: 3px;
+    background: white;
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: none;
+}
+
+QScrollBar:vertical {
+     border: 2px solid grey;
+     background: rgb( 0, 128, 128);
+     width: 15px;
+     margin: 22px 0 22px 0;
+ }
+ QScrollBar::handle:vertical {
+     background: white;
+     min-height: 20px;
+ }
+ QScrollBar::add-line:vertical {
+     border: 2px solid grey;
+     background: rgb(40, 71, 145);
+     height: 20px;
+     subcontrol-position: bottom;
+     subcontrol-origin: margin;
+ }
+
+ QScrollBar::sub-line:vertical {
+     border: 2px solid grey;
+     background: rgb(40, 71, 145);
+     height: 20px;
+     subcontrol-position: top;
+     subcontrol-origin: margin;
+ }
+ QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+     border: 2px solid grey;
+     width: 3px;
+     height: 3px;
+     background: white;
+ }
+
+ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+     background: none;
+ }
+
+
+

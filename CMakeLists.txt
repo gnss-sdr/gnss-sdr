@@ -86,7 +86,8 @@ if(ENABLE_FPGA)
     set(ENABLE_INSTALL_TESTS ON)
 endif(ENABLE_FPGA)
 
-
+# GUI
+option(ENABLE_GUI "Build GUI configurator (requires Qt5)" OFF)
 
 ###############################
 # GNSS-SDR version information

@@ -33,7 +33,7 @@
 
 #include "gnss_signal.h"
 #include <boost/scoped_array.hpp>
-#include <gnuradio/random.h>
+//#include <gnuradio/random.h>
 #include <gnuradio/block.h>
 #include <string>
 #include <vector>
@@ -120,13 +120,15 @@ private:
 
     boost::scoped_array<gr_complex *> sampled_code_data_;
     boost::scoped_array<gr_complex *> sampled_code_pilot_;
-    gr::random *random_;
+    //gr::random *random_;
     gr_complex *complex_phase_;
 
     unsigned int work_counter_;
     std::random_device r;
     std::default_random_engine e1;
+    std::default_random_engine e2;
     std::uniform_int_distribution<int> uniform_dist;
+    std::normal_distribution<float> normal_dist;
 
 public:
     ~signal_generator_c();  // public destructor

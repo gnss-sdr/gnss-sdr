@@ -360,7 +360,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${GNSSSDR_GCC_MIN_VERSION})
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     execute_process(COMMAND
         ${CMAKE_CXX_COMPILER} -v
         RESULT_VARIABLE _res ERROR_VARIABLE _err
@@ -387,7 +387,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     else(${_res} STREQUAL "0")
         message(WARNING "\nCannot determine the version of the compiler selected to build GNSS-SDR (${APPLE_STR}Clang : ${CMAKE_CXX_COMPILER}). This build may or not work. We highly recommend using Apple Clang version ${APPLECLANG_MIN_VERSION} or more recent, or Clang version ${CLANG_MIN_VERSION} or more recent.")
     endif(${_res} STREQUAL "0")
-endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 
 
@@ -783,7 +783,7 @@ if (NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
          set(GFLAGS_LIBRARY_DIR_TO_LINK ${GFlags_LIBRARY_DIRS})
      endif(${LOCAL_GFLAGS})
 
-     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
@@ -799,7 +799,7 @@ autoreconf -vfi
 cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure")
 
-      else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+      else(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
              file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
@@ -812,7 +812,7 @@ autoreconf -vfi
 cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure")
 
-     endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+     endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
@@ -1458,39 +1458,51 @@ endif(ENABLE_GPROF)
 ########################################################################
 # Set compiler flags
 ########################################################################
-# Enable C++14 support in GCC / Fallback to C++11 when using GCC < 6.1.1
+# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
+# Enable C++14 support in GCC >= 6.1.1
+# Fallback to C++11 when using GCC < 6.1.1
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
     else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+        # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+        # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
+        # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
     endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 
-# Enable C++14 support in Clang from 3.5 / Fallback to C++11 if older version and use lib++ if working in macOS
+# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
+# Enable C++14 support in Clang >= 3.5.0 or AppleClang >= 600
+# Fallback to C++11 if older version
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(OS_IS_MACOSX)
         # See https://trac.macports.org/wiki/XcodeVersionInfo for Apple Clang version equivalences
         if(CLANG_VERSION VERSION_LESS "600")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
         else(CLANG_VERSION VERSION_LESS "600")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+            # if(CLANG_VERSION VERSION_LESS "900")
+                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+            # else(CLANG_VERSION VERSION_LESS "900")
+                # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
+            # endif(CLANG_VERSION VERSION_LESS "900")
         endif(CLANG_VERSION VERSION_LESS "600")
-        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wno-deprecated-declarations")
     else(OS_IS_MACOSX)
         if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
         else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+            # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+            # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+                # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
+            # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
         endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
     endif(OS_IS_MACOSX)
 
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
-        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wno-unused-private-field")
-    endif(CMAKE_BUILD_TYPE MATCHES "Release")
     if(OS_IS_MACOSX)
-       set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -stdlib=libc++")
+        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -stdlib=libc++")
     endif(OS_IS_MACOSX)
 endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 

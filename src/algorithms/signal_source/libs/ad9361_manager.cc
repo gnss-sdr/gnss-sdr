@@ -86,7 +86,7 @@ bool get_ad9361_stream_dev(struct iio_context *ctx, enum iodev d, struct iio_dev
 
 
 /* finds AD9361 streaming IIO channels */
-bool get_ad9361_stream_ch(struct iio_context *ctx, enum iodev d, struct iio_device *dev, int chid, struct iio_channel **chn)
+bool get_ad9361_stream_ch(struct iio_context *ctx __attribute__((unused)), enum iodev d, struct iio_device *dev, int chid, struct iio_channel **chn)
 {
     std::stringstream name;
     name.str("");

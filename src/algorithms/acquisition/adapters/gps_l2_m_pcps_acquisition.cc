@@ -46,6 +46,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
+    pcpsconf_t acq_parameters;
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -57,21 +58,26 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    acq_parameters.fs_in = fs_in_;
     if_ = configuration_->property(role + ".if", 0);
+    acq_parameters.freq = if_;
     dump_ = configuration_->property(role + ".dump", false);
+    acq_parameters.dump = dump_;
     blocking_ = configuration_->property(role + ".blocking", true);
+    acq_parameters.blocking = blocking_;
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
-
+    acq_parameters.doppler_max = doppler_max_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
+    acq_parameters.bit_transition_flag = bit_transition_flag_;
     use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
-
+    acq_parameters.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
-
+    acq_parameters.max_dwells = max_dwells_;
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
-
+    acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = round(static_cast<double>(fs_in_) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
+    code_length_ = std::round(static_cast<double>(fs_in_) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_;
 
@@ -90,10 +96,14 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
         {
             item_size_ = sizeof(gr_complex);
         }
-    acquisition_ = pcps_make_acquisition(1, max_dwells_,
-        doppler_max_, if_, fs_in_, code_length_, code_length_,
-        bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, blocking_,
-        dump_filename_, item_size_);
+    acq_parameters.samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
+    acq_parameters.samples_per_code = code_length_;
+    acq_parameters.it_size = item_size_;
+    acq_parameters.sampled_ms = 20;
+    acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
+    acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
+    acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", true);
+    acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);

@@ -1,18 +1,20 @@
 /*!
  * \file gps_l1_ca_kf_tracking.cc
- * \brief Implementation of an adapter of a DLL+PLL tracking loop block
- * for GPS L1 C/A to a TrackingInterface
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
+ * \brief Implementation of an adapter of a DLL + Kalman carrier
+ * tracking loop block for GPS L1 C/A signals
+ * \author Javier Arribas, 2018. jarribas(at)cttc.es
+ * \author Jordi Vila-Valls 2018. jvila(at)cttc.es
+ * \author Carles Fernandez-Prades 2018. cfernandez(at)cttc.es
  *
- * Code DLL + carrier PLL according to the algorithms described in:
- * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkhauser, 2007
+ * Reference:
+ * J. Vila-Valls, P. Closas, M. Navarro and C. Fernández-Prades,
+ * "Are PLLs Dead? A Tutorial on Kalman Filter-based Techniques for Digital
+ * Carrier Synchronization", IEEE Aerospace and Electronic Systems Magazine,
+ * Vol. 32, No. 7, pp. 28–45, July 2017. DOI: 10.1109/MAES.2017.150260
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -66,13 +68,11 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
-    //pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
-    //if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);  //unused!
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################

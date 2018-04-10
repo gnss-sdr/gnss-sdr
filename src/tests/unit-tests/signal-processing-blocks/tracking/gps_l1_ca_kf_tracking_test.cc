@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -123,7 +123,7 @@ public:
     std::string p4;
     std::string p5;
 
-    std::string implementation = "GPS_L1_CA_KF_Tracking";  // "GPS_L1_CA_KF_Tracking";
+    std::string implementation = "GPS_L1_CA_KF_Tracking";
 
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
 
@@ -251,7 +251,6 @@ void GpsL1CAKfTrackingTest::check_results_doppler(arma::vec& true_time_s,
     arma::uvec meas_time_s_valid = find(meas_time_s > 0);
     meas_time_s = meas_time_s(meas_time_s_valid);
     meas_value = meas_value(meas_time_s_valid);
-
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
     // 2. RMSE
@@ -464,6 +463,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
 
     nepoch = trk_dump.num_epochs();
     std::cout << "Measured observation epochs=" << nepoch << std::endl;
+    //trk_dump.restart();
 
     arma::vec trk_timestamp_s = arma::zeros(nepoch, 1);
     arma::vec trk_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
@@ -482,7 +482,6 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
             trk_timestamp_s(epoch_counter) = static_cast<double>(trk_dump.PRN_start_sample_count) / static_cast<double>(baseband_sampling_freq);
             trk_acc_carrier_phase_cycles(epoch_counter) = trk_dump.acc_carrier_phase_rad / GPS_TWO_PI;
             trk_Doppler_Hz(epoch_counter) = trk_dump.carrier_doppler_hz;
-
             double delay_chips = GPS_L1_CA_CODE_LENGTH_CHIPS - GPS_L1_CA_CODE_LENGTH_CHIPS * (fmod((static_cast<double>(trk_dump.PRN_start_sample_count) + trk_dump.aux1) / static_cast<double>(baseband_sampling_freq), 1.0e-3) / 1.0e-3);
 
             trk_prn_delay_chips(epoch_counter) = delay_chips;

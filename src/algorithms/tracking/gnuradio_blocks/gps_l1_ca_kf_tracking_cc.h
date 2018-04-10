@@ -1,18 +1,20 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking_cc.h
- * \brief Interface of a code DLL + carrier PLL tracking block
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
- *         Cillian O'Driscoll, 2017. cillian.odriscoll(at)gmail.com
+ * \file gps_l1_ca_kf_tracking_cc.cc
+ * \brief Interface of a processing block of a DLL + Kalman carrier
+ * tracking loop for GPS L1 C/A signals
+ * \author Javier Arribas, 2018. jarribas(at)cttc.es
+ * \author Jordi Vila-Valls 2018. jvila(at)cttc.es
+ * \author Carles Fernandez-Prades 2018. cfernandez(at)cttc.es
  *
- * Code DLL + carrier PLL according to the algorithms described in:
- * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
- * Birkhauser, 2007
+ * Reference:
+ * J. Vila-Valls, P. Closas, M. Navarro and C. Fernandez-Prades,
+ * "Are PLLs Dead? A Tutorial on Kalman Filter-based Techniques for Digital
+ * Carrier Synchronization", IEEE Aerospace and Electronic Systems Magazine,
+ * Vol. 32, No. 7, pp. 28–45, July 2017. DOI: 10.1109/MAES.2017.150260
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

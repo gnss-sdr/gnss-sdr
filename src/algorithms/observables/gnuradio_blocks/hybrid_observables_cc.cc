@@ -66,7 +66,7 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in,
     max_delta = 0.15;     // 150 ms
     valid_channels.resize(d_nchannels, false);
     d_num_valid_channels = 0;
-    d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(200, d_nchannels);
+    d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(1000, d_nchannels);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)
@@ -307,25 +307,19 @@ bool hybrid_observables_cc::interpolate_data(Gnss_Synchro &out, const unsigned i
         }
     std::pair<unsigned int, unsigned int> ind = find_interp_elements(ch, ti);
 
-    //Linear interpolation parameters: y(t) = m * t + c
-    double m = 0.0;
-    double c = 0.0;
+    //Linear interpolation: y(t) = y(t1) + (y(t2) - y(t1)) * (t - t1) / (t2 - t1)
 
     // CARRIER PHASE INTERPOLATION
 
-    m = (d_gnss_synchro_history->at(ch, ind.first).Carrier_phase_rads - d_gnss_synchro_history->at(ch, ind.second).Carrier_phase_rads) / (d_gnss_synchro_history->at(ch, ind.first).RX_time - d_gnss_synchro_history->at(ch, ind.second).RX_time);
-    c = d_gnss_synchro_history->at(ch, ind.first).Carrier_phase_rads - m * d_gnss_synchro_history->at(ch, ind.first).RX_time;
-    out.Carrier_phase_rads = m * ti + c;
+    out.Carrier_phase_rads = d_gnss_synchro_history->at(ch, ind.first).Carrier_phase_rads + (d_gnss_synchro_history->at(ch, ind.second).Carrier_phase_rads - d_gnss_synchro_history->at(ch, ind.first).Carrier_phase_rads) * (ti - d_gnss_synchro_history->at(ch, ind.first).RX_time) / (d_gnss_synchro_history->at(ch, ind.second).RX_time - d_gnss_synchro_history->at(ch, ind.first).RX_time);
 
     // CARRIER DOPPLER INTERPOLATION
-    m = (d_gnss_synchro_history->at(ch, ind.first).Carrier_Doppler_hz - d_gnss_synchro_history->at(ch, ind.second).Carrier_Doppler_hz) / (d_gnss_synchro_history->at(ch, ind.first).RX_time - d_gnss_synchro_history->at(ch, ind.second).RX_time);
-    c = d_gnss_synchro_history->at(ch, ind.first).Carrier_Doppler_hz - m * d_gnss_synchro_history->at(ch, ind.first).RX_time;
-    out.Carrier_Doppler_hz = m * ti + c;
+
+    out.Carrier_Doppler_hz = d_gnss_synchro_history->at(ch, ind.first).Carrier_Doppler_hz + (d_gnss_synchro_history->at(ch, ind.second).Carrier_Doppler_hz - d_gnss_synchro_history->at(ch, ind.first).Carrier_Doppler_hz) * (ti - d_gnss_synchro_history->at(ch, ind.first).RX_time) / (d_gnss_synchro_history->at(ch, ind.second).RX_time - d_gnss_synchro_history->at(ch, ind.first).RX_time);
 
     // TOW INTERPOLATION
-    m = (d_gnss_synchro_history->at(ch, ind.first).TOW_at_current_symbol_s - d_gnss_synchro_history->at(ch, ind.second).TOW_at_current_symbol_s) / (d_gnss_synchro_history->at(ch, ind.first).RX_time - d_gnss_synchro_history->at(ch, ind.second).RX_time);
-    c = d_gnss_synchro_history->at(ch, ind.first).TOW_at_current_symbol_s - m * d_gnss_synchro_history->at(ch, ind.first).RX_time;
-    out.TOW_at_current_symbol_s = m * ti + c;
+
+    out.TOW_at_current_symbol_s = d_gnss_synchro_history->at(ch, ind.first).TOW_at_current_symbol_s + (d_gnss_synchro_history->at(ch, ind.second).TOW_at_current_symbol_s - d_gnss_synchro_history->at(ch, ind.first).TOW_at_current_symbol_s) * (ti - d_gnss_synchro_history->at(ch, ind.first).RX_time) / (d_gnss_synchro_history->at(ch, ind.second).RX_time - d_gnss_synchro_history->at(ch, ind.first).RX_time);
 
     return true;
 

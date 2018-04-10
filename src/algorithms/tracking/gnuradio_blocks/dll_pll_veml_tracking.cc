@@ -362,6 +362,14 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
     d_code_phase_samples = 0.0;
     d_last_prompt = gr_complex(0.0, 0.0);
     d_state = 0;  // initial state: standby
+
+    signal_pretty_name["1C"] = "L1 C/A";
+    signal_pretty_name["1B"] = "E1";
+    signal_pretty_name["1G"] = "L1 C/A";
+    signal_pretty_name["2S"] = "L2C";
+    signal_pretty_name["2G"] = "L2 C/A";
+    signal_pretty_name["5X"] = "E5a";
+    signal_pretty_name["L5"] = "L5";
 }
 
 
@@ -504,7 +512,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_code_loop_filter.set_pdi(static_cast<float>(d_code_period));
 
     // DEBUG OUTPUT
-    std::cout << "Tracking of " << systemName << " " << signal_type << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of " << systemName << " " << signal_pretty_name[signal_type] << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking pull-in
@@ -1256,8 +1264,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         next_state = acquire_secondary();
                                         if (next_state)
                                             {
-                                                std::cout << "Secondary code locked for CH " << d_channel
-                                                          << " : Satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+                                                std::cout << systemName << " " << signal_pretty_name[signal_type] << " secondary code locked in channel " << d_channel
+                                                          << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                             }
 
                                         d_Prompt_buffer_deque.pop_front();
@@ -1318,12 +1326,12 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_carrier_loop_filter.set_pdi(new_correlation_time);
                                         d_code_loop_filter.set_pdi(new_correlation_time);
                                         d_state = 3;  // next state is the extended correlator integrator
-                                        LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols << " [symbols] extended correlator for CH "
+                                        LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
-                                                  << " : Satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
-                                        std::cout << "Enabled " << trk_parameters.extend_correlation_symbols << " [symbols] extended correlator for CH "
+                                                  << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
+                                        std::cout << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
-                                                  << " : Satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+                                                  << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                         // Set narrow taps delay values [chips]
                                         d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_narrow_hz);
                                         d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_narrow_hz);

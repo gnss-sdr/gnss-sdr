@@ -307,6 +307,7 @@ bool hybrid_observables_cc::interpolate_data(Gnss_Synchro &out, const unsigned i
         }
     std::pair<unsigned int, unsigned int> ind = find_interp_elements(ch, ti);
 
+    //Linear interpolation parameters: y(t) = m * t + c
     double m = 0.0;
     double c = 0.0;
 
@@ -378,8 +379,8 @@ std::pair<unsigned int, unsigned int> hybrid_observables_cc::find_interp_element
     double dt = 0.0;
     for (unsigned int i = 0; i < d_gnss_synchro_history->size(ch); i++)
         {
-            dt = std::fabs(ti - d_gnss_synchro_history->at(ch, i).RX_time);
-            if (dt < dif)
+            dt = ti - d_gnss_synchro_history->at(ch, i).RX_time;
+            if (dt < dif and dt > 0.0)
                 {
                     dif = dt;
                     closest = i;
@@ -399,16 +400,8 @@ std::pair<unsigned int, unsigned int> hybrid_observables_cc::find_interp_element
         }
     else
         {
-            if (d_gnss_synchro_history->at(ch, closest).RX_time < ti)
-                {
-                    index1 = closest;
-                    index2 = closest + 1;
-                }
-            else
-                {
-                    index1 = closest - 1;
-                    index2 = closest;
-                }
+            index1 = closest;
+            index2 = closest + 1;
         }
     return std::pair<unsigned int, unsigned int>(index1, index2);
 }

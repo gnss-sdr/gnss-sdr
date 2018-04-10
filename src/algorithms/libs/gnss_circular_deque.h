@@ -33,6 +33,7 @@
 
 #ifndef GNSS_SDR_CIRCULAR_DEQUE_H_
 #define GNSS_SDR_CIRCULAR_DEQUE_H_
+#include <exception>
 
 template <class T>
 class Gnss_circular_deque
@@ -89,6 +90,10 @@ Gnss_circular_deque<T>::Gnss_circular_deque(const unsigned int max_size, const u
                     d_index_pop[i] = 0;
                     d_index_push[i] = 0;
                     d_history[i] = new T[d_max_size];
+                    for (unsigned int ii = 0; ii < d_max_size; ii++)
+                        {
+                            d_history[i][ii] = d_return_void;
+                        }
                 }
         }
 }
@@ -127,12 +132,14 @@ T& Gnss_circular_deque<T>::back(const unsigned int ch)
                 }
             else
                 {
-                    index = d_max_size;
+                    index = d_max_size - 1;
                 }
             return d_history[ch][index];
         }
     else
         {
+            std::exception ex;
+            throw ex;
             return d_return_void;
         }
 }
@@ -146,6 +153,8 @@ T& Gnss_circular_deque<T>::front(const unsigned int ch)
         }
     else
         {
+            std::exception ex;
+            throw ex;
             return d_return_void;
         }
 }
@@ -155,11 +164,13 @@ T& Gnss_circular_deque<T>::at(const unsigned int ch, const unsigned int pos)
 {
     if (d_size[ch] > 0 and pos < d_size[ch])
         {
-            unsigned int index = (d_index_pop[ch] + pos) % d_max_size;
+            unsigned int index = ((d_index_pop[ch] + pos) % d_max_size);
             return d_history[ch][index];
         }
     else
         {
+            std::exception ex;
+            throw ex;
             return d_return_void;
         }
 }
@@ -175,31 +186,45 @@ void Gnss_circular_deque<T>::clear(const unsigned int ch)
 template <class T>
 T Gnss_circular_deque<T>::pop_front(const unsigned int ch)
 {
-    T result;
     if (d_size[ch] > 0)
         {
             d_size[ch]--;
-            result = d_history[ch][d_index_pop[ch]];
-            d_index_pop[ch]++;
-            d_index_pop[ch] %= d_max_size;
+            T result = d_history[ch][d_index_pop[ch]];
+            if (d_size[ch] > 0)
+                {
+                    d_index_pop[ch]++;
+                    d_index_pop[ch] %= d_max_size;
+                }
+            else
+                {
+                    clear(ch);
+                }
+            return result;
         }
-    return result;
+    else
+        {
+            std::exception ex;
+            throw ex;
+            return d_return_void;
+        }
 }
 
 template <class T>
 void Gnss_circular_deque<T>::push_back(const unsigned int ch, const T& new_data)
 {
+    bool increment_pop = true;
+    if (d_size[ch] < d_max_size)
+        {
+            increment_pop = false;
+            d_size[ch]++;
+        }
+
     d_history[ch][d_index_push[ch]] = new_data;
     d_index_push[ch]++;
     d_index_push[ch] %= d_max_size;
-    if (d_size[ch] < d_max_size)
+    if (increment_pop)
         {
-            d_size[ch]++;
-        }
-    else
-        {
-            d_index_pop[ch]++;
-            d_index_pop[ch] %= d_max_size;
+            d_index_pop[ch] = d_index_push[ch];
         }
 }
 

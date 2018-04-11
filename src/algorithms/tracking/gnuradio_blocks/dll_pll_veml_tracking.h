@@ -38,6 +38,7 @@
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
+#include <map>
 
 typedef struct
 {
@@ -118,6 +119,7 @@ private:
     std::string systemName;
     std::string signal_type;
     std::string *d_secondary_code_string;
+    std::map<std::string, std::string> signal_pretty_name;
 
     //tracking state machine
     int d_state;

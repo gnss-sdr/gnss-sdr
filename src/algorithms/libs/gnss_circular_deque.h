@@ -33,181 +33,103 @@
 
 #ifndef GNSS_SDR_CIRCULAR_DEQUE_H_
 #define GNSS_SDR_CIRCULAR_DEQUE_H_
+#include <vector>
+#include <boost/circular_buffer.hpp>
 
 template <class T>
 class Gnss_circular_deque
 {
 public:
-    Gnss_circular_deque();
-    Gnss_circular_deque(const unsigned int max_size, const unsigned int nchann);
-    ~Gnss_circular_deque();
-    unsigned int size(const unsigned int ch);
-    T& at(const unsigned int ch, const unsigned int pos);
-    T& front(const unsigned int ch);
-    T& back(const unsigned int ch);
-    void push_back(const unsigned int ch, const T& new_data);
-    T pop_front(const unsigned int ch);
-    void clear(const unsigned int ch);
-    T* get_vector(const unsigned int ch);
+    Gnss_circular_deque();                                                        // Default constructor
+    Gnss_circular_deque(const unsigned int max_size, const unsigned int nchann);  // nchann = number of channels; max_size = channel capacity
+    unsigned int size(const unsigned int ch);                                     // Returns the number of available elements in a channel
+    T& at(const unsigned int ch, const unsigned int pos);                         // Returns a reference to an element
+    T& front(const unsigned int ch);                                              // Returns a reference to the first element in the deque
+    T& back(const unsigned int ch);                                               // Returns a reference to the last element in the deque
+    void push_back(const unsigned int ch, const T& new_data);                     // Inserts an element at the end of the deque
+    void pop_front(const unsigned int ch);                                        // Removes the first element of the deque
+    void clear(const unsigned int ch);                                            // Removes all the elements of the deque (Sets size to 0). Capacity is not modified
+    void reset(const unsigned int max_size, const unsigned int nchann);           // Removes all the elements in all the channels. Re-sets the number of channels and their capacity
+    void reset();                                                                 // Removes all the channels (Sets nchann to 0)
 
 private:
-    T** d_history;
-    T d_return_void;  // Void object for avoid compiler errors
-    unsigned int* d_index_pop;
-    unsigned int* d_index_push;
-    unsigned int* d_size;
-    unsigned int d_max_size;
-    unsigned int d_nchannels;
+    std::vector<boost::circular_buffer<T>> d_data;
 };
 
 
 template <class T>
 Gnss_circular_deque<T>::Gnss_circular_deque()
 {
-    d_max_size = 0;
-    d_nchannels = 0;
-    d_size = nullptr;
-    d_index_pop = nullptr;
-    d_index_push = nullptr;
-    d_history = nullptr;
+    reset();
 }
 
 template <class T>
 Gnss_circular_deque<T>::Gnss_circular_deque(const unsigned int max_size, const unsigned int nchann)
 {
-    d_max_size = max_size;
-    d_nchannels = nchann;
-    if (d_max_size > 0 and d_nchannels > 0)
-        {
-            d_size = new unsigned int[d_nchannels];
-            d_index_pop = new unsigned int[d_nchannels];
-            d_index_push = new unsigned int[d_nchannels];
-            d_history = new T*[d_nchannels];
-            for (unsigned int i = 0; i < d_nchannels; i++)
-                {
-                    d_size[i] = 0;
-                    d_index_pop[i] = 0;
-                    d_index_push[i] = 0;
-                    d_history[i] = new T[d_max_size];
-                }
-        }
-}
-
-template <class T>
-Gnss_circular_deque<T>::~Gnss_circular_deque()
-{
-    if (d_max_size > 0 and d_nchannels > 0)
-        {
-            delete[] d_size;
-            delete[] d_index_pop;
-            delete[] d_index_push;
-            for (unsigned int i = 0; i < d_nchannels; i++)
-                {
-                    delete[] d_history[i];
-                }
-            delete[] d_history;
-        }
+    reset(max_size, nchann);
 }
 
 template <class T>
 unsigned int Gnss_circular_deque<T>::size(const unsigned int ch)
 {
-    return d_size[ch];
+    return d_data.at(ch).size();
 }
 
 template <class T>
 T& Gnss_circular_deque<T>::back(const unsigned int ch)
 {
-    if (d_size[ch] > 0)
-        {
-            unsigned int index = 0;
-            if (d_index_push[ch] > 0)
-                {
-                    index = d_index_push[ch] - 1;
-                }
-            else
-                {
-                    index = d_max_size;
-                }
-            return d_history[ch][index];
-        }
-    else
-        {
-            return d_return_void;
-        }
+    return d_data.at(ch).back();
 }
+
 
 template <class T>
 T& Gnss_circular_deque<T>::front(const unsigned int ch)
 {
-    if (d_size[ch] > 0)
-        {
-            return d_history[ch][d_index_pop[ch]];
-        }
-    else
-        {
-            return d_return_void;
-        }
+    return d_data.at(ch).front();
 }
+
 
 template <class T>
 T& Gnss_circular_deque<T>::at(const unsigned int ch, const unsigned int pos)
 {
-    if (d_size[ch] > 0 and pos < d_size[ch])
-        {
-            unsigned int index = (d_index_pop[ch] + pos) % d_max_size;
-            return d_history[ch][index];
-        }
-    else
-        {
-            return d_return_void;
-        }
+    return d_data.at(ch).at(pos);
 }
 
 template <class T>
 void Gnss_circular_deque<T>::clear(const unsigned int ch)
 {
-    d_size[ch] = 0;
-    d_index_pop[ch] = 0;
-    d_index_push[ch] = 0;
+    d_data.at(ch).clear();
 }
 
 template <class T>
-T Gnss_circular_deque<T>::pop_front(const unsigned int ch)
+void Gnss_circular_deque<T>::reset(const unsigned int max_size, const unsigned int nchann)
 {
-    T result;
-    if (d_size[ch] > 0)
+    d_data.clear();
+    if (max_size > 0 and nchann > 0)
         {
-            d_size[ch]--;
-            result = d_history[ch][d_index_pop[ch]];
-            d_index_pop[ch]++;
-            d_index_pop[ch] %= d_max_size;
+            for (unsigned int i = 0; i < nchann; i++)
+                {
+                    d_data.push_back(boost::circular_buffer<T>(max_size));
+                }
         }
-    return result;
+}
+
+template <class T>
+void Gnss_circular_deque<T>::reset()
+{
+    d_data.clear();
+}
+
+template <class T>
+void Gnss_circular_deque<T>::pop_front(const unsigned int ch)
+{
+    d_data.at(ch).pop_front();
 }
 
 template <class T>
 void Gnss_circular_deque<T>::push_back(const unsigned int ch, const T& new_data)
 {
-    d_history[ch][d_index_push[ch]] = new_data;
-    d_index_push[ch]++;
-    d_index_push[ch] %= d_max_size;
-    if (d_size[ch] < d_max_size)
-        {
-            d_size[ch]++;
-        }
-    else
-        {
-            d_index_pop[ch]++;
-            d_index_pop[ch] %= d_max_size;
-        }
+    d_data.at(ch).push_back(new_data);
 }
-
-template <class T>
-T* Gnss_circular_deque<T>::get_vector(const unsigned int ch)
-{
-    return d_history[ch];
-}
-
 
 #endif /* GNSS_SDR_CIRCULAR_DEQUE_H_ */

@@ -63,10 +63,11 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in,
     d_dump_filename = dump_filename;
     T_rx_s = 0.0;
     T_rx_step_s = 0.001;  // 1 ms
-    max_delta = 0.15;     // 150 ms
+    max_delta = 3.5;      // 3.5 s
+    d_latency = 0.08;     // 80 ms
     valid_channels.resize(d_nchannels, false);
     d_num_valid_channels = 0;
-    d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(200, d_nchannels);
+    d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(static_cast<unsigned int>(max_delta * 1000.0), d_nchannels);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)
@@ -86,7 +87,6 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in,
                         }
                 }
         }
-    std::cout << "SALIDA CONST HO. ()" << std::endl;
 }
 
 
@@ -308,55 +308,21 @@ bool hybrid_observables_cc::interpolate_data(Gnss_Synchro &out, const unsigned i
         }
     std::pair<unsigned int, unsigned int> ind = find_interp_elements(ch, ti);
 
-    double m = 0.0;
-    double c = 0.0;
+    //Linear interpolation: y(t) = y(t1) + (y(t2) - y(t1)) * (t - t1) / (t2 - t1)
 
     // CARRIER PHASE INTERPOLATION
 
-    m = (d_gnss_synchro_history->at(ch, ind.first).Carrier_phase_rads - d_gnss_synchro_history->at(ch, ind.second).Carrier_phase_rads) / (d_gnss_synchro_history->at(ch, ind.first).RX_time - d_gnss_synchro_history->at(ch, ind.second).RX_time);
-    c = d_gnss_synchro_history->at(ch, ind.first).Carrier_phase_rads - m * d_gnss_synchro_history->at(ch, ind.first).RX_time;
-    out.Carrier_phase_rads = m * ti + c;
+    out.Carrier_phase_rads = d_gnss_synchro_history->at(ch, ind.first).Carrier_phase_rads + (d_gnss_synchro_history->at(ch, ind.second).Carrier_phase_rads - d_gnss_synchro_history->at(ch, ind.first).Carrier_phase_rads) * (ti - d_gnss_synchro_history->at(ch, ind.first).RX_time) / (d_gnss_synchro_history->at(ch, ind.second).RX_time - d_gnss_synchro_history->at(ch, ind.first).RX_time);
 
     // CARRIER DOPPLER INTERPOLATION
-    m = (d_gnss_synchro_history->at(ch, ind.first).Carrier_Doppler_hz - d_gnss_synchro_history->at(ch, ind.second).Carrier_Doppler_hz) / (d_gnss_synchro_history->at(ch, ind.first).RX_time - d_gnss_synchro_history->at(ch, ind.second).RX_time);
-    c = d_gnss_synchro_history->at(ch, ind.first).Carrier_Doppler_hz - m * d_gnss_synchro_history->at(ch, ind.first).RX_time;
-    out.Carrier_Doppler_hz = m * ti + c;
+
+    out.Carrier_Doppler_hz = d_gnss_synchro_history->at(ch, ind.first).Carrier_Doppler_hz + (d_gnss_synchro_history->at(ch, ind.second).Carrier_Doppler_hz - d_gnss_synchro_history->at(ch, ind.first).Carrier_Doppler_hz) * (ti - d_gnss_synchro_history->at(ch, ind.first).RX_time) / (d_gnss_synchro_history->at(ch, ind.second).RX_time - d_gnss_synchro_history->at(ch, ind.first).RX_time);
 
     // TOW INTERPOLATION
-    m = (d_gnss_synchro_history->at(ch, ind.first).TOW_at_current_symbol_s - d_gnss_synchro_history->at(ch, ind.second).TOW_at_current_symbol_s) / (d_gnss_synchro_history->at(ch, ind.first).RX_time - d_gnss_synchro_history->at(ch, ind.second).RX_time);
-    c = d_gnss_synchro_history->at(ch, ind.first).TOW_at_current_symbol_s - m * d_gnss_synchro_history->at(ch, ind.first).RX_time;
-    out.TOW_at_current_symbol_s = m * ti + c;
+
+    out.TOW_at_current_symbol_s = d_gnss_synchro_history->at(ch, ind.first).TOW_at_current_symbol_s + (d_gnss_synchro_history->at(ch, ind.second).TOW_at_current_symbol_s - d_gnss_synchro_history->at(ch, ind.first).TOW_at_current_symbol_s) * (ti - d_gnss_synchro_history->at(ch, ind.first).RX_time) / (d_gnss_synchro_history->at(ch, ind.second).RX_time - d_gnss_synchro_history->at(ch, ind.first).RX_time);
 
     return true;
-
-    /*
-    arma::vec t = arma::vec(d_gnss_synchro_history.size(ch));
-    arma::vec dop = t;
-    arma::vec cph = t;
-    arma::vec tow = t;
-    arma::vec tiv = arma::vec(1);
-    arma::vec result;
-    tiv(0) = ti;
-
-    unsigned int aux = 0;
-    for (it = data.begin(); it != data.end(); it++)
-        {
-            t(aux) = it->RX_time;
-            dop(aux) = it->Carrier_Doppler_hz;
-            cph(aux) = it->Carrier_phase_rads;
-            tow(aux) = it->TOW_at_current_symbol_s;
-
-            aux++;
-        }
-    arma::interp1(t, dop, tiv, result);
-    out.Carrier_Doppler_hz = result(0);
-    arma::interp1(t, cph, tiv, result);
-    out.Carrier_phase_rads = result(0);
-    arma::interp1(t, tow, tiv, result);
-    out.TOW_at_current_symbol_s = result(0);
-
-    return result.is_finite();
-    */
 }
 
 
@@ -379,8 +345,8 @@ std::pair<unsigned int, unsigned int> hybrid_observables_cc::find_interp_element
     double dt = 0.0;
     for (unsigned int i = 0; i < d_gnss_synchro_history->size(ch); i++)
         {
-            dt = std::fabs(ti - d_gnss_synchro_history->at(ch, i).RX_time);
-            if (dt < dif)
+            dt = ti - d_gnss_synchro_history->at(ch, i).RX_time;
+            if (dt < dif and dt > 0.0)
                 {
                     dif = dt;
                     closest = i;
@@ -400,16 +366,8 @@ std::pair<unsigned int, unsigned int> hybrid_observables_cc::find_interp_element
         }
     else
         {
-            if (d_gnss_synchro_history->at(ch, closest).RX_time < ti)
-                {
-                    index1 = closest;
-                    index2 = closest + 1;
-                }
-            else
-                {
-                    index1 = closest - 1;
-                    index2 = closest;
-                }
+            index1 = closest;
+            index2 = closest + 1;
         }
     return std::pair<unsigned int, unsigned int>(index1, index2);
 }
@@ -576,7 +534,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
 
     // Check if there is any valid channel after computing the time distance between the Gnss_Synchro data and the receiver time
     d_num_valid_channels = valid_channels.count();
-    double T_rx_s_out = T_rx_s - (max_delta / 2.0);
+    double T_rx_s_out = T_rx_s - d_latency;
     if ((d_num_valid_channels == 0) or (T_rx_s_out < 0.0))
         {
             return 0;

@@ -78,6 +78,7 @@ private:
     double T_rx_s;
     double T_rx_step_s;
     double max_delta;
+    double d_latency;
     bool d_dump;
     unsigned int d_nchannels;
     unsigned int d_num_valid_channels;

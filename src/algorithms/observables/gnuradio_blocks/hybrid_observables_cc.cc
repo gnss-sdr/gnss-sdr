@@ -63,7 +63,7 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in,
     d_dump_filename = dump_filename;
     T_rx_s = 0.0;
     T_rx_step_s = 0.001;  // 1 ms
-    max_delta = 2.5;      // 2.5 s
+    max_delta = 3.0;      // 3 s
     d_latency = 0.08;     // 80 ms
     valid_channels.resize(d_nchannels, false);
     d_num_valid_channels = 0;

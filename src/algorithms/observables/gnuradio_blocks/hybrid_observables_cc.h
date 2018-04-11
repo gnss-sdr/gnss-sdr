@@ -35,12 +35,12 @@
 #define GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 
 #include "gnss_synchro.h"
+#include "gnss_circular_deque.h"
 #include <gnuradio/block.h>
 #include <boost/dynamic_bitset.hpp>
 #include <fstream>
 #include <string>
-#include <vector>
-#include <deque>
+#include <utility>
 
 
 class hybrid_observables_cc;
@@ -65,14 +65,15 @@ private:
     friend hybrid_observables_cc_sptr
     hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
     hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
-    void clean_history(std::deque<Gnss_Synchro>& data);
+    void clean_history(unsigned int pos);
     double compute_T_rx_s(const Gnss_Synchro& a);
-    bool interpolate_data(Gnss_Synchro& out, std::deque<Gnss_Synchro>& data, const double& ti);
+    bool interpolate_data(Gnss_Synchro& out, const unsigned int& ch, const double& ti);
+    std::pair<unsigned int, unsigned int> find_interp_elements(const unsigned int& ch, const double& ti);
     void correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data);
     int save_matfile();
 
     //Tracking observable history
-    std::vector<std::deque<Gnss_Synchro>> d_gnss_synchro_history;
+    Gnss_circular_deque<Gnss_Synchro>* d_gnss_synchro_history;
     boost::dynamic_bitset<> valid_channels;
     double T_rx_s;
     double T_rx_step_s;

@@ -68,7 +68,7 @@ private:
     void clean_history(unsigned int pos);
     double compute_T_rx_s(const Gnss_Synchro& a);
     bool interpolate_data(Gnss_Synchro& out, const unsigned int& ch, const double& ti);
-    std::pair<unsigned int, unsigned int> find_interp_elements(const unsigned int& ch, const double& ti);
+    void find_interp_elements(const unsigned int& ch, const double& ti);
     void correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data);
     int save_matfile();
 

@@ -281,14 +281,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attrib
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
 	
-	// debug
-	int secondary_sample_counter;
-	int counter_corr_0_in;
-	int counter_corr_0_out;
-	int sample_counter;
-	
     unsigned absolute_samples_offset;
-//    int kk2;	
     // process vars
     double carr_error_hz = 0.0;
     double carr_error_filt_hz = 0.0;
@@ -333,16 +326,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attrib
 			d_rem_carr_phase_rad, d_carrier_phase_step_rad,
 			d_rem_code_phase_chips, d_code_phase_step_chips,
 			d_current_prn_length_samples);			
-			d_previous_sample_counter =  d_debug_sample_counter;
-			d_previous_counter_corr_0_in = d_counter_corr_0_in;
-			d_previous_counter_corr_0_out = d_counter_corr_0_out;		
-			multicorrelator_fpga_8sc->read_sample_counters(&sample_counter, &secondary_sample_counter, &counter_corr_0_in, &counter_corr_0_out);
-			d_debug_sample_counter = sample_counter;			
-			d_counter_corr_0_in = counter_corr_0_in;
-			d_counter_corr_0_out = counter_corr_0_out;
-			d_counter_corr_0_in_inc = 	counter_corr_0_in - d_previous_counter_corr_0_in;
-			d_counter_corr_0_out_inc = counter_corr_0_out - d_previous_counter_corr_0_out;
-			d_sample_counter_inc = d_debug_sample_counter - d_previous_sample_counter;
             
             // ################## PLL ##########################################################
             // PLL discriminator

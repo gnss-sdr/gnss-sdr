@@ -182,17 +182,6 @@ private:
     double d_K_blk_samples_previous;
     int d_offset_sample_previous;
     
-    int d_kk = 0;
-    int d_numsamples_debug = 990;
-    int d_previous_sample_counter = 0;  
-	int d_debug_sample_counter = 0;
-	int d_previous_counter_corr_0_in = 0;
-	int d_previous_counter_corr_0_out = 0;
-    int d_counter_corr_0_in_inc = 0;
-    int d_counter_corr_0_out_inc = 0;
-    int d_counter_corr_0_in = 0;
-    int d_counter_corr_0_out = 0;
-    int d_sample_counter_inc = 0;
 };
 
 #endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_SC_H

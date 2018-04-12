@@ -93,7 +93,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc(
                         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // Telemetry bit synchronization message port input
-    this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->message_port_register_out(pmt::mp("events"));
 
     // initialize internal vars

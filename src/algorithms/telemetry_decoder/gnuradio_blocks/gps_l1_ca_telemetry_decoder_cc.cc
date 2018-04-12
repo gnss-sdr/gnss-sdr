@@ -54,8 +54,6 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     bool dump) : gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    // Telemetry Bit transition synchronization port out
-    this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
@@ -224,9 +222,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                             d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter;  // record the PRN start sample index associated to the preamble
                             if (!d_flag_frame_sync)
                                 {
-                                    // send asynchronous message to tracking to inform of frame sync and extend correlation time
-                                    pmt::pmt_t value = pmt::from_double(static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) - 0.001);
-                                    this->message_port_pub(pmt::mp("preamble_timestamp_s"), value);
                                     d_flag_frame_sync = true;
                                     if (corr_value < 0)
                                         {

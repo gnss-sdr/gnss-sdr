@@ -54,8 +54,6 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     bool dump) : gr::block("glonass_l1_ca_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    // Telemetry Bit transition synchronization port out
-    this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
@@ -285,9 +283,6 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                             LOG(INFO) << "Starting string decoder for GLONASS L1 C/A SAT " << this->d_satellite;
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp
                             d_stat = 2;
-                            // send asynchronous message to tracking to inform of frame sync and extend correlation time
-                            pmt::pmt_t value = pmt::from_double(static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) - 0.001);
-                            this->message_port_pub(pmt::mp("preamble_timestamp_s"), value);
                         }
                     else
                         {

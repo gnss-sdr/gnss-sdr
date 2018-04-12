@@ -571,14 +571,14 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                 {
                     if (valid_channels[i])
                         {
-                            out[i][0] = (*it);
-                            out[i][0].Flag_valid_pseudorange = true;
+                            out[i][epoch] = (*it);
+                            out[i][epoch].Flag_valid_pseudorange = true;
                             it++;
                         }
                     else
                         {
-                            out[i][0] = Gnss_Synchro();
-                            out[i][0].Flag_valid_pseudorange = false;
+                            out[i][epoch] = Gnss_Synchro();
+                            out[i][epoch].Flag_valid_pseudorange = false;
                         }
                 }
             if (d_dump)
@@ -589,19 +589,19 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                             double tmp_double;
                             for (i = 0; i < d_nchannels; i++)
                                 {
-                                    tmp_double = out[i][0].RX_time;
+                                    tmp_double = out[i][epoch].RX_time;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = out[i][0].TOW_at_current_symbol_s;
+                                    tmp_double = out[i][epoch].TOW_at_current_symbol_s;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = out[i][0].Carrier_Doppler_hz;
+                                    tmp_double = out[i][epoch].Carrier_Doppler_hz;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = out[i][0].Carrier_phase_rads / GPS_TWO_PI;
+                                    tmp_double = out[i][epoch].Carrier_phase_rads / GPS_TWO_PI;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = out[i][0].Pseudorange_m;
+                                    tmp_double = out[i][epoch].Pseudorange_m;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = static_cast<double>(out[i][0].PRN);
+                                    tmp_double = static_cast<double>(out[i][epoch].PRN);
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = static_cast<double>(out[i][0].Flag_valid_pseudorange);
+                                    tmp_double = static_cast<double>(out[i][epoch].Flag_valid_pseudorange);
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                 }
                         }

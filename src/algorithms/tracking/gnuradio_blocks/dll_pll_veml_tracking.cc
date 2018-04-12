@@ -362,13 +362,15 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
     d_last_prompt = gr_complex(0.0, 0.0);
     d_state = 0;  // initial state: standby
 
-    signal_pretty_name["1C"] = "L1 C/A";
-    signal_pretty_name["1B"] = "E1";
-    signal_pretty_name["1G"] = "L1 C/A";
-    signal_pretty_name["2S"] = "L2C";
-    signal_pretty_name["2G"] = "L2 C/A";
-    signal_pretty_name["5X"] = "E5a";
-    signal_pretty_name["L5"] = "L5";
+    map_signal_pretty_name["1C"] = "L1 C/A";
+    map_signal_pretty_name["1B"] = "E1";
+    map_signal_pretty_name["1G"] = "L1 C/A";
+    map_signal_pretty_name["2S"] = "L2C";
+    map_signal_pretty_name["2G"] = "L2 C/A";
+    map_signal_pretty_name["5X"] = "E5a";
+    map_signal_pretty_name["L5"] = "L5";
+
+    signal_pretty_name = map_signal_pretty_name[signal_type];
 }
 
 
@@ -511,7 +513,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_code_loop_filter.set_pdi(static_cast<float>(d_code_period));
 
     // DEBUG OUTPUT
-    std::cout << "Tracking of " << systemName << " " << signal_pretty_name[signal_type] << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+    std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking pull-in
@@ -1263,7 +1265,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         next_state = acquire_secondary();
                                         if (next_state)
                                             {
-                                                std::cout << systemName << " " << signal_pretty_name[signal_type] << " secondary code locked in channel " << d_channel
+                                                std::cout << systemName << " " << signal_pretty_name << " secondary code locked in channel " << d_channel
                                                           << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                             }
 

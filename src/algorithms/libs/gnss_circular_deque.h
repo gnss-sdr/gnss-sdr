@@ -2,7 +2,7 @@
  * \file gnss_circular_deque.h
  * \brief This class implements a circular deque for Gnss_Synchro
  *
- * \author Luis Esteve, 2018. antonio.ramos(at)cttc.es
+ * \author Antonio Ramos, 2018. antonio.ramosdet(at)gmail.com
  *
  * Detailed description of the file here if needed.
  *

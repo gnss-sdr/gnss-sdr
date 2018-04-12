@@ -107,6 +107,8 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_TOW_at_current_symbol_ms = 0;
     d_symbol_history.resize(GPS_CA_PREAMBLE_LENGTH_SYMBOLS + 1);  // Change fixed buffer size
     d_symbol_history.clear();                                     // Clear all the elements in the buffer
+    d_make_correlation = true;
+    d_symbol_counter_corr = 0;
 }
 
 
@@ -170,7 +172,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
     unsigned int required_symbols = GPS_CA_PREAMBLE_LENGTH_SYMBOLS;
     d_flag_preamble = false;
 
-    if (d_symbol_history.size() > required_symbols)
+    if (d_symbol_history.size() > required_symbols and d_make_correlation)
         {
             //******* preamble correlation ********
             for (unsigned int i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
@@ -186,7 +188,12 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                                     corr_value += d_preambles_symbols[i] * d_symbol_history.at(i).correlation_length_ms;
                                 }
                         }
-                    if (corr_value >= GPS_CA_PREAMBLE_LENGTH_SYMBOLS) break;
+                    if (corr_value >= GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
+                        {
+                            d_symbol_counter_corr = 0;
+                            d_make_correlation = false;
+                            break;
+                        }
                 }
         }
 

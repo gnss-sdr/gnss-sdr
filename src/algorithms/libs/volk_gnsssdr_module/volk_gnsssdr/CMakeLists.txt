@@ -62,6 +62,7 @@ endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 # Enable C++17 support in GCC >= 8.0.0
 # Enable C++14 support in 8.0.0 > GCC >= 6.1.1
 # Fallback to C++11 when using GCC < 6.1.1
+
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
@@ -75,8 +76,8 @@ if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 
-# Enable C++17 support in Clang >= 6.0.0 or AppleClang >= 900
-# Enable C++14 support in 6.0.0 > Clang >= 3.5.0 or 900 > AppleClang >= 600
+# Enable C++17 support in Clang >= 6.0.0
+# Enable C++14 support in 6.0.0 > Clang >= 3.5.0 or AppleClang >= 600
 # Fallback to C++11 if older version
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
@@ -84,11 +85,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         if(CLANG_VERSION VERSION_LESS "600")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
         else(CLANG_VERSION VERSION_LESS "600")
-            if(CLANG_VERSION VERSION_LESS "900")
-                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-            else(CLANG_VERSION VERSION_LESS "900")
-                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-            endif(CLANG_VERSION VERSION_LESS "900")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
         endif(CLANG_VERSION VERSION_LESS "600")
     else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
         if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")

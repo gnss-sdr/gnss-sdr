@@ -54,8 +54,6 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     bool dump) : gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    // Telemetry Bit transition synchronization port out
-    this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
@@ -105,6 +103,10 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     flag_PLL_180_deg_phase_locked = false;
     d_preamble_time_samples = 0;
     d_TOW_at_current_symbol_ms = 0;
+    d_symbol_history.resize(GPS_CA_PREAMBLE_LENGTH_SYMBOLS + 1);  // Change fixed buffer size
+    d_symbol_history.clear();                                     // Clear all the elements in the buffer
+    d_make_correlation = true;
+    d_symbol_counter_corr = 0;
 }
 
 
@@ -168,7 +170,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
     unsigned int required_symbols = GPS_CA_PREAMBLE_LENGTH_SYMBOLS;
     d_flag_preamble = false;
 
-    if (d_symbol_history.size() > required_symbols)
+    if ((d_symbol_history.size() > required_symbols) and (d_make_correlation or !d_flag_frame_sync))
         {
             //******* preamble correlation ********
             for (unsigned int i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
@@ -177,19 +179,22 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                         {
                             if (d_symbol_history.at(i).Prompt_I < 0)  // symbols clipping
                                 {
-                                    corr_value -= d_preambles_symbols[i] * d_symbol_history.at(i).correlation_length_ms;
+                                    corr_value -= d_preambles_symbols[i];
                                 }
                             else
                                 {
-                                    corr_value += d_preambles_symbols[i] * d_symbol_history.at(i).correlation_length_ms;
+                                    corr_value += d_preambles_symbols[i];
                                 }
                         }
-                    if (corr_value >= GPS_CA_PREAMBLE_LENGTH_SYMBOLS) break;
+                }
+            if (std::abs(corr_value) >= GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
+                {
+                    d_symbol_counter_corr++;
                 }
         }
 
     //******* frame sync ******************
-    if (abs(corr_value) == GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
+    if (std::abs(corr_value) == GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
         {
             //TODO: Rewrite with state machine
             if (d_stat == 0)
@@ -206,18 +211,17 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                 }
             else if (d_stat == 1)  //check 6 seconds of preamble separation
                 {
-                    preamble_diff_ms = round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
-                    if (abs(preamble_diff_ms - GPS_SUBFRAME_MS) < 1)
+                    preamble_diff_ms = std::round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
+                    if (std::abs(preamble_diff_ms - GPS_SUBFRAME_MS) < 1)
                         {
                             DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;
                             d_GPS_FSM.Event_gps_word_preamble();
                             d_flag_preamble = true;
+                            d_make_correlation = false;
+                            d_symbol_counter_corr = 0;
                             d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter;  // record the PRN start sample index associated to the preamble
                             if (!d_flag_frame_sync)
                                 {
-                                    // send asynchronous message to tracking to inform of frame sync and extend correlation time
-                                    pmt::pmt_t value = pmt::from_double(static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) - 0.001);
-                                    this->message_port_pub(pmt::mp("preamble_timestamp_s"), value);
                                     d_flag_frame_sync = true;
                                     if (corr_value < 0)
                                         {
@@ -236,6 +240,11 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
         }
     else
         {
+            d_symbol_counter_corr++;
+            if (d_symbol_counter_corr > (GPS_SUBFRAME_MS - GPS_CA_TELEMETRY_SYMBOLS_PER_BIT))
+                {
+                    d_make_correlation = true;
+                }
             if (d_stat == 1)
                 {
                     preamble_diff_ms = round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - static_cast<double>(d_preamble_time_samples)) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
@@ -245,6 +254,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                             d_stat = 0;  //lost of frame sync
                             d_flag_frame_sync = false;
                             flag_TOW_set = false;
+                            d_make_correlation = true;
+                            d_symbol_counter_corr = 0;
                         }
                 }
         }
@@ -395,11 +406,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                 }
         }
 
-    // remove used symbols from history
-    if (d_symbol_history.size() > required_symbols)
-        {
-            d_symbol_history.pop_front();
-        }
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_symbol;
 

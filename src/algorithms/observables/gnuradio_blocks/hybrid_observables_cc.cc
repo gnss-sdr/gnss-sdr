@@ -63,11 +63,11 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in,
     d_dump_filename = dump_filename;
     T_rx_s = 0.0;
     T_rx_step_s = 0.001;  // 1 ms
-    max_delta = 3.5;      // 3.5 s
-    d_latency = 0.08;     // 80 ms
+    max_delta = 1.5;      // 1.5 s
+    d_latency = 0.175;    // 175 ms
     valid_channels.resize(d_nchannels, false);
     d_num_valid_channels = 0;
-    d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(static_cast<unsigned int>(max_delta * 1000.0 * 2.0), d_nchannels);
+    d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(static_cast<unsigned int>(max_delta * 1000.0), d_nchannels);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)

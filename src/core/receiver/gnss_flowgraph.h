@@ -49,6 +49,9 @@
 #include <string>
 #include <vector>
 
+#if ENABLE_FPGA
+#include "gnss_sdr_time_counter.h"
+#endif
 
 class GNSSBlockInterface;
 class ChannelInterface;
@@ -144,6 +147,9 @@ private:
 
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gnss_sdr_sample_counter_sptr ch_out_sample_counter;
+#if ENABLE_FPGA
+    gnss_sdr_time_counter_sptr time_counter_;
+#endif
     gr::blocks::null_source::sptr null_source_;
     gr::blocks::throttle::sptr throttle_;
     gr::top_block_sptr top_block_;

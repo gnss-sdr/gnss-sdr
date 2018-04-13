@@ -18,27 +18,52 @@
 
 add_subdirectory(rtklib)
 
-set(GNSS_SPLIBS_SOURCES
-	gps_l2c_signal.cc
-	gps_l5_signal.cc
-    galileo_e1_signal_processing.cc
-    gnss_sdr_valve.cc
-    gnss_sdr_sample_counter.cc
-    gnss_signal_processing.cc
-    gps_sdr_signal_processing.cc
-    glonass_l1_signal_processing.cc
-    glonass_l2_signal_processing.cc
-    pass_through.cc
-    galileo_e5_signal_processing.cc
-    complex_byte_to_float_x2.cc
-    byte_x2_to_complex_byte.cc
-    cshort_to_float_x2.cc
-    short_x2_to_cshort.cc
-    complex_float_to_complex_byte.cc
-    conjugate_cc.cc
-    conjugate_sc.cc
-    conjugate_ic.cc
-)
+if(ENABLE_FPGA)
+	set(GNSS_SPLIBS_SOURCES
+		gps_l2c_signal.cc
+		gps_l5_signal.cc
+    	galileo_e1_signal_processing.cc
+    	gnss_sdr_valve.cc
+    	gnss_sdr_sample_counter.cc
+    	gnss_sdr_time_counter.cc
+    	gnss_signal_processing.cc
+    	gps_sdr_signal_processing.cc
+    	glonass_l1_signal_processing.cc
+    	glonass_l2_signal_processing.cc
+    	pass_through.cc
+    	galileo_e5_signal_processing.cc
+    	complex_byte_to_float_x2.cc
+    	byte_x2_to_complex_byte.cc
+    	cshort_to_float_x2.cc
+    	short_x2_to_cshort.cc
+    	complex_float_to_complex_byte.cc
+    	conjugate_cc.cc
+    	conjugate_sc.cc
+    	conjugate_ic.cc
+	)
+else(ENABLE_FPGA)
+	set(GNSS_SPLIBS_SOURCES
+		gps_l2c_signal.cc
+		gps_l5_signal.cc
+    	galileo_e1_signal_processing.cc
+    	gnss_sdr_valve.cc
+    	gnss_sdr_sample_counter.cc
+    	gnss_signal_processing.cc
+    	gps_sdr_signal_processing.cc
+    	glonass_l1_signal_processing.cc
+    	glonass_l2_signal_processing.cc
+    	pass_through.cc
+    	galileo_e5_signal_processing.cc
+    	complex_byte_to_float_x2.cc
+    	byte_x2_to_complex_byte.cc
+    	cshort_to_float_x2.cc
+    	short_x2_to_cshort.cc
+    	complex_float_to_complex_byte.cc
+    	conjugate_cc.cc
+    	conjugate_sc.cc
+    	conjugate_ic.cc
+	)
+endif(ENABLE_FPGA)
 
 if(OPENCL_FOUND)
     set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}

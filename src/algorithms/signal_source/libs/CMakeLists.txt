@@ -53,13 +53,12 @@ if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     
 endif(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
 
-set (SIGNAL_SOURCE_LIB_SOURCES
-  rtl_tcp_commands.cc
-  rtl_tcp_dongle_info.cc
-  ${OPT_SIGNAL_SOURCE_LIB_SOURCES})
+if(ENABLE_AD9361)
+	set(OPT_SIGNAL_SOURCE_LIB_SOURCES ad9361_manager.cc)
+endif(ENABLE_AD9361)
 
 if(ENABLE_FPGA)
-    SET(SIGNAL_SOURCE_LIB_SOURCES ${SIGNAL_SOURCE_LIB_SOURCES} fpga_switch.cc)
+    SET(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_switch.cc)
 endif(ENABLE_FPGA)
 
 include_directories(
@@ -68,6 +67,10 @@ include_directories(
      ${OPT_DRIVER_INCLUDE_DIRS}
 )
 
+set (SIGNAL_SOURCE_LIB_SOURCES
+  rtl_tcp_commands.cc
+  rtl_tcp_dongle_info.cc
+  ${OPT_SIGNAL_SOURCE_LIB_SOURCES})
 
 file(GLOB SIGNAL_SOURCE_LIB_HEADERS "*.h")
 list(SORT SIGNAL_SOURCE_LIB_HEADERS)

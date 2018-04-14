@@ -358,7 +358,7 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));
             config->set_property("Tracking_1C.dll_bw_hz", std::to_string(dll_bw_hz));
             config->set_property("Tracking_1C.early_late_space_chips", std::to_string(early_late_space_chips));
-            config->set_property("Tracking_1Cearly_late_space_narrow_chips", std::to_string(early_late_space_chips / 5.0));
+
             config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
             config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
             config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_ms));
@@ -366,7 +366,6 @@ int StaticPositionSystemTest::configure_receiver()
             // Set Telemetry
             config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
             config->set_property("TelemetryDecoder_1C.dump", "false");
-            config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
             // Set Observables
             config->set_property("Observables.implementation", "Hybrid_Observables");

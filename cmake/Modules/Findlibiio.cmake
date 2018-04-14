@@ -14,7 +14,7 @@ FIND_PATH(
 
 FIND_LIBRARY(
     LIBIIO_LIBRARIES
-    NAMES libiio.so iio
+    NAMES iio libiio.so.0
     HINTS $ENV{LIBIIO_DIR}/lib
           ${PC_LIBIIO_LIBDIR}
     PATHS ${CMAKE_INSTALL_PREFIX}/lib

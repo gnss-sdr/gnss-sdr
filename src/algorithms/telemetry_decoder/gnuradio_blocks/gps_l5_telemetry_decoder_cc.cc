@@ -100,6 +100,43 @@ gps_l5_telemetry_decoder_cc::~gps_l5_telemetry_decoder_cc()
 }
 
 
+void gps_l5_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+{
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    LOG(INFO) << "GPS L5 CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
+    d_CNAV_Message.reset();
+}
+
+
+void gps_l5_telemetry_decoder_cc::set_channel(int channel)
+{
+    d_channel = channel;
+    d_CNAV_Message.reset();
+    LOG(INFO) << "GPS L5 CNAV channel set to " << channel;
+    // ############# ENABLE DATA FILE LOG #################
+    if (d_dump == true)
+        {
+            if (d_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_dump_filename = "telemetry_L5_";
+                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(".dat");
+                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
+                                      << " Log file: " << d_dump_filename.c_str();
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening Telemetry GPS L5 dump file " << e.what();
+                        }
+                }
+        }
+}
+
+
 int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -242,41 +279,4 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     out[0] = current_synchro_data;
     return 1;
-}
-
-
-void gps_l5_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
-{
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG(INFO) << "GPS L5 CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
-    d_CNAV_Message.reset();
-}
-
-
-void gps_l5_telemetry_decoder_cc::set_channel(int channel)
-{
-    d_channel = channel;
-    d_CNAV_Message.reset();
-    LOG(INFO) << "GPS L5 CNAV channel set to " << channel;
-    // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
-        {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                        {
-                            d_dump_filename = "telemetry_L5_";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
-                            d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
-                                      << " Log file: " << d_dump_filename.c_str();
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening Telemetry GPS L5 dump file " << e.what();
-                        }
-                }
-        }
 }

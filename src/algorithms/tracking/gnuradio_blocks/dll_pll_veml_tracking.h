@@ -119,7 +119,8 @@ private:
     std::string systemName;
     std::string signal_type;
     std::string *d_secondary_code_string;
-    std::map<std::string, std::string> signal_pretty_name;
+    std::map<std::string, std::string> map_signal_pretty_name;
+    std::string signal_pretty_name;
 
     //tracking state machine
     int d_state;

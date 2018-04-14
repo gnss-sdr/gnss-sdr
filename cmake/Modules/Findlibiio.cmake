@@ -3,7 +3,7 @@ PKG_CHECK_MODULES(PC_LIBIIO libiio)
 
 FIND_PATH(
     LIBIIO_INCLUDE_DIRS
-    NAMES gnuradio/iio/api.h
+    NAMES iio.h
     HINTS $ENV{LIBIIO_DIR}/include
           ${PC_LIBIIO_INCLUDEDIR}
     PATHS ${CMAKE_INSTALL_PREFIX}/include

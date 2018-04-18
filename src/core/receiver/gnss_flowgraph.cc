@@ -556,10 +556,9 @@ void GNSSFlowgraph::set_signals_list()
      */
 
     unsigned int total_channels = configuration_->property("Channels_1C.count", 0) +
-                                  configuration_->property("Channels_2S.count", 0) +
                                   configuration_->property("Channels_1B.count", 0) +
-                                  configuration_->property("Channels_5X.count", 0) +
                                   configuration_->property("Channels_1G.count", 0) +
+                                  configuration_->property("Channels_2S.count", 0) +
                                   configuration_->property("Channels_2G.count", 0) +
                                   configuration_->property("Channels_5X.count", 0) +
                                   configuration_->property("Channels_L5.count", 0);

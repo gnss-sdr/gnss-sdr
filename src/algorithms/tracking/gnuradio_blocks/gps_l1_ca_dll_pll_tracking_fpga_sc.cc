@@ -172,6 +172,8 @@ Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc(
     d_carrier_phase_step_rad = 0.0;
 
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
+
+    multicorrelator_fpga_8sc->set_output_vectors(d_correlator_outs);
 }
 
 void Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::start_tracking()
@@ -320,7 +322,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attrib
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
-			multicorrelator_fpga_8sc->set_output_vectors(d_correlator_outs);
 			multicorrelator_fpga_8sc->Carrier_wipeoff_multicorrelator_resampler(
 			d_rem_carr_phase_rad, d_carrier_phase_step_rad,
 			d_rem_code_phase_chips, d_code_phase_step_chips,

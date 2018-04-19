@@ -403,14 +403,12 @@ void fpga_multicorrelator_8sc::read_tracking_gps_results(void)
                 {
                     readval_real = -2097152 + readval_real;
                 }
-            readval_real = readval_real * 2; // the results are shifted two bits to the left due to the complex multiplier in the FPGA
 
             readval_imag = d_map_base[1 + d_n_correlators + k];
             if (readval_imag >= 1048576) // 0x100000 (21 bits two's complement)
                 {
                     readval_imag = -2097152 + readval_imag;
                 }
-            readval_imag = readval_imag * 2; // the results are shifted two bits to the left due to the complex multiplier in the FPGA
             d_corr_out[k] = gr_complex(readval_real,readval_imag);
         }
 }

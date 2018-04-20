@@ -1,11 +1,9 @@
 /*!
  * \file gnss_flowgraph.cc
- * \brief Implementation of a GNSS receiver flowgraph
+ * \brief Implementation of a GNSS receiver flow graph
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -95,7 +93,7 @@ void GNSSFlowgraph::stop()
 
 void GNSSFlowgraph::connect()
 {
-    // Connects the blocks in the flowgraph
+    // Connects the blocks in the flow graph
     // Signal Source > Signal conditioner >> Channels >> Observables >> PVT
 
     LOG(INFO) << "Connecting flowgraph";
@@ -401,7 +399,7 @@ bool GNSSFlowgraph::send_telemetry_msg(pmt::pmt_t msg)
 
 
 /*
- * Applies an action to the flowgraph
+ * Applies an action to the flow graph
  *
  * \param[in] who   Who generated the action
  * \param[in] what  What is the action 0: acquisition failed
@@ -509,9 +507,9 @@ void GNSSFlowgraph::init()
                 {
                     std::cout << "Creating source " << i << std::endl;
                     sig_source_.push_back(block_factory_->GetSignalSource(configuration_, queue_, i));
-                    //TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-                    //Include GetRFChannels in the interface to avoid read config parameters here
-                    //read the number of RF channels for each front-end
+                    // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+                    // Include GetRFChannels in the interface to avoid read config parameters here
+                    // read the number of RF channels for each front-end
                     RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
                     std::cout << "RF Channels " << RF_Channels << std::endl;
                     for (int j = 0; j < RF_Channels; j++)
@@ -523,11 +521,11 @@ void GNSSFlowgraph::init()
         }
     else
         {
-            //backwards compatibility for old config files
+            // backwards compatibility for old config files
             sig_source_.push_back(block_factory_->GetSignalSource(configuration_, queue_, -1));
-            //TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-            //Include GetRFChannels in the interface to avoid read config parameters here
-            //read the number of RF channels for each front-end
+            // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+            // Include GetRFChannels in the interface to avoid read config parameters here
+            // read the number of RF channels for each front-end
             RF_Channels = configuration_->property(sig_source_.at(0)->role() + ".RF_channels", 0);
             if (RF_Channels != 0)
                 {
@@ -539,7 +537,7 @@ void GNSSFlowgraph::init()
                 }
             else
                 {
-                    //old config file, single signal source and single channel, not specified
+                    // old config file, single signal source and single channel, not specified
                     sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, -1));
                 }
         }
@@ -566,7 +564,6 @@ void GNSSFlowgraph::init()
 
     std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = block_factory_->GetChannels(configuration_, queue_);
 
-    //todo:check smart pointer coherence...
     channels_count_ = channels->size();
     for (unsigned int i = 0; i < channels_count_; i++)
         {

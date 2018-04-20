@@ -1,12 +1,12 @@
 /*!
  * \file gnss_flowgraph.h
- * \brief Interface of a GNSS receiver flowgraph.
+ * \brief Interface of a GNSS receiver flow graph.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
  *
  * It contains a signal source,
- * a signal conditioner, a set of channels, a pvt and an output filter.
+ * a signal conditioner, a set of channels, an observables block and a pvt.
  *
  * -------------------------------------------------------------------------
  *
@@ -53,7 +53,7 @@ class ChannelInterface;
 class ConfigurationInterface;
 class GNSSBlockFactory;
 
-/*! \brief This class represents a GNSS flowgraph.
+/*! \brief This class represents a GNSS flow graph.
  *
  * It contains a signal source,
  * a signal conditioner, a set of channels, a PVT and an output filter.
@@ -62,7 +62,7 @@ class GNSSFlowgraph
 {
 public:
     /*!
-     * \brief Constructor that initializes the receiver flowgraph
+     * \brief Constructor that initializes the receiver flow graph
      */
     GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue);
 
@@ -71,14 +71,14 @@ public:
      */
     virtual ~GNSSFlowgraph();
 
-    //! \brief Start the flowgraph
+    //! \brief Start the flow graph
     void start();
 
-    //! \brief Stop the flowgraph
+    //! \brief Stop the flow graph
     void stop();
 
     /*!
-     * \brief Connects the defined blocks in the flowgraph
+     * \brief Connects the defined blocks in the flow graph
      *
      * Signal Source > Signal conditioner > Channels >> Observables >> PVT > Output filter
      */
@@ -87,10 +87,10 @@ public:
     void wait();
 
     /*!
-     * \brief Applies an action to the flowgraph
+     * \brief Applies an action to the flow graph
      *
      * \param[in] who   Who generated the action
-     * \param[in] what  What is the action 0: acquisition failed
+     * \param[in] what  What is the action. 0: acquisition failed; 1: acquisition success; 2: tracking lost
      */
     void apply_action(unsigned int who, unsigned int what);
 
@@ -100,14 +100,17 @@ public:
     {
         return applied_actions_;
     }
+
     bool connected()
     {
         return connected_;
     }
+
     bool running()
     {
         return running_;
     }
+
     /*!
      * \brief Sends a GNURadio asynchronous message from telemetry to PVT
      *

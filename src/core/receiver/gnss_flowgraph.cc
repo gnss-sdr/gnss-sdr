@@ -1,15 +1,13 @@
 /*!
  * \file gnss_flowgraph.cc
- * \brief Implementation of a GNSS receiver flowgraph
+ * \brief Implementation of a GNSS receiver flow graph
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
  *
- * Detailed description of the file here if needed.
- *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -61,6 +59,8 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
 
 
 GNSSFlowgraph::~GNSSFlowgraph() {}
+
+
 void GNSSFlowgraph::start()
 {
     if (running_)
@@ -93,10 +93,9 @@ void GNSSFlowgraph::stop()
 
 void GNSSFlowgraph::connect()
 {
-    /* Connects the blocks in the flowgraph
-     *
-     * Signal Source > Signal conditioner >> Channels >> Observables >> PVT
-     */
+    // Connects the blocks in the flow graph
+    // Signal Source > Signal conditioner >> Channels >> Observables >> PVT
+
     LOG(INFO) << "Connecting flowgraph";
     if (connected_)
         {
@@ -184,8 +183,8 @@ void GNSSFlowgraph::connect()
         {
             try
                 {
-                    //TODO: Remove this array implementation and create generic multistream connector
-                    //(if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
+                    // TODO: Remove this array implementation and create generic multistream connector
+                    // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
                     if (sig_source_.at(i)->implementation().compare("Raw_Array_Signal_Source") == 0)
                         {
                             //Multichannel Array
@@ -198,14 +197,14 @@ void GNSSFlowgraph::connect()
                         }
                     else
                         {
-                            //TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-                            //Include GetRFChannels in the interface to avoid read config parameters here
-                            //read the number of RF channels for each front-end
+                            // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+                            // Include GetRFChannels in the interface to avoid read config parameters here
+                            // read the number of RF channels for each front-end
                             RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
 
                             for (int j = 0; j < RF_Channels; j++)
                                 {
-                                    //Connect the multichannel signal source to multiple signal conditioners
+                                    // Connect the multichannel signal source to multiple signal conditioners
                                     // GNURADIO max_streams=-1 means infinite ports!
                                     LOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
                                     LOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
@@ -244,8 +243,8 @@ void GNSSFlowgraph::connect()
         }
     DLOG(INFO) << "Signal source connected to signal conditioner";
 
-    //connect the signal source to sample counter
-    //connect the sample counter to Observables
+    // connect the signal source to sample counter
+    // connect the sample counter to Observables
     try
         {
             double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
@@ -266,7 +265,6 @@ void GNSSFlowgraph::connect()
             top_block_->disconnect_all();
             return;
         }
-
 
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
     int selected_signal_conditioner_ID;
@@ -301,26 +299,46 @@ void GNSSFlowgraph::connect()
                     top_block_->disconnect_all();
                     return;
                 }
+        }
 
-            std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();  // use channel's implicit signal!
-            channels_.at(i)->set_signal(search_next_signal(gnss_signal, false));
-
-            if (channels_state_[i] == 1)
+    // Put channels fixed to a given satellite at the beginning of the vector, then the rest
+    std::vector<unsigned int> vector_of_channels;
+    for (unsigned int i = 0; i < channels_count_; i++)
+        {
+            unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
+            if (sat == 0)
                 {
-                    channels_.at(i)->start_acquisition();
-                    available_GNSS_signals_.pop_front();
-                    LOG(INFO) << "Channel " << i << " assigned to " << channels_.at(i)->get_signal();
-                    LOG(INFO) << "Channel " << i << " connected to observables and ready for acquisition";
+                    vector_of_channels.push_back(i);
                 }
             else
                 {
-                    LOG(INFO) << "Channel " << i << " connected to observables in standby mode";
+                    auto it = vector_of_channels.begin();
+                    it = vector_of_channels.insert(it, i);
                 }
         }
 
-    /*
-     * Connect the observables output of each channel to the PVT block
-     */
+    // Assign satellites to channels in the initialization
+    for (unsigned int& i : vector_of_channels)
+        {
+            std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();  // use channel's implicit signal
+            unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
+            if (sat == 0)
+                {
+                    channels_.at(i)->set_signal(search_next_signal(gnss_signal, true));
+                }
+            else
+                {
+                    std::string gnss_system;
+                    if ((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) or (gnss_signal.compare("L5") == 0)) gnss_system = "GPS";
+                    if ((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0)) gnss_system = "Galileo";
+                    if ((gnss_signal.compare("1G") == 0) or (gnss_signal.compare("2G") == 0)) gnss_system = "Glonass";
+                    Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                    available_GNSS_signals_.remove(signal_value);
+                    channels_.at(i)->set_signal(signal_value);
+                }
+        }
+
+    // Connect the observables output of each channel to the PVT block
     try
         {
             for (unsigned int i = 0; i < channels_count_; i++)
@@ -335,6 +353,21 @@ void GNSSFlowgraph::connect()
             LOG(ERROR) << e.what();
             top_block_->disconnect_all();
             return;
+        }
+
+    // Activate acquisition in enabled channels
+    for (unsigned int i = 0; i < channels_count_; i++)
+        {
+            LOG(INFO) << "Channel " << i << " assigned to " << channels_.at(i)->get_signal();
+            if (channels_state_[i] == 1)
+                {
+                    channels_.at(i)->start_acquisition();
+                    LOG(INFO) << "Channel " << i << " connected to observables and ready for acquisition";
+                }
+            else
+                {
+                    LOG(INFO) << "Channel " << i << " connected to observables in standby mode";
+                }
         }
 
     connected_ = true;
@@ -366,7 +399,7 @@ bool GNSSFlowgraph::send_telemetry_msg(pmt::pmt_t msg)
 
 
 /*
- * Applies an action to the flowgraph
+ * Applies an action to the flow graph
  *
  * \param[in] who   Who generated the action
  * \param[in] what  What is the action 0: acquisition failed
@@ -374,12 +407,16 @@ bool GNSSFlowgraph::send_telemetry_msg(pmt::pmt_t msg)
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
     DLOG(INFO) << "Received " << what << " from " << who << ". Number of applied actions = " << applied_actions_;
+    unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(who) + ".satellite", 0);
     switch (what)
         {
         case 0:
             DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
-            available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
-            channels_.at(who)->set_signal(search_next_signal(channels_.at(who)->get_signal().get_signal_str(), true));
+            if (sat == 0)
+                {
+                    available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
+                    channels_.at(who)->set_signal(search_next_signal(channels_.at(who)->get_signal().get_signal_str(), true));
+                }
             DLOG(INFO) << "Channel " << who << " Starting acquisition " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
             channels_.at(who)->start_acquisition();
             break;
@@ -390,10 +427,14 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             acq_channels_count_--;
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
+                    unsigned int sat_ = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
                     if (!available_GNSS_signals_.empty() && (acq_channels_count_ < max_acq_channels_) && (channels_state_[i] == 0))
                         {
                             channels_state_[i] = 1;
-                            channels_.at(i)->set_signal(search_next_signal(channels_.at(i)->get_signal().get_signal_str(), true));
+                            if (sat_ == 0)
+                                {
+                                    channels_.at(i)->set_signal(search_next_signal(channels_.at(i)->get_signal().get_signal_str(), true));
+                                }
                             acq_channels_count_++;
                             DLOG(INFO) << "Channel " << i << " Starting acquisition " << channels_.at(i)->get_signal().get_satellite() << ", Signal " << channels_.at(i)->get_signal().get_signal_str();
                             channels_.at(i)->start_acquisition();
@@ -417,7 +458,10 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 {
                     channels_state_[who] = 0;
                     LOG(INFO) << "Channel " << who << " Idle state";
-                    available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
+                    if (sat == 0)
+                        {
+                            available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
+                        }
                 }
             break;
 
@@ -436,7 +480,6 @@ void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> co
             LOG(WARNING) << "Unable to update configuration while flowgraph running";
             return;
         }
-
     if (connected_)
         {
             LOG(WARNING) << "Unable to update configuration while flowgraph connected";
@@ -464,9 +507,9 @@ void GNSSFlowgraph::init()
                 {
                     std::cout << "Creating source " << i << std::endl;
                     sig_source_.push_back(block_factory_->GetSignalSource(configuration_, queue_, i));
-                    //TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-                    //Include GetRFChannels in the interface to avoid read config parameters here
-                    //read the number of RF channels for each front-end
+                    // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+                    // Include GetRFChannels in the interface to avoid read config parameters here
+                    // read the number of RF channels for each front-end
                     RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
                     std::cout << "RF Channels " << RF_Channels << std::endl;
                     for (int j = 0; j < RF_Channels; j++)
@@ -478,11 +521,11 @@ void GNSSFlowgraph::init()
         }
     else
         {
-            //backwards compatibility for old config files
+            // backwards compatibility for old config files
             sig_source_.push_back(block_factory_->GetSignalSource(configuration_, queue_, -1));
-            //TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-            //Include GetRFChannels in the interface to avoid read config parameters here
-            //read the number of RF channels for each front-end
+            // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+            // Include GetRFChannels in the interface to avoid read config parameters here
+            // read the number of RF channels for each front-end
             RF_Channels = configuration_->property(sig_source_.at(0)->role() + ".RF_channels", 0);
             if (RF_Channels != 0)
                 {
@@ -494,7 +537,7 @@ void GNSSFlowgraph::init()
                 }
             else
                 {
-                    //old config file, single signal source and single channel, not specified
+                    // old config file, single signal source and single channel, not specified
                     sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, -1));
                 }
         }
@@ -521,7 +564,6 @@ void GNSSFlowgraph::init()
 
     std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = block_factory_->GetChannels(configuration_, queue_);
 
-    //todo:check smart pointer coherence...
     channels_count_ = channels->size();
     for (unsigned int i = 0; i < channels_count_; i++)
         {
@@ -541,34 +583,19 @@ void GNSSFlowgraph::init()
 
 void GNSSFlowgraph::set_signals_list()
 {
-    /*
-     * Sets a sequential list of GNSS satellites
-     */
+    // Set a sequential list of GNSS satellites
     std::set<unsigned int>::const_iterator available_gnss_prn_iter;
 
-    /*
-     * \TODO Describe GNSS satellites more nicely, with RINEX notation
-     * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf (page 5)
-     */
-
-    /*
-     * Read GNSS-SDR default GNSS system and signal
-     */
-
+    // Read GNSS systems and signals
     unsigned int total_channels = configuration_->property("Channels_1C.count", 0) +
-                                  configuration_->property("Channels_2S.count", 0) +
                                   configuration_->property("Channels_1B.count", 0) +
-                                  configuration_->property("Channels_5X.count", 0) +
                                   configuration_->property("Channels_1G.count", 0) +
+                                  configuration_->property("Channels_2S.count", 0) +
                                   configuration_->property("Channels_2G.count", 0) +
                                   configuration_->property("Channels_5X.count", 0) +
                                   configuration_->property("Channels_L5.count", 0);
 
-    /*
-     * Loop to create the list of GNSS Signals
-     * To add signals from other systems, add another loop 'for'
-     */
-
+    // Create the lists of GNSS satellites
     std::set<unsigned int> available_gps_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
         29, 30, 31, 32};
@@ -690,6 +717,7 @@ void GNSSFlowgraph::set_signals_list()
                         std::string("L5")));
                 }
         }
+
     if (configuration_->property("Channels_SBAS.count", 0) > 0)
         {
             /*
@@ -704,7 +732,6 @@ void GNSSFlowgraph::set_signals_list()
                         std::string("1C")));
                 }
         }
-
 
     if (configuration_->property("Channels_1B.count", 0) > 0)
         {
@@ -765,39 +792,12 @@ void GNSSFlowgraph::set_signals_list()
                         std::string("2G")));
                 }
         }
-    /*
-     * Ordering the list of signals from configuration file
-     */
-    std::list<Gnss_Signal>::iterator gnss_it = available_GNSS_signals_.begin();
-
-    // Pre-assignation if not defined at ChannelX.signal=1C ...? In what order?
-
-    for (unsigned int i = 0; i < total_channels; i++)
-        {
-            std::string gnss_signal = (configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("1C")));
-            std::string gnss_system;
-            if ((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) or (gnss_signal.compare("L5") == 0)) gnss_system = "GPS";
-            if ((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0)) gnss_system = "Galileo";
-            if ((gnss_signal.compare("1G") == 0) or (gnss_signal.compare("2G") == 0)) gnss_system = "Glonass";
-            unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
-            LOG(INFO) << "Channel " << i << " system " << gnss_system << ", signal " << gnss_signal << ", sat " << sat;
-            if (sat == 0)  // 0 = not PRN in configuration file
-                {
-                    gnss_it++;
-                }
-            else
-                {
-                    Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
-                    available_GNSS_signals_.remove(signal_value);
-                    gnss_it = available_GNSS_signals_.insert(gnss_it, signal_value);
-                }
-        }
 }
 
 
 void GNSSFlowgraph::set_channels_state()
 {
-    max_acq_channels_ = (configuration_->property("Channels.in_acquisition", channels_count_));
+    max_acq_channels_ = configuration_->property("Channels.in_acquisition", channels_count_);
     if (max_acq_channels_ > channels_count_)
         {
             max_acq_channels_ = channels_count_;

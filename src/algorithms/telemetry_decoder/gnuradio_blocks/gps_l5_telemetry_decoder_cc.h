@@ -1,7 +1,6 @@
 /*!
  * \file gps_l5_telemetry_decoder_cc.h
- * \brief Interface of a CNAV message demodulator block based on
- * Kay Borre book MATLAB-based GPS receiver
+ * \brief Interface of a CNAV message demodulator block
  * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  * -------------------------------------------------------------------------
  *
@@ -42,7 +41,8 @@
 #include <utility>
 #include <vector>
 
-extern "C" {
+extern "C"
+{
 #include "cnav_msg.h"
 #include "edc.h"
 #include "bits.h"

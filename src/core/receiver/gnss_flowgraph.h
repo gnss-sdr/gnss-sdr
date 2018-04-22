@@ -43,6 +43,7 @@
 #include <gnuradio/msg_queue.h>
 #include <list>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <string>
 #include <vector>
@@ -67,9 +68,9 @@ public:
     GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue);
 
     /*!
-     * \brief Virtual destructor
+     * \brief Destructor
      */
-    virtual ~GNSSFlowgraph();
+    ~GNSSFlowgraph();
 
     //! \brief Start the flow graph
     void start();
@@ -83,6 +84,8 @@ public:
      * Signal Source > Signal conditioner > Channels >> Observables >> PVT > Output filter
      */
     void connect();
+
+    void disconnect();
 
     void wait();
 
@@ -147,6 +150,7 @@ private:
     gr::msg_queue::sptr queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;
     std::vector<unsigned int> channels_state_;
+    std::mutex signal_list_mutex;
 };
 
 #endif /*GNSS_SDR_GNSS_FLOWGRAPH_H_*/

@@ -1,7 +1,6 @@
 /*!
  * \file gps_l5_telemetry_decoder_cc.cc
- * \brief Implementation of a NAV message demodulator block based on
- * Kay Borre book MATLAB-based GPS receiver
+ * \brief Implementation of a CNAV message demodulator block
  * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -31,12 +30,13 @@
 
 
 #include "gps_l5_telemetry_decoder_cc.h"
+#include "display.h"
 #include "gnss_synchro.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
 #include <boost/lexical_cast.hpp>
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <bitset>
 #include <iostream>
 #include <sstream>
@@ -218,20 +218,20 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
                 {
                     // get ephemeris object for this SV
                     std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                    std::cout << "New GPS L5 CNAV message received: ephemeris from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
             if (d_CNAV_Message.have_new_iono() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                    std::cout << "New GPS L5 CNAV message received: iono model parameters from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": iono model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
             if (d_CNAV_Message.have_new_utc_model() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                    std::cout << "New GPS L5 CNAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 

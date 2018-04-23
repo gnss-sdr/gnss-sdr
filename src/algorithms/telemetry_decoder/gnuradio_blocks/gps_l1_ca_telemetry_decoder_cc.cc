@@ -32,8 +32,9 @@
 #include "gps_l1_ca_telemetry_decoder_cc.h"
 #include "control_message_factory.h"
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 
 #ifndef _rotl
@@ -63,10 +64,8 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     // set the preamble
     unsigned short int preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
 
-    //memcpy((unsigned short int*)this->d_preambles_bits, (unsigned short int*)preambles_bits, GPS_CA_PREAMBLE_LENGTH_BITS*sizeof(unsigned short int));
-
     // preamble bits to sampled symbols
-    d_preambles_symbols = static_cast<signed int *>(malloc(sizeof(signed int) * GPS_CA_PREAMBLE_LENGTH_SYMBOLS));
+    d_preambles_symbols = static_cast<int *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int), volk_gnsssdr_get_alignment()));
     int n = 0;
     for (int i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
         {
@@ -112,7 +111,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
 
 gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
 {
-    delete d_preambles_symbols;
+    volk_gnsssdr_free(d_preambles_symbols);
     if (d_dump_file.is_open() == true)
         {
             try

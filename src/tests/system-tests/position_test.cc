@@ -277,8 +277,8 @@ int StaticPositionSystemTest::configure_receiver()
             const float dll_bw_narrow_hz = 2.0;
             const int extend_correlation_ms = 1;
 
-            const int display_rate_ms = 1000;
-            const int output_rate_ms = 1000;
+            const int display_rate_ms = 500;
+            const int output_rate_ms = 500;
 
             config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
 
@@ -361,12 +361,11 @@ int StaticPositionSystemTest::configure_receiver()
 
             config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
             config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
-            config->set_property("Tracking_1C.extend_correlation_ms", std::to_string(extend_correlation_ms));
+            config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_ms));
 
             // Set Telemetry
             config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
             config->set_property("TelemetryDecoder_1C.dump", "false");
-            config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
             // Set Observables
             config->set_property("Observables.implementation", "Hybrid_Observables");
@@ -454,6 +453,7 @@ int StaticPositionSystemTest::run_receiver()
 void StaticPositionSystemTest::check_results()
 {
     std::fstream myfile(StaticPositionSystemTest::generated_kml_file, std::ios_base::in);
+    ASSERT_TRUE(myfile.is_open()) << "No valid kml file could be opened";
     std::string line;
 
     std::vector<double> pos_e;
@@ -466,6 +466,7 @@ void StaticPositionSystemTest::check_results()
     while (is_header)
         {
             std::getline(myfile, line);
+            ASSERT_FALSE(myfile.eof()) << "No valid kml file found.";
             std::size_t found = line.find("<coordinates>");
             if (found != std::string::npos) is_header = false;
         }
@@ -474,7 +475,11 @@ void StaticPositionSystemTest::check_results()
     //read data
     while (is_data)
         {
-            std::getline(myfile, line);
+            if (!std::getline(myfile, line))
+                {
+                    is_data = false;
+                    break;
+                }
             std::size_t found = line.find("</coordinates>");
             if (found != std::string::npos)
                 is_data = false;
@@ -504,6 +509,7 @@ void StaticPositionSystemTest::check_results()
                 }
         }
     myfile.close();
+    ASSERT_FALSE(pos_e.size() == 0) << "KML file is empty";
 
     double sigma_E_2_precision = std::pow(compute_stdev_precision(pos_e), 2.0);
     double sigma_N_2_precision = std::pow(compute_stdev_precision(pos_n), 2.0);

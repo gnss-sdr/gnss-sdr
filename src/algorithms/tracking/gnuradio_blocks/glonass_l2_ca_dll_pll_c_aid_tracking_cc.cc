@@ -292,8 +292,8 @@ void glonass_l2_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     sys = sys_.substr(0, 1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+    std::cout << "Tracking of GLONASS L2 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    LOG(INFO) << "Tracking of GLONASS L2 C/A signal for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
     d_pull_in = true;
@@ -552,6 +552,38 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::save_matfile()
     delete[] aux2;
     delete[] PRN;
     return 0;
+}
+
+
+void glonass_l2_ca_dll_pll_c_aid_tracking_cc::set_channel(unsigned int channel)
+{
+    d_channel = channel;
+    LOG(INFO) << "Tracking Channel set to " << d_channel;
+    // ############# ENABLE DATA FILE LOG #################
+    if (d_dump == true)
+        {
+            if (d_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(".dat");
+                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                        }
+                    catch (const std::ifstream::failure *e)
+                        {
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e->what() << std::endl;
+                        }
+                }
+        }
+}
+
+
+void glonass_l2_ca_dll_pll_c_aid_tracking_cc::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
+{
+    d_acquisition_gnss_synchro = p_gnss_synchro;
 }
 
 
@@ -891,36 +923,4 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
     d_sample_counter += d_correlation_length_samples;  //count for the processed samples
 
     return 1;  //output tracking result ALWAYS even in the case of d_enable_tracking==false
-}
-
-
-void glonass_l2_ca_dll_pll_c_aid_tracking_cc::set_channel(unsigned int channel)
-{
-    d_channel = channel;
-    LOG(INFO) << "Tracking Channel set to " << d_channel;
-    // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
-        {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                        {
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
-                            d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
-                        }
-                    catch (const std::ifstream::failure *e)
-                        {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e->what() << std::endl;
-                        }
-                }
-        }
-}
-
-
-void glonass_l2_ca_dll_pll_c_aid_tracking_cc::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
-{
-    d_acquisition_gnss_synchro = p_gnss_synchro;
 }

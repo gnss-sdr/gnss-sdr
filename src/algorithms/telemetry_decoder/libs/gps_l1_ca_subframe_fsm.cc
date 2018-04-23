@@ -39,13 +39,16 @@
 
 
 //************ GPS WORD TO SUBFRAME DECODER STATE MACHINE **********
-
 struct Ev_gps_word_valid : sc::event<Ev_gps_word_valid>
 {
 };
+
+
 struct Ev_gps_word_invalid : sc::event<Ev_gps_word_invalid>
 {
 };
+
+
 struct Ev_gps_word_preamble : sc::event<Ev_gps_word_preamble>
 {
 };
@@ -245,16 +248,20 @@ void GpsL1CaSubframeFsm::gps_word_to_subframe(int position)
     std::memcpy(&d_subframe[position * GPS_WORD_LENGTH], &d_GPS_frame_4bytes, sizeof(char) * GPS_WORD_LENGTH);
 }
 
+
 void GpsL1CaSubframeFsm::clear_flag_new_subframe()
 {
     d_flag_new_subframe = false;
 }
+
+
 void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
 {
     //int subframe_ID;
     // NEW GPS SUBFRAME HAS ARRIVED!
     d_subframe_ID = d_nav.subframe_decoder(this->d_subframe);  //decode the subframe
-    std::cout << "New GPS NAV message received: subframe "
+    std::cout << "New GPS NAV message received in channel " << i_channel_ID << ": "
+              << "subframe "
               << d_subframe_ID << " from satellite "
               << Gnss_Satellite(std::string("GPS"), i_satellite_PRN) << std::endl;
     d_nav.i_satellite_PRN = i_satellite_PRN;
@@ -262,6 +269,7 @@ void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
 
     d_flag_new_subframe = true;
 }
+
 
 void GpsL1CaSubframeFsm::Event_gps_word_valid()
 {

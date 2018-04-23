@@ -84,6 +84,10 @@ private:
     double d_symbol_accumulator;
     short int d_symbol_accumulator_counter;
 
+    // symbol counting
+    bool d_make_correlation;
+    unsigned int d_symbol_counter_corr;
+
     //bits and frame
     unsigned short int d_frame_bit_index;
     unsigned int d_GPS_frame_4bytes;

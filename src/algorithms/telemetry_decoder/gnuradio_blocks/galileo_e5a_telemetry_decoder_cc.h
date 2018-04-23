@@ -112,6 +112,15 @@ private:
     Gnss_Satellite d_satellite;
     // navigation message vars
     Galileo_Fnav_Message d_nav;
+
+    // vars for Viterbi decoder
+    int *out0, *out1, *state0, *state1;
+    int g_encoder[2];
+    const int nn = 2;  // Coding rate 1/n
+    const int KK = 7;  // Constraint Length
+    int mm = KK - 1;
+    const int CodeLength = 488;
+    int DataLength = (CodeLength / nn) - mm;
 };
 
 #endif /* GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_CC_H_ */

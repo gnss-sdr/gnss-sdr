@@ -1,14 +1,18 @@
+
 /*!
  * \file gps_l1_ca_pcps_acquisition_fpga.cc
- * \brief Adapts a PCPS acquisition block to an FPGA Acquisition Interface for
- *  GPS L1 C/A signals. This file is based on the file gps_l1_ca_pcps_acquisition.cc
+ * \brief Adapts a PCPS acquisition block to an FPGA AcquisitionInterface
+ *  for GPS L1 C/A signals
  * \authors <ul>
- * 			<li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ *          <li> Marc Majoral, 2018. mmajoral(at)cttc.es
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,88 +34,109 @@
  *
  * -------------------------------------------------------------------------
  */
-
-#include "gps_l1_ca_pcps_acquisition_fpga.h"
-#include <boost/math/distributions/exponential.hpp>
+#include <new>
+#include <gnuradio/fft/fft.h>
+#include <volk/volk.h>
 #include <glog/logging.h>
-#include "GPS_L1_CA.h"
+#include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "configuration_interface.h"
+#include "gps_sdr_signal_processing.h"
+#include "GPS_L1_CA.h"
+#include "gnss_sdr_flags.h"
+
+#define NUM_PRNs 32
 
 using google::LogMessage;
 
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    unsigned int code_length;
-    bool bit_transition_flag;
-    bool use_CFAR_algorithm_flag;
-    unsigned int sampled_ms;
-    long fs_in;
-    long ifreq;
-    bool dump;
-    std::string dump_filename;
-    unsigned int nsamples_total;
-    unsigned int select_queue_Fpga;
-    std::string device_name;
+    pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
-    std::string default_item_type = "cshort";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    std::string default_item_type = "gr_complex";
+
     DLOG(INFO) << "role " << role;
-    item_type_ = configuration_->property(role + ".item_type",
-            default_item_type);
-    fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", 2048000);
-    ifreq = configuration_->property(role + ".if", 0);
-    dump = configuration_->property(role + ".dump", false);
+
+    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    acq_parameters.fs_in = fs_in_;
+    if_ = configuration_->property(role + ".if", 0);
+    acq_parameters.freq = if_;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    sampled_ms = configuration_->property(
-            role + ".coherent_integration_time_ms", 1);
-    // note : the FPGA is implemented according to bit transition flag = 0. Setting bit transition flag to 1 has no effect.
-    bit_transition_flag = configuration_->property(
-            role + ".bit_transition_flag", false);
-    // note : the FPGA is implemented according to use_CFAR_algorithm = 0. Setting use_CFAR_algorithm to 1 has no effect.
-    use_CFAR_algorithm_flag = configuration_->property(
-            role + ".use_CFAR_algorithm", false);
-    // note : the FPGA does not use the max_dwells variable.
-    max_dwells_ = configuration_->property(role + ".max_dwells", 1);
-    dump_filename = configuration_->property(role + ".dump_filename",
-            default_dump_filename);
-    //--- Find number of samples per spreading code -------------------------
-    code_length = round(
-            fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-    // code length has the same value as d_fft_size
-    float nbits;
-    nbits = ceilf(log2f(code_length));
-    nsamples_total = pow(2, nbits);
-    //vector_length_ = code_length_ * sampled_ms_;
-    vector_length_ = nsamples_total * sampled_ms;
-    //    if( bit_transition_flag_ )
-    //        {
-    //            vector_length_ *= 2;
-    //        }
-    select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga",
-            0);
-   std::string default_device_name = "/dev/uio0";
-    device_name = configuration_->property(role + ".devicename",
-            default_device_name);
-    if (item_type_.compare("cshort") == 0)
+    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    acq_parameters.doppler_max = doppler_max_;
+    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
+    acq_parameters.sampled_ms = sampled_ms_;
+    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+
+    // The FPGA can only use FFT lengths that are a power of two.
+    float nbits = ceilf(log2f((float) code_length_));
+    unsigned int nsamples_total = pow(2, nbits);
+    vector_length_ = nsamples_total * sampled_ms_;
+    unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga",0);
+    acq_parameters.select_queue_Fpga = select_queue_Fpga;
+    std::string default_device_name = "/dev/uio0";
+    std::string device_name = configuration_->property(role + ".devicename", default_device_name);
+    acq_parameters.device_name = device_name;
+    acq_parameters.samples_per_ms = nsamples_total;
+    acq_parameters.samples_per_code = nsamples_total;
+
+    // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
+    // a channel is assigned)
+
+    // Direct FFT
+    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(vector_length_, true);
+    // allocate memory to compute all the PRNs
+    // and compute all the possible codes
+    std::complex<float>* code = new std::complex<float>[nsamples_total]; // buffer for the local code
+    gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_all_fft_codes = new lv_16sc_t[nsamples_total * NUM_PRNs]; // memory containing all the possible fft codes for PRN 0 to 32
+    float max; // temporary maxima search
+
+    for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            item_size_ = sizeof(lv_16sc_t);
-            gps_acquisition_fpga_sc_ = gps_pcps_make_acquisition_fpga_sc(
-                    sampled_ms, max_dwells_, doppler_max_, ifreq, fs_in,
-                    code_length, code_length, vector_length_, nsamples_total,
-                    bit_transition_flag, use_CFAR_algorithm_flag,
-                    select_queue_Fpga, device_name, dump, dump_filename);
-            DLOG(INFO) << "acquisition("
-                    << gps_acquisition_fpga_sc_->unique_id() << ")";
-        }
-    else
-        {
-            LOG(FATAL) << item_type_ << " FPGA only accepts chsort";
-        }
+            gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in_, 0); // generate PRN code
+            // fill in zero padding
+            for (int s=code_length_;s<nsamples_total;s++)
+                {
+                    code[s] = 0;
+                }
+            int offset = 0;
+            memcpy(fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * nsamples_total); // copy to FFT buffer
+            fft_if->execute(); // Run the FFT of local code
+            volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total); // conjugate values
+            max = 0; // initialize maximum value
+            for (unsigned int i = 0; i < nsamples_total; i++) // search for maxima
+                {
+                    if (std::abs(fft_codes_padded[i].real()) > max)
+                        {
+                            max = std::abs(fft_codes_padded[i].real());
+                        }
+                    if (std::abs(fft_codes_padded[i].imag()) > max)
+                        {
+                            max = std::abs(fft_codes_padded[i].imag());
+                        }
+                }
+            for (unsigned int i = 0; i < nsamples_total; i++) // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
+                {
+                    d_all_fft_codes[i + nsamples_total * (PRN -1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 7) - 1) / max)),
+                            static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max)));
+
+                }
+            }
+
+    acq_parameters.all_fft_codes = d_all_fft_codes;
+    //acq_parameters
+    // temporary buffers that we can delete
+    delete[] code;
+    delete fft_if;
+    delete[] fft_codes_padded;
+
+    acquisition_fpga_ = pcps_make_acquisition(acq_parameters);
+    DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
+
     channel_ = 0;
-    threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
 }
@@ -119,123 +144,94 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
 GpsL1CaPcpsAcquisitionFpga::~GpsL1CaPcpsAcquisitionFpga()
 {
+    //delete[] code_;
+    delete[] d_all_fft_codes;
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    gps_acquisition_fpga_sc_->set_channel(channel_);
+    acquisition_fpga_->set_channel(channel_);
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + ".pfa", 0.0);
-
-    if (pfa == 0.0)
-        {
-            threshold_ = threshold;
-        }
-    else
-        {
-            threshold_ = calculate_threshold(pfa);
-        }
-
-    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
-    gps_acquisition_fpga_sc_->set_threshold(threshold_);
+    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold;
+    acquisition_fpga_->set_threshold(threshold);
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
-    gps_acquisition_fpga_sc_->set_doppler_max(doppler_max_);
+    acquisition_fpga_->set_doppler_max(doppler_max_);
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-    gps_acquisition_fpga_sc_->set_doppler_step(doppler_step_);
+    acquisition_fpga_->set_doppler_step(doppler_step_);
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-    gps_acquisition_fpga_sc_->set_gnss_synchro(gnss_synchro_);
+    acquisition_fpga_->set_gnss_synchro(gnss_synchro_);
 }
 
 
 signed int GpsL1CaPcpsAcquisitionFpga::mag()
 {
-    return gps_acquisition_fpga_sc_->mag();
+    return acquisition_fpga_->mag();
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::init()
 {
-    gps_acquisition_fpga_sc_->init();
+    acquisition_fpga_->init();
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_local_code()
 {
-    gps_acquisition_fpga_sc_->set_local_code();
+    acquisition_fpga_->set_local_code();
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::reset()
 {
-    gps_acquisition_fpga_sc_->set_active(true);
+    acquisition_fpga_->set_active(true);
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::set_state(int state)
 {
-    gps_acquisition_fpga_sc_->set_state(state);
-}
-
-
-float GpsL1CaPcpsAcquisitionFpga::calculate_threshold(float pfa)
-{
-    //Calculate the threshold
-    unsigned int frequency_bins = 0;
-    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_);
-            doppler += doppler_step_)
-        {
-            frequency_bins++;
-        }
-    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
-    unsigned int ncells = vector_length_ * frequency_bins;
-    double exponent = 1 / static_cast<double>(ncells);
-    double val = pow(1.0 - pfa, exponent);
-    double lambda = double(vector_length_);
-    boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
-    return threshold;
+    acquisition_fpga_->set_state(state);
 }
 
 void GpsL1CaPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
-    //nothing to connect
+    // nothing to connect
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 {
-    //nothing to disconnect
+    // nothing to disconnect
 }
 
 
 gr::basic_block_sptr GpsL1CaPcpsAcquisitionFpga::get_left_block()
 {
-    return gps_acquisition_fpga_sc_;
+    return acquisition_fpga_;
 }
 
 
 gr::basic_block_sptr GpsL1CaPcpsAcquisitionFpga::get_right_block()
 {
-    return gps_acquisition_fpga_sc_;
+    return acquisition_fpga_;
 }

@@ -91,7 +91,7 @@
 #include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
 #include "glonass_l2_ca_dll_pll_tracking.h"
 #include "glonass_l2_ca_dll_pll_c_aid_tracking.h"
-#include "gps_l5i_dll_pll_tracking.h"
+#include "gps_l5_dll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l2c_telemetry_decoder.h"
 #include "gps_l5_telemetry_decoder.h"
@@ -250,13 +250,13 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared
     GPS_channels += configuration->property("Channels_2S.count", 0);
     GPS_channels += configuration->property("Channels_L5.count", 0);
     unsigned int Glonass_channels = configuration->property("Channels_1G.count", 0);
-    unsigned int extra_channels = 1; // For monitor channel sample counter
+    unsigned int extra_channels = 1;  // For monitor channel sample counter
     return GetBlock(configuration, "Observables", implementation,
-            Galileo_channels +
+        Galileo_channels +
             GPS_channels +
             Glonass_channels +
             extra_channels,
-            Galileo_channels +
+        Galileo_channels +
             GPS_channels +
             Glonass_channels);
 }
@@ -617,7 +617,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
 }
 
 
-
 //********* GLONASS L2 C/A CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
     std::shared_ptr<ConfigurationInterface> configuration,
@@ -685,7 +684,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
 
     return channel_;
 }
-
 
 
 //********* GPS L5  CHANNEL *****************
@@ -779,7 +777,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                                   Channels_1B_count +
                                   Channels_5X_count +
                                   Channels_1G_count +
-								  Channels_2G_count +
+                                  Channels_2G_count +
                                   Channels_L5_count;
 
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels(new std::vector<std::unique_ptr<GNSSBlockInterface>>(total_channels));
@@ -1437,9 +1435,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
-    else if (implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0)
+    else if ((implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0) or (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0))
         {
-            std::unique_ptr<GNSSBlockInterface> block_(new GpsL5iDllPllTracking(configuration.get(), role, in_streams,
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL5DllPllTracking(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
@@ -1766,9 +1764,9 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams));
             block = std::move(block_);
         }
-    else if (implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0)
+    else if ((implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0) or (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0))
         {
-            std::unique_ptr<TrackingInterface> block_(new GpsL5iDllPllTracking(configuration.get(), role, in_streams,
+            std::unique_ptr<TrackingInterface> block_(new GpsL5DllPllTracking(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }

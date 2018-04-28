@@ -128,7 +128,7 @@ static inline void volk_gnsssdr_16ic_resamplerfastxnpuppet_16ic_u_sse2(lv_16sc_t
 #endif
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 static inline void volk_gnsssdr_16ic_resamplerfastxnpuppet_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float code_phase_step_chips = 0.1;

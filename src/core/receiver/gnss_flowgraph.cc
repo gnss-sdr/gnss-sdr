@@ -772,15 +772,6 @@ void GNSSFlowgraph::set_signals_list()
     // Set a sequential list of GNSS satellites
     std::set<unsigned int>::const_iterator available_gnss_prn_iter;
 
-    // Read GNSS systems and signals
-    unsigned int total_channels = configuration_->property("Channels_1C.count", 0) +
-                                  configuration_->property("Channels_1B.count", 0) +
-                                  configuration_->property("Channels_1G.count", 0) +
-                                  configuration_->property("Channels_2S.count", 0) +
-                                  configuration_->property("Channels_2G.count", 0) +
-                                  configuration_->property("Channels_5X.count", 0) +
-                                  configuration_->property("Channels_L5.count", 0);
-
     // Create the lists of GNSS satellites
     std::set<unsigned int> available_gps_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,

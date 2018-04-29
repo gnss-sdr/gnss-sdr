@@ -36,14 +36,15 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H
 
-#include <fstream>
-#include <map>
-#include <string>
-#include <gnuradio/block.h>
+#include "cuda_multicorrelator.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
-#include "cuda_multicorrelator.h"
+#include <gnuradio/block.h>
+#include <fstream>
+#include <map>
+#include <string>
+
 
 class Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc;
 

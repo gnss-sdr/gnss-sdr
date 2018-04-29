@@ -5,7 +5,15 @@
 </machine>
 
 <machine name="neon">
-<archs>generic neon softfp|hardfp orc|</archs>
+<archs>generic neon orc|</archs>
+</machine>
+
+<machine name="neonv7">
+<archs>generic neon neonv7 softfp|hardfp orc|</archs>
+</machine>
+
+<machine name="neonv8">
+<archs>generic neon neonv8</archs>
 </machine>
 
 <!-- trailing | bar means generate without either for MSVC -->

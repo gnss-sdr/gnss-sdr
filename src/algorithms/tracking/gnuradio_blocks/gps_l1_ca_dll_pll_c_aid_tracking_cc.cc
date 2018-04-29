@@ -39,7 +39,6 @@
 #include <boost/bind.hpp>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
-#include <pmt/pmt.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <glog/logging.h>
 #include <cmath>

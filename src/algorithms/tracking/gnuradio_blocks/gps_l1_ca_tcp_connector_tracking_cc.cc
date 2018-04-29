@@ -36,22 +36,22 @@
  */
 
 #include "gps_l1_ca_tcp_connector_tracking_cc.h"
-#include <cmath>
-#include <iostream>
-#include <sstream>
+#include "control_message_factory.h"
+#include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include "GPS_L1_CA.h"
+#include "lock_detectors.h"
+#include "tcp_communication.h"
+#include "tcp_packet_data.h"
+#include "tracking_discriminators.h"
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "gps_sdr_signal_processing.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
-#include "GPS_L1_CA.h"
-#include "control_message_factory.h"
-#include "gnss_sdr_flags.h"
-#include "tcp_communication.h"
-#include "tcp_packet_data.h"
+#include <cmath>
+#include <iostream>
+#include <sstream>
 
 
 using google::LogMessage;

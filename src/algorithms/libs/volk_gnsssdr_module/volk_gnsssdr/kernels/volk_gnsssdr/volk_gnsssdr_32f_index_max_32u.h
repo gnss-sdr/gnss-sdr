@@ -481,7 +481,7 @@ static inline void volk_gnsssdr_32f_index_max_32u_generic(uint32_t* target, cons
 #endif /*LV_HAVE_GENERIC*/
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_32f_index_max_32u_neon(uint32_t* target, const float* src0, uint32_t num_points)
@@ -546,6 +546,6 @@ static inline void volk_gnsssdr_32f_index_max_32u_neon(uint32_t* target, const f
         }
 }
 
-#endif /*LV_HAVE_NEON*/
+#endif /*LV_HAVE_NEONV7*/
 
 #endif /*INCLUDED_volk_gnsssdr_32f_index_max_32u_H*/

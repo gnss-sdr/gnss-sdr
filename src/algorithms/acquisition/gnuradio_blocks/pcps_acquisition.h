@@ -56,7 +56,7 @@
 #include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk/volk.h>
 #include <string>
 
 typedef struct

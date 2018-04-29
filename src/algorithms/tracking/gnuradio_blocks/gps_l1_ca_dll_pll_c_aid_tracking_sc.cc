@@ -40,7 +40,6 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <glog/logging.h>
 #include <matio.h>
 #include <cmath>

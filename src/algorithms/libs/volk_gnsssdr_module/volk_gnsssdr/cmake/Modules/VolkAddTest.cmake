@@ -1,21 +1,19 @@
-# Copyright 2015 Free Software Foundation, Inc.
+# Copyright (C) 2015-2018 (see AUTHORS file for a list of contributors)
 #
-# This file is part of Volk
+# This file is part of GNSS-SDR.
 #
-# Volk is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
+# GNSS-SDR is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Volk is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
+# GNSS-SDR is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Volk; see the file COPYING.  If not, write to the Free
-# Software Foundation, Inc., 51 Franklin Street, Boston, MA
-# 02110-1301, USA.
+# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 
 if(DEFINED __INCLUDED_VOLK_ADD_TEST)
     return()

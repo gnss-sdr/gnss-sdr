@@ -138,6 +138,13 @@ void ControlThread::run()
     keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
     sysv_queue_thread_ = boost::thread(&ControlThread::sysv_queue_listener, this);
 
+    bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
+
+    if (enable_FPGA == true)
+    {
+        flowgraph_->start_acquisition_helper();
+    }
+
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
         {

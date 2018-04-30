@@ -28,7 +28,10 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
    endif(NOT IIO_FOUND)
    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
-   
+
+endif(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+
+if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
    find_package(libiio REQUIRED)
    if(NOT LIBIIO_FOUND)
       message(STATUS "gnuradio-iio not found, its installation is required.")
@@ -40,37 +43,38 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
    endif(NOT LIBIIO_FOUND)
    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${LIBIIO_LIBRARIES})
    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${LIBIIO_INCLUDE_DIRS})
-   
-endif(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
 
-if(ENABLE_FMCOMMS2)
-    ###############################################
+       ###############################################
     # FMCOMMS2 based SDR Hardware
     ###############################################
     if(IIO_FOUND)
         set(OPT_SIGNAL_SOURCE_LIB_SOURCES ad9361_manager.cc)
     endif(IIO_FOUND)
-endif(ENABLE_FMCOMMS2)
+
+endif(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
+
+if(ENABLE_AD9361)
+	set(OPT_SIGNAL_SOURCE_LIB_SOURCES ad9361_manager.cc)
+endif(ENABLE_AD9361)
+
+if(ENABLE_FPGA)
+    SET(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_switch.cc)
+endif(ENABLE_FPGA)
+
+include_directories(
+     ${CMAKE_CURRENT_SOURCE_DIR}
+     ${Boost_INCLUDE_DIRS}
+     ${OPT_DRIVER_INCLUDE_DIRS}
+)
 
 set (SIGNAL_SOURCE_LIB_SOURCES
   rtl_tcp_commands.cc
   rtl_tcp_dongle_info.cc
   ${OPT_SIGNAL_SOURCE_LIB_SOURCES})
 
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${OPT_DRIVER_INCLUDE_DIRS}
-)
-
-
 file(GLOB SIGNAL_SOURCE_LIB_HEADERS "*.h")
 list(SORT SIGNAL_SOURCE_LIB_HEADERS)
-list(SORT SIGNAL_SOURCE_LIB_SOURCES)
 add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})
-add_dependencies(signal_source_lib glog-${glog_RELEASE})
-target_link_libraries(signal_source_lib ${OPT_LIBRARIES})
 
+target_link_libraries(signal_source_lib ${OPT_LIBRARIES})

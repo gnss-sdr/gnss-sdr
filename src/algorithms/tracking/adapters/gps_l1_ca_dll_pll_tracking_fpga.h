@@ -1,9 +1,8 @@
 /*!
- * \file gps_l1_ca_dll_pll_c_aid_tracking_fpga.h
+ * \file gps_l1_ca_dll_pll_tracking.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface
- * \author Marc Majoral, 2017. mmajoral(at)cttc.cat
- *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -13,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,36 +35,38 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_FPGA__H_
-#define GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_FPGA__H_
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
+#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 
-#include <string>
+
 #include "tracking_interface.h"
-#include "gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc.h"
+#include "gps_l1_ca_dll_pll_tracking_fpga_sc.h"
+#include <string>
 
 class ConfigurationInterface;
 
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking loop
  */
-class GpsL1CaDllPllCAidTrackingFpga : public TrackingInterface
+class GpsL1CaDllPllTrackingFpga : public TrackingInterface
 {
 public:
-    GpsL1CaDllPllCAidTrackingFpga(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+    GpsL1CaDllPllTrackingFpga(ConfigurationInterface* configuration,
+        std::string role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL1CaDllPllCAidTrackingFpga();
+    virtual ~GpsL1CaDllPllTrackingFpga();
 
     inline std::string role() override
     {
         return role_;
     }
 
-    //! Returns "GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga"
+    //! Returns "GPS_L1_CA_DLL_PLL_Tracking_Fpga"
     inline std::string implementation() override
     {
-        return "GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga";
+        return "GPS_L1_CA_DLL_PLL_Tracking_Fpga";
     }
 
     inline size_t item_size() override
@@ -75,7 +76,6 @@ public:
 
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
-    // CONVERT TO SOURCE
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_right_block() override;
 
@@ -95,13 +95,13 @@ public:
     void reset(void);
 
 private:
-    gps_l1_ca_dll_pll_c_aid_tracking_fpga_sc_sptr tracking_fpga_sc;
+    //gps_l1_ca_dll_pll_tracking_cc_sptr tracking_;
+    gps_l1_ca_dll_pll_tracking_fpga_sc_sptr tracking_fpga_sc;
     size_t item_size_;
-    std::string item_type_;
     unsigned int channel_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_FPGA__H_
+#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_

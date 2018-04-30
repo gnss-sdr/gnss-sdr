@@ -104,8 +104,8 @@
 #include "rtklib_pvt.h"
 
 #if ENABLE_FPGA
-#include "gps_l1_ca_dll_pll_c_aid_tracking_fpga.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
+#include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #endif
 
 #if OPENCL_BLOCKS
@@ -134,6 +134,10 @@
 
 #if FMCOMMS2_DRIVER
 #include "fmcomms2_signal_source.h"
+#endif
+
+#if AD9361_DRIVER
+#include "ad9361_fpga_signal_source.h"
 #endif
 
 #if FLEXIBAND_DRIVER
@@ -273,7 +277,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<Con
     GPS_channels += configuration->property("Channels_2S.count", 0);
     GPS_channels += configuration->property("Channels_L5.count", 0);
     unsigned int Glonass_channels = configuration->property("Channels_1G.count", 0);
-    Glonass_channels += configuration->property("Channels_2G.count", 0);
     return GetBlock(configuration, "PVT", implementation, Galileo_channels + GPS_channels + Glonass_channels, 0);
 }
 
@@ -1186,6 +1189,15 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         }
 #endif
 
+#if AD9361_DRIVER
+    else if (implementation.compare("Ad9361_Fpga_Signal_Source") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new Ad9361FpgaSignalSource(configuration.get(), role, in_streams,
+                out_streams, queue));
+            block = std::move(block_);
+        }
+#endif
+
 #if FLEXIBAND_DRIVER
     else if (implementation.compare("Flexiband_Signal_Source") == 0)
         {
@@ -1416,9 +1428,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
 #if ENABLE_FPGA
-    else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga") == 0)
+    else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllCAidTrackingFpga(configuration.get(), role, in_streams,
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllTrackingFpga(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
@@ -1727,9 +1739,9 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
             block = std::move(block_);
         }
 #if ENABLE_FPGA
-    else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga") == 0)
+    else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllCAidTrackingFpga(configuration.get(), role, in_streams,
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllTrackingFpga(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }

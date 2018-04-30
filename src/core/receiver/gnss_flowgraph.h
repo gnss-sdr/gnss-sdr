@@ -41,6 +41,8 @@
 #include "gnss_sdr_sample_counter.h"
 #include <gnuradio/top_block.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/blocks/null_source.h>
+#include <gnuradio/blocks/throttle.h>
 #include <list>
 #include <memory>
 #include <mutex>
@@ -48,6 +50,9 @@
 #include <string>
 #include <vector>
 
+#if ENABLE_FPGA
+#include "gnss_sdr_time_counter.h"
+#endif
 
 class GNSSBlockInterface;
 class ChannelInterface;
@@ -88,6 +93,8 @@ public:
     void disconnect();
 
     void wait();
+
+    void start_acquisition_helper();
 
     /*!
      * \brief Applies an action to the flow graph
@@ -146,6 +153,11 @@ private:
 
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gnss_sdr_sample_counter_sptr ch_out_sample_counter;
+#if ENABLE_FPGA
+    gnss_sdr_time_counter_sptr time_counter_;
+#endif
+    gr::blocks::null_source::sptr null_source_;
+    gr::blocks::throttle::sptr throttle_;
     gr::top_block_sptr top_block_;
     gr::msg_queue::sptr queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;

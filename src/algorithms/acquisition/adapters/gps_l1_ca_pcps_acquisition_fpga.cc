@@ -40,7 +40,6 @@
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include <gnuradio/fft/fft.h>
-#include <volk/volk.h>
 #include <glog/logging.h>
 #include <new>
 

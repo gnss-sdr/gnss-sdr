@@ -40,6 +40,7 @@
 #include "acquisition_interface.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string>
 
 class ConfigurationInterface;

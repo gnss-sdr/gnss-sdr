@@ -33,15 +33,17 @@
  *
  * -------------------------------------------------------------------------
  */
-#include <new>
+
+#include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gps_l1_ca_pcps_acquisition_fpga.h"
+#include "gps_sdr_signal_processing.h"
+#include "GPS_L1_CA.h"
 #include <gnuradio/fft/fft.h>
 #include <volk/volk.h>
 #include <glog/logging.h>
-#include "gps_l1_ca_pcps_acquisition_fpga.h"
-#include "configuration_interface.h"
-#include "gps_sdr_signal_processing.h"
-#include "GPS_L1_CA.h"
-#include "gnss_sdr_flags.h"
+#include <new>
+
 
 #define NUM_PRNs 32
 
@@ -70,10 +72,10 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f((float) code_length));
+    float nbits = ceilf(log2f((float)code_length));
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total * sampled_ms;
-    unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga",0);
+    unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
@@ -84,27 +86,27 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
 
-    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(vector_length, true); // Direct FFT
+    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
     // allocate memory to compute all the PRNs and compute all the possible codes
-    std::complex<float>* code = new std::complex<float>[nsamples_total]; // buffer for the local code
+    std::complex<float>* code = new std::complex<float>[nsamples_total];  // buffer for the local code
     gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_all_fft_codes_ = new lv_16sc_t[nsamples_total * NUM_PRNs]; // memory containing all the possible fft codes for PRN 0 to 32
-    float max; // temporary maxima search
+    d_all_fft_codes_ = new lv_16sc_t[nsamples_total * NUM_PRNs];  // memory containing all the possible fft codes for PRN 0 to 32
+    float max;                                                    // temporary maxima search
 
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in, 0); // generate PRN code
+            gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in, 0);  // generate PRN code
             // fill in zero padding
-            for (int s=code_length;s<nsamples_total;s++)
+            for (int s = code_length; s < nsamples_total; s++)
                 {
                     code[s] = 0;
                 }
             int offset = 0;
-            memcpy(fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * nsamples_total); // copy to FFT buffer
-            fft_if->execute(); // Run the FFT of local code
-            volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total); // conjugate values
-            max = 0; // initialize maximum value
-            for (unsigned int i = 0; i < nsamples_total; i++) // search for maxima
+            memcpy(fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * nsamples_total);   // copy to FFT buffer
+            fft_if->execute();                                                                 // Run the FFT of local code
+            volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
+            max = 0;                                                                           // initialize maximum value
+            for (unsigned int i = 0; i < nsamples_total; i++)                                  // search for maxima
                 {
                     if (std::abs(fft_codes_padded[i].real()) > max)
                         {
@@ -115,13 +117,12 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                             max = std::abs(fft_codes_padded[i].imag());
                         }
                 }
-            for (unsigned int i = 0; i < nsamples_total; i++) // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
+            for (unsigned int i = 0; i < nsamples_total; i++)  // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
                 {
-                    d_all_fft_codes_[i + nsamples_total * (PRN -1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 7) - 1) / max)),
-                            static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max)));
-
+                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 7) - 1) / max)),
+                        static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max)));
                 }
-            }
+        }
 
     //acq_parameters
 

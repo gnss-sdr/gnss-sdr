@@ -37,10 +37,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 
+#include <string>
 #include "acquisition_interface.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
-#include <string>
 
 
 class ConfigurationInterface;
@@ -137,19 +137,14 @@ public:
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    unsigned int vector_length_;
-    unsigned int code_length_;
     unsigned int channel_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
-    unsigned int sampled_ms_;
-    long fs_in_;
-    long if_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    lv_16sc_t *d_all_fft_codes; // memory that contains all the code ffts
+    lv_16sc_t *d_all_fft_codes_; // memory that contains all the code ffts
 
 };
 

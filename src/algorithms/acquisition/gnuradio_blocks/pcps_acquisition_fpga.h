@@ -56,9 +56,10 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_PCPS_ACQUISITION_FPGA_H_
 
-#include "gnss_synchro.h"
+
 #include <gnuradio/block.h>
 #include "fpga_acquisition.h"
+#include "gnss_synchro.h"
 
 typedef struct
 {
@@ -69,10 +70,8 @@ typedef struct
     long fs_in;
     int samples_per_ms;
     int samples_per_code;
-    std::string dump_filename;
     unsigned int select_queue_Fpga;
     std::string device_name;
-    unsigned int code_length;
     lv_16sc_t *all_fft_codes; // memory that contains all the code ffts
 
 } pcpsconf_fpga_t;
@@ -117,8 +116,6 @@ private:
     unsigned long int d_sample_counter;
     Gnss_Synchro* d_gnss_synchro;
     std::shared_ptr<fpga_acquisition> acquisition_fpga;
-
-
 
 public:
     ~pcps_acquisition_fpga();

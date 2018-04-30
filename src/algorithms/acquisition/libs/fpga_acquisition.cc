@@ -33,9 +33,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include "fpga_acquisition.h"
-#include "gps_sdr_signal_processing.h"
-
 // libraries used by the GIPO
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -46,9 +43,23 @@
 // GPS L1
 #include "GPS_L1_CA.h"
 
-#define PAGE_SIZE 0x10000
-#define MAX_PHASE_STEP_RAD 0.999999999534339 // 1 - pow(2,-31);
-#define TEST_REG_SANITY_CHECK 0x55AA
+#include "fpga_acquisition.h"
+#include "gps_sdr_signal_processing.h"
+
+#define PAGE_SIZE 0x10000                       // default page size for the multicorrelator memory map
+#define MAX_PHASE_STEP_RAD 0.999999999534339    // 1 - pow(2,-31);
+#define RESET_ACQUISITION 2                     // command to reset the multicorrelator
+#define LAUNCH_ACQUISITION 1                    // command to launch the multicorrelator
+#define TEST_REG_SANITY_CHECK 0x55AA            // value to check the presence of the test register (to detect the hw)
+#define LOCAL_CODE_CLEAR_MEM 0x10000000         // command to clear the internal memory of the multicorrelator
+#define MEM_LOCAL_CODE_WR_ENABLE 0x0C000000     // command to enable the ENA and WR pins of the internal memory of the multicorrelator
+#define POW_2_2 4                               // 2^2 (used for the conversion of floating point numbers to integers)
+#define POW_2_29 536870912                      // 2^29 (used for the conversion of floating point numbers to integers)
+#define SELECT_LSB 0x00FF                       // value to select the least significant byte
+#define SELECT_MSB 0XFF00                       // value to select the most significant byte
+#define SELECT_16_BITS 0xFFFF                   // value to select 16 bits
+#define SHL_8_BITS 256                          // value used to shift a value 8 bits to the left
+
 
 bool fpga_acquisition::init()
 {
@@ -144,14 +155,14 @@ void fpga_acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local
     unsigned int k, tmp, tmp2;
     unsigned int fft_data;
     // clear memory address counter
-    d_map_base[4] = 0x10000000;
+    d_map_base[4] = LOCAL_CODE_CLEAR_MEM;
     // write local code
     for (k = 0; k < d_vector_length; k++)
         {
             tmp = fft_local_code[k].real();
             tmp2 = fft_local_code[k].imag();
-            local_code = (tmp & 0xFF) | ((tmp2 * 256) & 0xFF00); // put together the real part and the imaginary part
-            fft_data = 0x0C000000 | (local_code & 0xFFFF);
+            local_code = (tmp & SELECT_LSB) | ((tmp2 * SHL_8_BITS) & SELECT_MSB); // put together the real part and the imaginary part
+            fft_data = MEM_LOCAL_CODE_WR_ENABLE | (local_code & SELECT_16_BITS);
             d_map_base[4] = fft_data;
         }
 }
@@ -162,7 +173,7 @@ void fpga_acquisition::run_acquisition(void)
     int reenable = 1;
     write(d_fd, reinterpret_cast<void*>(&reenable), sizeof(int));
     // launch the acquisition process
-    d_map_base[6] = 1; // writing anything to reg 6 launches the acquisition process
+    d_map_base[6] = LAUNCH_ACQUISITION; // writing anything to reg 6 launches the acquisition process
 
     int irq_count;
     ssize_t nb;
@@ -201,8 +212,8 @@ void fpga_acquisition::set_phase_step(unsigned int doppler_index)
         {
             phase_step_rad_real = MAX_PHASE_STEP_RAD;
         }
-    phase_step_rad_int_temp = phase_step_rad_real * 4; // * 2^2
-    phase_step_rad_int = (int32_t) (phase_step_rad_int_temp * (536870912)); // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
+    phase_step_rad_int_temp = phase_step_rad_real * POW_2_2; // * 2^2
+    phase_step_rad_int = (int32_t) (phase_step_rad_int_temp * (POW_2_29)); // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
     d_map_base[3] = phase_step_rad_int;
 }
 
@@ -243,5 +254,5 @@ void fpga_acquisition::close_device()
 
 void fpga_acquisition::reset_acquisition(void)
 {
-    d_map_base[6] = 2; // writing a 2 to d_map_base[6] resets the multicorrelator
+    d_map_base[6] = RESET_ACQUISITION; // writing a 2 to d_map_base[6] resets the multicorrelator
 }

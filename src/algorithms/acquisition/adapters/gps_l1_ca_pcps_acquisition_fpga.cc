@@ -1,4 +1,3 @@
-
 /*!
  * \file gps_l1_ca_pcps_acquisition_fpga.cc
  * \brief Adapts a PCPS acquisition block to an FPGA AcquisitionInterface
@@ -59,21 +58,21 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     DLOG(INFO) << "role " << role;
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    acq_parameters.fs_in = fs_in_;
-    if_ = configuration_->property(role + ".if", 0);
-    acq_parameters.freq = if_;
+    long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    acq_parameters.fs_in = fs_in;
+    long ifreq = configuration_->property(role + ".if", 0);
+    acq_parameters.freq = ifreq;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
-    acq_parameters.sampled_ms = sampled_ms_;
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    unsigned int sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
+    acq_parameters.sampled_ms = sampled_ms;
+    unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f((float) code_length_));
+    float nbits = ceilf(log2f((float) code_length));
     unsigned int nsamples_total = pow(2, nbits);
-    vector_length_ = nsamples_total * sampled_ms_;
+    unsigned int vector_length = nsamples_total * sampled_ms;
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga",0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
@@ -85,20 +84,18 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
 
-    // Direct FFT
-    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(vector_length_, true);
-    // allocate memory to compute all the PRNs
-    // and compute all the possible codes
+    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(vector_length, true); // Direct FFT
+    // allocate memory to compute all the PRNs and compute all the possible codes
     std::complex<float>* code = new std::complex<float>[nsamples_total]; // buffer for the local code
     gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_all_fft_codes = new lv_16sc_t[nsamples_total * NUM_PRNs]; // memory containing all the possible fft codes for PRN 0 to 32
+    d_all_fft_codes_ = new lv_16sc_t[nsamples_total * NUM_PRNs]; // memory containing all the possible fft codes for PRN 0 to 32
     float max; // temporary maxima search
 
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in_, 0); // generate PRN code
+            gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in, 0); // generate PRN code
             // fill in zero padding
-            for (int s=code_length_;s<nsamples_total;s++)
+            for (int s=code_length;s<nsamples_total;s++)
                 {
                     code[s] = 0;
                 }
@@ -120,14 +117,16 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                 }
             for (unsigned int i = 0; i < nsamples_total; i++) // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
                 {
-                    d_all_fft_codes[i + nsamples_total * (PRN -1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 7) - 1) / max)),
+                    d_all_fft_codes_[i + nsamples_total * (PRN -1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 7) - 1) / max)),
                             static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max)));
 
                 }
             }
 
-    acq_parameters.all_fft_codes = d_all_fft_codes;
     //acq_parameters
+
+    acq_parameters.all_fft_codes = d_all_fft_codes_;
+
     // temporary buffers that we can delete
     delete[] code;
     delete fft_if;
@@ -144,8 +143,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
 GpsL1CaPcpsAcquisitionFpga::~GpsL1CaPcpsAcquisitionFpga()
 {
-    //delete[] code_;
-    delete[] d_all_fft_codes;
+    delete[] d_all_fft_codes_;
 }
 
 

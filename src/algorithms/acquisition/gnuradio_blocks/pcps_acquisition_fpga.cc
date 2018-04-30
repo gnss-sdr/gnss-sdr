@@ -38,11 +38,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include "pcps_acquisition_fpga.h"
-#include "GPS_L1_CA.h"         // for GPS_TWO_PI
-#include "GLONASS_L1_L2_CA.h"  // for GLONASS_TWO_PI"
+
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include "pcps_acquisition_fpga.h"
 
 using google::LogMessage;
 
@@ -175,12 +174,10 @@ void pcps_acquisition_fpga::set_active(bool active)
     // initialize acquisition algorithm
     uint32_t indext = 0;
     float magt = 0.0;
-    int effective_fft_size = d_fft_size;
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
     d_input_power = 0.0;
     d_mag = 0.0;
-    //d_well_count++;
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
@@ -208,9 +205,9 @@ void pcps_acquisition_fpga::set_active(bool active)
                 {
                     d_mag = magt;
 
-                    input_power_all = d_input_power / (effective_fft_size - 1);
-                    input_power_computed = (d_input_power - d_mag) / (effective_fft_size - 1);
-                    d_input_power = (d_input_power - d_mag) / (effective_fft_size - 1);
+                    input_power_all = d_input_power / (d_fft_size - 1);
+                    input_power_computed = (d_input_power - d_mag) / (d_fft_size - 1);
+                    d_input_power = (d_input_power - d_mag) / (d_fft_size - 1);
 
                     d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
                     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);

@@ -18,7 +18,7 @@
 
   
 set(ACQUISITION_LIB_SOURCES   
-	gps_fpga_acquisition_8sc.cc
+	fpga_acquisition.cc
 )
 
 include_directories(

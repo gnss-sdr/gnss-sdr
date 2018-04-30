@@ -526,7 +526,7 @@ static inline void volk_gnsssdr_16i_xn_resampler_16i_xn_u_avx(int16_t** result, 
 #endif
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 #include <arm_neon.h>
 static inline void volk_gnsssdr_16i_xn_resampler_16i_xn_neon(int16_t** result, const int16_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
 {

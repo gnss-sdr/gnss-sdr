@@ -38,10 +38,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 
-#include <string>
+
 #include "tracking_interface.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga_sc.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -52,9 +52,9 @@ class GpsL1CaDllPllTrackingFpga : public TrackingInterface
 {
 public:
     GpsL1CaDllPllTrackingFpga(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaDllPllTrackingFpga();
 
@@ -92,8 +92,8 @@ public:
 
     void start_tracking() override;
 
-	void reset(void);
-	
+    void reset(void);
+
 private:
     //gps_l1_ca_dll_pll_tracking_cc_sptr tracking_;
     gps_l1_ca_dll_pll_tracking_fpga_sc_sptr tracking_fpga_sc;
@@ -104,4 +104,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
+#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_

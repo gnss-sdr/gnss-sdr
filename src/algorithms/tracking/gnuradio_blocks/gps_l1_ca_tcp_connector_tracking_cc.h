@@ -37,13 +37,13 @@
 #ifndef GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_CC_H
 #define GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_CC_H
 
+#include "cpu_multicorrelator.h"
+#include "gnss_synchro.h"
+#include "tcp_communication.h"
+#include <gnuradio/block.h>
 #include <fstream>
 #include <map>
 #include <string>
-#include <gnuradio/block.h>
-#include "gnss_synchro.h"
-#include "cpu_multicorrelator.h"
-#include "tcp_communication.h"
 
 
 class Gps_L1_Ca_Tcp_Connector_Tracking_cc;

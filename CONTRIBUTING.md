@@ -75,7 +75,7 @@ the actual username of your GitHub account):
 
    4. Your forked repository https://github.com/YOUR_USERNAME/gnss-sdr
 will receive the default name of `origin`. You can also add the original
-gnss-sdr repository, which is usually called `upstream`:
+gnss-sdr repository, which is usually referred to as `upstream`:
 
           $ cd gnss-sdr
           $ git remote add upstream https://github.com/gnss-sdr/gnss-sdr.git

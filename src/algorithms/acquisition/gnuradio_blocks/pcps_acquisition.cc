@@ -39,7 +39,7 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
-#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cstring>
 
 
@@ -335,84 +335,6 @@ void pcps_acquisition::send_negative_acquisition()
 }
 
 
-int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
-    gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,
-    gr_vector_void_star& output_items __attribute__((unused)))
-{
-    /*
-     * By J.Arribas, L.Esteve and M.Molina
-     * Acquisition strategy (Kay Borre book + CFAR threshold):
-     * 1. Compute the input signal power estimation
-     * 2. Doppler serial search loop
-     * 3. Perform the FFT-based circular convolution (parallel time search)
-     * 4. Record the maximum peak and the associated synchronization parameters
-     * 5. Compute the test statistics and compare to the threshold
-     * 6. Declare positive or negative acquisition using a message port
-     */
-
-    gr::thread::scoped_lock lk(d_setlock);
-    if (!d_active or d_worker_active)
-        {
-            d_sample_counter += d_fft_size * ninput_items[0];
-            consume_each(ninput_items[0]);
-            if (d_step_two)
-                {
-                    d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
-                    update_grid_doppler_wipeoffs_step2();
-                    d_state = 0;
-                    d_active = true;
-                }
-            return 0;
-        }
-
-    switch (d_state)
-        {
-        case 0:
-            {
-                //restart acquisition variables
-                d_gnss_synchro->Acq_delay_samples = 0.0;
-                d_gnss_synchro->Acq_doppler_hz = 0.0;
-                d_gnss_synchro->Acq_samplestamp_samples = 0;
-                d_well_count = 0;
-                d_mag = 0.0;
-                d_input_power = 0.0;
-                d_test_statistics = 0.0;
-                d_state = 1;
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
-                consume_each(ninput_items[0]);
-                break;
-            }
-
-        case 1:
-            {
-                // Copy the data to the core and let it know that new data is available
-                if (d_cshort)
-                    {
-                        memcpy(d_data_buffer_sc, input_items[0], d_fft_size * sizeof(lv_16sc_t));
-                    }
-                else
-                    {
-                        memcpy(d_data_buffer, input_items[0], d_fft_size * sizeof(gr_complex));
-                    }
-                if (acq_parameters.blocking)
-                    {
-                        lk.unlock();
-                        acquisition_core(d_sample_counter);
-                    }
-                else
-                    {
-                        gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter);
-                        d_worker_active = true;
-                    }
-                d_sample_counter += d_fft_size;
-                consume_each(1);
-                break;
-            }
-        }
-    return 0;
-}
-
-
 void pcps_acquisition::acquisition_core(unsigned long int samp_count)
 {
     gr::thread::scoped_lock lk(d_setlock);
@@ -685,4 +607,82 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                 }
         }
     d_worker_active = false;
+}
+
+
+int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
+    gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,
+    gr_vector_void_star& output_items __attribute__((unused)))
+{
+    /*
+     * By J.Arribas, L.Esteve and M.Molina
+     * Acquisition strategy (Kay Borre book + CFAR threshold):
+     * 1. Compute the input signal power estimation
+     * 2. Doppler serial search loop
+     * 3. Perform the FFT-based circular convolution (parallel time search)
+     * 4. Record the maximum peak and the associated synchronization parameters
+     * 5. Compute the test statistics and compare to the threshold
+     * 6. Declare positive or negative acquisition using a message port
+     */
+
+    gr::thread::scoped_lock lk(d_setlock);
+    if (!d_active or d_worker_active)
+        {
+            d_sample_counter += d_fft_size * ninput_items[0];
+            consume_each(ninput_items[0]);
+            if (d_step_two)
+                {
+                    d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+                    update_grid_doppler_wipeoffs_step2();
+                    d_state = 0;
+                    d_active = true;
+                }
+            return 0;
+        }
+
+    switch (d_state)
+        {
+        case 0:
+            {
+                //restart acquisition variables
+                d_gnss_synchro->Acq_delay_samples = 0.0;
+                d_gnss_synchro->Acq_doppler_hz = 0.0;
+                d_gnss_synchro->Acq_samplestamp_samples = 0;
+                d_well_count = 0;
+                d_mag = 0.0;
+                d_input_power = 0.0;
+                d_test_statistics = 0.0;
+                d_state = 1;
+                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                consume_each(ninput_items[0]);
+                break;
+            }
+
+        case 1:
+            {
+                // Copy the data to the core and let it know that new data is available
+                if (d_cshort)
+                    {
+                        memcpy(d_data_buffer_sc, input_items[0], d_fft_size * sizeof(lv_16sc_t));
+                    }
+                else
+                    {
+                        memcpy(d_data_buffer, input_items[0], d_fft_size * sizeof(gr_complex));
+                    }
+                if (acq_parameters.blocking)
+                    {
+                        lk.unlock();
+                        acquisition_core(d_sample_counter);
+                    }
+                else
+                    {
+                        gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter);
+                        d_worker_active = true;
+                    }
+                d_sample_counter += d_fft_size;
+                consume_each(1);
+                break;
+            }
+        }
+    return 0;
 }

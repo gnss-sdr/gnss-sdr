@@ -202,7 +202,7 @@ static inline void volk_gnsssdr_16ic_conjugate_16ic_u_avx2(lv_16sc_t* cVector, c
 
 //
 //
-//#ifdef LV_HAVE_NEON
+//#ifdef LV_HAVE_NEONV7
 //#include <arm_neon.h>
 //
 //static inline void volk_gnsssdr_16ic_conjugate_16ic_neon(lv_16sc_t* cVector, const lv_16sc_t* aVector, unsigned int num_points)
@@ -228,6 +228,6 @@ static inline void volk_gnsssdr_16ic_conjugate_16ic_u_avx2(lv_16sc_t* cVector, c
 //            *c++ = lv_conj(*a++);
 //        }
 //}
-//#endif /* LV_HAVE_NEON */
+//#endif /* LV_HAVE_NEONV7 */
 
 #endif /* INCLUDED_volk_gnsssdr_16ic_conjugate_16ic_H */

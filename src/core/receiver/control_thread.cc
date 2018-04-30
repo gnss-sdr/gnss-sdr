@@ -155,6 +155,7 @@ void ControlThread::run()
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
     flowgraph_->stop();
     stop_ = true;
+    flowgraph_->disconnect();
 
     //Join keyboard thread
 #ifdef OLD_BOOST

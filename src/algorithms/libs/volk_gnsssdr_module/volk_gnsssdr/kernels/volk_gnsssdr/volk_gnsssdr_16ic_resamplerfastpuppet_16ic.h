@@ -72,7 +72,7 @@ static inline void volk_gnsssdr_16ic_resamplerfastpuppet_16ic_u_sse2(lv_16sc_t* 
 
 #endif /* LV_HAVE_SSE2 */
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 
 static inline void volk_gnsssdr_16ic_resamplerfastpuppet_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
@@ -82,6 +82,6 @@ static inline void volk_gnsssdr_16ic_resamplerfastpuppet_16ic_neon(lv_16sc_t* re
     volk_gnsssdr_16ic_resampler_fast_16ic_neon(result, local_code, rem_code_phase_chips, code_phase_step_chips, code_length_chips, num_points);
 }
 
-#endif /* LV_HAVE_NEON */
+#endif /* LV_HAVE_NEONV7 */
 
 #endif  // INCLUDED_volk_gnsssdr_16ic_resamplerfastpuppet_16ic_H

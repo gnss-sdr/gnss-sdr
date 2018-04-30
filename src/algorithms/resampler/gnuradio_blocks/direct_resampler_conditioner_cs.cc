@@ -48,13 +48,13 @@ direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(
 
 
 direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
-    double sample_freq_in, double sample_freq_out) : gr::block("direct_resampler_make_conditioner_cs", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)), gr::io_signature::make(1, 1, sizeof(lv_16sc_t))),
-                                                     d_sample_freq_in(sample_freq_in),
-                                                     d_sample_freq_out(
-                                                         sample_freq_out),
-                                                     d_phase(0),
-                                                     d_lphase(0),
-                                                     d_history(1)
+    double sample_freq_in,
+    double sample_freq_out) : gr::block("direct_resampler_make_conditioner_cs", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)), gr::io_signature::make(1, 1, sizeof(lv_16sc_t))),
+                              d_sample_freq_in(sample_freq_in),
+                              d_sample_freq_out(sample_freq_out),
+                              d_phase(0),
+                              d_lphase(0),
+                              d_history(1)
 {
     const double two_32 = 4294967296.0;
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296

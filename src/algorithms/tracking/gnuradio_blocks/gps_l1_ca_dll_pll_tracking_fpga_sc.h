@@ -38,38 +38,42 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_SC_H
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_SC_H
 
-#include <fstream>
-#include <map>
-#include <string>
-#include <gnuradio/block.h>
+
+#include "gps_sdr_signal_processing.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include "fpga_multicorrelator_8sc.h"
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
+#include <gnuradio/block.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <fstream>
+#include <map>
+#include <string>
+
 
 class Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc;
 
 typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc>
-        gps_l1_ca_dll_pll_tracking_fpga_sc_sptr;
+    gps_l1_ca_dll_pll_tracking_fpga_sc_sptr;
 
 gps_l1_ca_dll_pll_tracking_fpga_sc_sptr
 gps_l1_ca_dll_pll_make_tracking_fpga_sc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float early_late_space_chips,
-                                   std::string device_name, 
-                                   unsigned int device_base);
-
+    long fs_in, unsigned int vector_length,
+    bool dump,
+    std::string dump_filename,
+    float pll_bw_hz,
+    float dll_bw_hz,
+    float early_late_space_chips,
+    std::string device_name,
+    unsigned int device_base);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc: public gr::block
+class Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc : public gr::block
 {
 public:
     ~Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc();
@@ -78,34 +82,32 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-    
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
+
     void reset(void);
 
 private:
     friend gps_l1_ca_dll_pll_tracking_fpga_sc_sptr
     gps_l1_ca_dll_pll_make_tracking_fpga_sc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips,
-            std::string device_name,
-            unsigned int device_base);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float early_late_space_chips,
+        std::string device_name,
+        unsigned int device_base);
 
     Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips,
-            std::string device_name,
-            unsigned int device_base);
+        long fs_in, unsigned int vector_length,
+        bool dump,
+        std::string dump_filename,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float early_late_space_chips,
+        std::string device_name,
+        unsigned int device_base);
 
     // tracking configuration vars
     unsigned int d_vector_length;
@@ -135,11 +137,11 @@ private:
     int d_n_correlator_taps;
     //float* d_ca_code;
     //int* d_ca_code_16sc;
-    
+
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
     std::shared_ptr<fpga_multicorrelator_8sc> multicorrelator_fpga_8sc;
-    
+
     // tracking vars
     double d_code_freq_chips;
     double d_code_phase_step_chips;
@@ -173,15 +175,14 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
-    
+
     // extra
     int d_correlation_length_samples;
     unsigned long int d_sample_counter_next;
     double d_rem_carrier_phase_rad;
-    
+
     double d_K_blk_samples_previous;
     int d_offset_sample_previous;
-    
 };
 
-#endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_SC_H
+#endif  //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_SC_H

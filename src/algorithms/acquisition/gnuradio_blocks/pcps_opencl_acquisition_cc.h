@@ -51,14 +51,14 @@
 #ifndef GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 
-#include <fstream>
-#include <string>
-#include <vector>
+#include "gnss_synchro.h"
+#include "opencl/fft_internal.h"
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include "opencl/fft_internal.h"
-#include "gnss_synchro.h"
+#include <fstream>
+#include <string>
+#include <vector>
 
 #ifdef __APPLE__
 #include "opencl/cl.hpp"

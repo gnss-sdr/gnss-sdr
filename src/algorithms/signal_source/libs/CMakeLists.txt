@@ -28,7 +28,7 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
    endif(NOT IIO_FOUND)
    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
-   
+
 endif(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
 
 if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
@@ -43,14 +43,14 @@ if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
    endif(NOT LIBIIO_FOUND)
    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${LIBIIO_LIBRARIES})
    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${LIBIIO_INCLUDE_DIRS})
-   
+
        ###############################################
     # FMCOMMS2 based SDR Hardware
     ###############################################
     if(IIO_FOUND)
         set(OPT_SIGNAL_SOURCE_LIB_SOURCES ad9361_manager.cc)
     endif(IIO_FOUND)
-    
+
 endif(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
 
 if(ENABLE_AD9361)
@@ -78,4 +78,3 @@ add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_H
 source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})
 
 target_link_libraries(signal_source_lib ${OPT_LIBRARIES})
-

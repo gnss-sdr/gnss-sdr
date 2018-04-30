@@ -35,7 +35,6 @@
  */
 
 #include "fpga_switch.h"
-
 #include <cmath>
 
 // FPGA stuff
@@ -76,9 +75,9 @@ fpga_switch::fpga_switch(std::string device_name)
             printf("switch memory successfully mapped\n");
         }
     d_map_base = reinterpret_cast<volatile unsigned *>(mmap(NULL, PAGE_SIZE,
-            PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));
+        PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));
 
-    if (d_map_base == reinterpret_cast<void*>(-1))
+    if (d_map_base == reinterpret_cast<void *>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA switch module into tracking memory";
             printf("could not map switch memory\n");
@@ -100,18 +99,21 @@ fpga_switch::fpga_switch(std::string device_name)
     DLOG(INFO) << "Switch FPGA class created";
 }
 
+
 fpga_switch::~fpga_switch()
 {
     close_device();
 }
+
 
 void fpga_switch::set_switch_position(int switch_position)
 {
     d_map_base[0] = switch_position;
 }
 
+
 unsigned fpga_switch::fpga_switch_test_register(
-        unsigned writeval)
+    unsigned writeval)
 {
     unsigned readval;
     // write value to test register
@@ -122,15 +124,14 @@ unsigned fpga_switch::fpga_switch_test_register(
     return readval;
 }
 
+
 void fpga_switch::close_device()
 {
-    unsigned * aux = const_cast<unsigned*>(d_map_base);
-    if (munmap(static_cast<void*>(aux), PAGE_SIZE) == -1)
+    unsigned *aux = const_cast<unsigned *>(d_map_base);
+    if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
             printf("Failed to unmap memory uio\n");
         }
 
     close(d_device_descriptor);
 }
-    
-

@@ -1,12 +1,12 @@
 /*!
- * \file fpga_acquisition_8sc.h
- * \brief High optimized FPGA vector correlator class for lv_16sc_t (short int complex).
+ * \file fpga_acquisition.h
+ * \brief High optimized FPGA vector correlator class
  * \authors <ul>
- *          <li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ *          <li> Marc Majoral, 2018. mmajoral(at)cttc.cat
  *          </ul>
  *
- * Class that controls and executes a high optimized vector correlator
- * class in the FPGA
+ * Class that controls and executes a high optimized acquisition HW
+ * accelerator in the FPGA
  *
  * -------------------------------------------------------------------------
  *
@@ -33,26 +33,26 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_GPS_SDR_FPGA_ACQUISITION_8SC_H_
-#define GNSS_GPS_SDR_FPGA_ACQUISITION_8SC_H_
+#ifndef GNSS_SDR_FPGA_ACQUISITION_H_
+#define GNSS_SDR_FPGA_ACQUISITION_H_
 
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
-class gps_fpga_acquisition_8sc
+class fpga_acquisition
 {
 public:
-    gps_fpga_acquisition_8sc(std::string device_name,
-            unsigned int vector_length, unsigned int nsamples,
+    fpga_acquisition(std::string device_name,
+            unsigned int nsamples,
             unsigned int doppler_max,
             unsigned int nsamples_total, long fs_in, long freq,
-            unsigned int sampled_ms, unsigned select_queue);
-    ~gps_fpga_acquisition_8sc();bool init();bool set_local_code(
-            unsigned int PRN); //int code_length_chips, const lv_16sc_t* local_code_in, float *shifts_chips);
+            unsigned int sampled_ms, unsigned select_queue,
+            lv_16sc_t *all_fft_codes);
+    ~fpga_acquisition();bool init();bool set_local_code(
+            unsigned int PRN);
     bool free();
     void run_acquisition(void);
     void set_phase_step(unsigned int doppler_index);
@@ -60,7 +60,7 @@ public:
             unsigned *initial_sample, float *power_sum);
     void block_samples();
     void unblock_samples();
-    //void open_device();
+
     /*!
      * \brief Set maximum Doppler grid search
      * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
@@ -69,6 +69,7 @@ public:
     {
         d_doppler_max = doppler_max;
     }
+
     /*!
      * \brief Set Doppler steps for the grid search
      * \param doppler_step - Frequency bin of the search grid [Hz].
@@ -102,4 +103,4 @@ private:
     void close_device();
 };
 
-#endif /* GNSS_GPS_SDR_FPGA_MULTICORRELATOR_H_ */
+#endif /* GNSS_SDR_FPGA_ACQUISITION_H_ */

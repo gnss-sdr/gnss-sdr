@@ -188,7 +188,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_u_avx2(lv_16sc_t* r
 #endif /* LV_HAVE_AVX2  */
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 
 static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
 {
@@ -213,7 +213,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_neon(lv_16sc_t* res
 #endif  // NEON
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 
 static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_neon_vma(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
 {
@@ -237,7 +237,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_neon_vma(lv_16sc_t*
 
 #endif  // NEON
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 
 static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_neon_optvma(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
 {

@@ -1,7 +1,6 @@
 /*!
  * \file gps_l5_telemetry_decoder_cc.cc
- * \brief Implementation of a NAV message demodulator block based on
- * Kay Borre book MATLAB-based GPS receiver
+ * \brief Implementation of a CNAV message demodulator block
  * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -31,12 +30,13 @@
 
 
 #include "gps_l5_telemetry_decoder_cc.h"
+#include "display.h"
 #include "gnss_synchro.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
 #include <boost/lexical_cast.hpp>
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <bitset>
 #include <iostream>
 #include <sstream>
@@ -95,6 +95,43 @@ gps_l5_telemetry_decoder_cc::~gps_l5_telemetry_decoder_cc()
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+                }
+        }
+}
+
+
+void gps_l5_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+{
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    LOG(INFO) << "GPS L5 CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
+    d_CNAV_Message.reset();
+}
+
+
+void gps_l5_telemetry_decoder_cc::set_channel(int channel)
+{
+    d_channel = channel;
+    d_CNAV_Message.reset();
+    LOG(INFO) << "GPS L5 CNAV channel set to " << channel;
+    // ############# ENABLE DATA FILE LOG #################
+    if (d_dump == true)
+        {
+            if (d_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_dump_filename = "telemetry_L5_";
+                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(".dat");
+                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
+                                      << " Log file: " << d_dump_filename.c_str();
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening Telemetry GPS L5 dump file " << e.what();
+                        }
                 }
         }
 }
@@ -181,20 +218,20 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
                 {
                     // get ephemeris object for this SV
                     std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                    std::cout << "New GPS L5 CNAV message received: ephemeris from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
             if (d_CNAV_Message.have_new_iono() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                    std::cout << "New GPS L5 CNAV message received: iono model parameters from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": iono model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
             if (d_CNAV_Message.have_new_utc_model() == true)
                 {
                     std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                    std::cout << "New GPS L5 CNAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
+                    std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
@@ -242,41 +279,4 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     out[0] = current_synchro_data;
     return 1;
-}
-
-
-void gps_l5_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
-{
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG(INFO) << "GPS L5 CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
-    d_CNAV_Message.reset();
-}
-
-
-void gps_l5_telemetry_decoder_cc::set_channel(int channel)
-{
-    d_channel = channel;
-    d_CNAV_Message.reset();
-    LOG(INFO) << "GPS L5 CNAV channel set to " << channel;
-    // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
-        {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                        {
-                            d_dump_filename = "telemetry_L5_";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
-                            d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
-                                      << " Log file: " << d_dump_filename.c_str();
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening Telemetry GPS L5 dump file " << e.what();
-                        }
-                }
-        }
 }

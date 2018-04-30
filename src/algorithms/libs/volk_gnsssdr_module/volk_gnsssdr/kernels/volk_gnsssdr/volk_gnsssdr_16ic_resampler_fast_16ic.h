@@ -256,7 +256,7 @@ static inline void volk_gnsssdr_16ic_resampler_fast_16ic_u_sse2(lv_16sc_t* resul
 #endif /* LV_HAVE_SSE2 */
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_16ic_resampler_fast_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)  //, int* scratch_buffer, float* scratch_buffer_float)
@@ -342,6 +342,6 @@ static inline void volk_gnsssdr_16ic_resampler_fast_16ic_neon(lv_16sc_t* result,
         }
 }
 
-#endif /* LV_HAVE_NEON */
+#endif /* LV_HAVE_NEONV7 */
 
 #endif /*INCLUDED_volk_gnsssdr_16ic_resampler_fast_16ic_H*/

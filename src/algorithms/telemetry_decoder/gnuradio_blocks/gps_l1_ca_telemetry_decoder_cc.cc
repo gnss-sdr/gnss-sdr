@@ -32,8 +32,9 @@
 #include "gps_l1_ca_telemetry_decoder_cc.h"
 #include "control_message_factory.h"
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 
 #ifndef _rotl
@@ -63,10 +64,8 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     // set the preamble
     unsigned short int preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
 
-    //memcpy((unsigned short int*)this->d_preambles_bits, (unsigned short int*)preambles_bits, GPS_CA_PREAMBLE_LENGTH_BITS*sizeof(unsigned short int));
-
     // preamble bits to sampled symbols
-    d_preambles_symbols = static_cast<signed int *>(malloc(sizeof(signed int) * GPS_CA_PREAMBLE_LENGTH_SYMBOLS));
+    d_preambles_symbols = static_cast<int *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int), volk_gnsssdr_get_alignment()));
     int n = 0;
     for (int i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
         {
@@ -112,7 +111,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
 
 gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
 {
-    delete d_preambles_symbols;
+    volk_gnsssdr_free(d_preambles_symbols);
     if (d_dump_file.is_open() == true)
         {
             try
@@ -149,6 +148,44 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
         return (true);
     else
         return (false);
+}
+
+
+void gps_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+{
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
+    d_GPS_FSM.i_satellite_PRN = d_satellite.get_PRN();
+    DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
+}
+
+
+void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
+{
+    d_channel = channel;
+    d_GPS_FSM.i_channel_ID = channel;
+    DLOG(INFO) << "Navigation channel set to " << channel;
+    // ############# ENABLE DATA FILE LOG #################
+    if (d_dump == true)
+        {
+            if (d_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_dump_filename = "telemetry";
+                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(".dat");
+                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
+                                      << " Log file: " << d_dump_filename.c_str();
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
+                        }
+                }
+        }
 }
 
 
@@ -410,42 +447,4 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
     *out[0] = current_symbol;
 
     return 1;
-}
-
-
-void gps_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
-{
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
-    d_GPS_FSM.i_satellite_PRN = d_satellite.get_PRN();
-    DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
-}
-
-
-void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
-{
-    d_channel = channel;
-    d_GPS_FSM.i_channel_ID = channel;
-    DLOG(INFO) << "Navigation channel set to " << channel;
-    // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
-        {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                        {
-                            d_dump_filename = "telemetry";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
-                            d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
-                                      << " Log file: " << d_dump_filename.c_str();
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
-                        }
-                }
-        }
 }

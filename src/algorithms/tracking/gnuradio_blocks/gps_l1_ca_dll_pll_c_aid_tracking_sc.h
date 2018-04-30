@@ -45,7 +45,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
-#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <fstream>
 #include <map>
 #include <string>

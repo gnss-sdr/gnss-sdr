@@ -37,9 +37,11 @@
 #include "galileo_e5a_telemetry_decoder_cc.h"
 #include "control_message_factory.h"
 #include "convolutional.h"
+#include "display.h"
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 #include <iostream>
 
@@ -58,42 +60,8 @@ galileo_e5a_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump
 
 void galileo_e5a_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, int *page_part_bits)
 {
-    //    int CodeLength = 240;
-    int CodeLength = 488;
-    int DataLength;
-    int nn, KK, mm, max_states;
-    int g_encoder[2];
-
-    nn = 2;              // Coding rate 1/n
-    KK = 7;              // Constraint Length
-    g_encoder[0] = 121;  // Polynomial G1
-    g_encoder[1] = 91;   // Polynomial G2
-    //    g_encoder[0] = 171; // Polynomial G1
-    //    g_encoder[1] = 133;  // Polynomial G2
-
-    mm = KK - 1;
-    max_states = 1 << mm;  // 2^mm
-    DataLength = (CodeLength / nn) - mm;
-
-    //create appropriate transition matrices
-
-    int *out0, *out1, *state0, *state1;
-    out0 = static_cast<int *>(calloc(max_states, sizeof(int)));
-    out1 = static_cast<int *>(calloc(max_states, sizeof(int)));
-    state0 = static_cast<int *>(calloc(max_states, sizeof(int)));
-    state1 = static_cast<int *>(calloc(max_states, sizeof(int)));
-
-    nsc_transit(out0, state0, 0, g_encoder, KK, nn);
-    nsc_transit(out1, state1, 1, g_encoder, KK, nn);
-
     Viterbi(page_part_bits, out0, state0, out1, state1,
         page_part_symbols, KK, nn, DataLength);
-
-    //Clean up memory
-    free(out0);
-    free(out1);
-    free(state0);
-    free(state1);
 }
 
 
@@ -147,32 +115,32 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int fra
     d_nav.split_page(page_String);
     if (d_nav.flag_CRC_test == true)
         {
-            LOG(INFO) << "Galileo E5a CRC correct on channel " << d_channel << " from satellite " << d_satellite;
+            LOG(INFO) << "Galileo E5a CRC correct in channel " << d_channel << " from satellite " << d_satellite;
             //std::cout << "Galileo E5a CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
         }
     else
         {
-            std::cout << "Galileo E5a CRC error on channel " << d_channel << " from satellite " << d_satellite << std::endl;
-            LOG(INFO) << "Galileo E5a CRC error on channel " << d_channel << " from satellite " << d_satellite;
+            std::cout << "Galileo E5a CRC error in channel " << d_channel << " from satellite " << d_satellite << std::endl;
+            LOG(INFO) << "Galileo E5a CRC error in channel " << d_channel << " from satellite " << d_satellite;
         }
 
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
         {
             std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_nav.get_ephemeris());
-            std::cout << "New Galileo E5a F/NAV message received: ephemeris from satellite " << d_satellite << std::endl;
+            std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_iono_and_GST() == true)
         {
             std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_nav.get_iono());
-            std::cout << "New Galileo E5a F/NAV message received: iono/GST model parameters from satellite " << d_satellite << std::endl;
+            std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel " << d_channel << ": iono/GST model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_utc_model() == true)
         {
             std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_nav.get_utc_model());
-            std::cout << "New Galileo E5a F/NAV message received: UTC model parameters from satellite " << d_satellite << std::endl;
+            std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
 }
@@ -226,11 +194,27 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
     flag_bit_start = false;
     new_symbol = false;
     required_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
+
+    // vars for Viterbi decoder
+    int max_states = 1 << mm; /* 2^mm */
+    g_encoder[0] = 121;       // Polynomial G1
+    g_encoder[1] = 91;        // Polynomial G2
+    out0 = static_cast<int *>(volk_gnsssdr_malloc(max_states * sizeof(int), volk_gnsssdr_get_alignment()));
+    out1 = static_cast<int *>(volk_gnsssdr_malloc(max_states * sizeof(int), volk_gnsssdr_get_alignment()));
+    state0 = static_cast<int *>(volk_gnsssdr_malloc(max_states * sizeof(int), volk_gnsssdr_get_alignment()));
+    state1 = static_cast<int *>(volk_gnsssdr_malloc(max_states * sizeof(int), volk_gnsssdr_get_alignment()));
+    /* create appropriate transition matrices */
+    nsc_transit(out0, state0, 0, g_encoder, KK, nn);
+    nsc_transit(out1, state1, 1, g_encoder, KK, nn);
 }
 
 
 galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
 {
+    volk_gnsssdr_free(out0);
+    volk_gnsssdr_free(out1);
+    volk_gnsssdr_free(state0);
+    volk_gnsssdr_free(state1);
     if (d_dump_file.is_open() == true)
         {
             try
@@ -240,6 +224,41 @@ galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+                }
+        }
+}
+
+
+void galileo_e5a_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+{
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
+    DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
+}
+
+
+void galileo_e5a_telemetry_decoder_cc::set_channel(int channel)
+{
+    d_channel = channel;
+    LOG(INFO) << "Navigation channel set to " << channel;
+    // ############# ENABLE DATA FILE LOG #################
+    if (d_dump == true)
+        {
+            if (d_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_dump_filename = "telemetry";
+                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(".dat");
+                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
+                        }
                 }
         }
 }
@@ -489,40 +508,5 @@ int galileo_e5a_telemetry_decoder_cc::general_work(int noutput_items __attribute
     else
         {
             return 0;
-        }
-}
-
-
-void galileo_e5a_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
-{
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
-    DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
-}
-
-
-void galileo_e5a_telemetry_decoder_cc::set_channel(int channel)
-{
-    d_channel = channel;
-    LOG(INFO) << "Navigation channel set to " << channel;
-    // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
-        {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                        {
-                            d_dump_filename = "telemetry";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
-                            d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
-                        }
-                }
         }
 }

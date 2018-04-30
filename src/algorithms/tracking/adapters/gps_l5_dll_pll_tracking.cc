@@ -1,7 +1,7 @@
 /*!
- * \file gps_l5i_dll_pll_tracking.cc
+ * \file gps_l5_dll_pll_tracking.cc
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L5i to a TrackingInterface
+ * for GPS L5 to a TrackingInterface
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -35,7 +35,7 @@
  */
 
 
-#include "gps_l5i_dll_pll_tracking.h"
+#include "gps_l5_dll_pll_tracking.h"
 #include "configuration_interface.h"
 #include "GPS_L5.h"
 #include "gnss_sdr_flags.h"
@@ -45,7 +45,7 @@
 
 using google::LogMessage;
 
-GpsL5iDllPllTracking::GpsL5iDllPllTracking(
+GpsL5DllPllTracking::GpsL5DllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
@@ -101,6 +101,19 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
     trk_param.system = 'G';
     char sig_[3] = "L5";
     std::memcpy(trk_param.signal, sig_, 3);
+    int cn0_samples = configuration->property(role + ".cn0_samples", 20);
+    if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
+    trk_param.cn0_samples = cn0_samples;
+    int cn0_min = configuration->property(role + ".cn0_min", 25);
+    if (FLAGS_cn0_min != 25) cn0_min = FLAGS_cn0_min;
+    trk_param.cn0_min = cn0_min;
+    int max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
+    if (FLAGS_max_lock_fail != 50) max_lock_fail = FLAGS_max_lock_fail;
+    trk_param.max_lock_fail = max_lock_fail;
+    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
+    if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
+    trk_param.carrier_lock_th = carrier_lock_th;
+
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
@@ -117,12 +130,12 @@ GpsL5iDllPllTracking::GpsL5iDllPllTracking(
 }
 
 
-GpsL5iDllPllTracking::~GpsL5iDllPllTracking()
+GpsL5DllPllTracking::~GpsL5DllPllTracking()
 {
 }
 
 
-void GpsL5iDllPllTracking::start_tracking()
+void GpsL5DllPllTracking::start_tracking()
 {
     tracking_->start_tracking();
 }
@@ -131,20 +144,20 @@ void GpsL5iDllPllTracking::start_tracking()
 /*
  * Set tracking channel unique ID
  */
-void GpsL5iDllPllTracking::set_channel(unsigned int channel)
+void GpsL5DllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
     tracking_->set_channel(channel);
 }
 
 
-void GpsL5iDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void GpsL5DllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
 
-void GpsL5iDllPllTracking::connect(gr::top_block_sptr top_block)
+void GpsL5DllPllTracking::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -153,7 +166,7 @@ void GpsL5iDllPllTracking::connect(gr::top_block_sptr top_block)
 }
 
 
-void GpsL5iDllPllTracking::disconnect(gr::top_block_sptr top_block)
+void GpsL5DllPllTracking::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -162,13 +175,13 @@ void GpsL5iDllPllTracking::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr GpsL5iDllPllTracking::get_left_block()
+gr::basic_block_sptr GpsL5DllPllTracking::get_left_block()
 {
     return tracking_;
 }
 
 
-gr::basic_block_sptr GpsL5iDllPllTracking::get_right_block()
+gr::basic_block_sptr GpsL5DllPllTracking::get_right_block()
 {
     return tracking_;
 }

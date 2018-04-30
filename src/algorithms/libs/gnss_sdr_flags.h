@@ -50,7 +50,7 @@ DECLARE_int32(doppler_step);  //<! If defined, sets the frequency step in the se
 // Declare flags for tracking blocks
 DECLARE_int32(cn0_samples);       //<! Number of correlator outputs used for CN0 estimation.
 DECLARE_int32(cn0_min);           //<! Minimum valid CN0 (in dB-Hz).
-DECLARE_int32(max_lock_fail);     //<! Number number of lock failures before dropping satellite.
+DECLARE_int32(max_lock_fail);     //<! Maximum number of lock failures before dropping a satellite.
 DECLARE_double(carrier_lock_th);  //<! Carrier lock threshold (in rad).
 DECLARE_double(dll_bw_hz);        //<! Bandwidth of the DLL low pass filter, in Hz (overrides the configuration file).
 DECLARE_double(pll_bw_hz);        //<! Bandwidth of the PLL low pass filter, in Hz (overrides the configuration file).

@@ -16,35 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 
 ########################################################################
-# Find  GR-GN3S Module
+# Toolchain file for building native on a ARM Cortex A8 w/ NEON
+# Usage: cmake -DCMAKE_TOOLCHAIN_FILE=<this file> <source directory>
 ########################################################################
-
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_GR_GN3S gr-gn3s)
-
-FIND_PATH(
-    GR_GN3S_INCLUDE_DIRS
-    NAMES gn3s/gn3s_api.h
-    HINTS $ENV{GR_GN3S_DIR}/include
-          ${PC_GR_GN3S_INCLUDEDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/include
-          /usr/local/include
-          /usr/include
-)
-
-FIND_LIBRARY(
-    GR_GN3S_LIBRARIES
-    NAMES gr-gn3s
-    HINTS $ENV{GR_GN3S_DIR}/lib
-          ${PC_GR_GN3S_LIBDIR}
-    PATHS ${CMAKE_INSTALL_PREFIX}/lib
-          ${CMAKE_INSTALL_PREFIX}/lib64
-          /usr/local/lib
-          /usr/local/lib64
-          /usr/lib
-          /usr/lib64
-)
-
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(GR_GN3S DEFAULT_MSG GR_GN3S_LIBRARIES GR_GN3S_INCLUDE_DIRS)
-MARK_AS_ADVANCED(GR_GN3S_LIBRARIES GR_GN3S_INCLUDE_DIRS)
+set(CMAKE_CXX_COMPILER g++)
+set(CMAKE_C_COMPILER  gcc)
+set(CMAKE_CXX_FLAGS "-march=armv7-a -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS ${CMAKE_CXX_FLAGS} CACHE STRING "" FORCE) #same flags for C sources

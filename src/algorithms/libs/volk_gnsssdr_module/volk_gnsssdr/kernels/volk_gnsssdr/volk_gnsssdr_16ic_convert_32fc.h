@@ -180,7 +180,7 @@ static inline void volk_gnsssdr_16ic_convert_32fc_a_axv(lv_32fc_t* outputVector,
 #endif /* LV_HAVE_AVX */
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_16ic_convert_32fc_neon(lv_32fc_t* outputVector, const lv_16sc_t* inputVector, unsigned int num_points)
@@ -210,6 +210,6 @@ static inline void volk_gnsssdr_16ic_convert_32fc_neon(lv_32fc_t* outputVector, 
             _in++;
         }
 }
-#endif /* LV_HAVE_NEON */
+#endif /* LV_HAVE_NEONV7 */
 
 #endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_H */

@@ -46,10 +46,10 @@ if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
      ###############################################
      # FMCOMMS2 based SDR Hardware
      ###############################################
-     if(IIO_FOUND)
+     if(LIBIIO_FOUND)
           set(OPT_SIGNAL_SOURCE_LIB_SOURCES ad9361_manager.cc)
           set(OPT_SIGNAL_SOURCE_LIB_HEADERS ad9361_manager.h)
-     endif(IIO_FOUND)
+     endif(LIBIIO_FOUND)
 endif(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
 
 if(ENABLE_FPGA)

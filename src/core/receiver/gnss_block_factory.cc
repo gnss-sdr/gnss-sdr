@@ -45,6 +45,7 @@
 #include "spir_file_signal_source.h"
 #include "spir_gss6450_file_signal_source.h"
 #include "rtl_tcp_signal_source.h"
+#include "udp_signal_source.h"
 #include "two_bit_packed_file_signal_source.h"
 #include "labsat_signal_source.h"
 #include "channel.h"
@@ -1025,6 +1026,21 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             try
                 {
                     std::unique_ptr<GNSSBlockInterface> block_(new FileSignalSource(configuration.get(), role, in_streams,
+                        out_streams, queue));
+                    block = std::move(block_);
+                }
+
+            catch (const std::exception &e)
+                {
+                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    exit(1);
+                }
+        }
+    else if (implementation.compare("UDP_Signal_Source") == 0)
+        {
+            try
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_(new UDPSignalSource(configuration.get(), role, in_streams,
                         out_streams, queue));
                     block = std::move(block_);
                 }

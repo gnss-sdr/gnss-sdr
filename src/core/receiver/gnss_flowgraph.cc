@@ -341,7 +341,7 @@ void GNSSFlowgraph::connect()
         {
             if (FPGA_enabled == false)
                 {
-                    selected_signal_conditioner_ID = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".RF_channel_ID", 0);
+                    selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", 0);
                     try
                         {
                             top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
@@ -376,7 +376,7 @@ void GNSSFlowgraph::connect()
     std::vector<unsigned int> vector_of_channels;
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-            unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
+            unsigned int sat = configuration_->property("Channel" + std::to_string(i) + ".satellite", 0);
             if (sat == 0)
                 {
                     vector_of_channels.push_back(i);
@@ -392,7 +392,7 @@ void GNSSFlowgraph::connect()
     for (unsigned int& i : vector_of_channels)
         {
             std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();  // use channel's implicit signal
-            unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
+            unsigned int sat = configuration_->property("Channel" + std::to_string(i) + ".satellite", 0);
             if (sat == 0)
                 {
                     channels_.at(i)->set_signal(search_next_signal(gnss_signal, true));
@@ -528,7 +528,7 @@ void GNSSFlowgraph::disconnect()
     int selected_signal_conditioner_ID;
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-            selected_signal_conditioner_ID = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".RF_channel_ID", 0);
+            selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", 0);
             try
                 {
                     top_block_->disconnect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
@@ -679,7 +679,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             acq_channels_count_--;
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
-                    unsigned int sat_ = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
+                    unsigned int sat_ = configuration_->property("Channel" + std::to_string(i) + ".satellite", 0);
                     if (!available_GNSS_signals_.empty() && (acq_channels_count_ < max_acq_channels_) && (channels_state_[i] == 0))
                         {
                             channels_state_[i] = 1;

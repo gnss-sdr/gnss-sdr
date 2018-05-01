@@ -37,7 +37,7 @@
 #ifndef GNSS_SDR_FPGA_SWITCH_H_
 #define GNSS_SDR_FPGA_SWITCH_H_
 
-#include <gnuradio/block.h>
+#include <string>
 
 #define MAX_LENGTH_DEVICEIO_NAME 50
 

@@ -35,52 +35,33 @@
  */
 
 #include "fpga_switch.h"
-#include <cmath>
-
-// FPGA stuff
-#include <new>
-
-// libraries used by DMA test code and GIPO test code
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-
-// libraries used by DMA test code
-#include <sys/stat.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <assert.h>
-
-// libraries used by GPIO test code
-#include <stdlib.h>
-#include <signal.h>
-#include <sys/mman.h>
-
-// logging
 #include <glog/logging.h>
+#include <fcntl.h>     // for open, O_RDWR, O_SYNC
+#include <iostream>    // for cout, endl
+#include <sys/mman.h>  // for mmap
 
-// string manipulation
-#include <string>
 
 // constants
-#define PAGE_SIZE 0x10000
-#define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
+const size_t PAGE_SIZE = 0x10000;
+const unsigned int TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
 
 fpga_switch::fpga_switch(std::string device_name)
 {
     if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
         {
             LOG(WARNING) << "Cannot open deviceio" << device_name;
-            printf("switch memory successfully mapped\n");
         }
-    d_map_base = reinterpret_cast<volatile unsigned *>(mmap(NULL, PAGE_SIZE,
+    d_map_base = reinterpret_cast<volatile unsigned *>(mmap(nullptr, PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));
 
     if (d_map_base == reinterpret_cast<void *>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA switch module into tracking memory";
-            printf("could not map switch memory\n");
+            std::cout << "Could not map switch memory." << std::endl;
+        }
+    else
+        {
+            std::cout << "Switch memory successfully mapped." << std::endl;
         }
 
     // sanity check : check test register
@@ -130,7 +111,7 @@ void fpga_switch::close_device()
     unsigned *aux = const_cast<unsigned *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
-            printf("Failed to unmap memory uio\n");
+            std::cout << "Failed to unmap memory uio" << std::endl;
         }
 
     close(d_device_descriptor);

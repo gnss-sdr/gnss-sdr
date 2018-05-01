@@ -35,10 +35,8 @@
 #include "ad9361_manager.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
-#include <signal.h>
-#include <stdio.h>
 #include <glog/logging.h>
-#include <iostream>
+#include <iostream>  // for cout, endl
 
 #ifdef __APPLE__
 #include <iio/iio.h>
@@ -47,10 +45,8 @@
 #endif
 
 Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                        role_(role), in_stream_(in_stream), out_stream_(out_stream),
-                        queue_(queue)
+    std::string role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
@@ -75,12 +71,12 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    enable_dds_lo_=configuration->property(role + ".enable_dds_lo", false);
-    freq_rf_tx_hz_=configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ-GPS_L2_FREQ_HZ-1000);
-    freq_dds_tx_hz_=configuration->property(role + ".freq_dds_tx_hz", 1000);
-    scale_dds_dbfs_=configuration->property(role + ".scale_dds_dbfs", -3.0);
-    phase_dds_deg_=configuration->property(role + ".phase_dds_deg", 0.0);
-    tx_attenuation_db_=configuration->property(role + ".tx_attenuation_db", 0.0);
+    enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
+    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - 1000);
+    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 1000);
+    scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", -3.0);
+    phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
+    tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", 0.0);
 
     item_size_ = sizeof(gr_complex);
 
@@ -89,30 +85,30 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
     std::cout << "sample rate: " << sample_rate_ << " Hz" << std::endl;
 
     config_ad9361_rx_local(bandwidth_,
-                           sample_rate_,
-                           freq_,
-                           rf_port_select_,
-                           gain_mode_rx1_,
-                           gain_mode_rx2_,
-                           rf_gain_rx1_,
-                           rf_gain_rx2_);
+        sample_rate_,
+        freq_,
+        rf_port_select_,
+        gain_mode_rx1_,
+        gain_mode_rx2_,
+        rf_gain_rx1_,
+        rf_gain_rx2_);
 
     //LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
-    if (enable_dds_lo_==true)
-    {
-        config_ad9361_lo_local(bandwidth_,
-                               sample_rate_,
-                               freq_rf_tx_hz_,
-                               tx_attenuation_db_,
-                               freq_dds_tx_hz_,
-                               scale_dds_dbfs_);
-    }
+    if (enable_dds_lo_ == true)
+        {
+            config_ad9361_lo_local(bandwidth_,
+                sample_rate_,
+                freq_rf_tx_hz_,
+                tx_attenuation_db_,
+                freq_dds_tx_hz_,
+                scale_dds_dbfs_);
+        }
 
     // turn switch to A/D position
     std::string default_device_name = "/dev/uio13";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     int switch_position = configuration->property(role + ".switch_position", 0);
-    switch_fpga = std::make_shared <fpga_switch>(device_name);
+    switch_fpga = std::make_shared<fpga_switch>(device_name);
     switch_fpga->set_switch_position(switch_position);
 }
 
@@ -125,11 +121,11 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
     //if (rx0_q) { iio_channel_disable(rx0_q); }
 
     if (enable_dds_lo_)
-    {
-        ad9361_disable_lo_local();
-    }
+        {
+            ad9361_disable_lo_local();
+        }
 
-   // std::cout<<"* AD9361 Destroying context\n";
+    // std::cout<<"* AD9361 Destroying context\n";
     //if (ctx) { iio_context_destroy(ctx); }
 }
 

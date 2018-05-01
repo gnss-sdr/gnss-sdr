@@ -34,21 +34,20 @@
 
 #include "gnss_block_interface.h"
 #include "fpga_switch.h"
-
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <string>
 
 class ConfigurationInterface;
 
-class Ad9361FpgaSignalSource: public GNSSBlockInterface
+class Ad9361FpgaSignalSource : public GNSSBlockInterface
 {
 public:
     Ad9361FpgaSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
-    virtual ~Ad9361FpgaSignalSource();
+    ~Ad9361FpgaSignalSource();
 
     inline std::string role() override
     {
@@ -77,11 +76,11 @@ private:
     std::string role_;
 
     // Front-end settings
-    std::string uri_;//device direction
-    unsigned long freq_; //frequency of local oscilator
+    std::string uri_;     // device direction
+    unsigned long freq_;  // frequency of local oscillator
     unsigned long sample_rate_;
     unsigned long bandwidth_;
-    unsigned long buffer_size_; //reception buffer
+    unsigned long buffer_size_;  // reception buffer
     bool rx1_en_;
     bool rx2_en_;
     bool quadrature_;
@@ -95,7 +94,7 @@ private:
     std::string filter_file_;
     bool filter_auto_;
 
-    //DDS configuration for LO generation for external mixer
+    // DDS configuration for LO generation for external mixer
     bool enable_dds_lo_;
     unsigned long freq_rf_tx_hz_;
     unsigned long freq_dds_tx_hz_;

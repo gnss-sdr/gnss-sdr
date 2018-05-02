@@ -57,50 +57,62 @@ UDPSignalSource::UDPSignalSource(ConfigurationInterface* configuration,
     std::string default_address = "127.0.0.1";
     int default_port = 1234;
 
-    RF_channels_ = configuration->property(role + ".RF_channels", 2);
+    RF_channels_ = configuration->property(role + ".RF_channels", 1);
+    channels_in_udp_= configuration->property(role + ".channels_in_udp", 1);
+    IQ_swap_= configuration->property(role + ".IQ_swap", false);
+
     std::string default_sample_type = "cbyte";
     std::string sample_type = configuration->property(role + ".sample_type", default_sample_type);
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    address_ = configuration->property(role + ".address", default_address);
-    port_ = configuration->property(role + ".port", default_port);
+    std::string address = configuration->property(role + ".address", default_address);
+    int port = configuration->property(role + ".port", default_port);
     int payload_bytes = configuration->property(role + ".payload_bytes", 1024);
 
     if (sample_type.compare("cbyte")==0)
     {
-        std::cout<<"address_ "<<address_<<" port_ "<<port_<<" payload_bytes"<<payload_bytes<<std::endl;
-        udp_gnss_rx_source_ = make_udp_gnss_rx_source(sizeof(char), address_, port_, payload_bytes, true);
+        udp_gnss_rx_source_ = make_udp_gnss_rx_source(sizeof(char), address, port, payload_bytes, true);
         demux_=gr::blocks::deinterleave::make(sizeof(char),1);
     }else{
         std::cout<<"WARNING: Requested UDP sample type unsuported, setting sample type to cbyte\n";
-        udp_gnss_rx_source_ = make_udp_gnss_rx_source(sizeof(char), address_, port_, payload_bytes, true);
+        udp_gnss_rx_source_ = make_udp_gnss_rx_source(sizeof(char), address, port, payload_bytes, true);
         demux_=gr::blocks::deinterleave::make(sizeof(char),1);
     }
 
-
     //create I, Q -> gr_complex type conversion blocks
-    for (int n = 0; n < (RF_channels_ * 2); n++)
+    for (int n = 0; n < (channels_in_udp_ * 2); n++)
         {
-            char_to_float.push_back(gr::blocks::char_to_float::make());
+            char_to_float_.push_back(gr::blocks::char_to_float::make());
         }
 
-    for (int n = 0; n < RF_channels_; n++)
+    for (int n = 0; n < channels_in_udp_; n++)
         {
             float_to_complex_.push_back(gr::blocks::float_to_complex::make());
         }
 
-    item_size_ = sizeof(gr_complex);
+    if (channels_in_udp_>=RF_channels_)
+    {
+        for (int n = 0; n < (channels_in_udp_-RF_channels_); n++)
+        {
+            null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
+        }
+    }else
+    {
+        std::cout<<"Configuration error: RF_channels<channels_in_use"<<std::endl;
+        exit(0);
+    }
 
+    //output item size is always gr_complex
+    item_size_ = sizeof(gr_complex);
     if (dump_)
         {
-        file_sink_dbg_=gr::blocks::file_sink::make(sizeof(char), "debug.dat");
-
-            for (int n = 0; n < RF_channels_; n++)
+            for (int n = 0; n < channels_in_udp_; n++)
             {
-                DLOG(INFO) << "Dumping output into file " << (dump_filename_+"ch"+std::to_string(n));
-                file_sink_.push_back(gr::blocks::file_sink::make(item_size_, (dump_filename_+"ch"+std::to_string(n)).c_str()));
+                DLOG(INFO) << "Dumping output into file " << (dump_filename_+"c_h"+std::to_string(n)+".bin");
+                file_sink_.push_back(gr::blocks::file_sink::make(item_size_, (dump_filename_+"_ch"+std::to_string(n)+".bin").c_str()));
             }
         }
+
 }
 
 
@@ -113,23 +125,39 @@ void UDPSignalSource::connect(gr::top_block_sptr top_block)
 {
     top_block->connect(udp_gnss_rx_source_,0, demux_,0);
     DLOG(INFO)<<"connected udp_source to demux"<<std::endl;
-    for (int n = 0; n < (RF_channels_ * 2); n++)
+    for (int n = 0; n < (channels_in_udp_ * 2); n++)
         {
 
-            top_block->connect(demux_, n, char_to_float.at(n), 0);
+            top_block->connect(demux_, n, char_to_float_.at(n), 0);
             DLOG(INFO) << "connected demux to char_to_float CH" << n;
         }
-    for (int n = 0; n < RF_channels_; n++)
+    for (int n = 0; n < channels_in_udp_; n++)
         {
-            top_block->connect(char_to_float.at(n * 2), 0, float_to_complex_.at(n), 0);
-            top_block->connect(char_to_float.at(n * 2 + 1), 0, float_to_complex_.at(n), 1);
+            if (!IQ_swap_)
+            {
+                top_block->connect(char_to_float_.at(n * 2), 0, float_to_complex_.at(n), 0);
+                top_block->connect(char_to_float_.at(n * 2 + 1), 0, float_to_complex_.at(n), 1);
+            }
+            else
+            {
+                top_block->connect(char_to_float_.at(n * 2), 0, float_to_complex_.at(n), 1);
+                top_block->connect(char_to_float_.at(n * 2 + 1), 0, float_to_complex_.at(n), 0);
+            }
             DLOG(INFO) << "connected char_to_float to float_to_complex_ CH" << n;
         }
 
+    //connect null sinks to unused streams
+    if (channels_in_udp_>RF_channels_)
+    {
+        for (int n = 0; n < (channels_in_udp_-RF_channels_); n++)
+        {
+            top_block->connect(float_to_complex_.at(RF_channels_+n),0,null_sinks_.at(n),0);
+        }
+    }
+
     if (dump_)
         {
-        top_block->connect(udp_gnss_rx_source_,0, file_sink_dbg_,0);
-            for (int n = 0; n < RF_channels_; n++)
+            for (int n = 0; n < channels_in_udp_; n++)
             {
                 top_block->connect(float_to_complex_.at(n), 0, file_sink_.at(n), 0);
                 DLOG(INFO) << "connected source to file sink";
@@ -141,22 +169,39 @@ void UDPSignalSource::connect(gr::top_block_sptr top_block)
 void UDPSignalSource::disconnect(gr::top_block_sptr top_block)
 {
 
-    for (int n = 0; n < (RF_channels_ * 2); n++)
+    for (int n = 0; n < (channels_in_udp_ * 2); n++)
         {
-            top_block->disconnect(demux_, n, char_to_float.at(n), 0);
+            top_block->disconnect(demux_, n, char_to_float_.at(n), 0);
             DLOG(INFO) << "disconnect demux to char_to_float CH" << n;
         }
-    for (int n = 0; n < RF_channels_; n++)
+    for (int n = 0; n < channels_in_udp_; n++)
         {
-            top_block->disconnect(char_to_float.at(n * 2), 0, float_to_complex_.at(n), 0);
-            top_block->disconnect(char_to_float.at(n * 2 + 1), 0, float_to_complex_.at(n), 1);
+            if (!IQ_swap_)
+            {
+                top_block->disconnect(char_to_float_.at(n * 2), 0, float_to_complex_.at(n), 0);
+                top_block->disconnect(char_to_float_.at(n * 2 + 1), 0, float_to_complex_.at(n), 1);
+            }
+            else
+            {
+                top_block->disconnect(char_to_float_.at(n * 2), 0, float_to_complex_.at(n), 1);
+                top_block->disconnect(char_to_float_.at(n * 2 + 1), 0, float_to_complex_.at(n), 0);
+            }
             DLOG(INFO) << "disconnect char_to_float to float_to_complex_ CH" << n;
         }
 
+    //disconnect null sinks to unused streams
+    if (channels_in_udp_>RF_channels_)
+    {
+        for (int n = 0; n < (channels_in_udp_-RF_channels_); n++)
+        {
+            top_block->disconnect(float_to_complex_.at(RF_channels_+n),0,null_sinks_.at(n),0);
+        }
+    }
+
+
     if (dump_)
         {
-        top_block->disconnect(udp_gnss_rx_source_,0, file_sink_dbg_,0);
-        for (int n = 0; n < RF_channels_; n++)
+        for (int n = 0; n < channels_in_udp_; n++)
         {
             top_block->disconnect(float_to_complex_.at(n), 0, file_sink_.at(n), 0);
             DLOG(INFO) << "disconnected source to file sink";

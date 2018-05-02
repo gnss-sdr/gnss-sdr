@@ -37,8 +37,8 @@
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/char_to_float.h>
-//#include <gnuradio/blocks/udp_source.h>
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/deinterleave.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include <stdexcept>
@@ -88,25 +88,22 @@ public:
 private:
     std::string role_;
 
-    // UDP settings
-    std::string address_;
-    int port_;
+    bool IQ_swap_;
     int RF_channels_;
-
+    int channels_in_udp_;
     unsigned int in_stream_;
     unsigned int out_stream_;
-
 
     std::string item_type_;
     size_t item_size_;
     bool dump_;
     std::string dump_filename_;
-    std::vector<boost::shared_ptr<gr::block>> char_to_float;
+    std::vector<boost::shared_ptr<gr::block>> char_to_float_;
     std::vector<boost::shared_ptr<gr::block>> float_to_complex_;
+    std::vector<boost::shared_ptr<gr::block>> null_sinks_;
 
     udp_gnss_rx_source_sptr udp_gnss_rx_source_;
     gr::blocks::deinterleave::sptr demux_;
-    gr::blocks::file_sink::sptr file_sink_dbg_;
     std::vector<boost::shared_ptr<gr::block>> file_sink_;
     boost::shared_ptr<gr::msg_queue> queue_;
 };

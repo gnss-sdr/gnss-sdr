@@ -90,6 +90,7 @@ private:
 
     bool IQ_swap_;
     int RF_channels_;
+    int select_single_channel_;
     int channels_in_udp_;
     unsigned int in_stream_;
     unsigned int out_stream_;

@@ -53,11 +53,12 @@ UDPSignalSource::UDPSignalSource(ConfigurationInterface* configuration,
     dump_filename_ = configuration->property(role + ".dump_filename",
         default_dump_file);
 
-    // rtl_tcp PARAMETERS
+    // network PARAMETERS
     std::string default_address = "127.0.0.1";
     int default_port = 1234;
 
     RF_channels_ = configuration->property(role + ".RF_channels", 1);
+    select_single_channel_ = configuration->property(role + ".select_single_channel", 0);
     channels_in_udp_= configuration->property(role + ".channels_in_udp", 1);
     IQ_swap_= configuration->property(role + ".IQ_swap", false);
 
@@ -90,9 +91,9 @@ UDPSignalSource::UDPSignalSource(ConfigurationInterface* configuration,
             float_to_complex_.push_back(gr::blocks::float_to_complex::make());
         }
 
-    if (channels_in_udp_>=RF_channels_)
+    if (channels_in_udp_>RF_channels_)
     {
-        for (int n = 0; n < (channels_in_udp_-RF_channels_); n++)
+        for (int n = 0; n < channels_in_udp_; n++)
         {
             null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
         }
@@ -149,9 +150,9 @@ void UDPSignalSource::connect(gr::top_block_sptr top_block)
     //connect null sinks to unused streams
     if (channels_in_udp_>RF_channels_)
     {
-        for (int n = 0; n < (channels_in_udp_-RF_channels_); n++)
+        for (int n = 0; n < channels_in_udp_; n++)
         {
-            top_block->connect(float_to_complex_.at(RF_channels_+n),0,null_sinks_.at(n),0);
+            top_block->connect(float_to_complex_.at(n),0,null_sinks_.at(n),0);
         }
     }
 
@@ -192,9 +193,9 @@ void UDPSignalSource::disconnect(gr::top_block_sptr top_block)
     //disconnect null sinks to unused streams
     if (channels_in_udp_>RF_channels_)
     {
-        for (int n = 0; n < (channels_in_udp_-RF_channels_); n++)
+        for (int n = 0; n < channels_in_udp_; n++)
         {
-            top_block->disconnect(float_to_complex_.at(RF_channels_+n),0,null_sinks_.at(n),0);
+            top_block->disconnect(float_to_complex_.at(n),0,null_sinks_.at(n),0);
         }
     }
 
@@ -221,7 +222,7 @@ gr::basic_block_sptr UDPSignalSource::get_left_block()
 
 gr::basic_block_sptr UDPSignalSource::get_right_block()
 {
-    return get_right_block(0);
+    return get_right_block(select_single_channel_);
 }
 
 gr::basic_block_sptr UDPSignalSource::get_right_block(int RF_channel)

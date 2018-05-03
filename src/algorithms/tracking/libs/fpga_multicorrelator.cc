@@ -34,7 +34,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "fpga_multicorrelator_8sc.h"
+#include "fpga_multicorrelator.h"
 
 #include <cmath>
 
@@ -65,9 +65,9 @@
 #include <string>
 
 // constants
-#include "GPS_L1_CA.h" 
+#include "GPS_L1_CA.h"
 
-#include "gps_sdr_signal_processing.h"
+//#include "gps_sdr_signal_processing.h"
 
 #define NUM_PRNs 32
 #define PAGE_SIZE 0x10000
@@ -144,7 +144,7 @@ void fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
 }
 
 fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
-        std::string device_name, unsigned int device_base)
+        std::string device_name, unsigned int device_base, int *ca_codes, unsigned int code_length)
 {
     d_n_correlators = n_correlators;
     d_device_name = device_name;
@@ -170,14 +170,16 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
     d_phase_step_rad_int = 0;
     d_initial_sample_counter = 0;
     d_channel = 0;
-    d_correlator_length_samples = 0;
+    d_correlator_length_samples = 0,
+    d_code_length = code_length;
     
     // pre-compute all the codes
-    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS*NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
-    for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
-    {
-		gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
-    }
+//    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS*NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
+//    for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
+//    {
+//		gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
+//    }
+    d_ca_codes = ca_codes;
     DLOG(INFO) << "TRACKING FPGA CLASS CREATED";
     
 }
@@ -278,7 +280,7 @@ void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int PRN)
             for (k = 0; k < d_code_length_chips; k++)
                 {
                     //if (d_local_code_in[k] == 1)
-                    if (d_ca_codes[((int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)) + k] == 1)
+                    if (d_ca_codes[((int(d_code_length)) * (PRN - 1)) + k] == 1)
                         {
                             code_chip = 1;
                         }

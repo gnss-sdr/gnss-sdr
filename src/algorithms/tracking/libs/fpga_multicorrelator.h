@@ -49,7 +49,7 @@ class fpga_multicorrelator_8sc
 {
 public:
     fpga_multicorrelator_8sc(int n_correlators, std::string device_name,
-            unsigned int device_base);
+            unsigned int device_base, int *ca_codes, unsigned int code_length);
     ~fpga_multicorrelator_8sc();
 	//bool set_output_vectors(gr_complex* corr_out);
 	void set_output_vectors(gr_complex* corr_out);
@@ -109,6 +109,8 @@ private:
 
 
     int* d_ca_codes;
+
+    unsigned int d_code_length; // nominal number of chips
 
     // private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);

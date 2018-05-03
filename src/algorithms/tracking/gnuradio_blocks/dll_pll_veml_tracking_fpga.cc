@@ -34,7 +34,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_dll_pll_tracking_fpga_sc.h"
+#include "dll_pll_veml_tracking_fpga.h"
 #include <cmath>
 #include <iostream>
 #include <memory>
@@ -61,43 +61,96 @@
 
 using google::LogMessage;
 
-gps_l1_ca_dll_pll_tracking_fpga_sc_sptr
-gps_l1_ca_dll_pll_make_tracking_fpga_sc(
-        long if_freq,
-        long fs_in,
-        unsigned int vector_length,
-        bool dump,
-        std::string dump_filename,
-        float pll_bw_hz,
-        float dll_bw_hz,
-        float early_late_space_chips,
-        std::string device_name, 
-        unsigned int device_base)
+//dll_pll_veml_tracking_fpga_sptr
+//dll_pll_veml_make_tracking_fpga(
+//        long if_freq,
+//        long fs_in,
+//        unsigned int vector_length,
+//        bool dump,
+//        std::string dump_filename,
+//        float pll_bw_hz,
+//        float dll_bw_hz,
+//        float early_late_space_chips,
+//        std::string device_name,
+//        unsigned int device_base,
+//        int* ca_codes,
+//        unsigned int code_length)
+//{
+//    return dll_pll_veml_tracking_fpga_sptr(new dll_pll_veml_tracking_fpga(if_freq,
+//            fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips, device_name, device_base, ca_codes, code_length));
+//
+////    return dll_pll_veml_tracking_fpga_sptr(new dll_pll_veml_tracking_fpga(conf_));
+//}
+
+
+
+
+dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(dllpllconf_fpga_t conf_)
 {
-    return gps_l1_ca_dll_pll_tracking_fpga_sc_sptr(new Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc(if_freq,
-            fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips, device_name, device_base));
+
+    return dll_pll_veml_tracking_fpga_sptr(new dll_pll_veml_tracking_fpga(conf_));
+    //return dll_pll_veml_tracking_fpga_sptr(new dll_pll_veml_tracking_fpga(//0, //conf_.f_if, // if_freq is removed ... why ????????????
+    //        conf_.fs_in, conf_.vector_length, conf_.dump, conf_.dump_filename, conf_.pll_bw_hz, conf_.dll_bw_hz,
+    //        conf_.early_late_space_chips, conf_.device_name, conf_.device_base, conf_.ca_codes, conf_.code_length));
+
 }
 
-Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc(
-        long if_freq,
-        long fs_in,
-        unsigned int vector_length,
-        bool dump,
-        std::string dump_filename,
-        float pll_bw_hz,
-        float dll_bw_hz,
-        float early_late_space_chips,
-        std::string device_name, 
-        unsigned int device_base) :
-                gr::block("Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc", gr::io_signature::make(0, 0, sizeof(lv_16sc_t)),
-                        gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+
+
+//dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(
+//        //long if_freq,
+//        long fs_in,
+//        unsigned int vector_length,
+//        bool dump,
+//        std::string dump_filename,
+//        float pll_bw_hz,
+//        float dll_bw_hz,
+//        float early_late_space_chips,
+//        std::string device_name,
+//        unsigned int device_base,
+//        int* ca_codes,
+//        unsigned int code_length) :
+//                gr::block("dll_pll_veml_tracking_fpga", gr::io_signature::make(0, 0, sizeof(lv_16sc_t)),
+//                        gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+//{
+
+dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(dllpllconf_fpga_t conf_) :
+                gr::block("dll_pll_veml_tracking_fpga", gr::io_signature::make(0, 0, sizeof(lv_16sc_t)),
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+
+    trk_parameters = conf_;
+
     // Telemetry bit synchronization message port input
     this->message_port_register_out(pmt::mp("events"));
 
+
+
+    long fs_in = trk_parameters.fs_in;
+    unsigned int vector_length = trk_parameters.vector_length;
+    bool dump = trk_parameters.dump;
+    std::string dump_filename = trk_parameters.dump_filename;
+    float pll_bw_hz = trk_parameters.pll_bw_hz;
+    float dll_bw_hz = trk_parameters.dll_bw_hz;
+    float early_late_space_chips = trk_parameters.early_late_space_chips;
+    std::string device_name = trk_parameters.device_name;
+    unsigned int device_base = trk_parameters.device_base;
+    int* ca_codes = trk_parameters.ca_codes;
+    unsigned int code_length = trk_parameters.code_length;
+
+
+
+
+
+
+
+
+
+
+
     // initialize internal vars
     d_dump = dump;
-    d_if_freq = if_freq;
+    //d_if_freq = if_freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
@@ -132,7 +185,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc(
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
     // create multicorrelator class
-    multicorrelator_fpga_8sc = std::make_shared <fpga_multicorrelator_8sc>(d_n_correlator_taps, device_name, device_base);
+    multicorrelator_fpga_8sc = std::make_shared <fpga_multicorrelator_8sc>(d_n_correlator_taps, device_name, device_base, ca_codes, code_length);
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
@@ -174,9 +227,10 @@ Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc(
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 
     multicorrelator_fpga_8sc->set_output_vectors(d_correlator_outs);
+
 }
 
-void Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::start_tracking()
+void dll_pll_veml_tracking_fpga::start_tracking()
 {
     /*
      *  correct the code phase according to the delay between acq and trk
@@ -252,7 +306,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::start_tracking()
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
 
-Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::~Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc()
+dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
 {
     if (d_dump_file.is_open())
         {
@@ -278,7 +332,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::~Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc()
     }
 }
 
-int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int dll_pll_veml_tracking_fpga::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
 	
@@ -513,7 +567,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::general_work (int noutput_items __attrib
 
 
 
-void Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::set_channel(unsigned int channel)
+void dll_pll_veml_tracking_fpga::set_channel(unsigned int channel)
 {
     d_channel = channel;
     multicorrelator_fpga_8sc->set_channel(d_channel);
@@ -541,12 +595,12 @@ void Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::set_channel(unsigned int channel)
 }
 
 
-void Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }
 
-void Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc::reset(void)
+void dll_pll_veml_tracking_fpga::reset(void)
 {
     multicorrelator_fpga_8sc->unlock_channel();
 }

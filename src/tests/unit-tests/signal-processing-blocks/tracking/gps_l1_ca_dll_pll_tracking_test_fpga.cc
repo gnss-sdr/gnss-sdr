@@ -534,7 +534,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
                 {
                     start = std::chrono::system_clock::now();
                     top_block->run(); // Start threads and wait
-                    tracking->reset();// unlock the channel
+                    //tracking->reset();// unlock the channel
                     end = std::chrono::system_clock::now();
                     elapsed_seconds = end - start;
                 }) << "Failure running the top_block.";

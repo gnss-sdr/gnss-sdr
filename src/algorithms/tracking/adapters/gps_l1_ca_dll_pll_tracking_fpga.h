@@ -40,7 +40,7 @@
 
 #include <string>
 #include "tracking_interface.h"
-#include "gps_l1_ca_dll_pll_tracking_fpga_sc.h"
+#include "dll_pll_veml_tracking_fpga.h"
 
 
 class ConfigurationInterface;
@@ -92,16 +92,17 @@ public:
 
     void start_tracking() override;
 
-	void reset(void);
+	//void reset(void);
 	
 private:
-    //gps_l1_ca_dll_pll_tracking_cc_sptr tracking_;
-    gps_l1_ca_dll_pll_tracking_fpga_sc_sptr tracking_fpga_sc;
+	//gps_l1_ca_dll_pll_tracking_cc_sptr tracking_;
+	dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+    int* d_ca_codes;
 };
 
 #endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_

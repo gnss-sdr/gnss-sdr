@@ -132,12 +132,13 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     delete fft_if;
     delete[] fft_codes_padded;
 
-    acquisition_fpga_ = pcps_make_acquisition(acq_parameters);
+    acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
+
 }
 
 

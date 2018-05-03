@@ -35,8 +35,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_SC_H
-#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_SC_H
+#ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
+#define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
 #include <fstream>
 #include <map>
@@ -45,34 +45,63 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include "fpga_multicorrelator_8sc.h"
+#include "fpga_multicorrelator.h"
 
-class Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc;
+typedef struct
+{
+    /* DLL/PLL tracking configuration */
+    double fs_in;
+    unsigned int vector_length;
+    bool dump;
+    std::string dump_filename;
+    float pll_bw_hz;
+    float dll_bw_hz;
+    float pll_bw_narrow_hz;
+    float dll_bw_narrow_hz;
+    float early_late_space_chips;
+    float very_early_late_space_chips;
+    float early_late_space_narrow_chips;
+    float very_early_late_space_narrow_chips;
+    int extend_correlation_symbols;
+    bool track_pilot;
+    char system;
+    char signal[3];
+    std::string device_name;
+    unsigned int device_base;
+    unsigned int code_length;
+    int* ca_codes;
+    //int f_if;
+} dllpllconf_fpga_t;
 
-typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc>
-        gps_l1_ca_dll_pll_tracking_fpga_sc_sptr;
+class dll_pll_veml_tracking_fpga;
 
-gps_l1_ca_dll_pll_tracking_fpga_sc_sptr
-gps_l1_ca_dll_pll_make_tracking_fpga_sc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float early_late_space_chips,
-                                   std::string device_name, 
-                                   unsigned int device_base);
+typedef boost::shared_ptr<dll_pll_veml_tracking_fpga>
+dll_pll_veml_tracking_fpga_sptr;
 
+//dll_pll_veml_tracking_fpga_sptr
+//dll_pll_veml_make_tracking_fpga(long if_freq,
+//                                   long fs_in, unsigned
+//                                   int vector_length,
+//                                   bool dump,
+//                                   std::string dump_filename,
+//                                   float pll_bw_hz,
+//                                   float dll_bw_hz,
+//                                   float early_late_space_chips,
+//                                   std::string device_name,
+//                                   unsigned int device_base,
+//                                   int* ca_codes,
+//                                   unsigned int code_length);
+
+dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(dllpllconf_fpga_t conf_);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc: public gr::block
+class dll_pll_veml_tracking_fpga: public gr::block
 {
 public:
-    ~Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc();
+    ~dll_pll_veml_tracking_fpga();
 
     void set_channel(unsigned int channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
@@ -84,28 +113,37 @@ public:
     void reset(void);
 
 private:
-    friend gps_l1_ca_dll_pll_tracking_fpga_sc_sptr
-    gps_l1_ca_dll_pll_make_tracking_fpga_sc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips,
-            std::string device_name,
-            unsigned int device_base);
+//    friend dll_pll_veml_tracking_fpga_sptr
+//    dll_pll_veml_make_tracking_fpga(long if_freq,
+//            long fs_in, unsigned
+//            int vector_length,
+//            bool dump,
+//            std::string dump_filename,
+//            float pll_bw_hz,
+//            float dll_bw_hz,
+//            float early_late_space_chips,
+//            std::string device_name,
+//            unsigned int device_base,
+//            int* ca_codes,
+//            unsigned int code_length);
+    friend dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(dllpllconf_fpga_t conf_);
 
-    Gps_L1_Ca_Dll_Pll_Tracking_fpga_sc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            bool dump,
-            std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips,
-            std::string device_name,
-            unsigned int device_base);
+    dll_pll_veml_tracking_fpga(dllpllconf_fpga_t conf_);
+//    dll_pll_veml_tracking_fpga(//long if_freq,
+//            long fs_in, unsigned
+//            int vector_length,
+//            bool dump,
+//            std::string dump_filename,
+//            float pll_bw_hz,
+//            float dll_bw_hz,
+//            float early_late_space_chips,
+//            std::string device_name,
+//            unsigned int device_base,
+//            int* ca_codes,
+//            unsigned int code_length);
+
+
+    dllpllconf_fpga_t trk_parameters;
 
     // tracking configuration vars
     unsigned int d_vector_length;
@@ -114,7 +152,7 @@ private:
     Gnss_Synchro* d_acquisition_gnss_synchro;
     unsigned int d_channel;
 
-    long d_if_freq;
+    //long d_if_freq;
     long d_fs_in;
 
     double d_early_late_spc_chips;
@@ -184,4 +222,4 @@ private:
     
 };
 
-#endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_SC_H
+#endif //GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

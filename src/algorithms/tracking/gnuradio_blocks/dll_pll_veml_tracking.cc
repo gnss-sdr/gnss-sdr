@@ -144,21 +144,20 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_code_length_chips = static_cast<unsigned int>(GPS_L5i_CODE_LENGTH_CHIPS);
-                    // GPS L5 does not have pilot secondary code
                     d_secondary = true;
-                    interchange_iq = false;
                     if (trk_parameters.track_pilot)
                         {
                             d_secondary_code_length = static_cast<unsigned int>(GPS_L5q_NH_CODE_LENGTH);
                             d_secondary_code_string = const_cast<std::string *>(&GPS_L5q_NH_CODE_STR);
                             signal_pretty_name = signal_pretty_name + "Q";
-                            //interchange_iq = true;
+                            interchange_iq = true;
                         }
                     else
                         {
                             d_secondary_code_length = static_cast<unsigned int>(GPS_L5i_NH_CODE_LENGTH);
                             d_secondary_code_string = const_cast<std::string *>(&GPS_L5i_NH_CODE_STR);
                             signal_pretty_name = signal_pretty_name + "I";
+                            interchange_iq = false;
                         }
                 }
             else
@@ -212,18 +211,18 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
                     d_code_samples_per_chip = 1;
                     d_code_length_chips = static_cast<unsigned int>(Galileo_E5a_CODE_LENGTH_CHIPS);
                     d_secondary = true;
-                    interchange_iq = false;
                     if (trk_parameters.track_pilot)
                         {
                             d_secondary_code_length = static_cast<unsigned int>(Galileo_E5a_Q_SECONDARY_CODE_LENGTH);
                             signal_pretty_name = signal_pretty_name + "Q";
-                            // interchange_iq = true;
+                            interchange_iq = true;
                         }
                     else
                         {
                             d_secondary_code_length = static_cast<unsigned int>(Galileo_E5a_I_SECONDARY_CODE_LENGTH);
                             d_secondary_code_string = const_cast<std::string *>(&Galileo_E5a_I_SECONDARY_CODE);
                             signal_pretty_name = signal_pretty_name + "I";
+                            interchange_iq = false;
                         }
                 }
             else

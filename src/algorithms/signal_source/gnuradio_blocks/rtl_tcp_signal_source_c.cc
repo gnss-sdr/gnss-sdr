@@ -157,6 +157,7 @@ rtl_tcp_signal_source_c::~rtl_tcp_signal_source_c()
     boost::mutex::scoped_lock lock(mutex_);
     io_service_.stop();
     not_empty_.notify_one();
+    not_full_.notify_one();
 }
 
 

@@ -23,6 +23,7 @@ set(PVT_LIB_SOURCES
      ls_pvt.cc
      hybrid_ls_pvt.cc
      kml_printer.cc
+     gpx_printer.cc
      rinex_printer.cc
      nmea_printer.cc  
      rtcm_printer.cc

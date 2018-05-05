@@ -261,6 +261,12 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     d_kml_dump = std::make_shared<Kml_Printer>();
     d_kml_dump->set_headers(kml_dump_filename);
 
+    //initialize gpx_printer
+    std::string gpx_dump_filename;
+    gpx_dump_filename = d_dump_filename;
+    d_gpx_dump = std::make_shared<Gpx_Printer>();
+    d_gpx_dump->set_headers(gpx_dump_filename);
+
     //initialize geojson_printer
     std::string geojson_dump_filename;
     geojson_dump_filename = d_dump_filename;
@@ -678,6 +684,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                             first_fix = false;
                                         }
                                     d_kml_dump->print_position(d_ls_pvt, false);
+                                    d_gpx_dump->print_position(d_ls_pvt, false);
                                     d_geojson_printer->print_position(d_ls_pvt, false);
                                     d_nmea_printer->Print_Nmea_Line(d_ls_pvt, false);
 

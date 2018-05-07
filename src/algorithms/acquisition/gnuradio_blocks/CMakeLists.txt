@@ -29,7 +29,7 @@ set(ACQ_GR_BLOCKS_SOURCES
 ) 
 
 if(ENABLE_FPGA)
-    set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} gps_pcps_acquisition_fpga_sc.cc)
+    set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_acquisition_fpga.cc)
 endif(ENABLE_FPGA)
     
 if(OPENCL_FOUND)

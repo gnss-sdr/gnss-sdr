@@ -154,42 +154,10 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
 
 rtl_tcp_signal_source_c::~rtl_tcp_signal_source_c()
 {
+    boost::mutex::scoped_lock lock(mutex_);
     io_service_.stop();
-}
-
-
-int rtl_tcp_signal_source_c::work(int noutput_items,
-    gr_vector_const_void_star & /*input_items*/,
-    gr_vector_void_star &output_items)
-{
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
-    int i = 0;
-    if (io_service_.stopped())
-        {
-            return -1;
-        }
-
-    {
-        boost::mutex::scoped_lock lock(mutex_);
-        not_empty_.wait(lock, boost::bind(&rtl_tcp_signal_source_c::not_empty,
-                                  this));
-
-        for (; i < noutput_items && unread_ > 1; i++)
-            {
-                float re = buffer_[--unread_];
-                float im = buffer_[--unread_];
-                if (flip_iq_)
-                    {
-                        out[i] = gr_complex(im, re);
-                    }
-                else
-                    {
-                        out[i] = gr_complex(re, im);
-                    }
-            }
-    }
+    not_empty_.notify_one();
     not_full_.notify_one();
-    return i == 0 ? -1 : i;
 }
 
 
@@ -358,4 +326,39 @@ void rtl_tcp_signal_source_c::handle_read(const boost::system::error_code &ec,
                 boost::bind(&rtl_tcp_signal_source_c::handle_read,
                     this, _1, _2));
         }
+}
+
+
+int rtl_tcp_signal_source_c::work(int noutput_items,
+    gr_vector_const_void_star & /*input_items*/,
+    gr_vector_void_star &output_items)
+{
+    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    int i = 0;
+    if (io_service_.stopped())
+        {
+            return -1;
+        }
+
+    {
+        boost::mutex::scoped_lock lock(mutex_);
+        not_empty_.wait(lock, boost::bind(&rtl_tcp_signal_source_c::not_empty,
+                                  this));
+
+        for (; i < noutput_items && unread_ > 1; i++)
+            {
+                float re = buffer_[--unread_];
+                float im = buffer_[--unread_];
+                if (flip_iq_)
+                    {
+                        out[i] = gr_complex(im, re);
+                    }
+                else
+                    {
+                        out[i] = gr_complex(re, im);
+                    }
+            }
+    }
+    not_full_.notify_one();
+    return i == 0 ? -1 : i;
 }

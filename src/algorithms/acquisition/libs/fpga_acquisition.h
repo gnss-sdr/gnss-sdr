@@ -1,12 +1,12 @@
 /*!
- * \file fpga_acquisition_8sc.h
- * \brief High optimized FPGA vector correlator class for lv_16sc_t (short int complex).
+ * \file fpga_acquisition.h
+ * \brief High optimized FPGA vector correlator class
  * \authors <ul>
- * 			<li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ *          <li> Marc Majoral, 2018. mmajoral(at)cttc.cat
  *          </ul>
  *
- * Class that controls and executes a high optimized vector correlator
- * class in the FPGA
+ * Class that controls and executes a high optimized acquisition HW
+ * accelerator in the FPGA
  *
  * -------------------------------------------------------------------------
  *
@@ -33,28 +33,28 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FPGA_ACQUISITION_8SC_H_
-#define GNSS_SDR_FPGA_ACQUISITION_8SC_H_
+#ifndef GNSS_SDR_FPGA_ACQUISITION_H_
+#define GNSS_SDR_FPGA_ACQUISITION_H_
 
-#include <volk_gnsssdr/volk_gnsssdr.h>
-
-#include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
+#include <volk/volk.h>
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
-class gps_fpga_acquisition_8sc
+class fpga_acquisition
 {
 public:
-    gps_fpga_acquisition_8sc(std::string device_name,
-        unsigned int vector_length, unsigned int nsamples,
+    fpga_acquisition(std::string device_name,
+        unsigned int nsamples,
+        unsigned int doppler_max,
         unsigned int nsamples_total, long fs_in, long freq,
-        unsigned int sampled_ms, unsigned select_queue);
-    ~gps_fpga_acquisition_8sc();
+        unsigned int sampled_ms, unsigned select_queue,
+        lv_16sc_t *all_fft_codes);
+    ~fpga_acquisition();
     bool init();
     bool set_local_code(
-        unsigned int PRN);  //int code_length_chips, const lv_16sc_t* local_code_in, float *shifts_chips);
+        unsigned int PRN);
     bool free();
     void run_acquisition(void);
     void set_phase_step(unsigned int doppler_index);
@@ -62,8 +62,6 @@ public:
         unsigned *initial_sample, float *power_sum);
     void block_samples();
     void unblock_samples();
-    void open_device();
-    void close_device();
 
     /*!
      * \brief Set maximum Doppler grid search
@@ -87,22 +85,23 @@ private:
     long d_freq;
     long d_fs_in;
     gr::fft::fft_complex *d_fft_if;  // function used to run the fft of the local codes
-
     // data related to the hardware module and the driver
     int d_fd;                       // driver descriptor
     volatile unsigned *d_map_base;  // driver memory map
     lv_16sc_t *d_all_fft_codes;     // memory that contains all the code ffts
-    unsigned int d_vector_length;   // number of samples including padding and number of ms
+    unsigned int d_vector_length;   // number of samples incluing padding and number of ms
+    unsigned int d_nsamples_total;  // number of samples including padding
     unsigned int d_nsamples;        // number of samples not including padding
     unsigned int d_select_queue;    // queue selection
     std::string d_device_name;      // HW device name
     unsigned int d_doppler_max;     // max doppler
     unsigned int d_doppler_step;    // doppler step
-
     // FPGA private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);
     void fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[]);
     void configure_acquisition();
+    void reset_acquisition(void);
+    void close_device();
 };
 
-#endif /* GNSS_SDR_FPGA_MULTICORRELATOR_H_ */
+#endif /* GNSS_SDR_FPGA_ACQUISITION_H_ */

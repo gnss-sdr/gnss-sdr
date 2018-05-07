@@ -49,18 +49,18 @@
  */
 
 #include "pcps_opencl_acquisition_cc.h"
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <glog/logging.h>
-#include <gnuradio/io_signature.h>
-#include <volk/volk.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "control_message_factory.h"
 #include "opencl/fft_base_kernels.h"
 #include "opencl/fft_internal.h"
 #include "GPS_L1_CA.h"  //GPS_TWO_PI
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 
 using google::LogMessage;
@@ -78,10 +78,15 @@ pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
             samples_per_code, bit_transition_flag, dump, dump_filename));
 }
 
+
 pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
-    unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
-    int samples_per_ms, int samples_per_code,
+    unsigned int sampled_ms,
+    unsigned int max_dwells,
+    unsigned int doppler_max,
+    long freq,
+    long fs_in,
+    int samples_per_ms,
+    int samples_per_code,
     bool bit_transition_flag,
     bool dump,
     std::string dump_filename) : gr::block("pcps_opencl_acquisition_cc",
@@ -339,6 +344,7 @@ void pcps_opencl_acquisition_cc::init()
         }
 }
 
+
 void pcps_opencl_acquisition_cc::set_local_code(std::complex<float> *code)
 {
     if (d_opencl == 0)
@@ -373,6 +379,7 @@ void pcps_opencl_acquisition_cc::set_local_code(std::complex<float> *code)
             volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
         }
 }
+
 
 void pcps_opencl_acquisition_cc::acquisition_core_volk()
 {
@@ -495,6 +502,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
 
     d_core_working = false;
 }
+
 
 void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 {
@@ -686,6 +694,7 @@ void pcps_opencl_acquisition_cc::set_state(int state)
             LOG(ERROR) << "State can only be set to 0 or 1";
         }
 }
+
 
 int pcps_opencl_acquisition_cc::general_work(int noutput_items,
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,

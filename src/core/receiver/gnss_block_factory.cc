@@ -91,7 +91,7 @@
 #include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
 #include "glonass_l2_ca_dll_pll_tracking.h"
 #include "glonass_l2_ca_dll_pll_c_aid_tracking.h"
-#include "gps_l5i_dll_pll_tracking.h"
+#include "gps_l5_dll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l2c_telemetry_decoder.h"
 #include "gps_l5_telemetry_decoder.h"
@@ -104,8 +104,8 @@
 #include "rtklib_pvt.h"
 
 #if ENABLE_FPGA
-#include "gps_l1_ca_dll_pll_c_aid_tracking_fpga.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
+#include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #endif
 
 #if OPENCL_BLOCKS
@@ -136,6 +136,10 @@
 #include "fmcomms2_signal_source.h"
 #endif
 
+#if AD9361_DRIVER
+#include "ad9361_fpga_signal_source.h"
+#endif
+
 #if FLEXIBAND_DRIVER
 #include "flexiband_signal_source.h"
 #endif
@@ -144,7 +148,6 @@
 #include "gps_l1_ca_dll_pll_tracking_gpu.h"
 #endif
 
-#include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <string>
 #include <sstream>
@@ -165,9 +168,16 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
 {
     std::string default_implementation = "File_Signal_Source";
     std::string role = "SignalSource";  //backwards compatibility for old conf files
-    if (ID != -1)
+    try
         {
-            role = "SignalSource" + boost::lexical_cast<std::string>(ID);
+            if (ID != -1)
+                {
+                    role = "SignalSource" + std::to_string(ID);
+                }
+        }
+    catch (const std::exception &e)
+        {
+            LOG(WARNING) << e.what();
         }
     std::string implementation = configuration->property(role + ".implementation", default_implementation);
     LOG(INFO) << "Getting SignalSource with implementation " << implementation;
@@ -184,15 +194,20 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
     std::string role_datatypeadapter = "DataTypeAdapter";
     std::string role_inputfilter = "InputFilter";
     std::string role_resampler = "Resampler";
-
-    if (ID != -1)
+    try
         {
-            role_conditioner = "SignalConditioner" + boost::lexical_cast<std::string>(ID);
-            role_datatypeadapter = "DataTypeAdapter" + boost::lexical_cast<std::string>(ID);
-            role_inputfilter = "InputFilter" + boost::lexical_cast<std::string>(ID);
-            role_resampler = "Resampler" + boost::lexical_cast<std::string>(ID);
+            if (ID != -1)
+                {
+                    role_conditioner = "SignalConditioner" + std::to_string(ID);
+                    role_datatypeadapter = "DataTypeAdapter" + std::to_string(ID);
+                    role_inputfilter = "InputFilter" + std::to_string(ID);
+                    role_resampler = "Resampler" + std::to_string(ID);
+                }
         }
-
+    catch (const std::exception &e)
+        {
+            LOG(WARNING) << e.what();
+        }
     std::string signal_conditioner = configuration->property(role_conditioner + ".implementation", default_implementation);
 
     std::string data_type_adapter;
@@ -250,13 +265,13 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared
     GPS_channels += configuration->property("Channels_2S.count", 0);
     GPS_channels += configuration->property("Channels_L5.count", 0);
     unsigned int Glonass_channels = configuration->property("Channels_1G.count", 0);
-    unsigned int extra_channels = 1; // For monitor channel sample counter
+    unsigned int extra_channels = 1;  // For monitor channel sample counter
     return GetBlock(configuration, "Observables", implementation,
-            Galileo_channels +
+        Galileo_channels +
             GPS_channels +
             Glonass_channels +
             extra_channels,
-            Galileo_channels +
+        Galileo_channels +
             GPS_channels +
             Glonass_channels);
 }
@@ -273,7 +288,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<Con
     GPS_channels += configuration->property("Channels_2S.count", 0);
     GPS_channels += configuration->property("Channels_L5.count", 0);
     unsigned int Glonass_channels = configuration->property("Channels_1G.count", 0);
-    Glonass_channels += configuration->property("Channels_2G.count", 0);
     return GetBlock(configuration, "PVT", implementation, Galileo_channels + GPS_channels + Glonass_channels, 0);
 }
 
@@ -290,31 +304,31 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder implementation: " << tlm;
 
-    std::string aux = configuration->property("Acquisition_1C" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string aux = configuration->property("Acquisition_1C" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix1;
     if (aux.compare("W") != 0)
         {
-            appendix1 = boost::lexical_cast<std::string>(channel);
+            appendix1 = std::to_string(channel);
         }
     else
         {
             appendix1 = "";
         }
-    aux = configuration->property("Tracking_1C" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("Tracking_1C" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix2;
     if (aux.compare("W") != 0)
         {
-            appendix2 = boost::lexical_cast<std::string>(channel);
+            appendix2 = std::to_string(channel);
         }
     else
         {
             appendix2 = "";
         }
-    aux = configuration->property("TelemetryDecoder_1C" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("TelemetryDecoder_1C" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix3;
     if (aux.compare("W") != 0)
         {
-            appendix3 = boost::lexical_cast<std::string>(channel);
+            appendix3 = std::to_string(channel);
         }
     else
         {
@@ -355,31 +369,31 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
 {
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder implementation: " << tlm;
-    std::string aux = configuration->property("Acquisition_2S" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string aux = configuration->property("Acquisition_2S" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix1;
     if (aux.compare("W") != 0)
         {
-            appendix1 = boost::lexical_cast<std::string>(channel);
+            appendix1 = std::to_string(channel);
         }
     else
         {
             appendix1 = "";
         }
-    aux = configuration->property("Tracking_2S" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("Tracking_2S" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix2;
     if (aux.compare("W") != 0)
         {
-            appendix2 = boost::lexical_cast<std::string>(channel);
+            appendix2 = std::to_string(channel);
         }
     else
         {
             appendix2 = "";
         }
-    aux = configuration->property("TelemetryDecoder_2S" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("TelemetryDecoder_2S" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix3;
     if (aux.compare("W") != 0)
         {
-            appendix3 = boost::lexical_cast<std::string>(channel);
+            appendix3 = std::to_string(channel);
         }
     else
         {
@@ -423,31 +437,31 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
     std::string id = stream.str();
     LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder implementation: " << tlm;
-    std::string aux = configuration->property("Acquisition_1B" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string aux = configuration->property("Acquisition_1B" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix1;
     if (aux.compare("W") != 0)
         {
-            appendix1 = boost::lexical_cast<std::string>(channel);
+            appendix1 = std::to_string(channel);
         }
     else
         {
             appendix1 = "";
         }
-    aux = configuration->property("Tracking_1B" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("Tracking_1B" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix2;
     if (aux.compare("W") != 0)
         {
-            appendix2 = boost::lexical_cast<std::string>(channel);
+            appendix2 = std::to_string(channel);
         }
     else
         {
             appendix2 = "";
         }
-    aux = configuration->property("TelemetryDecoder_1B" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("TelemetryDecoder_1B" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix3;
     if (aux.compare("W") != 0)
         {
-            appendix3 = boost::lexical_cast<std::string>(channel);
+            appendix3 = std::to_string(channel);
         }
     else
         {
@@ -491,31 +505,31 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
     std::string id = stream.str();
     LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder implementation: " << tlm;
-    std::string aux = configuration->property("Acquisition_5X" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string aux = configuration->property("Acquisition_5X" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix1;
     if (aux.compare("W") != 0)
         {
-            appendix1 = boost::lexical_cast<std::string>(channel);
+            appendix1 = std::to_string(channel);
         }
     else
         {
             appendix1 = "";
         }
-    aux = configuration->property("Tracking_5X" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("Tracking_5X" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix2;
     if (aux.compare("W") != 0)
         {
-            appendix2 = boost::lexical_cast<std::string>(channel);
+            appendix2 = std::to_string(channel);
         }
     else
         {
             appendix2 = "";
         }
-    aux = configuration->property("TelemetryDecoder_5X" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("TelemetryDecoder_5X" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix3;
     if (aux.compare("W") != 0)
         {
-            appendix3 = boost::lexical_cast<std::string>(channel);
+            appendix3 = std::to_string(channel);
         }
     else
         {
@@ -560,31 +574,31 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder Implementation: " << tlm;
 
-    std::string aux = configuration->property("Acquisition_1G" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string aux = configuration->property("Acquisition_1G" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix1;
     if (aux.compare("W") != 0)
         {
-            appendix1 = boost::lexical_cast<std::string>(channel);
+            appendix1 = std::to_string(channel);
         }
     else
         {
             appendix1 = "";
         }
-    aux = configuration->property("Tracking_1G" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("Tracking_1G" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix2;
     if (aux.compare("W") != 0)
         {
-            appendix2 = boost::lexical_cast<std::string>(channel);
+            appendix2 = std::to_string(channel);
         }
     else
         {
             appendix2 = "";
         }
-    aux = configuration->property("TelemetryDecoder_1G" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("TelemetryDecoder_1G" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix3;
     if (aux.compare("W") != 0)
         {
-            appendix3 = boost::lexical_cast<std::string>(channel);
+            appendix3 = std::to_string(channel);
         }
     else
         {
@@ -617,7 +631,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
 }
 
 
-
 //********* GLONASS L2 C/A CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
     std::shared_ptr<ConfigurationInterface> configuration,
@@ -630,31 +643,31 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder Implementation: " << tlm;
 
-    std::string aux = configuration->property("Acquisition_2G" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string aux = configuration->property("Acquisition_2G" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix1;
     if (aux.compare("W") != 0)
         {
-            appendix1 = boost::lexical_cast<std::string>(channel);
+            appendix1 = std::to_string(channel);
         }
     else
         {
             appendix1 = "";
         }
-    aux = configuration->property("Tracking_2G" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("Tracking_2G" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix2;
     if (aux.compare("W") != 0)
         {
-            appendix2 = boost::lexical_cast<std::string>(channel);
+            appendix2 = std::to_string(channel);
         }
     else
         {
             appendix2 = "";
         }
-    aux = configuration->property("TelemetryDecoder_2G" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("TelemetryDecoder_2G" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix3;
     if (aux.compare("W") != 0)
         {
-            appendix3 = boost::lexical_cast<std::string>(channel);
+            appendix3 = std::to_string(channel);
         }
     else
         {
@@ -687,7 +700,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
 }
 
 
-
 //********* GPS L5  CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
     std::shared_ptr<ConfigurationInterface> configuration,
@@ -699,31 +711,31 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
     std::string id = stream.str();
     LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk << ", Telemetry Decoder implementation: " << tlm;
-    std::string aux = configuration->property("Acquisition_L5" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string aux = configuration->property("Acquisition_L5" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix1;
     if (aux.compare("W") != 0)
         {
-            appendix1 = boost::lexical_cast<std::string>(channel);
+            appendix1 = std::to_string(channel);
         }
     else
         {
             appendix1 = "";
         }
-    aux = configuration->property("Tracking_L5" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("Tracking_L5" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix2;
     if (aux.compare("W") != 0)
         {
-            appendix2 = boost::lexical_cast<std::string>(channel);
+            appendix2 = std::to_string(channel);
         }
     else
         {
             appendix2 = "";
         }
-    aux = configuration->property("TelemetryDecoder_L5" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    aux = configuration->property("TelemetryDecoder_L5" + std::to_string(channel) + ".implementation", std::string("W"));
     std::string appendix3;
     if (aux.compare("W") != 0)
         {
-            appendix3 = boost::lexical_cast<std::string>(channel);
+            appendix3 = std::to_string(channel);
         }
     else
         {
@@ -767,227 +779,233 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     unsigned int channel_absolute_id = 0;
 
     unsigned int Channels_1C_count = configuration->property("Channels_1C.count", 0);
-    unsigned int Channels_2S_count = configuration->property("Channels_2S.count", 0);
     unsigned int Channels_1B_count = configuration->property("Channels_1B.count", 0);
-    unsigned int Channels_5X_count = configuration->property("Channels_5X.count", 0);
     unsigned int Channels_1G_count = configuration->property("Channels_1G.count", 0);
     unsigned int Channels_2G_count = configuration->property("Channels_2G.count", 0);
+    unsigned int Channels_2S_count = configuration->property("Channels_2S.count", 0);
+    unsigned int Channels_5X_count = configuration->property("Channels_5X.count", 0);
     unsigned int Channels_L5_count = configuration->property("Channels_L5.count", 0);
 
     unsigned int total_channels = Channels_1C_count +
-                                  Channels_2S_count +
                                   Channels_1B_count +
-                                  Channels_5X_count +
                                   Channels_1G_count +
-								  Channels_2G_count +
+                                  Channels_2S_count +
+                                  Channels_2G_count +
+                                  Channels_5X_count +
                                   Channels_L5_count;
 
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels(new std::vector<std::unique_ptr<GNSSBlockInterface>>(total_channels));
-
-    //**************** GPS L1 C/A  CHANNELS **********************
-    LOG(INFO) << "Getting " << Channels_1C_count << " GPS L1 C/A channels";
-    acquisition_implementation = configuration->property("Acquisition_1C.implementation", default_implementation);
-    tracking_implementation = configuration->property("Tracking_1C.implementation", default_implementation);
-    telemetry_decoder_implementation = configuration->property("TelemetryDecoder_1C.implementation", default_implementation);
-
-    for (unsigned int i = 0; i < Channels_1C_count; i++)
+    try
         {
-            //(i.e. Acquisition_1C0.implementation=xxxx)
-            std::string acquisition_implementation_specific = configuration->property(
-                "Acquisition_1C" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                acquisition_implementation);
-            //(i.e. Tracking_1C0.implementation=xxxx)
-            std::string tracking_implementation_specific = configuration->property(
-                "Tracking_1C" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                tracking_implementation);
-            std::string telemetry_decoder_implementation_specific = configuration->property(
-                "TelemetryDecoder_1C" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                telemetry_decoder_implementation);
+            //**************** GPS L1 C/A  CHANNELS **********************
+            LOG(INFO) << "Getting " << Channels_1C_count << " GPS L1 C/A channels";
+            acquisition_implementation = configuration->property("Acquisition_1C.implementation", default_implementation);
+            tracking_implementation = configuration->property("Tracking_1C.implementation", default_implementation);
+            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_1C.implementation", default_implementation);
 
-            // Push back the channel to the vector of channels
-            channels->at(channel_absolute_id) = std::move(GetChannel_1C(configuration,
-                acquisition_implementation_specific,
-                tracking_implementation_specific,
-                telemetry_decoder_implementation_specific,
-                channel_absolute_id,
-                queue));
-            channel_absolute_id++;
+            for (unsigned int i = 0; i < Channels_1C_count; i++)
+                {
+                    //(i.e. Acquisition_1C0.implementation=xxxx)
+                    std::string acquisition_implementation_specific = configuration->property(
+                        "Acquisition_1C" + std::to_string(channel_absolute_id) + ".implementation",
+                        acquisition_implementation);
+                    //(i.e. Tracking_1C0.implementation=xxxx)
+                    std::string tracking_implementation_specific = configuration->property(
+                        "Tracking_1C" + std::to_string(channel_absolute_id) + ".implementation",
+                        tracking_implementation);
+                    std::string telemetry_decoder_implementation_specific = configuration->property(
+                        "TelemetryDecoder_1C" + std::to_string(channel_absolute_id) + ".implementation",
+                        telemetry_decoder_implementation);
+
+                    // Push back the channel to the vector of channels
+                    channels->at(channel_absolute_id) = std::move(GetChannel_1C(configuration,
+                        acquisition_implementation_specific,
+                        tracking_implementation_specific,
+                        telemetry_decoder_implementation_specific,
+                        channel_absolute_id,
+                        queue));
+                    channel_absolute_id++;
+                }
+
+            //**************** GPS L2C (M)  CHANNELS **********************
+            LOG(INFO) << "Getting " << Channels_2S_count << " GPS L2C (M) channels";
+            tracking_implementation = configuration->property("Tracking_2S.implementation", default_implementation);
+            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_2S.implementation", default_implementation);
+            acquisition_implementation = configuration->property("Acquisition_2S.implementation", default_implementation);
+            for (unsigned int i = 0; i < Channels_2S_count; i++)
+                {
+                    //(i.e. Acquisition_1C0.implementation=xxxx)
+                    std::string acquisition_implementation_specific = configuration->property(
+                        "Acquisition_2S" + std::to_string(channel_absolute_id) + ".implementation",
+                        acquisition_implementation);
+                    //(i.e. Tracking_1C0.implementation=xxxx)
+                    std::string tracking_implementation_specific = configuration->property(
+                        "Tracking_2S" + std::to_string(channel_absolute_id) + ".implementation",
+                        tracking_implementation);
+                    std::string telemetry_decoder_implementation_specific = configuration->property(
+                        "TelemetryDecoder_2S" + std::to_string(channel_absolute_id) + ".implementation",
+                        telemetry_decoder_implementation);
+
+                    // Push back the channel to the vector of channels
+                    channels->at(channel_absolute_id) = std::move(GetChannel_2S(configuration,
+                        acquisition_implementation_specific,
+                        tracking_implementation_specific,
+                        telemetry_decoder_implementation_specific,
+                        channel_absolute_id,
+                        queue));
+                    channel_absolute_id++;
+                }
+
+            //**************** GPS L5  CHANNELS **********************
+            LOG(INFO) << "Getting " << Channels_L5_count << " GPS L5 channels";
+            tracking_implementation = configuration->property("Tracking_L5.implementation", default_implementation);
+            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_L5.implementation", default_implementation);
+            acquisition_implementation = configuration->property("Acquisition_L5.implementation", default_implementation);
+            for (unsigned int i = 0; i < Channels_L5_count; i++)
+                {
+                    //(i.e. Acquisition_1C0.implementation=xxxx)
+                    std::string acquisition_implementation_specific = configuration->property(
+                        "Acquisition_L5" + std::to_string(channel_absolute_id) + ".implementation",
+                        acquisition_implementation);
+                    //(i.e. Tracking_1C0.implementation=xxxx)
+                    std::string tracking_implementation_specific = configuration->property(
+                        "Tracking_L5" + std::to_string(channel_absolute_id) + ".implementation",
+                        tracking_implementation);
+                    std::string telemetry_decoder_implementation_specific = configuration->property(
+                        "TelemetryDecoder_L5" + std::to_string(channel_absolute_id) + ".implementation",
+                        telemetry_decoder_implementation);
+
+                    // Push back the channel to the vector of channels
+                    channels->at(channel_absolute_id) = std::move(GetChannel_L5(configuration,
+                        acquisition_implementation_specific,
+                        tracking_implementation_specific,
+                        telemetry_decoder_implementation_specific,
+                        channel_absolute_id,
+                        queue));
+                    channel_absolute_id++;
+                }
+
+            //**************** GALILEO E1 B (I/NAV OS) CHANNELS **********************
+            LOG(INFO) << "Getting " << Channels_1B_count << " GALILEO E1 B (I/NAV OS) channels";
+            tracking_implementation = configuration->property("Tracking_1B.implementation", default_implementation);
+            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_1B.implementation", default_implementation);
+            acquisition_implementation = configuration->property("Acquisition_1B.implementation", default_implementation);
+            for (unsigned int i = 0; i < Channels_1B_count; i++)
+                {
+                    //(i.e. Acquisition_1C0.implementation=xxxx)
+                    std::string acquisition_implementation_specific = configuration->property(
+                        "Acquisition_1B" + std::to_string(channel_absolute_id) + ".implementation",
+                        acquisition_implementation);
+                    //(i.e. Tracking_1C0.implementation=xxxx)
+                    std::string tracking_implementation_specific = configuration->property(
+                        "Tracking_1B" + std::to_string(channel_absolute_id) + ".implementation",
+                        tracking_implementation);
+                    std::string telemetry_decoder_implementation_specific = configuration->property(
+                        "TelemetryDecoder_1B" + std::to_string(channel_absolute_id) + ".implementation",
+                        telemetry_decoder_implementation);
+
+                    // Push back the channel to the vector of channels
+                    channels->at(channel_absolute_id) = std::move(GetChannel_1B(configuration,
+                        acquisition_implementation_specific,
+                        tracking_implementation_specific,
+                        telemetry_decoder_implementation_specific,
+                        channel_absolute_id,
+                        queue));
+                    channel_absolute_id++;
+                }
+
+            //**************** GALILEO E5a I (F/NAV OS)  CHANNELS **********************
+            LOG(INFO) << "Getting " << Channels_5X_count << " GALILEO E5a I (F/NAV OS) channels";
+            tracking_implementation = configuration->property("Tracking_5X.implementation", default_implementation);
+            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_5X.implementation", default_implementation);
+            acquisition_implementation = configuration->property("Acquisition_5X.implementation", default_implementation);
+            for (unsigned int i = 0; i < Channels_5X_count; i++)
+                {
+                    //(i.e. Acquisition_1C0.implementation=xxxx)
+                    std::string acquisition_implementation_specific = configuration->property(
+                        "Acquisition_5X" + std::to_string(channel_absolute_id) + ".implementation",
+                        acquisition_implementation);
+                    //(i.e. Tracking_1C0.implementation=xxxx)
+                    std::string tracking_implementation_specific = configuration->property(
+                        "Tracking_5X" + std::to_string(channel_absolute_id) + ".implementation",
+                        tracking_implementation);
+                    std::string telemetry_decoder_implementation_specific = configuration->property(
+                        "TelemetryDecoder_5X" + std::to_string(channel_absolute_id) + ".implementation",
+                        telemetry_decoder_implementation);
+
+                    // Push back the channel to the vector of channels
+                    channels->at(channel_absolute_id) = std::move(GetChannel_5X(configuration,
+                        acquisition_implementation_specific,
+                        tracking_implementation_specific,
+                        telemetry_decoder_implementation_specific,
+                        channel_absolute_id,
+                        queue));
+                    channel_absolute_id++;
+                }
+
+            //**************** GLONASS L1 C/A  CHANNELS **********************
+            LOG(INFO) << "Getting " << Channels_1G_count << " GLONASS L1 C/A channels";
+            acquisition_implementation = configuration->property("Acquisition_1G.implementation", default_implementation);
+            tracking_implementation = configuration->property("Tracking_1G.implementation", default_implementation);
+            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_1G.implementation", default_implementation);
+
+            for (unsigned int i = 0; i < Channels_1G_count; i++)
+                {
+                    //(i.e. Acquisition_1G0.implementation=xxxx)
+                    std::string acquisition_implementation_specific = configuration->property(
+                        "Acquisition_1G" + std::to_string(channel_absolute_id) + ".implementation",
+                        acquisition_implementation);
+                    //(i.e. Tracking_1G0.implementation=xxxx)
+                    std::string tracking_implementation_specific = configuration->property(
+                        "Tracking_1G" + std::to_string(channel_absolute_id) + ".implementation",
+                        tracking_implementation);
+                    std::string telemetry_decoder_implementation_specific = configuration->property(
+                        "TelemetryDecoder_1G" + std::to_string(channel_absolute_id) + ".implementation",
+                        telemetry_decoder_implementation);
+
+                    // Push back the channel to the vector of channels
+                    channels->at(channel_absolute_id) = std::move(GetChannel_1G(configuration,
+                        acquisition_implementation_specific,
+                        tracking_implementation_specific,
+                        telemetry_decoder_implementation_specific,
+                        channel_absolute_id,
+                        queue));
+                    channel_absolute_id++;
+                }
+
+            //**************** GLONASS L2 C/A  CHANNELS **********************
+            LOG(INFO) << "Getting " << Channels_2G_count << " GLONASS L2 C/A channels";
+            acquisition_implementation = configuration->property("Acquisition_2G.implementation", default_implementation);
+            tracking_implementation = configuration->property("Tracking_2G.implementation", default_implementation);
+            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_2G.implementation", default_implementation);
+
+            for (unsigned int i = 0; i < Channels_2G_count; i++)
+                {
+                    //(i.e. Acquisition_2G0.implementation=xxxx)
+                    std::string acquisition_implementation_specific = configuration->property(
+                        "Acquisition_2G" + std::to_string(channel_absolute_id) + ".implementation",
+                        acquisition_implementation);
+                    //(i.e. Tracking_2G0.implementation=xxxx)
+                    std::string tracking_implementation_specific = configuration->property(
+                        "Tracking_2G" + std::to_string(channel_absolute_id) + ".implementation",
+                        tracking_implementation);
+                    std::string telemetry_decoder_implementation_specific = configuration->property(
+                        "TelemetryDecoder_2G" + std::to_string(channel_absolute_id) + ".implementation",
+                        telemetry_decoder_implementation);
+
+                    // Push back the channel to the vector of channels
+                    channels->at(channel_absolute_id) = std::move(GetChannel_2G(configuration,
+                        acquisition_implementation_specific,
+                        tracking_implementation_specific,
+                        telemetry_decoder_implementation_specific,
+                        channel_absolute_id,
+                        queue));
+                    channel_absolute_id++;
+                }
         }
-
-    //**************** GPS L2C (M)  CHANNELS **********************
-    LOG(INFO) << "Getting " << Channels_2S_count << " GPS L2C (M) channels";
-    tracking_implementation = configuration->property("Tracking_2S.implementation", default_implementation);
-    telemetry_decoder_implementation = configuration->property("TelemetryDecoder_2S.implementation", default_implementation);
-    acquisition_implementation = configuration->property("Acquisition_2S.implementation", default_implementation);
-    for (unsigned int i = 0; i < Channels_2S_count; i++)
+    catch (const std::exception &e)
         {
-            //(i.e. Acquisition_1C0.implementation=xxxx)
-            std::string acquisition_implementation_specific = configuration->property(
-                "Acquisition_2S" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                acquisition_implementation);
-            //(i.e. Tracking_1C0.implementation=xxxx)
-            std::string tracking_implementation_specific = configuration->property(
-                "Tracking_2S" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                tracking_implementation);
-            std::string telemetry_decoder_implementation_specific = configuration->property(
-                "TelemetryDecoder_2S" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                telemetry_decoder_implementation);
-
-            // Push back the channel to the vector of channels
-            channels->at(channel_absolute_id) = std::move(GetChannel_2S(configuration,
-                acquisition_implementation_specific,
-                tracking_implementation_specific,
-                telemetry_decoder_implementation_specific,
-                channel_absolute_id,
-                queue));
-            channel_absolute_id++;
-        }
-
-    //**************** GPS L5  CHANNELS **********************
-    LOG(INFO) << "Getting " << Channels_L5_count << " GPS L5 channels";
-    tracking_implementation = configuration->property("Tracking_L5.implementation", default_implementation);
-    telemetry_decoder_implementation = configuration->property("TelemetryDecoder_L5.implementation", default_implementation);
-    acquisition_implementation = configuration->property("Acquisition_L5.implementation", default_implementation);
-    for (unsigned int i = 0; i < Channels_L5_count; i++)
-        {
-            //(i.e. Acquisition_1C0.implementation=xxxx)
-            std::string acquisition_implementation_specific = configuration->property(
-                "Acquisition_L5" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                acquisition_implementation);
-            //(i.e. Tracking_1C0.implementation=xxxx)
-            std::string tracking_implementation_specific = configuration->property(
-                "Tracking_L5" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                tracking_implementation);
-            std::string telemetry_decoder_implementation_specific = configuration->property(
-                "TelemetryDecoder_L5" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                telemetry_decoder_implementation);
-
-            // Push back the channel to the vector of channels
-            channels->at(channel_absolute_id) = std::move(GetChannel_L5(configuration,
-                acquisition_implementation_specific,
-                tracking_implementation_specific,
-                telemetry_decoder_implementation_specific,
-                channel_absolute_id,
-                queue));
-            channel_absolute_id++;
-        }
-
-    //**************** GALILEO E1 B (I/NAV OS) CHANNELS **********************
-    LOG(INFO) << "Getting " << Channels_1B_count << " GALILEO E1 B (I/NAV OS) channels";
-    tracking_implementation = configuration->property("Tracking_1B.implementation", default_implementation);
-    telemetry_decoder_implementation = configuration->property("TelemetryDecoder_1B.implementation", default_implementation);
-    acquisition_implementation = configuration->property("Acquisition_1B.implementation", default_implementation);
-    for (unsigned int i = 0; i < Channels_1B_count; i++)
-        {
-            //(i.e. Acquisition_1C0.implementation=xxxx)
-            std::string acquisition_implementation_specific = configuration->property(
-                "Acquisition_1B" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                acquisition_implementation);
-            //(i.e. Tracking_1C0.implementation=xxxx)
-            std::string tracking_implementation_specific = configuration->property(
-                "Tracking_1B" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                tracking_implementation);
-            std::string telemetry_decoder_implementation_specific = configuration->property(
-                "TelemetryDecoder_1B" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                telemetry_decoder_implementation);
-
-            // Push back the channel to the vector of channels
-            channels->at(channel_absolute_id) = std::move(GetChannel_1B(configuration,
-                acquisition_implementation_specific,
-                tracking_implementation_specific,
-                telemetry_decoder_implementation_specific,
-                channel_absolute_id,
-                queue));
-            channel_absolute_id++;
-        }
-
-    //**************** GALILEO E5a I (F/NAV OS)  CHANNELS **********************
-    LOG(INFO) << "Getting " << Channels_5X_count << " GALILEO E5a I (F/NAV OS) channels";
-    tracking_implementation = configuration->property("Tracking_5X.implementation", default_implementation);
-    telemetry_decoder_implementation = configuration->property("TelemetryDecoder_5X.implementation", default_implementation);
-    acquisition_implementation = configuration->property("Acquisition_5X.implementation", default_implementation);
-    for (unsigned int i = 0; i < Channels_5X_count; i++)
-        {
-            //(i.e. Acquisition_1C0.implementation=xxxx)
-            std::string acquisition_implementation_specific = configuration->property(
-                "Acquisition_5X" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                acquisition_implementation);
-            //(i.e. Tracking_1C0.implementation=xxxx)
-            std::string tracking_implementation_specific = configuration->property(
-                "Tracking_5X" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                tracking_implementation);
-            std::string telemetry_decoder_implementation_specific = configuration->property(
-                "TelemetryDecoder_5X" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                telemetry_decoder_implementation);
-
-            // Push back the channel to the vector of channels
-            channels->at(channel_absolute_id) = std::move(GetChannel_5X(configuration,
-                acquisition_implementation_specific,
-                tracking_implementation_specific,
-                telemetry_decoder_implementation_specific,
-                channel_absolute_id,
-                queue));
-            channel_absolute_id++;
-        }
-
-    //**************** GLONASS L1 C/A  CHANNELS **********************
-    LOG(INFO) << "Getting " << Channels_1G_count << " GLONASS L1 C/A channels";
-    acquisition_implementation = configuration->property("Acquisition_1G.implementation", default_implementation);
-    tracking_implementation = configuration->property("Tracking_1G.implementation", default_implementation);
-    telemetry_decoder_implementation = configuration->property("TelemetryDecoder_1G.implementation", default_implementation);
-
-    for (unsigned int i = 0; i < Channels_1G_count; i++)
-        {
-            //(i.e. Acquisition_1G0.implementation=xxxx)
-            std::string acquisition_implementation_specific = configuration->property(
-                "Acquisition_1G" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                acquisition_implementation);
-            //(i.e. Tracking_1G0.implementation=xxxx)
-            std::string tracking_implementation_specific = configuration->property(
-                "Tracking_1G" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                tracking_implementation);
-            std::string telemetry_decoder_implementation_specific = configuration->property(
-                "TelemetryDecoder_1G" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                telemetry_decoder_implementation);
-
-            // Push back the channel to the vector of channels
-            channels->at(channel_absolute_id) = std::move(GetChannel_1G(configuration,
-                acquisition_implementation_specific,
-                tracking_implementation_specific,
-                telemetry_decoder_implementation_specific,
-                channel_absolute_id,
-                queue));
-            channel_absolute_id++;
-        }
-
-    //**************** GLONASS L2 C/A  CHANNELS **********************
-    LOG(INFO) << "Getting " << Channels_2G_count << " GLONASS L2 C/A channels";
-    acquisition_implementation = configuration->property("Acquisition_2G.implementation", default_implementation);
-    tracking_implementation = configuration->property("Tracking_2G.implementation", default_implementation);
-    telemetry_decoder_implementation = configuration->property("TelemetryDecoder_2G.implementation", default_implementation);
-
-    for (unsigned int i = 0; i < Channels_2G_count; i++)
-        {
-            //(i.e. Acquisition_2G0.implementation=xxxx)
-            std::string acquisition_implementation_specific = configuration->property(
-                "Acquisition_2G" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                acquisition_implementation);
-            //(i.e. Tracking_2G0.implementation=xxxx)
-            std::string tracking_implementation_specific = configuration->property(
-                "Tracking_2G" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                tracking_implementation);
-            std::string telemetry_decoder_implementation_specific = configuration->property(
-                "TelemetryDecoder_2G" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
-                telemetry_decoder_implementation);
-
-            // Push back the channel to the vector of channels
-            channels->at(channel_absolute_id) = std::move(GetChannel_2G(configuration,
-                acquisition_implementation_specific,
-                tracking_implementation_specific,
-                telemetry_decoder_implementation_specific,
-                channel_absolute_id,
-                queue));
-            channel_absolute_id++;
+            LOG(WARNING) << e.what();
         }
 
     return channels;
@@ -1183,6 +1201,15 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Fmcomms2_Signal_Source") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new Fmcomms2SignalSource(configuration.get(), role, in_streams,
+                out_streams, queue));
+            block = std::move(block_);
+        }
+#endif
+
+#if AD9361_DRIVER
+    else if (implementation.compare("Ad9361_Fpga_Signal_Source") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new Ad9361FpgaSignalSource(configuration.get(), role, in_streams,
                 out_streams, queue));
             block = std::move(block_);
         }
@@ -1418,9 +1445,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
 #if ENABLE_FPGA
-    else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga") == 0)
+    else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllCAidTrackingFpga(configuration.get(), role, in_streams,
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllTrackingFpga(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
@@ -1437,9 +1464,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
-    else if (implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0)
+    else if ((implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0) or (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0))
         {
-            std::unique_ptr<GNSSBlockInterface> block_(new GpsL5iDllPllTracking(configuration.get(), role, in_streams,
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL5DllPllTracking(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
@@ -1729,9 +1756,9 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
             block = std::move(block_);
         }
 #if ENABLE_FPGA
-    else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga") == 0)
+    else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllCAidTrackingFpga(configuration.get(), role, in_streams,
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllTrackingFpga(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
@@ -1766,9 +1793,9 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams));
             block = std::move(block_);
         }
-    else if (implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0)
+    else if ((implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0) or (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0))
         {
-            std::unique_ptr<TrackingInterface> block_(new GpsL5iDllPllTracking(configuration.get(), role, in_streams,
+            std::unique_ptr<TrackingInterface> block_(new GpsL5DllPllTracking(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }

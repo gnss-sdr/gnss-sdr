@@ -59,8 +59,6 @@ sbas_l1_telemetry_decoder_cc::sbas_l1_telemetry_decoder_cc(
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    // Telemetry Bit transition synchronization port out
-    this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
@@ -89,88 +87,6 @@ sbas_l1_telemetry_decoder_cc::~sbas_l1_telemetry_decoder_cc()
 }
 
 
-int sbas_l1_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-    gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
-{
-    VLOG(FLOW) << "general_work(): "
-               << "noutput_items=" << noutput_items << "\toutput_items real size=" << output_items.size() << "\tninput_items size=" << ninput_items.size() << "\tinput_items real size=" << input_items.size() << "\tninput_items[0]=" << ninput_items[0];
-    // get pointers on in- and output gnss-synchro objects
-    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);            // Get the output buffer pointer
-    const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
-
-    Gnss_Synchro current_symbol;  //structure to save the synchronization information and send the output object to the next block
-    //1. Copy the current tracking output
-    current_symbol = in[0];
-    // copy correlation samples into samples vector
-    d_sample_buf.push_back(current_symbol.Prompt_I);  //add new symbol to the symbol queue
-
-    // store the time stamp of the first sample in the processed sample block
-    double sample_stamp = static_cast<double>(in[0].Tracking_sample_counter) / static_cast<double>(in[0].fs);
-
-    // decode only if enough samples in buffer
-    if (d_sample_buf.size() >= d_block_size)
-        {
-            // align correlation samples in pairs
-            // and obtain the symbols by summing the paired correlation samples
-            std::vector<double> symbols;
-            bool sample_alignment = d_sample_aligner.get_symbols(d_sample_buf, symbols);
-
-            // align symbols in pairs
-            // and obtain the bits by decoding the symbol pairs
-            std::vector<int> bits;
-            bool symbol_alignment = d_symbol_aligner_and_decoder.get_bits(symbols, bits);
-
-            // search for preambles
-            // and extract the corresponding message candidates
-            std::vector<msg_candiate_int_t> msg_candidates;
-            d_frame_detector.get_frame_candidates(bits, msg_candidates);
-
-            // verify checksum
-            // and return the valid messages
-            std::vector<msg_candiate_char_t> valid_msgs;
-            d_crc_verifier.get_valid_frames(msg_candidates, valid_msgs);
-
-            // compute message sample stamp
-            // and fill messages in SBAS raw message objects
-            //std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
-            for (std::vector<msg_candiate_char_t>::const_iterator it = valid_msgs.cbegin();
-                 it != valid_msgs.cend(); ++it)
-                {
-                    int message_sample_offset =
-                        (sample_alignment ? 0 : -1) + d_samples_per_symbol * (symbol_alignment ? -1 : 0) + d_samples_per_symbol * d_symbols_per_bit * it->first;
-                    double message_sample_stamp = sample_stamp + static_cast<double>(message_sample_offset) / 1000.0;
-                    VLOG(EVENT) << "message_sample_stamp=" << message_sample_stamp
-                                << " (sample_stamp=" << sample_stamp
-                                << " sample_alignment=" << sample_alignment
-                                << " symbol_alignment=" << symbol_alignment
-                                << " relative_preamble_start=" << it->first
-                                << " message_sample_offset=" << message_sample_offset
-                                << ")";
-                    //Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);
-                    //sbas_raw_msgs.push_back(sbas_raw_msg);
-                }
-
-            // parse messages
-            // and send them to the SBAS raw message queue
-            //for(std::vector<Sbas_Raw_Msg>::iterator it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); it++)
-            //    {
-            //std::cout << "SBAS message type " << it->get_msg_type() << " from PRN" << it->get_prn() << " received" << std::endl;
-            //sbas_telemetry_data.update(*it);
-            //    }
-
-            // clear all processed samples in the input buffer
-            d_sample_buf.clear();
-        }
-
-    // UPDATE GNSS SYNCHRO DATA
-    // actually the SBAS telemetry decoder doesn't support ranging
-    current_symbol.Flag_valid_word = false;  // indicate to observable block that this synchro object isn't valid for pseudorange computation
-    out[0] = current_symbol;
-    consume_each(1);  // tell scheduler input items consumed
-    return 1;         // tell scheduler output items produced
-}
-
-
 void sbas_l1_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -186,7 +102,6 @@ void sbas_l1_telemetry_decoder_cc::set_channel(int channel)
 
 
 // ### helper class for sample alignment ###
-
 sbas_l1_telemetry_decoder_cc::sample_aligner::sample_aligner()
 {
     d_n_smpls_in_history = 3;
@@ -405,11 +320,10 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
 
 
 // ### helper class for checking the CRC of the message candidates ###
-
-
 void sbas_l1_telemetry_decoder_cc::crc_verifier::reset()
 {
 }
+
 
 void sbas_l1_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs)
 {
@@ -501,4 +415,86 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_b
     VLOG(LMORE) << " -> byte=" << std::setw(2)
                 << std::setfill('0') << std::hex << static_cast<unsigned int>(byte)
                 << std::setfill(' ') << std::resetiosflags(std::ios::hex);
+}
+
+
+int sbas_l1_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+    gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+{
+    VLOG(FLOW) << "general_work(): "
+               << "noutput_items=" << noutput_items << "\toutput_items real size=" << output_items.size() << "\tninput_items size=" << ninput_items.size() << "\tinput_items real size=" << input_items.size() << "\tninput_items[0]=" << ninput_items[0];
+    // get pointers on in- and output gnss-synchro objects
+    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);            // Get the output buffer pointer
+    const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
+
+    Gnss_Synchro current_symbol;  //structure to save the synchronization information and send the output object to the next block
+    //1. Copy the current tracking output
+    current_symbol = in[0];
+    // copy correlation samples into samples vector
+    d_sample_buf.push_back(current_symbol.Prompt_I);  //add new symbol to the symbol queue
+
+    // store the time stamp of the first sample in the processed sample block
+    double sample_stamp = static_cast<double>(in[0].Tracking_sample_counter) / static_cast<double>(in[0].fs);
+
+    // decode only if enough samples in buffer
+    if (d_sample_buf.size() >= d_block_size)
+        {
+            // align correlation samples in pairs
+            // and obtain the symbols by summing the paired correlation samples
+            std::vector<double> symbols;
+            bool sample_alignment = d_sample_aligner.get_symbols(d_sample_buf, symbols);
+
+            // align symbols in pairs
+            // and obtain the bits by decoding the symbol pairs
+            std::vector<int> bits;
+            bool symbol_alignment = d_symbol_aligner_and_decoder.get_bits(symbols, bits);
+
+            // search for preambles
+            // and extract the corresponding message candidates
+            std::vector<msg_candiate_int_t> msg_candidates;
+            d_frame_detector.get_frame_candidates(bits, msg_candidates);
+
+            // verify checksum
+            // and return the valid messages
+            std::vector<msg_candiate_char_t> valid_msgs;
+            d_crc_verifier.get_valid_frames(msg_candidates, valid_msgs);
+
+            // compute message sample stamp
+            // and fill messages in SBAS raw message objects
+            //std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
+            for (std::vector<msg_candiate_char_t>::const_iterator it = valid_msgs.cbegin();
+                 it != valid_msgs.cend(); ++it)
+                {
+                    int message_sample_offset =
+                        (sample_alignment ? 0 : -1) + d_samples_per_symbol * (symbol_alignment ? -1 : 0) + d_samples_per_symbol * d_symbols_per_bit * it->first;
+                    double message_sample_stamp = sample_stamp + static_cast<double>(message_sample_offset) / 1000.0;
+                    VLOG(EVENT) << "message_sample_stamp=" << message_sample_stamp
+                                << " (sample_stamp=" << sample_stamp
+                                << " sample_alignment=" << sample_alignment
+                                << " symbol_alignment=" << symbol_alignment
+                                << " relative_preamble_start=" << it->first
+                                << " message_sample_offset=" << message_sample_offset
+                                << ")";
+                    //Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);
+                    //sbas_raw_msgs.push_back(sbas_raw_msg);
+                }
+
+            // parse messages
+            // and send them to the SBAS raw message queue
+            //for(std::vector<Sbas_Raw_Msg>::iterator it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); it++)
+            //    {
+            //std::cout << "SBAS message type " << it->get_msg_type() << " from PRN" << it->get_prn() << " received" << std::endl;
+            //sbas_telemetry_data.update(*it);
+            //    }
+
+            // clear all processed samples in the input buffer
+            d_sample_buf.clear();
+        }
+
+    // UPDATE GNSS SYNCHRO DATA
+    // actually the SBAS telemetry decoder doesn't support ranging
+    current_symbol.Flag_valid_word = false;  // indicate to observable block that this synchro object isn't valid for pseudorange computation
+    out[0] = current_symbol;
+    consume_each(1);  // tell scheduler input items consumed
+    return 1;         // tell scheduler output items produced
 }

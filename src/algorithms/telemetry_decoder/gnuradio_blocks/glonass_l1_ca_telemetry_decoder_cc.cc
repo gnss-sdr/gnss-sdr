@@ -54,8 +54,6 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     bool dump) : gr::block("glonass_l1_ca_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    // Telemetry Bit transition synchronization port out
-    this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
@@ -183,11 +181,11 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols, in
     // 3. Check operation executed correctly
     if (d_nav.flag_CRC_test == true)
         {
-            LOG(INFO) << "GLONASS GNAV CRC correct on channel " << d_channel << " from satellite " << d_satellite;
+            LOG(INFO) << "GLONASS GNAV CRC correct in channel " << d_channel << " from satellite " << d_satellite;
         }
     else
         {
-            LOG(INFO) << "GLONASS GNAV CRC error on channel " << d_channel << " from satellite " << d_satellite;
+            LOG(INFO) << "GLONASS GNAV CRC error in channel " << d_channel << " from satellite " << d_satellite;
         }
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
@@ -196,29 +194,67 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols, in
             d_nav.gnav_ephemeris.i_satellite_freq_channel = d_satellite.get_rf_link();
             std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "GLONASS GNAV Ephemeris have been received on channel" << d_channel << " from satellite " << d_satellite;
+            LOG(INFO) << "GLONASS GNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
+            std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << std::endl;
         }
     if (d_nav.have_new_utc_model() == true)
         {
             // get object for this SV (mandatory)
             std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "GLONASS GNAV UTC Model have been received on channel" << d_channel << " from satellite " << d_satellite;
+            LOG(INFO) << "GLONASS GNAV UTC Model have been received in channel" << d_channel << " from satellite " << d_satellite;
+            std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << std::endl;
         }
     if (d_nav.have_new_almanac() == true)
         {
             unsigned int slot_nbr = d_nav.i_alm_satellite_slot_number;
             std::shared_ptr<Glonass_Gnav_Almanac> tmp_obj = std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "GLONASS GNAV Almanac have been received on channel" << d_channel << " in slot number " << slot_nbr;
+            LOG(INFO) << "GLONASS GNAV Almanac have been received in channel" << d_channel << " in slot number " << slot_nbr;
+            std::cout << "New GLONASS L1 GNAV almanac received in channel " << d_channel << " from satellite " << d_satellite << std::endl;
         }
     // 5. Update satellite information on system
     if (d_nav.flag_update_slot_number == true)
         {
-            LOG(INFO) << "GLONASS GNAV Slot Number Identified on channel " << d_channel;
+            LOG(INFO) << "GLONASS GNAV Slot Number Identified in channel " << d_channel;
             d_satellite.update_PRN(d_nav.gnav_ephemeris.d_n);
             d_satellite.what_block(d_satellite.get_system(), d_nav.gnav_ephemeris.d_n);
             d_nav.flag_update_slot_number = false;
+        }
+}
+
+
+void glonass_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+{
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
+    DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
+}
+
+
+void glonass_l1_ca_telemetry_decoder_cc::set_channel(int channel)
+{
+    d_channel = channel;
+    LOG(INFO) << "Navigation channel set to " << channel;
+    // ############# ENABLE DATA FILE LOG #################
+    if (d_dump == true)
+        {
+            if (d_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_dump_filename = "telemetry";
+                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(".dat");
+                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "channel " << d_channel << ": exception opening Glonass TLM dump file. " << e.what();
+                        }
+                }
         }
 }
 
@@ -285,9 +321,6 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                             LOG(INFO) << "Starting string decoder for GLONASS L1 C/A SAT " << this->d_satellite;
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp
                             d_stat = 2;
-                            // send asynchronous message to tracking to inform of frame sync and extend correlation time
-                            pmt::pmt_t value = pmt::from_double(static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) - 0.001);
-                            this->message_port_pub(pmt::mp("preamble_timestamp_s"), value);
                         }
                     else
                         {
@@ -412,39 +445,4 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
     *out[0] = current_symbol;
 
     return 1;
-}
-
-
-void glonass_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
-{
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
-    DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
-}
-
-
-void glonass_l1_ca_telemetry_decoder_cc::set_channel(int channel)
-{
-    d_channel = channel;
-    LOG(INFO) << "Navigation channel set to " << channel;
-    // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
-        {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                        {
-                            d_dump_filename = "telemetry";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
-                            d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            LOG(WARNING) << "channel " << d_channel << ": exception opening Glonass TLM dump file. " << e.what();
-                        }
-                }
-        }
 }

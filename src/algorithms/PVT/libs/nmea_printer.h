@@ -36,7 +36,7 @@
 #ifndef GNSS_SDR_NMEA_PRINTER_H_
 #define GNSS_SDR_NMEA_PRINTER_H_
 
-#include "pvt_solution.h"
+#include "rtklib_solver.h"
 #include <fstream>
 #include <string>
 
@@ -58,7 +58,7 @@ public:
     /*!
      * \brief Print NMEA PVT and satellite info to the initialized device
      */
-    bool Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);
+    bool Print_Nmea_Line(const std::shared_ptr<rtklib_solver>& position, bool print_average_values);
 
     /*!
      * \brief Default destructor.
@@ -70,7 +70,7 @@ private:
     std::ofstream nmea_file_descriptor;  // Output file stream for NMEA log file
     std::string nmea_devname;
     int nmea_dev_descriptor;  // NMEA serial device descriptor (i.e. COM port)
-    std::shared_ptr<Pvt_Solution> d_PVT_data;
+    std::shared_ptr<rtklib_solver> d_PVT_data;
     int init_serial(std::string serial_device);  //serial port control
     void close_serial();
     std::string get_GPGGA();  // fix data

@@ -1,12 +1,12 @@
 /*!
  * \file gnss_flowgraph.h
- * \brief Interface of a GNSS receiver flowgraph.
+ * \brief Interface of a GNSS receiver flow graph.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
  *
  * It contains a signal source,
- * a signal conditioner, a set of channels, a pvt and an output filter.
+ * a signal conditioner, a set of channels, an observables block and a pvt.
  *
  * -------------------------------------------------------------------------
  *
@@ -41,19 +41,25 @@
 #include "gnss_sdr_sample_counter.h"
 #include <gnuradio/top_block.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/blocks/null_source.h>
+#include <gnuradio/blocks/throttle.h>
 #include <list>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <string>
 #include <vector>
 
+#if ENABLE_FPGA
+#include "gnss_sdr_time_counter.h"
+#endif
 
 class GNSSBlockInterface;
 class ChannelInterface;
 class ConfigurationInterface;
 class GNSSBlockFactory;
 
-/*! \brief This class represents a GNSS flowgraph.
+/*! \brief This class represents a GNSS flow graph.
  *
  * It contains a signal source,
  * a signal conditioner, a set of channels, a PVT and an output filter.
@@ -62,35 +68,39 @@ class GNSSFlowgraph
 {
 public:
     /*!
-     * \brief Constructor that initializes the receiver flowgraph
+     * \brief Constructor that initializes the receiver flow graph
      */
     GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue);
 
     /*!
-     * \brief Virtual destructor
+     * \brief Destructor
      */
-    virtual ~GNSSFlowgraph();
+    ~GNSSFlowgraph();
 
-    //! \brief Start the flowgraph
+    //! \brief Start the flow graph
     void start();
 
-    //! \brief Stop the flowgraph
+    //! \brief Stop the flow graph
     void stop();
 
     /*!
-     * \brief Connects the defined blocks in the flowgraph
+     * \brief Connects the defined blocks in the flow graph
      *
      * Signal Source > Signal conditioner > Channels >> Observables >> PVT > Output filter
      */
     void connect();
 
+    void disconnect();
+
     void wait();
 
+    void start_acquisition_helper();
+
     /*!
-     * \brief Applies an action to the flowgraph
+     * \brief Applies an action to the flow graph
      *
      * \param[in] who   Who generated the action
-     * \param[in] what  What is the action 0: acquisition failed
+     * \param[in] what  What is the action. 0: acquisition failed; 1: acquisition success; 2: tracking lost
      */
     void apply_action(unsigned int who, unsigned int what);
 
@@ -100,14 +110,17 @@ public:
     {
         return applied_actions_;
     }
+
     bool connected()
     {
         return connected_;
     }
+
     bool running()
     {
         return running_;
     }
+
     /*!
      * \brief Sends a GNURadio asynchronous message from telemetry to PVT
      *
@@ -140,10 +153,16 @@ private:
 
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gnss_sdr_sample_counter_sptr ch_out_sample_counter;
+#if ENABLE_FPGA
+    gnss_sdr_time_counter_sptr time_counter_;
+#endif
+    gr::blocks::null_source::sptr null_source_;
+    gr::blocks::throttle::sptr throttle_;
     gr::top_block_sptr top_block_;
     gr::msg_queue::sptr queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;
     std::vector<unsigned int> channels_state_;
+    std::mutex signal_list_mutex;
 };
 
 #endif /*GNSS_SDR_GNSS_FLOWGRAPH_H_*/

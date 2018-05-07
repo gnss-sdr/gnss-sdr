@@ -33,6 +33,7 @@
 
 #include <chrono>
 #include <fcntl.h>
+#include <iostream>
 #include <unistd.h>
 #include <armadillo>
 #include <boost/thread.hpp>  // to test the FPGA we have to create a simultaneous task to send the samples using the DMA and stop the test
@@ -53,7 +54,8 @@
 #include "tracking_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_dll_pll_c_aid_tracking_fpga.h"
+//#include "gps_l1_ca_dll_pll_c_aid_tracking_fpga.h"
+#include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #include "tracking_true_obs_reader.h"
 #include "tracking_dump_reader.h"
 #include "signal_generator_flags.h"
@@ -308,8 +310,10 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
     config->set_property("GNSS-SDR.internal_fs_sps",
         std::to_string(baseband_sampling_freq));
     // Set Tracking
+    //config->set_property("Tracking_1C.implementation",
+    //        "GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga");
     config->set_property("Tracking_1C.implementation",
-        "GPS_L1_CA_DLL_PLL_C_Aid_Tracking_Fpga");
+        "GPS_L1_CA_DLL_PLL_Tracking_Fpga");
     config->set_property("Tracking_1C.item_type", "cshort");
     config->set_property("Tracking_1C.if", "0");
     config->set_property("Tracking_1C.dump", "true");
@@ -466,7 +470,8 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         << "Failure opening true observables file";
 
     top_block = gr::make_top_block("Tracking test");
-    std::shared_ptr<GpsL1CaDllPllCAidTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllCAidTrackingFpga>(config.get(), "Tracking_1C", 1, 1);
+    //std::shared_ptr<GpsL1CaDllPllCAidTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllCAidTrackingFpga> (config.get(), "Tracking_1C", 1, 1);
+    std::shared_ptr<GpsL1CaDllPllTrackingFpga> tracking = std::make_shared<GpsL1CaDllPllTrackingFpga>(config.get(), "Tracking_1C", 1, 1);
 
     boost::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx> msg_rx = GpsL1CADllPllTrackingTestFpga_msg_rx_make();
 

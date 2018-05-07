@@ -29,21 +29,20 @@
  */
 
 #include "gps_l1_ca_dll_pll_tracking_gpu_cc.h"
-#include <cmath>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
 #include "gps_sdr_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
 #include "gnss_sdr_flags.h"
-// includes
+#include <boost/lexical_cast.hpp>
 #include <cuda_profiler_api.h>
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
+#include <cmath>
+#include <iostream>
+#include <memory>
+#include <sstream>
 
 
 using google::LogMessage;
@@ -245,7 +244,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
 
     // DEBUG OUTPUT
     std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+    LOG(INFO) << "Tracking of GPS L1 C/A signal for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
     d_pull_in = true;
@@ -284,6 +283,38 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc()
         {
             LOG(WARNING) << "Exception in destructor " << ex.what();
         }
+}
+
+
+void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::set_channel(unsigned int channel)
+{
+    d_channel = channel;
+    LOG(INFO) << "Tracking Channel set to " << d_channel;
+    // ############# ENABLE DATA FILE LOG #################
+    if (d_dump == true)
+        {
+            if (d_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(".dat");
+                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
+                        }
+                    catch (const std::ifstream::failure *e)
+                        {
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e->what();
+                        }
+                }
+        }
+}
+
+
+void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
+{
+    d_acquisition_gnss_synchro = p_gnss_synchro;
 }
 
 
@@ -413,7 +444,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                 {
                     d_cn0_estimation_counter = 0;
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
                     // Loss of lock detection
@@ -538,36 +569,4 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
         {
             return 0;
         }
-}
-
-
-void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::set_channel(unsigned int channel)
-{
-    d_channel = channel;
-    LOG(INFO) << "Tracking Channel set to " << d_channel;
-    // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
-        {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                        {
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
-                            d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
-                        }
-                    catch (const std::ifstream::failure *e)
-                        {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e->what();
-                        }
-                }
-        }
-}
-
-
-void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
-{
-    d_acquisition_gnss_synchro = p_gnss_synchro;
 }

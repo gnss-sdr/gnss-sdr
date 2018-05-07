@@ -36,22 +36,22 @@
  */
 
 #include "gps_l1_ca_tcp_connector_tracking_cc.h"
-#include <cmath>
-#include <iostream>
-#include <sstream>
+#include "control_message_factory.h"
+#include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include "GPS_L1_CA.h"
+#include "lock_detectors.h"
+#include "tcp_communication.h"
+#include "tcp_packet_data.h"
+#include "tracking_discriminators.h"
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "gps_sdr_signal_processing.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
-#include "GPS_L1_CA.h"
-#include "control_message_factory.h"
-#include "gnss_sdr_flags.h"
-#include "tcp_communication.h"
-#include "tcp_packet_data.h"
+#include <cmath>
+#include <iostream>
+#include <sstream>
 
 
 using google::LogMessage;
@@ -91,8 +91,6 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     size_t port_ch0) : gr::block("Gps_L1_Ca_Tcp_Connector_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                            gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-    // Telemetry bit synchronization message port input
-    this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->message_port_register_out(pmt::mp("events"));
     // initialize internal vars
     d_dump = dump;
@@ -252,7 +250,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
 
     // DEBUG OUTPUT
     std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+    LOG(INFO) << "Tracking of GPS L1 C/A signal for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
     d_pull_in = true;
@@ -290,6 +288,45 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::~Gps_L1_Ca_Tcp_Connector_Tracking_cc()
         {
             LOG(WARNING) << "Exception in destructor " << ex.what();
         }
+}
+
+
+void Gps_L1_Ca_Tcp_Connector_Tracking_cc::set_channel(unsigned int channel)
+{
+    d_channel = channel;
+    LOG(INFO) << "Tracking Channel set to " << d_channel;
+    // ############# ENABLE DATA FILE LOG #################
+    if (d_dump == true)
+        {
+            if (d_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(".dat");
+                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
+                        }
+                }
+        }
+
+    //! Listen for connections on a TCP port
+    if (d_listen_connection == true)
+        {
+            d_port = d_port_ch0 + d_channel;
+            d_listen_connection = d_tcp_com.listen_tcp_connection(d_port, d_port_ch0);
+        }
+}
+
+
+void Gps_L1_Ca_Tcp_Connector_Tracking_cc::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
+{
+    d_acquisition_gnss_synchro = p_gnss_synchro;
 }
 
 
@@ -418,7 +455,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             else
                 {
                     d_cn0_estimation_counter = 0;
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
 
                     // ###### TRACKING UNLOCK NOTIFICATION #####
@@ -552,43 +589,4 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
         {
             return 0;
         }
-}
-
-
-void Gps_L1_Ca_Tcp_Connector_Tracking_cc::set_channel(unsigned int channel)
-{
-    d_channel = channel;
-    LOG(INFO) << "Tracking Channel set to " << d_channel;
-    // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
-        {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                        {
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
-                            d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
-                        }
-                }
-        }
-
-    //! Listen for connections on a TCP port
-    if (d_listen_connection == true)
-        {
-            d_port = d_port_ch0 + d_channel;
-            d_listen_connection = d_tcp_com.listen_tcp_connection(d_port, d_port_ch0);
-        }
-}
-
-
-void Gps_L1_Ca_Tcp_Connector_Tracking_cc::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
-{
-    d_acquisition_gnss_synchro = p_gnss_synchro;
 }

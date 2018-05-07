@@ -6,9 +6,6 @@
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
- * -------------------------------------------------------------------------
- *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -52,9 +49,10 @@ std::string labsat23_source::generate_filename()
 }
 
 
-labsat23_source::labsat23_source(const char *signal_file_basename, int channel_selector) : gr::block("labsat23_source",
-                                                                                               gr::io_signature::make(0, 0, 0),
-                                                                                               gr::io_signature::make(1, 1, sizeof(gr_complex)))
+labsat23_source::labsat23_source(const char *signal_file_basename,
+    int channel_selector) : gr::block("labsat23_source",
+                                gr::io_signature::make(0, 0, 0),
+                                gr::io_signature::make(1, 1, sizeof(gr_complex)))
 {
     if (channel_selector < 1 or channel_selector > 2)
         {

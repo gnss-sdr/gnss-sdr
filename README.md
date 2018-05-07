@@ -185,9 +185,9 @@ or manually as explained below, and then please follow instructions on how to [d
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-8.200.2.tar.xz
-$ tar xvfz armadillo-8.200.2.tar.xz
-$ cd armadillo-8.200.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-8.500.0.tar.xz
+$ tar xvfz armadillo-8.500.0.tar.xz
+$ cd armadillo-8.500.0
 $ cmake .
 $ make
 $ sudo make install

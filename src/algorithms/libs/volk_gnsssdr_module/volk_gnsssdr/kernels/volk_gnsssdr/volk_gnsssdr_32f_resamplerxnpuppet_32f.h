@@ -246,7 +246,7 @@ static inline void volk_gnsssdr_32f_resamplerxnpuppet_32f_u_avx(float* result, c
 }
 #endif
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 static inline void volk_gnsssdr_32f_resamplerxnpuppet_32f_neon(float* result, const float* local_code, unsigned int num_points)
 {
     int code_length_chips = 2046;

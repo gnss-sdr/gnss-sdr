@@ -348,7 +348,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_orc(lv_8sc_t* cVector, const
 #endif /* LV_HAVE_ORC */
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_8ic_conjugate_8ic_neon(lv_8sc_t* cVector, const lv_8sc_t* aVector, unsigned int num_points)
@@ -374,6 +374,6 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_neon(lv_8sc_t* cVector, const 
             *c++ = lv_conj(*a++);
         }
 }
-#endif /* LV_HAVE_NEON */
+#endif /* LV_HAVE_NEONV7 */
 
 #endif /* INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_H */

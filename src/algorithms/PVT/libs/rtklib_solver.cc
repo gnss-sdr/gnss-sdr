@@ -459,14 +459,26 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                 {
                     this->set_num_valid_observations(rtk_.sol.ns);  //record the number of valid satellites used by the PVT solver
                     pvt_sol = rtk_.sol;
-                    // TODO: Reduce the number of satellites in DOP computation
-                    double azel[MAXSAT * 2] = {0.0};
+                    // DOP computation
+                    unsigned int used_sats = 0;
                     for (unsigned int i = 0; i < MAXSAT; i++)
                         {
-                            azel[2 * i] = rtk_.ssat[i].azel[0];
-                            azel[2 * i + 1] = rtk_.ssat[i].azel[1];
+                            if (int vsat = rtk_.ssat[i].vsat[0] == 1) used_sats++;
                         }
-                    dops(MAXSAT, azel, 0.0, dop_);
+
+                    double azel[used_sats * 2];
+                    unsigned int index_aux = 0;
+                    for (unsigned int i = 0; i < MAXSAT; i++)
+                        {
+                            if (int vsat = rtk_.ssat[i].vsat[0] == 1)
+                                {
+                                    azel[2 * index_aux] = rtk_.ssat[i].azel[0];
+                                    azel[2 * index_aux + 1] = rtk_.ssat[i].azel[1];
+                                    index_aux++;
+                                }
+                        }
+                    if (index_aux > 0) dops(index_aux, azel, 0.0, dop_);
+
                     this->set_valid_position(true);
                     arma::vec rx_position_and_time(4);
                     rx_position_and_time(0) = pvt_sol.rr[0];

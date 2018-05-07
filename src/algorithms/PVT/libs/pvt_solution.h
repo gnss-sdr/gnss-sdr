@@ -70,13 +70,6 @@ private:
     boost::posix_time::ptime d_position_UTC_time;
     int d_valid_observations;
 
-    arma::mat d_Q;
-    double d_GDOP;
-    double d_PDOP;
-    double d_HDOP;
-    double d_VDOP;
-    double d_TDOP;
-
     int d_visible_satellites_IDs[PVT_MAX_CHANNELS] = {};          // Array with the IDs of the valid satellites
     double d_visible_satellites_El[PVT_MAX_CHANNELS] = {};        // Array with the LOS Elevation of the valid satellites
     double d_visible_satellites_Az[PVT_MAX_CHANNELS] = {};        // Array with the LOS Azimuth of the valid satellites
@@ -129,16 +122,6 @@ public:
     void set_averaging_depth(int depth);  //!< Set length of averaging window
     bool is_averaging() const;
     void set_averaging_flag(bool flag);
-
-    // DOP estimations
-    void set_Q(const arma::mat &Q);
-    int compute_DOP();  //!< Compute Dilution Of Precision parameters
-
-    double get_GDOP() const;
-    double get_PDOP() const;
-    double get_HDOP() const;
-    double get_VDOP() const;
-    double get_TDOP() const;
 
     arma::vec rotateSatellite(double traveltime, const arma::vec &X_sat);
 

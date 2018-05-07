@@ -34,6 +34,7 @@
 #define GNSS_SDR_GPX_PRINTER_H_
 
 #include "pvt_solution.h"
+#include "rtklib_solver.h"
 #include <fstream>
 #include <memory>
 #include <string>
@@ -50,12 +51,13 @@ private:
     std::ofstream gpx_file;
     bool positions_printed;
     std::string gpx_filename;
+    std::string indent;
 
 public:
     Gpx_Printer();
     ~Gpx_Printer();
     bool set_headers(std::string filename, bool time_tag_name = true);
-    bool print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);
+    bool print_position(const std::shared_ptr<rtklib_solver>& position, bool print_average_values);
     bool close_file();
 };
 

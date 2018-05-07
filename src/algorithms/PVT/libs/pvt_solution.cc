@@ -46,11 +46,6 @@ Pvt_Solution::Pvt_Solution()
     d_avg_latitude_d = 0.0;
     d_avg_longitude_d = 0.0;
     d_avg_height_m = 0.0;
-    d_GDOP = 0.0;
-    d_PDOP = 0.0;
-    d_HDOP = 0.0;
-    d_VDOP = 0.0;
-    d_TDOP = 0.0;
     d_flag_averaging = false;
     b_valid_position = false;
     d_averaging_depth = 0;
@@ -445,50 +440,6 @@ int Pvt_Solution::topocent(double *Az, double *El, double *D, const arma::vec &x
 }
 
 
-int Pvt_Solution::compute_DOP()
-{
-    // ###### Compute DOPs ########
-
-    // 1- Rotation matrix from ECEF coordinates to ENU coordinates
-    // ref: http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
-    arma::mat F = arma::zeros(3, 3);
-    F(0, 0) = -sin(GPS_TWO_PI * (d_longitude_d / 360.0));
-    F(0, 1) = -sin(GPS_TWO_PI * (d_latitude_d / 360.0)) * cos(GPS_TWO_PI * (d_longitude_d / 360.0));
-    F(0, 2) = cos(GPS_TWO_PI * (d_latitude_d / 360.0)) * cos(GPS_TWO_PI * (d_longitude_d / 360.0));
-
-    F(1, 0) = cos((GPS_TWO_PI * d_longitude_d) / 360.0);
-    F(1, 1) = -sin((GPS_TWO_PI * d_latitude_d) / 360.0) * sin((GPS_TWO_PI * d_longitude_d) / 360.0);
-    F(1, 2) = cos((GPS_TWO_PI * d_latitude_d / 360.0)) * sin((GPS_TWO_PI * d_longitude_d) / 360.0);
-
-    F(2, 0) = 0;
-    F(2, 1) = cos((GPS_TWO_PI * d_latitude_d) / 360.0);
-    F(2, 2) = sin((GPS_TWO_PI * d_latitude_d / 360.0));
-
-    // 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
-    arma::mat Q_ECEF = d_Q.submat(0, 0, 2, 2);
-    arma::mat DOP_ENU = arma::zeros(3, 3);
-
-    try
-        {
-            DOP_ENU = arma::htrans(F) * Q_ECEF * F;
-            d_GDOP = sqrt(arma::trace(DOP_ENU));                           // Geometric DOP
-            d_PDOP = sqrt(DOP_ENU(0, 0) + DOP_ENU(1, 1) + DOP_ENU(2, 2));  // PDOP
-            d_HDOP = sqrt(DOP_ENU(0, 0) + DOP_ENU(1, 1));                  // HDOP
-            d_VDOP = sqrt(DOP_ENU(2, 2));                                  // VDOP
-            d_TDOP = sqrt(d_Q(3, 3));                                      // TDOP
-        }
-    catch (const std::exception &ex)
-        {
-            d_GDOP = -1;  // Geometric DOP
-            d_PDOP = -1;  // PDOP
-            d_HDOP = -1;  // HDOP
-            d_VDOP = -1;  // VDOP
-            d_TDOP = -1;  // TDOP
-        }
-    return 0;
-}
-
-
 void Pvt_Solution::set_averaging_depth(int depth)
 {
     d_averaging_depth = depth;
@@ -823,40 +774,4 @@ double Pvt_Solution::get_visible_satellites_CN0_dB(size_t index) const
         {
             return d_visible_satellites_CN0_dB[index];
         }
-}
-
-
-void Pvt_Solution::set_Q(const arma::mat &Q)
-{
-    d_Q = Q;
-}
-
-
-double Pvt_Solution::get_GDOP() const
-{
-    return d_GDOP;
-}
-
-
-double Pvt_Solution::get_PDOP() const
-{
-    return d_PDOP;
-}
-
-
-double Pvt_Solution::get_HDOP() const
-{
-    return d_HDOP;
-}
-
-
-double Pvt_Solution::get_VDOP() const
-{
-    return d_VDOP;
-}
-
-
-double Pvt_Solution::get_TDOP() const
-{
-    return d_TDOP;
 }

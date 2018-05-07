@@ -98,7 +98,9 @@ bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
                      << "xmlns=\"http://www.topografix.com/GPX/1/1\"" << std::endl
                      << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" << std::endl
                      << "<trk>" << std::endl
-                     << "<trkseg>" << std::endl;
+                     << indent << "<name>Position fixes computed by GNSS-SDR v" << GNSS_SDR_VERSION << "</name>" << std::endl
+                     << indent << "<desc>GNSS-SDR position log generated at " << pt << " (local time)</desc>" << std::endl
+                     << indent << "<trkseg>" << std::endl;
             return true;
         }
     else
@@ -108,15 +110,21 @@ bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
 }
 
 
-bool Gpx_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values)
+bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position, bool print_average_values)
 {
     double latitude;
     double longitude;
     double height;
 
     positions_printed = true;
+    std::shared_ptr<rtklib_solver> position_ = position;
 
-    std::shared_ptr<Pvt_Solution> position_ = position;
+    double hdop = position_->get_hdop();
+    double vdop = position_->get_vdop();
+    double pdop = position_->get_pdop();
+    std::string utc_time = to_iso_extended_string(position_->get_position_UTC_time());
+    utc_time.resize(23);   // time up to ms
+    utc_time.append("Z");  // UTC time zone
 
     if (print_average_values == false)
         {
@@ -133,7 +141,9 @@ bool Gpx_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, 
 
     if (gpx_file.is_open())
         {
-            gpx_file << "<trkpt lon=\"" << longitude << "\" lat=\"" << latitude << "\"><ele>" << height << "</ele></trkpt>" << std::endl;
+            gpx_file << indent << indent << "<trkpt lon=\"" << longitude << "\" lat=\"" << latitude << "\"><ele>" << height << "</ele>"
+                     << "<time>" << utc_time << "</time>"
+                     << "<hdop>" << hdop << "</hdop><vdop>" << vdop << "</vdop><pdop>" << pdop << "</pdop></trkpt>" << std::endl;
             return true;
         }
     else
@@ -147,7 +157,7 @@ bool Gpx_Printer::close_file()
 {
     if (gpx_file.is_open())
         {
-            gpx_file << "</trkseg>" << std::endl
+            gpx_file << indent << "</trkseg>" << std::endl
                      << "</trk>" << std::endl
                      << "</gpx>";
             gpx_file.close();
@@ -163,6 +173,7 @@ bool Gpx_Printer::close_file()
 Gpx_Printer::Gpx_Printer()
 {
     positions_printed = false;
+    indent = "  ";
 }
 
 

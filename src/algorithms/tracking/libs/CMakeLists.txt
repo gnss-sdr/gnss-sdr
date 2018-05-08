@@ -42,6 +42,7 @@ set(TRACKING_LIB_SOURCES
      tracking_2nd_PLL_filter.cc
      tracking_discriminators.cc
      tracking_FLL_PLL_filter.cc
+     tracking_Kalman_filter.cc
      tracking_loop_filter.cc
 )
 

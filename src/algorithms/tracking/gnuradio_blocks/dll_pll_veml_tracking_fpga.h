@@ -39,15 +39,15 @@
 #ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
+#include "fpga_multicorrelator.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include "fpga_multicorrelator.h"
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
 #include <map>
-#include "fpga_multicorrelator.h"
+
 
 typedef struct
 {
@@ -75,13 +75,13 @@ typedef struct
     std::string device_name;
     unsigned int device_base;
     unsigned int code_length;
-    int* ca_codes;
+    int *ca_codes;
 } dllpllconf_fpga_t;
 
 class dll_pll_veml_tracking_fpga;
 
 typedef boost::shared_ptr<dll_pll_veml_tracking_fpga>
-dll_pll_veml_tracking_fpga_sptr;
+    dll_pll_veml_tracking_fpga_sptr;
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(dllpllconf_fpga_t conf_);
 
@@ -221,7 +221,6 @@ private:
     int d_next_prn_length_samples;
     unsigned long int d_sample_counter_next;
     unsigned int d_pull_in = 0;
-    
 };
 
-#endif //GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
+#endif  //GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

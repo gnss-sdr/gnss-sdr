@@ -34,15 +34,14 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include "gps_l1_ca_pcps_acquisition_fpga.h"
-#include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
+#include "gps_sdr_signal_processing.h"
 #include <gnuradio/fft/fft.h>
 #include <glog/logging.h>
 #include <new>
-
 
 #define NUM_PRNs 32
 
@@ -123,8 +122,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                 }
         }
 
-    //acq_parameters
-
+    // acq_parameters
     acq_parameters.all_fft_codes = d_all_fft_codes_;
 
     // temporary buffers that we can delete
@@ -138,7 +136,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
-
 }
 
 
@@ -212,15 +209,20 @@ void GpsL1CaPcpsAcquisitionFpga::set_state(int state)
     acquisition_fpga_->set_state(state);
 }
 
+
 void GpsL1CaPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
-    // nothing to connect
+    if (top_block)
+        {  // nothing to disconnect
+        }
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 {
-    // nothing to disconnect
+    if (top_block)
+        {  // nothing to disconnect
+        }
 }
 
 

@@ -38,10 +38,10 @@
  * -------------------------------------------------------------------------
  */
 
-
+#include "pcps_acquisition_fpga.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-#include "pcps_acquisition_fpga.h"
+
 
 using google::LogMessage;
 
@@ -52,8 +52,8 @@ pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
 
 
 pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block("pcps_acquisition_fpga",
-                                                           gr::io_signature::make(0, 0, 0),
-                                                           gr::io_signature::make(0, 0, 0))
+                                                                          gr::io_signature::make(0, 0, 0),
+                                                                          gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_out(pmt::mp("events"));
 
@@ -71,10 +71,8 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     d_channel = 0;
     d_gnss_synchro = 0;
 
-    acquisition_fpga = std::make_shared <fpga_acquisition>
-          (acq_parameters.device_name, d_fft_size, acq_parameters.doppler_max, acq_parameters.samples_per_ms,
-                  acq_parameters.fs_in, acq_parameters.freq, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes);
-
+    acquisition_fpga = std::make_shared<fpga_acquisition>(acq_parameters.device_name, d_fft_size, acq_parameters.doppler_max, acq_parameters.samples_per_ms,
+        acq_parameters.fs_in, acq_parameters.freq, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes);
 }
 
 
@@ -196,9 +194,9 @@ void pcps_acquisition_fpga::set_active(bool active)
             int doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
 
             acquisition_fpga->set_phase_step(doppler_index);
-            acquisition_fpga->run_acquisition(); // runs acquisition and waits until it is finished
+            acquisition_fpga->run_acquisition();  // runs acquisition and waits until it is finished
             acquisition_fpga->read_acquisition_results(&indext, &magt,
-                    &initial_sample, &d_input_power);
+                &initial_sample, &d_input_power);
             d_sample_counter = initial_sample;
 
             if (d_mag < magt)
@@ -213,7 +211,7 @@ void pcps_acquisition_fpga::set_active(bool active)
                     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 
-                    d_test_statistics = (d_mag / d_input_power); //* correction_factor;
+                    d_test_statistics = (d_mag / d_input_power);  //* correction_factor;
                 }
 
             // In the case of the FPGA the option of dumping the results of the acquisition to a file is not available

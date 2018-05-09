@@ -39,10 +39,9 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 
-#include <string>
 #include "tracking_interface.h"
 #include "dll_pll_veml_tracking_fpga.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -53,9 +52,9 @@ class GpsL1CaDllPllTrackingFpga : public TrackingInterface
 {
 public:
     GpsL1CaDllPllTrackingFpga(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaDllPllTrackingFpga();
 
@@ -93,11 +92,8 @@ public:
 
     void start_tracking() override;
 
-	//void reset(void);
-	
 private:
-	//gps_l1_ca_dll_pll_tracking_cc_sptr tracking_;
-	dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
+    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
@@ -106,4 +102,4 @@ private:
     int* d_ca_codes;
 };
 
-#endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
+#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_

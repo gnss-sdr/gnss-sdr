@@ -1,8 +1,9 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L1 C/A to a TrackingInterface
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * for GPS L1 C/A to a TrackingInterface that uses the FPGA
+ * \author Marc Majoral, 2018. mmajoral(at)cttc.es
+ *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:

@@ -1,7 +1,8 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking_cc.h
+ * \file gps_l1_ca_dll_pll_tracking_fpga.h
  * \brief Interface of a code DLL + carrier PLL tracking block
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * \author Marc Majoral, 2018. marc.majoral(at)cttc.es
+ *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *         Cillian O'Driscoll, 2017. cillian.odriscoll(at)gmail.com
  *
@@ -38,13 +39,14 @@
 #ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
-#include <fstream>
-#include <map>
-#include <string>
-#include <gnuradio/block.h>
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
+#include "fpga_multicorrelator.h"
+#include <gnuradio/block.h>
+#include <fstream>
+#include <string>
+#include <map>
 #include "fpga_multicorrelator.h"
 
 typedef struct
@@ -63,6 +65,10 @@ typedef struct
     float early_late_space_narrow_chips;
     float very_early_late_space_narrow_chips;
     int extend_correlation_symbols;
+    int cn0_samples;
+    int cn0_min;
+    int max_lock_fail;
+    double carrier_lock_th;
     bool track_pilot;
     char system;
     char signal[3];
@@ -70,7 +76,6 @@ typedef struct
     unsigned int device_base;
     unsigned int code_length;
     int* ca_codes;
-    //int f_if;
 } dllpllconf_fpga_t;
 
 class dll_pll_veml_tracking_fpga;
@@ -78,88 +83,96 @@ class dll_pll_veml_tracking_fpga;
 typedef boost::shared_ptr<dll_pll_veml_tracking_fpga>
 dll_pll_veml_tracking_fpga_sptr;
 
-//dll_pll_veml_tracking_fpga_sptr
-//dll_pll_veml_make_tracking_fpga(long if_freq,
-//                                   long fs_in, unsigned
-//                                   int vector_length,
-//                                   bool dump,
-//                                   std::string dump_filename,
-//                                   float pll_bw_hz,
-//                                   float dll_bw_hz,
-//                                   float early_late_space_chips,
-//                                   std::string device_name,
-//                                   unsigned int device_base,
-//                                   int* ca_codes,
-//                                   unsigned int code_length);
-
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(dllpllconf_fpga_t conf_);
 
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class dll_pll_veml_tracking_fpga: public gr::block
+class dll_pll_veml_tracking_fpga : public gr::block
 {
 public:
     ~dll_pll_veml_tracking_fpga();
 
     void set_channel(unsigned int channel);
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
 
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-    
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
     void reset(void);
 
 private:
-//    friend dll_pll_veml_tracking_fpga_sptr
-//    dll_pll_veml_make_tracking_fpga(long if_freq,
-//            long fs_in, unsigned
-//            int vector_length,
-//            bool dump,
-//            std::string dump_filename,
-//            float pll_bw_hz,
-//            float dll_bw_hz,
-//            float early_late_space_chips,
-//            std::string device_name,
-//            unsigned int device_base,
-//            int* ca_codes,
-//            unsigned int code_length);
     friend dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(dllpllconf_fpga_t conf_);
 
     dll_pll_veml_tracking_fpga(dllpllconf_fpga_t conf_);
-//    dll_pll_veml_tracking_fpga(//long if_freq,
-//            long fs_in, unsigned
-//            int vector_length,
-//            bool dump,
-//            std::string dump_filename,
-//            float pll_bw_hz,
-//            float dll_bw_hz,
-//            float early_late_space_chips,
-//            std::string device_name,
-//            unsigned int device_base,
-//            int* ca_codes,
-//            unsigned int code_length);
 
-
-    dllpllconf_fpga_t trk_parameters;
+    bool cn0_and_tracking_lock_status(double coh_integration_time_s);
+    bool acquire_secondary();
+    void run_dll_pll();
+    void update_tracking_vars();
+    void clear_tracking_vars();
+    void save_correlation_results();
+    void log_data(bool integrating);
+    int save_matfile();
 
     // tracking configuration vars
-    unsigned int d_vector_length;
-    bool d_dump;
-
-    Gnss_Synchro* d_acquisition_gnss_synchro;
+    dllpllconf_fpga_t trk_parameters;
+    bool d_veml;
+    bool d_cloop;
     unsigned int d_channel;
+    Gnss_Synchro *d_acquisition_gnss_synchro;
 
-    //long d_if_freq;
-    long d_fs_in;
+    //Signal parameters
+    bool d_secondary;
+    bool interchange_iq;
+    double d_signal_carrier_freq;
+    double d_code_period;
+    double d_code_chip_rate;
+    unsigned int d_secondary_code_length;
+    unsigned int d_code_length_chips;
+    unsigned int d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
+    int d_symbols_per_bit;
+    std::string systemName;
+    std::string signal_type;
+    std::string *d_secondary_code_string;
+    std::string signal_pretty_name;
 
-    double d_early_late_spc_chips;
+    //tracking state machine
+    int d_state;
+    bool d_synchonizing;
+    //Integration period in samples
+    int d_correlation_length_ms;
+    int d_n_correlator_taps;
+    float *d_local_code_shift_chips;
+    float *d_prompt_data_shift;
+    std::shared_ptr<fpga_multicorrelator_8sc> multicorrelator_fpga;
 
+    gr_complex *d_correlator_outs;
+    gr_complex *d_Very_Early;
+    gr_complex *d_Early;
+    gr_complex *d_Prompt;
+    gr_complex *d_Late;
+    gr_complex *d_Very_Late;
+
+    bool d_enable_extended_integration;
+    int d_extend_correlation_symbols_count;
+    int d_current_symbol;
+
+    gr_complex d_VE_accu;
+    gr_complex d_E_accu;
+    gr_complex d_P_accu;
+    gr_complex d_L_accu;
+    gr_complex d_VL_accu;
+    gr_complex d_last_prompt;
+
+    gr_complex *d_Prompt_Data;
+
+    double d_code_phase_step_chips;
+    double d_carrier_phase_step_rad;
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
-    double d_rem_code_phase_chips;
     double d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
@@ -169,56 +182,45 @@ private:
     // acquisition
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
-    // correlator
-    int d_n_correlator_taps;
-    //float* d_ca_code;
-    //int* d_ca_code_16sc;
-    
-    float* d_local_code_shift_chips;
-    gr_complex* d_correlator_outs;
-    std::shared_ptr<fpga_multicorrelator_8sc> multicorrelator_fpga_8sc;
-    
+
     // tracking vars
+    double d_carr_error_hz;
+    double d_carr_error_filt_hz;
+    double d_code_error_chips;
+    double d_code_error_filt_chips;
+    double d_K_blk_samples;
     double d_code_freq_chips;
-    double d_code_phase_step_chips;
     double d_carrier_doppler_hz;
-    double d_carrier_phase_step_rad;
     double d_acc_carrier_phase_rad;
+    double d_rem_code_phase_chips;
     double d_code_phase_samples;
-
-    //PRN period in samples
+    double T_chip_seconds;
+    double T_prn_seconds;
+    double T_prn_samples;
+    double K_blk_samples;
+    // PRN period in samples
     int d_current_prn_length_samples;
-
-    //processing samples counters
+    // processing samples counters
     unsigned long int d_sample_counter;
     unsigned long int d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
-    gr_complex* d_Prompt_buffer;
+    int d_carrier_lock_fail_counter;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
-    int d_carrier_lock_fail_counter;
-
-    // control vars
-    bool d_enable_tracking;
-    bool d_pull_in;
+    std::deque<gr_complex> d_Prompt_buffer_deque;
+    gr_complex *d_Prompt_buffer;
 
     // file dump
-    std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    std::map<std::string, std::string> systemName;
-    std::string sys;
-    
     // extra
     int d_correlation_length_samples;
+    int d_next_prn_length_samples;
     unsigned long int d_sample_counter_next;
-    double d_rem_carrier_phase_rad;
-    
-    double d_K_blk_samples_previous;
-    int d_offset_sample_previous;
+    unsigned int d_pull_in = 0;
     
 };
 

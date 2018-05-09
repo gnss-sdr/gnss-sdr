@@ -49,7 +49,6 @@
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <pmt/pmt.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <glog/logging.h>
 #include <cmath>
 #include <iostream>
@@ -785,7 +784,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                         {
                             d_cn0_estimation_counter = 0;
                             // Code lock indicator
-                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GLONASS_L1_CA_CODE_LENGTH_CHIPS);
+                            d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, GLONASS_L1_CA_CODE_PERIOD);
                             // Carrier lock indicator
                             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
                             // Loss of lock detection

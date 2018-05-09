@@ -58,14 +58,14 @@
  * \f$\hat{P}_{tot}=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2\f$ is the estimator of the total power, \f$|\cdot|\f$ is the absolute value,
  * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
  *
- * The SNR value is converted to CN0 [dB-Hz], taking to account the receiver bandwidth and the PRN code gain, using the following formula:
+ * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
  * \f{equation}
- *     CN0_{dB}=10*log(\hat{\rho})+10*log(\frac{f_s}{2})-10*log(L_{PRN}),
+ *     CN0_{dB}=10*log(\hat{\rho})-10*log(T_{int}),
  * \f}
- * where \f$f_s\f$ is the sampling frequency and \f$L_{PRN}\f$ is the PRN sequence length.
+ * where \f$T_{int}\f$ is the coherent integration time, in seconds.
  *
  */
-float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, double code_length)
+float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, double coh_integration_time_s)
 {
     double SNR = 0.0;
     double SNR_dB_Hz = 0.0;
@@ -80,7 +80,7 @@ float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, doubl
     Psig = Psig * Psig;
     Ptot /= static_cast<double>(length);
     SNR = Psig / (Ptot - Psig);
-    SNR_dB_Hz = 10.0 * log10(SNR) + 10.0 * log10(static_cast<double>(fs_in) / 2.0) - 10.0 * log10(code_length);
+    SNR_dB_Hz = 10.0 * log10(SNR) - 10.0 * log10(coh_integration_time_s);
     return static_cast<float>(SNR_dB_Hz);
 }
 

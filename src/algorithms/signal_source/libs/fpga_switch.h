@@ -37,7 +37,7 @@
 #ifndef GNSS_SDR_FPGA_SWITCH_H_
 #define GNSS_SDR_FPGA_SWITCH_H_
 
-#include <gnuradio/block.h>
+#include <string>
 
 #define MAX_LENGTH_DEVICEIO_NAME 50
 
@@ -47,15 +47,14 @@ public:
     fpga_switch(std::string device_name);
     ~fpga_switch();
     void set_switch_position(int switch_position);
-	
+
 private:
-    int d_device_descriptor; // driver descriptor
-    volatile unsigned *d_map_base; // driver memory map
+    int d_device_descriptor;        // driver descriptor
+    volatile unsigned *d_map_base;  // driver memory map
 
     // private functions
     unsigned fpga_switch_test_register(unsigned writeval);
-	void close_device(void);
-	
+    void close_device(void);
 };
 
 #endif /* GNSS_SDR_FPGA_SWITCH_H_ */

@@ -37,11 +37,11 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 
-#include <string>
 #include "acquisition_interface.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
-
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -144,8 +144,7 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    lv_16sc_t *d_all_fft_codes_; // memory that contains all the code ffts
-
+    lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
 };
 
 #endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_ */

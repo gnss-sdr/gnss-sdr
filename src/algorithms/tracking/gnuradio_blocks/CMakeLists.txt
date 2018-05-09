@@ -23,7 +23,7 @@ if(ENABLE_CUDA)
 endif(ENABLE_CUDA)
 
 if(ENABLE_FPGA)
-     set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} gps_l1_ca_dll_pll_tracking_fpga_sc.cc)
+     set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} dll_pll_veml_tracking_fpga.cc)
 endif(ENABLE_FPGA)
 
 set(TRACKING_GR_BLOCKS_SOURCES

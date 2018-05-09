@@ -1,34 +1,34 @@
 GNSS-SDR Authorship
 ------------------------------------------------------------------------------
 
-The GNSS-SDR project is hosted and sponsored by the Centre Tecnologic de 
-Telecomunicacions de Catalunya (CTTC), a non-profit research foundation located 
-in Castelldefels (40.396764 N, 3.713379 E), 20 km south of Barcelona, Spain. 
-GNSS-SDR is the by-product of GNSS research conducted at the Communications 
-Systems Division of CTTC, and it is the combined effort of students, 
+The GNSS-SDR project is hosted and sponsored by the Centre Tecnologic de
+Telecomunicacions de Catalunya (CTTC), a non-profit research foundation located
+in Castelldefels (40.396764 N, 3.713379 E), 20 km south of Barcelona, Spain.
+GNSS-SDR is the by-product of GNSS research conducted at the Communications
+Systems Division of CTTC, and it is the combined effort of students,
 software engineers and researchers from different institutions around the World.
 
 Contact Information
 ------------------------------------------------------------------------------
-	GNSS-SDR Homepage 
+	GNSS-SDR Homepage
 	----------------------------
-	http://gnss-sdr.org
-	
-	
+	https://gnss-sdr.org
+
+
 	CTTC Homepage
 	----------------------------
 	http://www.cttc.cat
- 	
- 	
-	Mailing Lists 
+
+
+	Mailing Lists
 	----------------------------
- 	gnss-sdr-developers@lists.sourceforge.net 
+ 	gnss-sdr-developers@lists.sourceforge.net
  	http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers
- 	
- 	 
+
+
  	Email
 	----------------------------
-	Inquiries beyond the mailing list can be sent to carles.fernandez@cttc.cat 
+	Inquiries beyond the mailing list can be sent to carles.fernandez@cttc.cat
 
 
 List of authors
@@ -40,7 +40,7 @@ Antonio Ramos           antonio.ramos@cttc.es           Developer
 Marc Majoral            marc.majoral@cttc.cat           Developer
 Pau Closas              pau.closas@northeastern.edu     Consultant
 Jordi Vila-Valls        jordi.vila@cttc.cat             Consultant
-Carlos Aviles           carlos.avilesr@googlemail.com   Contributor     
+Carlos Aviles           carlos.avilesr@googlemail.com   Contributor
 David Pubill            david.pubill@cttc.cat           Contributor
 Mara Branzanti          mara.branzanti@gmail.com        Contributor
 Marc Molina             marc.molina.pena@gmail.com      Contributor
@@ -54,6 +54,3 @@ Fran Fabra              fabra@ice.csic.es               Contributor
 Cillian O'Driscoll      cillian.odriscoll@gmail.com     Contributor
 Gabriel Araujo          gabriel.araujo.5000@gmail.com   Contributor
 Carlos Paniego          carpanie@hotmail.com            Artwork
-
-
-

@@ -1,4 +1,4 @@
-[![](./docs/doxygen/images/gnss-sdr_logo.png)](http://gnss-sdr.org "GNSS-SDR website")
+[![](./docs/doxygen/images/gnss-sdr_logo.png)](https://gnss-sdr.org "GNSS-SDR website")
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
@@ -19,14 +19,14 @@ In the L5 band (centered at 1176.45 MHz):
  - &#128752; GPS L5 :white_check_mark:
  - &#128752; Galileo E5a :white_check_mark:
 
-GNSS-SDR provides interfaces for a wide range of radio frequency front-ends, generates processing outputs in standard formats, allows for the full inspection of the whole signal processing chain, and offers a framework for the development of new features. Please visit [http://gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR website") for more information about this open source software-defined GNSS receiver.
+GNSS-SDR provides interfaces for a wide range of radio frequency front-ends, generates processing outputs in standard formats, allows for the full inspection of the whole signal processing chain, and offers a framework for the development of new features. Please visit [https://gnss-sdr.org](https://gnss-sdr.org "GNSS-SDR website") for more information about this open source software-defined GNSS receiver.
 
 
 
 # How to build GNSS-SDR
 
 
-This section describes how to set up the compilation environment in GNU/Linux or [macOS / Mac OS X](#macosx), and to build GNSS-SDR. See also our [build and install page](http://gnss-sdr.org/build-and-install/ "GNSS-SDR's Build and Install").
+This section describes how to set up the compilation environment in GNU/Linux or [macOS / Mac OS X](#macosx), and to build GNSS-SDR. See also our [build and install page](https://gnss-sdr.org/build-and-install/ "GNSS-SDR's Build and Install").
 
 
 GNU/Linux
@@ -286,7 +286,7 @@ By default, you will be in the 'master' branch of the Git repository, which corr
 $ git checkout next
 ~~~~~~
 
-More information about GNSS-SDR-specific Git usage and pointers to further readings can be found at our [Git tutorial](http://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
+More information about GNSS-SDR-specific Git usage and pointers to further readings can be found at our [Git tutorial](https://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
 
 
 ### Build and install GNSS-SDR
@@ -507,7 +507,7 @@ $ sudo make install
 
 Using this option, all SIMD instructions are exclusively accessed via VOLK, which automatically includes versions of each function for different SIMD instruction sets, then detects at runtime which to use, or if there are none, substitutes a generic, non-SIMD implementation.
 
-More details can be found in our tutorial about [GNSS-SDR configuration options at building time](http://gnss-sdr.org/docs/tutorials/using-git/ "Configuration options at building time").
+More details can be found in our tutorial about [GNSS-SDR configuration options at building time](https://gnss-sdr.org/docs/tutorials/using-git/ "Configuration options at building time").
 
 
 <a name="macosx">macOS and Mac OS X</a>
@@ -648,7 +648,7 @@ Other builds
 
 * **Snap packages**: [Snaps](http://snapcraft.io) are universal Linux packages aimed to work on any distribution or device, from IoT devices to servers, desktops to mobile devices. Visit [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox) for instructions.
 
-* **GNSS-SDR in embedded platforms**: we provide a Software Development Kit (SDK) based on [OpenEmbedded](http://www.openembedded.org/wiki/Main_Page) for cross-compiling GNSS-SDR in your desktop computer and for producing executables that can run in embedded platforms, such as a Zedboard or a Raspberry Pi 3. Visit [Cross-compiling GNSS-SDR](http://gnss-sdr.org/docs/tutorials/cross-compiling/) for instructions.
+* **GNSS-SDR in embedded platforms**: we provide a Software Development Kit (SDK) based on [OpenEmbedded](http://www.openembedded.org/wiki/Main_Page) for cross-compiling GNSS-SDR in your desktop computer and for producing executables that can run in embedded platforms, such as a Zedboard or a Raspberry Pi 3. Visit [Cross-compiling GNSS-SDR](https://gnss-sdr.org/docs/tutorials/cross-compiling/) for instructions.
 
 
 Updating GNSS-SDR
@@ -680,9 +680,9 @@ Before rebuilding the source code, it is safe (and recommended) to remove the re
 $ rm -rf gnss-sdr/build/*
 ~~~~~~
 
-If you are interested in contributing to the development of GNSS-SDR, please check out [how to do it](http://gnss-sdr.org/contribute/ "How to contribute to GNSS-SDR source code").
+If you are interested in contributing to the development of GNSS-SDR, please check out [how to do it](https://gnss-sdr.org/contribute/ "How to contribute to GNSS-SDR source code").
 
-There is a more controlled way to upgrade your repository, which is to use the Git commands ```fetch``` and ```merge```, as described in our [Git Tutorial](http://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
+There is a more controlled way to upgrade your repository, which is to use the Git commands ```fetch``` and ```merge```, as described in our [Git Tutorial](https://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
 
 
 
@@ -712,7 +712,7 @@ We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, 
 ```$ gnss-sdr --config_file=/path/to/my_receiver.conf```
 The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track and decode at least 4 satellites, you will get PVT fixes. The program will write .kml, .geojson and RINEX files in the folder from which ```gnss-sdr``` was run. In addition to the console output, GNSS-SDR also writes log files at /tmp/ (configurable with the commandline flag ```./gnss-sdr --log_dir=/path/to/log```).
 
-For more information, check out our [quick start guide](http://gnss-sdr.org/quick-start-guide/).
+For more information, check out our [quick start guide](https://gnss-sdr.org/quick-start-guide/).
 
 
 Using GNSS-SDR
@@ -772,7 +772,7 @@ Since the configuration is just a set of property names and values without any m
 
 Hence, the application defines a simple accessor class to fetch the configuration pairs of values and passes them to a factory class called [GNSSBlockFactory](./src/core/receiver/gnss_block_factory.h). This factory decides, according to the configuration, which class needs to be instantiated and which parameters should be passed to the constructor. Hence, the factory encapsulates the complexity of blocks' instantiation. With that approach, adding a new block that requires new parameters will be as simple as adding the block class and modifying the factory to be able to instantiate it. This loose coupling between the blocks' implementations and the syntax of the configuration enables extending the application capacities in a high degree. It also allows producing fully customized receivers, for instance a testbed for acquisition algorithms, and to place observers at any point of the receiver chain.
 
-More information can be found at the [Control Plane page](http://gnss-sdr.org/docs/control-plane/).
+More information can be found at the [Control Plane page](https://gnss-sdr.org/docs/control-plane/).
 
 
 Signal Processing plane
@@ -800,7 +800,7 @@ Internally, GNSS-SDR makes use of the complex data types defined by [VOLK](http:
 - **`gr_complex`**: Complex samples, with real and imaginary parts of type `float`. C++ type name: `std::complex<float>`.
 
 
-More information about the available processing blocks and their configuration parameters can be found at the [Signal Processing Blocks documentation page](http://gnss-sdr.org/docs/sp-blocks/).
+More information about the available processing blocks and their configuration parameters can be found at the [Signal Processing Blocks documentation page](https://gnss-sdr.org/docs/sp-blocks/).
 
 ###  Signal Source
 
@@ -994,7 +994,7 @@ SignalSource.dump1=false
 ~~~~~~
 
 
-More documentation and examples are available at the [Signal Source Blocks page](http://gnss-sdr.org/docs/sp-blocks/signal-source/).
+More documentation and examples are available at the [Signal Source Blocks page](https://gnss-sdr.org/docs/sp-blocks/signal-source/).
 
 ### Signal Conditioner
 
@@ -1015,7 +1015,7 @@ If you need to adapt some aspect of your signal, you can enable the Signal Condi
 SignalConditioner.implementation=Signal_Conditioner
 ~~~~~~
 
-More documentation at the [Signal Conditioner Blocks page](http://gnss-sdr.org/docs/sp-blocks/signal-conditioner/).
+More documentation at the [Signal Conditioner Blocks page](https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/).
 
 #### Data type adapter
 
@@ -1027,7 +1027,7 @@ This block changes the type of input data samples. If your signal source deliver
 DataTypeAdapter.implementation=Ishort_To_Complex
 ~~~~~~
 
-More documentation at the [Data Type Adapter Blocks page](http://gnss-sdr.org/docs/sp-blocks/data-type-adapter/).
+More documentation at the [Data Type Adapter Blocks page](https://gnss-sdr.org/docs/sp-blocks/data-type-adapter/).
 
 #### Input filter
 
@@ -1082,7 +1082,7 @@ InputFilter.IF=0
 InputFilter.decimation_factor=1
 ~~~~~~
 
-More documentation at the [Input Filter Blocks page](http://gnss-sdr.org/docs/sp-blocks/input-filter/).
+More documentation at the [Input Filter Blocks page](https://gnss-sdr.org/docs/sp-blocks/input-filter/).
 
 #### Resampler
 
@@ -1100,7 +1100,7 @@ Resampler.sample_freq_in=8000000 ; sample frequency of the input signal
 Resampler.sample_freq_out=4000000 ; desired sample frequency of the output signal
 ~~~~~~
 
-More documentation at the [Resampler Blocks page](http://gnss-sdr.org/docs/sp-blocks/resampler/).
+More documentation at the [Resampler Blocks page](https://gnss-sdr.org/docs/sp-blocks/resampler/).
 
 ###  Channel
 
@@ -1150,7 +1150,7 @@ This module is also in charge of managing the interplay between acquisition and 
 
 The abstract class [ChannelInterface](./src/core/interfaces/channel_interface.h) represents an interface to a channel GNSS block. Check [Channel](./src/algorithms/channel/adapters/channel.h) for an actual implementation.
 
-More documentation at the [Channels page](http://gnss-sdr.org/docs/sp-blocks/channels/).
+More documentation at the [Channels page](https://gnss-sdr.org/docs/sp-blocks/channels/).
 
 
 
@@ -1201,7 +1201,7 @@ Acquisition_1B.dump=false
 Acquisition_1B.dump_filename=./acq_dump.dat
 ~~~~~~
 
-More documentation at the [Acquisition Blocks page](http://gnss-sdr.org/docs/sp-blocks/acquisition/).
+More documentation at the [Acquisition Blocks page](https://gnss-sdr.org/docs/sp-blocks/acquisition/).
 
 
 #### Tracking
@@ -1251,7 +1251,7 @@ Tracking_1B.dump=false
 Tracking_1B.dump_filename=../data/veml_tracking_ch_
 ~~~~~~
 
-More documentation at the [Tracking Blocks page](http://gnss-sdr.org/docs/sp-blocks/tracking/).
+More documentation at the [Tracking Blocks page](https://gnss-sdr.org/docs/sp-blocks/tracking/).
 
 
 #### Decoding of the navigation message
@@ -1279,7 +1279,7 @@ TelemetryDecoder_1B.implementation=Galileo_E1B_Telemetry_Decoder
 TelemetryDecoder_1B.dump=false
 ~~~~~~
 
-More documentation at the [Telemetry Decoder Blocks page](http://gnss-sdr.org/docs/sp-blocks/telemetry-decoder/).
+More documentation at the [Telemetry Decoder Blocks page](https://gnss-sdr.org/docs/sp-blocks/telemetry-decoder/).
 
 
 #### Observables
@@ -1297,7 +1297,7 @@ Observables.dump=false
 Observables.dump_filename=./observables.dat
 ~~~~~~
 
-More documentation at the [Observables Blocks page](http://gnss-sdr.org/docs/sp-blocks/observables/).
+More documentation at the [Observables Blocks page](https://gnss-sdr.org/docs/sp-blocks/observables/).
 
 
 #### Computation of Position, Velocity and Time
@@ -1354,7 +1354,7 @@ PVT.rtcm_station_id=1111
 
 In order to get well-formatted GeoJSON, KML and RINEX files, always terminate ```gnss-sdr``` execution by pressing key ```q``` and then key ```ENTER```. Those files will be automatically deleted if no position fix have been obtained during the execution of the software receiver.
 
-More documentation at the [PVT Blocks page](http://gnss-sdr.org/docs/sp-blocks/pvt/).
+More documentation at the [PVT Blocks page](https://gnss-sdr.org/docs/sp-blocks/pvt/).
 
 
 About the software license
@@ -1393,7 +1393,7 @@ For LaTeX users, this is the BibTeX entry for your convenience:
 ~~~~~~
 
 
-There is a list of papers related to GNSS-SDR in our [publications page](http://gnss-sdr.org/publications/ "Publications").
+There is a list of papers related to GNSS-SDR in our [publications page](https://gnss-sdr.org/publications/ "Publications").
 
 
 
@@ -1404,9 +1404,9 @@ In order to start using GNSS-SDR, you may want to populate ```gnss-sdr/data``` f
 
 Another interesting option is working in real-time with an RF front-end. We provide drivers for UHD-compatible hardware such as the [USRP family](http://www.ettus.com/product), for OsmoSDR and other front-ends (HackRF, bladeRF, LimeSDR), for the GN3S v2 USB dongle and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
 
-You can find more information at the [GNSS-SDR Documentation page](http://gnss-sdr.org/docs/) or directly asking to the [GNSS-SDR Developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers).
+You can find more information at the [GNSS-SDR Documentation page](https://gnss-sdr.org/docs/) or directly asking to the [GNSS-SDR Developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers).
 
-You are also very welcome to contribute to the project, there are many ways to [participate in GNSS-SDR](http://gnss-sdr.org/contribute/). If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. Please do not hesitate to [contact them](http://gnss-sdr.org/team/).
+You are also very welcome to contribute to the project, there are many ways to [participate in GNSS-SDR](https://gnss-sdr.org/contribute/). If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. Please do not hesitate to [contact them](https://gnss-sdr.org/team/).
 
 **Enjoy GNSS-SDR!**
 

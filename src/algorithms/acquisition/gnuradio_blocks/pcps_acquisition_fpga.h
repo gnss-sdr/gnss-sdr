@@ -81,7 +81,7 @@ class pcps_acquisition_fpga;
 typedef boost::shared_ptr<pcps_acquisition_fpga> pcps_acquisition_fpga_sptr;
 
 pcps_acquisition_fpga_sptr
-pcps_make_acquisition(pcpsconf_fpga_t conf_);
+pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition that uses the FPGA.
@@ -94,7 +94,7 @@ class pcps_acquisition_fpga : public gr::block
 private:
     friend pcps_acquisition_fpga_sptr
 
-    pcps_make_acquisition(pcpsconf_fpga_t conf_);
+    pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 
     pcps_acquisition_fpga(pcpsconf_fpga_t conf_);
 

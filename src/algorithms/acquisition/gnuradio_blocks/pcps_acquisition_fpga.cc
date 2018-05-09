@@ -45,7 +45,7 @@
 
 using google::LogMessage;
 
-pcps_acquisition_fpga_sptr pcps_make_acquisition(pcpsconf_fpga_t conf_)
+pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
 {
     return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(conf_));
 }

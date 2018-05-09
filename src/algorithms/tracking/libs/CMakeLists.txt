@@ -46,7 +46,7 @@ set(TRACKING_LIB_SOURCES
 )
 
 if(ENABLE_FPGA)
-    SET(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} fpga_multicorrelator_8sc.cc)
+    SET(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} fpga_multicorrelator.cc)
 endif(ENABLE_FPGA)
 
 include_directories(

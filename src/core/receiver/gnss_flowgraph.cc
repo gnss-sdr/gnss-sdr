@@ -310,7 +310,6 @@ void GNSSFlowgraph::connect()
                     return;
                 }
         }
-
 #else
     // connect the signal source to sample counter
     // connect the sample counter to Observables
@@ -336,12 +335,19 @@ void GNSSFlowgraph::connect()
         }
 #endif
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
-    int selected_signal_conditioner_ID;
+    int selected_signal_conditioner_ID = 0;
     for (unsigned int i = 0; i < channels_count_; i++)
         {
             if (FPGA_enabled == false)
                 {
-                    selected_signal_conditioner_ID = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".RF_channel_ID", 0);
+                    try
+                        {
+                            selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", 0);
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                     try
                         {
                             top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
@@ -376,7 +382,15 @@ void GNSSFlowgraph::connect()
     std::vector<unsigned int> vector_of_channels;
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-            unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
+            unsigned int sat = 0;
+            try
+                {
+                    sat = configuration_->property("Channel" + std::to_string(i) + ".satellite", 0);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
             if (sat == 0)
                 {
                     vector_of_channels.push_back(i);
@@ -392,7 +406,15 @@ void GNSSFlowgraph::connect()
     for (unsigned int& i : vector_of_channels)
         {
             std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();  // use channel's implicit signal
-            unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
+            unsigned int sat = 0;
+            try
+                {
+                    sat = configuration_->property("Channel" + std::to_string(i) + ".satellite", 0);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
             if (sat == 0)
                 {
                     channels_.at(i)->set_signal(search_next_signal(gnss_signal, true));
@@ -459,7 +481,7 @@ void GNSSFlowgraph::disconnect()
             LOG(INFO) << "flowgraph was not connected";
             return;
         }
-
+    connected_ = false;
     // Signal Source (i) >  Signal conditioner (i) >
     int RF_Channels = 0;
     int signal_conditioner_ID = 0;
@@ -511,24 +533,76 @@ void GNSSFlowgraph::disconnect()
             catch (const std::exception& e)
                 {
                     LOG(INFO) << "Can't disconnect signal source " << i << " to signal conditioner " << i << ": " << e.what();
+                    top_block_->disconnect_all();
+                    return;
                 }
         }
 
+#if ENABLE_FPGA
+    bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
+    if (FPGA_enabled == false)
+        {
+            // disconnect the signal source to sample counter
+            // disconnect the sample counter to Observables
+            try
+                {
+                    top_block_->disconnect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
+                    top_block_->disconnect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Can't disconnect sample counter";
+                    LOG(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
+        }
+    else
+        {
+            try
+                {
+                    top_block_->disconnect(null_source_, 0, throttle_, 0);
+                    top_block_->disconnect(throttle_, 0, time_counter_, 0);
+                    top_block_->disconnect(time_counter_, 0, observables_->get_left_block(), channels_count_);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Can't connect sample counter";
+                    LOG(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
+        }
+#else
+    // disconnect the signal source to sample counter
+    // disconnect the sample counter to Observables
     try
         {
             top_block_->disconnect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
-            top_block_->disconnect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
+            top_block_->disconnect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
         }
     catch (const std::exception& e)
         {
-            LOG(INFO) << "Can't disconnect sample counter: " << e.what();
+            LOG(WARNING) << "Can't connect sample counter";
+            LOG(ERROR) << e.what();
+            top_block_->disconnect_all();
+            return;
         }
-
+#endif
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
     int selected_signal_conditioner_ID;
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-            selected_signal_conditioner_ID = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".RF_channel_ID", 0);
+            try
+                {
+                    selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", 0);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
             try
                 {
                     top_block_->disconnect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
@@ -537,6 +611,8 @@ void GNSSFlowgraph::disconnect()
             catch (const std::exception& e)
                 {
                     LOG(INFO) << "Can't disconnect signal conditioner " << selected_signal_conditioner_ID << " to channel " << i << ": " << e.what();
+                    top_block_->disconnect_all();
+                    return;
                 }
 
             // Signal Source > Signal conditioner >> Channels >> Observables
@@ -548,6 +624,8 @@ void GNSSFlowgraph::disconnect()
             catch (const std::exception& e)
                 {
                     LOG(INFO) << "Can't disconnect channel " << i << " to observables: " << e.what();
+                    top_block_->disconnect_all();
+                    return;
                 }
         }
 
@@ -562,6 +640,8 @@ void GNSSFlowgraph::disconnect()
     catch (const std::exception& e)
         {
             LOG(INFO) << "Can't disconnect observables to PVT: " << e.what();
+            top_block_->disconnect_all();
+            return;
         }
 
     for (int i = 0; i < sources_count_; i++)
@@ -573,6 +653,8 @@ void GNSSFlowgraph::disconnect()
             catch (const std::exception& e)
                 {
                     LOG(INFO) << "Can't disconnect signal source block " << i << " internally: " << e.what();
+                    top_block_->disconnect_all();
+                    return;
                 }
         }
 
@@ -586,6 +668,8 @@ void GNSSFlowgraph::disconnect()
             catch (const std::exception& e)
                 {
                     LOG(INFO) << "Can't disconnect signal conditioner block " << i << " internally: " << e.what();
+                    top_block_->disconnect_all();
+                    return;
                 }
         }
 
@@ -598,6 +682,8 @@ void GNSSFlowgraph::disconnect()
             catch (const std::exception& e)
                 {
                     LOG(INFO) << "Can't disconnect channel " << i << " internally: " << e.what();
+                    top_block_->disconnect_all();
+                    return;
                 }
         }
 
@@ -608,6 +694,8 @@ void GNSSFlowgraph::disconnect()
     catch (const std::exception& e)
         {
             LOG(INFO) << "Can't disconnect observables block internally: " << e.what();
+            top_block_->disconnect_all();
+            return;
         }
 
     // Signal Source > Signal conditioner >> Channels >> Observables > PVT
@@ -618,11 +706,11 @@ void GNSSFlowgraph::disconnect()
     catch (const std::exception& e)
         {
             LOG(INFO) << "Can't disconnect PVT block internally: " << e.what();
+            top_block_->disconnect_all();
+            return;
         }
 
     DLOG(INFO) << "blocks disconnected internally";
-
-    connected_ = false;
     LOG(INFO) << "Flowgraph disconnected";
 }
 
@@ -658,7 +746,15 @@ bool GNSSFlowgraph::send_telemetry_msg(pmt::pmt_t msg)
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
     DLOG(INFO) << "Received " << what << " from " << who << ". Number of applied actions = " << applied_actions_;
-    unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(who) + ".satellite", 0);
+    unsigned int sat = 0;
+    try
+        {
+            sat = configuration_->property("Channel" + std::to_string(who) + ".satellite", 0);
+        }
+    catch (const std::exception& e)
+        {
+            LOG(WARNING) << e.what();
+        }
     switch (what)
         {
         case 0:
@@ -679,7 +775,15 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             acq_channels_count_--;
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
-                    unsigned int sat_ = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
+                    unsigned int sat_ = 0;
+                    try
+                        {
+                            sat_ = configuration_->property("Channel" + std::to_string(i) + ".satellite", 0);
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                     if (!available_GNSS_signals_.empty() && (acq_channels_count_ < max_acq_channels_) && (channels_state_[i] == 0))
                         {
                             channels_state_[i] = 1;
@@ -828,7 +932,7 @@ void GNSSFlowgraph::init()
             std::cout << "Please update your configuration file." << std::endl;
         }
 
-    std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface> > > channels = block_factory_->GetChannels(configuration_, queue_);
+    std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = block_factory_->GetChannels(configuration_, queue_);
 
     channels_count_ = channels->size();
     for (unsigned int i = 0; i < channels_count_; i++)

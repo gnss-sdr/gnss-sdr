@@ -350,9 +350,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                << " [deg], Height= " << this->get_height() << " [m]"
                                << " RX time offset= " << this->get_time_offset_s() << " [s]";
 
-                    // ###### Compute DOPs ########
-                    hybrid_ls_pvt::compute_DOP();
-
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)
                         {

@@ -110,7 +110,15 @@ ControlThread::~ControlThread()
 void ControlThread::run()
 {
     // Connect the flowgraph
-    flowgraph_->connect();
+    try
+        {
+            flowgraph_->connect();
+        }
+    catch (const std::exception e)
+        {
+            LOG(ERROR) << e.what();
+            return;
+        }
     if (flowgraph_->connected())
         {
             LOG(INFO) << "Flowgraph connected";
@@ -141,9 +149,9 @@ void ControlThread::run()
     bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
 
     if (enable_FPGA == true)
-    {
-        flowgraph_->start_acquisition_helper();
-    }
+        {
+            flowgraph_->start_acquisition_helper();
+        }
 
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
@@ -270,6 +278,7 @@ bool ControlThread::read_assistance_from_XML()
 
     return ret;
 }
+
 
 void ControlThread::assist_GNSS()
 {

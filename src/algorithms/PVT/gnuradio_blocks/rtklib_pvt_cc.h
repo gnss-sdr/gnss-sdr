@@ -34,6 +34,7 @@
 
 #include "nmea_printer.h"
 #include "kml_printer.h"
+#include "gpx_printer.h"
 #include "geojson_printer.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
@@ -120,6 +121,7 @@ private:
 
     std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_dump;
+    std::shared_ptr<Gpx_Printer> d_gpx_dump;
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
     std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
     std::shared_ptr<Rtcm_Printer> d_rtcm_printer;

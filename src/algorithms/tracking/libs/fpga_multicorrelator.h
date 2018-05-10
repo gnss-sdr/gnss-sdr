@@ -49,46 +49,46 @@ class fpga_multicorrelator_8sc
 {
 public:
     fpga_multicorrelator_8sc(int n_correlators, std::string device_name,
-        unsigned int device_base);
+            unsigned int device_base, int *ca_codes, unsigned int code_length);
     ~fpga_multicorrelator_8sc();
-    //bool set_output_vectors(gr_complex* corr_out);
-    void set_output_vectors(gr_complex *corr_out);
-    //    bool set_local_code_and_taps(
-    //            int code_length_chips, const int* local_code_in,
-    //            float *shifts_chips, int PRN);
+	//bool set_output_vectors(gr_complex* corr_out);
+	void set_output_vectors(gr_complex* corr_out);
+//    bool set_local_code_and_taps(
+//            int code_length_chips, const int* local_code_in,
+//            float *shifts_chips, int PRN);
     //bool set_local_code_and_taps(
     void set_local_code_and_taps(
-        int code_length_chips,
-        float *shifts_chips, int PRN);
+            int code_length_chips, 
+            float *shifts_chips, int PRN);            
     //bool set_output_vectors(lv_16sc_t* corr_out);
     void update_local_code(float rem_code_phase_chips);
     //bool Carrier_wipeoff_multicorrelator_resampler(
     void Carrier_wipeoff_multicorrelator_resampler(
-        float rem_carrier_phase_in_rad, float phase_step_rad,
-        float rem_code_phase_chips, float code_phase_step_chips,
-        int signal_length_samples);
-    bool free();
+            float rem_carrier_phase_in_rad, float phase_step_rad,
+            float rem_code_phase_chips, float code_phase_step_chips,
+            int signal_length_samples);bool free();
     void set_channel(unsigned int channel);
     void set_initial_sample(int samples_offset);
     int read_sample_counter();
     void lock_channel(void);
     void unlock_channel(void);
-    void read_sample_counters(int *sample_counter, int *secondary_sample_counter, int *counter_corr_0_in, int *counter_corr_0_out);  // debug
-
+    void read_sample_counters(int *sample_counter, int *secondary_sample_counter, int *counter_corr_0_in, int *counter_corr_0_out); // debug
+	
+	
 private:
     //const int *d_local_code_in;
-    gr_complex *d_corr_out;
+    gr_complex * d_corr_out;
     float *d_shifts_chips;
     int d_code_length_chips;
     int d_n_correlators;
 
     // data related to the hardware module and the driver
-    int d_device_descriptor;        // driver descriptor
-    volatile unsigned *d_map_base;  // driver memory map
+    int d_device_descriptor; // driver descriptor
+    volatile unsigned *d_map_base; // driver memory map
 
     // configuration data received from the interface
-    unsigned int d_channel;   // channel number
-    unsigned d_ncorrelators;  // number of correlators
+    unsigned int d_channel; // channel number
+    unsigned d_ncorrelators; // number of correlators
     unsigned d_correlator_length_samples;
     float d_rem_code_phase_chips;
     float d_code_phase_step_chips;
@@ -107,7 +107,10 @@ private:
     std::string d_device_name;
     unsigned int d_device_base;
 
-    int *d_ca_codes;
+
+    int* d_ca_codes;
+
+    unsigned int d_code_length; // nominal number of chips
 
     // private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);
@@ -118,8 +121,11 @@ private:
     void fpga_configure_signal_parameters_in_fpga(void);
     void fpga_launch_multicorrelator_fpga(void);
     void read_tracking_gps_results(void);
-    void reset_multicorrelator(void);
-    void close_device(void);
+	void reset_multicorrelator(void);
+	void close_device(void);
+	
+	// debug
+	//unsigned int first_time = 1;
 };
 
 #endif /* GNSS_SDR_FPGA_MULTICORRELATOR_H_ */

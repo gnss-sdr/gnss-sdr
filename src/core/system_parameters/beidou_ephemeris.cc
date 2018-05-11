@@ -1,9 +1,8 @@
 /*!
- * \file gps_ephemeris.cc
- * \brief  Interface of a GPS EPHEMERIS storage and orbital model functions
+ * \file beidou_ephemeris.cc
+ * \brief  Interface of a BeiDou EPHEMERIS storage and orbital model functions
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
- * \author Javier Arribas, 2013. jarribas(at)cttc.es
+ * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -35,7 +34,7 @@
 #include "beidou_b1I.h"
 #include "gnss_satellite.h"
 
-Gps_Ephemeris::Gps_Ephemeris()
+Beidou_Ephemeris::Beidou_Ephemeris()
 {
     i_satellite_PRN = 0;
     d_TOW = 0;
@@ -240,7 +239,7 @@ double Beidou_Ephemeris::satellitePosition(double transmitTime)
     phi = nu + d_OMEGA;
 
     // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi), (2.0 * GPS_PI));
+    phi = fmod((phi), (2.0 * BEIDOU_PI));
 
     // Correct argument of latitude
     u = phi + d_Cuc * cos(2.0 * phi) +  d_Cus * sin(2.0 * phi);

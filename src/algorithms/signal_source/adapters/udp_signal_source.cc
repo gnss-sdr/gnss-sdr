@@ -54,8 +54,14 @@ UDPSignalSource::UDPSignalSource(ConfigurationInterface* configuration,
         default_dump_file);
 
     // network PARAMETERS
+    std::string default_capture_device = "eth0";
     std::string default_address = "127.0.0.1";
     int default_port = 1234;
+    std::string address = configuration->property(role + ".origin_address", default_address);
+    std::string capture_device = configuration->property(role + ".capture_device", default_capture_device);
+    int port = configuration->property(role + ".port", default_port);
+    int payload_bytes = configuration->property(role + ".payload_bytes", 1024);
+
 
     RF_channels_ = configuration->property(role + ".RF_channels", 1);
     select_single_channel_ = configuration->property(role + ".select_single_channel", 0);
@@ -64,19 +70,15 @@ UDPSignalSource::UDPSignalSource(ConfigurationInterface* configuration,
 
     std::string default_sample_type = "cbyte";
     std::string sample_type = configuration->property(role + ".sample_type", default_sample_type);
-
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    std::string address = configuration->property(role + ".address", default_address);
-    int port = configuration->property(role + ".port", default_port);
-    int payload_bytes = configuration->property(role + ".payload_bytes", 1024);
 
     if (sample_type.compare("cbyte")==0)
     {
-        udp_gnss_rx_source_ = make_udp_gnss_rx_source(sizeof(char), address, port, payload_bytes, true);
+        udp_gnss_rx_source_ = raw_ip_packet_source::make(capture_device, address, port, payload_bytes);
         demux_=gr::blocks::deinterleave::make(sizeof(char),1);
     }else{
         std::cout<<"WARNING: Requested UDP sample type unsuported, setting sample type to cbyte\n";
-        udp_gnss_rx_source_ = make_udp_gnss_rx_source(sizeof(char), address, port, payload_bytes, true);
+        udp_gnss_rx_source_ = raw_ip_packet_source::make(capture_device, address, port, payload_bytes);
         demux_=gr::blocks::deinterleave::make(sizeof(char),1);
     }
 

@@ -25,7 +25,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
      unpack_2bit_samples.cc
      unpack_spir_gss6450_samples.cc
      labsat23_source.cc
-     udp_gnss_rx_source.cc
+     raw_ip_packet_source.cc
 )
 
 include_directories(
@@ -41,5 +41,10 @@ file(GLOB SIGNAL_SOURCE_GR_BLOCKS_HEADERS "*.h")
 list(SORT SIGNAL_SOURCE_GR_BLOCKS_HEADERS)
 add_library(signal_source_gr_blocks ${SIGNAL_SOURCE_GR_BLOCKS_SOURCES} ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
-target_link_libraries(signal_source_gr_blocks signal_source_lib ${GNURADIO_RUNTIME_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(signal_source_gr_blocks 
+    signal_source_lib 
+    ${GNURADIO_RUNTIME_LIBRARIES} 
+    ${Boost_LIBRARIES}
+    ${PCAP_LIBRARIES}
+)
 add_dependencies(signal_source_gr_blocks glog-${glog_RELEASE})

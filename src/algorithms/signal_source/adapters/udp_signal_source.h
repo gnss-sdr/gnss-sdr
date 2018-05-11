@@ -33,7 +33,7 @@
 #define GNSS_SDR_UDP_SIGNAL_SOURCE_H
 
 #include "gnss_block_interface.h"
-#include "udp_gnss_rx_source.h"
+#include "raw_ip_packet_source.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/char_to_float.h>
@@ -103,7 +103,7 @@ private:
     std::vector<boost::shared_ptr<gr::block>> float_to_complex_;
     std::vector<boost::shared_ptr<gr::block>> null_sinks_;
 
-    udp_gnss_rx_source_sptr udp_gnss_rx_source_;
+    raw_ip_packet_source::sptr udp_gnss_rx_source_;
     gr::blocks::deinterleave::sptr demux_;
     std::vector<boost::shared_ptr<gr::block>> file_sink_;
     boost::shared_ptr<gr::msg_queue> queue_;

@@ -331,7 +331,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                             d_GPS_frame_4bytes = d_GPS_frame_4bytes | 0x80000000;
                         }
                     /* Check that the 2 most recently logged words pass parity. Have to first
-                      invert the data bits according to bit 30 of the previous word. */
+                      invert the data bits according to bit thirteen of the previous word. */
                     if (d_GPS_frame_4bytes & 0x40000000)
                         {
                             d_GPS_frame_4bytes ^= 0x3FFFFFC0;  // invert the data bits (using XOR)

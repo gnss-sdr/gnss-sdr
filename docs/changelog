@@ -59,7 +59,7 @@ This release has several improvements, addition of new features and bug fixes in
 
 - Now GNSS-SDR can be run in virtual environments through snap packages (see https://github.com/carlesfernandez/snapcraft-sandbox) and docker images (see https://github.com/carlesfernandez/docker-gnsssdr).
 - Now GNSS-SDR is adapted to cross-compiling environments for embedded devices (see https://github.com/carlesfernandez/oe-gnss-sdr-manifest).
-- BLAS and LAPACK libraries are not longer mandatory on ARM devices.
+- BLAS and LAPACK libraries are no longer mandatory on ARM devices.
 
 
 ### Improvements in Scalability:
@@ -198,7 +198,7 @@ This release has several improvements and bug fixes:
 - Added volk_gnsssdr library, a volk-like library implementing some specific kernels and ensuring portable executables. It comes with a ‘volk_gnsssdr_profile’ executable, in the fashion of volk_profile. Volk and volk_gnsssdr are compatible and can be mixed together. This is expected to enable faster execution of the software receiver in upcoming versions.
 - The former ‘rtlsdr_signal_source’ has been replaced by a more general ‘osmosdr_signal_source’ compatible with all those front-ends accessible by the OsmoSDR driver (bladeRF, hackRF, etc.) in addition to RTL-based dongles.
 - Added manpages when binaries gnss-sdr, volk_gnsssdr_profile and front-end-cal are installed.
-- Now GNSS-SDR can be build on i386, amd64, armhf, armel and arm64 architectures.
+- Now GNSS-SDR can be built on i386, amd64, armhf, armel and arm64 architectures.
 - Now GNSS-SDR builds on Ubuntu 14.04 and 14.10, Debian jessie/sid and Mac OS X 10.9 and 10.10.
 - Improved detection of dependencies, specially when installed as .deb packages.
 - Added a ‘check' target with some minimal tests.

@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 /*! \page the_signal_model Signal model
@@ -21,46 +21,46 @@
 \section gnss_signal_model GNSS signal model
 
 This page describes signals transmitted by GNSS space vehicles. Signal models are mathematical representations
-of the electromagnetic waves that are exciting the receiver's antenna. The current induced by those waves is then amplified, filtered and downconverted to a suitable frequency (can be at some intermediate frequency or 
+of the electromagnetic waves that are exciting the receiver's antenna. The current induced by those waves is then amplified, filtered and downconverted to a suitable frequency (can be at some intermediate frequency or
 directly to baseband), and then converted to 0s and 1s by the Analog-to-Digital Converter (ADC). That is the job of the Radio Frequency front-end, which at its output delivers a stream of
-digital samples. Those samples constitute the input of a software receiver, so for GNSS-SDR the signal models described below can be seen as <i>the rules of the game</i>. 
+digital samples. Those samples constitute the input of a software receiver, so for GNSS-SDR the signal models described below can be seen as <i>the rules of the game</i>.
 
-GNSS' space vehicles are modern versions of lighthouses, but with better visibility. Each satellite is a reference point, and if we know our distance to several reference points, 
+GNSS' space vehicles are modern versions of lighthouses, but with better visibility. Each satellite is a reference point, and if we know our distance to several reference points,
 we can compute our location, just as mariners do when they see a couple of lighthouses. For each in-view satellite \f$i\f$ of system \f$s\f$, we can write:
 \f{equation}{\label{eq:pseudorange}
 \rho_i   =  \sqrt{   \left(x^{\text{Tx}}_i - x \right)^2   +   \left(y^{\text{Tx}}_i - y \right)^2  +   \left(z^{\text{Tx}}_i - z \right)^2}+c\Delta t^{(s)}+\sigma_{e},
 \f}
-  where \f$\left(x^{\text{Tx}}_i, y^{\text{Tx}}_i, z^{\text{Tx}}_i\right)\f$ is the satellite's position (known from the navigation message), \f$(x,y,z)\f$ the receiver's position, 
-  and \f$\sigma_e\f$ gathers other sources of error. Since the receiver needs to estimate its own 3D position (three spatial unknowns) and its clock deviation with respect to 
-  the satellites' time basis, at least \f$3+N_s\f$ satellites must be seen by the receiver at the same time, where \f$N_s\f$ is the number of different navigation systems available 
-  (in-view) at a given time. Each received satellite signal, once synchronized and demodulated at the receiver, defines one equation such as the one defined above, 
-  forming a set of nonlinear equations that can be solved algebraically by means of the <a href="http://navipedia.org/index.php/Bancroft_Method" target="_blank">Bancroft algorithm</a> or 
-  numerically, resorting to multidimensional Newton-Raphson and weighted least square methods. When <i>a priori</i> information is added we resort to Bayesian estimation, a problem 
-  that can be solved recursively by a Kalman filter or any of its variants. The problem can be further expanded by adding other unknowns (for instance, parameters of ionospheric and 
-  tropospheric models), sources of information from other systems, mapping information, and even motion models of the receiver. In the design of multi-constellation GNSS receivers, 
-  the vector of unknowns can also include the receiver clock offset with respect to each system in order to take advantage of a higher number of in-view satellites and using them 
+  where \f$\left(x^{\text{Tx}}_i, y^{\text{Tx}}_i, z^{\text{Tx}}_i\right)\f$ is the satellite's position (known from the navigation message), \f$(x,y,z)\f$ the receiver's position,
+  and \f$\sigma_e\f$ gathers other sources of error. Since the receiver needs to estimate its own 3D position (three spatial unknowns) and its clock deviation with respect to
+  the satellites' time basis, at least \f$3+N_s\f$ satellites must be seen by the receiver at the same time, where \f$N_s\f$ is the number of different navigation systems available
+  (in-view) at a given time. Each received satellite signal, once synchronized and demodulated at the receiver, defines one equation such as the one defined above,
+  forming a set of nonlinear equations that can be solved algebraically by means of the <a href="http://navipedia.org/index.php/Bancroft_Method" target="_blank">Bancroft algorithm</a> or
+  numerically, resorting to multidimensional Newton-Raphson and weighted least square methods. When <i>a priori</i> information is added we resort to Bayesian estimation, a problem
+  that can be solved recursively by a Kalman filter or any of its variants. The problem can be further expanded by adding other unknowns (for instance, parameters of ionospheric and
+  tropospheric models), sources of information from other systems, mapping information, and even motion models of the receiver. In the design of multi-constellation GNSS receivers,
+  the vector of unknowns can also include the receiver clock offset with respect to each system in order to take advantage of a higher number of in-view satellites and using them
   jointly in the navigation solution, therefore increasing accuracy.
 
-The <a href="http://en.wikipedia.org/wiki/Analytic_signal" target="_blank">analytic representation</a> of a signal received from a GNSS satellite can be generically expressed as
+The <a href="https://en.wikipedia.org/wiki/Analytic_signal" target="_blank">analytic representation</a> of a signal received from a GNSS satellite can be generically expressed as
 \f{equation}{\label{eq:analytic}
 r(t)=\alpha(t) s_{T} \left(t-\tau(t)\right)e^{-j2 \pi f_d(t) }e^{j 2 \pi f_c t}+n(t)~,
 \f}
-  where \f$\alpha(t)\f$ is the amplitude, \f$s_{T}(t)\f$ is the complex baseband transmitted signal, \f$\tau(t)\f$ is the time-varying delay, \f$f_d(t)=f_c \tau(t)\f$ is the Doppler shift, \f$f_c\f$ is 
-  the carrier frequency, and \f$n(t)\f$ is a noise term. These signals arrive to the Earth's surface at extremely low power (e.g. \f$-158.5\f$ dBW for GPS L1 C/A-code, \f$-157\f$ dBW 
-  for Galileo E1), well below the noise floor. In order to estimate its distances to satellites, the receiver must correlate time-aligned replicas of the corresponding pseudorandom 
-  code with the incoming signal, in a process called <i>despreading</i> that provides processing gain only to the signal of interest. After a coarse and fine estimation stages of the 
-  synchronization parameters (usually known as acquisition and tracking, respectively), signal processing output is in form of <i>observables</i>: 
-  
-  <i>i)</i> the pseudorange (code) measurement, 
+  where \f$\alpha(t)\f$ is the amplitude, \f$s_{T}(t)\f$ is the complex baseband transmitted signal, \f$\tau(t)\f$ is the time-varying delay, \f$f_d(t)=f_c \tau(t)\f$ is the Doppler shift, \f$f_c\f$ is
+  the carrier frequency, and \f$n(t)\f$ is a noise term. These signals arrive to the Earth's surface at extremely low power (e.g. \f$-158.5\f$ dBW for GPS L1 C/A-code, \f$-157\f$ dBW
+  for Galileo E1), well below the noise floor. In order to estimate its distances to satellites, the receiver must correlate time-aligned replicas of the corresponding pseudorandom
+  code with the incoming signal, in a process called <i>despreading</i> that provides processing gain only to the signal of interest. After a coarse and fine estimation stages of the
+  synchronization parameters (usually known as acquisition and tracking, respectively), signal processing output is in form of <i>observables</i>:
+
+  <i>i)</i> the pseudorange (code) measurement,
   equivalent to the difference of the time of reception (expressed
-in the time frame of the receiver) and the time of transmission (expressed in the time frame of the satellite) of a distinct satellite signal; and optionally 
+in the time frame of the receiver) and the time of transmission (expressed in the time frame of the satellite) of a distinct satellite signal; and optionally
 
-<i>ii)</i> the carrier-phase measurement, actually being a measurement on the beat frequency between the received carrier of the satellite signal and a receiver-generated reference frequency. 
-Carrier phase measurements are ambiguous, in the sense that the integer number of carrier wavelengths between satellite and the receiver's antenna is unknown. 
-Techniques such as <a href="http://www.citg.tudelft.nl/en/about-faculty/departments/geoscience-and-remote-sensing/research-themes/gps/lambda-method/" target="_blank">Least-square AMBiguity Decorrelation Approach (LAMBDA)</a> or 
-Multi Carrier Ambiguity Resolution (MCAR) can be applied to resolve such ambiguity and provide an accurate estimation of the distance between the satellite and the receiver. 
+<i>ii)</i> the carrier-phase measurement, actually being a measurement on the beat frequency between the received carrier of the satellite signal and a receiver-generated reference frequency.
+Carrier phase measurements are ambiguous, in the sense that the integer number of carrier wavelengths between satellite and the receiver's antenna is unknown.
+Techniques such as <a href="http://www.citg.tudelft.nl/en/about-faculty/departments/geoscience-and-remote-sensing/research-themes/gps/lambda-method/" target="_blank">Least-square AMBiguity Decorrelation Approach (LAMBDA)</a> or
+Multi Carrier Ambiguity Resolution (MCAR) can be applied to resolve such ambiguity and provide an accurate estimation of the distance between the satellite and the receiver.
 
-Then, depending on the required accuracy, the navigation solution can range from pseudorange-only, computationally low demanding, and limited accuracy least squares methods to sophisticated combinations of code and 
+Then, depending on the required accuracy, the navigation solution can range from pseudorange-only, computationally low demanding, and limited accuracy least squares methods to sophisticated combinations of code and
 phase observables at different frequencies for high demanding applications such as surveying, geodesy, and geophysics.
 
 
@@ -74,7 +74,7 @@ and civilian users on a continuous, worldwide basis. Two GPS services are provid
 the Precise Positioning Service (PPS), available primarily to the military of the United
 States and its allies, and the Standard Positioning Service (SPS) open to civilian users.
 
-\li <b>GPS L1</b>. Defined at <a href="http://www.gps.gov/technical/icwg/IS-GPS-200F.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision F</b></a>, this band is centered at \f$f_{\text{GPS L1}}=1575.42\f$ MHz.  The complex baseband transmitted signal can be written as
+\li <b>GPS L1</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200F.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision F</b></a>, this band is centered at \f$f_{\text{GPS L1}}=1575.42\f$ MHz.  The complex baseband transmitted signal can be written as
 \f{equation}{
 s^{\text{(GPS L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
 \f}
@@ -83,30 +83,30 @@ s^{\text{(GPS L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
  e_{L1I}(t)  =& \sum_{l=-\infty}^{\infty}  D_{\text{NAV}}\Big[ [l]_{204600}\Big]  \oplus   C_{\text{P(Y)}}\Big[ |l|_{L_{\text{P(Y)}}} \Big]   p(t  -  lT_{c,\text{P(Y)}})~,\label{eq:L1CAI}\\
  e_{L1Q}(t)  =&  \sum_{l=-\infty}^{\infty} D_{\text{NAV}}\Big[ [l]_{20460}  \Big]  \oplus  C_{\text{C/A}} \Big[ |l|_{1023} \Big] p(t - lT_{c,\text{C/A}})~,\label{eq:L1CA}
 \f}
-  where \f$\oplus\f$ is the exclusive-or operation (modulo-2 addition), \f$|l|_{L}\f$ means \f$l\f$ modulo \f$L\f$, \f$[l]_{L}\f$ means the integer part of \f$\frac{l}{L}\f$, 
-  \f$D_{\text{NAV}}\f$ is the GPS navigation message bit sequence, transmitted at \f$50\f$ bps, \f$T_{c,\text{P(Y)}}=\frac{1}{10.23}\f$ \f$\mu\f$s,  \f$T_{c,\text{C/A}}=\frac{1}{1.023}\f$ \f$\mu\f$s, 
-  \f$L_{\text{P(Y)}}=6.1871 \cdot 10^{12}\f$, and \f$p(t)\f$ is a rectangular pulse of a chip-period duration centered at \f$t=0\f$ and filtered at the transmitter. 
-  According to the chip rate, the binary phase-shift keying modulations in the equations above are denoted as BPSK(10) and BPSK(1), respectively. The precision P codes (named Y codes whenever 
-  the anti-spoofing mode is activated, encrypting the code and thus denying non-U.S. military users) are sequences of \f$7\f$ days in length. Regarding the modernization plans for GPS, it 
-  is worthwhile to mention that there is a new civilian-use signal planned, called L1C and defined at <a href="http://www.gps.gov/technical/icwg/IS-GPS-800B.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision B</b></a>, 
-  to be broadcast on the same L1 frequency that currently contains the C/A signal. The L1C will be available with first Block III launch, currently scheduled for 2013. The implementation will 
+  where \f$\oplus\f$ is the exclusive-or operation (modulo-2 addition), \f$|l|_{L}\f$ means \f$l\f$ modulo \f$L\f$, \f$[l]_{L}\f$ means the integer part of \f$\frac{l}{L}\f$,
+  \f$D_{\text{NAV}}\f$ is the GPS navigation message bit sequence, transmitted at \f$50\f$ bps, \f$T_{c,\text{P(Y)}}=\frac{1}{10.23}\f$ \f$\mu\f$s,  \f$T_{c,\text{C/A}}=\frac{1}{1.023}\f$ \f$\mu\f$s,
+  \f$L_{\text{P(Y)}}=6.1871 \cdot 10^{12}\f$, and \f$p(t)\f$ is a rectangular pulse of a chip-period duration centered at \f$t=0\f$ and filtered at the transmitter.
+  According to the chip rate, the binary phase-shift keying modulations in the equations above are denoted as BPSK(10) and BPSK(1), respectively. The precision P codes (named Y codes whenever
+  the anti-spoofing mode is activated, encrypting the code and thus denying non-U.S. military users) are sequences of \f$7\f$ days in length. Regarding the modernization plans for GPS, it
+  is worthwhile to mention that there is a new civilian-use signal planned, called L1C and defined at <a href="http://www.gps.gov/technical/icwg/IS-GPS-800B.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision B</b></a>,
+  to be broadcast on the same L1 frequency that currently contains the C/A signal. The L1C will be available with first Block III launch, currently scheduled for 2013. The implementation will
   provide C/A code to ensure backward compatibility.
 
 
-\li <b>GPS L2C</b>. Defined at <a href="http://www.gps.gov/technical/icwg/IS-GPS-200F.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision F</b></a>, is only available on 
-Block IIR-M and subsequent satellite blocks. Centered at \f$f_{\text{GPS L2}}=1227.60\f$ MHz, the signal structure is the same than in (\ref{eq:GPSL1}), with the precision code in the In-phase 
+\li <b>GPS L2C</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200F.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision F</b></a>, is only available on
+Block IIR-M and subsequent satellite blocks. Centered at \f$f_{\text{GPS L2}}=1227.60\f$ MHz, the signal structure is the same than in (\ref{eq:GPSL1}), with the precision code in the In-phase
 component, just as in (\ref{eq:L1CAI}) but with an optional presence of the navigation message \f$D_{\text{NAV}}\f$. For the Quadrature-phase component, three options are defined:
      \f{align}{ e_{L2CQ}(t) =&  \sum_{l=-\infty}^{\infty}     D_{\text{CNAV}}  \Big[ [l]_{10230}  \Big]    \oplus      \left(  C_{\text{CL}} \Big[ |l|_{L_{\text{CL}}} \Big]  p_{\text{\tiny{1/2}}}  \left(  t - lT_{c,L2C}   \right)   +  \right.\\ {} &+ \left. C_{\text{CM}}  \Big[ |l|_{L_{\text{CM}}} \Big] p_{\text{\tiny{1/2}}}\left(t - \left(l+\frac{3}{4}\right)T_{c,L2C}\right) \right),\\
                  e_{L2CQ}(t)  =&   \sum_{l=-\infty}^{\infty}     D_{\text{NAV}}  \Big[ [l]_{20460}  \Big]    \oplus     C_{\text{C/A}}  \Big[ |l|_{1023} \Big] p \left(t - lT_{c,\text{C/A}}\right) \text{, or}\\
                  e_{L2CQ}(t)=& \sum_{l=-\infty}^{\infty}C_{\text{C/A}}  \Big[ |l|_{1023} \Big] p(t - lT_{c,\text{C/A}})~,
      \f}
-       where \f$T_{c,L2C}=\frac{1}{511.5}\f$ ms and \f$p_{\text{\tiny{1/2}}}(t)\f$ is a rectangular pulse of half chip-period duration, thus time-multiplexing both codes. The civilian long 
-       code \f$C_{\text{CL}}\f$ is \f$L_{\text{CL}}=767250\f$ chips long, repeating every \f$1.5\f$ s, while the civilian moderate code \f$C_{\text{CM}}\f$ is \f$L_{\text{CL}}=10230\f$ chips 
-       long and its repeats every \f$20\f$ ms. The CNAV data is an upgraded version of the original NAV navigation message, containing higher precision representation and nominally more accurate 
+       where \f$T_{c,L2C}=\frac{1}{511.5}\f$ ms and \f$p_{\text{\tiny{1/2}}}(t)\f$ is a rectangular pulse of half chip-period duration, thus time-multiplexing both codes. The civilian long
+       code \f$C_{\text{CL}}\f$ is \f$L_{\text{CL}}=767250\f$ chips long, repeating every \f$1.5\f$ s, while the civilian moderate code \f$C_{\text{CM}}\f$ is \f$L_{\text{CL}}=10230\f$ chips
+       long and its repeats every \f$20\f$ ms. The CNAV data is an upgraded version of the original NAV navigation message, containing higher precision representation and nominally more accurate
        data than the NAV data. It is transmitted at \f$25\f$ bps with forward error correction (FEC) encoding, resulting in \f$50\f$ sps.
 
 
-\li <b>GPS L5</b>. The GPS L5 link, defined at <a href="http://www.gps.gov/technical/icwg/IS-GPS-705B.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision B</b></a>, is only available 
+\li <b>GPS L5</b>. The GPS L5 link, defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-705B.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision B</b></a>, is only available
 in Block IIF (first satellite launched on May, 2010) and subsequent satellite blocks. Centered at \f$f_{\text{GPS L5}}=1176.45\f$ MHz, this signal in space can be written as:
     \f{equation}{
 s^{\text{(GPS L5)}}_{T}(t)=e_{L5I}(t) +j e_{L5Q}(t)~,
@@ -129,9 +129,9 @@ Eight satellites are equally spaced in each plane with \f$45^o\f$ argument of la
 the orbital planes have an argument of latitude displacement of \f$15^o\f$ relative to each other.
 
 
-GLONASS civil signal-in-space is defined at <a href="http://facility.unavco.org/data/docs/ICD_GLONASS_5.1_(2008)_en.pdf" target="_blank"><b>Interface Control Document. Navigational radiosignal in bands L1, L2. Edition 5.1</b></a>. 
-This system makes use of a frequency-division multiple access (FDMA) signal structure, transmitting in two bands: \f$f^{(k)}_{GLO L1}=1602+k \cdot 0.5625\f$ MHz and \f$f^{(k)}_{GLO L2}=1246+k \cdot 0.4375\f$ MHz, 
-where \f$k\in \left\{ -7,-6,\cdots,5,6\right\}\f$ is the channel number. Satellites in opposite points of an orbit plane transmit signals on equal frequencies, as these satellites will never be 
+GLONASS civil signal-in-space is defined at <a href="http://facility.unavco.org/data/docs/ICD_GLONASS_5.1_(2008)_en.pdf" target="_blank"><b>Interface Control Document. Navigational radiosignal in bands L1, L2. Edition 5.1</b></a>.
+This system makes use of a frequency-division multiple access (FDMA) signal structure, transmitting in two bands: \f$f^{(k)}_{GLO L1}=1602+k \cdot 0.5625\f$ MHz and \f$f^{(k)}_{GLO L2}=1246+k \cdot 0.4375\f$ MHz,
+where \f$k\in \left\{ -7,-6,\cdots,5,6\right\}\f$ is the channel number. Satellites in opposite points of an orbit plane transmit signals on equal frequencies, as these satellites will never be
 in view simultaneously by a ground-based user.
 
 
@@ -144,18 +144,18 @@ s^{\text{(GLO L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
  e_{L1I}(t) =&  \sum_{l=-\infty}^{\infty}  D_{\text{GNAV}}\Big[ [l]_{102200}\Big]  \oplus C_{\text{HP}} \Big[ |l|_{L_{\text{HP}}} \Big]   p(t  -  lT_{c,\text{HP}})~,\\
  e_{L1Q}(t) =&  \sum_{l=-\infty}^{\infty}  D_{\text{GNAV}}\Big[ [l]_{10220}  \Big]  \oplus   C_{\text{SP}}  \Big[ |l|_{511} \Big] p(t - lT_{c,\text{SP}})~,
 \f}
-  where  \f$T_{c,\text{HP}}=\frac{1}{5.11}\f$ \f$\mu\f$s, \f$T_{c,\text{SP}}=\frac{1}{0.511}\f$ \f$\mu\f$s, and \f$L_{\text{HP}}=3.3554\cdot 10^7\f$. The navigation 
-  message \f$D_{\text{GNAV}}\f$ is transmitted at \f$50\f$ bps. Details of its content and structure, as well as the generation of the \f$C_{\text{SP}}\f$ code, can be found at 
-  the <a href="http://facility.unavco.org/data/docs/ICD_GLONASS_5.1_(2008)_en.pdf" target="_blank">ICD</a>. The usage of the HP signal should be agreed with the Russian Federation Defense 
+  where  \f$T_{c,\text{HP}}=\frac{1}{5.11}\f$ \f$\mu\f$s, \f$T_{c,\text{SP}}=\frac{1}{0.511}\f$ \f$\mu\f$s, and \f$L_{\text{HP}}=3.3554\cdot 10^7\f$. The navigation
+  message \f$D_{\text{GNAV}}\f$ is transmitted at \f$50\f$ bps. Details of its content and structure, as well as the generation of the \f$C_{\text{SP}}\f$ code, can be found at
+  the <a href="http://facility.unavco.org/data/docs/ICD_GLONASS_5.1_(2008)_en.pdf" target="_blank">ICD</a>. The usage of the HP signal should be agreed with the Russian Federation Defense
   Ministry, and no more details have been disclosed.
 
 
 \li <b>GLONASS L2</b>. Beginning with the second generation of satellites, called GLONASS-M and first launched in 2001, a second civil signal is available using the same SP code than the one in the L1 band.
 
-The use of FDMA techniques, in which the same code is used to broadcast navigation signals on different frequencies, and the placement of civil GLONASS transmissions on frequencies close to \f$1600\f$ MHz, 
-well above the GPS L1 band, have complicated the design of combined GLONASS/GPS receivers, particularly low-cost equipment for mass-market applications. Future plans of modernization are 
-intended to increase compatibility and interoperability with other GNSS, and include the addition of a code-division multiple access (CDMA) structure, and possibly binary offset carrier (BOC) 
-modulation, beginning with the third civil signal in the L3 band (\f$1197.648 - 1212.255\f$ MHz). Russia is implementing the new signals on the next-generation GLONASS-K satellites, with a 
+The use of FDMA techniques, in which the same code is used to broadcast navigation signals on different frequencies, and the placement of civil GLONASS transmissions on frequencies close to \f$1600\f$ MHz,
+well above the GPS L1 band, have complicated the design of combined GLONASS/GPS receivers, particularly low-cost equipment for mass-market applications. Future plans of modernization are
+intended to increase compatibility and interoperability with other GNSS, and include the addition of a code-division multiple access (CDMA) structure, and possibly binary offset carrier (BOC)
+modulation, beginning with the third civil signal in the L3 band (\f$1197.648 - 1212.255\f$ MHz). Russia is implementing the new signals on the next-generation GLONASS-K satellites, with a
 first prototype successfully launched into orbit on February 26, 2011.
 
 
@@ -173,9 +173,9 @@ period of \f$14\f$ hours. The Control segment full infrastructure will be compos
 Galileo's Open Service is defined at <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 1.1</b></a>, where the following signal structures are specified:
 
 
-\li <b>Galileo E1</b>. This band, centered at \f$f_{\text{Gal E1}}=1575.420\f$ MHz and with a reference bandwidth of \f$24.5520\f$ MHz, uses the so-called composite binary offset carrier 
+\li <b>Galileo E1</b>. This band, centered at \f$f_{\text{Gal E1}}=1575.420\f$ MHz and with a reference bandwidth of \f$24.5520\f$ MHz, uses the so-called composite binary offset carrier
 CBOC(6,1,\f$\frac{1}{11}\f$) modulation, defined in baseband as:
-\f{align}{ 
+\f{align}{
 s^{\text{(Gal E1)}}_{T}(t)=&\frac{1}{\sqrt{2}} \Big( e_{E1B}(t)\left( \alpha sc_A(t)+ \beta sc_B(t) \right)+ \\
 {}&  - e_{E1C}(t) \left( \alpha sc_A(t)- \beta  sc_B(t) \right) \Big)~,\label{eq:CBOC}
 \f}
@@ -192,8 +192,8 @@ In case of channel \f$C\f$, it is a pilot (dataless) channel with a secondary co
 \f{align}{
 \nonumber e_{E1C}(t)&= \sum_{m=-\infty}^{+\infty}C_{E1Cs}\Big[|m|_{25}\Big] \oplus \sum_{l=1}^{4092}C_{E1Cp}\Big[ l \Big] \cdot \\ {}& \; \; \cdot p(t-mT_{c,E1Cs}-lT_{c,E1Cp})~,\label{eq:E1C}
 \f}
-  with \f$T_{c,E1B}=T_{c,E1Cp}=\frac{1}{1.023}\f$ \f$\mu\f$s and \f$T_{c,E1Cs}=4\f$ ms. The \f$C_{E1B}\f$ and \f$C_{E1Cp}\f$ primary codes are pseudorandom memory code sequences defined at 
-  Annex C.7 and C.8 of <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf" target="_blank">OS SIS ICD</a>. The binary 
+  with \f$T_{c,E1B}=T_{c,E1Cp}=\frac{1}{1.023}\f$ \f$\mu\f$s and \f$T_{c,E1Cs}=4\f$ ms. The \f$C_{E1B}\f$ and \f$C_{E1Cp}\f$ primary codes are pseudorandom memory code sequences defined at
+  Annex C.7 and C.8 of <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf" target="_blank">OS SIS ICD</a>. The binary
   sequence of the secondary code \f$C_{E1Cs}\f$ is 0011100000001010110110010. This band also contains another component, Galileo E1A, intended for the Public Regulated Service (PRS).
  It uses a BOC(15,2.5) modulation with cosine-shaped subcarrier \f$f_{s,E1A}=15.345\f$ MHz and \f$T_{c, E1A}=\frac{1}{2.5575}\f$ \f$\mu\f$s.
 The PRS spreading codes and the structure of the navigation message have not been made public.
@@ -207,19 +207,19 @@ s_{T}^{\text{(Gal E6)}}(t) = \frac{1}{\sqrt{2}}\left(e_{E6B}(t)-e_{E6C}(t)\right
 \nonumber e_{E6B}(t) =& \sum_{m=-\infty}^{+\infty}  D_{\text{C/NAV}}  \Big[ [l]_{5115}\Big]  \oplus C_{E6B}\Big[|l|_{L_{E6B}}\Big] \cdot \\ {}& \cdot  p(t  -  lT_{c,E6}),\\
 \nonumber e_{E6C}(t) =& \sum_{m=-\infty}^{+\infty}C_{E6Cs}\Big[|m|_{100}\Big] \oplus \sum_{l=1}^{L_{E6C}}C_{E6Cp}\Big[ l \Big] \cdot \\ {}& \cdot p(t-mT_{c,E6s} -lT_{c,E6p}),
 \f}
-  where \f$D_{\text{C/NAV}}\f$ is the C/NAV navigation data stream, which is modulated with the encrypted ranging code \f$C_{E6B}\f$ with chip period \f$T_{c,E6}=\frac{1}{5.115}\f$ \f$\mu\f$s, thus 
-  being a BPSK(5) modulation. Codes \f$C_{E6B}\f$ and primary codes \f$C_{E6Cs}\f$ and their respective lengths, \f$L_{E6B}\f$ and \f$L_{E6C}\f$, have not been published. The secondary codes 
-  for the pilot component, \f$C_{E6Cs}\f$, are available at the <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf" target="_blank">OS SIS ICD</a>. 
+  where \f$D_{\text{C/NAV}}\f$ is the C/NAV navigation data stream, which is modulated with the encrypted ranging code \f$C_{E6B}\f$ with chip period \f$T_{c,E6}=\frac{1}{5.115}\f$ \f$\mu\f$s, thus
+  being a BPSK(5) modulation. Codes \f$C_{E6B}\f$ and primary codes \f$C_{E6Cs}\f$ and their respective lengths, \f$L_{E6B}\f$ and \f$L_{E6C}\f$, have not been published. The secondary codes
+  for the pilot component, \f$C_{E6Cs}\f$, are available at the <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf" target="_blank">OS SIS ICD</a>.
   The receiver reference bandwidth for this signal is \f$40.920\f$ MHz. This band also contains another component, Galileo E6A, intended for PRS.
 
 \li <b>Galileo E5</b>. Centered at \f$f_{\text{Gal E5}}=1191.795\f$ MHz and with a total bandwidth of \f$51.150\f$ MHz, its signal structure deserves some analysis. The AltBOC modulation can be generically expressed as
 \f{equation}{\label{AltBOC}
 s^{\text{AltBOC}}(t)=x_1(t)v^{*}(t)+x_2(t)v(t)~,
 \f}
-  where \f$v(t)=\frac{1}{\sqrt{2}}\left( \text{sign}\left( \cos (2 \pi f_s t)\right)+j \text{sign}\left( \sin (2 \pi f_s t)\right)\right)\f$ is the single side-band 
-  subcarrier, \f$f_s\f$ is the subcarrier frequency, \f$(\cdot)^{*}\f$ stands for the conjugate operation, and \f$x_1(t)\f$ and \f$x_2(t)\f$ are QPSK signals. 
-  The resulting waveform  does not exhibit constant envelope. In case of Galileo, the need for high efficiency of the satellites' onboard High Power Amplifier (HPA) has pushed 
-  a modification on the signal in order to make it envelope-constant and thus use the HPA at saturation. This can be done by adding some inter-modulation products to the expression 
+  where \f$v(t)=\frac{1}{\sqrt{2}}\left( \text{sign}\left( \cos (2 \pi f_s t)\right)+j \text{sign}\left( \sin (2 \pi f_s t)\right)\right)\f$ is the single side-band
+  subcarrier, \f$f_s\f$ is the subcarrier frequency, \f$(\cdot)^{*}\f$ stands for the conjugate operation, and \f$x_1(t)\f$ and \f$x_2(t)\f$ are QPSK signals.
+  The resulting waveform  does not exhibit constant envelope. In case of Galileo, the need for high efficiency of the satellites' onboard High Power Amplifier (HPA) has pushed
+  a modification on the signal in order to make it envelope-constant and thus use the HPA at saturation. This can be done by adding some inter-modulation products to the expression
   above, coming up with the following definition:
 
 \f{align}{
@@ -260,9 +260,9 @@ receiver. The single subcarrier \f$sc_s(t)\f$ and the product subcarrier \f$sc_p
  sc_p(t)=& -\frac{\sqrt{2}}{4}\text{sign} \left( \cos \left( 2 \pi f_s t - \frac{\pi}{4}\right) \right)+\\ \nonumber {}&+ \frac{1}{2}\text{sign} \Big( \cos \left( 2 \pi f_s t \right) \Big)+\\
 {} &-\frac{\sqrt{2}}{4}\text{sign} \left( \cos \left( 2 \pi f_s t + \frac{\pi}{4}\right) \right)~,
 \f}
-  with a subcarrier frequency of \f$f_s=15.345\f$ MHz, thus defining an AltBOC(15,10) modulation. The QPSK(10) signal \f$e_{E5a}(t)\f$ defined above is shifted 
+  with a subcarrier frequency of \f$f_s=15.345\f$ MHz, thus defining an AltBOC(15,10) modulation. The QPSK(10) signal \f$e_{E5a}(t)\f$ defined above is shifted
   to \f$f_{\text{Gal E5a}}\doteq f_{\text{Gal E5}}-f_s=1176.450\f$ MHz, while \f$e_{E5b}(t)\f$ is shifted to \f$f_{\text{Gal E5b}}\doteq f_{\text{Gal E5}}+f_s=1207.140\f$ MHz.
-   Thus, we can bandpass filter around \f$f_{\text{Gal E5a}}\f$ and get a good approximation of a QPSK(10) signal, with very low energy components of \f$e_{E5b}(t)\f$, \f$ \bar{e}_{E5a}(t)\f$, 
+   Thus, we can bandpass filter around \f$f_{\text{Gal E5a}}\f$ and get a good approximation of a QPSK(10) signal, with very low energy components of \f$e_{E5b}(t)\f$, \f$ \bar{e}_{E5a}(t)\f$,
    and \f$ \bar{e}_{E5b}(t)\f$:
 \f{equation}{
 s_{T}^{\text{(Gal E5a)}}(t) \simeq e_{E5aI}(t)+je_{E5aQ}(t).
@@ -273,9 +273,9 @@ The same applies to \f$e_{E5b}(t)\f$, allowing an independent reception of two Q
 
 This text is an except of the following paper:
 
-\li C. Fern&aacute;ndez-Prades, L. Lo Presti, E. Falleti, <a href="http://ieeexplore.ieee.org/xpl/articleDetails.jsp?tp=&arnumber=5942139" target="_blank"><i>Satellite Radiolocalization From GPS to GNSS and Beyond: Novel Technologies and Applications for Civil Mass-Market</i></a>.
+\li C. Fern&aacute;ndez-Prades, L. Lo Presti, E. Falleti, <a href="https://ieeexplore.ieee.org/document/5942139/" target="_blank"><i>Satellite Radiolocalization From GPS to GNSS and Beyond: Novel Technologies and Applications for Civil Mass-Market</i></a>.
  Proceedings of the IEEE. Vol 99, No. 11, pp. 1882-1904. November, 2011. DOI: 10.1109/JPROC.2011.2158032
-   
-   
+
+
 
 */

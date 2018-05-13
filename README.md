@@ -1360,7 +1360,7 @@ More documentation at the [PVT Blocks page](https://gnss-sdr.org/docs/sp-blocks/
 About the software license
 ==========================
 
-GNSS-SDR is released under the [General Public License (GPL) v3](http://www.gnu.org/licenses/gpl.html), thus securing practical usability, inspection, and continuous improvement by the research community, allowing the discussion based on tangible code and the analysis of results obtained with real signals. The GPL implies that:
+GNSS-SDR is released under the [General Public License (GPL) v3](https://www.gnu.org/licenses/gpl.html), thus securing practical usability, inspection, and continuous improvement by the research community, allowing the discussion based on tangible code and the analysis of results obtained with real signals. The GPL implies that:
 
    1. Copies may be distributed free of charge or for money, but the source code has to be shipped or provided free of charge (or at cost price) on demand. The receiver of the source code has the same rights meaning he can share copies free of charge or resell.
    2. The licensed material may be analyzed or modified.

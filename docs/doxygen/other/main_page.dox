@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 /*! \mainpage
@@ -23,12 +23,12 @@
 
 Welcome to GNSS-SDR!
 
-GNSS-SDR is an open-source <a href="http://en.wikipedia.org/wiki/Software_GNSS_receiver" target="_blank">GNSS software receiver</a> freely available to the research community. This project provides a common framework for GNSS signal processing which can operate in a variety of computer platforms. This tool is intended to foster collaboration, increase awareness, and reduce development costs in the field of GNSS receiver design and customized use of GNSS signals.
+GNSS-SDR is an open-source <a href="https://en.wikipedia.org/wiki/Software_GNSS_receiver" target="_blank">GNSS software receiver</a> freely available to the research community. This project provides a common framework for GNSS signal processing which can operate in a variety of computer platforms. This tool is intended to foster collaboration, increase awareness, and reduce development costs in the field of GNSS receiver design and customized use of GNSS signals.
 
 For details about GNSS-SDR and using it, please see the <a
 href="https://gnss-sdr.org" target="_blank"><b>main project page</b></a> or browse the code at the <a
-href="http://sourceforge.net/p/gnss-sdr/cttc/ci/master/tree/" target="_blank"><b>Sourceforge project page</b></a>. You could be also interested in
-<a href="http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>subscribing to the mailing list</b></a>.
+href="https://sourceforge.net/p/gnss-sdr/cttc/ci/master/tree/" target="_blank"><b>Sourceforge project page</b></a>. You could be also interested in
+<a href="https://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>subscribing to the mailing list</b></a>.
 
 \section toc Contents
 \li \ref overview
@@ -71,8 +71,8 @@ buses to a variety of either commercially available or custom-made RF front-ends
 
 As signal inputs, it accepts:
 \li Raw data file captured with a data grabber (digitized at some intermediate frequency or directly at baseband).
-\li Any suitable RF configuration that can be driven by the Universal Software Radio Peripheral Hardware Driver (<a href="http://files.ettus.com/uhd_docs/manual/html/" target="_blank">UHD</a>).
-This includes all current and future <a href="http://www.ettus.com/">Ettus Research</a> products. The USRP1 + DBSRX 2.2 daughterboard is an example of working configuration for GPS L1 C/A and Galileo E1B and E1C signals.
+\li Any suitable RF configuration that can be driven by the Universal Software Radio Peripheral Hardware Driver (<a href="https://files.ettus.com/uhd_docs/manual/html/" target="_blank">UHD</a>).
+This includes all current and future <a href="https://www.ettus.com/">Ettus Research</a> products. The USRP1 + DBSRX 2.2 daughterboard is an example of working configuration for GPS L1 C/A and Galileo E1B and E1C signals.
 \li The <a href="https://gnss-sdr.org/docs/tutorials/sige-gn3s-sampler-v2-usb-front-end/" target="blank">GN3S v2 USB dongle</a> (GN3S v3 might work with small modifications).
 \li Experimentally, with some <a href="https://gnss-sdr.org/docs/tutorials/gnss-sdr-operation-realtek-rtl2832u-usb-dongle-dvb-t-receiver/" target="_blank">USB DVB-T dongles based on the Realtek RTL2832U chipset</a>.
 \li For mathematical representations of the targeted signals, check out the \ref the_signal_model page.
@@ -88,19 +88,19 @@ As outputs, it provides:
 \section build Building GNSS-SDR
 
 In principle, GNSS-SDR can be built in any Unix-like system. In practice, it depends on being able to install all the required dependencies. See the <a href="https://gnss-sdr.org/build-and-install/" target="_blank">building guide</a> page for details about the project's
-dependencies and build process. Mainly, it consists on installing <a href="http://gnuradio.org/" target="_blank">GNU Radio</a> plus some few more libraries:
+dependencies and build process. Mainly, it consists on installing <a href="https://gnuradio.org/" target="_blank">GNU Radio</a> plus some few more libraries:
 
-\li <a href="http://code.google.com/p/gflags/" target="_blank">Gflags</a>, a library that implements commandline flags processing,
-\li <a href="http://code.google.com/p/google-glog/" target="_blank">Glog</a>, a library that implements application-level logging,
+\li <a href="https://github.com/gflags/gflags" target="_blank">Gflags</a>, a library that implements commandline flags processing,
+\li <a href="https://github.com/google/glog" target="_blank">Glog</a>, a library that implements application-level logging,
 \li <a href="http://arma.sourceforge.net/" target="_blank">Armadillo</a>, a C++ linear algebra library,
-\li <a href="http://code.google.com/p/googletest/" target="_blank">Googletest</a>, Google's framework for writing C++ tests (requires definition of the GTEST_DIR variable),
+\li <a href="https://github.com/google/googletest" target="_blank">Googletest</a>, Google's framework for writing C++ tests (requires definition of the GTEST_DIR variable),
 
 and, optionally,
-\li <a href="http://code.google.com/p/gperftools/" target="_blank">Gperftools</a>, which provides fast, multi-threaded malloc() and performance analysis tools.
+\li <a href="https://github.com/gperftools/gperftools" target="_blank">Gperftools</a>, which provides fast, multi-threaded malloc() and performance analysis tools.
 
 After all dependencies are installed, clone the GNSS-SDR repository:
 \verbatim
-$ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
+$ git clone https://github.com/gnss-sdr/gnss-sdr
 \endverbatim
 
 This will create a folder named gnss-sdr with the following structure:
@@ -136,7 +136,7 @@ This will create a folder named gnss-sdr with the following structure:
  |-----utils     <- some utilities (e.g. Matlab scripts)
 \endverbatim
 
-You are now ready to build GNSS-SDR by using <a href="http://www.cmake.org/" target="_blank">CMake</a> as building tool:
+You are now ready to build GNSS-SDR by using <a href="https://cmake.org/" target="_blank">CMake</a> as building tool:
 \verbatim
 $ cd gnss-sdr/build
 $ cmake ../
@@ -201,7 +201,7 @@ $ sudo make uninstall
 $ rm -rf *
 \endverbatim
 
-You can also check <a href="http://git-scm.com/book" target="_blank">The Git Book</a> for more information about Git usage.
+You can also check <a href="https://git-scm.com/book" target="_blank">The Git Book</a> for more information about Git usage.
 
 \section using_gnss-sdr Using GNSS-SDR
 
@@ -214,7 +214,7 @@ $ gnss-sdr --config_file=../conf/my_receiver.conf
 \endverbatim
 
 You can see a guide of available implementations at <tt>gnss-sdr/conf/master.conf</tt>. That folder contains other working examples as well. If you have a working
-configuration and want to share it will others, please email it to the <a href="http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>GNSS-SDR developers mailing list</b></a>
+configuration and want to share it will others, please email it to the <a href="https://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>GNSS-SDR developers mailing list</b></a>
 and we will be happy to upload it to the server.
 
 You can use a single configuration file for processing
@@ -228,7 +228,7 @@ You can get a complete list of available commandline flags by doing:
 \verbatim
 $ gnss-sdr --help
 \endverbatim
-For general usage of commandline flags, see <a href="http://google-gflags.googlecode.com/svn/trunk/doc/gflags.html" target="_blank">how to use Google Commandline Flags</a>.
+
 
 \section control_plane Control plane
 GNSS-SDR's main method initializes the logging library, processes the command line flags, if any, provided by the user and instantiates a ControlThread object.
@@ -276,7 +276,7 @@ SignalConditioner.implementation=Pass_Through
 
 Since the configuration is just a set of property names and values without any meaning or syntax, the system is very versatile and easily extendable. Adding new
 properties to the system only implies modifications in the classes that will make use of these properties. In addition, the configuration files are not checked
-against any strict syntax so it is always in a correct status (as long as it contains pairs of property names and values in <a href="http://en.wikipedia.org/wiki/INI_file" target="_blank">INI format</a>).
+against any strict syntax so it is always in a correct status (as long as it contains pairs of property names and values in <a href="https://en.wikipedia.org/wiki/INI_file" target="_blank">INI format</a>).
 
 \subsection gnss_block_factory GNSS block factory
 Hence, the application defines a simple accessor class to fetch the configuration pairs of values and passes them to a factory class called GNSSBlockFactory.
@@ -373,10 +373,7 @@ a rough location and the approximate time of day are available, and the receiver
 was tracking a satellite and the signal line of sight broke for a short period of time, but the ephemeris and almanac data is still valid, or this information
 is provided by other means), and an acquisition process can finish deciding that the satellite is not present, that longer integration is needed in order to
 confirm the presence of the satellite, or declaring the satellite present. In the latter case, acquisition process should stop and trigger the tracking module
-with coarse estimations of the synchronization parameters. The mathematical abstraction used to design this logic is known as finite state machine (FSM), that is
-a behavior model composed of a finite number of states, transitions between those states, and actions. For the implementation, we used the
-<a href="http://www.boost.org/libs/statechart/doc/tutorial.html" target="_blank">Boost.Statechart library</a>,
-which provides desirable features such as support for asynchronous state machines, multi-threading, type-safety, error handling and compile-time validation.
+with coarse estimations of the synchronization parameters.
 
 The abstract class ChannelInterface represents an interface to a channel GNSS block. Check Channel for an actual implementation.
 
@@ -513,7 +510,7 @@ Most of GNSS signal links are modulated by a navigation message containing the t
 error correction). Navigation data bits are structured in words, pages, subframes, frames and superframes. Sometimes, bits corresponding to a single parameter are
 spread over different words, and values extracted from different frames are required for proper decoding. Some words are for synchronization purposes, others for
 error control an others contain actual information. There are also error control mechanisms, from parity checks to forward error correction (FEC) encoding and
-interleaving, depending on the system. All this decoding complexity is managed by a finite state machine implemented with the <a href="http://www.boost.org/libs/statechart/doc/tutorial.html" target="_blank">Boost.Statechart library</a>.
+interleaving, depending on the system.
 
 The common interface is TelemetryDecoderInterface. Check GpsL1CaTelemetryDecoder for an example of the GPS L1 NAV message decoding adapter, and gps_l1_ca_telemetry_decoder_cc
 for an actual implementation of a signal processing block. Configuration example:
@@ -583,7 +580,7 @@ PVT.dump_filename=./PVT ; Log path and filename without extension.
 
 
 \section license About the software license
-GNSS-SDR is released under the <a href="http://www.gnu.org/licenses/gpl.html" target="_blank">General Public License (GPL) v3</a>, thus securing practical usability, inspection,
+GNSS-SDR is released under the <a href="https://www.gnu.org/licenses/gpl.html" target="_blank">General Public License (GPL) v3</a>, thus securing practical usability, inspection,
 and continuous improvement by the research community, allowing the discussion based on tangible code and the analysis of results obtained with real signals.
 The GPL implies that:
 
@@ -656,7 +653,7 @@ Another interesting option is working in real-time with a RF front-end. We provi
 and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
 
 You can find more information at the <a href="https://gnss-sdr.org/docs/" target="_blank"><b>GNSS-SDR Documentation page</b></a> or directly asking to the
-<a href="http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>GNSS-SDR Developers mailing list</b></a>.
+<a href="https://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>GNSS-SDR Developers mailing list</b></a>.
 
 You are also very welcome to contribute to the project, there are many ways to <a href="https://gnss-sdr.org/contribute/" target="_blank"><b>participate in GNSS-SDR</b></a>.
 If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it.

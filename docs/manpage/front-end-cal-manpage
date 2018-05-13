@@ -32,7 +32,7 @@ Example of configuration file available at: ${prefix}/share/gnss\-sdr/conf/front
 \.TP
 [1] C. Fernandez\-Prades, J. Arribas, P. Closas, \fITurning a Television into a GNSS Receiver\fR, in Proceedings of ION GNSS+, 15\-16 September 2013, Nashville, Tennessee (USA). A draft copy is freely available at http://www.cttc.es/publication/turning\-a\-television\-into\-a\-gnss\-receiver/
 \.TP
-Check https://gnss\\-sdr.org for more information.
+Check https://gnss\-sdr.org for more information.
 .SH BUGS
 No known bugs.
 .SH AUTHOR

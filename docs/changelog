@@ -81,7 +81,7 @@ Next release will have several improvements, addition of new features and bug fi
 - Fixed a number of defects detected by Coverity Scan.
 - Some destructors have been fixed, avoiding a segmentation fault when exiting the program.
 - Introduction of high-integrity C++ practices into the coding style guide.
-- Website switched from http to https. 
+- Website switched from http to https. Links in source code switched when available.
 
 
 ### Improvements in Reproducibility:

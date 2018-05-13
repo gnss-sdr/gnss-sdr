@@ -15,7 +15,7 @@ dependencies: gnuradio (>= 3.7.3), armadillo, gflags, glog, gnutls
 license: GPLv3+
 repo: https://github.com/gnss-sdr/gnss-sdr
 website: https://gnss-sdr.org
-icon: http://a.fsdn.com/con/app/proj/gnss-sdr/screenshots/logo400x400.jpg
+icon: https://a.fsdn.com/con/app/proj/gnss-sdr/screenshots/logo400x400.jpg
 ---
 Global Navigation Satellite Systems receiver defined by software. It performs all the signal
 processing from raw signal samples up to the computation of the Position-Velocity-Time solution,

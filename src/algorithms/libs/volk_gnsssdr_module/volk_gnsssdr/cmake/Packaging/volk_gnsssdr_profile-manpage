@@ -10,7 +10,7 @@ The Vector-Optimized Library of Kernels of GNSS-SDR (VOLK_GNSSSDR) is a software
 .TP
 Processors providing SIMD instruction sets compute with multiple processing elements that perform the same operation on multiple data points simultaneously, thus exploiting data-level parallelism, an can be found in most modern desktop and laptop personal computers. In a nutshell, VOLK_GNSSSDR implements in assembly language optimized versions of computationally-intensive operations for different processor architectures that are commonly found in modern computers. In order to use the most optimized version for the specific processor(s) of the host machine running the software receiver (that is, the implementation than runs the fastest).
 .TP
-\fBvolk_gnsssdr_profile\fR is a program that tests all known VOLK_GNSSSDR kernels (that is, basic processing components like adders, multipliers, correlators, and much more) for each architecture supported by the host machine, measuring their performance. When finished, the profiler writes to $HOME/.volk_gnsssdr/volk_gnsssdr_config the best architecture for each VOLK_GSSSDR function. This file is read when using a function to know the best version to execute. 
+\fBvolk_gnsssdr_profile\fR is a program that tests all known VOLK_GNSSSDR kernels (that is, basic processing components like adders, multipliers, correlators, and much more) for each architecture supported by the host machine, measuring their performance. When finished, the profiler writes to $HOME/.volk_gnsssdr/volk_gnsssdr_config the best architecture for each VOLK_GSSSDR function. This file is read when using a function to know the best version to execute.
 .SH OPTIONS
 \fBvolk_gnsssdr_profile\fR takes the following options:
 .TP
@@ -34,7 +34,7 @@ Processors providing SIMD instruction sets compute with multiple processing elem
 .SH SEE ALSO
 .BR gnss-sdr (1)
 \.TP
-Check http://gnss-sdr.org for more information.
+Check https://gnss\-sdr.org for more information.
 .SH HISTORY
 This library was originally developed by Andres Cecilia Luque in the framework of the Summer of Code in Space program (SOCIS 2014) by the European Space Agency (ESA), and then integrated into \fBgnss-sdr\fR. This software is based on the VOLK library http://libvolk.org/
 .SH BUGS

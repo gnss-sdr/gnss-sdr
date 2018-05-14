@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -37,12 +37,15 @@ using google::LogMessage;
 
 // Constructor
 SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
-    std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
-    std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation) : data_type_adapt_(data_type_adapt),
-                                                                                             in_filt_(in_filt),
-                                                                                             res_(res),
-                                                                                             role_(role),
-                                                                                             implementation_(implementation)
+    std::shared_ptr<GNSSBlockInterface> data_type_adapt,
+    std::shared_ptr<GNSSBlockInterface> in_filt,
+    std::shared_ptr<GNSSBlockInterface> res,
+    std::string role,
+    std::string implementation) : data_type_adapt_(data_type_adapt),
+                                  in_filt_(in_filt),
+                                  res_(res),
+                                  role_(role),
+                                  implementation_(implementation)
 {
     connected_ = false;
     if (configuration)
@@ -100,6 +103,7 @@ gr::basic_block_sptr SignalConditioner::get_left_block()
 {
     return data_type_adapt_->get_left_block();
 }
+
 
 gr::basic_block_sptr SignalConditioner::get_right_block()
 {

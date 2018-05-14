@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -108,8 +108,6 @@ Channel::Channel(ConfigurationInterface* configuration, unsigned int channel,
 
 // Destructor
 Channel::~Channel() {}
-
-
 void Channel::connect(gr::top_block_sptr top_block)
 {
     if (connected_)
@@ -137,8 +135,6 @@ void Channel::connect(gr::top_block_sptr top_block)
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
     // Message ports
-    top_block->msg_connect(nav_->get_left_block(), pmt::mp("preamble_timestamp_s"), trk_->get_right_block(), pmt::mp("preamble_timestamp_s"));
-    DLOG(INFO) << "MSG FEEDBACK CHANNEL telemetry_decoder -> tracking";
 
     top_block->msg_connect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
     top_block->msg_connect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));

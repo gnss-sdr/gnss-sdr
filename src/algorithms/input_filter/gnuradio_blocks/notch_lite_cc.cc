@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -43,9 +43,15 @@ notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int length_,
     return notch_lite_sptr(new NotchLite(p_c_factor, pfa, length_, n_segments_est, n_segments_reset, n_segments_coeff));
 }
 
-NotchLite::NotchLite(float p_c_factor, float pfa, int length_, int n_segments_est, int n_segments_reset, int n_segments_coeff) : gr::block("NotchLite",
-                                                                                                                                     gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                                                                                                                     gr::io_signature::make(1, 1, sizeof(gr_complex)))
+
+NotchLite::NotchLite(float p_c_factor,
+    float pfa,
+    int length_,
+    int n_segments_est,
+    int n_segments_reset,
+    int n_segments_coeff) : gr::block("NotchLite",
+                                gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                                gr::io_signature::make(1, 1, sizeof(gr_complex)))
 {
     const int alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
     set_alignment(std::max(1, alignment_multiple));
@@ -74,10 +80,12 @@ NotchLite::NotchLite(float p_c_factor, float pfa, int length_, int n_segments_es
     d_fft = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(length_, true));
 }
 
+
 NotchLite::~NotchLite()
 {
     volk_free(power_spect);
 }
+
 
 void NotchLite::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
@@ -86,6 +94,7 @@ void NotchLite::forecast(int noutput_items __attribute__((unused)), gr_vector_in
             ninput_items_required[aux] = length_;
         }
 }
+
 
 int NotchLite::general_work(int noutput_items, gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)

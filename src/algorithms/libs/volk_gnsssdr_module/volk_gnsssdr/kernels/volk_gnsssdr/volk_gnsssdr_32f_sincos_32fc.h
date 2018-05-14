@@ -642,7 +642,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, con
 #endif /* LV_HAVE_GENERIC  */
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 #include <arm_neon.h>
 /* Adapted from http://gruntthepeon.free.fr/ssemath/neon_mathfun.h, original code from Julien Pommier  */
 /* Based on algorithms from the cephes library http://www.netlib.org/cephes/   */
@@ -747,7 +747,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_neon(lv_32fc_t* out, const float
         }
 }
 
-#endif /* LV_HAVE_NEON  */
+#endif /* LV_HAVE_NEONV7  */
 
 
 #endif /* INCLUDED_volk_gnsssdr_32f_sincos_32fc_H  */

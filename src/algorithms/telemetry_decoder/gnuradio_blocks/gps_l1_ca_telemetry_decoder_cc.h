@@ -5,7 +5,7 @@
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -36,9 +36,9 @@
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
-#include <deque>
 #include <fstream>
 #include <string>
+#include <boost/circular_buffer.hpp>
 
 class gps_l1_ca_telemetry_decoder_cc;
 
@@ -79,10 +79,14 @@ private:
     bool d_flag_frame_sync;
 
     // symbols
-    std::deque<Gnss_Synchro> d_symbol_history;
+    boost::circular_buffer<Gnss_Synchro> d_symbol_history;
 
     double d_symbol_accumulator;
     short int d_symbol_accumulator_counter;
+
+    // symbol counting
+    bool d_make_correlation;
+    unsigned int d_symbol_counter_corr;
 
     //bits and frame
     unsigned short int d_frame_bit_index;

@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,7 +28,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -125,7 +125,7 @@ void Nmea_Printer::close_serial()
 }
 
 
-bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data, bool print_average_values)
+bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<rtklib_solver>& pvt_data, bool print_average_values)
 {
     std::string GPRMC;
     std::string GPGGA;
@@ -432,9 +432,9 @@ std::string Nmea_Printer::get_GPGSA()
     // GSA-GNSS DOP and Active Satellites
     bool valid_fix = d_PVT_data->is_valid_position();
     int n_sats_used = d_PVT_data->get_num_valid_observations();
-    double pdop = d_PVT_data->get_PDOP();
-    double hdop = d_PVT_data->get_HDOP();
-    double vdop = d_PVT_data->get_VDOP();
+    double pdop = d_PVT_data->get_pdop();
+    double hdop = d_PVT_data->get_hdop();
+    double vdop = d_PVT_data->get_vdop();
 
     std::stringstream sentence_str;
     std::string sentence_header;
@@ -603,7 +603,7 @@ std::string Nmea_Printer::get_GPGGA()
     //boost::posix_time::ptime d_position_UTC_time=boost::posix_time::microsec_clock::universal_time();
     bool valid_fix = d_PVT_data->is_valid_position();
     int n_channels = d_PVT_data->get_num_valid_observations();  //d_nchannels
-    double hdop = d_PVT_data->get_HDOP();
+    double hdop = d_PVT_data->get_hdop();
     double MSL_altitude;
 
     if (d_PVT_data->is_averaging() == true)

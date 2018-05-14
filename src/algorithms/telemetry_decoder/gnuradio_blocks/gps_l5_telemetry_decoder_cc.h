@@ -1,11 +1,10 @@
 /*!
  * \file gps_l5_telemetry_decoder_cc.h
- * \brief Interface of a CNAV message demodulator block based on
- * Kay Borre book MATLAB-based GPS receiver
+ * \brief Interface of a CNAV message demodulator block
  * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +22,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -42,7 +41,8 @@
 #include <utility>
 #include <vector>
 
-extern "C" {
+extern "C"
+{
 #include "cnav_msg.h"
 #include "edc.h"
 #include "bits.h"

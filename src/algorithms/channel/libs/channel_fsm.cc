@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,6 +33,7 @@
 #include "control_message_factory.h"
 #include <glog/logging.h>
 
+using google::LogMessage;
 
 ChannelFsm::ChannelFsm()
 {
@@ -135,11 +136,13 @@ bool ChannelFsm::Event_failed_tracking_standby()
         }
 }
 
+
 void ChannelFsm::set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition)
 {
     std::lock_guard<std::mutex> lk(mx);
     acq_ = acquisition;
 }
+
 
 void ChannelFsm::set_tracking(std::shared_ptr<TrackingInterface> tracking)
 {
@@ -147,11 +150,13 @@ void ChannelFsm::set_tracking(std::shared_ptr<TrackingInterface> tracking)
     trk_ = tracking;
 }
 
+
 void ChannelFsm::set_queue(gr::msg_queue::sptr queue)
 {
     std::lock_guard<std::mutex> lk(mx);
     queue_ = queue;
 }
+
 
 void ChannelFsm::set_channel(unsigned int channel)
 {
@@ -159,10 +164,12 @@ void ChannelFsm::set_channel(unsigned int channel)
     channel_ = channel;
 }
 
+
 void ChannelFsm::start_acquisition()
 {
     acq_->reset();
 }
+
 
 void ChannelFsm::start_tracking()
 {
@@ -174,6 +181,7 @@ void ChannelFsm::start_tracking()
         }
 }
 
+
 void ChannelFsm::request_satellite()
 {
     std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
@@ -182,6 +190,7 @@ void ChannelFsm::request_satellite()
             queue_->handle(cmf->GetQueueMessage(channel_, 0));
         }
 }
+
 
 void ChannelFsm::notify_stop_tracking()
 {

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -45,9 +45,13 @@ notch_sptr make_notch_filter(float pfa, float p_c_factor,
 }
 
 
-Notch::Notch(float pfa, float p_c_factor, int length_, int n_segments_est, int n_segments_reset) : gr::block("Notch",
-                                                                                                       gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                                                                                       gr::io_signature::make(1, 1, sizeof(gr_complex)))
+Notch::Notch(float pfa,
+    float p_c_factor,
+    int length_,
+    int n_segments_est,
+    int n_segments_reset) : gr::block("Notch",
+                                gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                                gr::io_signature::make(1, 1, sizeof(gr_complex)))
 {
     const int alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
     set_alignment(std::max(1, alignment_multiple));
@@ -79,6 +83,7 @@ Notch::~Notch()
     volk_free(power_spect);
 }
 
+
 void Notch::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
     for (unsigned int aux = 0; aux < ninput_items_required.size(); aux++)
@@ -86,6 +91,7 @@ void Notch::forecast(int noutput_items __attribute__((unused)), gr_vector_int &n
             ninput_items_required[aux] = length_;
         }
 }
+
 
 int Notch::general_work(int noutput_items, gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)

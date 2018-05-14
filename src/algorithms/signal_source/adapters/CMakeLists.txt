@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 file(GLOB SIGNAL_SOURCE_ADAPTER_HEADERS "*.h")
@@ -29,11 +29,25 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
       message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
       message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
       message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
-      message(FATAL_ERROR "gnuradio-iio required for building gnss-sdr with this option enabled")
+      message(FATAL_ERROR "gnuradio-iio is required for building gnss-sdr with this option enabled.")
    endif(NOT IIO_FOUND)
    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
 endif(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+
+if(ENABLE_AD9361)
+   find_package(libiio REQUIRED)
+   if(NOT LIBIIO_FOUND)
+      message(STATUS "libiio not found, its installation is required.")
+      message(STATUS "Please build and install the following projects:")
+      message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
+      message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
+      message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
+      message(FATAL_ERROR "libiio is required for building gnss-sdr with this option enabled.")
+   endif(NOT LIBIIO_FOUND)
+   set(OPT_LIBRARIES ${OPT_LIBRARIES} ${LIBIIO_LIBRARIES})
+   set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${LIBIIO_INCLUDE_DIRS})
+endif(ENABLE_AD9361)
 
 
 if(ENABLE_PLUTOSDR)
@@ -54,6 +68,16 @@ if(ENABLE_FMCOMMS2)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} fmcomms2_signal_source.cc)
     endif(IIO_FOUND)
 endif(ENABLE_FMCOMMS2)
+
+if(ENABLE_AD9361)
+    ###############################################
+    # AD9361 DIRECT TO FPGA Hardware
+    ###############################################
+    if(LIBIIO_FOUND)
+        set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad9361_fpga_signal_source.cc)
+    endif(LIBIIO_FOUND)
+endif(ENABLE_AD9361)
+
 
 
 if(ENABLE_GN3S)

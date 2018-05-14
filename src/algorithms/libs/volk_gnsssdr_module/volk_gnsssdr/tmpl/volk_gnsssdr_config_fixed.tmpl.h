@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef INCLUDED_VOLK_GNSSSDR_CONFIG_FIXED_H
@@ -21,9 +21,9 @@
 
 // clang-format off
 %for i, arch in enumerate(archs):
-//#ifndef LV_${arch.name.upper()}
+#ifndef LV_${arch.name.upper()}
 #define LV_${arch.name.upper()} ${i}
-//#endif
+#endif
 %endfor
 // clang-format on
 #endif /*INCLUDED_VOLK_GNSSSDR_CONFIG_FIXED*/

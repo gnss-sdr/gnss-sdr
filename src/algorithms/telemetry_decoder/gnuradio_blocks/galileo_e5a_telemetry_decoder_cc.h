@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,7 +29,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -112,6 +112,15 @@ private:
     Gnss_Satellite d_satellite;
     // navigation message vars
     Galileo_Fnav_Message d_nav;
+
+    // vars for Viterbi decoder
+    int *out0, *out1, *state0, *state1;
+    int g_encoder[2];
+    const int nn = 2;  // Coding rate 1/n
+    const int KK = 7;  // Constraint Length
+    int mm = KK - 1;
+    const int CodeLength = 488;
+    int DataLength = (CodeLength / nn) - mm;
 };
 
 #endif /* GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_CC_H_ */

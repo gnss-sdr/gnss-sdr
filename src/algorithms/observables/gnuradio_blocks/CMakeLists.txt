@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 set(OBS_GR_BLOCKS_SOURCES 
@@ -39,8 +39,8 @@ list(SORT OBS_GR_BLOCKS_HEADERS)
 add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} ${OBS_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
 if(MATIO_FOUND)
-    add_dependencies(obs_gr_blocks glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
+    add_dependencies(obs_gr_blocks gnss_sp_libs glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
 else(MATIO_FOUND)
-    add_dependencies(obs_gr_blocks glog-${glog_RELEASE} armadillo-${armadillo_RELEASE} matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+    add_dependencies(obs_gr_blocks gnss_sp_libs glog-${glog_RELEASE} armadillo-${armadillo_RELEASE} matio-${GNSSSDR_MATIO_LOCAL_VERSION})
 endif(MATIO_FOUND)
-target_link_libraries(obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${ARMADILLO_LIBRARIES} ${MATIO_LIBRARIES})
+target_link_libraries(obs_gr_blocks gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES} ${ARMADILLO_LIBRARIES} ${MATIO_LIBRARIES})

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2016  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -38,8 +38,10 @@
 TEST(NmeaPrinterTest, PrintLine)
 {
     std::string filename("nmea_test.nmea");
-
-    std::shared_ptr<Pvt_Solution> pvt_solution = std::make_shared<Pvt_Solution>();
+    rtk_t rtk;
+    prcopt_t rtklib_configuration_options;
+    rtkinit(&rtk, &rtklib_configuration_options);
+    std::shared_ptr<rtklib_solver> pvt_solution = std::make_shared<rtklib_solver>(12, "filename", false, rtk);
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
         boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));  // example from http://aprs.gids.nl/nmea/#rmc
@@ -77,8 +79,10 @@ TEST(NmeaPrinterTest, PrintLine)
 TEST(NmeaPrinterTest, PrintLineLessthan10min)
 {
     std::string filename("nmea_test.nmea");
-
-    std::shared_ptr<Pvt_Solution> pvt_solution = std::make_shared<Pvt_Solution>();
+    rtk_t rtk;
+    prcopt_t rtklib_configuration_options;
+    rtkinit(&rtk, &rtklib_configuration_options);
+    std::shared_ptr<rtklib_solver> pvt_solution = std::make_shared<rtklib_solver>(12, "filename", false, rtk);
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
         boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));  // example from http://aprs.gids.nl/nmea/#rmc

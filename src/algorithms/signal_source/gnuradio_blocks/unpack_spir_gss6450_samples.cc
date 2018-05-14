@@ -5,7 +5,7 @@
  * \author Antonio Ramos,  antonio(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -57,6 +57,21 @@ unpack_spir_gss6450_samples::~unpack_spir_gss6450_samples()
 }
 
 
+int unpack_spir_gss6450_samples::compute_two_complement(unsigned long data)
+{
+    int res = 0;
+    if (static_cast<int>(data) < two_compl_thres)
+        {
+            res = static_cast<int>(data);
+        }
+    else
+        {
+            res = static_cast<int>(data) - adc_bits_two_pow;
+        }
+    return res;
+}
+
+
 int unpack_spir_gss6450_samples::work(int noutput_items,
     gr_vector_const_void_star& input_items, gr_vector_void_star& output_items)
 {
@@ -85,18 +100,4 @@ int unpack_spir_gss6450_samples::work(int noutput_items,
                 }
         }
     return noutput_items;
-}
-
-int unpack_spir_gss6450_samples::compute_two_complement(unsigned long data)
-{
-    int res = 0;
-    if (static_cast<int>(data) < two_compl_thres)
-        {
-            res = static_cast<int>(data);
-        }
-    else
-        {
-            res = static_cast<int>(data) - adc_bits_two_pow;
-        }
-    return res;
 }

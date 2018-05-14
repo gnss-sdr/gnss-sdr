@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -26,7 +26,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -49,7 +49,13 @@ direct_resampler_conditioner_cc_sptr direct_resampler_make_conditioner_cc(
 
 
 direct_resampler_conditioner_cc::direct_resampler_conditioner_cc(
-    double sample_freq_in, double sample_freq_out) : gr::block("direct_resampler_conditioner_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)), gr::io_signature::make(1, 1, sizeof(gr_complex))), d_sample_freq_in(sample_freq_in), d_sample_freq_out(sample_freq_out), d_phase(0), d_lphase(0), d_history(1)
+    double sample_freq_in,
+    double sample_freq_out) : gr::block("direct_resampler_conditioner_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)), gr::io_signature::make(1, 1, sizeof(gr_complex))),
+                              d_sample_freq_in(sample_freq_in),
+                              d_sample_freq_out(sample_freq_out),
+                              d_phase(0),
+                              d_lphase(0),
+                              d_history(1)
 {
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296
     const double two_32 = 4294967296.0;

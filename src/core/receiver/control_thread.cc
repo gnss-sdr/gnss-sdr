@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -110,7 +110,15 @@ ControlThread::~ControlThread()
 void ControlThread::run()
 {
     // Connect the flowgraph
-    flowgraph_->connect();
+    try
+        {
+            flowgraph_->connect();
+        }
+    catch (const std::exception e)
+        {
+            LOG(ERROR) << e.what();
+            return;
+        }
     if (flowgraph_->connected())
         {
             LOG(INFO) << "Flowgraph connected";
@@ -138,6 +146,13 @@ void ControlThread::run()
     keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
     sysv_queue_thread_ = boost::thread(&ControlThread::sysv_queue_listener, this);
 
+    bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
+
+    if (enable_FPGA == true)
+        {
+            flowgraph_->start_acquisition_helper();
+        }
+
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
         {
@@ -148,6 +163,7 @@ void ControlThread::run()
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
     flowgraph_->stop();
     stop_ = true;
+    flowgraph_->disconnect();
 
     //Join keyboard thread
 #ifdef OLD_BOOST
@@ -262,6 +278,7 @@ bool ControlThread::read_assistance_from_XML()
 
     return ret;
 }
+
 
 void ControlThread::assist_GNSS()
 {

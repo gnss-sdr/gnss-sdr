@@ -22,7 +22,7 @@
  *          </ul>
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,7 +40,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -62,17 +62,17 @@
  * \f$\hat{P}_{tot}=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2\f$ is the estimator of the total power, \f$|\cdot|\f$ is the absolute value,
  * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
  *
- * The SNR value is converted to CN0 [dB-Hz], taking to account the receiver bandwidth and the PRN code gain, using the following formula:
+ * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
  * \f{equation}
- *  CN0_{dB}=10*log(\hat{\rho})+10*log(\frac{f_s}{2})-10*log(L_{PRN}),
+ *     CN0_{dB}=10*log(\hat{\rho})-10*log(2 * T_{int}),
  * \f}
- * where \f$f_s\f$ is the sampling frequency and \f$L_{PRN}\f$ is the PRN sequence length.
+ * where \f$T_{int}\f$ is the coherent integration time, in seconds.
  * Ref: Marco Pini, Emanuela Falletti and Maurizio Fantino, "Performance
  * Evaluation of C/N0 Estimators using a Real Time GNSS Software Receiver,"
  * IEEE 10th International Symposium on Spread Spectrum Techniques and
  * Applications, pp.28-30, August 2008.
  */
-float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, double code_length);
+float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, double coh_integration_time_s);
 
 
 /*! \brief A carrier lock detector

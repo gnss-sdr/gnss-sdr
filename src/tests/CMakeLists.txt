@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 
@@ -308,6 +308,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
      ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/adapters

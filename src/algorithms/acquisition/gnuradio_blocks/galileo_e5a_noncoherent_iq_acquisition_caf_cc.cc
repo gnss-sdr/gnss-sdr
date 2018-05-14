@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,18 +30,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
-#include <sstream>
-#include <gnuradio/io_signature.h>
+#include "control_message_factory.h"
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "control_message_factory.h"
+#include <sstream>
 
 using google::LogMessage;
 
@@ -62,11 +62,15 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make
             samples_per_code, bit_transition_flag, dump, dump_filename, both_signal_components_, CAF_window_hz_, Zero_padding_));
 }
 
+
 galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisition_caf_cc(
     unsigned int sampled_ms,
     unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
-    int samples_per_ms, int samples_per_code,
+    unsigned int doppler_max,
+    long freq,
+    long fs_in,
+    int samples_per_ms,
+    int samples_per_code,
     bool bit_transition_flag,
     bool dump,
     std::string dump_filename,
@@ -167,6 +171,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_gr_stream_buffer = 0;
 }
 
+
 galileo_e5a_noncoherentIQ_acquisition_caf_cc::~galileo_e5a_noncoherentIQ_acquisition_caf_cc()
 {
     if (d_num_doppler_bins > 0)
@@ -266,6 +271,7 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
                 }
         }
 }
+
 
 void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
 {

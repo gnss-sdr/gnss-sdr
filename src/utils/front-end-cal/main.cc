@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -261,7 +261,7 @@ int main(int argc, char** argv)
 {
     const std::string intro_help(
         std::string("\n RTL-SDR E4000 RF front-end center frequency and sampling rate calibration tool that uses GPS signals\n") +
-        "Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)\n" +
+        "Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)\n" +
         "This program comes with ABSOLUTELY NO WARRANTY;\n" +
         "See COPYING file to see a copy of the General Public License\n \n");
 

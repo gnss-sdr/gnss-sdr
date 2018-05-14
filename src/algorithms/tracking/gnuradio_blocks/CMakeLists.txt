@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 if(ENABLE_CUDA)
@@ -23,7 +23,7 @@ if(ENABLE_CUDA)
 endif(ENABLE_CUDA)
 
 if(ENABLE_FPGA)
-     set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} gps_l1_ca_dll_pll_tracking_fpga_sc.cc)
+     set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} dll_pll_veml_tracking_fpga.cc)
 endif(ENABLE_FPGA)
 
 set(TRACKING_GR_BLOCKS_SOURCES

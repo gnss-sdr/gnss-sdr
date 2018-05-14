@@ -30,7 +30,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,7 +48,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -81,7 +81,7 @@ class pcps_acquisition_fpga;
 typedef boost::shared_ptr<pcps_acquisition_fpga> pcps_acquisition_fpga_sptr;
 
 pcps_acquisition_fpga_sptr
-pcps_make_acquisition(pcpsconf_fpga_t conf_);
+pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition that uses the FPGA.
@@ -94,7 +94,7 @@ class pcps_acquisition_fpga : public gr::block
 private:
     friend pcps_acquisition_fpga_sptr
 
-    pcps_make_acquisition(pcpsconf_fpga_t conf_);
+    pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 
     pcps_acquisition_fpga(pcpsconf_fpga_t conf_);
 

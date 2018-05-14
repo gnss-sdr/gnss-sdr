@@ -1,8 +1,9 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L1 C/A to a TrackingInterface
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * for GPS L1 C/A to a TrackingInterface that uses the FPGA
+ * \author Marc Majoral, 2018. mmajoral(at)cttc.es
+ *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -12,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,7 +31,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -38,9 +39,8 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 
-
 #include "tracking_interface.h"
-#include "gps_l1_ca_dll_pll_tracking_fpga_sc.h"
+#include "dll_pll_veml_tracking_fpga.h"
 #include <string>
 
 class ConfigurationInterface;
@@ -92,16 +92,14 @@ public:
 
     void start_tracking() override;
 
-    void reset(void);
-
 private:
-    //gps_l1_ca_dll_pll_tracking_cc_sptr tracking_;
-    gps_l1_ca_dll_pll_tracking_fpga_sc_sptr tracking_fpga_sc;
+    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+    int* d_ca_codes;
 };
 
 #endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_

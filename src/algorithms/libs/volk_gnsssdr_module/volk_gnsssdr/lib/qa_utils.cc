@@ -539,7 +539,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
     vlen = vlen + vlen_twiddle;
 
     const float tol_f = tol;
-    const unsigned int tol_i = static_cast<const unsigned int>(tol);
+    const unsigned int tol_i = static_cast<unsigned int>(tol);
 
     //first let's get a list of available architectures for the test
     std::vector<std::string> arch_list = get_arch_list(desc);

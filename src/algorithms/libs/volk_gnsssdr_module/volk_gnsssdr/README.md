@@ -20,10 +20,10 @@ sets. Then, the application ```volk_gnsssdr_profile``` runs some
 iterations of all versions that your machine can execute and annotates
 which is the fastest, which will then be selected at runtime when
 executing GNSS-SDR. In this way, we can address at the same time
-[portability](http://gnss-sdr.org/design-forces/portability/) (by
+[portability](https://gnss-sdr.org/design-forces/portability/) (by
 creating executables that will run in nearly all processor
 architectures) and
-[efficiency](http://gnss-sdr.org/design-forces/efficiency/) (by
+[efficiency](https://gnss-sdr.org/design-forces/efficiency/) (by
 providing custom implementations specially designed to take advantage of
 the specific processor that is running the code).
 
@@ -44,21 +44,21 @@ independently of GNSS-SDR.
 First, make sure that the required dependencies are installed in your
 machine:
 
-~~~~~~ 
+~~~~~~
 $ sudo apt-get install cmake python-mako python-six libboost-dev \
   libboost-filesystem-dev libboost-system-dev
-~~~~~~ 
+~~~~~~
 
 In order to build and install the library, go to the base folder of the
 source code and do:
 
-~~~~~~ 
+~~~~~~
 $ mkdir build
 $ cd build
 $ cmake ..
 $ make
 $ sudo make install
-~~~~~~ 
+~~~~~~
 
 That's it!
 
@@ -66,7 +66,7 @@ Before its first use, please execute ```volk_gnsssdr_profile``` to let
 your system know which is the fastest available implementation. This
 only has to be done once:
 
-~~~~~~ 
+~~~~~~
 $ volk_gnsssdr_profile
 ~~~~~~
 

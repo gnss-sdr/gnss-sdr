@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
 INCLUDE(FindPkgConfig)
 PKG_CHECK_MODULES(PC_TELEORBIT teleorbit)

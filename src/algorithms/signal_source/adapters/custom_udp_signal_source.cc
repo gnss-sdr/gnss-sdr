@@ -30,7 +30,7 @@
  */
 
 
-#include "udp_signal_source.h"
+#include "custom_udp_signal_source.h"
 #include "configuration_interface.h"
 #include "GPS_L1_CA.h"
 #include <boost/format.hpp>
@@ -41,7 +41,7 @@
 using google::LogMessage;
 
 
-UDPSignalSource::UDPSignalSource(ConfigurationInterface* configuration,
+CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configuration,
     std::string role, unsigned int in_stream, unsigned int out_stream,
     boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
@@ -107,12 +107,12 @@ UDPSignalSource::UDPSignalSource(ConfigurationInterface* configuration,
 }
 
 
-UDPSignalSource::~UDPSignalSource()
+CustomUDPSignalSource::~CustomUDPSignalSource()
 {
 }
 
 
-void UDPSignalSource::connect(gr::top_block_sptr top_block)
+void CustomUDPSignalSource::connect(gr::top_block_sptr top_block)
 {
     //connect null sinks to unused streams
     for (int n = 0; n < channels_in_udp_; n++)
@@ -132,7 +132,7 @@ void UDPSignalSource::connect(gr::top_block_sptr top_block)
 }
 
 
-void UDPSignalSource::disconnect(gr::top_block_sptr top_block)
+void CustomUDPSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     //disconnect null sinks to unused streams
     for (int n = 0; n < channels_in_udp_; n++)
@@ -151,19 +151,19 @@ void UDPSignalSource::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr UDPSignalSource::get_left_block()
+gr::basic_block_sptr CustomUDPSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::block_sptr();
 }
 
 
-gr::basic_block_sptr UDPSignalSource::get_right_block()
+gr::basic_block_sptr CustomUDPSignalSource::get_right_block()
 {
     return udp_gnss_rx_source_;
 }
 
-gr::basic_block_sptr UDPSignalSource::get_right_block(int RF_channel)
+gr::basic_block_sptr CustomUDPSignalSource::get_right_block(__attribute__((unused)) int RF_channel)
 {
     return udp_gnss_rx_source_;
 }

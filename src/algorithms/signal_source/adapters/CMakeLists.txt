@@ -21,6 +21,38 @@ list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
 
 # Optional drivers
 
+if(ENABLE_RAW_UDP)
+    # - Try to find libpcap include dirs and libraries
+    #
+    # Usage of this module as follows:
+    #
+    #     find_package(PCAP)
+    #
+    # Variables used by this module, they can change the default behaviour and need
+    # to be set before calling find_package:
+    #
+    #  PCAP_ROOT_DIR             Set this variable to the root installation of
+    #                            libpcap if the module has problems finding the
+    #                            proper installation path.
+    #
+    # Variables defined by this module:
+    #
+    #  PCAP_FOUND                System has libpcap, include and library dirs found
+    #  PCAP_INCLUDE_DIR          The libpcap include directories.
+    #  PCAP_LIBRARY              The libpcap library (possibly includes a thread
+    #                            library e.g. required by pf_ring's libpcap)
+    #  HAVE_PF_RING              If a found version of libpcap supports PF_RING
+    find_package(PCAP)
+    if(NOT PCAP_FOUND)
+        message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source (ENABLE_RAW_UDP)")
+    endif()
+    get_filename_component(PCAP_LIBRARY_DIRS ${PCAP_LIBRARY} DIRECTORY CACHE)
+   set(OPT_LIBRARIES ${OPT_LIBRARIES} ${PCAP_LIBRARIES})
+   set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${PCAP_INCLUDE_DIRS})
+   set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} custom_udp_signal_source.cc)
+   
+endif(ENABLE_RAW_UDP)
+
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
    find_package(iio REQUIRED)
    if(NOT IIO_FOUND)
@@ -166,7 +198,6 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc
                                   spir_gss6450_file_signal_source.cc
                                   rtl_tcp_signal_source.cc
                                   labsat_signal_source.cc
-                                  udp_signal_source.cc
                                   ${OPT_DRIVER_SOURCES}
 )
 

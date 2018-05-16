@@ -35,6 +35,7 @@
 
 
 #include "gnss_block_factory.h"
+
 #include "configuration_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_block_interface.h"
@@ -45,7 +46,6 @@
 #include "spir_file_signal_source.h"
 #include "spir_gss6450_file_signal_source.h"
 #include "rtl_tcp_signal_source.h"
-#include "udp_signal_source.h"
 #include "two_bit_packed_file_signal_source.h"
 #include "labsat_signal_source.h"
 #include "channel.h"
@@ -104,6 +104,10 @@
 #include "hybrid_observables.h"
 #include "rtklib_pvt.h"
 
+#if RAW_UDP
+#include "custom_udp_signal_source.h"
+#endif
+
 #if ENABLE_FPGA
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"
@@ -159,11 +163,7 @@ using google::LogMessage;
 
 
 GNSSBlockFactory::GNSSBlockFactory() {}
-
-
 GNSSBlockFactory::~GNSSBlockFactory() {}
-
-
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
     std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue, int ID)
 {
@@ -1053,11 +1053,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     exit(1);
                 }
         }
-    else if (implementation.compare("UDP_Signal_Source") == 0)
+#if RAW_UDP
+    else if (implementation.compare("Custom_UDP_Signal_Source") == 0)
         {
             try
                 {
-                    std::unique_ptr<GNSSBlockInterface> block_(new UDPSignalSource(configuration.get(), role, in_streams,
+                    std::unique_ptr<GNSSBlockInterface> block_(new CustomUDPSignalSource(configuration.get(), role, in_streams,
                         out_streams, queue));
                     block = std::move(block_);
                 }
@@ -1068,6 +1069,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     exit(1);
                 }
         }
+#endif
     else if (implementation.compare("Nsr_File_Signal_Source") == 0)
         {
             try

@@ -30,8 +30,8 @@
  */
 
 
-#ifndef GNSS_SDR_UDP_SIGNAL_SOURCE_H
-#define GNSS_SDR_UDP_SIGNAL_SOURCE_H
+#ifndef GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H
+#define GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H
 
 #include "gnss_block_interface.h"
 #include "gr_complex_ip_packet_source.h"
@@ -50,14 +50,14 @@ class ConfigurationInterface;
  * \brief This class reads from UDP packets, which streams interleaved
  * I/Q samples over a network.
  */
-class UDPSignalSource : public GNSSBlockInterface
+class CustomUDPSignalSource : public GNSSBlockInterface
 {
 public:
-    UDPSignalSource(ConfigurationInterface* configuration,
+    CustomUDPSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream,
         unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
-    virtual ~UDPSignalSource();
+    virtual ~CustomUDPSignalSource();
 
     inline std::string role() override
     {
@@ -69,7 +69,7 @@ public:
      */
     inline std::string implementation() override
     {
-        return "UDP_Signal_Source";
+        return "Custom_UDP_Signal_Source";
     }
 
     inline size_t item_size() override
@@ -102,4 +102,4 @@ private:
     boost::shared_ptr<gr::msg_queue> queue_;
 };
 
-#endif /*GNSS_SDR_UDP_SIGNAL_SOURCE_H */
+#endif /*GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H */

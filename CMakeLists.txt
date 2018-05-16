@@ -52,6 +52,7 @@ option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experime
 option(ENABLE_PLUTOSDR "Enable the use of ADALM-PLUTO Evaluation Boards (Analog Devices Inc.), requires gr-iio" OFF)
 option(ENABLE_FMCOMMS2 "Enable the use of FMCOMMS4-EBZ + ZedBoard hardware, requires gr-iio" OFF)
 option(ENABLE_AD9361 "Enable the use of AD9361 directo to FPGA hardware, requires gr-iio" OFF)
+option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample source, requires libpcap" OFF)
 
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
@@ -1321,6 +1322,16 @@ else(ENABLE_CUDA)
     message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA." )
 endif(ENABLE_CUDA)
 
+###############################################################################
+# CUSTOM UDP PACKET SOURCE (OPTIONAL)
+###############################################################################
+if(ENABLE_RAW_UDP)
+    message(STATUS "High-optimized custom UDP ip packet source will be enabled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'" )
+else(ENABLE_RAW_UDP)
+    message(STATUS "High-optimized custom UDP ip packet source will be enabled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'" )
+endif(ENABLE_RAW_UDP)
 
 
 ###############################################################################
@@ -1453,35 +1464,6 @@ if(ENABLE_GPROF)
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
     #endif(CMAKE_COMPILER_IS_GNUCXX)
 endif(ENABLE_GPROF)
-
-
-# - Try to find libpcap include dirs and libraries
-#
-# Usage of this module as follows:
-#
-#     find_package(PCAP)
-#
-# Variables used by this module, they can change the default behaviour and need
-# to be set before calling find_package:
-#
-#  PCAP_ROOT_DIR             Set this variable to the root installation of
-#                            libpcap if the module has problems finding the
-#                            proper installation path.
-#
-# Variables defined by this module:
-#
-#  PCAP_FOUND                System has libpcap, include and library dirs found
-#  PCAP_INCLUDE_DIR          The libpcap include directories.
-#  PCAP_LIBRARY              The libpcap library (possibly includes a thread
-#                            library e.g. required by pf_ring's libpcap)
-#  HAVE_PF_RING              If a found version of libpcap supports PF_RING
-find_package(PCAP)
-if(NOT PCAP_FOUND)
-    message(FATAL_ERROR "PCAP required to compile dbfcttc")
-endif()
-get_filename_component(PCAP_LIBRARY_DIRS ${PCAP_LIBRARY} DIRECTORY CACHE)
-
-
 
 
 ########################################################################

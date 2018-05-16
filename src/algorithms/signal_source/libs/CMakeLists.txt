@@ -17,7 +17,7 @@
 #
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
-     find_package(iio REQUIRED)
+     find_package(Griio REQUIRED)
           if(NOT IIO_FOUND)
                message(STATUS "gnuradio-iio not found, its installation is required.")
                message(STATUS "Please build and install the following projects:")

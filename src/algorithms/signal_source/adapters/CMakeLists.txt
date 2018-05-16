@@ -50,11 +50,10 @@ if(ENABLE_RAW_UDP)
    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${PCAP_LIBRARIES})
    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${PCAP_INCLUDE_DIRS})
    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} custom_udp_signal_source.cc)
-   
 endif(ENABLE_RAW_UDP)
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
-   find_package(iio REQUIRED)
+   find_package(Griio REQUIRED)
    if(NOT IIO_FOUND)
       message(STATUS "gnuradio-iio not found, its installation is required.")
       message(STATUS "Please build and install the following projects:")

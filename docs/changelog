@@ -43,7 +43,7 @@ Next release will have several improvements in different dimensions, addition of
 - Added the GLONASS L2 SP receiver chain.
 - Improvements in the Galileo E5a and GPS L2C receiver chains.
 - Updated list of available GNSS satellites.
-- Added four more signal sources: "Fmcomms2_Signal_Source", "Plutosdr_Signal Source", "Spir_GSS6450_File_Signal_Source" and "Labsat_Signal_Source". Documented in https://gnss-sdr.org/docs/sp-blocks/signal-source/
+- Added five more signal sources: "Fmcomms2_Signal_Source" (requires gr-iio), "Plutosdr_Signal Source" (requires gr-iio), "Spir_GSS6450_File_Signal_Source", "Labsat_Signal_Source" and "Custom_UDP_Signal_Source" (requires libpcap). Documented in https://gnss-sdr.org/docs/sp-blocks/signal-source/
 - Improved support for BladeRF, HackRF and RTL-SDR front-ends.
 - Added tools for the interaction with front-ends based on the AD9361 chipset.
 - Intermediate results are now saved in .mat binary format, readable from Matlab/Octave and from Python via h5py.

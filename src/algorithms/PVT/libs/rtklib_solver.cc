@@ -70,7 +70,7 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
-    for (unsigned int i = 0; i > 4; i++) dop_[i] = 0.0;
+    for (unsigned int i = 0; i < 4; i++) dop_[i] = 0.0;
     pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
 
     // ############# ENABLE DATA FILE LOG #################

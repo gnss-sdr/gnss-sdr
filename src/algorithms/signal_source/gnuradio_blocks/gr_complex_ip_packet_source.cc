@@ -24,17 +24,16 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 
-#include <gnuradio/io_signature.h>
 #include "gr_complex_ip_packet_source.h"
+#include <gnuradio/io_signature.h>
 
-#include <string.h>
-#include <stdlib.h>
+//#include <cstdlib>
 
 
 #define FIFO_SIZE 1472000

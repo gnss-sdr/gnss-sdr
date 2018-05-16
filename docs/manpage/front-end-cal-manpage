@@ -17,9 +17,9 @@ The crystal oscillator that ships with the RTL2832U family devices exhibits limi
 \fBfront\-end\-cal\fR takes the following options:
 .TP
 \fB\-config_file=\fR\fI<path\-to\-configuration\-file>\fR Set the configuration file.
-.TP 
+.TP
 \fB\-signal_source=\fR\fI<path\-to\-raw\-signal\-file>\fR If defined, path to the file containing the signal samples (overrides the data file specified in the configuration file).
-.TP 
+.TP
 \fB\-log_dir=\fR\fI<path\-to\-directory>\fR If defined, overrides the default directory where logs are saved.
 .TP
 \fB\-version\fR Print program version and exit.
@@ -32,7 +32,7 @@ Example of configuration file available at: ${prefix}/share/gnss\-sdr/conf/front
 \.TP
 [1] C. Fernandez\-Prades, J. Arribas, P. Closas, \fITurning a Television into a GNSS Receiver\fR, in Proceedings of ION GNSS+, 15\-16 September 2013, Nashville, Tennessee (USA). A draft copy is freely available at http://www.cttc.es/publication/turning\-a\-television\-into\-a\-gnss\-receiver/
 \.TP
-Check http://gnss\\-sdr.org for more information.
+Check https://gnss\-sdr.org for more information.
 .SH BUGS
 No known bugs.
 .SH AUTHOR

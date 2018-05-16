@@ -128,7 +128,7 @@ $ git pull --rebase upstream next
 
 ### How to submit a pull request
 
-Before submitting your code, please be sure to [apply clang-format](http://gnss-sdr.org/coding-style/#use-tools-for-automated-code-formatting).
+Before submitting your code, please be sure to [apply clang-format](https://gnss-sdr.org/coding-style/#use-tools-for-automated-code-formatting).
 
 When the contribution is ready, you can [submit a pull
 request](https://github.com/gnss-sdr/gnss-sdr/compare/). Head to your
@@ -146,24 +146,24 @@ accepted:
  * Avoid platform-dependent code. If your code require external
  dependencies, they must be available as packages in [Debian OldStable](https://wiki.debian.org/DebianOldStable).
  * Write tests.
- * Follow our [coding style guide](http://gnss-sdr.org/coding-style/).
+ * Follow our [coding style guide](https://gnss-sdr.org/coding-style/).
  * Write a descriptive and detailed summary. Please consider that
 reviewing pull requests is hard, so include as much information as
 possible to make your pull request's intent clear.
 
 For more details about Git usage, please check out [our
-tutorial](http://gnss-sdr.org/docs/tutorials/using-git/).
+tutorial](https://gnss-sdr.org/docs/tutorials/using-git/).
 
 
 ## Contributing to the website
 
-The content of http://gnss-sdr.org lives in a GitHub repository at
+The content of https://gnss-sdr.org lives in a GitHub repository at
 https://github.com/gnss-sdr/geniuss-place
 
 You can fork that repository, reproduce the entire website on your
 computer using [Jekyll](https://jekyllrb.com/), do changes and submit
 pull requests, just as explained above. For more details, please check
-out [how to contribute](http://gnss-sdr.org/contribute/).
+out [how to contribute](https://gnss-sdr.org/contribute/).
 
 Last but not the least, you can leave your comments on the website.
 
@@ -173,6 +173,6 @@ Last but not the least, you can leave your comments on the website.
 
 
 ![GeNiuSS
-contributes](http://gnss-sdr.org/assets/images/geniuss-contribute.png)
+contributes](https://gnss-sdr.org/assets/images/geniuss-contribute.png)
 
 Thanks for your contribution to GNSS-SDR!

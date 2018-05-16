@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 /*! \page reference_docs Reference Documents
@@ -21,32 +21,32 @@
 \section icd Interface Control Documents
 
 \subsection gps GPS
-All the current GPS Interface Control Documents can be downloaded from <a href="http://www.gps.gov" target="_blank">GPS.gov</a>, the official U.S. Government webpage for GPS.
+All the current GPS Interface Control Documents can be downloaded from <a href="https://www.gps.gov" target="_blank">GPS.gov</a>, the official U.S. Government webpage for GPS.
 
 
-\li GPS L1 and L2C: Global Positioning System Directorate, <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision H</b></a>. September, 2013.
-\li GPS L1C (available with first Block III launch): Global Positioning System Directorate, <a href="http://www.gps.gov/technical/icwg/IS-GPS-800D.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision D</b></a>. September, 2013.
-\li GPS L5 (first Block IIF satellite launched on May, 2010): Global Positioning System Directorate, <a href="http://www.gps.gov/technical/icwg/IS-GPS-705D.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision D</b></a>. September, 2013.
+\li GPS L1 and L2C: Global Positioning System Directorate, <a href="https://www.gps.gov/technical/icwg/IS-GPS-200H.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision H</b></a>. September, 2013.
+\li GPS L1C (available with first Block III launch): Global Positioning System Directorate, <a href="https://www.gps.gov/technical/icwg/IS-GPS-800D.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision D</b></a>. September, 2013.
+\li GPS L5 (first Block IIF satellite launched on May, 2010): Global Positioning System Directorate, <a href="https://www.gps.gov/technical/icwg/IS-GPS-705D.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision D</b></a>. September, 2013.
 
 
 
 \subsection glonass GLONASS
-Official GLONASS webpage: <a href="http://www.glonass-ianc.rsa.ru/en/" target="_blank"> Information-analytical centre official website</a>. 
+Official GLONASS webpage: <a href="http://www.glonass-ianc.rsa.ru/en/" target="_blank"> Information-analytical centre official website</a>.
 \li Standard Accuracy (ST) signals at L1 and L2: Russian Institute of Space Device Engineering, Global Navigation Satellite System GLONASS. <a href="http://facility.unavco.org/data/docs/ICD_GLONASS_5.1_(2008)_en.pdf" target="_blank"><b>Interface Control Document. Navigational radiosignal in bands L1, L2. Edition 5.1</b></a>, Moscow, Russia, 2008
 
 
 \subsection galileo Galileo
-Check the <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/index_en.htm" target="_blank">Galileo website of the European Commission</a> and the
-<a href="http://www.esa.int/Our_Activities/Navigation/The_future_-_Galileo/What_is_Galileo" target="_blank">Galileo website of the European Space Agency</a>.
+Check the <a href="https://ec.europa.eu/enterprise/policies/satnav/galileo/index_en.htm" target="_blank">Galileo website of the European Commission</a> and the
+<a href="https://www.esa.int/Our_Activities/Navigation/The_future_-_Galileo/What_is_Galileo" target="_blank">Galileo website of the European Space Agency</a>.
 There is a website with <a href="http://igs.org/mgex/Status_GAL.htm" target="_blank">Galileo constellation status information</a> from the International GNSS Service.
 
-\li Galileo E5, E6, and E1: European GNSS (Galileo) Open Service.  <a href="http://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 1.2</b></a>, European Commission, Nov. 2015. 
+\li Galileo E5, E6, and E1: European GNSS (Galileo) Open Service.  <a href="http://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 1.2</b></a>, European Commission, Nov. 2015.
 
 \li European GNSS (Galileo) Open Service  <a href="" target="_blank"><b>Signal-In-Space Operational Status Definition</b></a>, European Commission, Sept. 2015.
 
 
-The European Commission is granting free access to the technical information on the future Galileo open service signal, i.e. the specifications manufacturers 
-and developers need to process data received from satellites. This document informs receiver manufacturers, application developers and service providers on how 
+The European Commission is granting free access to the technical information on the future Galileo open service signal, i.e. the specifications manufacturers
+and developers need to process data received from satellites. This document informs receiver manufacturers, application developers and service providers on how
 to use the future Galileo system and what they can expect in terms of performance.
 
 \subsection beidou BeiDou
@@ -65,20 +65,20 @@ Open Service Signal (Version 2.0). China Satellite Navigation Office, December 2
 
 \li  <a href="http://egnos-portal.eu/sites/default/files/EGNOS-open-service-sdd.PDF" target="_blank"><b>EGNOS Open Service (OS) Service Definition Document. Ref: EGN-SDD OS, Revision 2.2</b></a>, European GNSS Agency (GSA), Feb. 12, 2015. This is a complementary document to the RTCA DO229D, mentioned above. It describes the scope of services provided by the EGNOS Open Service to be used by end-users or Application Specific Service Providers. It details the general conditions relating to the use of the EGNOS service, a technical description of the Signal-in-Space (SIS), the reference receiver, environmental conditions, the service performance achieved and aspects relating to service provision.
 
-\li  <a href="http://egnos-user-support.essp-sas.eu/new_egnos_ops/sites/default/files/library/official_docs/egnos_sol_sdd_in_force.pdf" target="_blank"><b>EGNOS Safety of Life Service Definition Document. Ref: EGN-SDD SoL, Revision 3.0</b></a>, European GNSS Agency (GSA), Sep. 22, 2015. The EGNOS Safety of Life (SoL) Service is provided openly and is freely accessible without any direct charge and is tailored to safety-critical transport applications in various domains, in particular for aviation applications. The service is thus compliant with the aviation APV-I (Approach with Vertical Guidance) requirements, as defined by ICAO in Annex 10, but may support also applications in other SoL domains. 
+\li  <a href="http://egnos-user-support.essp-sas.eu/new_egnos_ops/sites/default/files/library/official_docs/egnos_sol_sdd_in_force.pdf" target="_blank"><b>EGNOS Safety of Life Service Definition Document. Ref: EGN-SDD SoL, Revision 3.0</b></a>, European GNSS Agency (GSA), Sep. 22, 2015. The EGNOS Safety of Life (SoL) Service is provided openly and is freely accessible without any direct charge and is tailored to safety-critical transport applications in various domains, in particular for aviation applications. The service is thus compliant with the aviation APV-I (Approach with Vertical Guidance) requirements, as defined by ICAO in Annex 10, but may support also applications in other SoL domains.
 
 \li <a href="http://egnos-portal.gsa.europa.eu/sites/default/files/EGNOS_EDAS_SDD_2.1.pdf" target="_blank"><b>EGNOS Data Access Service (EDAS) Service Definition Document, Rf: EGN-SDD EDAS, V2.1</b></a>, European GNSS Agency (GSA), Dec. 19, 2014.
 
-More information about EGNOS can be found through the <a href="http://www.egnos-portal.eu/" target="_blank">EGNOS Portal</a>.
+More information about EGNOS can be found through the <a href="https://egnos-user-support.essp-sas.eu/new_egnos_ops/index.php" target="_blank">EGNOS Portal</a>.
 \section standards Other Standards
 
 \subsection rinex RINEX
-The final output of a navigation receiver is usually its position, speed or other related physical quantities. However, the calculation of those quantities 
-are based on a series of measurements from one or more satellite constellations. Although receivers calculate positions in real time, in many cases it is 
-interesting to store intermediate measures for later post-processing. RINEX is the standard format that allows the management and disposal of the measures 
+The final output of a navigation receiver is usually its position, speed or other related physical quantities. However, the calculation of those quantities
+are based on a series of measurements from one or more satellite constellations. Although receivers calculate positions in real time, in many cases it is
+interesting to store intermediate measures for later post-processing. RINEX is the standard format that allows the management and disposal of the measures
 generated by a receiver, as well as their off-line processing by a multitude of applications.
 
-\li The most common version at present is <a href="http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt" target="_blank"><b>RINEX: The Receiver Independent Exchange Format Version 2.11</b></a>, which enables storage of measurements from pseudorange, carrier-phase and Doppler systems for GPS or GLONASS, 
+\li The most common version at present is <a href="http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt" target="_blank"><b>RINEX: The Receiver Independent Exchange Format Version 2.11</b></a>, which enables storage of measurements from pseudorange, carrier-phase and Doppler systems for GPS or GLONASS,
 along with data from EGNOS and WAAS satellite based augmentation systems (SBAS).
 
 \li The most recent version is <a href="ftp://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf" target="_blank"><b>RINEX: The Receiver Independent Exchange Format Version 3.01</b></a> published in June, 2009.
@@ -88,11 +88,11 @@ It includes Galileo and improves the handling of multi-constellation data files.
 
 \subsection nmea NMEA
 
-The <a href="http://www.nmea.org" target="_blank">National Marine Electronics Association </a> released the NMEA 0183 Interface Standard, which defines electrical signal requirements, data transmission protocol and time, 
+The <a href="http://www.nmea.org" target="_blank">National Marine Electronics Association </a> released the NMEA 0183 Interface Standard, which defines electrical signal requirements, data transmission protocol and time,
 and specific sentence formats for a 4800-baud serial data bus. The standard is <a href="http://www.nmea.org/store/index.asp?show=cprd&cid=8" target="_blank">available for purchase</a>.
 \subsection kml KML
 
-KML is an XML language focused on geographic visualization, including annotation of maps and images. Geographic visualization includes not only the presentation of graphical data on the globe, but also the control of the user's navigation in the sense of where to go and where to look. 
+KML is an XML language focused on geographic visualization, including annotation of maps and images. Geographic visualization includes not only the presentation of graphical data on the globe, but also the control of the user's navigation in the sense of where to go and where to look.
 Google submitted KML (formerly Keyhole Markup Language) to the Open Geospatial Consortium (OGC) to be evolved within the OGC consensus process with the following goal: KML Version 2.2 has been adopted as an OGC implementation standard.
 
 \li Open Geospatial Consortium, Inc., <a href="http://portal.opengeospatial.org/files/?artifact_id=27810" target="_blank"><b>OGC KML Version 2.2.0</b></a>, April 2008.
@@ -100,33 +100,33 @@ Google submitted KML (formerly Keyhole Markup Language) to the Open Geospatial C
 
 \subsection cxx C++ Standards
 
-In 1998, the C++ standards committee (the <a href="http://www.open-std.org/JTC1/SC22/WG21/" target="_blank">ISO/IEC JTC1/SC22/WG21 working group</a>) 
-standardized C++ and published the international standard ISO/IEC 14882:1998 (informally known as C++98). A technical corrigendum was approved in 2003, 
+In 1998, the C++ standards committee (the <a href="http://www.open-std.org/JTC1/SC22/WG21/" target="_blank">ISO/IEC JTC1/SC22/WG21 working group</a>)
+standardized C++ and published the international standard ISO/IEC 14882:1998 (informally known as C++98). A technical corrigendum was approved in 2003,
 and the standard was published again as the ISO/IEC 14882:2003.
 
-Published ISO and IEC standards can be purchased from a member body of ISO or IEC. Free copies of the C++ standard Committee Drafts 
-were <a href="http://www.csci.csusb.edu/dick/c++std/" target="_blank">made public</a> before the official standard was released. 
+Published ISO and IEC standards can be purchased from a member body of ISO or IEC. Free copies of the C++ standard Committee Drafts
+were <a href="http://www.csci.csusb.edu/dick/c++std/" target="_blank">made public</a> before the official standard was released.
 
-In 2005, a technical report, called the <a href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1836.pdf" target="_blank">Library Technical Report 1</a> 
-(often known as TR1 for short), was released. While not an official part of the standard, it specified a number of extensions to the standard library, 
-which were expected to be included in the next version of C++. The linked document is officially a draft, but that is due only to procedural issues; 
+In 2005, a technical report, called the <a href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1836.pdf" target="_blank">Library Technical Report 1</a>
+(often known as TR1 for short), was released. While not an official part of the standard, it specified a number of extensions to the standard library,
+which were expected to be included in the next version of C++. The linked document is officially a draft, but that is due only to procedural issues;
 the content did not change. Scott Meyers provides more <a href="http://www.aristeia.com/EC3E/TR1_info.html" target="_blank">TR1 information</a>.
 
 
 Some ISO/IEC standards are publicly available, for instance: <a href="http://standards.iso.org/ittf/PubliclyAvailableStandards/c043351_ISO_IEC_TR_18015_2006(E).zip" target="_blank">ISO/IEC TR 18015:2006 Technical Report on C++ Performance</a>.
 
 
-The standard for the next version of the language (previously known as C++0x) was finally 
-published with the name of <a href="http://en.wikipedia.org/wiki/C%2B%2B11" target="_blank">C++11</a> in September, 2011, as the ISO/IEC 14882:2011 Standard. GCC, the GNU Compiler Collection, 
-<a href="http://gcc.gnu.org/projects/cxx0x.html" target="_blank">provides partial C++11 support</a>. Bjarne Stroustrup maintains a <a href="http://www.stroustrup.com/C++11FAQ.html" target="_blank">C++11 FAQ</a>. 
+The standard for the next version of the language (previously known as C++0x) was finally
+published with the name of <a href="https://en.wikipedia.org/wiki/C%2B%2B11" target="_blank">C++11</a> in September, 2011, as the ISO/IEC 14882:2011 Standard. GCC, the GNU Compiler Collection,
+<a href="http://gcc.gnu.org/projects/cxx0x.html" target="_blank">provides partial C++11 support</a>. Bjarne Stroustrup maintains a <a href="http://www.stroustrup.com/C++11FAQ.html" target="_blank">C++11 FAQ</a>.
 
 \li The most recent public draft of the <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2011/n3242.pdf" target="_blank"><b>Standard for Programming Language C++</b></a> was published in Feb. 2011.
 
 \subsection protocols Positioning protocols in wireless communication networks
-Cellular industry location standards first appeared in the late 1990s, with the <a href="http://www.3gpp.org/index.php" target="_blank">3rd generation partnership project (3GPP)</a> radio resource location services protocol (RRLP) technical specification 44.031 positioning protocol for GSM networks. 
-Today, RRLP is the de facto standardized protocol to carry GNSS assistance data to GNSS-enabled mobile devices, and the term "3GPP specification" now covers all GSM (including GPRS and EDGE), 
-W-CDMA and LTE (including LTE-A) specifications. Precisely, the label "LTE-A" is applied to networks compliant with LTE Release 10 and beyond, which fulfill the requirements issued by 
-the <a href="http://www.itu.int/en/ITU-R/Pages/default.aspx" target="_blank">International Telecommunication Union Radiocommunication Sector (ITU-R)</a> in the global standard for international mobile telecommunications (IMT Advanced, also referred to as 4G) 
+Cellular industry location standards first appeared in the late 1990s, with the <a href="http://www.3gpp.org/index.php" target="_blank">3rd generation partnership project (3GPP)</a> radio resource location services protocol (RRLP) technical specification 44.031 positioning protocol for GSM networks.
+Today, RRLP is the de facto standardized protocol to carry GNSS assistance data to GNSS-enabled mobile devices, and the term "3GPP specification" now covers all GSM (including GPRS and EDGE),
+W-CDMA and LTE (including LTE-A) specifications. Precisely, the label "LTE-A" is applied to networks compliant with LTE Release 10 and beyond, which fulfill the requirements issued by
+the <a href="http://www.itu.int/en/ITU-R/Pages/default.aspx" target="_blank">International Telecommunication Union Radiocommunication Sector (ITU-R)</a> in the global standard for international mobile telecommunications (IMT Advanced, also referred to as 4G)
 access technologies.
 
 Control plane protocols:
@@ -139,11 +139,11 @@ User plane protocols:
 \li Open Mobile Alliance (OMA), <a href="http://member.openmobilealliance.org/ftp/Public_documents/LOC/Permanent_documents/OMA-AD-SUPL-V1_0-20070615-A.zip" target="_blank"><b>Secure User Plane Location Architecture Version 1 (SUPL 1.0)</b></a>, June 2007.
 \li Open Mobile Alliance (OMA), <a href="http://member.openmobilealliance.org/ftp/Public_documents/LOC/Permanent_documents/OMA-AD-SUPL-V2_0-20120417-A.zip" target="_blank"><b>Secure User Plane Location Architecture Version 2 (SUPL 2.0)</b></a>, April 2012.
 
-LTE Release 9 introduced extension hooks in LPP messages, so that the bodies external to 3GPP could extend the LPP feature set. OMA LPP extensions (LPPe), supported in SUPL 3.0, build on top of the 3GPP LPP reusing its procedures and data types. 
+LTE Release 9 introduced extension hooks in LPP messages, so that the bodies external to 3GPP could extend the LPP feature set. OMA LPP extensions (LPPe), supported in SUPL 3.0, build on top of the 3GPP LPP reusing its procedures and data types.
 Check the <a href="http://technical.openmobilealliance.org/Technical/LOC.aspx" target="_blank">OMA Location Working Group (WG) webpage</a> for updated information about LPP Extensions (LPPe) Specification.
 
-\li The <a href="http://technical.openmobilealliance.org/Technical/release_program/mlp_v31.aspx" target="_blank"><b>OMA Mobile Location Protocol (MLP) V3.1</b></a> is an application-level protocol for getting the position of mobile stations (mobile phones, wireless personal digital assistants, etc.) independent 
-of underlying network technology. The MLP serves as the interface between a Location Server and a Location Services (LCS) Client. 
+\li The <a href="http://technical.openmobilealliance.org/Technical/release_program/mlp_v31.aspx" target="_blank"><b>OMA Mobile Location Protocol (MLP) V3.1</b></a> is an application-level protocol for getting the position of mobile stations (mobile phones, wireless personal digital assistants, etc.) independent
+of underlying network technology. The MLP serves as the interface between a Location Server and a Location Services (LCS) Client.
 This specification defines the core set of operations that a Location Server should be able to perform.
 
 

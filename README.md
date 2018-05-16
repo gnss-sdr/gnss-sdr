@@ -64,7 +64,7 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
        libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
-       libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+       libgnutls-openssl-dev libpcap-dev python-mako python-six libmatio-dev googletest
 ~~~~~~
 
 Please note that `googletest` was named `libgtest-dev` in distributions older than Debian 9 "stretch" and Ubuntu 17.04 "zesty".
@@ -85,7 +85,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
        boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
        boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
        blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel openssl-devel python-mako python-six
+       glog-devel openssl-devel libpcap-devel python-mako python-six
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -102,7 +102,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel libtool \
        hdf5-devel cmake git boost-devel boost-date-time boost-system \
        boost-filesystem boost-thread boost-chrono boost-serialization \
        log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel \
-       armadillo-devel openssl-devel python-mako python-six
+       armadillo-devel openssl-devel libpcap-devel python-mako python-six
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -114,7 +114,7 @@ If you are using Arch Linux (with base-devel group installed):
 ~~~~~~
 $ pacman -S cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr \
        blas lapack gflags google-glog gnutls openssl python2-mako python2-six \
-       libmatio gtest
+       libmatio libpcap gtest
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).

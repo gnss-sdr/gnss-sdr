@@ -20,12 +20,14 @@
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
      unpack_byte_2bit_samples.cc
      unpack_byte_2bit_cpx_samples.cc
+     unpack_byte_4bit_samples.cc
      unpack_intspir_1bit_samples.cc
      rtl_tcp_signal_source_c.cc
      unpack_2bit_samples.cc
      unpack_spir_gss6450_samples.cc
      labsat23_source.cc
      raw_ip_packet_source.cc
+     gr_complex_ip_packet_source.cc
 )
 
 include_directories(

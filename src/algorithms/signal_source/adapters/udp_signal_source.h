@@ -1,12 +1,12 @@
 /*!
- * \file rtl_tcp_signal_source.h
- * \brief Signal source which reads from rtl_tcp.
- * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr for more information)
- * \author Anthony Arnold, 2015. anthony.arnold(at)uqconnect.edu.au
+ * \file udp_signal_source.h
  *
+ * \brief Receives ip frames containing samples in UDP frame encapsulation
+ * using a high performance packet capture library (libpcap)
+ * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,18 +29,16 @@
  * -------------------------------------------------------------------------
  */
 
+
 #ifndef GNSS_SDR_UDP_SIGNAL_SOURCE_H
 #define GNSS_SDR_UDP_SIGNAL_SOURCE_H
 
 #include "gnss_block_interface.h"
-#include "raw_ip_packet_source.h"
+#include "gr_complex_ip_packet_source.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/char_to_float.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/deinterleave.h>
-#include <gnuradio/blocks/float_to_complex.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -90,7 +88,6 @@ private:
 
     bool IQ_swap_;
     int RF_channels_;
-    int select_single_channel_;
     int channels_in_udp_;
     unsigned int in_stream_;
     unsigned int out_stream_;
@@ -99,12 +96,8 @@ private:
     size_t item_size_;
     bool dump_;
     std::string dump_filename_;
-    std::vector<boost::shared_ptr<gr::block>> char_to_float_;
-    std::vector<boost::shared_ptr<gr::block>> float_to_complex_;
     std::vector<boost::shared_ptr<gr::block>> null_sinks_;
-
-    raw_ip_packet_source::sptr udp_gnss_rx_source_;
-    gr::blocks::deinterleave::sptr demux_;
+    gr_complex_ip_packet_source::sptr udp_gnss_rx_source_;
     std::vector<boost::shared_ptr<gr::block>> file_sink_;
     boost::shared_ptr<gr::msg_queue> queue_;
 };

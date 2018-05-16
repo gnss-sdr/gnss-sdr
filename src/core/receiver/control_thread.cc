@@ -114,7 +114,7 @@ void ControlThread::run()
         {
             flowgraph_->connect();
         }
-    catch (const std::exception e)
+    catch (const std::exception &e)
         {
             LOG(ERROR) << e.what();
             return;

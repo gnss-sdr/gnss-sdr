@@ -40,6 +40,9 @@ if(ENABLE_FPGA)
      add_definitions(-DENABLE_FPGA=1)
 endif(ENABLE_FPGA)
 
+if(ENABLE_RAW_UDP)
+    add_definitions(-DRAW_UDP=1)
+endif(ENABLE_RAW_UDP)
 
 if(Boost_VERSION LESS 105000)
      add_definitions(-DOLD_BOOST=1)

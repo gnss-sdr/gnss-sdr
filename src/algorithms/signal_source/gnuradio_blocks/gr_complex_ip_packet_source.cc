@@ -319,22 +319,22 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
             switch (d_wire_sample_type)
                 {
                 case 1:  //interleaved byte samples
-                    for (int i = 0; i < output_items.size(); i++)
+                    for (long unsigned int i = 0; i < output_items.size(); i++)
                         {
                             real = fifo_buff[fifo_read_ptr++];
                             imag = fifo_buff[fifo_read_ptr++];
                             if (d_IQ_swap)
                                 {
-                                    ((gr_complex *)output_items[i])[n] = gr_complex(real, imag);
+                                    (static_cast<gr_complex *>(output_items[i]))[n] = gr_complex(real, imag);
                                 }
                             else
                                 {
-                                    ((gr_complex *)output_items[i])[n] = gr_complex(imag, real);
+                                    (static_cast<gr_complex *>(output_items[i]))[n] = gr_complex(imag, real);
                                 }
                         }
                     break;
                 case 2:  // 4bits samples
-                    for (int i = 0; i < output_items.size(); i++)
+                    for (long unsigned int i = 0; i < output_items.size(); i++)
                         {
                             tmp_char2 = fifo_buff[fifo_read_ptr] & 0x0F;
                             if (tmp_char2 >= 8)
@@ -357,11 +357,11 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
                                 }
                             if (d_IQ_swap)
                                 {
-                                    ((gr_complex *)output_items[i])[n] = gr_complex(imag, real);
+                                    (static_cast<gr_complex *>(output_items[i]))[n] = gr_complex(imag, real);
                                 }
                             else
                                 {
-                                    ((gr_complex *)output_items[i])[n] = gr_complex(real, imag);
+                                    (static_cast<gr_complex *>(output_items[i]))[n] = gr_complex(real, imag);
                                 }
                         }
                     break;
@@ -381,7 +381,7 @@ int gr_complex_ip_packet_source::work(int noutput_items,
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     if (fifo_items == 0) return 0;
 
-    if (output_items.size() > d_n_baseband_channels)
+    if (output_items.size() > static_cast<long unsigned int>(d_n_baseband_channels))
         {
             std::cout << "Configuration error: more baseband channels connected than the available in the UDP source\n";
             exit(0);
@@ -430,9 +430,9 @@ int gr_complex_ip_packet_source::work(int noutput_items,
     //update fifo items
     fifo_items = fifo_items - bytes_requested;
 
-    for (int n = 0; n < output_items.size(); n++)
+    for (long unsigned int n = 0; n < output_items.size(); n++)
         {
-            produce(n, num_samples_readed);
+            produce(static_cast<int>(n), num_samples_readed);
         }
     return this->WORK_CALLED_PRODUCE;
 }

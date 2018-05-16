@@ -1603,7 +1603,7 @@ void *ftpthread(void *arg)
                                 " --glob=off --passive-ftp " + std::string(proxyopt) + "s-t 1 -T " + std::to_string(FTP_TIMEOUT) +
                                 " -O \"" + std::string(local) + "\"";
             int k = s_aux.length();
-            if (k < 1024])
+            if (k < 1024)
                 for (int i = 0; i < k; i++) opt[i] = s_aux[i];
 
             // sprintf(cmd, "%s%s %s \"ftp://%s/%s\" 2> \"%s\"\n", env, FTP_CMD, opt, ftp->addr,

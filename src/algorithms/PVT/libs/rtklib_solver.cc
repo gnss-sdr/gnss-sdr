@@ -481,13 +481,26 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
 
                     this->set_valid_position(true);
                     arma::vec rx_position_and_time(4);
-                    rx_position_and_time(0) = pvt_sol.rr[0];
-                    rx_position_and_time(1) = pvt_sol.rr[1];
-                    rx_position_and_time(2) = pvt_sol.rr[2];
-                    rx_position_and_time(3) = pvt_sol.dtr[0];
+                    rx_position_and_time(0) = pvt_sol.rr[0];  //[m]
+                    rx_position_and_time(1) = pvt_sol.rr[1];  //[m]
+                    rx_position_and_time(2) = pvt_sol.rr[2];  //[m]
+
+                    //todo: fix this ambiguity in the RTKLIB units in receiver clock offset!
+                    if (rtk_.opt.mode == PMODE_SINGLE)
+                        {
+                            rx_position_and_time(3) = pvt_sol.dtr[0];  //if the RTKLIB solver is set to SINGLE, the dtr is already expressed in [s]
+                        }
+                    else
+                        {
+                            rx_position_and_time(3) = pvt_sol.dtr[0] / GPS_C_m_s;  // the receiver clock offset is expressed in [meters]
+                        }
+                    //[s]
                     this->set_rx_pos(rx_position_and_time.rows(0, 2));  // save ECEF position for the next iteration
-                    double offset_s = this->get_time_offset_s();
-                    this->set_time_offset_s(offset_s + (rx_position_and_time(3) / GPS_C_m_s));  // accumulate the rx time error for the next iteration [meters]->[seconds]
+                    //observable fix:
+                    //double offset_s = this->get_time_offset_s();
+                    //this->set_time_offset_s(offset_s + (rx_position_and_time(3) / GPS_C_m_s));  // accumulate the rx time error for the next iteration [meters]->[seconds]
+                    this->set_time_offset_s(rx_position_and_time(3));
+
                     DLOG(INFO) << "RTKLIB Position at TOW=" << Rx_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
 
                     boost::posix_time::ptime p_time;

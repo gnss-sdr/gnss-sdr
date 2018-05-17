@@ -316,6 +316,10 @@ bool hybrid_observables_cc::interpolate_data(Gnss_Synchro &out, const unsigned i
     // CARRIER DOPPLER INTERPOLATION
     out.Carrier_Doppler_hz = d_gnss_synchro_history->at(ch, 0).Carrier_Doppler_hz + (d_gnss_synchro_history->at(ch, 1).Carrier_Doppler_hz - d_gnss_synchro_history->at(ch, 0).Carrier_Doppler_hz) * (ti - d_gnss_synchro_history->at(ch, 0).RX_time) / (d_gnss_synchro_history->at(ch, 1).RX_time - d_gnss_synchro_history->at(ch, 0).RX_time);
 
+    // todo: CODE PHASE IS MISSING!
+    // todo: convert to seconds, considering fs per channel
+    out.Code_phase_samples = d_gnss_synchro_history->at(ch, 0).Code_phase_samples + (d_gnss_synchro_history->at(ch, 1).Code_phase_samples - d_gnss_synchro_history->at(ch, 0).Code_phase_samples) * (ti - d_gnss_synchro_history->at(ch, 0).RX_time) / (d_gnss_synchro_history->at(ch, 1).RX_time - d_gnss_synchro_history->at(ch, 0).RX_time);
+
     // TOW INTERPOLATION
     out.TOW_at_current_symbol_s = d_gnss_synchro_history->at(ch, 0).TOW_at_current_symbol_s + (d_gnss_synchro_history->at(ch, 1).TOW_at_current_symbol_s - d_gnss_synchro_history->at(ch, 0).TOW_at_current_symbol_s) * (ti - d_gnss_synchro_history->at(ch, 0).RX_time) / (d_gnss_synchro_history->at(ch, 1).RX_time - d_gnss_synchro_history->at(ch, 0).RX_time);
 
@@ -434,17 +438,22 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
     ///////////////////////////////////////////////////////////
 
     double TOW_ref = std::numeric_limits<double>::lowest();
+    double Code_phase_ref_s = 0.0;
     for (it = data.begin(); it != data.end(); it++)
         {
             if (it->TOW_at_current_symbol_s > TOW_ref)
                 {
                     TOW_ref = it->TOW_at_current_symbol_s;
+                    Code_phase_ref_s = it->Code_phase_samples / static_cast<double>(it->fs);
                 }
         }
     for (it = data.begin(); it != data.end(); it++)
         {
-            double traveltime_s = TOW_ref - it->TOW_at_current_symbol_s + GPS_STARTOFFSET_ms / 1000.0;
-            it->RX_time = TOW_ref + GPS_STARTOFFSET_ms / 1000.0;
+            //double traveltime_s = TOW_ref - it->TOW_at_current_symbol_s + GPS_STARTOFFSET_ms / 1000.0;
+
+            double traveltime_s = TOW_ref - it->TOW_at_current_symbol_s + Code_phase_ref_s - it->Code_phase_samples / static_cast<double>(it->fs) + GPS_STARTOFFSET_ms / 1000.0;
+            //it->RX_time = TOW_ref + GPS_STARTOFFSET_ms / 1000.0;
+            it->RX_time = TOW_ref + Code_phase_ref_s + GPS_STARTOFFSET_ms / 1000.0;
             it->Pseudorange_m = traveltime_s * SPEED_OF_LIGHT;
         }
 }

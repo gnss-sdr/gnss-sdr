@@ -77,6 +77,9 @@ private:
     boost::dynamic_bitset<> valid_channels;
     double T_rx_s;
     double T_rx_step_s;
+    //rx time follow GPST
+    bool T_rx_TOW_set;
+    double T_rx_TOW_s;
     double max_delta;
     double d_latency;
     bool d_dump;

@@ -605,9 +605,11 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                     //std::cout << TEXT_RED << "(internal) accumulated RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]" << TEXT_RESET << std::endl;
                     for (std::map<int, Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
                         {
+                    		//it->second.RX_time+=d_ls_pvt->get_time_offset_s();
                             it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->get_time_offset_s() * GPS_C_m_s;
                         }
-                    double current_RX_time = gnss_observables_map.begin()->second.RX_time;
+
+                    double current_RX_time = gnss_observables_map.begin()->second.RX_time;//+ d_ls_pvt->get_time_offset_s();
 
                     if (std::fabs(current_RX_time - d_rx_time) * 1000.0 >= static_cast<double>(d_output_rate_ms))
                         {
@@ -672,10 +674,10 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
 
                                     // correct the observable to account for the receiver clock offset
-                                    for (std::map<int, Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
-                                        {
-                                            it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->get_time_offset_s() * GPS_C_m_s;
-                                        }
+                                    //for (std::map<int, Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
+                                     //   {
+                                     //       it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->get_time_offset_s() * GPS_C_m_s;
+                                     //   }
                                     if (first_fix == true)
                                         {
                                             std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
@@ -2081,7 +2083,16 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                             std::cout << TEXT_BOLD_GREEN << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
                                       << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
                                       << " [deg], Height= " << d_ls_pvt->get_height() << " [m]" << TEXT_RESET << std::endl;
+
                             std::cout << TEXT_RED << "accumulated RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]" << TEXT_RESET << std::endl;
+
+                            boost::posix_time::ptime p_time;
+                            gtime_t rtklib_utc_time = gpst2time(adjgpsweek(d_ls_pvt->gps_ephemeris_map.cbegin()->second.i_GPS_week), d_rx_time);
+                            p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
+                            p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
+                            std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time)<< TEXT_RESET << std::endl;
+
+
                             LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
                                       << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
                                       << " [deg], Height= " << d_ls_pvt->get_height() << " [m]";

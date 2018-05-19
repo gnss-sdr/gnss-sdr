@@ -36,6 +36,7 @@
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include <glog/logging.h>
+#include <exception>
 #include <iostream>  // for cout, endl
 
 #ifdef __APPLE__
@@ -122,7 +123,14 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 
     if (enable_dds_lo_)
         {
-            ad9361_disable_lo_local();
+            try
+                {
+                    ad9361_disable_lo_local();
+                }
+            catch (const std::exception& e)
+                {
+                    LOW(WARNING) << "Problem closing the Ad9361FpgaSignalSource: " << e.what();
+                }
         }
 
     // std::cout<<"* AD9361 Destroying context\n";

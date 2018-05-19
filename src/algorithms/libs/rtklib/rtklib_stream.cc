@@ -1458,6 +1458,7 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
     char *passwd, int *topts)
 {
     char buff[MAXSTRPATH], *p, *q;
+    q[0] = '\0';
 
     tracet(4, "decodeftpath: path=%s\n", path);
 

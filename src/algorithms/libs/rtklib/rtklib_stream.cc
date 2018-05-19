@@ -1458,7 +1458,6 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
     char *passwd, int *topts)
 {
     char buff[MAXSTRPATH], *p, *q;
-    q[0] = '\0';
 
     tracet(4, "decodeftpath: path=%s\n", path);
 
@@ -1494,7 +1493,7 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
                     *q = '\0';
                     if (passwd) strcpy(passwd, q + 1);
                 }
-            *q = '\0';
+            if (*q != 0) *q = '\0';
             if (user) strcpy(user, buff);
         }
     else

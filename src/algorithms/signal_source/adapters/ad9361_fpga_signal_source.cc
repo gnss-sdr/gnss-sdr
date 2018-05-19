@@ -132,12 +132,18 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 
 void Ad9361FpgaSignalSource::connect(gr::top_block_sptr top_block)
 {
+    if (top_block)
+        { /* top_block is not null */
+        };
     DLOG(INFO) << "AD9361 FPGA source nothing to connect";
 }
 
 
 void Ad9361FpgaSignalSource::disconnect(gr::top_block_sptr top_block)
 {
+    if (top_block)
+        { /* top_block is not null */
+        };
     DLOG(INFO) << "AD9361 FPGA source nothing to disconnect";
 }
 

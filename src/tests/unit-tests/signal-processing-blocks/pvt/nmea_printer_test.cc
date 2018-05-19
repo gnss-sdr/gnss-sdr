@@ -92,7 +92,7 @@ void NmeaPrinterTest::conf()
     int reject_GPS_IIA = 0;
     int raim_fde = 0;
 
-    prcopt_t rtklib_configuration_options = {
+    rtklib_configuration_options = {
         positioning_mode,                                                                  /* positioning mode (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
         0,                                                                                 /* solution type (0:forward,1:backward,2:combined) */
         number_of_frequencies,                                                             /* number of frequencies (1:L1, 2:L1+L2, 3:L1+L2+L5)*/

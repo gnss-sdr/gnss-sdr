@@ -121,6 +121,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
     s_aux.resize(128, '\0');
     int n = s_aux.length();
     for (int i = 0; i < n; i++) dev[i] = s_aux[i];
+    if (n == 0) dev[0] = '\0';
 
     if ((mode & STR_MODE_R) && (mode & STR_MODE_W))
         rw = O_RDWR;

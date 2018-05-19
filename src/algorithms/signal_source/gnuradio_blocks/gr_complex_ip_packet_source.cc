@@ -33,10 +33,8 @@
 #include "gr_complex_ip_packet_source.h"
 #include <gnuradio/io_signature.h>
 
-//#include <cstdlib>
 
-
-#define FIFO_SIZE 1472000
+const int FIFO_SIZE = 1472000;
 
 
 /* 4 bytes IP address */
@@ -47,6 +45,7 @@ typedef struct gr_ip_address
     u_char byte3;
     u_char byte4;
 } gr_ip_address;
+
 
 /* IPv4 header */
 typedef struct gr_ip_header
@@ -64,6 +63,7 @@ typedef struct gr_ip_header
     u_int op_pad;            // Option + Padding
 } gr_ip_header;
 
+
 /* UDP header*/
 typedef struct gr_udp_header
 {
@@ -72,6 +72,7 @@ typedef struct gr_udp_header
     u_short len;    // Datagram length
     u_short crc;    // Checksum
 } gr_udp_header;
+
 
 gr_complex_ip_packet_source::sptr
 gr_complex_ip_packet_source::make(std::string src_device,
@@ -93,6 +94,7 @@ gr_complex_ip_packet_source::make(std::string src_device,
         IQ_swap_));
 }
 
+
 /*
  * The private constructor
  */
@@ -106,9 +108,8 @@ gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
     bool IQ_swap_)
     : gr::sync_block("gr_complex_ip_packet_source",
           gr::io_signature::make(0, 0, 0),
-          gr::io_signature::make(1, 4, item_size))  //1 to 4 baseband complex channels
+          gr::io_signature::make(1, 4, item_size))  // 1 to 4 baseband complex channels
 {
-    // constructor code here
     std::cout << "Start Ethernet packet capture\n";
 
     d_n_baseband_channels = n_baseband_channels;
@@ -133,7 +134,7 @@ gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
     d_udp_payload_size = udp_packet_size;
     d_fifo_full = false;
 
-    //allocate signal samples buffer
+    // allocate signal samples buffer
     fifo_buff = new char[FIFO_SIZE];
     fifo_read_ptr = 0;
     fifo_write_ptr = 0;
@@ -143,14 +144,16 @@ gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
     d_sock_raw = 0;
     d_pcap_thread = NULL;
     descr = NULL;
+
+    memset(reinterpret_cast<char *>(&si_me), 0, sizeof(si_me));
 }
 
 
-//Called by gnuradio to enable drivers, etc for i/o devices.
+// Called by gnuradio to enable drivers, etc for i/o devices.
 bool gr_complex_ip_packet_source::start()
 {
     std::cout << "gr_complex_ip_packet_source START\n";
-    //open the ethernet device
+    // open the ethernet device
     if (open() == true)
         {
             // start pcap capture thread
@@ -163,7 +166,8 @@ bool gr_complex_ip_packet_source::start()
         }
 }
 
-//Called by gnuradio to disable drivers, etc for i/o devices.
+
+// Called by gnuradio to disable drivers, etc for i/o devices.
 bool gr_complex_ip_packet_source::stop()
 {
     std::cout << "gr_complex_ip_packet_source STOP\n";
@@ -176,41 +180,43 @@ bool gr_complex_ip_packet_source::stop()
     return true;
 }
 
+
 bool gr_complex_ip_packet_source::open()
 {
     char errbuf[PCAP_ERRBUF_SIZE];
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
-    /* open device for reading */
+    // open device for reading
     descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf);
     if (descr == NULL)
         {
-            std::cout << "Error openning Ethernet device " << d_src_device << std::endl;
-            printf("Fatal Error in pcap_open_live(): %s\n", errbuf);
+            std::cout << "Error opening Ethernet device " << d_src_device << std::endl;
+            std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf) << std::endl;
             return false;
         }
-    //bind UDP port to avoid automatic reply with ICMP port ureacheable packets from kernel
+    // bind UDP port to avoid automatic reply with ICMP port unreachable packets from kernel
     d_sock_raw = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (d_sock_raw == -1)
         {
-            std::cout << "Error openning UDP socket" << std::endl;
+            std::cout << "Error opening UDP socket" << std::endl;
             return false;
         }
 
     // zero out the structure
-    memset((char *)&si_me, 0, sizeof(si_me));
+    memset(reinterpret_cast<char *>(&si_me), 0, sizeof(si_me));
 
     si_me.sin_family = AF_INET;
     si_me.sin_port = htons(d_udp_port);
     si_me.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    //bind socket to port
-    if (bind(d_sock_raw, (struct sockaddr *)&si_me, sizeof(si_me)) == -1)
+    // bind socket to port
+    if (bind(d_sock_raw, reinterpret_cast<struct sockaddr *>(&si_me), sizeof(si_me)) == -1)
         {
-            std::cout << "Error openning UDP socket" << std::endl;
+            std::cout << "Error opening UDP socket" << std::endl;
             return false;
         }
     return true;
 }
+
 
 gr_complex_ip_packet_source::~gr_complex_ip_packet_source()
 {
@@ -222,35 +228,36 @@ gr_complex_ip_packet_source::~gr_complex_ip_packet_source()
     std::cout << "Stop Ethernet packet capture\n";
 }
 
+
 void gr_complex_ip_packet_source::static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr,
     const u_char *packet)
 {
-    gr_complex_ip_packet_source *bridge = (gr_complex_ip_packet_source *)args;
+    gr_complex_ip_packet_source *bridge = reinterpret_cast<gr_complex_ip_packet_source *>(args);
     bridge->pcap_callback(args, pkthdr, packet);
 }
+
 
 void gr_complex_ip_packet_source::pcap_callback(__attribute__((unused)) u_char *args, __attribute__((unused)) const struct pcap_pkthdr *pkthdr,
     const u_char *packet)
 {
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
 
-    gr_ip_header *ih;
-    gr_udp_header *uh;
+    const gr_ip_header *ih;
+    const gr_udp_header *uh;
 
     // eth frame parameters
     // **** UDP RAW PACKET DECODER ****
-    if ((packet[12] == 0x08) & (packet[13] == 0x00))  //IP FRAME
+    if ((packet[12] == 0x08) & (packet[13] == 0x00))  // IP FRAME
         {
-            /* retireve the position of the ip header */
-            ih = (gr_ip_header *)(packet +
-                                  14);  //length of ethernet header
+            // retrieve the position of the ip header
+            ih = reinterpret_cast<const gr_ip_header *>(packet + 14);  // length of ethernet header
 
-            /* retireve the position of the udp header */
+            // retrieve the position of the udp header
             u_int ip_len;
             ip_len = (ih->ver_ihl & 0xf) * 4;
-            uh = (gr_udp_header *)((u_char *)ih + ip_len);
+            uh = reinterpret_cast<const gr_udp_header *>(reinterpret_cast<const u_char *>(ih) + ip_len);
 
-            /* convert from network byte order to host byte order */
+            // convert from network byte order to host byte order
             //u_short sport;
             u_short dport;
             dport = ntohs(uh->dport);
@@ -271,43 +278,44 @@ void gr_complex_ip_packet_source::pcap_callback(__attribute__((unused)) u_char *
                     //                   dport);
                     //            std::cout<<"uh->len:"<<ntohs(uh->len)<<std::endl;
 
-                    int payload_lenght_bytes = ntohs(uh->len) - 8;  //total udp packet lenght minus the header lenght
-                    //read the payload bytes and insert them into the shared circular buffer
-                    u_char *udp_payload = ((u_char *)uh + sizeof(gr_udp_header));
-                    if (fifo_items <= (FIFO_SIZE - payload_lenght_bytes))
+                    int payload_length_bytes = ntohs(uh->len) - 8;  // total udp packet length minus the header length
+                    // read the payload bytes and insert them into the shared circular buffer
+                    const u_char *udp_payload = (reinterpret_cast<const u_char *>(uh) + sizeof(gr_udp_header));
+                    if (fifo_items <= (FIFO_SIZE - payload_length_bytes))
                         {
                             int aligned_write_items = FIFO_SIZE - fifo_write_ptr;
-                            if (aligned_write_items >= payload_lenght_bytes)
+                            if (aligned_write_items >= payload_length_bytes)
                                 {
-                                    //write all in a single memcpy
-                                    memcpy(&fifo_buff[fifo_write_ptr], &udp_payload[0], payload_lenght_bytes);  //size in bytes
-                                    fifo_write_ptr += payload_lenght_bytes;
+                                    // write all in a single memcpy
+                                    memcpy(&fifo_buff[fifo_write_ptr], &udp_payload[0], payload_length_bytes);  // size in bytes
+                                    fifo_write_ptr += payload_length_bytes;
                                     if (fifo_write_ptr == FIFO_SIZE) fifo_write_ptr = 0;
-                                    fifo_items += payload_lenght_bytes;
+                                    fifo_items += payload_length_bytes;
                                 }
                             else
                                 {
-                                    //two step wrap write
-                                    memcpy(&fifo_buff[fifo_write_ptr], &udp_payload[0], aligned_write_items);  //size in bytes
-                                    fifo_write_ptr = payload_lenght_bytes - aligned_write_items;
-                                    memcpy(&fifo_buff[0], &udp_payload[aligned_write_items], fifo_write_ptr);  //size in bytes
-                                    fifo_items += payload_lenght_bytes;
+                                    // two step wrap write
+                                    memcpy(&fifo_buff[fifo_write_ptr], &udp_payload[0], aligned_write_items);  // size in bytes
+                                    fifo_write_ptr = payload_length_bytes - aligned_write_items;
+                                    memcpy(&fifo_buff[0], &udp_payload[aligned_write_items], fifo_write_ptr);  // size in bytes
+                                    fifo_items += payload_length_bytes;
                                 }
                         }
                     else
                         {
-                            //notify overflow
+                            // notify overflow
                             std::cout << "O" << std::flush;
                         }
                 }
         }
 }
 
-void gr_complex_ip_packet_source::my_pcap_loop_thread(pcap_t *pcap_handle)
 
+void gr_complex_ip_packet_source::my_pcap_loop_thread(pcap_t *pcap_handle)
 {
-    pcap_loop(pcap_handle, -1, gr_complex_ip_packet_source::static_pcap_callback, (u_char *)this);
+    pcap_loop(pcap_handle, -1, gr_complex_ip_packet_source::static_pcap_callback, reinterpret_cast<u_char *>(this));
 }
+
 
 void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items, int num_samples_readed)
 {
@@ -318,22 +326,22 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
         {
             switch (d_wire_sample_type)
                 {
-                case 1:  //interleaved byte samples
+                case 1:  // interleaved byte samples
                     for (long unsigned int i = 0; i < output_items.size(); i++)
                         {
                             real = fifo_buff[fifo_read_ptr++];
                             imag = fifo_buff[fifo_read_ptr++];
                             if (d_IQ_swap)
                                 {
-                                    (static_cast<gr_complex *>(output_items[i]))[n] = gr_complex(real, imag);
+                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(real, imag);
                                 }
                             else
                                 {
-                                    (static_cast<gr_complex *>(output_items[i]))[n] = gr_complex(imag, real);
+                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(imag, real);
                                 }
                         }
                     break;
-                case 2:  // 4bits samples
+                case 2:  // 4-bit samples
                     for (long unsigned int i = 0; i < output_items.size(); i++)
                         {
                             tmp_char2 = fifo_buff[fifo_read_ptr] & 0x0F;
@@ -357,11 +365,11 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
                                 }
                             if (d_IQ_swap)
                                 {
-                                    (static_cast<gr_complex *>(output_items[i]))[n] = gr_complex(imag, real);
+                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(imag, real);
                                 }
                             else
                                 {
-                                    (static_cast<gr_complex *>(output_items[i]))[n] = gr_complex(real, imag);
+                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(real, imag);
                                 }
                         }
                     break;
@@ -372,6 +380,7 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
             if (fifo_read_ptr == FIFO_SIZE) fifo_read_ptr = 0;
         }
 }
+
 
 int gr_complex_ip_packet_source::work(int noutput_items,
     __attribute__((unused)) gr_vector_const_void_star &input_items,
@@ -390,44 +399,44 @@ int gr_complex_ip_packet_source::work(int noutput_items,
     int bytes_requested;
     switch (d_wire_sample_type)
         {
-        case 1:  //complex byte samples
+        case 1:  // complex byte samples
             bytes_requested = noutput_items * d_bytes_per_sample;
             if (bytes_requested < fifo_items)
                 {
-                    num_samples_readed = noutput_items;  //read all
+                    num_samples_readed = noutput_items;  // read all
                 }
             else
                 {
-                    num_samples_readed = fifo_items / d_bytes_per_sample;  //read what we have
+                    num_samples_readed = fifo_items / d_bytes_per_sample;  // read what we have
                 }
             break;
-        case 2:  //complex 4 bits samples
+        case 2:  // complex 4 bits samples
             bytes_requested = noutput_items * d_bytes_per_sample;
             if (bytes_requested < fifo_items)
                 {
-                    num_samples_readed = noutput_items;  //read all
+                    num_samples_readed = noutput_items;  // read all
                 }
             else
                 {
-                    num_samples_readed = fifo_items / d_bytes_per_sample;  //read what we have
+                    num_samples_readed = fifo_items / d_bytes_per_sample;  // read what we have
                 }
             break;
-        default:  //complex byte samples
+        default:  // complex byte samples
             bytes_requested = noutput_items * d_bytes_per_sample;
             if (bytes_requested < fifo_items)
                 {
-                    num_samples_readed = noutput_items;  //read all
+                    num_samples_readed = noutput_items;  // read all
                 }
             else
                 {
-                    num_samples_readed = fifo_items / d_bytes_per_sample;  //read what we have
+                    num_samples_readed = fifo_items / d_bytes_per_sample;  // read what we have
                 }
         }
 
     bytes_requested = num_samples_readed * d_bytes_per_sample;
-    //read all in a single loop
+    // read all in a single loop
     demux_samples(output_items, num_samples_readed);  // it also increases the fifo read pointer
-    //update fifo items
+    // update fifo items
     fifo_items = fifo_items - bytes_requested;
 
     for (long unsigned int n = 0; n < output_items.size(); n++)

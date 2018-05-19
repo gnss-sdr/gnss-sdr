@@ -356,6 +356,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = trk_parameters.carrier_lock_th;
+    d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
 
     d_acquisition_gnss_synchro = nullptr;
@@ -559,6 +560,7 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
             volk_gnsssdr_free(d_local_code_shift_chips);
             volk_gnsssdr_free(d_correlator_outs);
             volk_gnsssdr_free(d_tracking_code);
+            volk_gnsssdr_free(d_Prompt_Data);
             if (trk_parameters.track_pilot)
                 {
                     volk_gnsssdr_free(d_data_code);

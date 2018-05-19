@@ -328,12 +328,10 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
         {
             // Extra correlator for the data component
             correlator_data_cpu.init(2 * trk_parameters.vector_length, 1);
-            d_Prompt_Data[0] = gr_complex(0.0, 0.0);
             d_data_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
         }
     else
         {
-            d_Prompt_Data = nullptr;
             d_data_code = nullptr;
         }
 
@@ -358,6 +356,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = trk_parameters.carrier_lock_th;
+    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
 
     d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;

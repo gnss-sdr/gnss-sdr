@@ -129,7 +129,7 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
                 }
             catch (const std::exception& e)
                 {
-                    LOW(WARNING) << "Problem closing the Ad9361FpgaSignalSource: " << e.what();
+                    LOG(WARNING) << "Problem closing the Ad9361FpgaSignalSource: " << e.what();
                 }
         }
 

@@ -477,7 +477,19 @@ int main(int argc, char** argv)
     if (global_gps_ephemeris_map.size() > 0)
         {
             std::map<int, Gps_Ephemeris> Eph_map;
-            Eph_map = global_gps_ephemeris_map.get_map_copy();
+            try
+                {
+                    Eph_map = global_gps_ephemeris_map.get_map_copy();
+                }
+            catch (const boost::exception& e)
+                {
+                    std::cout << "Exception in getting Global ephemeris map" << std::endl;
+                    delete acquisition;
+                    delete gnss_synchro;
+                    google::ShutDownCommandLineFlags();
+                    std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
+                    return 0;
+                }
             current_TOW = Eph_map.begin()->second.d_TOW;
 
             time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (long int)current_TOW);

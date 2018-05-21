@@ -565,6 +565,11 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
             std::cerr << "  - " << name << std::endl;
             return false;
         }
+    catch (std::string s)
+        {
+            std::cerr << "Error: " << s << std::endl;
+            return false;
+        }
 
     //pull the input scalars into their own vector
     std::vector<volk_gnsssdr_type_t> inputsc;

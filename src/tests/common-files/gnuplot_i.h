@@ -1965,7 +1965,7 @@ bool Gnuplot::get_program_path()
     path = std::getenv("PATH");
     char secured_path[4096];
     size_t len = strlen(path);
-    if (path && len < 4046 * sizeof(char))
+    if (len > 0 && len < 4046 * sizeof(char))
         {
             strncpy(secured_path, path, sizeof(secured_path));
         }

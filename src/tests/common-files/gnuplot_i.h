@@ -1967,7 +1967,7 @@ bool Gnuplot::get_program_path()
     size_t len = strlen(path);
     if (path && len < 4046 * sizeof(char))
         {
-            strncpy(secured_path, path, len - 1);
+            strncpy(secured_path, path, sizeof(secured_path));
         }
     else
         {

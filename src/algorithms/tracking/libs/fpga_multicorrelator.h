@@ -49,10 +49,10 @@ class fpga_multicorrelator_8sc
 {
 public:
     fpga_multicorrelator_8sc(int n_correlators, std::string device_name,
-            unsigned int device_base, int *ca_codes, unsigned int code_length);
+            unsigned int device_base, int *ca_codes, int *data_codes, unsigned int code_length, bool track_pilot);
     ~fpga_multicorrelator_8sc();
 	//bool set_output_vectors(gr_complex* corr_out);
-	void set_output_vectors(gr_complex* corr_out);
+	void set_output_vectors(gr_complex* corr_out, gr_complex* Prompt_Data);
 //    bool set_local_code_and_taps(
 //            int code_length_chips, const int* local_code_in,
 //            float *shifts_chips, int PRN);
@@ -78,6 +78,7 @@ public:
 private:
     //const int *d_local_code_in;
     gr_complex * d_corr_out;
+    gr_complex * d_Prompt_Data;
     float *d_shifts_chips;
     int d_code_length_chips;
     int d_n_correlators;
@@ -112,6 +113,8 @@ private:
 
     unsigned int d_code_length; // nominal number of chips
 
+    bool d_track_pilot;
+
     // private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);
     void fpga_configure_tracking_gps_local_code(int PRN);
@@ -123,9 +126,7 @@ private:
     void read_tracking_gps_results(void);
 	void reset_multicorrelator(void);
 	void close_device(void);
-	
-	// debug
-	//unsigned int first_time = 1;
+
 };
 
 #endif /* GNSS_SDR_FPGA_MULTICORRELATOR_H_ */

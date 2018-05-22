@@ -73,25 +73,23 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length));
     unsigned int nsamples_total = pow(2, nbits);
-    unsigned int vector_length = nsamples_total * sampled_ms;
+    unsigned int vector_length = nsamples_total;
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
-    acq_parameters.samples_per_ms = nsamples_total;
+    acq_parameters.samples_per_ms = nsamples_total/sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
 
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-
     gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
     // allocate memory to compute all the PRNs and compute all the possible codes
     std::complex<float>* code = new std::complex<float>[nsamples_total];  // buffer for the local code
     gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * NUM_PRNs];  // memory containing all the possible fft codes for PRN 0 to 32
     float max;                                                    // temporary maxima search
-
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in, 0);  // generate PRN code
@@ -124,7 +122,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
         }
 
     //acq_parameters
-
     acq_parameters.all_fft_codes = d_all_fft_codes_;
 
     // temporary buffers that we can delete
@@ -157,6 +154,8 @@ void GpsL1CaPcpsAcquisitionFpga::set_channel(unsigned int channel)
 
 void GpsL1CaPcpsAcquisitionFpga::set_threshold(float threshold)
 {
+    // the .pfa parameter and the threshold calculation is only used for the CFAR algorithm.
+    // We don't use the CFAR algorithm in the FPGA. Therefore the threshold is set as such.
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold;
     acquisition_fpga_->set_threshold(threshold);
 }
@@ -226,7 +225,7 @@ void GpsL1CaPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL1CaPcpsAcquisitionFpga::get_left_block()
 {
-    return acquisition_fpga_;
+    return nullptr;
 }
 
 

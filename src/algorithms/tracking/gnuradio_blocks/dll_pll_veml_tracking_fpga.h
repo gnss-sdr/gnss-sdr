@@ -76,6 +76,7 @@ typedef struct
     unsigned int device_base;
     unsigned int code_length;
     int* ca_codes;
+    int* data_codes;
 } dllpllconf_fpga_t;
 
 class dll_pll_veml_tracking_fpga;

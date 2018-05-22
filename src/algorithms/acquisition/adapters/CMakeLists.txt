@@ -37,7 +37,7 @@ set(ACQ_ADAPTER_SOURCES
 )
 
 if(ENABLE_FPGA)
-    set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES} gps_l1_ca_pcps_acquisition_fpga.cc)
+    set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES} gps_l1_ca_pcps_acquisition_fpga.cc galileo_e1_pcps_ambiguous_acquisition_fpga.cc)
 endif(ENABLE_FPGA)
     
 if(OPENCL_FOUND)

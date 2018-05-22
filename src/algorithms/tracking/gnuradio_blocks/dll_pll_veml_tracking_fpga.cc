@@ -1,5 +1,5 @@
 /*!
- * \file dll_pll_veml_tracking.cc
+ * \file dll_pll_veml_tracking_fpga.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block using an FPGA
  * \author Marc Majoral, 2018. marc.majoral(at)cttc.es
  * 	       Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
@@ -365,9 +365,10 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(dllpllconf_fpga_t conf_) 
     std::string device_name = trk_parameters.device_name;
     unsigned int device_base = trk_parameters.device_base;
     int* ca_codes = trk_parameters.ca_codes;
+    int* data_codes = trk_parameters.data_codes;
     unsigned int code_length = trk_parameters.code_length;
-    multicorrelator_fpga = std::make_shared <fpga_multicorrelator_8sc>(d_n_correlator_taps, device_name, device_base, ca_codes, code_length);
-    multicorrelator_fpga->set_output_vectors(d_correlator_outs);
+    multicorrelator_fpga = std::make_shared <fpga_multicorrelator_8sc>(d_n_correlator_taps, device_name, device_base, ca_codes, data_codes, code_length, trk_parameters.track_pilot);
+    multicorrelator_fpga->set_output_vectors(d_correlator_outs, d_Prompt_Data);
 
     d_pull_in = 0;
 }
@@ -438,6 +439,7 @@ void dll_pll_veml_tracking_fpga::start_tracking()
                 {
                     char pilot_signal[3] = "1C";
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    // MISSING _: set_local_code_and_taps for the data correlator
                 }
             else
                 {
@@ -505,7 +507,7 @@ void dll_pll_veml_tracking_fpga::start_tracking()
     LOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
               << ". Code Phase correction [samples] = " << delay_correction_samples
               << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
-    multicorrelator_fpga->set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_local_code_shift_chips, d_acquisition_gnss_synchro->PRN);
+    multicorrelator_fpga->set_local_code_and_taps(d_code_length_chips, d_local_code_shift_chips, d_acquisition_gnss_synchro->PRN);
     d_pull_in = 1;
     // enable tracking pull-in and d_state at the end to avoid general work from starting pull-in before the start tracking function is finished
     d_state = 1;

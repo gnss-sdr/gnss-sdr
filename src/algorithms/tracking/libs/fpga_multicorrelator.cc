@@ -104,9 +104,10 @@ void fpga_multicorrelator_8sc::set_local_code_and_taps(int code_length_chips,
     fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(PRN);
 }
 
-void fpga_multicorrelator_8sc::set_output_vectors(gr_complex* corr_out)
+void fpga_multicorrelator_8sc::set_output_vectors(gr_complex* corr_out, gr_complex* Prompt_Data)
 {
     d_corr_out = corr_out;
+    d_Prompt_Data = Prompt_Data;
 }
 
 void fpga_multicorrelator_8sc::update_local_code(float rem_code_phase_chips)
@@ -144,11 +145,12 @@ void fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
 }
 
 fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
-        std::string device_name, unsigned int device_base, int *ca_codes, unsigned int code_length)
+        std::string device_name, unsigned int device_base, int *ca_codes, int *data_codes, unsigned int code_length, bool track_pilot)
 {
     d_n_correlators = n_correlators;
     d_device_name = device_name;
     d_device_base = device_base;
+    d_track_pilot = track_pilot;
     d_device_descriptor = 0;
     d_map_base = nullptr;
 
@@ -158,7 +160,6 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
     d_initial_interp_counter = static_cast<unsigned*>(volk_gnsssdr_malloc(
             n_correlators * sizeof(unsigned), volk_gnsssdr_get_alignment()));
 
-    //d_local_code_in = nullptr;
     d_shifts_chips = nullptr;
     d_corr_out = nullptr;
     d_code_length_chips = 0;
@@ -172,13 +173,6 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
     d_channel = 0;
     d_correlator_length_samples = 0,
     d_code_length = code_length;
-    
-    // pre-compute all the codes
-//    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS*NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
-//    for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
-//    {
-//		gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
-//    }
     d_ca_codes = ca_codes;
     DLOG(INFO) << "TRACKING FPGA CLASS CREATED";
     
@@ -429,10 +423,6 @@ void fpga_multicorrelator_8sc::close_device()
         {
             printf("Failed to unmap memory uio\n");
         }
-/*    else
-        {
-            printf("memory uio unmapped\n");
-        } */
     close(d_device_descriptor);
 }
     

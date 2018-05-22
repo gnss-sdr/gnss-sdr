@@ -25,6 +25,7 @@
 #include <iostream>                             // for operator<<, basic_ostream, endl, char...
 #include <fstream>                              // IWYU pragma: keep
 #include <map>                                  // for map, map<>::iterator, _Rb_tree_iterator
+#include <sstream>                              // for stringstream
 #include <string>                               // for string, operator<<
 #include <utility>                              // for pair
 #include <vector>                               // for vector
@@ -48,15 +49,16 @@ int main(int argc, char* argv[])
     std::vector<volk_gnsssdr_test_results_t> results;
     if (argc > 1)
         {
-            const size_t len = std::char_traits<char>::length(argv[1]);
-            if (len == 0 || len > 2046)
+            std::stringstream ss;
+            ss << argv[1];
+            if (ss.fail())
                 {
-                    std::cerr << "Test name is too long." << std::endl;
+                    std::cerr << "Test name not correctly set." << std::endl;
                     return 0;
                 }
             for (unsigned int ii = 0; ii < test_cases.size(); ++ii)
                 {
-                    if (std::string(argv[1]) == test_cases[ii].name())
+                    if (ss.str() == test_cases[ii].name())
                         {
                             volk_gnsssdr_test_case_t test_case = test_cases[ii];
                             if (run_volk_gnsssdr_tests(test_case.desc(), test_case.kernel_ptr(),

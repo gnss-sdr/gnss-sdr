@@ -59,6 +59,7 @@
 #include <cstring>  // for strncpy
 #include <cmath>
 #include <list>  // for std::list
+#include <sys/stat.h>
 
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
@@ -1960,21 +1961,16 @@ bool Gnuplot::get_program_path()
     //
     // second look in PATH for Gnuplot
     //
-    char *path;
+    const char *path;
     // Retrieves a C string containing the value of environment variable PATH
     path = std::getenv("PATH");
-    char secured_path[4096];
-    size_t len = strlen(path);
-    if (len > 0 && len < 4046 * sizeof(char))
+    std::stringstream s;
+    s << path;
+    if (s.fail())
         {
-            strncpy(secured_path, path, sizeof(secured_path));
+            throw GnuplotException("Path is not set");
         }
-    else
-        {
-            throw GnuplotException("Path is not set or it is too long");
-        }
-    secured_path[len] = '\0';
-    std::string path_str(secured_path);
+    std::string path_str = s.str();
 
     std::list<std::string> ls;
 
@@ -2106,17 +2102,24 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
         //
         // open temporary files for output
         //
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_mktemp(name) == NULL)
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+    mode_t mask = umask(S_IXUSR | S_IRWXG | S_IRWXO);
     if (mkstemp(name) == -1)
 #endif
         {
             std::ostringstream except;
             except << "Cannot create temporary file \"" << name << "\"";
+#if defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+            umask(mask);
+#endif
             throw GnuplotException(except.str());
         }
-
+#if defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+    umask(mask);
+#endif
     tmp.open(name);
     if (tmp.bad())
         {

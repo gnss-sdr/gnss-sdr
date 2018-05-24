@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -56,6 +56,10 @@ typedef struct
     float early_late_space_narrow_chips;
     float very_early_late_space_narrow_chips;
     int extend_correlation_symbols;
+    int cn0_samples;
+    int cn0_min;
+    int max_lock_fail;
+    double carrier_lock_th;
     bool track_pilot;
     char system;
     char signal[3];
@@ -89,7 +93,7 @@ private:
 
     dll_pll_veml_tracking(dllpllconf_t conf_);
 
-    bool cn0_and_tracking_lock_status();
+    bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
     void do_correlation_step(const gr_complex *input_samples);
     void run_dll_pll();
@@ -119,7 +123,6 @@ private:
     std::string systemName;
     std::string signal_type;
     std::string *d_secondary_code_string;
-    std::map<std::string, std::string> map_signal_pretty_name;
     std::string signal_pretty_name;
 
     //tracking state machine

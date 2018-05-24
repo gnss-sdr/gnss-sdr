@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -34,6 +34,7 @@
 
 #include "nmea_printer.h"
 #include "kml_printer.h"
+#include "gpx_printer.h"
 #include "geojson_printer.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
@@ -120,6 +121,7 @@ private:
 
     std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_dump;
+    std::shared_ptr<Gpx_Printer> d_gpx_dump;
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
     std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
     std::shared_ptr<Rtcm_Printer> d_rtcm_printer;

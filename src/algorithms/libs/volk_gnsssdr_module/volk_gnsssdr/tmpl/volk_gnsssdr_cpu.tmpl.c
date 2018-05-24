@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>
@@ -128,12 +128,12 @@ static inline unsigned int get_avx2_enabled(void)
 #include <asm/hwcap.h>
 #include <linux/auxvec.h>
 #include <stdio.h>
-#define VOLK_CPU_ARM
+#define VOLK_CPU_ARMV7
 #endif
 
-static int has_neon(void)
+static int has_neonv7(void)
 {
-#if defined(VOLK_CPU_ARM)
+#if defined(VOLK_CPU_ARMV7)
     FILE *auxvec_f;
     unsigned long auxvec[2];
     unsigned int found_neon = 0;
@@ -152,6 +152,53 @@ static int has_neon(void)
 
     fclose(auxvec_f);
     return found_neon;
+#else
+    return 0;
+#endif
+}
+
+//\todo: Fix this to really check for neon on aarch64
+//neon detection is linux specific
+#if defined(__aarch64__) && defined(__linux__)
+#include <asm/hwcap.h>
+#include <linux/auxvec.h>
+#include <stdio.h>
+#define VOLK_CPU_ARMV8
+#endif
+
+static int has_neonv8(void)
+{
+#if defined(VOLK_CPU_ARMV8)
+    FILE *auxvec_f;
+    unsigned long auxvec[2];
+    unsigned int found_neon = 0;
+    auxvec_f = fopen("/proc/self/auxv", "rb");
+    if (!auxvec_f) return 0;
+
+    size_t r = 1;
+    //so auxv is basically 32b of ID and 32b of value
+    //so it goes like this
+    while (!found_neon && r)
+        {
+            r = fread(auxvec, sizeof(unsigned long), 2, auxvec_f);
+            if ((auxvec[0] == AT_HWCAP) && (auxvec[1] & HWCAP_ASIMD))
+                found_neon = 1;
+        }
+
+    fclose(auxvec_f);
+    return found_neon;
+#else
+    return 0;
+#endif
+}
+
+static int has_neon(void)
+{
+#if defined(VOLK_CPU_ARMV8) || defined(VOLK_CPU_ARMV7)
+    if (has_neonv7() || has_neonv8())
+        return 1;
+    else
+        return 0;
 #else
     return 0;
 #endif

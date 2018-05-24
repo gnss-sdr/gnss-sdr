@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 
@@ -40,6 +40,9 @@ if(ENABLE_FPGA)
      add_definitions(-DENABLE_FPGA=1)
 endif(ENABLE_FPGA)
 
+if(ENABLE_RAW_UDP)
+    add_definitions(-DRAW_UDP=1)
+endif(ENABLE_RAW_UDP)
 
 if(Boost_VERSION LESS 105000)
      add_definitions(-DOLD_BOOST=1)
@@ -89,6 +92,11 @@ if(ENABLE_FMCOMMS2)
 	add_definitions(-DFMCOMMS2_DRIVER=1)
 	set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
 endif(ENABLE_FMCOMMS2)
+
+if(ENABLE_AD9361)
+    add_definitions(-DAD9361_DRIVER=1)
+    set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
+endif(ENABLE_AD9361)
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.15" )
      add_definitions( -DGR_GREATER_38=1 )

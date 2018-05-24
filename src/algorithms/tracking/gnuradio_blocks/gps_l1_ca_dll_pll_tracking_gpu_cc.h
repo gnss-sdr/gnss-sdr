@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,7 +28,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -36,14 +36,15 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H
 
-#include <fstream>
-#include <map>
-#include <string>
-#include <gnuradio/block.h>
+#include "cuda_multicorrelator.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
-#include "cuda_multicorrelator.h"
+#include <gnuradio/block.h>
+#include <fstream>
+#include <map>
+#include <string>
+
 
 class Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc;
 

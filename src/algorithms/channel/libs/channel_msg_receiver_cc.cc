@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2016  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -42,6 +42,7 @@ channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<Channe
     return channel_msg_receiver_cc_sptr(new channel_msg_receiver_cc(channel_fsm, repeat));
 }
 
+
 void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
 {
     bool result = false;
@@ -50,10 +51,10 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
             long int message = pmt::to_long(msg);
             switch (message)
                 {
-                case 1:  //positive acquisition
+                case 1:  // positive acquisition
                     result = d_channel_fsm->Event_valid_acquisition();
                     break;
-                case 2:  //negative acquisition
+                case 2:  // negative acquisition
                     if (d_repeat == true)
                         {
                             result = d_channel_fsm->Event_failed_acquisition_repeat();

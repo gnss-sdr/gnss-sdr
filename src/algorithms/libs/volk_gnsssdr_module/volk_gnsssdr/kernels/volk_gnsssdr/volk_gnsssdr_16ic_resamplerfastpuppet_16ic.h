@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -72,7 +72,7 @@ static inline void volk_gnsssdr_16ic_resamplerfastpuppet_16ic_u_sse2(lv_16sc_t* 
 
 #endif /* LV_HAVE_SSE2 */
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 
 static inline void volk_gnsssdr_16ic_resamplerfastpuppet_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
@@ -82,6 +82,6 @@ static inline void volk_gnsssdr_16ic_resamplerfastpuppet_16ic_neon(lv_16sc_t* re
     volk_gnsssdr_16ic_resampler_fast_16ic_neon(result, local_code, rem_code_phase_chips, code_phase_step_chips, code_length_chips, num_points);
 }
 
-#endif /* LV_HAVE_NEON */
+#endif /* LV_HAVE_NEONV7 */
 
 #endif  // INCLUDED_volk_gnsssdr_16ic_resamplerfastpuppet_16ic_H

@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,28 +30,28 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "gps_l1_ca_tcp_connector_tracking_cc.h"
-#include <cmath>
-#include <iostream>
-#include <sstream>
+#include "control_message_factory.h"
+#include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include "GPS_L1_CA.h"
+#include "lock_detectors.h"
+#include "tcp_communication.h"
+#include "tcp_packet_data.h"
+#include "tracking_discriminators.h"
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "gps_sdr_signal_processing.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
-#include "GPS_L1_CA.h"
-#include "control_message_factory.h"
-#include "gnss_sdr_flags.h"
-#include "tcp_communication.h"
-#include "tcp_packet_data.h"
+#include <cmath>
+#include <iostream>
+#include <sstream>
 
 
 using google::LogMessage;
@@ -455,7 +455,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             else
                 {
                     d_cn0_estimation_counter = 0;
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD);
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, FLAGS_cn0_samples);
 
                     // ###### TRACKING UNLOCK NOTIFICATION #####

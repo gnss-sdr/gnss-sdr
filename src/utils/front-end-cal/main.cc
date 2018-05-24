@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -261,7 +261,7 @@ int main(int argc, char** argv)
 {
     const std::string intro_help(
         std::string("\n RTL-SDR E4000 RF front-end center frequency and sampling rate calibration tool that uses GPS signals\n") +
-        "Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)\n" +
+        "Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)\n" +
         "This program comes with ABSOLUTELY NO WARRANTY;\n" +
         "See COPYING file to see a copy of the General Public License\n \n");
 
@@ -471,26 +471,37 @@ int main(int argc, char** argv)
               << elapsed_seconds.count()
               << " [seconds]" << std::endl;
 
-    //6. find TOW from SUPL assistance
-
+    // 6. find TOW from SUPL assistance
     double current_TOW = 0;
-    if (global_gps_ephemeris_map.size() > 0)
+    try
         {
-            std::map<int, Gps_Ephemeris> Eph_map;
-            Eph_map = global_gps_ephemeris_map.get_map_copy();
-            current_TOW = Eph_map.begin()->second.d_TOW;
+            if (global_gps_ephemeris_map.size() > 0)
+                {
+                    std::map<int, Gps_Ephemeris> Eph_map;
+                    Eph_map = global_gps_ephemeris_map.get_map_copy();
+                    current_TOW = Eph_map.begin()->second.d_TOW;
 
-            time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (long int)current_TOW);
+                    time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (long int)current_TOW);
 
-            fprintf(stdout, "Reference Time:\n");
-            fprintf(stdout, "  GPS Week: %d\n", Eph_map.begin()->second.i_GPS_week);
-            fprintf(stdout, "  GPS TOW:  %ld %lf\n", (long int)current_TOW, (long int)current_TOW * 0.08);
-            fprintf(stdout, "  ~ UTC:    %s", ctime(&t));
-            std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << std::endl;
+                    fprintf(stdout, "Reference Time:\n");
+                    fprintf(stdout, "  GPS Week: %d\n", Eph_map.begin()->second.i_GPS_week);
+                    fprintf(stdout, "  GPS TOW:  %ld %lf\n", (long int)current_TOW, (long int)current_TOW * 0.08);
+                    fprintf(stdout, "  ~ UTC:    %s", ctime(&t));
+                    std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << std::endl;
+                }
+            else
+                {
+                    std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!" << std::endl;
+                    delete acquisition;
+                    delete gnss_synchro;
+                    google::ShutDownCommandLineFlags();
+                    std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
+                    return 0;
+                }
         }
-    else
+    catch (const boost::exception& e)
         {
-            std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!" << std::endl;
+            std::cout << "Exception in getting Global ephemeris map" << std::endl;
             delete acquisition;
             delete gnss_synchro;
             google::ShutDownCommandLineFlags();
@@ -498,7 +509,7 @@ int main(int argc, char** argv)
             return 0;
         }
 
-    //Get user position from config file (or from SUPL using GSM Cell ID)
+    // Get user position from config file (or from SUPL using GSM Cell ID)
     double lat_deg = configuration->property("GNSS-SDR.init_latitude_deg", 41.0);
     double lon_deg = configuration->property("GNSS-SDR.init_longitude_deg", 2.0);
     double altitude_m = configuration->property("GNSS-SDR.init_altitude_m", 100);

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 if(ENABLE_CUDA)
@@ -22,7 +22,7 @@ if(ENABLE_CUDA)
 endif(ENABLE_CUDA)
 
 if(ENABLE_FPGA)
-     SET(OPT_TRACKING_ADAPTERS ${OPT_TRACKING_ADAPTERS} gps_l1_ca_dll_pll_c_aid_tracking_fpga.cc)
+     SET(OPT_TRACKING_ADAPTERS ${OPT_TRACKING_ADAPTERS} gps_l1_ca_dll_pll_tracking_fpga.cc)
 endif(ENABLE_FPGA)
 
 set(TRACKING_ADAPTER_SOURCES
@@ -35,7 +35,7 @@ set(TRACKING_ADAPTER_SOURCES
      gps_l2_m_dll_pll_tracking.cc
      glonass_l1_ca_dll_pll_tracking.cc
      glonass_l1_ca_dll_pll_c_aid_tracking.cc
-     gps_l5i_dll_pll_tracking.cc
+     gps_l5_dll_pll_tracking.cc
      glonass_l2_ca_dll_pll_tracking.cc
      glonass_l2_ca_dll_pll_c_aid_tracking.cc
      ${OPT_TRACKING_ADAPTERS}

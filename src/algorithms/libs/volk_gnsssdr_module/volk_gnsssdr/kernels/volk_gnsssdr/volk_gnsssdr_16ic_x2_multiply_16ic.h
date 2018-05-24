@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,7 +28,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -292,7 +292,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_avx2(lv_16sc_t* out, con
 #endif /* LV_HAVE_AVX2  */
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_neon(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
@@ -338,6 +338,6 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_neon(lv_16sc_t* out, const
             *out++ = (*a_ptr++) * (*b_ptr++);
         }
 }
-#endif /* LV_HAVE_NEON */
+#endif /* LV_HAVE_NEONV7*/
 
 #endif /*INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_H*/

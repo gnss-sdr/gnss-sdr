@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -54,7 +54,8 @@
 #include "test_flags.h"
 
 DEFINE_bool(plot_gps_l1_tracking_test, false, "Plots results of GpsL1CADllPllTrackingTest with gnuplot");
-
+DEFINE_double(CN0_dBHz, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 [dB-Hz]");
+DEFINE_int32(extend_correlation_symbols, 1, "Set the tracking coherent correlation to N symbols (up to 20 for GPS L1 C/A)");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTest_msg_rx;
@@ -121,7 +122,7 @@ public:
     std::string p3;
     std::string p4;
     std::string p5;
-
+    std::string p6;
     std::string implementation = "GPS_L1_CA_DLL_PLL_Tracking";  //"GPS_L1_CA_DLL_PLL_C_Aid_Tracking";
 
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
@@ -183,6 +184,7 @@ int GpsL1CADllPllTrackingTest::configure_generator()
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  //Baseband sampling frequency [MSps]
+    p6 = std::string("-CN0_dBHz=") + std::to_string(FLAGS_CN0_dBHz); // Signal generator CN0
     return 0;
 }
 
@@ -191,7 +193,7 @@ int GpsL1CADllPllTrackingTest::generate_signal()
 {
     int child_status;
 
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0],&p6[0], NULL};
 
     int pid;
     if ((pid = fork()) == -1)
@@ -223,12 +225,12 @@ void GpsL1CADllPllTrackingTest::configure_receiver()
     config->set_property("Tracking_1C.implementation", implementation);
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("Tracking_1C.pll_bw_hz", "20.0");
-    config->set_property("Tracking_1C.dll_bw_hz", "2.0");
+    config->set_property("Tracking_1C.dll_bw_hz", "1.5");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
-    config->set_property("Tracking_1C.pll_bw_narrow_hz", "20.0");
-    config->set_property("Tracking_1C.dll_bw_narrow_hz", "2.0");
+    config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(FLAGS_extend_correlation_symbols));
+    config->set_property("Tracking_1C.pll_bw_narrow_hz", "2.0");
+    config->set_property("Tracking_1C.dll_bw_narrow_hz", "1.0");
     config->set_property("Tracking_1C.early_late_space_narrow_chips", "0.5");
-    config->set_property("Tracking_1C.extend_correlation_ms", "1");
     config->set_property("Tracking_1C.dump", "true");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
 }
@@ -471,6 +473,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     std::vector<double> late;
     std::vector<double> promptI;
     std::vector<double> promptQ;
+    std::vector<double> CN0_dBHz;
 
     epoch_counter = 0;
     while (trk_dump.read_binary_obs())
@@ -488,6 +491,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
             late.push_back(trk_dump.abs_L);
             promptI.push_back(trk_dump.prompt_I);
             promptQ.push_back(trk_dump.prompt_Q);
+            CN0_dBHz.push_back(trk_dump.CN0_SNV_dB_Hz);
         }
 
     // Align initial measurements and cut the tracking pull-in transitory
@@ -555,6 +559,17 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             g2.savetops("Constellation");
                             g2.savetopdf("Constellation", 18);
                             g2.showonscreen();  // window output
+
+                            Gnuplot g3("linespoints");
+                            g3.set_title("GPS L1 C/A tracking CN0 output (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                            g3.set_grid();
+                            g3.set_xlabel("Time [s]");
+                            g3.set_ylabel("Reported CN0 [dB-Hz]");
+                            g3.cmd("set key box opaque");
+                            g3.plot_xy(timevec, CN0_dBHz, "Prompt", decimate);
+                            g3.savetops("CN0_output");
+                            g3.savetopdf("CN0_output", 18);
+                            g3.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {

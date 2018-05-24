@@ -1,7 +1,7 @@
 /*!
- * \file gps_l5idll_pll_tracking.h
+ * \file gps_l5_dll_pll_tracking.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L5i to a TrackingInterface
+ * for GPS L5 to a TrackingInterface
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,13 +29,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L5i_DLL_PLL_TRACKING_H_
-#define GNSS_SDR_GPS_L5i_DLL_PLL_TRACKING_H_
+#ifndef GNSS_SDR_GPS_L5_DLL_PLL_TRACKING_H_
+#define GNSS_SDR_GPS_L5_DLL_PLL_TRACKING_H_
 
 #include "tracking_interface.h"
 #include "dll_pll_veml_tracking.h"
@@ -46,25 +46,25 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking loop
  */
-class GpsL5iDllPllTracking : public TrackingInterface
+class GpsL5DllPllTracking : public TrackingInterface
 {
 public:
-    GpsL5iDllPllTracking(ConfigurationInterface* configuration,
+    GpsL5DllPllTracking(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL5iDllPllTracking();
+    virtual ~GpsL5DllPllTracking();
 
     inline std::string role() override
     {
         return role_;
     }
 
-    //! Returns "GPS_L5i_DLL_PLL_Tracking"
+    //! Returns "GPS_L5_DLL_PLL_Tracking"
     inline std::string implementation() override
     {
-        return "GPS_L5i_DLL_PLL_Tracking";
+        return "GPS_L5_DLL_PLL_Tracking";
     }
 
     inline size_t item_size() override
@@ -99,4 +99,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GPS_L5i_DLL_PLL_TRACKING_H_
+#endif  // GNSS_SDR_GPS_L5_DLL_PLL_TRACKING_H_

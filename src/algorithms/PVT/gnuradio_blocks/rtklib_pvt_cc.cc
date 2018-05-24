@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -260,6 +260,12 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     kml_dump_filename = d_dump_filename;
     d_kml_dump = std::make_shared<Kml_Printer>();
     d_kml_dump->set_headers(kml_dump_filename);
+
+    //initialize gpx_printer
+    std::string gpx_dump_filename;
+    gpx_dump_filename = d_dump_filename;
+    d_gpx_dump = std::make_shared<Gpx_Printer>();
+    d_gpx_dump->set_headers(gpx_dump_filename);
 
     //initialize geojson_printer
     std::string geojson_dump_filename;
@@ -678,6 +684,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                             first_fix = false;
                                         }
                                     d_kml_dump->print_position(d_ls_pvt, false);
+                                    d_gpx_dump->print_position(d_ls_pvt, false);
                                     d_geojson_printer->print_position(d_ls_pvt, false);
                                     d_nmea_printer->Print_Nmea_Line(d_ls_pvt, false);
 

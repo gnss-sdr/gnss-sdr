@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -220,7 +220,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_a_avx(lv_32
 #endif  // AVX
 
 
-#ifdef LV_HAVE_NEON
+#ifdef LV_HAVE_NEONV7
 static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_neon(lv_32fc_t* result, const lv_32fc_t* local_code, const lv_32fc_t* in, unsigned int num_points)
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!

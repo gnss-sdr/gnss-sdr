@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -54,7 +54,7 @@ DEFINE_int32(cn0_samples, 20, "Number of correlator outputs used for CN0 estimat
 
 DEFINE_int32(cn0_min, 25, "Minimum valid CN0 (in dB-Hz).");
 
-DEFINE_int32(max_lock_fail, 50, "Number number of lock failures before dropping satellite.");
+DEFINE_int32(max_lock_fail, 50, "Maximum number of lock failures before dropping a satellite.");
 
 DEFINE_double(carrier_lock_th, 0.85, "Carrier lock threshold (in rad).");
 

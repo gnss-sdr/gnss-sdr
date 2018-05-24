@@ -25,7 +25,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -43,7 +43,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -51,14 +51,14 @@
 #ifndef GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 
-#include <fstream>
-#include <string>
-#include <vector>
+#include "gnss_synchro.h"
+#include "opencl/fft_internal.h"
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include "opencl/fft_internal.h"
-#include "gnss_synchro.h"
+#include <fstream>
+#include <string>
+#include <vector>
 
 #ifdef __APPLE__
 #include "opencl/cl.hpp"

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
@@ -23,6 +23,7 @@ set(PVT_LIB_SOURCES
      ls_pvt.cc
      hybrid_ls_pvt.cc
      kml_printer.cc
+     gpx_printer.cc
      rinex_printer.cc
      nmea_printer.cc  
      rtcm_printer.cc

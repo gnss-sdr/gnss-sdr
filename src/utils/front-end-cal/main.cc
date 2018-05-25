@@ -449,7 +449,14 @@ int main(int argc, char** argv)
                 {
                     std::cout << " . ";
                 }
-            channel_internal_queue.push(3);
+            try
+                {
+                    channel_internal_queue.push(3);
+                }
+            catch (const boost::exception& e)
+                {
+                    LOG(INFO) << "Exception caught while pushing to he internal queue.";
+                }
             try
                 {
                     ch_thread.join();

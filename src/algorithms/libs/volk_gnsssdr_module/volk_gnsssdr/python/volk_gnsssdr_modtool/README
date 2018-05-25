@@ -76,8 +76,7 @@ This will put the code for the new kernel into
 
 Other kernels must be added by hand. See the following webpages for
 more information about creating VOLK kernels:
-  http://gnuradio.org/doc/doxygen/volk_gnsssdr_guide.html
-  http://gnuradio.org/redmine/projects/gnuradio/wiki/Volk
+  https://www.gnuradio.org/doc/doxygen/volk_guide.html
 
 
 ======================================================================

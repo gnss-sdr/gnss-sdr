@@ -308,11 +308,18 @@ int main(int argc, char** argv)
 
 
     // 2. Get SUPL information from server: Ephemeris record, assistance info and TOW
-    if (front_end_cal.get_ephemeris() == true)
+    try
         {
-            std::cout << "SUPL data received OK!" << std::endl;
+            if (front_end_cal.get_ephemeris() == true)
+                {
+                    std::cout << "SUPL data received OK!" << std::endl;
+                }
+            else
+                {
+                    std::cout << "Failure connecting to SUPL server" << std::endl;
+                }
         }
-    else
+    catch (const boost::exception& e)
         {
             std::cout << "Failure connecting to SUPL server" << std::endl;
         }

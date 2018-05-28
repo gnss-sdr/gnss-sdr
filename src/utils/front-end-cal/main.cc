@@ -146,8 +146,6 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx() : gr::block("FrontEndCal_msg_rx", gr::i
 FrontEndCal_msg_rx::~FrontEndCal_msg_rx() {}
 
 
-// ###########################################################
-
 void wait_message()
 {
     while (!stop)
@@ -234,8 +232,6 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
             return false;
         }
 
-    //delete conditioner;
-    //delete source;
     return true;
 }
 
@@ -275,7 +271,6 @@ int main(int argc, char** argv)
     if (FLAGS_log_dir.empty())
         {
             std::cout << "Logging will be done at "
-
                       << "/tmp"
                       << std::endl
                       << "Use front-end-cal --log_dir=/path/to/log to change that."
@@ -296,23 +291,26 @@ int main(int argc, char** argv)
                       << FLAGS_log_dir << std::endl;
         }
 
-
     // 0. Instantiate the FrontEnd Calibration class
     FrontEndCal front_end_cal;
 
     // 1. Load configuration parameters from config file
-
     std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<FileConfiguration>(FLAGS_config_file);
-
     front_end_cal.set_configuration(configuration);
 
-
     // 2. Get SUPL information from server: Ephemeris record, assistance info and TOW
-    if (front_end_cal.get_ephemeris() == true)
+    try
         {
-            std::cout << "SUPL data received OK!" << std::endl;
+            if (front_end_cal.get_ephemeris() == true)
+                {
+                    std::cout << "SUPL data received OK!" << std::endl;
+                }
+            else
+                {
+                    std::cout << "Failure connecting to SUPL server" << std::endl;
+                }
         }
-    else
+    catch (const boost::exception& e)
         {
             std::cout << "Failure connecting to SUPL server" << std::endl;
         }
@@ -377,11 +375,6 @@ int main(int argc, char** argv)
             std::cout << "Failure connecting the message port system: " << e.what() << std::endl;
             exit(0);
         }
-
-    //gr_basic_block_sptr head = gr_make_head(sizeof(gr_complex), nsamples);
-    //gr_head_sptr head_sptr = boost::dynamic_pointer_cast<gr_head>(head);
-    //head_sptr->set_length(nsamples);
-    //head_sptr->reset();
 
     try
         {
@@ -449,7 +442,14 @@ int main(int argc, char** argv)
                 {
                     std::cout << " . ";
                 }
-            channel_internal_queue.push(3);
+            try
+                {
+                    channel_internal_queue.push(3);
+                }
+            catch (const boost::exception& e)
+                {
+                    LOG(INFO) << "Exception caught while pushing to he internal queue.";
+                }
             try
                 {
                     ch_thread.join();
@@ -516,8 +516,8 @@ int main(int argc, char** argv)
 
     std::cout << "Reference location (defined in config file):" << std::endl;
 
-    std::cout << "Latitude=" << lat_deg << " [�]" << std::endl;
-    std::cout << "Longitude=" << lon_deg << " [�]" << std::endl;
+    std::cout << "Latitude=" << lat_deg << " [º]" << std::endl;
+    std::cout << "Longitude=" << lon_deg << " [º]" << std::endl;
     std::cout << "Altitude=" << altitude_m << " [m]" << std::endl;
 
     if (doppler_measurements_map.size() == 0)

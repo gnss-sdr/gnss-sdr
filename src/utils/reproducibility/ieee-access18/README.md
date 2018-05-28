@@ -4,7 +4,7 @@ Continuous Reproducibility in GNSS Signal Processing
 
 This folder contains files required for the reproduction of the experiment proposed in:
 
-C. Fern&aacute;ndez-Prades, J. Vil&agrave;-Valls, J. Arribas and A. Ramos, [*Continuous Reproducibility in GNSS Signal Processing*](http://ieeexplore.ieee.org/document/8331069/), IEEE Access, accepted for publication, April 2018. DOI: 10.1109/ACCESS.2018.2822835
+C. Fern&aacute;ndez-Prades, J. Vil&agrave;-Valls, J. Arribas and A. Ramos, [*Continuous Reproducibility in GNSS Signal Processing*](https://ieeexplore.ieee.org/document/8331069/), IEEE Access, Vol. 6, No. 1, pp. 20451-20463, April 2018. DOI: [10.1109/ACCESS.2018.2822835](https://doi.org/10.1109/ACCESS.2018.2822835)
 
 The data set used in this paper is available at https://zenodo.org/record/1184601
 

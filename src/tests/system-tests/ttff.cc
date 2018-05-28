@@ -1,5 +1,5 @@
 /*!
- * \file ttff_gps_l1.cc
+ * \file ttff.cc
  * \brief  This class implements a test for measuring
  * the Time-To-First-Fix
  * \author Carles Fernandez-Prades, 2016. cfernandez(at)cttc.es
@@ -75,7 +75,7 @@ typedef struct
 } ttff_msgbuf;
 
 
-class TfttGpsL1CATest : public ::testing::Test
+class TtffTest : public ::testing::Test
 {
 public:
     void config_1();
@@ -124,7 +124,7 @@ public:
 };
 
 
-void TfttGpsL1CATest::config_1()
+void TtffTest::config_1()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
@@ -235,7 +235,7 @@ void TfttGpsL1CATest::config_1()
 }
 
 
-void TfttGpsL1CATest::config_2()
+void TtffTest::config_2()
 {
     if (FLAGS_config_file_ttff.empty())
         {
@@ -300,7 +300,7 @@ void receive_msg()
 }
 
 
-void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_)
+void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_)
 {
     std::ofstream ttff_report_file;
     std::string filename = "ttff_report";
@@ -420,7 +420,7 @@ void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> &ttff_v, std::
 }
 
 
-TEST_F(TfttGpsL1CATest, ColdStart)
+TEST_F(TtffTest, ColdStart)
 {
     unsigned int num_measurements = 0;
 
@@ -503,7 +503,7 @@ TEST_F(TfttGpsL1CATest, ColdStart)
 }
 
 
-TEST_F(TfttGpsL1CATest, HotStart)
+TEST_F(TtffTest, HotStart)
 {
     unsigned int num_measurements = 0;
     TTFF_v.clear();

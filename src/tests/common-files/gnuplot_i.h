@@ -56,8 +56,10 @@
 #include <stdexcept>
 #include <cstdio>
 #include <cstdlib>  // for getenv()
+#include <cstring>  // for strncpy
 #include <cmath>
 #include <list>  // for std::list
+#include <sys/stat.h>
 
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
@@ -1959,47 +1961,46 @@ bool Gnuplot::get_program_path()
     //
     // second look in PATH for Gnuplot
     //
-    char *path;
+    const char *path;
     // Retrieves a C string containing the value of environment variable PATH
     path = std::getenv("PATH");
-
-    if (path == NULL || std::char_traits<char>::length(path) > 4096 * sizeof(char))
+    std::stringstream s;
+    s << path;
+    if (s.fail())
         {
             throw GnuplotException("Path is not set");
         }
-    else
+    std::string path_str = s.str();
+
+    std::list<std::string> ls;
+
+    //split path (one long string) into list ls of strings
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
+    stringtok(ls, path_str, ";");
+#elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+    stringtok(ls, path_str, ":");
+#endif
+
+    // scan list for Gnuplot program files
+    for (std::list<std::string>::const_iterator i = ls.begin();
+         i != ls.end(); ++i)
         {
-            std::list<std::string> ls;
-            std::string path_str(path);
-
-            //split path (one long string) into list ls of strings
+            tmp = (*i) + "/" + Gnuplot::m_sGNUPlotFileName;
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
-            stringtok(ls, path_str, ";");
+            if (Gnuplot::file_exists(tmp, 0))  // check existence
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
-            stringtok(ls, path_str, ":");
+            if (Gnuplot::file_exists(tmp, 1))  // check existence and execution permission
 #endif
-
-            // scan list for Gnuplot program files
-            for (std::list<std::string>::const_iterator i = ls.begin();
-                 i != ls.end(); ++i)
                 {
-                    tmp = (*i) + "/" + Gnuplot::m_sGNUPlotFileName;
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
-                    if (Gnuplot::file_exists(tmp, 0))  // check existence
-#elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
-                    if (Gnuplot::file_exists(tmp, 1))  // check existence and execution permission
-#endif
-                        {
-                            Gnuplot::m_sGNUPlotPath = *i;  // set m_sGNUPlotPath
-                            return true;
-                        }
+                    Gnuplot::m_sGNUPlotPath = *i;  // set m_sGNUPlotPath
+                    return true;
                 }
-
-            tmp = "Can't find gnuplot neither in PATH nor in \"" +
-                  Gnuplot::m_sGNUPlotPath + "\"";
-            Gnuplot::m_sGNUPlotPath = "";
-            throw GnuplotException(tmp);
         }
+
+    tmp = "Can't find gnuplot neither in PATH nor in \"" +
+          Gnuplot::m_sGNUPlotPath + "\"";
+    Gnuplot::m_sGNUPlotPath = "";
+    throw GnuplotException(tmp);
 }
 
 
@@ -2101,17 +2102,24 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
         //
         // open temporary files for output
         //
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_mktemp(name) == NULL)
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+    mode_t mask = umask(S_IXUSR | S_IRWXG | S_IRWXO);
     if (mkstemp(name) == -1)
 #endif
         {
             std::ostringstream except;
             except << "Cannot create temporary file \"" << name << "\"";
+#if defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+            umask(mask);
+#endif
             throw GnuplotException(except.str());
         }
-
+#if defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+    umask(mask);
+#endif
     tmp.open(name);
     if (tmp.bad())
         {

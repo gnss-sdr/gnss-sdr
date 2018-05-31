@@ -120,8 +120,8 @@ serial_t *openserial(const char *path, int mode, char *msg)
     std::string s_aux = "/dev/" + std::string(port);
     s_aux.resize(128, '\0');
     int n = s_aux.length();
-    if (n < 128)
-        for (int i = 0; i < n; i++) dev[i] = s_aux[i];
+    for (int i = 0; i < n; i++) dev[i] = s_aux[i];
+    if (n == 0) dev[0] = '\0';
 
     if ((mode & STR_MODE_R) && (mode & STR_MODE_W))
         rw = O_RDWR;
@@ -1493,7 +1493,6 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
                     *q = '\0';
                     if (passwd) strcpy(passwd, q + 1);
                 }
-            *q = '\0';
             if (user) strcpy(user, buff);
         }
     else

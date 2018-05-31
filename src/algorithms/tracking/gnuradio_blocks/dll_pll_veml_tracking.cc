@@ -281,7 +281,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
 
     d_correlator_outs = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_local_code_shift_chips = static_cast<float *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(float), volk_gnsssdr_get_alignment()));
-    std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
+    clear_tracking_vars();
 
     // map memory pointers of correlator outputs
     if (d_veml)
@@ -328,17 +328,14 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
         {
             // Extra correlator for the data component
             correlator_data_cpu.init(2 * trk_parameters.vector_length, 1);
-            d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-            d_Prompt_Data[0] = gr_complex(0.0, 0.0);
             d_data_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
         }
     else
         {
-            d_Prompt_Data = nullptr;
             d_data_code = nullptr;
         }
 
-    //--- Initializations ---//
+    // --- Initializations ---
     // Initial code frequency basis of NCO
     d_code_freq_chips = d_code_chip_rate;
     // Residual code phase (in chips)
@@ -359,8 +356,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = trk_parameters.carrier_lock_th;
-
-    clear_tracking_vars();
+    d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
 
     d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;
@@ -383,9 +380,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
 void dll_pll_veml_tracking::start_tracking()
 {
     gr::thread::scoped_lock l(d_setlock);
-    /*
-     *  correct the code phase according to the delay between acq and trk
-     */
+
+    //  correct the code phase according to the delay between acq and trk
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
@@ -396,7 +392,7 @@ void dll_pll_veml_tracking::start_tracking()
     DLOG(INFO) << "Number of seconds between Acquisition and Tracking = " << acq_trk_diff_seconds;
     // Doppler effect Fd = (C / (C + Vr)) * F
     double radial_velocity = (d_signal_carrier_freq + d_acq_carrier_doppler_hz) / d_signal_carrier_freq;
-    // new chip and prn sequence periods based on acq Doppler
+    // new chip and PRN sequence periods based on acq Doppler
     d_code_freq_chips = radial_velocity * d_code_chip_rate;
     d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
     double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
@@ -564,9 +560,9 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
             volk_gnsssdr_free(d_local_code_shift_chips);
             volk_gnsssdr_free(d_correlator_outs);
             volk_gnsssdr_free(d_tracking_code);
+            volk_gnsssdr_free(d_Prompt_Data);
             if (trk_parameters.track_pilot)
                 {
-                    volk_gnsssdr_free(d_Prompt_Data);
                     volk_gnsssdr_free(d_data_code);
                     correlator_data_cpu.free();
                 }
@@ -735,7 +731,7 @@ void dll_pll_veml_tracking::run_dll_pll()
 void dll_pll_veml_tracking::clear_tracking_vars()
 {
     std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
-    if (trk_parameters.track_pilot) *d_Prompt_Data = gr_complex(0.0, 0.0);
+    if (trk_parameters.track_pilot) d_Prompt_Data[0] = gr_complex(0.0, 0.0);
     d_carr_error_hz = 0.0;
     d_carr_error_filt_hz = 0.0;
     d_code_error_chips = 0.0;

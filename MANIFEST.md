@@ -5,17 +5,18 @@ tags:
   - gnss
   - gps
   - Galileo
+  - Glonass
 author:
   - Carles Fernandez-Prades <carles.fernandez@cttc.es>
   - Javier Arribas <javier.arribas@cttc.es>
   - et altri (see AUTHORS file for a list of contributors)
 copyright_owner:
   - The Authors
-dependencies: gnuradio (>= 3.7.3), armadillo, gflags, glog, gnutls
+dependencies: gnuradio (>= 3.7.3), armadillo, gflags, glog, gnutls, matio
 license: GPLv3+
 repo: https://github.com/gnss-sdr/gnss-sdr
 website: https://gnss-sdr.org
-icon: https://a.fsdn.com/con/app/proj/gnss-sdr/screenshots/logo400x400.jpg
+icon: https://raw.githubusercontent.com/gnss-sdr/gnss-sdr/master/docs/doxygen/images/gnss-sdr_logo.png
 ---
 Global Navigation Satellite Systems receiver defined by software. It performs all the signal
 processing from raw signal samples up to the computation of the Position-Velocity-Time solution,

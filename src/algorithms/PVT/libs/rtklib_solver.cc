@@ -133,7 +133,7 @@ double rtklib_solver::get_vdop() const
 }
 
 
-bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double Rx_time, bool flag_averaging)
+bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -501,10 +501,13 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                     //this->set_time_offset_s(offset_s + (rx_position_and_time(3) / GPS_C_m_s));  // accumulate the rx time error for the next iteration [meters]->[seconds]
                     this->set_time_offset_s(rx_position_and_time(3));
 
-                    DLOG(INFO) << "RTKLIB Position at TOW=" << Rx_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
+                    DLOG(INFO) << "RTKLIB Position at RX TOW = " << gnss_observables_map.begin()->second.RX_time
+                               << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
 
                     boost::posix_time::ptime p_time;
-                    gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time);
+                    //gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time);
+
+                    gtime_t rtklib_utc_time = gpst2time(adjgpsweek(nav_data.eph[0].week), gnss_observables_map.begin()->second.RX_time);
                     p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                     p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
                     this->set_position_UTC_time(p_time);
@@ -523,7 +526,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                 {
                                     double tmp_double;
                                     //  PVT GPS time
-                                    tmp_double = Rx_time;
+                                    tmp_double = gnss_observables_map.begin()->second.RX_time;
                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // ECEF User Position East [m]
                                     tmp_double = rx_position_and_time(0);

@@ -126,16 +126,7 @@ private:
     std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
     std::shared_ptr<Rtcm_Printer> d_rtcm_printer;
     double d_rx_time;
-    double last_pvt_display_T_rx_s;
-    double last_RTCM_1019_output_time;
-    double last_RTCM_1020_output_time;
-    double last_RTCM_1045_output_time;
-    double last_RTCM_1077_output_time;
-    double last_RTCM_1087_output_time;
-    double last_RTCM_1097_output_time;
-    double last_RTCM_MSM_output_time;
-    double last_RINEX_obs_output_time;
-    double last_RINEX_nav_output_time;
+
     std::shared_ptr<rtklib_solver> d_ls_pvt;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;

@@ -456,8 +456,9 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
             current_symbol.Flag_valid_word = false;
         }
 
-    current_symbol.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
-    current_symbol.TOW_at_current_symbol_s -= delta_t;  //Galileo to GPS TOW
+    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
+    //todo: Galileo to GPS time conversion should be moved to observable block.
+    //current_symbol.TOW_at_current_symbol_ms -= delta_t;  //Galileo to GPS TOW
 
     if (d_dump == true)
         {

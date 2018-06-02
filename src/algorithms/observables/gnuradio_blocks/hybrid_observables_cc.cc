@@ -62,9 +62,9 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in,
     d_nchannels = nchannels_out;
     d_dump_filename = dump_filename;
     T_rx_s = 0.0;
-    T_rx_step_s = 0.001;  // 1 ms
-    max_delta = 1.5;      // 1.5 s
-    d_latency = 0.5;      // 300 ms
+    T_rx_step_ms = 1;  // 1 ms
+    max_delta = 1.5;   // 1.5 s
+    d_latency = 0.5;   // 300 ms
     valid_channels.resize(d_nchannels, false);
     d_num_valid_channels = 0;
     d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(static_cast<unsigned int>(max_delta * 1000.0), d_nchannels);
@@ -87,8 +87,8 @@ hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels_in,
                         }
                 }
         }
-	T_rx_TOW_s=0.0;
-	T_rx_TOW_set=false;
+    T_rx_TOW_ms = 0;
+    T_rx_TOW_set = false;
 }
 
 
@@ -310,7 +310,10 @@ bool hybrid_observables_cc::interpolate_data(Gnss_Synchro &out, const unsigned i
         }
     find_interp_elements(ch, ti);
 
-    //Linear interpolation: y(t) = y(t1) + (y(t2) - y(t1)) * (t - t1) / (t2 - t1)
+    //1st: copy the nearest gnss_synchro data for that channel
+    out = d_gnss_synchro_history->at(ch, 0);
+
+    //2nd: Linear interpolation: y(t) = y(t1) + (y(t2) - y(t1)) * (t - t1) / (t2 - t1)
 
     // CARRIER PHASE INTERPOLATION
     out.Carrier_phase_rads = d_gnss_synchro_history->at(ch, 0).Carrier_phase_rads + (d_gnss_synchro_history->at(ch, 1).Carrier_phase_rads - d_gnss_synchro_history->at(ch, 0).Carrier_phase_rads) * (ti - d_gnss_synchro_history->at(ch, 0).RX_time) / (d_gnss_synchro_history->at(ch, 1).RX_time - d_gnss_synchro_history->at(ch, 0).RX_time);
@@ -319,7 +322,12 @@ bool hybrid_observables_cc::interpolate_data(Gnss_Synchro &out, const unsigned i
     out.Carrier_Doppler_hz = d_gnss_synchro_history->at(ch, 0).Carrier_Doppler_hz + (d_gnss_synchro_history->at(ch, 1).Carrier_Doppler_hz - d_gnss_synchro_history->at(ch, 0).Carrier_Doppler_hz) * (ti - d_gnss_synchro_history->at(ch, 0).RX_time) / (d_gnss_synchro_history->at(ch, 1).RX_time - d_gnss_synchro_history->at(ch, 0).RX_time);
 
     // TOW INTERPOLATION
-    out.TOW_at_current_symbol_s = d_gnss_synchro_history->at(ch, 0).TOW_at_current_symbol_s + (d_gnss_synchro_history->at(ch, 1).TOW_at_current_symbol_s - d_gnss_synchro_history->at(ch, 0).TOW_at_current_symbol_s) * (ti - d_gnss_synchro_history->at(ch, 0).RX_time) / (d_gnss_synchro_history->at(ch, 1).RX_time - d_gnss_synchro_history->at(ch, 0).RX_time);
+    out.interp_TOW_ms = static_cast<double>(d_gnss_synchro_history->at(ch, 0).TOW_at_current_symbol_ms) + (static_cast<double>(d_gnss_synchro_history->at(ch, 1).TOW_at_current_symbol_ms) - static_cast<double>(d_gnss_synchro_history->at(ch, 0).TOW_at_current_symbol_ms)) * (ti - d_gnss_synchro_history->at(ch, 0).RX_time) / (d_gnss_synchro_history->at(ch, 1).RX_time - d_gnss_synchro_history->at(ch, 0).RX_time);
+
+
+    //std::cout.precision(17);
+    //std::cout << "Diff TOW_at_current_symbol_ms(1) -  out.interp_TOW_ms: " << static_cast<double>(d_gnss_synchro_history->at(ch, 1).TOW_at_current_symbol_ms) - out.interp_TOW_ms << std::endl;
+
 
     return true;
 }
@@ -417,8 +425,8 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
                 {
                     if (it->PRN == it2->PRN and it->System == it2->System)
                         {
-                            double tow_dif_ = std::fabs(it->TOW_at_current_symbol_s - it2->TOW_at_current_symbol_s);
-                            if (tow_dif_ > thr_)
+                            double tow_dif_ = std::fabs(it->TOW_at_current_symbol_ms - it2->TOW_at_current_symbol_ms);
+                            if (tow_dif_ > thr_ * 1000.0)
                                 {
                                     DLOG(INFO) << "System " << it->System << ". Signals " << it->Signal << " and " << it2->Signal
                                                << ". TOW difference in PRN " << it->PRN
@@ -433,27 +441,39 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
                 }
         }
 #endif
+
     ///////////////////////////////////////////////////////////
-    double TOW_ref = std::numeric_limits<double>::lowest();
+
     if (!T_rx_TOW_set)
-    {
-		for (it = data.begin(); it != data.end(); it++)
-			{
-				if (it->TOW_at_current_symbol_s > TOW_ref)
-					{
-						TOW_ref = it->TOW_at_current_symbol_s;
-					}
-			}
-		T_rx_TOW_s=round(TOW_ref*1000.0)/1000.0;
-		T_rx_TOW_set=true;
-    }else{
-    	T_rx_TOW_s+=T_rx_step_s;
-    	TOW_ref=T_rx_TOW_s;
-    }
+        {
+            unsigned int TOW_ref = std::numeric_limits<unsigned int>::lowest();
+            for (it = data.begin(); it != data.end(); it++)
+                {
+                    if (it->TOW_at_current_symbol_ms > TOW_ref)
+                        {
+                            TOW_ref = it->TOW_at_current_symbol_ms;
+                        }
+                }
+            T_rx_TOW_ms = TOW_ref;
+            T_rx_TOW_set = true;
+        }
+    else
+        {
+            T_rx_TOW_ms += T_rx_step_ms;
+            //todo: check what happen during the week rollover
+            if (T_rx_TOW_ms >= 604800000)
+                {
+                    T_rx_TOW_ms = T_rx_TOW_ms % 604800000;
+                }
+        }
     for (it = data.begin(); it != data.end(); it++)
         {
-            double traveltime_s = TOW_ref - it->TOW_at_current_symbol_s + GPS_STARTOFFSET_ms / 1000.0;
-            it->RX_time = TOW_ref + GPS_STARTOFFSET_ms / 1000.0;
+            double traveltime_s = (static_cast<double>(T_rx_TOW_ms) - it->interp_TOW_ms + GPS_STARTOFFSET_ms) / 1000.0;
+
+            //std::cout.precision(17);
+            //std::cout << "Diff T_rx_TOW_ms - interp_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) - it->interp_TOW_ms << std::endl;
+
+            it->RX_time = (T_rx_TOW_ms + GPS_STARTOFFSET_ms) / 1000.0;
             it->Pseudorange_m = traveltime_s * SPEED_OF_LIGHT;
         }
 }
@@ -475,7 +495,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
         }
     for (int epoch = 0; epoch < ninput_items[d_nchannels]; epoch++)
         {
-            T_rx_s += T_rx_step_s;
+            T_rx_s += (static_cast<double>(T_rx_step_ms) / 1000.0);
 
             //////////////////////////////////////////////////////////////////////////
             if ((total_input_items == 0) and (d_num_valid_channels == 0))
@@ -557,7 +577,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                 {
                     if (valid_channels[i])
                         {
-                            Gnss_Synchro interpolated_gnss_synchro = d_gnss_synchro_history->back(i);
+                            Gnss_Synchro interpolated_gnss_synchro;  // empty set, it is required to COPY the nearest in the interpolation history = d_gnss_synchro_history->back(i);
                             if (interpolate_data(interpolated_gnss_synchro, i, T_rx_s_out))
                                 {
                                     epoch_data.push_back(interpolated_gnss_synchro);
@@ -600,7 +620,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                                 {
                                     tmp_double = out[i][epoch].RX_time;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = out[i][epoch].TOW_at_current_symbol_s;
+                                    tmp_double = out[i][epoch].interp_TOW_ms / 1000.0;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = out[i][epoch].Carrier_Doppler_hz;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));

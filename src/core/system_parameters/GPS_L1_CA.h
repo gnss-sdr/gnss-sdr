@@ -67,8 +67,8 @@ const double GPS_L1_CA_CHIP_PERIOD = 9.7752e-07;    //!< GPS L1 C/A chip period 
 const double MAX_TOA_DELAY_MS = 20;
 
 //#define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
-const double GPS_STARTOFFSET_ms = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
-
+//const double GPS_STARTOFFSET_ms = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
+const double GPS_STARTOFFSET_ms = 69.0;
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
 const int GPS_L1_CA_HISTORY_DEEP = 100;

@@ -413,8 +413,9 @@ int glonass_l2_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
         }
 
     current_symbol.PRN = this->d_satellite.get_PRN();
-    current_symbol.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
-    current_symbol.TOW_at_current_symbol_s -= delta_t;  // Galileo to GPS TOW
+    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
+    //todo: glonass time to gps time should be done in observables block
+    //current_symbol.TOW_at_current_symbol_s -= delta_t;
 
     if (d_dump == true)
         {

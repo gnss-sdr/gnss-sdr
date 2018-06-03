@@ -122,6 +122,14 @@ GlonassL2CaDllPllCAidTracking::GlonassL2CaDllPllCAidTracking(
             LOG(WARNING) << item_type_ << " unknown tracking item type.";
         }
     channel_ = 0;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

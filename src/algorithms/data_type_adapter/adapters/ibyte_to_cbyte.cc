@@ -66,6 +66,14 @@ IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, std::string ro
         {
             conjugate_ic_ = make_conjugate_ic();
         }
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

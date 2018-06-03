@@ -131,6 +131,14 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
         {
             LOG(ERROR) << " Unknown item type conversion";
         }
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

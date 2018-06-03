@@ -111,6 +111,14 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
     int switch_position = configuration->property(role + ".switch_position", 0);
     switch_fpga = std::make_shared<fpga_switch>(device_name);
     switch_fpga->set_switch_position(switch_position);
+    if (in_stream_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

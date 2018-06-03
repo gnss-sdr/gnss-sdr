@@ -66,6 +66,14 @@ IshortToCshort::IshortToCshort(ConfigurationInterface* configuration, std::strin
         {
             conjugate_sc_ = make_conjugate_sc();
         }
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

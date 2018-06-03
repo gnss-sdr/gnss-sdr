@@ -429,7 +429,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::stop_queue()
 TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, Instantiate)
 {
     config_1();
-    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
+    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
     delete acquisition;
 }
 
@@ -443,7 +443,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
 
     config_1();
-    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
+    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -474,7 +474,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
-    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
+    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -569,39 +569,33 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
     config_2();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
-    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
+    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
-    }) << "Failure setting channel."
-       << std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."
-       << std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
         acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max."
-       << std::endl;
+    }) << "Failure setting doppler_max.";
 
     ASSERT_NO_THROW({
         acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
-    }) << "Failure setting doppler_step."
-       << std::endl;
+    }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."
-       << std::endl;
+    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting acquisition to the top_block."
-       << std::endl;
+    }) << "Failure connecting acquisition to the top_block.";
 
     acquisition->init();
 
@@ -612,8 +606,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-    }) << "Failure connecting the blocks of acquisition test."
-       << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
 

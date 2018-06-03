@@ -872,7 +872,7 @@ private:
     {
     public:
         Tcp_Server(boost::asio::io_service& io_service, const boost::asio::ip::tcp::endpoint& endpoint)
-            : io_service_(io_service), acceptor_(io_service), socket_(io_service)
+            : acceptor_(io_service), socket_(io_service)
         {
             acceptor_.open(endpoint.protocol());
             acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -914,7 +914,6 @@ private:
             });
         }
 
-        boost::asio::io_service& io_service_;
         boost::asio::ip::tcp::acceptor acceptor_;
         boost::asio::ip::tcp::socket socket_;
         Rtcm_Listener_Room room_;

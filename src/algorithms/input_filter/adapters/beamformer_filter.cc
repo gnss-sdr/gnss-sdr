@@ -68,6 +68,14 @@ BeamformerFilter::BeamformerFilter(
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
     samples_ = 0;
+    if (in_stream_ > 8)
+        {
+            LOG(ERROR) << "This implementation only supports eight input streams";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

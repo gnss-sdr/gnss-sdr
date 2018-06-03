@@ -422,7 +422,7 @@ void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition_1C", 1, 1);
+    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition_1C", 1, 0);
 }
 
 
@@ -433,7 +433,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ConnectAndRun)
     std::chrono::duration<double> elapsed_seconds(0);
 
     config_1();
-    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition_1C", 1, 1);
+    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition_1C", 1, 0);
     boost::shared_ptr<GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -460,7 +460,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
 {
     config_1();
 
-    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition", 1, 1);
+    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition", 1, 0);
     boost::shared_ptr<GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -542,7 +542,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
 {
     config_2();
 
-    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition_1C", 1, 1);
+    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition_1C", 1, 0);
     boost::shared_ptr<GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({

@@ -155,7 +155,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
 TEST_F(GlonassL1CaPcpsAcquisitionTest, Instantiate)
 {
     init();
-    boost::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 1);
+    boost::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
 }
 
 
@@ -169,7 +169,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-    boost::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 1);
+    boost::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
@@ -201,7 +201,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     double expected_delay_samples = 31874;
     double expected_doppler_hz = -9500;
     init();
-    std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 1);
+    std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
 
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 

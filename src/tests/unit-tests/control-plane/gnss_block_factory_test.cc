@@ -323,7 +323,7 @@ TEST(GNSSBlockFactoryTest, InstantiateChannels)
     configuration->set_property("Channel1.item_type", "gr_complex");
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     std::unique_ptr<GNSSBlockFactory> factory;
-    std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = std::move(factory->GetChannels(configuration, queue));
+    std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = factory->GetChannels(configuration, queue);
     EXPECT_EQ(static_cast<unsigned int>(2), channels->size());
     channels->erase(channels->begin(), channels->end());
 }

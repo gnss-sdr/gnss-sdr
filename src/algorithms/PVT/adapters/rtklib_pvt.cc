@@ -94,6 +94,8 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
         {
             rinex_version = 2;
         }
+    int rinexobs_rate_ms = boost::math::lcm(configuration->property(role + ".rinexobs_rate_ms", 1000), output_rate_ms);
+    int rinexnav_rate_ms = boost::math::lcm(configuration->property(role + ".rinexnav_rate_ms", 6000), output_rate_ms);
 
     // RTCM Printer settings
     bool flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
@@ -471,10 +473,10 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
         0,                                                                                 /* initialize by restart */
         1,                                                                                 /* output single by dgps/float/fix/ppp outage */
         {"", ""},                                                                          /* char rnxopt[2][256]   rinex options {rover,base} */
-        {sat_PCV, rec_PCV, phwindup, reject_GPS_IIA, raim_fde},                            /*  posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
+        {sat_PCV, rec_PCV, phwindup, reject_GPS_IIA, raim_fde},                            /* posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
         0,                                                                                 /* solution sync mode (0:off,1:on) */
-        {{}, {}},                                                                          /*  odisp[2][6*11] ocean tide loading parameters {rov,base} */
-        {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /*  exterr_t exterr   extended receiver error model */
+        {{}, {}},                                                                          /* odisp[2][6*11] ocean tide loading parameters {rov,base} */
+        {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /* exterr_t exterr   extended receiver error model */
         0,                                                                                 /* disable L2-AR */
         {}                                                                                 /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
     };
@@ -482,7 +484,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     rtkinit(&rtk, &rtklib_configuration_options);
 
     // make PVT object
-    pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, rinex_version, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtk);
+    pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, rinex_version, rinexobs_rate_ms, rinexnav_rate_ms, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     if (out_streams_ > 0)
         {

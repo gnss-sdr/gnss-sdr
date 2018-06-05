@@ -111,7 +111,7 @@ private:
 
     unsigned long int d_preamble_time_samples;
 
-    double d_TOW_at_Preamble;
+    unsigned int d_TOW_at_Preamble_ms;
     unsigned int d_TOW_at_current_symbol_ms;
 
     bool flag_TOW_set;

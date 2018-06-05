@@ -90,7 +90,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_GPS_frame_4bytes = 0;
     d_prev_GPS_frame_4bytes = 0;
     d_flag_parity = false;
-    d_TOW_at_Preamble = 0.0;
+    d_TOW_at_Preamble_ms = 0;
     flag_TOW_set = false;
     d_average_count = 0;
     d_flag_preamble = false;
@@ -395,8 +395,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
     //2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_flag_new_tow_available == true)
         {
-            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + 2.0 * GPS_L1_CA_CODE_PERIOD + GPS_CA_PREAMBLE_DURATION_S;
-            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_GPS_FSM.d_nav.d_TOW) * 1000 + 161;
+            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_GPS_FSM.d_nav.d_TOW) * 1000 + GPS_L1_CA_CODE_PERIOD_MS + GPS_CA_PREAMBLE_DURATION_MS;
+            d_TOW_at_Preamble_ms = d_TOW_at_current_symbol_ms;
             flag_TOW_set = true;
             d_flag_new_tow_available = false;
         }
@@ -425,7 +425,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     tmp_ulong_int = current_symbol.Tracking_sample_counter;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
-                    tmp_double = d_TOW_at_Preamble;
+                    tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) * 1000.0;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                 }
             catch (const std::ifstream::failure &e)

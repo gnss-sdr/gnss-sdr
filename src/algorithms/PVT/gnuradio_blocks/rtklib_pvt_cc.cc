@@ -592,7 +592,6 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                 {
                     double current_RX_time = gnss_observables_map.begin()->second.RX_time;
                     unsigned int current_RX_time_ms = static_cast<unsigned int>(current_RX_time * 1000.0);
-                    //if (std::fabs(current_RX_time - d_rx_time) * 1000.0 >= static_cast<double>(d_output_rate_ms))
                     if (current_RX_time_ms % d_output_rate_ms == 0)
                         {
                             flag_compute_pvt_output = true;
@@ -604,14 +603,14 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                     // compute on the fly PVT solution
                     if (flag_compute_pvt_output == true)
                         {
-                            // correct the observable to account for the receiver clock offset
+                            // receiver clock correction is disabled to be coherent with the RINEX and RTCM standard
                             //std::cout << TEXT_RED << "(internal) accumulated RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]" << TEXT_RESET << std::endl;
-                            for (std::map<int, Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
-                                {
-                                    //todo: check if it has effect to correct the receiver time for the internal pvt solution
-                                    // take into account that the RINEX obs with the RX time (integer ms) CAN NOT be corrected to keep the coherence in obs time
-                                    it->second.Pseudorange_m = it->second.Pseudorange_m;  // - d_ls_pvt->get_time_offset_s() * GPS_C_m_s;
-                                }
+                            //for (std::map<int, Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
+                            //    {
+                            //todo: check if it has effect to correct the receiver time for the internal pvt solution
+                            // take into account that the RINEX obs with the RX time (integer ms) CAN NOT be corrected to keep the coherence in obs time
+                            //        it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->get_time_offset_s() * GPS_C_m_s;
+                            //    }
 
                             if (d_ls_pvt->get_PVT(gnss_observables_map, false))
                                 {
@@ -631,7 +630,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             flag_write_RTCM_1045_output = true;
                                         }
-
+                                    // TODO: RTCM 1077, 1087 and 1097 are not used, so, disable the output rates
                                     //                                    if (current_RX_time_ms % d_rtcm_MT1077_rate_ms==0 and d_rtcm_MT1077_rate_ms != 0)
                                     //                                        {
                                     //                                            last_RTCM_1077_output_time = current_RX_time;
@@ -2061,17 +2060,26 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                     // DEBUG MESSAGE: Display position in console output
                     if (d_ls_pvt->is_valid_position() and flag_display_pvt)
                         {
-                            std::cout << TEXT_BOLD_GREEN << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
-                                      << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
+                            std::streamsize ss = std::cout.precision();  //save current precision
+                            std::cout << TEXT_BOLD_GREEN
+                                      << std::fixed
+                                      << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
+                                      << std::setprecision(ss)
+                                      << " UTC using " << d_ls_pvt->get_num_valid_observations()
+                                      << std::setprecision(10)
+                                      << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
+                                      << std::setprecision(3)
                                       << " [deg], Height= " << d_ls_pvt->get_height() << " [m]" << TEXT_RESET << std::endl;
 
-                            std::cout << TEXT_RED << "accumulated RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]" << TEXT_RESET << std::endl;
-
-                            boost::posix_time::ptime p_time;
-                            gtime_t rtklib_utc_time = gpst2time(adjgpsweek(d_ls_pvt->gps_ephemeris_map.cbegin()->second.i_GPS_week), d_rx_time);
-                            p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
-                            p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
-                            std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << std::endl;
+                            std::cout << TEXT_RED
+                                      << std::setprecision(10)
+                                      << "RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]" << TEXT_RESET << std::endl;
+                            std::cout << std::setprecision(ss);
+                            //boost::posix_time::ptime p_time;
+                            //gtime_t rtklib_utc_time = gpst2time(adjgpsweek(d_ls_pvt->gps_ephemeris_map.cbegin()->second.i_GPS_week), d_rx_time);
+                            //p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
+                            //p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
+                            //std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << std::endl;
 
 
                             LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())

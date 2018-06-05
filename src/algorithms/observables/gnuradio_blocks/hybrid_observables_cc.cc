@@ -460,7 +460,7 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
     else
         {
             T_rx_TOW_ms += T_rx_step_ms;
-            //todo: check what happen during the week rollover
+            //todo: check what happens during the week rollover
             if (T_rx_TOW_ms >= 604800000)
                 {
                     T_rx_TOW_ms = T_rx_TOW_ms % 604800000;

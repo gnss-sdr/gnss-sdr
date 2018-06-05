@@ -65,13 +65,14 @@ public:
     int correlation_length_ms;      //!< Set by Tracking processing block
 
     //Telemetry Decoder
-    bool Flag_valid_word;            //!< Set by Telemetry Decoder processing block
-    double TOW_at_current_symbol_s;  //!< Set by Telemetry Decoder processing block
+    bool Flag_valid_word;                   //!< Set by Telemetry Decoder processing block
+    unsigned int TOW_at_current_symbol_ms;  //!< Set by Telemetry Decoder processing block
 
     // Observables
     double Pseudorange_m;         //!< Set by Observables processing block
     double RX_time;               //!< Set by Observables processing block
     bool Flag_valid_pseudorange;  //!< Set by Observables processing block
+    double interp_TOW_ms;         //!< Set by Observables processing block
 };
 
 #endif

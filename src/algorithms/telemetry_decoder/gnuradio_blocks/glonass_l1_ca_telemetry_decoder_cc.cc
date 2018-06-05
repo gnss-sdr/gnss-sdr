@@ -61,7 +61,7 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing GLONASS L1 CA TELEMETRY DECODING";
     // Define the number of sampes per symbol. Notice that GLONASS has 2 rates,
-    //one for the navigation data and the other for the preamble information
+    // one for the navigation data and the other for the preamble information
     d_samples_per_symbol = (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS) / GLONASS_L1_CA_SYMBOL_RATE_BPS;
 
     // Set the preamble information
@@ -268,11 +268,11 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
     Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
-    Gnss_Synchro current_symbol;  //structure to save the synchronization information and send the output object to the next block
-    //1. Copy the current tracking output
+    Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
+    // 1. Copy the current tracking output
     current_symbol = in[0][0];
-    d_symbol_history.push_back(current_symbol);  //add new symbol to the symbol queue
-    d_sample_counter++;                          //count for the processed samples
+    d_symbol_history.push_back(current_symbol);  // add new symbol to the symbol queue
+    d_sample_counter++;                          // count for the processed samples
     consume_each(1);
 
     d_flag_preamble = false;
@@ -280,7 +280,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
 
     if (d_symbol_history.size() > required_symbols)
         {
-            //******* preamble correlation ********
+            // ******* preamble correlation ********
             for (int i = 0; i < d_symbols_per_preamble; i++)
                 {
                     if (d_symbol_history.at(i).Prompt_I < 0)  // symbols clipping
@@ -294,8 +294,8 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                 }
         }
 
-    //******* frame sync ******************
-    if (d_stat == 0)  //no preamble information
+    // ******* frame sync ******************
+    if (d_stat == 0)  // no preamble information
         {
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {
@@ -311,15 +311,15 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
         {
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {
-                    //check preamble separation
+                    // check preamble separation
                     preamble_diff = d_sample_counter - d_preamble_index;
                     // Record the PRN start sample index associated to the preamble
                     d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter;
                     if (abs(preamble_diff - GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
-                            //try to decode frame
+                            // try to decode frame
                             LOG(INFO) << "Starting string decoder for GLONASS L1 C/A SAT " << this->d_satellite;
-                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp
+                            d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                             d_stat = 2;
                         }
                     else
@@ -342,7 +342,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                     int string_length = GLONASS_GNAV_STRING_SYMBOLS - d_symbols_per_preamble;
                     double string_symbols[GLONASS_GNAV_DATA_SYMBOLS] = {0};
 
-                    //******* SYMBOL TO BIT *******
+                    // ******* SYMBOL TO BIT *******
                     for (int i = 0; i < string_length; i++)
                         {
                             if (corr_value > 0)
@@ -355,13 +355,13 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                                 }
                         }
 
-                    //call the decoder
+                    // call the decoder
                     decode_string(string_symbols, string_length);
                     if (d_nav.flag_CRC_test == true)
                         {
                             d_CRC_error_counter = 0;
-                            d_flag_preamble = true;               //valid preamble indicator (initialized to false every work())
-                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
+                            d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
+                            d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
@@ -372,7 +372,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                     else
                         {
                             d_CRC_error_counter++;
-                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp
+                            d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                             if (d_CRC_error_counter > CRC_ERROR_LIMIT)
                                 {
                                     LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
@@ -384,21 +384,21 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
         }
 
     // UPDATE GNSS SYNCHRO DATA
-    //2. Add the telemetry decoder information
+    // 2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_nav.flag_TOW_new == true)
-        //update TOW at the preamble instant
+        // update TOW at the preamble instant
         {
             d_TOW_at_current_symbol = floor((d_nav.gnav_ephemeris.d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S) * 1000) / 1000;
             d_nav.flag_TOW_new = false;
         }
-    else  //if there is not a new preamble, we define the TOW of the current symbol
+    else  // if there is not a new preamble, we define the TOW of the current symbol
         {
             d_TOW_at_current_symbol = d_TOW_at_current_symbol + GLONASS_L1_CA_CODE_PERIOD;
         }
 
-    //if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
+    // if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
 
-    // if(d_nav.flag_GGTO_1 == true  and  d_nav.flag_GGTO_2 == true and  d_nav.flag_GGTO_3 == true and  d_nav.flag_GGTO_4 == true) //all GGTO parameters arrived
+    // if(d_nav.flag_GGTO_1 == true  and  d_nav.flag_GGTO_2 == true and  d_nav.flag_GGTO_3 == true and  d_nav.flag_GGTO_4 == true) // all GGTO parameters arrived
     //     {
     //         delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64)));
     //     }
@@ -413,8 +413,9 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
         }
 
     current_symbol.PRN = this->d_satellite.get_PRN();
-    current_symbol.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
-    current_symbol.TOW_at_current_symbol_s -= delta_t;  // Galileo to GPS TOW
+    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
+    // todo: glonass time to gps time should be done in observables block
+    // current_symbol.TOW_at_current_symbol_ms -= -= static_cast<unsigned int>(delta_t) * 1000;  // Galileo to GPS TOW
 
     if (d_dump == true)
         {
@@ -441,7 +442,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
         {
             d_symbol_history.pop_front();
         }
-    //3. Make the output (copy the object contents to the GNURadio reserved memory)
+    // 3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_symbol;
 
     return 1;

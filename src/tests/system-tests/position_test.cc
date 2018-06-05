@@ -255,7 +255,6 @@ int StaticPositionSystemTest::configure_receiver()
             const float band1_error = 1.0;
             const float band2_error = 1.0;
             const int grid_density = 16;
-            const int decimation_factor = 1;
 
             const float zero = 0.0;
             const int number_of_channels = 8;

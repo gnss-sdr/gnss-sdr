@@ -419,14 +419,14 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
             if (d_nav.flag_TOW_5 == true)  //page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
                     //TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_5 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols - 1) * GALILEO_E1_CODE_PERIOD;  //-GALILEO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
+                    d_TOW_at_current_symbol = d_nav.TOW_5 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols + 1) * GALILEO_E1_CODE_PERIOD;
                     d_nav.flag_TOW_5 = false;
                 }
 
             else if (d_nav.flag_TOW_6 == true)  //page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
                     //TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_6 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols - 1) * GALILEO_E1_CODE_PERIOD;  //-GALILEO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
+                    d_TOW_at_current_symbol = d_nav.TOW_6 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols + 1) * GALILEO_E1_CODE_PERIOD;
                     d_nav.flag_TOW_6 = false;
                 }
             else
@@ -456,8 +456,9 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
             current_symbol.Flag_valid_word = false;
         }
 
-    current_symbol.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
-    current_symbol.TOW_at_current_symbol_s -= delta_t;  //Galileo to GPS TOW
+    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
+    //todo: Galileo to GPS time conversion should be moved to observable block.
+    //current_symbol.TOW_at_current_symbol_ms -= delta_t;  //Galileo to GPS TOW
 
     if (d_dump == true)
         {

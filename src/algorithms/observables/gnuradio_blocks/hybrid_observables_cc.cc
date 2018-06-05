@@ -310,10 +310,10 @@ bool hybrid_observables_cc::interpolate_data(Gnss_Synchro &out, const unsigned i
         }
     find_interp_elements(ch, ti);
 
-    //1st: copy the nearest gnss_synchro data for that channel
+    // 1st: copy the nearest gnss_synchro data for that channel
     out = d_gnss_synchro_history->at(ch, 0);
 
-    //2nd: Linear interpolation: y(t) = y(t1) + (y(t2) - y(t1)) * (t - t1) / (t2 - t1)
+    // 2nd: Linear interpolation: y(t) = y(t1) + (y(t2) - y(t1)) * (t - t1) / (t2 - t1)
 
     // CARRIER PHASE INTERPOLATION
     out.Carrier_phase_rads = d_gnss_synchro_history->at(ch, 0).Carrier_phase_rads + (d_gnss_synchro_history->at(ch, 1).Carrier_phase_rads - d_gnss_synchro_history->at(ch, 0).Carrier_phase_rads) * (ti - d_gnss_synchro_history->at(ch, 0).RX_time) / (d_gnss_synchro_history->at(ch, 1).RX_time - d_gnss_synchro_history->at(ch, 0).RX_time);
@@ -323,11 +323,6 @@ bool hybrid_observables_cc::interpolate_data(Gnss_Synchro &out, const unsigned i
 
     // TOW INTERPOLATION
     out.interp_TOW_ms = static_cast<double>(d_gnss_synchro_history->at(ch, 0).TOW_at_current_symbol_ms) + (static_cast<double>(d_gnss_synchro_history->at(ch, 1).TOW_at_current_symbol_ms) - static_cast<double>(d_gnss_synchro_history->at(ch, 0).TOW_at_current_symbol_ms)) * (ti - d_gnss_synchro_history->at(ch, 0).RX_time) / (d_gnss_synchro_history->at(ch, 1).RX_time - d_gnss_synchro_history->at(ch, 0).RX_time);
-
-
-    //std::cout.precision(17);
-    //std::cout << "Diff TOW_at_current_symbol_ms(1) -  out.interp_TOW_ms: " << static_cast<double>(d_gnss_synchro_history->at(ch, 1).TOW_at_current_symbol_ms) - out.interp_TOW_ms << std::endl;
-
 
     return true;
 }
@@ -344,6 +339,7 @@ double hybrid_observables_cc::compute_T_rx_s(const Gnss_Synchro &a)
             return 0.0;
         }
 }
+
 
 void hybrid_observables_cc::find_interp_elements(const unsigned int &ch, const double &ti)
 {
@@ -412,10 +408,10 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
 {
     std::vector<Gnss_Synchro>::iterator it;
 
-/////////////////////// DEBUG //////////////////////////
-//   Logs if there is a pseudorange difference between
-//   signals of the same satellite higher than a threshold
-////////////////////////////////////////////////////////
+    /////////////////////// DEBUG //////////////////////////
+    //   Logs if there is a pseudorange difference between
+    //   signals of the same satellite higher than a threshold
+    ////////////////////////////////////////////////////////
 #ifndef NDEBUG
     std::vector<Gnss_Synchro>::iterator it2;
     double thr_ = 250.0 / SPEED_OF_LIGHT;  // Maximum pseudorange difference = 250 meters
@@ -441,8 +437,6 @@ void hybrid_observables_cc::correct_TOW_and_compute_prange(std::vector<Gnss_Sync
                 }
         }
 #endif
-
-    ///////////////////////////////////////////////////////////
 
     if (!T_rx_TOW_set)
         {
@@ -532,6 +526,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                                 }
                         }
                 }
+
             for (i = 0; i < d_nchannels; i++)
                 {
                     if (d_gnss_synchro_history->size(i) > 2)
@@ -544,6 +539,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                         }
                 }
             d_num_valid_channels = valid_channels.count();
+
             // Check if there is any valid channel after reading the new incoming Gnss_Synchro data
             if (d_num_valid_channels == 0)
                 {
@@ -551,7 +547,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                     return returned_elements;
                 }
 
-            for (i = 0; i < d_nchannels; i++)  //Discard observables with T_rx higher than the threshold
+            for (i = 0; i < d_nchannels; i++)  // Discard observables with T_rx higher than the threshold
                 {
                     if (valid_channels[i])
                         {
@@ -589,11 +585,13 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                         }
                 }
             d_num_valid_channels = valid_channels.count();
+
             if (d_num_valid_channels == 0)
                 {
                     consume(d_nchannels, epoch + 1);
                     return returned_elements;
                 }
+
             correct_TOW_and_compute_prange(epoch_data);
             std::vector<Gnss_Synchro>::iterator it = epoch_data.begin();
             for (i = 0; i < d_nchannels; i++)
@@ -610,6 +608,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                             out[i][epoch].Flag_valid_pseudorange = false;
                         }
                 }
+
             if (d_dump)
                 {
                     // MULTIPLEXED FILE RECORDING - Record results to file
@@ -640,6 +639,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                             d_dump = false;
                         }
                 }
+
             returned_elements++;
         }
     consume(d_nchannels, ninput_items[d_nchannels]);

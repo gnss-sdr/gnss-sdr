@@ -236,9 +236,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         {
             //instantiate the array version
             std::unique_ptr<GNSSBlockInterface> conditioner_(new ArraySignalConditioner(configuration.get(),
-                std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1)),
-                std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1)),
-                std::move(GetBlock(configuration, role_resampler, resampler, 1, 1)),
+                GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1),
+                GetBlock(configuration, role_inputfilter, input_filter, 1, 1),
+                GetBlock(configuration, role_resampler, resampler, 1, 1),
                 role_conditioner, "Signal_Conditioner"));
             return conditioner_;
         }
@@ -246,9 +246,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         {
             //single-antenna version
             std::unique_ptr<GNSSBlockInterface> conditioner_(new SignalConditioner(configuration.get(),
-                std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1)),
-                std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1)),
-                std::move(GetBlock(configuration, role_resampler, resampler, 1, 1)),
+                GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1),
+                GetBlock(configuration, role_inputfilter, input_filter, 1, 1),
+                GetBlock(configuration, role_resampler, resampler, 1, 1),
                 role_conditioner, "Signal_Conditioner"));
             return conditioner_;
         }
@@ -819,12 +819,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_1C(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_1C(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -848,12 +848,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_2S(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_2S(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -877,12 +877,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_L5(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_L5(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -906,12 +906,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_1B(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_1B(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -935,12 +935,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_5X(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_5X(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -965,12 +965,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_1G(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_1G(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -995,12 +995,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_2G(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_2G(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
         }
@@ -1608,7 +1608,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             // Log fatal. This causes execution to stop.
             LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
-    return std::move(block);
+    return block;
 }
 
 
@@ -1748,7 +1748,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
             // Log fatal. This causes execution to stop.
             LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
-    return std::move(block);
+    return block;
 }
 
 
@@ -1854,7 +1854,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
             // Log fatal. This causes execution to stop.
             LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
-    return std::move(block);
+    return block;
 }
 
 
@@ -1920,5 +1920,5 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
             // Log fatal. This causes execution to stop.
             LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
-    return std::move(block);
+    return block;
 }

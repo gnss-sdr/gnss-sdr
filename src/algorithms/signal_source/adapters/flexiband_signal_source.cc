@@ -85,6 +85,14 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
             LOG(WARNING) << item_type_ << " unrecognized item type for flexiband_source_";
             item_size_ = sizeof(gr_complex);
         }
+    if (in_stream_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

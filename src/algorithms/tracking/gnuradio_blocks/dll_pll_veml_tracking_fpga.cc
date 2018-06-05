@@ -581,7 +581,7 @@ bool dll_pll_veml_tracking_fpga::acquire_secondary()
                 }
         }
 
-    if (abs(corr_value) == d_secondary_code_length)
+    if (abs(corr_value) == static_cast<int>(d_secondary_code_length))
         {
             return true;
         }

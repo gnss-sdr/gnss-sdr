@@ -785,7 +785,7 @@ tcpsvr_t *opentcpsvr(const char *path, char *msg)
 {
     tcpsvr_t *tcpsvr, tcpsvr0;  // = {{0}};
     char port[256] = "";
-    tcpsvr0 = {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}, {0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}};
+    tcpsvr0 = {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}, {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}}};
     tracet(3, "opentcpsvr: path=%s\n", path);
 
     if (!(tcpsvr = (tcpsvr_t *)malloc(sizeof(tcpsvr_t)))) return NULL;

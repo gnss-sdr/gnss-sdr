@@ -775,9 +775,23 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             acq_channels_count_--;
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
+                    unsigned int sat_ = 0;
+                    try
+                        {
+                            sat_ = configuration_->property("Channel" + std::to_string(i) + ".satellite", 0);
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                     if (!available_GNSS_signals_.empty() && (acq_channels_count_ < max_acq_channels_) && (channels_state_[i] == 0))
                         {
                             channels_state_[i] = 1;
+                            if (sat_ == 0)
+                                {
+                                    std::lock_guard<std::mutex> lock(signal_list_mutex);
+                                    channels_[i]->set_signal(search_next_signal(channels_[i]->get_signal().get_signal_str(), true));
+                                }
                             acq_channels_count_++;
                             DLOG(INFO) << "Channel " << i << " Starting acquisition " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
                             channels_[i]->start_acquisition();

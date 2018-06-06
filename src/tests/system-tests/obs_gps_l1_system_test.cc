@@ -264,7 +264,6 @@ int ObsGpsL1SystemTest::configure_receiver()
     // Set Acquisition
     config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
     config->set_property("Acquisition_1C.item_type", "gr_complex");
-    config->set_property("Acquisition_1C.if", std::to_string(zero));
     config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
     config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
@@ -279,7 +278,6 @@ int ObsGpsL1SystemTest::configure_receiver()
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
-    config->set_property("Tracking_1C.if", std::to_string(zero));
     config->set_property("Tracking_1C.dump", "false");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
     config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));

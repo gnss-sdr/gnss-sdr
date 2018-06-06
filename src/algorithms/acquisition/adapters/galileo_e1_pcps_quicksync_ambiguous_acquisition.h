@@ -146,7 +146,6 @@ private:
     unsigned int max_dwells_;
     unsigned int folding_factor_;
     long fs_in_;
-    long if_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

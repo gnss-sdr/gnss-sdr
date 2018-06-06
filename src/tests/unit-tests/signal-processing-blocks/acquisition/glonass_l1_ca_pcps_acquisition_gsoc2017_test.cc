@@ -246,7 +246,6 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "4000000");
     config->set_property("Acquisition.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
@@ -334,7 +333,6 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "4000000");
     config->set_property("Acquisition.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");

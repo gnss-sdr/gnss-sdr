@@ -92,11 +92,9 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_flag_parity = false;
     d_TOW_at_Preamble_ms = 0;
     flag_TOW_set = false;
-    d_average_count = 0;
     d_flag_preamble = false;
     d_flag_new_tow_available = false;
     d_word_number = 0;
-    d_decimation_output_factor = 1;
     d_channel = 0;
     flag_PLL_180_deg_phase_locked = false;
     d_preamble_time_samples = 0;

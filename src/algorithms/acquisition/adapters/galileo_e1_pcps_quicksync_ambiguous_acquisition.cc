@@ -55,7 +55,6 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
@@ -70,7 +69,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     /*Calculate the folding factor value based on the formula described in the paper.
     This may be a bug, but acquisition also work by variying the folding factor at va-
     lues different that the expressed in the paper. In adition, it is important to point
-    out that by making the folding factor smaller we were able to get QuickSync work with 
+    out that by making the folding factor smaller we were able to get QuickSync work with
     Galileo. Future work should be directed to test this asumption statistically.*/
 
     //folding_factor_ = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
@@ -120,7 +119,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
-                sampled_ms_, max_dwells_, doppler_max_, if_, fs_in_,
+                sampled_ms_, max_dwells_, doppler_max_, fs_in_,
                 samples_per_ms, code_length_, bit_transition_flag_,
                 dump_, dump_filename_);
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_,

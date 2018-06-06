@@ -48,7 +48,7 @@ public:
     fpga_acquisition(std::string device_name,
         unsigned int nsamples,
         unsigned int doppler_max,
-        unsigned int nsamples_total, long fs_in, long freq,
+        unsigned int nsamples_total, long fs_in,
         unsigned int sampled_ms, unsigned select_queue,
         lv_16sc_t *all_fft_codes);
     ~fpga_acquisition();
@@ -82,9 +82,7 @@ public:
     }
 
 private:
-    long d_freq;
     long d_fs_in;
-    gr::fft::fft_complex *d_fft_if;  // function used to run the fft of the local codes
     // data related to the hardware module and the driver
     int d_fd;                       // driver descriptor
     volatile unsigned *d_map_base;  // driver memory map

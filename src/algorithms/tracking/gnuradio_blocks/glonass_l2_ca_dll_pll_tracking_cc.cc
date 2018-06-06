@@ -59,7 +59,6 @@ using google::LogMessage;
 
 glonass_l2_ca_dll_pll_tracking_cc_sptr
 glonass_l2_ca_dll_pll_make_tracking_cc(
-    long if_freq,
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -68,7 +67,7 @@ glonass_l2_ca_dll_pll_make_tracking_cc(
     float dll_bw_hz,
     float early_late_space_chips)
 {
-    return glonass_l2_ca_dll_pll_tracking_cc_sptr(new Glonass_L2_Ca_Dll_Pll_Tracking_cc(if_freq,
+    return glonass_l2_ca_dll_pll_tracking_cc_sptr(new Glonass_L2_Ca_Dll_Pll_Tracking_cc(
         fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips));
 }
 
@@ -84,7 +83,6 @@ void Glonass_L2_Ca_Dll_Pll_Tracking_cc::forecast(int noutput_items,
 
 
 Glonass_L2_Ca_Dll_Pll_Tracking_cc::Glonass_L2_Ca_Dll_Pll_Tracking_cc(
-    long if_freq,
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -98,7 +96,6 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::Glonass_L2_Ca_Dll_Pll_Tracking_cc(
 
     // initialize internal vars
     d_dump = dump;
-    d_if_freq = if_freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
@@ -220,7 +217,7 @@ void Glonass_L2_Ca_Dll_Pll_Tracking_cc::start_tracking()
 
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
-    d_carrier_frequency_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ2_GLO * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    d_carrier_frequency_hz = d_acq_carrier_doppler_hz + (DFRQ2_GLO * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_frequency_hz / static_cast<double>(d_fs_in);
     d_carrier_doppler_phase_step_rad = GLONASS_TWO_PI * (d_carrier_doppler_hz) / static_cast<double>(d_fs_in);

@@ -60,8 +60,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in;
-    long ifreq = configuration_->property(role + ".if", 0);
-    acq_parameters.freq = ifreq;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
@@ -95,7 +93,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
         {
             gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in, 0);  // generate PRN code
             // fill in zero padding
-            for (int s = code_length; s < nsamples_total; s++)
+            for (unsigned int s = code_length; s < nsamples_total; s++)
                 {
                     code[s] = 0;
                 }

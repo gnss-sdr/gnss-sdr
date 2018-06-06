@@ -59,8 +59,6 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
-    if_ = configuration_->property(role + ".if", 0);
-    acq_parameters.freq = if_;
     dump_ = configuration_->property(role + ".dump", false);
     acq_parameters.dump = dump_;
     blocking_ = configuration_->property(role + ".blocking", true);

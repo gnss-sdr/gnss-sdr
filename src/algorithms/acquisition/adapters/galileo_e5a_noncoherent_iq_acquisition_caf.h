@@ -146,7 +146,6 @@ private:
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
     long fs_in_;
-    long if_;
     bool dump_;
     std::string dump_filename_;
     int Zero_padding;

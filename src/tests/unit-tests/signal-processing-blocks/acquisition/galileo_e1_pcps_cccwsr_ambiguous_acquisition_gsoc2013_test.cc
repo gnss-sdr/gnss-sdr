@@ -243,7 +243,6 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_1()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition_1B.item_type", "gr_complex");
-    config->set_property("Acquisition_1B.if", "0");
     config->set_property("Acquisition_1B.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_1B.max_dwells", "1");

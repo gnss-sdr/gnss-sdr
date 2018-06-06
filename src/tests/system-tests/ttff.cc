@@ -66,7 +66,6 @@ concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 std::vector<double> TTFF_v;
-const int decimation_factor = 1;
 
 typedef struct
 {
@@ -189,7 +188,6 @@ void TtffTest::config_1()
     // Set Acquisition
     config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
     config->set_property("Acquisition_1C.item_type", "gr_complex");
-    config->set_property("Acquisition_1C.if", std::to_string(zero));
     config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
     config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
@@ -203,7 +201,6 @@ void TtffTest::config_1()
     // Set Tracking
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
-    config->set_property("Tracking_1C.if", std::to_string(zero));
     config->set_property("Tracking_1C.dump", "false");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
     config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));
@@ -213,7 +210,6 @@ void TtffTest::config_1()
     // Set Telemetry
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.dump", "false");
-    config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
     // Set Observables
     config->set_property("Observables.implementation", "Hybrid_Observables");
@@ -222,6 +218,7 @@ void TtffTest::config_1()
 
     // Set PVT
     config->set_property("PVT.implementation", "RTKLIB_PVT");
+    config->set_property("PVT.positioning_mode", "Single");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");

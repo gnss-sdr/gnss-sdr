@@ -52,7 +52,6 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
     int vector_length;
-    int f_if;
     bool dump;
     std::string dump_filename;
     std::string item_type;
@@ -65,7 +64,6 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
@@ -83,7 +81,6 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = galileo_e1_tcp_connector_make_tracking_cc(
-                f_if,
                 fs_in,
                 vector_length,
                 dump,

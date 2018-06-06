@@ -60,7 +60,6 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
@@ -102,7 +101,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(sampled_ms_, max_dwells_,
-                doppler_max_, if_, fs_in_, code_length_, code_length_, bit_transition_flag_,
+                doppler_max_, fs_in_, code_length_, code_length_, bit_transition_flag_,
                 dump_, dump_filename_, both_signal_components, CAF_window_hz_, Zero_padding);
         }
     else

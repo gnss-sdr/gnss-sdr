@@ -409,7 +409,6 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition_5X.item_type", "gr_complex");
-    config->set_property("Acquisition_5X.if", "0");
     config->set_property("Acquisition_5X.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_5X.max_dwells", "1");

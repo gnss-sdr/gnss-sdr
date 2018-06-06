@@ -45,18 +45,18 @@
 using google::LogMessage;
 
 pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(
-    int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
+    int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min,
     long fs_in, int samples_per_ms, bool dump,
     std::string dump_filename)
 {
     return pcps_acquisition_fine_doppler_cc_sptr(
-        new pcps_acquisition_fine_doppler_cc(max_dwells, sampled_ms, doppler_max, doppler_min, freq,
+        new pcps_acquisition_fine_doppler_cc(max_dwells, sampled_ms, doppler_max, doppler_min,
             fs_in, samples_per_ms, dump, dump_filename));
 }
 
 
 pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
-    int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
+    int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min,
     long fs_in, int samples_per_ms, bool dump,
     std::string dump_filename) : gr::block("pcps_acquisition_fine_doppler_cc",
                                      gr::io_signature::make(1, 1, sizeof(gr_complex)),
@@ -65,7 +65,6 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0;  // SAMPLE COUNTER
     d_active = false;
-    d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_sampled_ms = sampled_ms;
@@ -207,7 +206,7 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
             doppler_hz = d_config_doppler_min + d_doppler_step * doppler_index;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
-            phase_step_rad = static_cast<float>(GPS_TWO_PI) * (d_freq + doppler_hz) / static_cast<float>(d_fs_in);
+            phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
             d_grid_doppler_wipeoffs[doppler_index] = new gr_complex[d_fft_size];
             float _phase[1];
             _phase[0] = 0;

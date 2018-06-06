@@ -139,7 +139,6 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     gnss_synchro.PRN = 1;
     config->set_property("GNSS-SDR.internal_fs_sps", "62314000");
     config->set_property("Acquisition_1G.item_type", "gr_complex");
-    config->set_property("Acquisition_1G.if", "9540000");
     config->set_property("Acquisition_1G.coherent_integration_time_ms", "1");
     config->set_property("Acquisition_1G.dump", "true");
     config->set_property("Acquisition_1G.dump_filename", "./acquisition");

@@ -62,7 +62,6 @@ using google::LogMessage;
 
 glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(
-    long if_freq,
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -74,7 +73,7 @@ glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(
     int extend_correlation_ms,
     float early_late_space_chips)
 {
-    return glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr(new glonass_l1_ca_dll_pll_c_aid_tracking_cc(if_freq,
+    return glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr(new glonass_l1_ca_dll_pll_c_aid_tracking_cc(
         fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz, extend_correlation_ms, early_late_space_chips));
 }
 
@@ -103,7 +102,6 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index(pmt::pm
 
 
 glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc(
-    long if_freq,
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -125,7 +123,6 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
     this->message_port_register_out(pmt::mp("events"));
     // initialize internal vars
     d_dump = dump;
-    d_if_freq = if_freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
@@ -262,10 +259,10 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
 
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
-    // d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    // d_carrier_doppler_hz = d_acq_carrier_doppler_hz + (DFRQ1_GLO *  GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
     // d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     // d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
-    d_carrier_frequency_hz = d_acq_carrier_doppler_hz + d_if_freq + (DFRQ1_GLO * static_cast<double>(GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN)));
+    d_carrier_frequency_hz = d_acq_carrier_doppler_hz + (DFRQ1_GLO * static_cast<double>(GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN)));
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = GLONASS_TWO_PI * d_carrier_frequency_hz / static_cast<double>(d_fs_in);
 

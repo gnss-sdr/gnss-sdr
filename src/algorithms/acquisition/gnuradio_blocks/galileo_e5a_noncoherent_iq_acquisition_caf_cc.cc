@@ -48,7 +48,7 @@ using google::LogMessage;
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
     unsigned int sampled_ms,
     unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
+    unsigned int doppler_max, long fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -58,7 +58,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make
     int Zero_padding_)
 {
     return galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr(
-        new galileo_e5a_noncoherentIQ_acquisition_caf_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
+        new galileo_e5a_noncoherentIQ_acquisition_caf_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
             samples_per_code, bit_transition_flag, dump, dump_filename, both_signal_components_, CAF_window_hz_, Zero_padding_));
 }
 
@@ -67,7 +67,6 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     unsigned int sampled_ms,
     unsigned int max_dwells,
     unsigned int doppler_max,
-    long freq,
     long fs_in,
     int samples_per_ms,
     int samples_per_code,
@@ -84,7 +83,6 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_sample_counter = 0;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
-    d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
@@ -302,7 +300,7 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            float phase_step_rad = GALILEO_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
+            float phase_step_rad = GALILEO_TWO_PI * doppler / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase, d_fft_size);

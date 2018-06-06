@@ -67,7 +67,6 @@ typedef struct
     unsigned int doppler_max;
     unsigned int num_doppler_bins_step2;
     float doppler_step2;
-    long freq;
     long fs_in;
     int samples_per_ms;
     int samples_per_code;

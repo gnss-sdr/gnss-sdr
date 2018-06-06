@@ -61,7 +61,7 @@ pcps_acquisition::pcps_acquisition(pcpsconf_t conf_) : gr::block("pcps_acquisiti
     d_sample_counter = 0;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
-    d_old_freq = conf_.freq;
+    d_old_freq = 0;
     d_well_count = 0;
     d_fft_size = acq_parameters.sampled_ms * acq_parameters.samples_per_ms;
     d_mag = 0;
@@ -157,7 +157,7 @@ pcps_acquisition::~pcps_acquisition()
 void pcps_acquisition::set_local_code(std::complex<float>* code)
 {
     // reset the intermediate frequency
-    acq_parameters.freq = d_old_freq;
+    d_old_freq = 0;
     // This will check if it's fdma, if yes will update the intermediate frequency and the doppler grid
     if (is_fdma())
         {
@@ -189,14 +189,14 @@ bool pcps_acquisition::is_fdma()
     // Dealing with FDMA system
     if (strcmp(d_gnss_synchro->Signal, "1G") == 0)
         {
-            acq_parameters.freq += DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
-            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << acq_parameters.freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
+            d_old_freq += DFRQ1_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
+            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_old_freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
             return true;
         }
     else if (strcmp(d_gnss_synchro->Signal, "2G") == 0)
         {
-            acq_parameters.freq += DFRQ2_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
-            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << acq_parameters.freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
+            d_old_freq += DFRQ2_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
+            LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_old_freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
             return true;
         }
     else
@@ -244,7 +244,7 @@ void pcps_acquisition::init()
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
-            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, acq_parameters.freq + doppler);
+            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_old_freq + doppler);
         }
     d_worker_active = false;
 
@@ -261,7 +261,7 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             int doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
-            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, acq_parameters.freq + doppler);
+            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_old_freq + doppler);
         }
 }
 

@@ -52,7 +52,7 @@ typedef boost::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc> galileo_
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr
 galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(unsigned int sampled_ms,
     unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
+    unsigned int doppler_max, long fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -74,7 +74,7 @@ private:
     galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
         unsigned int sampled_ms,
         unsigned int max_dwells,
-        unsigned int doppler_max, long freq, long fs_in,
+        unsigned int doppler_max, long fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -86,7 +86,7 @@ private:
     galileo_e5a_noncoherentIQ_acquisition_caf_cc(
         unsigned int sampled_ms,
         unsigned int max_dwells,
-        unsigned int doppler_max, long freq, long fs_in,
+        unsigned int doppler_max, long fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -100,7 +100,6 @@ private:
     float estimate_input_power(gr_complex* in);
 
     long d_fs_in;
-    long d_freq;
     int d_samples_per_ms;
     int d_sampled_ms;
     int d_samples_per_code;

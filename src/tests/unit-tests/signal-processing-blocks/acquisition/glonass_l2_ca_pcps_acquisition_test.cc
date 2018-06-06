@@ -245,7 +245,6 @@ void GlonassL2CaPcpsAcquisitionTest::config_1()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition_2G.item_type", "gr_complex");
-    config->set_property("Acquisition_2G.if", "4000000");
     config->set_property("Acquisition_2G.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_2G.max_dwells", "1");
@@ -333,7 +332,6 @@ void GlonassL2CaPcpsAcquisitionTest::config_2()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition_2G.item_type", "gr_complex");
-    config->set_property("Acquisition_2G.if", "4000000");
     config->set_property("Acquisition_2G.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_2G.max_dwells", "1");

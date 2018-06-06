@@ -72,7 +72,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     d_gnss_synchro = 0;
 
     acquisition_fpga = std::make_shared<fpga_acquisition>(acq_parameters.device_name, d_fft_size, acq_parameters.doppler_max, acq_parameters.samples_per_ms,
-        acq_parameters.fs_in, acq_parameters.freq, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes);
+        acq_parameters.fs_in, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes);
 }
 
 
@@ -172,7 +172,6 @@ void pcps_acquisition_fpga::set_active(bool active)
     // initialize acquisition algorithm
     uint32_t indext = 0;
     float magt = 0.0;
-    float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
     d_input_power = 0.0;
     d_mag = 0.0;
@@ -234,7 +233,8 @@ void pcps_acquisition_fpga::set_active(bool active)
 
 
 int pcps_acquisition_fpga::general_work(int noutput_items __attribute__((unused)),
-    gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,
+    gr_vector_int& ninput_items __attribute__((unused)),
+    gr_vector_const_void_star& input_items __attribute__((unused)),
     gr_vector_void_star& output_items __attribute__((unused)))
 {
     // the general work is not used with the acquisition that uses the FPGA

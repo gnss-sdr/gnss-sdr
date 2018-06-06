@@ -45,7 +45,7 @@ typedef boost::shared_ptr<galileo_pcps_8ms_acquisition_cc> galileo_pcps_8ms_acqu
 
 galileo_pcps_8ms_acquisition_cc_sptr
 galileo_pcps_8ms_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
+    unsigned int doppler_max, long fs_in,
     int samples_per_ms, int samples_per_code,
     bool dump, std::string dump_filename);
 
@@ -58,13 +58,13 @@ class galileo_pcps_8ms_acquisition_cc : public gr::block
 private:
     friend galileo_pcps_8ms_acquisition_cc_sptr
     galileo_pcps_8ms_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-        unsigned int doppler_max, long freq, long fs_in,
+        unsigned int doppler_max, long fs_in,
         int samples_per_ms, int samples_per_code,
         bool dump, std::string dump_filename);
 
 
     galileo_pcps_8ms_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-        unsigned int doppler_max, long freq, long fs_in,
+        unsigned int doppler_max, long fs_in,
         int samples_per_ms, int samples_per_code,
         bool dump, std::string dump_filename);
 
@@ -72,7 +72,6 @@ private:
         int doppler_offset);
 
     long d_fs_in;
-    long d_freq;
     int d_samples_per_ms;
     int d_samples_per_code;
     unsigned int d_doppler_resolution;

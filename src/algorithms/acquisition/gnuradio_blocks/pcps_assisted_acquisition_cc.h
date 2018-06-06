@@ -62,7 +62,7 @@ typedef boost::shared_ptr<pcps_assisted_acquisition_cc>
 
 pcps_assisted_acquisition_cc_sptr
 pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-    int doppler_max, int doppler_min, long freq, long fs_in, int samples_per_ms,
+    int doppler_max, int doppler_min, long fs_in, int samples_per_ms,
     bool dump, std::string dump_filename);
 
 /*!
@@ -76,12 +76,12 @@ class pcps_assisted_acquisition_cc : public gr::block
 private:
     friend pcps_assisted_acquisition_cc_sptr
     pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-        int doppler_max, int doppler_min, long freq, long fs_in,
+        int doppler_max, int doppler_min, long fs_in,
         int samples_per_ms, bool dump,
         std::string dump_filename);
 
     pcps_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-        int doppler_max, int doppler_min, long freq, long fs_in,
+        int doppler_max, int doppler_min, long fs_in,
         int samples_per_ms, bool dump,
         std::string dump_filename);
 
@@ -97,7 +97,6 @@ private:
     void free_grid_memory();
 
     long d_fs_in;
-    long d_freq;
     int d_samples_per_ms;
     int d_max_dwells;
     unsigned int d_doppler_resolution;

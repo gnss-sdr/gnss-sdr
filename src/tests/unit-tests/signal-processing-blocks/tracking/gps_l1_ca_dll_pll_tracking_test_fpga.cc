@@ -120,7 +120,7 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
 
 
 // thread that sends the samples to the FPGA
-void thread(gr::top_block_sptr top_block, const char *file_name)
+void sending_thread(gr::top_block_sptr top_block, const char *file_name)
 {
     // file descriptor
     FILE *rx_signal_file;  // file descriptor
@@ -528,7 +528,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     const char *file_name = file.c_str();
 
     // start thread that sends the DMA samples to the FPGA
-    boost::thread t{thread, top_block, file_name};
+    boost::thread t{sending_thread, top_block, file_name};
 
     EXPECT_NO_THROW(
         {

@@ -56,7 +56,6 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
-    acq_parameters.freq = 0;
     acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
     acq_iq_ = configuration_->property(role + ".acquire_iq", false);
     if (acq_iq_)

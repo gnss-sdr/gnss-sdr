@@ -49,7 +49,6 @@ using google::LogMessage;
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
 gps_l1_ca_dll_pll_make_tracking_gpu_cc(
-    long if_freq,
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -58,7 +57,7 @@ gps_l1_ca_dll_pll_make_tracking_gpu_cc(
     float dll_bw_hz,
     float early_late_space_chips)
 {
-    return gps_l1_ca_dll_pll_tracking_gpu_cc_sptr(new Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(if_freq,
+    return gps_l1_ca_dll_pll_tracking_gpu_cc_sptr(new Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
         fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips));
 }
 
@@ -74,7 +73,6 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::forecast(int noutput_items,
 
 
 Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
-    long if_freq,
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -89,7 +87,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     this->message_port_register_out(pmt::mp("events"));
     // initialize internal vars
     d_dump = dump;
-    d_if_freq = if_freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;

@@ -181,7 +181,6 @@ int ObsGpsL1SystemTest::configure_receiver()
     const float band1_error = 1.0;
     const float band2_error = 1.0;
     const int grid_density = 16;
-    const int decimation_factor = 1;
 
     const float zero = 0.0;
     const int number_of_channels = 8;
@@ -204,7 +203,7 @@ int ObsGpsL1SystemTest::configure_receiver()
     const int extend_correlation_ms = 1;
 
     const int display_rate_ms = 500;
-    const int output_rate_ms = 100;
+    const int output_rate_ms = 10;
 
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
 
@@ -294,7 +293,6 @@ int ObsGpsL1SystemTest::configure_receiver()
     // Set Telemetry
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.dump", "false");
-    config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
     // Set Observables
     config->set_property("Observables.implementation", "Hybrid_Observables");
@@ -304,6 +302,7 @@ int ObsGpsL1SystemTest::configure_receiver()
 
     // Set PVT
     config->set_property("PVT.implementation", "RTKLIB_PVT");
+    config->set_property("PVT.positioning_mode", "Single");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");

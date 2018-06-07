@@ -277,7 +277,7 @@ int StaticPositionSystemTest::configure_receiver()
             const int extend_correlation_ms = 1;
 
             const int display_rate_ms = 500;
-            const int output_rate_ms = 10;
+            const int output_rate_ms = 100;
 
             config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
 

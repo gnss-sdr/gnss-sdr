@@ -2083,8 +2083,13 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                     if (d_ls_pvt->is_valid_position() and flag_display_pvt)
                         {
                             std::streamsize ss = std::cout.precision();  // save current precision
+                            std::cout.setf(std::ios::fixed, std::ios::floatfield);
+
+                            auto facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
+                            std::cout.imbue(std::locale(std::cout.getloc(), facet));
+
                             std::cout << TEXT_BOLD_GREEN
-                                      << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
+                                      << "Position at " << d_ls_pvt->get_position_UTC_time()
                                       << " UTC using " << d_ls_pvt->get_num_valid_observations()
                                       << std::setprecision(10)
                                       << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()

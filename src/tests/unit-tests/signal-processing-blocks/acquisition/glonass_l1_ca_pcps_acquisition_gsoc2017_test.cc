@@ -46,7 +46,7 @@
 #include "glonass_l1_ca_pcps_acquisition.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
-#include "fir_filter.h"
+#include "freq_xlating_fir_filter.h"
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
 #include "boost/shared_ptr.hpp"
@@ -226,7 +226,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
     config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
 
-    config->set_property("InputFilter.implementation", "Fir_Filter");
+    config->set_property("InputFilter.implementation", "Freq_Xlating_Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
     config->set_property("InputFilter.output_item_type", "gr_complex");
     config->set_property("InputFilter.taps_item_type", "float");
@@ -244,6 +244,8 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
     config->set_property("InputFilter.band2_error", "1.0");
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
+    config->set_property("InputFilter.sampling_frequency", std::to_string(fs_in));
+    config->set_property("InputFilter.IF", "4000000");
 
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.coherent_integration_time_ms",
@@ -313,7 +315,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
     config->set_property("SignalSource.data_flag", "true");
     config->set_property("SignalSource.BW_BB", "0.97");
 
-    config->set_property("InputFilter.implementation", "Fir_Filter");
+    config->set_property("InputFilter.implementation", "Freq_Xlating_Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
     config->set_property("InputFilter.output_item_type", "gr_complex");
     config->set_property("InputFilter.taps_item_type", "float");
@@ -331,6 +333,8 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
     config->set_property("InputFilter.band2_error", "1.0");
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
+    config->set_property("InputFilter.sampling_frequency", std::to_string(fs_in));
+    config->set_property("InputFilter.IF", "4000000");
 
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.coherent_integration_time_ms",
@@ -503,12 +507,11 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
     acquisition->init();
 
     ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
-        signal_source->connect(top_block);
-        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+        std::shared_ptr<SignalGenerator> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue);
+        std::shared_ptr<FreqXlatingFirFilter> filter = std::make_shared<FreqXlatingFirFilter>(config.get(), "InputFilter", 1, 1);
+        signal_generator->connect(top_block);
+        top_block->connect(signal_generator->get_right_block(), 0, filter->get_left_block(), 0);
+        top_block->connect(filter->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test.";
 
     // i = 0 --> satellite in acquisition is visible
@@ -598,12 +601,11 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
     acquisition->init();
 
     ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
-        signal_source->connect(top_block);
-        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+        std::shared_ptr<SignalGenerator> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue);
+        std::shared_ptr<FreqXlatingFirFilter> filter = std::make_shared<FreqXlatingFirFilter>(config.get(), "InputFilter", 1, 1);
+        signal_generator->connect(top_block);
+        top_block->connect(signal_generator->get_right_block(), 0, filter->get_left_block(), 0);
+        top_block->connect(filter->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test.";
 
     std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;

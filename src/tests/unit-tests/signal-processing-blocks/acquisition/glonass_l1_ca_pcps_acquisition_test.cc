@@ -46,6 +46,7 @@
 #include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
+#include "freq_xlating_fir_filter.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
 
 
@@ -138,6 +139,25 @@ void GlonassL1CaPcpsAcquisitionTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
     config->set_property("GNSS-SDR.internal_fs_sps", "62314000");
+    config->set_property("InputFilter.IF", "9540000");
+    config->set_property("InputFilter.input_item_type", "gr_complex");
+    config->set_property("InputFilter.output_item_type", "gr_complex");
+    config->set_property("InputFilter.taps_item_type", "float");
+    config->set_property("InputFilter.number_of_taps", "11");
+    config->set_property("InputFilter.number_of_bands", "2");
+    config->set_property("InputFilter.band1_begin", "0.0");
+    config->set_property("InputFilter.band1_end", "0.97");
+    config->set_property("InputFilter.band2_begin", "0.98");
+    config->set_property("InputFilter.band2_end", "1.0");
+    config->set_property("InputFilter.ampl1_begin", "1.0");
+    config->set_property("InputFilter.ampl1_end", "1.0");
+    config->set_property("InputFilter.ampl2_begin", "0.0");
+    config->set_property("InputFilter.ampl2_end", "0.0");
+    config->set_property("InputFilter.band1_error", "1.0");
+    config->set_property("InputFilter.band2_error", "1.0");
+    config->set_property("InputFilter.filter_type", "bandpass");
+    config->set_property("InputFilter.grid_density", "16");
+    config->set_property("InputFilter.sampling_frequency", "62314000");
     config->set_property("Acquisition_1G.item_type", "gr_complex");
     config->set_property("Acquisition_1G.coherent_integration_time_ms", "1");
     config->set_property("Acquisition_1G.dump", "true");
@@ -201,7 +221,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
     double expected_doppler_hz = -9500;
     init();
     std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
-
+    std::shared_ptr<FreqXlatingFirFilter> input_filter = std::make_shared<FreqXlatingFirFilter>(config.get(), "InputFilter", 1, 1);
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
@@ -237,7 +257,8 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ValidationOfResults)
         std::string file = path + "signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat";
         const char* file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
-        top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
+        top_block->connect(file_source, 0, input_filter->get_left_block(), 0);
+        top_block->connect(input_filter->get_right_block(), 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test.";
 

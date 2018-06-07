@@ -255,8 +255,8 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
-                        // GPS L2
-                        if (sig_.compare("2S") == 0)
+                        // GPS L2 (ephemeris disabled due to an incompatibility with RTKLIB solver)
+                        if (sig_.compare("2S_disabled") == 0)
                             {
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.cend())

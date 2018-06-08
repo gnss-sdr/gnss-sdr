@@ -154,9 +154,38 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
     eph_t eph_data[MAXOBS];
     geph_t geph_data[MAXOBS];
 
+    // Workaround for NAV/CNAV clash problem
+    bool gps_dual_band = false;
+    bool band1 = false;
+    bool band2 = false;
     for (gnss_observables_iter = gnss_observables_map.cbegin();
          gnss_observables_iter != gnss_observables_map.cend();
-         gnss_observables_iter++)  // CHECK INCONSISTENCY when combining GLONASS + other system
+         ++gnss_observables_iter)
+        {
+            switch (gnss_observables_iter->second.System)
+                {
+                case 'G':
+                    {
+                        std::string sig_(gnss_observables_iter->second.Signal);
+                        if (sig_.compare("1C") == 0)
+                            {
+                                band1 = true;
+                            }
+                        if (sig_.compare("2S") == 0)
+                            {
+                                band2 = true;
+                            }
+                    }
+                default:
+                    {
+                    }
+                }
+        }
+    if (band1 == true and band2 == true) gps_dual_band = true;
+
+    for (gnss_observables_iter = gnss_observables_map.cbegin();
+         gnss_observables_iter != gnss_observables_map.cend();
+         ++gnss_observables_iter)  // CHECK INCONSISTENCY when combining GLONASS + other system
         {
             switch (gnss_observables_iter->second.System)
                 {
@@ -255,8 +284,8 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
-                        // GPS L2 (ephemeris disabled due to an incompatibility with RTKLIB solver)
-                        if (sig_.compare("2S_disabled") == 0)
+                        // GPS L2 (todo: solve NAV/CNAV clash)
+                        if ((sig_.compare("2S") == 0) and (gps_dual_band == false))
                             {
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.cend())

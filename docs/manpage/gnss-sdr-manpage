@@ -1,6 +1,6 @@
 .\" Manpage for gnss\-sdr.
 .\" Contact carles.fernandez@cttc.es to correct errors or typos.
-.TH gnss\-sdr 1 "24 Feb 2018" "0.0.9" "gnss\-sdr man page"
+.TH gnss\-sdr 1 "14 Jun 2018" "0.0.10" "gnss\-sdr man page"
 .SH NAME
 \fBgnss\-sdr\fR \- GNSS Software Defined Receiver.
 .SH SYNOPSIS

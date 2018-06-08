@@ -1,14 +1,14 @@
-.\" Manpage for volk_gnsssdr-config-info
+.\" Manpage for volk_gnsssdr\-config\-info
 .\" Contact carles.fernandez@cttc.es to correct errors or typos.
-.TH volk_gnsssdr_profile 1 "06 Feb 2017" "0.0.9" "volk_gnsssdr-config-info man page"
+.TH volk_gnsssdr\-config\-info 1 "14 Jun 2018" "0.0.10" "volk_gnsssdr\-config\-info man page"
 .SH NAME
-\fBvolk_gnsssdr-config-info\fR \- Prints configuration information of libvolk_gnsssdr functions.
+\fBvolk_gnsssdr\-config\-info\fR \- Prints configuration information of libvolk_gnsssdr functions.
 .SH SYNOPSIS
-\fBvolk_gnsssdr-config-info\fR [OPTION]
+\fBvolk_gnsssdr\-config\-info\fR [OPTION]
 .SH DESCRIPTION
-This program prints configuration information for the Vector-Optimized Library of Kernels of GNSS-SDR (VOLK_GNSSSDR).
+This program prints configuration information for the Vector\-Optimized Library of Kernels of GNSS\-SDR (VOLK_GNSSSDR).
 .SH OPTIONS
-\fBvolk_gnsssdr-config-info\fR takes the following options:
+\fBvolk_gnsssdr\-config\-info\fR takes the following options:
 .TP
 \fB-h\fR [ \fB--help\fR ] Print help message.
 .TP

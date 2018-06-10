@@ -53,7 +53,7 @@ Rtcm::Rtcm(unsigned short port)
     reserved_field = std::bitset<6>("000000");
     rtcm_message_queue = std::make_shared<concurrent_queue<std::string> >();
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), RTCM_port);
-    servers.emplace_back(io_service, endpoint);
+    servers.emplace_back(io_context, endpoint);
     server_is_running = false;
 }
 
@@ -85,13 +85,13 @@ Rtcm::~Rtcm()
 // *****************************************************************************************************
 void Rtcm::run_server()
 {
-    std::cout << "Starting a TCP Server on port " << RTCM_port << std::endl;
+    std::cout << "Starting a TCP/IP server of RTCM messages on port " << RTCM_port << std::endl;
     try
         {
-            std::thread tq([&] { std::make_shared<Queue_Reader>(io_service, rtcm_message_queue, RTCM_port)->do_read_queue(); });
+            std::thread tq([&] { std::make_shared<Queue_Reader>(io_context, rtcm_message_queue, RTCM_port)->do_read_queue(); });
             tq.detach();
 
-            std::thread t([&] { io_service.run(); });
+            std::thread t([&] { io_context.run(); });
             server_is_running = true;
             t.detach();
         }
@@ -104,13 +104,13 @@ void Rtcm::run_server()
 
 void Rtcm::stop_service()
 {
-    io_service.stop();
+    io_context.stop();
 }
 
 
 void Rtcm::stop_server()
 {
-    std::cout << "Stopping TCP Server on port " << RTCM_port << std::endl;
+    std::cout << "Stopping TCP/IP server on port " << RTCM_port << std::endl;
     rtcm_message_queue->push("Goodbye");  // this terminates tq
     Rtcm::stop_service();
     servers.front().close_server();

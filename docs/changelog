@@ -4,7 +4,7 @@ Next release will have several improvements in different dimensions, addition of
 
 ### Improvements in Accuracy:
 
-- Part of the RTKLIB core libraries has been integrated into GNSS-SDR. There is now a single PVT block implementation which makes use of RTKLIB to deliver PVT solutions, including Single and PPP navigation modes.
+- Part of the RTKLIB core library has been integrated into GNSS-SDR. There is now a single PVT block implementation which makes use of RTKLIB to deliver PVT solutions, including Single and PPP navigation modes.
 - Fixed CN0 estimation for other correlation times than 1 ms.
 - Improved computation of tracking parameters and GNSS observables.
 - Other minor bug fixes.
@@ -14,7 +14,7 @@ Next release will have several improvements in different dimensions, addition of
 
 - Internal Finite State Machines rewritten for improved continuity in delivering position fixes. This fixes a bug that was stalling the receiver after about six hours of continuous operation.
 - Redesign of the time counter for enhanced continuity.
-- Improved acquisition and tracking sensibility.
+- Improved acquisition and tracking sensitivity.
 - Other minor bug fixes.
 
 
@@ -22,7 +22,7 @@ Next release will have several improvements in different dimensions, addition of
 
 - Added the possibility of non-blocking acquisition, which works well when using real-time data from an RF front-end.
 - Complex local codes have been replaced by real codes, alleviating the computational burden.
-- New kernels: volk_gnsssdr_16i_xn_resampler_16i_xn.h, volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn.h, volk_gnsssdr_32f_xn_resampler_32f_xn.h, volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn.h
+- New volk_gnsssdr kernels: volk_gnsssdr_16i_xn_resampler_16i_xn.h, volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn.h, volk_gnsssdr_32f_xn_resampler_32f_xn.h, volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn.h
 - Some AVX2 implementations added to the volk_gnsssdr library.
 - Improvement in C++ usage: Use of const container calls when result is immediately converted to a const iterator. Using these members removes an implicit conversion from iterator to const_iterator.
 - A number of code optimizations here and there.
@@ -124,7 +124,7 @@ Next release will have several improvements in different dimensions, addition of
 - Updated and improved documentation of processing blocks at https://gnss-sdr.org/docs/sp-blocks/
 - Improved documentation of required dependency packages in several GNU/Linux distributions.
 - Parameter names with the same role have been harmonized within different block implementations.
-- Added a chnagelog, a code of conduct, a contributing guide and a pull-request template in the source tree.
+- Added a changelog, a code of conduct, a contributing guide and a pull-request template in the source tree.
 - Added colors to the commandline user interface.
 - Updated manfiles.
 

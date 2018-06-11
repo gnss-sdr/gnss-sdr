@@ -2091,9 +2091,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                             std::cout << TEXT_BOLD_GREEN
                                       << "Position at " << d_ls_pvt->get_position_UTC_time()
                                       << " UTC using " << d_ls_pvt->get_num_valid_observations()
-                                      << std::setprecision(10)
+                                      << std::fixed << std::setprecision(9)
                                       << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
-                                      << std::setprecision(4)
+                                      << std::fixed << std::setprecision(3)
                                       << " [deg], Height = " << d_ls_pvt->get_height() << " [m]" << TEXT_RESET << std::endl;
                             std::cout << std::setprecision(ss);
                             LOG(INFO) << "RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]";

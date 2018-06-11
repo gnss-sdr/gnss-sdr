@@ -677,10 +677,10 @@ private:
                                 {
                                     if (first == true)
                                         {
-                                            std::cout << "Client from " << socket_.remote_endpoint().address() << " says ";
+                                            LOG(INFO) << "Client says:";
                                             first = false;
                                         }
-                                    std::cout << client_says.substr(0, 80) << std::endl;
+                                    LOG(INFO) << client_says;
                                     client_says = client_says.substr(80, client_says.length() - 80);
                                 }
                             do_read_message_header();

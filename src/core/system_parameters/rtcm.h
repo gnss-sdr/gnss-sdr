@@ -872,7 +872,7 @@ private:
     {
     public:
         Tcp_Server(boost::asio::io_service& io_context, const boost::asio::ip::tcp::endpoint& endpoint)
-            : acceptor_(io_context)
+            : acceptor_(io_context), socket_(io_context)
         {
             acceptor_.open(endpoint.protocol());
             acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -883,13 +883,14 @@ private:
 
         inline void close_server()
         {
+            socket_.close();
             acceptor_.close();
         }
 
     private:
         inline void do_accept()
         {
-            acceptor_.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket_) {
+            acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
                 if (!ec)
                     {
                         if (first_client)
@@ -928,6 +929,7 @@ private:
         }
 
         boost::asio::ip::tcp::acceptor acceptor_;
+        boost::asio::ip::tcp::socket socket_;
         Rtcm_Listener_Room room_;
         bool first_client = true;
         bool start_session = true;

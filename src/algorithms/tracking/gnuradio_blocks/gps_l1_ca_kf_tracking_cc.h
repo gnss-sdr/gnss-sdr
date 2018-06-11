@@ -135,6 +135,7 @@ private:
     //Tracking_2nd_PLL_filter d_carrier_loop_filter;
 
     // acquisition
+    double d_acq_carrier_doppler_step_hz;
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
     // correlator

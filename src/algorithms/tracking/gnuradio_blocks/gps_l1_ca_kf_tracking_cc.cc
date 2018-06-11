@@ -181,8 +181,8 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD));
 
     //covariances (static)
-    double sigma2_carrier_phase = GPS_TWO_PI / 4;
-    double sigma2_doppler = 250;  ///  !!
+    double sigma2_carrier_phase = pow(2, GPS_PI) / 3 ;
+    double sigma2_doppler = 450 ;  ///  !!
 
     kf_P_x_ini = arma::zeros(2, 2);
     kf_P_x_ini(0, 0) = sigma2_carrier_phase;
@@ -217,6 +217,13 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+    d_acq_carrier_doppler_step_hz = static_cast<double>(d_acquisition_gnss_synchro->Acq_doppler_step);
+
+    // Correct doppler acquisition error according to acq doppler step size (3 sigma)
+    if (d_acquisition_gnss_synchro->Acq_doppler_step > 0)
+        {
+            kf_P_x_ini(1, 1) = pow(2, d_acq_carrier_doppler_step_hz / 3.0);
+        }
 
     long int acq_trk_diff_samples;
     double acq_trk_diff_seconds;

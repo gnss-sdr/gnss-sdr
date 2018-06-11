@@ -49,6 +49,7 @@ public:
     // Acquisition
     double Acq_delay_samples;                   //!< Set by Acquisition processing block
     double Acq_doppler_hz;                      //!< Set by Acquisition processing block
+    unsigned int Acq_doppler_step;              //!< Set by Acquisition processing block
     unsigned long int Acq_samplestamp_samples;  //!< Set by Acquisition processing block
     bool Flag_valid_acquisition;                //!< Set by Acquisition processing block
     //Tracking

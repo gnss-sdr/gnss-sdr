@@ -803,13 +803,13 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         {
             LOG(WARNING) << e.what();
         }
+    std::lock_guard<std::mutex> lock(signal_list_mutex);
     switch (what)
         {
         case 0:
             DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
             if (sat == 0)
                 {
-                    std::lock_guard<std::mutex> lock(signal_list_mutex);
                     switch (mapStringValues_[channels_[who]->get_signal().get_signal_str()])
                         {
                         case evGPS_1C:
@@ -864,7 +864,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_state_[ch_index] = 1;
                             if (sat_ == 0)
                                 {
-                                    std::lock_guard<std::mutex> lock(signal_list_mutex);
                                     channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true));
                                 }
                             acq_channels_count_++;
@@ -895,7 +894,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_state_[i] = 1;
                             if (sat_ == 0)
                                 {
-                                    std::lock_guard<std::mutex> lock(signal_list_mutex);
                                     channels_[i]->set_signal(search_next_signal(channels_[i]->get_signal().get_signal_str(), true, true));
                                 }
                             acq_channels_count_++;
@@ -923,7 +921,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     LOG(INFO) << "Channel " << who << " Idle state";
                     if (sat == 0)
                         {
-                            std::lock_guard<std::mutex> lock(signal_list_mutex);
                             switch (mapStringValues_[channels_[who]->get_signal().get_signal_str()])
                                 {
                                 case evGPS_1C:
@@ -1330,19 +1327,19 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if (channels_[ch]->get_signal().get_satellite() == result.get_satellite()) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("1C") != 0)) untracked_satellite = false;
                                 }
                             if (untracked_satellite and configuration_->property("Channels_2S.count", 0) > 0)
                                 {
                                     Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2S");
+                                    available_GPS_2S_signals_.remove(gs);
                                     available_GPS_2S_signals_.push_front(gs);
-                                    available_GPS_2S_signals_.unique();
                                 }
                             if (untracked_satellite and configuration_->property("Channels_L5.count", 0) > 0)
                                 {
                                     Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "L5");
+                                    available_GPS_L5_signals_.remove(gs);
                                     available_GPS_L5_signals_.push_front(gs);
-                                    available_GPS_L5_signals_.unique();
                                 }
                         }
                 }
@@ -1360,19 +1357,19 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if (channels_[ch]->get_signal().get_satellite() == result.get_satellite()) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("2S") != 0)) untracked_satellite = false;
                                 }
                             if (untracked_satellite and configuration_->property("Channels_1C.count", 0) > 0)
                                 {
                                     Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1C");
+                                    available_GPS_1C_signals_.remove(gs);
                                     available_GPS_1C_signals_.push_front(gs);
-                                    available_GPS_1C_signals_.unique();
                                 }
                             if (untracked_satellite and configuration_->property("Channels_L5.count", 0) > 0)
                                 {
                                     Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "L5");
+                                    available_GPS_L5_signals_.remove(gs);
                                     available_GPS_L5_signals_.push_front(gs);
-                                    available_GPS_L5_signals_.unique();
                                 }
                         }
                 }
@@ -1390,19 +1387,19 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if (channels_[ch]->get_signal().get_satellite() == result.get_satellite()) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("L5") != 0)) untracked_satellite = false;
                                 }
                             if (untracked_satellite and configuration_->property("Channels_1C.count", 0) > 0)
                                 {
                                     Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1C");
+                                    available_GPS_1C_signals_.remove(gs);
                                     available_GPS_1C_signals_.push_front(gs);
-                                    available_GPS_1C_signals_.unique();
                                 }
                             if (untracked_satellite and configuration_->property("Channels_2S.count", 0) > 0)
                                 {
                                     Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2S");
+                                    available_GPS_2S_signals_.remove(gs);
                                     available_GPS_2S_signals_.push_front(gs);
-                                    available_GPS_2S_signals_.unique();
                                 }
                         }
                 }
@@ -1420,13 +1417,13 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if (channels_[ch]->get_signal().get_satellite() == result.get_satellite()) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("1B") != 0)) untracked_satellite = false;
                                 }
                             if (untracked_satellite)
                                 {
                                     Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "5X");
+                                    available_GAL_5X_signals_.remove(gs);
                                     available_GAL_5X_signals_.push_front(gs);
-                                    available_GAL_5X_signals_.unique();
                                 }
                         }
                 }
@@ -1444,13 +1441,13 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if (channels_[ch]->get_signal().get_satellite() == result.get_satellite()) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("5X") != 0)) untracked_satellite = false;
                                 }
                             if (untracked_satellite)
                                 {
                                     Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1B");
+                                    available_GAL_1B_signals_.remove(gs);
                                     available_GAL_1B_signals_.push_front(gs);
-                                    available_GAL_1B_signals_.unique();
                                 }
                         }
                 }
@@ -1468,13 +1465,13 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if (channels_[ch]->get_signal().get_satellite() == result.get_satellite()) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("1G") != 0)) untracked_satellite = false;
                                 }
                             if (untracked_satellite)
                                 {
                                     Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2G");
+                                    available_GLO_2G_signals_.remove(gs);
                                     available_GLO_2G_signals_.push_front(gs);
-                                    available_GLO_2G_signals_.unique();
                                 }
                         }
                 }
@@ -1492,13 +1489,13 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if (channels_[ch]->get_signal().get_satellite() == result.get_satellite()) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("2G") != 0)) untracked_satellite = false;
                                 }
                             if (untracked_satellite)
                                 {
                                     Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1G");
+                                    available_GLO_1G_signals_.remove(gs);
                                     available_GLO_1G_signals_.push_front(gs);
-                                    available_GLO_1G_signals_.unique();
                                 }
                         }
                 }

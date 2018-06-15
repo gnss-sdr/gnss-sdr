@@ -858,6 +858,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     unsigned int Channels_2S_count = configuration->property("Channels_2S.count", 0);
     unsigned int Channels_5X_count = configuration->property("Channels_5X.count", 0);
     unsigned int Channels_L5_count = configuration->property("Channels_L5.count", 0);
+    unsigned int Channels_B1_count = configuration->property("Channels_B1.count", 0);
 
     unsigned int total_channels = Channels_1C_count +
                                   Channels_1B_count +
@@ -866,7 +867,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                                   Channels_2G_count +
                                   Channels_5X_count +
                                   Channels_L5_count +
-                                  Channels_L5_count;
+                                  Channels_B1_count;
 
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels(new std::vector<std::unique_ptr<GNSSBlockInterface>>(total_channels));
     try
@@ -1076,6 +1077,36 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         queue);
                     channel_absolute_id++;
                 }
+            //**************** BEIDOU B1I  CHANNELS **********************
+            LOG(INFO) << "Getting " << Channels_B1_count << " BEIDOU B1I channels";
+            acquisition_implementation = configuration->property("Acquisition_B1.implementation", default_implementation);
+            tracking_implementation = configuration->property("Tracking_B1.implementation", default_implementation);
+            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_B1.implementation", default_implementation);
+
+            for (unsigned int i = 0; i < Channels_B1_count; i++)
+                {
+                    //(i.e. Acquisition_2G0.implementation=xxxx)
+                    std::string acquisition_implementation_specific = configuration->property(
+                        "Acquisition_B1" + std::to_string(channel_absolute_id) + ".implementation",
+                        acquisition_implementation);
+                    //(i.e. Tracking_2G0.implementation=xxxx)
+                    std::string tracking_implementation_specific = configuration->property(
+                        "Tracking_B1" + std::to_string(channel_absolute_id) + ".implementation",
+                        tracking_implementation);
+                    std::string telemetry_decoder_implementation_specific = configuration->property(
+                        "TelemetryDecoder_B1" + std::to_string(channel_absolute_id) + ".implementation",
+                        telemetry_decoder_implementation);
+
+                    // Push back the channel to the vector of channels
+                    channels->at(channel_absolute_id) = GetChannel_B1(configuration,
+                        acquisition_implementation_specific,
+                        tracking_implementation_specific,
+                        telemetry_decoder_implementation_specific,
+                        channel_absolute_id,
+                        queue);
+                    channel_absolute_id++;
+                }
+
         }
     catch (const std::exception &e)
         {

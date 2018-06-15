@@ -30,9 +30,9 @@
 
 #include "rtklib_pvt_cc.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/math/common_factor_rt.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
-#include <boost/integer/common_factor_rt.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/exception/all.hpp>
 #include <glog/logging.h>
@@ -304,7 +304,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels,
         }
     else
         {
-            d_rtcm_MT1019_rate_ms = boost::integer::lcm(5000, d_output_rate_ms);  // default value if not set
+            d_rtcm_MT1019_rate_ms = boost::math::lcm(5000, d_output_rate_ms);  // default value if not set
         }
     if (rtcm_msg_rate_ms.find(1020) != rtcm_msg_rate_ms.end())
         {
@@ -312,7 +312,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels,
         }
     else
         {
-            d_rtcm_MT1020_rate_ms = boost::integer::lcm(5000, d_output_rate_ms);  // default value if not set
+            d_rtcm_MT1020_rate_ms = boost::math::lcm(5000, d_output_rate_ms);  // default value if not set
         }
     if (rtcm_msg_rate_ms.find(1045) != rtcm_msg_rate_ms.end())
         {
@@ -320,7 +320,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels,
         }
     else
         {
-            d_rtcm_MT1045_rate_ms = boost::integer::lcm(5000, d_output_rate_ms);  // default value if not set
+            d_rtcm_MT1045_rate_ms = boost::math::lcm(5000, d_output_rate_ms);  // default value if not set
         }
     if (rtcm_msg_rate_ms.find(1077) != rtcm_msg_rate_ms.end())  // whatever between 1071 and 1077
         {
@@ -328,7 +328,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels,
         }
     else
         {
-            d_rtcm_MT1077_rate_ms = boost::integer::lcm(1000, d_output_rate_ms);  // default value if not set
+            d_rtcm_MT1077_rate_ms = boost::math::lcm(1000, d_output_rate_ms);  // default value if not set
         }
     if (rtcm_msg_rate_ms.find(1087) != rtcm_msg_rate_ms.end())  // whatever between 1081 and 1087
         {
@@ -336,7 +336,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels,
         }
     else
         {
-            d_rtcm_MT1087_rate_ms = boost::integer::lcm(1000, d_output_rate_ms);  // default value if not set
+            d_rtcm_MT1087_rate_ms = boost::math::lcm(1000, d_output_rate_ms);  // default value if not set
         }
     if (rtcm_msg_rate_ms.find(1097) != rtcm_msg_rate_ms.end())  // whatever between 1091 and 1097
         {
@@ -345,8 +345,8 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels,
         }
     else
         {
-            d_rtcm_MT1097_rate_ms = boost::integer::lcm(1000, d_output_rate_ms);  // default value if not set
-            d_rtcm_MSM_rate_ms = boost::integer::lcm(1000, d_output_rate_ms);     // default value if not set
+            d_rtcm_MT1097_rate_ms = boost::math::lcm(1000, d_output_rate_ms);  // default value if not set
+            d_rtcm_MSM_rate_ms = boost::math::lcm(1000, d_output_rate_ms);     // default value if not set
         }
     b_rtcm_writing_started = false;
 

@@ -343,7 +343,6 @@ run-tests:
     - mv position_test*.txt ../build64/
     - cd ..
     - rm -rf build-test
-
   artifacts:
     paths:
       - build64/*.xml
@@ -370,7 +369,6 @@ run-tests-i386:
     - mv position_test*.txt ../build32/
     - cd ..
     - rm -rf build-test
-
   artifacts:
     paths:
       - build32/*.xml
@@ -393,6 +391,25 @@ docker-gnsssdr:
     - docker push carlesfernandez/docker-gnsssdr
   only:
     - next
+  allow_failure: true
+
+
+docker-gnsssdr-v0.0.10:
+  image: docker:18.05
+  stage: deploy
+  services:
+    - docker:dind
+  script:
+    - wget https://raw.githubusercontent.com/carlesfernandez/docker-gnsssdr/v0.0.10/Dockerfile
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - mkdir docker-build
+    - cd docker-build
+    - cp ../Dockerfile .
+    - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO .
+    - docker tag $DOCKER_HUB_USER/$DOCKER_HUB_REPO:latest $DOCKER_HUB_USER/$DOCKER_HUB_REPO:0.0.10
+    - docker push $DOCKER_HUB_USER/$DOCKER_HUB_REPO:0.0.10
+  only:
+    - v0.0.10
   allow_failure: true
 
 
@@ -429,6 +446,24 @@ docker-access18:
     - docker push $DOCKER_HUB_USER/$DOCKER_HUB_REPO:access18
 
 
+docker-access18-0.0.10:
+  image: docker:18.05
+  stage: deploy
+  services:
+    - docker:dind
+  script:
+    - mkdir docker-build
+    - cd docker-build
+    - echo -e "FROM phusion/baseimage:0.10.1\nMAINTAINER carles.fernandez@cttc.es\nCMD [\"/sbin/my_init\"]\nWORKDIR /home/src\nRUN apt-get update && apt-get install -y build-essential cmake curl nano libarmadillo-dev libblas-dev libboost-chrono-dev libboost-dev libboost-date-time-dev libboost-filesystem-dev libboost-serialization-dev libboost-system-dev libboost-thread-dev libgflags-dev libgoogle-glog-dev libgtest-dev libgnutls-openssl-dev liblapack-dev liblog4cpp5-dev libmatio-dev git ca-certificates gnuradio-dev python-mako python-six texlive-latex-base texlive-fonts-recommended texlive-font-utils texlive-pictures epstool transfig octave && rm -rf /var/lib/apt/lists/*\nRUN git clone https://gitlab.com/gnss-sdr/gnss-sdr && cd gnss-sdr/build && git checkout v0.0.10 && cmake -DENABLE_PACKAGING=ON -DENABLE_INSTALL_TESTS=ON .. && NPROC=$(grep -c ^processor /proc/cpuinfo) && make -j$(($NPROC+1)) && make install\nRUN /usr/bin/volk_profile -v 8111\nRUN /usr/local/bin/volk_gnsssdr_profile\nRUN apt-get clean && rm -rf /tmp/* /var/tmp/*\nRUN rm -rf /home/src\nWORKDIR /home\nCMD [\"bash\"]" > Dockerfile
+    - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
+    - docker build -t $DOCKER_HUB_USER/$DOCKER_HUB_REPO .
+    - docker tag $DOCKER_HUB_USER/$DOCKER_HUB_REPO:latest $DOCKER_HUB_USER/$DOCKER_HUB_REPO:access18-0.0.10
+    - docker push $DOCKER_HUB_USER/$DOCKER_HUB_REPO:access18-0.0.10
+  only:
+    - v0.0.10
+  allow_failure: true
+
+
 # Stage "experiment"
 run-access18:
   image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:access18
@@ -453,7 +488,36 @@ run-access18:
     - cd ..
     - mkdir access18
     - cp exp-access18/*.pdf access18/
-
   artifacts:
     paths:
       - access18/*.pdf
+
+
+run-access18-0.0.10:
+  image: $DOCKER_HUB_USER/$DOCKER_HUB_REPO:access18-0.0.10
+  stage: experiment
+  script:
+    - apt-get update
+    # Grab the data set
+    - mkdir -p exp-access18/data
+    - cd exp-access18/data
+    - curl https://zenodo.org/record/1184601/files/L2_signal_samples.tar.xz --output L2_signal_samples.tar.xz
+    - tar xvfJ L2_signal_samples.tar.xz
+    - echo "3a04c1eeb970776bb77f5e3b7eaff2df  L2_signal_samples.tar.xz" > data.md5
+    - md5sum -c data.md5
+    - cd ..
+    # Execute the experiment
+    - cp ../src/utils/reproducibility/ieee-access18/L2-access18.conf .
+    - cp ../src/utils/reproducibility/ieee-access18/plot_dump.m .
+    - cp -r ../src/utils/matlab/libs/geoFunctions .
+    - gnss-sdr --c=L2-access18.conf
+    - octave --no-gui plot_dump.m
+    - epspdf Figure2.eps Figure2.pdf
+    - cd ..
+    - mkdir access18
+    - cp exp-access18/*.pdf access18/
+  artifacts:
+    paths:
+      - access18/*.pdf
+  only:
+    - v0.0.10

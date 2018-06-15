@@ -65,7 +65,7 @@ archlinux:
     - pwd
   script:
     - pacman -Syu --noconfirm
-    - pacman -S --noconfirm cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr libpcap blas lapack gflags google-glog gnutls openssl python2-mako python2-six libmatio gtest
+    - pacman -S --noconfirm cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr libpcap blas lapack gflags google-glog openssl python2-mako python2-six libmatio gtest
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)

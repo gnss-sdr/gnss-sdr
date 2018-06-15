@@ -182,12 +182,13 @@ or manually as explained below, and then please follow instructions on how to [d
 #### Install [Armadillo](http://arma.sourceforge.net/ "Armadillo's Homepage"), a C++ linear algebra library:
 
 ~~~~~~
-$ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
+$ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget https://sourceforge.net/projects/arma/files/armadillo-8.500.0.tar.xz
-$ tar xvfz armadillo-8.500.0.tar.xz
-$ cd armadillo-8.500.0
+$ sudo pacman -S blas lapack                           # For Arch Linux
+$ wget https://sourceforge.net/projects/arma/files/armadillo-8.500.1.tar.xz
+$ tar xvfz armadillo-8.500.1.tar.xz
+$ cd armadillo-8.500.1
 $ cmake .
 $ make
 $ sudo make install
@@ -250,6 +251,8 @@ changing `/home/username/googletest-release-1.8.0/googletest` by the actual dire
 ~~~~~~
 $ sudo apt-get install libgnutls-openssl-dev    # For Debian/Ubuntu/LinuxMint
 $ sudo yum install openssl-devel                # For Fedora/CentOS/RHEL
+$ sudo zypper install openssl-devel             # For OpenSUSE
+$ sudo pacman -S openssl                        # For Arch Linux
 ~~~~~~
 
 In case the GnuTLS library with openssl extensions package is not available in your GNU/Linux distribution, GNSS-SDR can also work well with OpenSSL.
@@ -1299,7 +1302,7 @@ More documentation at the [Observables Blocks page](https://gnss-sdr.org/docs/sp
 
 
 #### Computation of Position, Velocity and Time
-Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute simple least square solutions (stored in GIS-friendly formats such as [GeoJSON](https://tools.ietf.org/html/rfc7946) and [KML](http://www.opengeospatial.org/standards/kml), or transmitted via serial port as [NMEA 0183](https://en.wikipedia.org/wiki/NMEA_0183) messages), and leaves room for more sophisticated positioning methods by storing observables and navigation data in [RINEX](https://en.wikipedia.org/wiki/RINEX) files (v2.11 or v3.02), and generating [RTCM](http://www.rtcm.org "Radio Technical Commission for Maritime Services") 3.2 messages that can be disseminated through the Internet in real time.
+Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute position fixes (stored in GIS-friendly formats such as [GeoJSON](https://tools.ietf.org/html/rfc7946), [GPX](http://www.topografix.com/gpx.asp) and [KML](http://www.opengeospatial.org/standards/kml), or transmitted via serial port as [NMEA 0183](https://en.wikipedia.org/wiki/NMEA_0183) messages), and leaves room for more sophisticated positioning methods by storing observables and navigation data in [RINEX](https://en.wikipedia.org/wiki/RINEX) files (v2.11 or v3.02), and generating [RTCM](http://www.rtcm.org "Radio Technical Commission for Maritime Services") 3.2 messages that can be disseminated through the Internet in real time.
 
 The common interface is [PvtInterface](./src/core/interfaces/pvt_interface.h).
 
@@ -1333,6 +1336,8 @@ PVT.rtcm_MT1077_rate_ms=1000
  * **GeoJSON** is a geospatial data interchange format based on JavaScript Object Notation (JSON) supported by numerous mapping and GIS software packages, including [OpenLayers](https://openlayers.org), [Leaflet](https://leafletjs.com), [MapServer](http://www.mapserver.org), [GeoServer](http://geoserver.org), [GeoDjango](https://www.djangoproject.com), [GDAL](http://www.gdal.org), and [CartoDB](https://cartodb.com). It is also possible to use GeoJSON with [PostGIS](https://postgis.net/) and [Mapnik](http://mapnik.org), both of which handle the format via the GDAL OGR conversion library. The [Google Maps Javascript API](https://developers.google.com/maps/documentation/javascript/) v3 directly supports the [integration of GeoJSON data layers](https://developers.google.com/maps/documentation/javascript/examples/layer-data-simple), and [GitHub also supports GeoJSON rendering](https://github.com/blog/1528-there-s-a-map-for-that).
 
  * **KML** (Keyhole Markup Language) is an XML grammar used to encode and transport representations of geographic data for display in an earth browser. KML is an open standard officially named the OpenGIS KML Encoding Standard (OGC KML), and it is maintained by the Open Geospatial Consortium, Inc. (OGC). KML files can be displayed in geobrowsers such as [Google Earth](https://www.google.com/earth/), [Marble](https://marble.kde.org), [osgEarth](http://osgearth.org), or used with the [NASA World Wind SDK for Java](https://worldwind.arc.nasa.gov/java/).
+
+ * **GPX** (the GPS Exchange Format) is a light-weight XML data format for the interchange of GPS data (waypoints, routes, and tracks) between applications and Web services on the Internet. The format is open and can be used without the need to pay license fees, and it is supported by a [large list of software tools](http://www.topografix.com/gpx_resources.asp).
 
  * **NMEA 0183** is a combined electrical and data specification for communication between marine electronics such as echo sounder, sonars, anemometer, gyrocompass, autopilot, GPS receivers and many other types of instruments. It has been defined by, and is controlled by, the U.S. [National Marine Electronics Association](http://www.nmea.org/). The NMEA 0183 standard uses a simple ASCII, serial communications protocol that defines how data are transmitted in a *sentence* from one *talker* to multiple *listeners* at a time. Through the use of intermediate expanders, a talker can have a unidirectional conversation with a nearly unlimited number of listeners, and using multiplexers, multiple sensors can talk to a single computer port. At the application layer, the standard also defines the contents of each sentence (message) type, so that all listeners can parse messages accurately. Those messages can be sent through the serial port (that could be for instance a Bluetooth link) and be used/displayed by a number of software applications such as [gpsd](http://www.catb.org/gpsd/ "The UNIX GPS daemon"), [JOSM](https://josm.openstreetmap.de/ "The Java OpenStreetMap Editor"), [OpenCPN](https://opencpn.org/ "Open Chart Plotter Navigator"), and many others (and maybe running on other devices).
 

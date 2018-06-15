@@ -425,6 +425,7 @@ void GNSSFlowgraph::connect()
                     if ((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) or (gnss_signal.compare("L5") == 0)) gnss_system = "GPS";
                     if ((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0)) gnss_system = "Galileo";
                     if ((gnss_signal.compare("1G") == 0) or (gnss_signal.compare("2G") == 0)) gnss_system = "Glonass";
+                    if (gnss_signal.compare("B1") == 0) gnss_system = "Beidou";
                     Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
                     available_GNSS_signals_.remove(signal_value);
                     channels_.at(i)->set_signal(signal_value);
@@ -970,6 +971,9 @@ void GNSSFlowgraph::set_signals_list()
     // Removing satellites sharing same frequency number(1 and 5, 2 and 6, 3 and 7, 4 and 6, 11 and 15, 12 and 16, 14 and 18, 17 and 21
     std::set<unsigned int> available_glonass_prn = {1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21, 24};
 
+    std::set<unsigned int> available_beidou_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        11, 12, 13, 17, 31, 32, 33, 34, 35};
+
     std::string sv_list = configuration_->property("Galileo.prns", std::string(""));
 
     if (sv_list.length() > 0)
@@ -1033,6 +1037,22 @@ void GNSSFlowgraph::set_signals_list()
                     available_glonass_prn = tmp_set;
                 }
         }
+    sv_list = configuration_->property("Beidou.prns", std::string(""));
+
+    if (sv_list.length() > 0)
+        {
+            // Reset the available prns:
+            std::set<unsigned int> tmp_set;
+            boost::tokenizer<> tok(sv_list);
+            std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
+                boost::lexical_cast<unsigned int, std::string>);
+
+            if (tmp_set.size() > 0)
+                {
+                    available_beidou_prn = tmp_set;
+                }
+        }
+
 
     if (configuration_->property("Channels_1C.count", 0) > 0)
         {
@@ -1153,6 +1173,22 @@ void GNSSFlowgraph::set_signals_list()
                         std::string("2G")));
                 }
         }
+
+    if (configuration_->property("Channels_B1.count", 0) > 0)
+        {
+            /*
+             * Loop to create the list of BeiDou B1C signals
+             */
+            for (available_gnss_prn_iter = available_beidou_prn.begin();
+                 available_gnss_prn_iter != available_beidou_prn.end();
+                 available_gnss_prn_iter++)
+                {
+                    available_GNSS_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),
+                        std::string("B1")));
+                }
+        }
+
 }
 
 

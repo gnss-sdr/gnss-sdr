@@ -32,6 +32,7 @@ if(ENABLE_FPGA)
         glonass_l2_signal_processing.cc
         pass_through.cc
         galileo_e5_signal_processing.cc
+        beidou_b1I_signal_processing.cc
         complex_byte_to_float_x2.cc
         byte_x2_to_complex_byte.cc
         cshort_to_float_x2.cc
@@ -52,6 +53,7 @@ else(ENABLE_FPGA)
         gps_sdr_signal_processing.cc
         glonass_l1_signal_processing.cc
         glonass_l2_signal_processing.cc
+        beidou_b1I_signal_processing.cc
         pass_through.cc
         galileo_e5_signal_processing.cc
         complex_byte_to_float_x2.cc

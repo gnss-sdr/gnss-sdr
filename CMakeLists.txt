@@ -990,7 +990,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
       ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-         GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
+         GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
          GIT_TAG ${armadillo_BRANCH}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
@@ -1003,7 +1003,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
       ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-         GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
+         GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
          GIT_TAG ${armadillo_BRANCH}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}

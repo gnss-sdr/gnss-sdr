@@ -14,6 +14,7 @@ This release has several improvements in different dimensions, addition of new f
 
 - Internal Finite State Machines rewritten for improved continuity in delivering position fixes. This fixes a bug that was stalling the receiver after about six hours of continuous operation.
 - Redesign of the time counter for enhanced continuity.
+- Improved flow graph in multisystem configurations: the receiver does not get stalled anymore if no signal is found from the first system.
 - Improved acquisition and tracking sensitivity.
 - Other minor bug fixes.
 
@@ -21,6 +22,7 @@ This release has several improvements in different dimensions, addition of new f
 ### Improvements in Efficiency:
 
 - Added the possibility of non-blocking acquisition, which works well when using real-time data from an RF front-end.
+- Improved flow graph in multiband configurations: satellites acquired in one band are immediately searched in others.
 - Complex local codes have been replaced by real codes, alleviating the computational burden.
 - New volk_gnsssdr kernels: volk_gnsssdr_16i_xn_resampler_16i_xn.h, volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn.h, volk_gnsssdr_32f_xn_resampler_32f_xn.h, volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn.h
 - Some AVX2 implementations added to the volk_gnsssdr library.

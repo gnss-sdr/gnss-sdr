@@ -44,6 +44,7 @@
 #include <gnuradio/blocks/null_source.h>
 #include <gnuradio/blocks/throttle.h>
 #include <list>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -133,7 +134,7 @@ private:
     void set_signals_list();
     void set_channels_state();  // Initializes the channels state (start acquisition or keep standby)
                                 // using the configuration parameters (number of channels and max channels in acquisition)
-    Gnss_Signal search_next_signal(std::string searched_signal, bool pop);
+    Gnss_Signal search_next_signal(std::string searched_signal, bool pop, bool tracked = false);
     bool connected_;
     bool running_;
     int sources_count_;
@@ -160,7 +161,28 @@ private:
     gr::blocks::throttle::sptr throttle_;
     gr::top_block_sptr top_block_;
     gr::msg_queue::sptr queue_;
-    std::list<Gnss_Signal> available_GNSS_signals_;
+
+    std::list<Gnss_Signal> available_GPS_1C_signals_;
+    std::list<Gnss_Signal> available_GPS_2S_signals_;
+    std::list<Gnss_Signal> available_GPS_L5_signals_;
+    std::list<Gnss_Signal> available_SBAS_1C_signals_;
+    std::list<Gnss_Signal> available_GAL_1B_signals_;
+    std::list<Gnss_Signal> available_GAL_5X_signals_;
+    std::list<Gnss_Signal> available_GLO_1G_signals_;
+    std::list<Gnss_Signal> available_GLO_2G_signals_;
+    enum StringValue
+    {
+        evGPS_1C,
+        evGPS_2S,
+        evGPS_L5,
+        evSBAS_1C,
+        evGAL_1B,
+        evGAL_5X,
+        evGLO_1G,
+        evGLO_2G
+    };
+    std::map<std::string, StringValue> mapStringValues_;
+
     std::vector<unsigned int> channels_state_;
     std::mutex signal_list_mutex;
 };

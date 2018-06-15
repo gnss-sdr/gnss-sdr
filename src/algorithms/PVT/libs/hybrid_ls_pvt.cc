@@ -33,6 +33,7 @@
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 
 
@@ -338,7 +339,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                         }
 
                     // get time string Gregorian calendar
-                    boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
+                    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>(utc * 1000.0));
                     // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
                     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
                     this->set_position_UTC_time(p_time);

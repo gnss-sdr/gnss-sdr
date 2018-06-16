@@ -281,7 +281,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
 
     d_correlator_outs = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_local_code_shift_chips = static_cast<float *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(float), volk_gnsssdr_get_alignment()));
-    clear_tracking_vars();
+
 
     // map memory pointers of correlator outputs
     if (d_veml)
@@ -357,7 +357,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = trk_parameters.carrier_lock_th;
     d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
 
     d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;
@@ -374,6 +373,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
     d_code_phase_samples = 0.0;
     d_last_prompt = gr_complex(0.0, 0.0);
     d_state = 0;  // initial state: standby
+    clear_tracking_vars();
 }
 
 

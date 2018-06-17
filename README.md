@@ -11,7 +11,7 @@ In the L1 band:
  - &#128752; Galileo E1b/c  (centered at 1575.42 MHz) :white_check_mark:
  - &#128752; GLONASS L1 C/A (centered at 1601.72 MHz) :white_check_mark:
 
-In the L2 band :
+In the L2 band:
  - &#128752; GPS L2C (centered at 1227.60 MHz) :white_check_mark:
  - &#128752; GLONASS L2 C/A (centered at 1246 MHz) :white_check_mark:
 

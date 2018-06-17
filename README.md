@@ -19,7 +19,7 @@ In the L5 band (centered at 1176.45 MHz):
  - &#128752; GPS L5 :white_check_mark:
  - &#128752; Galileo E5a :white_check_mark:
 
-GNSS-SDR provides interfaces for a wide range of radio frequency front-ends, generates processing outputs in standard formats, allows for the full inspection of the whole signal processing chain, and offers a framework for the development of new features. Please visit [https://gnss-sdr.org](https://gnss-sdr.org "GNSS-SDR website") for more information about this open source software-defined GNSS receiver.
+GNSS-SDR provides interfaces for a wide range of radio frequency front-ends and raw sample file formats, generates processing outputs in standard formats, allows for the full inspection of the whole signal processing chain, and offers a framework for the development of new features. Please visit [https://gnss-sdr.org](https://gnss-sdr.org "GNSS-SDR website") for more information about this open source software-defined GNSS receiver.
 
 
 

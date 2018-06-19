@@ -107,17 +107,17 @@ public:
 
     void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
-    unsigned int applied_actions()
+    unsigned int applied_actions() const
     {
         return applied_actions_;
     }
 
-    bool connected()
+    bool connected() const
     {
         return connected_;
     }
 
-    bool running()
+    bool running() const
     {
         return running_;
     }

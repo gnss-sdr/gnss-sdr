@@ -1304,6 +1304,7 @@ void GNSSFlowgraph::set_channels_state()
                 }
             DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
         }
+    std::lock_guard<std::mutex> lock(signal_list_mutex);
     acq_channels_count_ = max_acq_channels_;
     DLOG(INFO) << acq_channels_count_ << " channels in acquisition state";
 }

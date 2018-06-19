@@ -36,17 +36,17 @@ Acq_Conf::Acq_Conf()
     /* PCPS acquisition configuration */
     sampled_ms = 0;
     max_dwells = 0;
-    unsigned int doppler_max = 0;
-    unsigned int num_doppler_bins_step2 = 0;
-    float doppler_step2 = 0.0;
-    long fs_in = 0;
-    int samples_per_ms = 0;
-    int samples_per_code = 0;
-    bool bit_transition_flag = false;
-    bool use_CFAR_algorithm_flag = false;
-    bool dump = false;
-    bool blocking = false;
-    bool make_2_steps = false;
-    std::string dump_filename = "";
+    doppler_max = 0;
+    num_doppler_bins_step2 = 0;
+    doppler_step2 = 0.0;
+    fs_in = 0;
+    samples_per_ms = 0;
+    samples_per_code = 0;
+    bit_transition_flag = false;
+    use_CFAR_algorithm_flag = false;
+    dump = false;
+    blocking = false;
+    make_2_steps = false;
+    dump_filename = "";
     it_size = sizeof(char);
 }

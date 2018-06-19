@@ -41,13 +41,12 @@
 #include <string>
 #include <map>
 #include <queue>
-#include <deque>
 
 class dll_pll_veml_tracking;
 
 typedef boost::shared_ptr<dll_pll_veml_tracking> dll_pll_veml_tracking_sptr;
 
-dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(Dll_Pll_Conf conf_);
+dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking block.
@@ -67,9 +66,9 @@ public:
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
-    friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(Dll_Pll_Conf conf_);
+    friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
 
-    dll_pll_veml_tracking(Dll_Pll_Conf conf_);
+    dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();

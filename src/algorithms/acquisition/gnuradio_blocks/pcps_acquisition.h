@@ -53,38 +53,20 @@
 #define GNSS_SDR_PCPS_ACQUISITION_H_
 
 #include "gnss_synchro.h"
+#include "acq_conf.h"
 #include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <volk/volk.h>
 #include <string>
 
-typedef struct
-{
-    /* pcps acquisition configuration */
-    unsigned int sampled_ms;
-    unsigned int max_dwells;
-    unsigned int doppler_max;
-    unsigned int num_doppler_bins_step2;
-    float doppler_step2;
-    long fs_in;
-    int samples_per_ms;
-    int samples_per_code;
-    bool bit_transition_flag;
-    bool use_CFAR_algorithm_flag;
-    bool dump;
-    bool blocking;
-    bool make_2_steps;
-    std::string dump_filename;
-    size_t it_size;
-} pcpsconf_t;
 
 class pcps_acquisition;
 
 typedef boost::shared_ptr<pcps_acquisition> pcps_acquisition_sptr;
 
 pcps_acquisition_sptr
-pcps_make_acquisition(pcpsconf_t conf_);
+pcps_make_acquisition(const Acq_Conf& conf_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -96,9 +78,9 @@ class pcps_acquisition : public gr::block
 {
 private:
     friend pcps_acquisition_sptr
-    pcps_make_acquisition(pcpsconf_t conf_);
+    pcps_make_acquisition(const Acq_Conf& conf_);
 
-    pcps_acquisition(pcpsconf_t conf_);
+    pcps_acquisition(const Acq_Conf& conf_);
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
     void update_grid_doppler_wipeoffs();
@@ -111,7 +93,7 @@ private:
 
     void send_positive_acquisition();
 
-    pcpsconf_t acq_parameters;
+    Acq_Conf acq_parameters;
     bool d_active;
     bool d_worker_active;
     bool d_cshort;

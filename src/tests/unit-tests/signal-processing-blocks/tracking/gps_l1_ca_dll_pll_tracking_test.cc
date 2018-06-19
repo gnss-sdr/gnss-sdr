@@ -54,7 +54,6 @@
 #include "test_flags.h"
 
 DEFINE_bool(plot_gps_l1_tracking_test, false, "Plots results of GpsL1CADllPllTrackingTest with gnuplot");
-DEFINE_double(CN0_dBHz, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 [dB-Hz]");
 DEFINE_int32(extend_correlation_symbols, 1, "Set the tracking coherent correlation to N symbols (up to 20 for GPS L1 C/A)");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
@@ -184,7 +183,7 @@ int GpsL1CADllPllTrackingTest::configure_generator()
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  //Baseband sampling frequency [MSps]
-    p6 = std::string("-CN0_dBHz=") + std::to_string(FLAGS_CN0_dBHz); // Signal generator CN0
+    p6 = std::string("-CN0_dBHz=") + std::to_string(FLAGS_CN0_dBHz);               // Signal generator CN0
     return 0;
 }
 
@@ -193,7 +192,7 @@ int GpsL1CADllPllTrackingTest::generate_signal()
 {
     int child_status;
 
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0],&p6[0], NULL};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], &p6[0], NULL};
 
     int pid;
     if ((pid = fork()) == -1)

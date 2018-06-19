@@ -60,7 +60,7 @@
 
 using google::LogMessage;
 
-dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(dllpllconf_t conf_)
+dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 {
     return dll_pll_veml_tracking_sptr(new dll_pll_veml_tracking(conf_));
 }
@@ -76,8 +76,8 @@ void dll_pll_veml_tracking::forecast(int noutput_items,
 }
 
 
-dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                                                                              gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     trk_parameters = conf_;
     // Telemetry bit synchronization message port input

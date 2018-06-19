@@ -34,7 +34,7 @@
  * -------------------------------------------------------------------------
  */
 
-
+#include "dll_pll_conf.h"
 #include "gps_l5_dll_pll_tracking.h"
 #include "configuration_interface.h"
 #include "GPS_L5.h"
@@ -49,7 +49,7 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    dllpllconf_t trk_param;
+    Dll_Pll_Conf trk_param = Dll_Pll_Conf();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     std::string default_item_type = "gr_complex";

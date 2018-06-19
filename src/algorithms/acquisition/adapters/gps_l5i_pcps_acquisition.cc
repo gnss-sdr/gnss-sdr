@@ -36,6 +36,7 @@
 #include "gps_l5_signal.h"
 #include "GPS_L5.h"
 #include "gnss_sdr_flags.h"
+#include "acq_conf.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
@@ -46,7 +47,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    pcpsconf_t acq_parameters;
+    Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";

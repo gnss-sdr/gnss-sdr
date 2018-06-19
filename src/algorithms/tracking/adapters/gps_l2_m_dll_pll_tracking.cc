@@ -49,7 +49,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    Dll_Pll_Conf trk_param;
+    Dll_Pll_Conf trk_param = Dll_Pll_Conf();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     std::string default_item_type = "gr_complex";

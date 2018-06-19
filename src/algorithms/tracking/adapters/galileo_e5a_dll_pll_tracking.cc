@@ -35,7 +35,7 @@
  *
  * -------------------------------------------------------------------------
  */
-
+#include "dll_pll_conf.h"
 #include "galileo_e5a_dll_pll_tracking.h"
 #include "configuration_interface.h"
 #include "Galileo_E5a.h"
@@ -49,7 +49,7 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    dllpllconf_t trk_param;
+    Dll_Pll_Conf trk_param;
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     std::string default_item_type = "gr_complex";

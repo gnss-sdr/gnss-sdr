@@ -302,9 +302,9 @@ public:
     ///
     /// \return <-- reference to the gnuplot object
     // -----------------------------------------------
-    inline Gnuplot &set_multiplot()
+    inline Gnuplot &set_multiplot(int rows, int cols)
     {
-        cmd("set multiplot");
+        cmd("set multiplot layout " + std::to_string(rows) + "," + std::to_string(cols));  //+ " rowfirst");
         return *this;
     };
 
@@ -1906,11 +1906,11 @@ void Gnuplot::init()
     std::string tmp = Gnuplot::m_sGNUPlotPath + "/" +
                       Gnuplot::m_sGNUPlotFileName;
 
-    // FILE *popen(const char *command, const char *mode);
-    // The popen() function shall execute the command specified by the string
-    // command, create a pipe between the calling program and the executed
-    // command, and return a pointer to a stream that can be used to either read
-    // from or write to the pipe.
+// FILE *popen(const char *command, const char *mode);
+// The popen() function shall execute the command specified by the string
+// command, create a pipe between the calling program and the executed
+// command, and return a pointer to a stream that can be used to either read
+// from or write to the pipe.
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     gnucmd = _popen(tmp.c_str(), "w");
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
@@ -1974,7 +1974,7 @@ bool Gnuplot::get_program_path()
 
     std::list<std::string> ls;
 
-    //split path (one long string) into list ls of strings
+//split path (one long string) into list ls of strings
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     stringtok(ls, path_str, ";");
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
@@ -2018,16 +2018,16 @@ bool Gnuplot::file_exists(const std::string &filename, int mode)
             return false;
         }
 
-        // int _access(const char *path, int mode);
-        //  returns 0 if the file has the given mode,
-        //  it returns -1 if the named file does not exist or is not accessible in
-        //  the given mode
-        // mode = 0 (F_OK) (default): checks file for existence only
-        // mode = 1 (X_OK): execution permission
-        // mode = 2 (W_OK): write permission
-        // mode = 4 (R_OK): read permission
-        // mode = 6       : read and write permission
-        // mode = 7       : read, write and execution permission
+// int _access(const char *path, int mode);
+//  returns 0 if the file has the given mode,
+//  it returns -1 if the named file does not exist or is not accessible in
+//  the given mode
+// mode = 0 (F_OK) (default): checks file for existence only
+// mode = 1 (X_OK): execution permission
+// mode = 2 (W_OK): write permission
+// mode = 4 (R_OK): read permission
+// mode = 6       : read and write permission
+// mode = 7       : read, write and execution permission
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_access(filename.c_str(), mode) == 0)
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
@@ -2089,19 +2089,19 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
             throw GnuplotException(except.str());
         }
 
-        // int mkstemp(char *name);
-        // shall replace the contents of the string pointed to by "name" by a unique
-        // filename, and return a file descriptor for the file open for reading and
-        // writing.  Otherwise, -1 shall be returned if no suitable file could be
-        // created.  The string in template should look like a filename with six
-        // trailing 'X' s; mkstemp() replaces each 'X' with a character from the
-        // portable filename character set.  The characters are chosen such that the
-        // resulting name does not duplicate the name of an existing file at the
-        // time of a call to mkstemp()
+// int mkstemp(char *name);
+// shall replace the contents of the string pointed to by "name" by a unique
+// filename, and return a file descriptor for the file open for reading and
+// writing.  Otherwise, -1 shall be returned if no suitable file could be
+// created.  The string in template should look like a filename with six
+// trailing 'X' s; mkstemp() replaces each 'X' with a character from the
+// portable filename character set.  The characters are chosen such that the
+// resulting name does not duplicate the name of an existing file at the
+// time of a call to mkstemp()
 
-        //
-        // open temporary files for output
-        //
+//
+// open temporary files for output
+//
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_mktemp(name) == NULL)

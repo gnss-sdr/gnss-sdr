@@ -148,15 +148,21 @@ public:
     std::vector<double> check_results_doppler(arma::vec& true_time_s,
         arma::vec& true_value,
         arma::vec& meas_time_s,
-        arma::vec& meas_value);
+        arma::vec& meas_value,
+        double& mean_error,
+        double& std_dev_error);
     std::vector<double> check_results_acc_carrier_phase(arma::vec& true_time_s,
         arma::vec& true_value,
         arma::vec& meas_time_s,
-        arma::vec& meas_value);
+        arma::vec& meas_value,
+        double& mean_error,
+        double& std_dev_error);
     std::vector<double> check_results_codephase(arma::vec& true_time_s,
         arma::vec& true_value,
         arma::vec& meas_time_s,
-        arma::vec& meas_value);
+        arma::vec& meas_value,
+        double& mean_error,
+        double& std_dev_error);
 
     GpsL1CADllPllTrackingTest()
     {
@@ -252,7 +258,9 @@ void GpsL1CADllPllTrackingTest::configure_receiver()
 std::vector<double> GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& true_time_s,
     arma::vec& true_value,
     arma::vec& meas_time_s,
-    arma::vec& meas_value)
+    arma::vec& meas_value,
+    double& mean_error,
+    double& std_dev_error)
 {
     // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
@@ -279,6 +287,9 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& 
     // 3. Mean err and variance
     double error_mean = arma::mean(err);
     double error_var = arma::var(err);
+
+    mean_error = error_mean;
+    std_dev_error = sqrt(error_var);
 
     // 4. Peaks
     double max_error = arma::max(err);
@@ -297,7 +308,9 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& 
 std::vector<double> GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(arma::vec& true_time_s,
     arma::vec& true_value,
     arma::vec& meas_time_s,
-    arma::vec& meas_value)
+    arma::vec& meas_value,
+    double& mean_error,
+    double& std_dev_error)
 {
     // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
@@ -323,6 +336,8 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(a
     double error_mean = arma::mean(err);
     double error_var = arma::var(err);
 
+    mean_error = error_mean;
+    std_dev_error = sqrt(error_var);
     // 4. Peaks
     double max_error = arma::max(err);
     double min_error = arma::min(err);
@@ -340,7 +355,9 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(a
 std::vector<double> GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec& true_time_s,
     arma::vec& true_value,
     arma::vec& meas_time_s,
-    arma::vec& meas_value)
+    arma::vec& meas_value,
+    double& mean_error,
+    double& std_dev_error)
 {
     // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
@@ -366,6 +383,9 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec
     // 3. Mean err and variance
     double error_mean = arma::mean(err);
     double error_var = arma::var(err);
+
+    mean_error = error_mean;
+    std_dev_error = sqrt(error_var);
 
     // 4. Peaks
     double max_error = arma::max(err);
@@ -395,12 +415,22 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     std::vector<std::vector<double>> promptI_sweep;
     std::vector<std::vector<double>> promptQ_sweep;
     std::vector<std::vector<double>> CN0_dBHz_sweep;
+    std::vector<std::vector<double>> trk_timestamp_s_sweep;
 
     //error vectors
     std::vector<std::vector<double>> doppler_error_sweep;
+    std::vector<double> mean_doppler_error_sweep;
+    std::vector<double> std_dev_doppler_error_sweep;
+
     std::vector<std::vector<double>> code_phase_error_sweep;
+    std::vector<double> mean_code_phase_error_sweep;
+    std::vector<double> std_dev_code_phase_error_sweep;
+
     std::vector<std::vector<double>> acc_carrier_phase_error_sweep;
-    std::vector<std::vector<double>> trk_timestamp_s_sweep;
+    std::vector<double> mean_carrier_phase_error_sweep;
+    std::vector<double> std_dev_carrier_phase_error_sweep;
+
+    std::vector<std::vector<double>> trk_valid_timestamp_s_sweep;
 
     if (FLAGS_CN0_dBHz_start == FLAGS_CN0_dBHz_stop)
         {
@@ -544,6 +574,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
             long int epoch_counter = 0;
 
+            std::vector<double> timestamp_s;
             std::vector<double> prompt;
             std::vector<double> early;
             std::vector<double> late;
@@ -558,17 +589,18 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     double delay_chips = GPS_L1_CA_CODE_LENGTH_CHIPS - GPS_L1_CA_CODE_LENGTH_CHIPS * (fmod((static_cast<double>(trk_dump.PRN_start_sample_count) + trk_dump.aux1) / static_cast<double>(baseband_sampling_freq), 1.0e-3) / 1.0e-3);
 
                     trk_prn_delay_chips(epoch_counter) = delay_chips;
-                    epoch_counter++;
 
-
+                    timestamp_s.push_back(trk_timestamp_s(epoch_counter));
                     prompt.push_back(trk_dump.abs_P);
                     early.push_back(trk_dump.abs_E);
                     late.push_back(trk_dump.abs_L);
                     promptI.push_back(trk_dump.prompt_I);
                     promptQ.push_back(trk_dump.prompt_Q);
                     CN0_dBHz.push_back(trk_dump.CN0_SNV_dB_Hz);
-                }
 
+                    epoch_counter++;
+                }
+            trk_timestamp_s_sweep.push_back(timestamp_s);
             prompt_sweep.push_back(prompt);
             early_sweep.push_back(early);
             late_sweep.push_back(late);
@@ -613,12 +645,25 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     std::vector<double> doppler_error_hz;
                     std::vector<double> code_phase_error_chips;
                     std::vector<double> acc_carrier_phase_hz;
-                    doppler_error_hz = check_results_doppler(true_timestamp_s, true_Doppler_Hz, trk_timestamp_s, trk_Doppler_Hz);
-                    code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips);
-                    acc_carrier_phase_hz = check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles);
+
+                    double mean_error;
+                    double std_dev_error;
+
+                    doppler_error_hz = check_results_doppler(true_timestamp_s, true_Doppler_Hz, trk_timestamp_s, trk_Doppler_Hz, mean_error, std_dev_error);
+                    mean_doppler_error_sweep.push_back(mean_error);
+                    std_dev_doppler_error_sweep.push_back(std_dev_error);
+
+                    code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips, mean_error, std_dev_error);
+                    mean_code_phase_error_sweep.push_back(mean_error);
+                    std_dev_code_phase_error_sweep.push_back(std_dev_error);
+
+                    acc_carrier_phase_hz = check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles, mean_error, std_dev_error);
+                    mean_carrier_phase_error_sweep.push_back(mean_error);
+                    std_dev_carrier_phase_error_sweep.push_back(std_dev_error);
+
                     //save tracking measurement timestamps to std::vector
                     std::vector<double> vector_trk_timestamp_s(trk_timestamp_s.colptr(0), trk_timestamp_s.colptr(0) + trk_timestamp_s.n_rows);
-                    trk_timestamp_s_sweep.push_back(vector_trk_timestamp_s);
+                    trk_valid_timestamp_s_sweep.push_back(vector_trk_timestamp_s);
 
                     doppler_error_sweep.push_back(doppler_error_hz);
                     code_phase_error_sweep.push_back(code_phase_error_chips);
@@ -647,50 +692,53 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             boost::filesystem::path dir = p.parent_path();
                             std::string gnuplot_path = dir.native();
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
-                            std::vector<double> timevec;
                             unsigned int decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
+
                             for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                                 {
-                                    timevec.clear();
-                                    //todo: timevector MUST BE READED from the trk output file
-                                    double t = 0.0;
-                                    for (auto it = prompt_sweep.at(current_cn0_idx).begin(); it != prompt_sweep.at(current_cn0_idx).end(); it++)
-                                        {
-                                            timevec.push_back(t);
-                                            t = t + GPS_L1_CA_CODE_PERIOD;
-                                        }
                                     Gnuplot g1("linespoints");
-                                    g1.set_title("[" + std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz ] GPS L1 C/A signal tracking correlators' output (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                    g1.showonscreen();  // window output
+                                    g1.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                     g1.set_grid();
                                     g1.set_xlabel("Time [s]");
                                     g1.set_ylabel("Correlators' output");
-                                    g1.cmd("set key box opaque");
-                                    g1.plot_xy(timevec, prompt_sweep.at(current_cn0_idx), "Prompt", decimate);
-                                    g1.plot_xy(timevec, early_sweep.at(current_cn0_idx), "Early", decimate);
-                                    g1.plot_xy(timevec, late_sweep.at(current_cn0_idx), "Late", decimate);
-                                    g1.savetops("Correlators_outputs");
-                                    g1.savetopdf("Correlators_outputs", 18);
-                                    g1.showonscreen();  // window output
-                                    Gnuplot g2("points");
-                                    g2.set_title("[" + std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz ] Constellation diagram (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                    //g1.cmd("set key box opaque");
+                                    g1.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), prompt_sweep.at(current_cn0_idx), "Prompt", decimate);
+                                    g1.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), early_sweep.at(current_cn0_idx), "Early", decimate);
+                                    g1.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), late_sweep.at(current_cn0_idx), "Late", decimate);
+                                    g1.set_legend();
+                                    g1.savetops("Correlators_outputs" + std::to_string(generator_CN0_values.at(current_cn0_idx)));
+                                    g1.savetopdf("Correlators_outputs" + std::to_string(generator_CN0_values.at(current_cn0_idx)), 18);
+                                }
+
+
+                            Gnuplot g2("points");
+                            g2.showonscreen();  // window output
+                            g2.set_multiplot(ceil(static_cast<float>(generator_CN0_values.size()) / 2.0),
+                                ceil(static_cast<float>(generator_CN0_values.size()) / 2));
+                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                {
+                                    g2.reset_plot();
+                                    g2.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz Constellation (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                     g2.set_grid();
                                     g2.set_xlabel("Inphase");
                                     g2.set_ylabel("Quadrature");
-                                    g2.cmd("set size ratio -1");
+                                    //g2.cmd("set size ratio -1");
                                     g2.plot_xy(promptI_sweep.at(current_cn0_idx), promptQ_sweep.at(current_cn0_idx));
-                                    g2.savetops("Constellation");
-                                    g2.savetopdf("Constellation", 18);
-                                    g2.showonscreen();  // window output
                                 }
+                            g2.unset_multiplot();
+                            g2.savetops("Constellation");
+                            g2.savetopdf("Constellation", 18);
+
                             Gnuplot g3("linespoints");
-                            g3.set_title("GPS L1 C/A tracking CN0 output (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                            g3.set_title("GPS L1 C/A tracking CN0 output (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                             g3.set_grid();
                             g3.set_xlabel("Time [s]");
                             g3.set_ylabel("Reported CN0 [dB-Hz]");
                             g3.cmd("set key box opaque");
                             for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                                 {
-                                    g3.plot_xy(timevec, CN0_dBHz_sweep.at(current_cn0_idx),
+                                    g3.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), CN0_dBHz_sweep.at(current_cn0_idx),
                                         std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
                                 }
                             g3.set_legend();
@@ -698,55 +746,97 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             g3.savetopdf("CN0_output", 18);
                             g3.showonscreen();  // window output
 
-                            Gnuplot g4("points");
-                            g4.set_title("Doppler error (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                            g4.set_grid();
-                            g4.set_xlabel("Time [s]");
-                            g4.set_ylabel("Dopper error [Hz]");
-                            g4.cmd("set key box opaque");
-                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                            //PLOT ERROR FIGURES (only if it is used the signal generator)
+                            if (!FLAGS_enable_external_signal_file)
                                 {
-                                    g4.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), doppler_error_sweep.at(current_cn0_idx),
-                                        std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                    Gnuplot g4("points");
+                                    g4.showonscreen();  // window output
+                                    g4.set_multiplot(ceil(static_cast<float>(generator_CN0_values.size()) / 2.0),
+                                        ceil(static_cast<float>(generator_CN0_values.size()) / 2));
+                                    for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                        {
+                                            g4.reset_plot();
+                                            g4.set_title(std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]" + " Doppler error (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                            g4.set_grid();
+                                            //g4.cmd("set key box opaque");
+                                            g4.set_xlabel("Time [s]");
+                                            g4.set_ylabel("Dopper error [Hz]");
+                                            g4.plot_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx), doppler_error_sweep.at(current_cn0_idx),
+                                                std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                            //g4.set_legend();
+                                        }
+                                    g4.unset_multiplot();
+                                    g4.savetops("Doppler_error_output");
+                                    g4.savetopdf("Doppler_error_output", 18);
+
+                                    Gnuplot g5("points");
+                                    g5.set_title("Code delay error (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                    g5.set_grid();
+                                    g5.set_xlabel("Time [s]");
+                                    g5.set_ylabel("Code delay error [Chips]");
+                                    g5.cmd("set key box opaque");
+
+                                    for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                        {
+                                            g5.plot_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx), code_phase_error_sweep.at(current_cn0_idx),
+                                                std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                        }
+                                    g5.set_legend();
+                                    g5.savetops("Code_error_output");
+                                    g5.savetopdf("Code_error_output", 18);
+                                    g5.showonscreen();  // window output
+
+                                    Gnuplot g6("points");
+                                    g6.set_title("Accumulated carrier phase error (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                    g6.set_grid();
+                                    g6.set_xlabel("Time [s]");
+                                    g6.set_ylabel("Accumulated carrier phase error [Cycles]");
+                                    g6.cmd("set key box opaque");
+
+                                    for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                        {
+                                            g6.plot_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx), acc_carrier_phase_error_sweep.at(current_cn0_idx),
+                                                std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                        }
+                                    g6.set_legend();
+                                    g6.savetops("Carrier_phase_error_output");
+                                    g6.savetopdf("Carrier_phase_error_output", 18);
+                                    g6.showonscreen();  // window output
+
+                                    if (generator_CN0_values.size() > 1)
+                                        {
+                                            //plot metrics
+                                            Gnuplot g7("linespoints");
+                                            g7.set_title("Doppler error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                            g7.set_grid();
+                                            g7.set_xlabel("CN0 [dB-Hz]");
+                                            g7.set_ylabel("Doppler error [Hz]");
+                                            g7.cmd("set key box opaque");
+                                            g7.plot_xy_err(generator_CN0_values, mean_doppler_error_sweep, std_dev_doppler_error_sweep, "Doppler error");
+                                            g7.savetops("Doppler_error_metrics");
+                                            g7.savetopdf("Doppler_error_metrics", 18);
+
+                                            Gnuplot g8("linespoints");
+                                            g8.set_title("Accumulated carrier phase error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                            g8.set_grid();
+                                            g8.set_xlabel("CN0 [dB-Hz]");
+                                            g8.set_ylabel("Accumulated Carrier Phase error [Hz]");
+                                            g8.cmd("set key box opaque");
+                                            g8.plot_xy_err(generator_CN0_values, mean_carrier_phase_error_sweep, std_dev_carrier_phase_error_sweep, "Carrier Phase error");
+                                            g8.savetops("Carrier_error_metrics");
+                                            g8.savetopdf("Carrier_error_metrics", 18);
+
+                                            Gnuplot g9("linespoints");
+                                            g9.set_title("Code Phase error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                            g9.set_grid();
+                                            g9.set_xlabel("CN0 [dB-Hz]");
+                                            g9.set_ylabel("Code Phase error [Hz]");
+                                            g9.cmd("set key box opaque");
+                                            g9.plot_xy_err(generator_CN0_values, mean_code_phase_error_sweep, std_dev_code_phase_error_sweep, "Code Phase error");
+                                            g9.savetops("Code_error_metrics");
+                                            g9.savetopdf("Code_error_metrics", 18);
+                                        }
                                 }
-                            g4.set_legend();
-                            g4.savetops("Doppler_error_output");
-                            g4.savetopdf("Doppler_error_output", 18);
-                            g4.showonscreen();  // window output
-
-                            Gnuplot g5("points");
-                            g5.set_title("Code delay error (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                            g5.set_grid();
-                            g5.set_xlabel("Time [s]");
-                            g5.set_ylabel("Code delay error [Chips]");
-                            g5.cmd("set key box opaque");
-
-                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
-                                {
-                                    g5.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), code_phase_error_sweep.at(current_cn0_idx),
-                                        std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
-                                }
-                            g5.set_legend();
-                            g5.savetops("Code_error_output");
-                            g5.savetopdf("Code_error_output", 18);
-                            g5.showonscreen();  // window output
-
-                            Gnuplot g6("points");
-                            g6.set_title("Accumulated carrier phase error (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                            g6.set_grid();
-                            g6.set_xlabel("Time [s]");
-                            g6.set_ylabel("Accumulated carrier phase error [Cycles]");
-                            g6.cmd("set key box opaque");
-
-                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
-                                {
-                                    g6.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), acc_carrier_phase_error_sweep.at(current_cn0_idx),
-                                        std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
-                                }
-                            g6.set_legend();
-                            g6.savetops("Carrier_phase_error_output");
-                            g6.savetopdf("Carrier_phase_error_output", 18);
-                            g6.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {
